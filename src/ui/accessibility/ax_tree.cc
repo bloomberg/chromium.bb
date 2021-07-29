@@ -98,6 +98,8 @@ void CallIfAttributeValuesChanged(const std::vector<std::pair<K, V>>& pairs1,
 
   for (size_t i = 0; i < pairs2.size(); ++i) {
     const auto& iter = map1.find(pairs2[i].first);
+    if (pairs2[i].second == empty_value && iter == map1.end())
+      continue;
     if (iter == map1.end())
       callback(pairs2[i].first, empty_value, pairs2[i].second);
     else if (iter->second != pairs2[i].second)
@@ -163,7 +165,7 @@ struct PendingStructureChanges {
         create_node_count(0),
         node_exists(!!node),
         parent_node_id((node && node->parent())
-                           ? absl::optional<AXNodeID>{node->parent()->id()}
+                           ? absl::make_optional<AXNodeID>(node->parent()->id())
                            : absl::nullopt),
         last_known_data(node ? &node->data() : nullptr) {}
 
@@ -541,9 +543,13 @@ struct AXTreeUpdateState {
   // We need to keep this around in order to correctly fire post-update events.
   std::map<AXNodeID, AXNodeData> old_node_id_to_data;
 
-  // Optional copy of the old tree data, only populated when the tree
-  // data has changed.
+  // Optional copy of the old tree data, only populated when the tree data will
+  // need to be updated.
   absl::optional<AXTreeData> old_tree_data;
+
+  // Optional copy of the updated tree data, used when calculating what changes
+  // will occur during an update before the update applies changes.
+  absl::optional<AXTreeData> new_tree_data;
 
   // Keep track of the pending tree update to help create useful error messages.
   // TODO(crbug.com/1156601) Revert this once we have the crash data we need
@@ -710,14 +716,14 @@ void AXTree::Destroy() {
   }
 }
 
-void AXTree::UpdateData(const AXTreeData& new_data) {
+void AXTree::UpdateDataForTesting(const AXTreeData& new_data) {
   if (data_ == new_data)
     return;
 
-  AXTreeData old_data = data_;
-  data_ = new_data;
-  for (AXTreeObserver& observer : observers_)
-    observer.OnTreeDataChanged(this, old_data, new_data);
+  AXTreeUpdate update;
+  update.has_tree_data = true;
+  update.tree_data = new_data;
+  Unserialize(update);
 }
 
 gfx::RectF AXTree::RelativeToTreeBoundsInternal(const AXNode* node,
@@ -990,6 +996,12 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   // false whenever this function exits.
   base::AutoReset<bool> update_state_resetter(&tree_update_in_progress_, true);
 
+  // Update the tree data. Do not call `UpdateDataForTesting` since this method
+  // should be used only for testing, but importantly, we want to defer the
+  // `OnTreeDataChanged` event until after the tree has finished updating.
+  if (update_state.new_tree_data)
+    data_ = update.tree_data;
+
   // Handle |node_id_to_clear| before applying ordinary node updates.
   // We distinguish between updating the root, e.g. changing its children or
   // some of its attributes, or replacing the root completely. If the root is
@@ -1039,13 +1051,6 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   }
 
   DCHECK_EQ(!GetFromId(update.root_id), update_state.root_will_be_created);
-
-  // Update the tree data, do not call |UpdateData| since we want to defer
-  // the |OnTreeDataChanged| event until after the tree has finished updating.
-  if (update.has_tree_data && data_ != update.tree_data) {
-    update_state.old_tree_data = data_;
-    data_ = update.tree_data;
-  }
 
   // Update all of the nodes in the update.
   for (size_t i = 0; i < update.nodes.size(); ++i) {
@@ -1133,6 +1138,19 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     changes.push_back(AXTreeObserver::Change(node, change));
   }
 
+  // Clear cached information in `AXComputedNodeData` for every node that has
+  // been changed in any way, including because of changes to one of its
+  // descendants.
+  std::set<AXNodeID> cleared_computed_node_data_ids;
+  for (AXNodeID node_id : update_state.node_data_changed_ids) {
+    AXNode* node = GetFromId(node_id);
+    while (node) {
+      if (cleared_computed_node_data_ids.insert(node->id()).second)
+        node->ClearComputedNodeData();
+      node = node->parent();
+    }
+  }
+
   // Update the unignored cached values as necessary, ensuring that we only
   // update once for each unignored node.
   // If the node is ignored, we must update from an unignored ancestor.
@@ -1148,27 +1166,32 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   // Tree is no longer updating.
   SetTreeUpdateInProgressState(false);
 
-  // Now that the tree is stable and its nodes have been updated, notify if
-  // the tree data changed. We must do this after updating nodes in case the
-  // root has been replaced, so observers have the most up-to-date information.
   if (update_state.old_tree_data) {
+    DCHECK(update.has_tree_data)
+        << "If `UpdateState::old_tree_data` exists, then there must be a "
+           "request to update the tree data.";
+
+    // Now that the tree is stable and its nodes have been updated, notify if
+    // the tree data changed. We must do this after updating nodes in case the
+    // root has been replaced, so observers have the most up-to-date
+    // information.
     for (AXTreeObserver& observer : observers_)
       observer.OnTreeDataChanged(this, *update_state.old_tree_data, data_);
   }
 
-  // Now that the unignored cached values are up to date, update observers to
+  // Now that the unignored cached values are up to date, notify observers of
   // the nodes that were deleted from the tree but not reparented.
   for (AXNodeID node_id : update_state.removed_node_ids) {
     if (!update_state.IsCreatedNode(node_id))
       NotifyNodeHasBeenDeleted(node_id);
   }
 
-  // Now that the unignored cached values are up to date, update observers to
+  // Now that the unignored cached values are up to date, notify observers of
   // new nodes in the tree.
   for (AXNodeID node_id : update_state.new_node_ids)
     NotifyNodeHasBeenReparentedOrCreated(GetFromId(node_id), &update_state);
 
-  // Now that the unignored cached values are up to date, update observers to
+  // Now that the unignored cached values are up to date, notify observers of
   // node changes.
   for (AXNodeID node_data_changed_id : update_state.node_data_changed_ids) {
     AXNode* node = GetFromId(node_data_changed_id);
@@ -1266,9 +1289,17 @@ bool AXTree::ComputePendingChanges(const AXTreeUpdate& update,
   update_state->pending_update_status =
       AXTreePendingStructureStatus::kComputing;
 
+  // The ID of the current root  is temporarily stored in `update_state`,
+  // but reset after all pending updates have been computed in order to
+  // avoid stale data hanging around.
   base::AutoReset<absl::optional<AXNodeID>> pending_root_id_resetter(
       &update_state->pending_root_id,
-      root_ ? absl::optional<AXNodeID>{root_->id()} : absl::nullopt);
+      root_ ? absl::make_optional<AXNodeID>(root_->id()) : absl::nullopt);
+
+  if (update.has_tree_data && data_ != update.tree_data) {
+    update_state->old_tree_data = data_;
+    update_state->new_tree_data = update.tree_data;
+  }
 
   // We distinguish between updating the root, e.g. changing its children or
   // some of its attributes, or replacing the root completely. If the root is
@@ -1644,6 +1675,7 @@ void AXTree::NotifyNodeDataHasBeenChanged(AXNode* node,
   auto string_callback = [this, node](ax::mojom::StringAttribute attr,
                                       const std::string& old_string,
                                       const std::string& new_string) {
+    DCHECK_NE(old_string, new_string);
     for (AXTreeObserver& observer : observers_) {
       observer.OnStringAttributeChanged(this, node, attr, old_string,
                                         new_string);
@@ -1656,6 +1688,7 @@ void AXTree::NotifyNodeDataHasBeenChanged(AXNode* node,
   auto bool_callback = [this, node](ax::mojom::BoolAttribute attr,
                                     const bool& old_bool,
                                     const bool& new_bool) {
+    DCHECK_NE(old_bool, new_bool);
     for (AXTreeObserver& observer : observers_)
       observer.OnBoolAttributeChanged(this, node, attr, new_bool);
   };
@@ -1665,6 +1698,7 @@ void AXTree::NotifyNodeDataHasBeenChanged(AXNode* node,
   auto float_callback = [this, node](ax::mojom::FloatAttribute attr,
                                      const float& old_float,
                                      const float& new_float) {
+    DCHECK_NE(old_float, new_float);
     for (AXTreeObserver& observer : observers_)
       observer.OnFloatAttributeChanged(this, node, attr, old_float, new_float);
   };
@@ -1673,6 +1707,7 @@ void AXTree::NotifyNodeDataHasBeenChanged(AXNode* node,
 
   auto int_callback = [this, node](ax::mojom::IntAttribute attr,
                                    const int& old_int, const int& new_int) {
+    DCHECK_NE(old_int, new_int);
     for (AXTreeObserver& observer : observers_)
       observer.OnIntAttributeChanged(this, node, attr, old_int, new_int);
   };
@@ -2056,8 +2091,8 @@ void AXTree::RecursivelyPopulateOrderedSetItemsMap(
     // containers are historically marked invisible. Therefore, in that case,
     // count the invisible items. Only check 2 levels up, as combobox containers
     // are never higher.
-    if (child->data().HasState(ax::mojom::State::kInvisible) &&
-        !IsCollapsed(local_parent) && !IsCollapsed(local_parent->parent())) {
+    if (child->data().IsInvisible() && !IsCollapsed(local_parent) &&
+        !IsCollapsed(local_parent->parent())) {
       continue;
     }
 

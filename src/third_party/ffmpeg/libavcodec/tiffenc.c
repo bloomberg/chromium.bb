@@ -533,12 +533,6 @@ static av_cold int encode_init(AVCodecContext *avctx)
     }
 #endif
 
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-    avctx->coded_frame->pict_type = AV_PICTURE_TYPE_I;
-    avctx->coded_frame->key_frame = 1;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     s->avctx = avctx;
 
     return 0;
@@ -574,7 +568,7 @@ static const AVClass tiffenc_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_tiff_encoder = {
+const AVCodec ff_tiff_encoder = {
     .name           = "tiff",
     .long_name      = NULL_IF_CONFIG_SMALL("TIFF image"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -594,4 +588,5 @@ AVCodec ff_tiff_encoder = {
         AV_PIX_FMT_NONE
     },
     .priv_class     = &tiffenc_class,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

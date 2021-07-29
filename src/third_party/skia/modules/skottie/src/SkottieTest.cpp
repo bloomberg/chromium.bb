@@ -173,11 +173,17 @@ DEF_TEST(Skottie_Properties, reporter) {
             fTransforms.push_back({SkString(node_name), lh()});
         }
 
-        void onEnterNode(const char node_name[]) override {
+        void onEnterNode(const char node_name[], PropertyObserver::NodeType node_type) override {
+            if (node_name == nullptr) {
+                return;
+            }
             fCurrentNode = fCurrentNode.empty() ? node_name : fCurrentNode + "." + node_name;
         }
 
-        void onLeavingNode(const char node_name[]) override {
+        void onLeavingNode(const char node_name[], PropertyObserver::NodeType node_type) override {
+            if (node_name == nullptr) {
+                return;
+            }
             auto length = strlen(node_name);
             fCurrentNode =
                     fCurrentNode.length() > length
@@ -203,9 +209,9 @@ DEF_TEST(Skottie_Properties, reporter) {
     };
 
     // Returns a single specified typeface for all requests.
-    class DummyFontMgr : public SkFontMgr {
+    class FakeFontMgr : public SkFontMgr {
      public:
-        DummyFontMgr(sk_sp<SkTypeface> test_font) : fTestFont(test_font) {}
+        FakeFontMgr(sk_sp<SkTypeface> test_font) : fTestFont(test_font) {}
 
         int onCountFamilies() const override { return 1; }
         void onGetFamilyName(int index, SkString* familyName) const override {}
@@ -244,7 +250,7 @@ DEF_TEST(Skottie_Properties, reporter) {
         sk_sp<SkTypeface> fTestFont;
     };
 
-    sk_sp<DummyFontMgr> test_font_manager = sk_make_sp<DummyFontMgr>(test_typeface);
+    sk_sp<FakeFontMgr> test_font_manager = sk_make_sp<FakeFontMgr>(test_typeface);
     SkMemoryStream stream(json, strlen(json));
     auto observer = sk_make_sp<TestPropertyObserver>();
 

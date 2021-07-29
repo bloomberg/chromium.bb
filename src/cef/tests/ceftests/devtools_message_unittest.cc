@@ -5,7 +5,8 @@
 #include <algorithm>
 #include <sstream>
 
-#include "include/base/cef_bind.h"
+#include "include/base/cef_callback.h"
+#include "include/base/cef_callback_helpers.h"
 #include "include/cef_callback.h"
 #include "include/cef_devtools_message_observer.h"
 #include "include/cef_parser.h"
@@ -53,8 +54,9 @@ class DevToolsMessageTestHandler : public TestHandler {
       if (load_ct_ == 1) {
         // STEP 2: 1st load has completed. Now enable page domain notifications
         // and wait for the method result.
-        ExecuteMethod("Page.enable", "",
-                      base::Bind(&DevToolsMessageTestHandler::Navigate, this));
+        ExecuteMethod(
+            "Page.enable", "",
+            base::BindOnce(&DevToolsMessageTestHandler::Navigate, this));
       } else if (load_ct_ == 2) {
         MaybeDestroyTest();
       }
@@ -184,7 +186,7 @@ class DevToolsMessageTestHandler : public TestHandler {
   // |expected_result| can be a fragment that the result should start with.
   void ExecuteMethod(const std::string& method,
                      const std::string& params,
-                     const base::Closure& next_step,
+                     base::OnceClosure next_step,
                      const std::string& expected_result = "{}",
                      bool expected_success = true) {
     CHECK(!method.empty());
@@ -201,7 +203,7 @@ class DevToolsMessageTestHandler : public TestHandler {
 
     // Set expected result state.
     pending_message_ = message.str();
-    pending_result_next_ = next_step;
+    pending_result_next_ = std::move(next_step);
     pending_result_ = {message_id, expected_success, expected_result};
 
     if (message_id % 2 == 0) {
@@ -245,11 +247,10 @@ class DevToolsMessageTestHandler : public TestHandler {
     last_result_id_ = result.message_id;
 
     // Continue asynchronously to allow the callstack to unwind.
-    CefPostTask(TID_UI, pending_result_next_);
+    CefPostTask(TID_UI, std::move(pending_result_next_));
 
     // Clear expected result state.
     pending_message_.clear();
-    pending_result_next_.Reset();
     pending_result_ = {};
   }
 
@@ -263,17 +264,16 @@ class DevToolsMessageTestHandler : public TestHandler {
         << "\nand expected params=" << pending_event_.params;
 
     // Continue asynchronously to allow the callstack to unwind.
-    CefPostTask(TID_UI, pending_event_next_);
+    CefPostTask(TID_UI, std::move(pending_event_next_));
 
     // Clear expected result state.
     pending_event_ = {};
-    pending_event_next_.Reset();
   }
 
   void Navigate() {
     pending_event_ = {"Page.frameNavigated", "{\"frame\":"};
     pending_event_next_ =
-        base::Bind(&DevToolsMessageTestHandler::AfterNavigate, this);
+        base::BindOnce(&DevToolsMessageTestHandler::AfterNavigate, this);
 
     std::stringstream params;
     params << "{\"url\":\"" << kTestUrl2 << "\"}";
@@ -281,7 +281,7 @@ class DevToolsMessageTestHandler : public TestHandler {
     // STEP 3: Page domain notifications are enabled. Now start a new
     // navigation (but do nothing on method result) and wait for the
     // "Page.frameNavigated" event.
-    ExecuteMethod("Page.navigate", params.str(), base::Bind(base::DoNothing),
+    ExecuteMethod("Page.navigate", params.str(), base::DoNothing(),
                   /*expected_result=*/"{\"frameId\":");
   }
 
@@ -290,7 +290,7 @@ class DevToolsMessageTestHandler : public TestHandler {
     // notifications.
     ExecuteMethod(
         "Page.disable", "",
-        base::Bind(&DevToolsMessageTestHandler::AfterPageDisabled, this));
+        base::BindOnce(&DevToolsMessageTestHandler::AfterPageDisabled, this));
   }
 
   void AfterPageDisabled() {
@@ -298,7 +298,7 @@ class DevToolsMessageTestHandler : public TestHandler {
     // method to verify an error result, and then destroy the test when done.
     ExecuteMethod(
         "Foo.doesNotExist", "",
-        base::Bind(&DevToolsMessageTestHandler::MaybeDestroyTest, this),
+        base::BindOnce(&DevToolsMessageTestHandler::MaybeDestroyTest, this),
         /*expected_result=*/
         "{\"code\":-32601,\"message\":\"'Foo.doesNotExist' wasn't found\"}",
         /*expected_success=*/false);
@@ -335,13 +335,13 @@ class DevToolsMessageTestHandler : public TestHandler {
   //   Tracks the last message ID received.
   int last_result_id_ = -1;
   //   When received, execute this callback.
-  base::Closure pending_result_next_;
+  base::OnceClosure pending_result_next_;
 
   // Wait for |pending_event_.method| in OnEvent.
   // The params should start with the |pending_event_.params| fragment.
   Event pending_event_;
   //   When received, execute this callback.
-  base::Closure pending_event_next_;
+  base::OnceClosure pending_event_next_;
 
   CefRefPtr<CefRegistration> registration_;
 

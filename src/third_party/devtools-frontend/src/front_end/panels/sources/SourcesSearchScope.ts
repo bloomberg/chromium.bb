@@ -252,7 +252,7 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
         return a.lineNumber - b.lineNumber;
       }
 
-      progress.worked(1);
+      progress.incrementWorked(1);
       let matches: TextUtils.ContentProvider.SearchMatch[] = [];
       const searchConfig = (this._searchConfig as Workspace.Workspace.ProjectSearchConfig);
       const queries = searchConfig.queries();
@@ -305,7 +305,7 @@ export class FileBasedSearchResult implements Search.SearchConfig.SearchResult {
 
   matchRevealable(index: number): Object {
     const match = this._searchMatches[index];
-    return this._uiSourceCode.uiLocation(match.lineNumber, undefined);
+    return this._uiSourceCode.uiLocation(match.lineNumber, match.columnNumber);
   }
 
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)

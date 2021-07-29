@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -16,7 +17,6 @@
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
-#include "content/browser/url_loader_factory_getter.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
@@ -29,7 +29,10 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 namespace service_worker_updated_script_loader_unittest {
@@ -93,13 +96,16 @@ class ServiceWorkerUpdatedScriptLoaderTest
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = script_url.GetWithoutFilename();
     options.type = script_type;
-    SetUpRegistrationWithOptions(script_url, options);
+    SetUpRegistrationWithOptions(
+        script_url, options,
+        blink::StorageKey(url::Origin::Create(options.scope)));
   }
   void SetUpRegistrationWithOptions(
       const GURL& script_url,
-      blink::mojom::ServiceWorkerRegistrationOptions options) {
+      blink::mojom::ServiceWorkerRegistrationOptions options,
+      const blink::StorageKey& key) {
     registration_ =
-        CreateNewServiceWorkerRegistration(context()->registry(), options);
+        CreateNewServiceWorkerRegistration(context()->registry(), options, key);
     SetUpVersion(script_url, options.type);
   }
 

@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
@@ -33,8 +34,7 @@ import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCo
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
@@ -43,6 +43,8 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.Shee
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.components.image_fetcher.ImageFetcherConfig;
+import org.chromium.components.image_fetcher.ImageFetcherFactory;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
@@ -104,7 +106,8 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     AssistantBottomBarCoordinator(Activity activity, AssistantModel model,
             AssistantOverlayCoordinator overlayCoordinator, BottomSheetController controller,
             ApplicationViewportInsetSupplier applicationViewportInsetSupplier,
-            TabObscuringHandler tabObscuringHandler) {
+            TabObscuringHandler tabObscuringHandler,
+            @NonNull BrowserControlsStateProvider browserControlsStateProvider) {
         mModel = model;
         mOverlayCoordinator = overlayCoordinator;
         mBottomSheetController = controller;
@@ -125,6 +128,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         mRootViewContainer =
                 (AssistantRootViewContainer) LayoutUtils.createInflater(activity).inflate(
                         R.layout.autofill_assistant_bottom_sheet_content, /* root= */ null);
+        mRootViewContainer.initialize(browserControlsStateProvider);
         mScrollableContent = mRootViewContainer.findViewById(R.id.scrollable_content);
         ViewGroup scrollableContentContainer =
                 mScrollableContent.findViewById(R.id.scrollable_content_container);
@@ -143,7 +147,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         mInfoBoxCoordinator = new AssistantInfoBoxCoordinator(activity, model.getInfoBoxModel());
         mDetailsCoordinator = new AssistantDetailsCoordinator(activity, model.getDetailsModel(),
                 ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY,
-                        AutofillAssistantUiController.getProfile()));
+                        AutofillAssistantUiController.getProfile().getProfileKey()));
         mPaymentRequestCoordinator =
                 new AssistantCollectUserDataCoordinator(activity, model.getCollectUserDataModel());
         mFormCoordinator = new AssistantFormCoordinator(activity, model.getFormModel());

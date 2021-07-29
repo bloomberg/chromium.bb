@@ -4,118 +4,308 @@
 
 #include "components/arc/compat_mode/resize_toggle_menu.h"
 
-#include <memory>
-
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "base/bind.h"
+#include "base/check.h"
 #include "base/notreached.h"
-#include "components/arc/compat_mode/resize_util.h"
+#include "components/arc/compat_mode/overlay_dialog.h"
+#include "components/arc/vector_icons/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/text_constants.h"
+#include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/background.h"
+#include "ui/views/border.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/layout_provider.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
 namespace arc {
 
 namespace {
 
-absl::optional<ResizeToggleMenu::CommandId> PredictCurrentMode(
-    views::Widget* widget) {
-  const int width = widget->GetWindowBoundsInScreen().width();
-  const int height = widget->GetWindowBoundsInScreen().height();
-  // We don't use the exact size here to predict tablet or phone size because
-  // the window size might be bigger than it due to the ARC app-side minimum
-  // size constraints.
-  if (widget->IsMaximized())
-    return ResizeToggleMenu::CommandId::kResizeDesktop;
-  else if (width < height)
-    return ResizeToggleMenu::CommandId::kResizePhone;
-  else if (width > height)
-    return ResizeToggleMenu::CommandId::kResizeTablet;
-  return absl::nullopt;
-}
+class RoundedCornerBubbleDialogDelegateView
+    : public views::BubbleDialogDelegateView {
+ public:
+  explicit RoundedCornerBubbleDialogDelegateView(int corner_radius)
+      : corner_radius_(corner_radius) {}
+
+  // views::View:
+  void AddedToWidget() override {
+    auto* const frame = GetBubbleFrameView();
+    if (frame)
+      frame->SetCornerRadius(corner_radius_);
+  }
+
+ private:
+  const int corner_radius_;
+};
 
 }  // namespace
+
+ResizeToggleMenu::MenuButtonView::MenuButtonView(PressedCallback callback,
+                                                 const gfx::VectorIcon& icon,
+                                                 int title_string_id)
+    : views::Button(std::move(callback)), icon_(icon) {
+  // Don't use FlexLayout here because it breaks the focus ring's bounds.
+  // TODO(b/193195191): Investigate why we can't use FlexLayout.
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(16, 0, 14, 0)));
+
+  AddChildView(views::Builder<views::ImageView>()
+                   .CopyAddressTo(&icon_view_)
+                   .SetImageSize(gfx::Size(20, 20))
+                   .SetHorizontalAlignment(views::ImageView::Alignment::kCenter)
+                   .SetVerticalAlignment(views::ImageView::Alignment::kCenter)
+                   .SetProperty(views::kMarginsKey, gfx::Insets(0, 0, 8, 0))
+                   .Build());
+  AddChildView(views::Builder<views::Label>()
+                   .CopyAddressTo(&title_)
+                   .SetBackgroundColor(SK_ColorTRANSPARENT)
+                   .SetText(l10n_util::GetStringUTF16(title_string_id))
+                   .SetVerticalAlignment(gfx::ALIGN_BOTTOM)
+                   .SetLineHeight(16)
+                   .SetMultiLine(true)
+                   .SetAllowCharacterBreak(true)
+                   .Build());
+
+  SetAccessibleName(l10n_util::GetStringUTF16(title_string_id));
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
+
+  constexpr int kBorderThicknessDp = 1;
+  const auto radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::Emphasis::kMedium);
+  SetBorder(views::CreateRoundedRectBorder(kBorderThicknessDp, radius,
+                                           gfx::kPlaceholderColor));
+  SetBackground(
+      views::CreateRoundedRectBackground(gfx::kPlaceholderColor, radius));
+
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+  SetInstallFocusRingOnFocus(true);
+  views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(), radius);
+}
+
+ResizeToggleMenu::MenuButtonView::~MenuButtonView() = default;
+
+void ResizeToggleMenu::MenuButtonView::SetSelected(bool is_selected) {
+  is_selected_ = is_selected;
+  SetState(is_selected_ ? views::Button::ButtonState::STATE_DISABLED
+                        : views::Button::ButtonState::STATE_NORMAL);
+  UpdateColors();
+}
+
+void ResizeToggleMenu::MenuButtonView::OnThemeChanged() {
+  views::Button::OnThemeChanged();
+  UpdateColors();
+}
+
+gfx::Size ResizeToggleMenu::MenuButtonView::CalculatePreferredSize() const {
+  constexpr int kWidth = 96;
+  return gfx::Size(kWidth, GetHeightForWidth(kWidth));
+}
+
+void ResizeToggleMenu::MenuButtonView::UpdateColors() {
+  if (!GetWidget())
+    return;
+
+  const auto* theme = GetNativeTheme();
+
+  const auto foreground_color = theme->GetSystemColor(
+      is_selected_ ? ui::NativeTheme::kColorId_TextOnProminentButtonColor
+                   : ui::NativeTheme::kColorId_LabelEnabledColor);
+  icon_view_->SetImage(gfx::CreateVectorIcon(icon_, foreground_color));
+  title_->SetEnabledColor(foreground_color);
+
+  const auto background_color =
+      is_selected_ ? theme->GetSystemColor(
+                         ui::NativeTheme::kColorId_ProminentButtonColor)
+                   : SK_ColorTRANSPARENT;
+  background()->SetNativeControlColor(background_color);
+
+  const auto border_color =
+      is_selected_
+          ? SK_ColorTRANSPARENT
+          : theme->GetSystemColor(ui::NativeTheme::kColorId_MenuBorderColor);
+  border()->set_color(border_color);
+}
 
 ResizeToggleMenu::ResizeToggleMenu(views::Widget* widget,
                                    ArcResizeLockPrefDelegate* pref_delegate)
     : widget_(widget), pref_delegate_(pref_delegate) {
-  model_ = MakeMenuModel();
-  adapter_ = std::make_unique<views::MenuModelAdapter>(model_.get());
-  root_view_ = adapter_->CreateMenu();
+  aura::Window* const window = widget->GetNativeWindow();
+  // Don't show the menu in maximized or fullscreen.
+  const ui::WindowShowState state =
+      window->GetProperty(aura::client::kShowStateKey);
+  if (state == ui::SHOW_STATE_FULLSCREEN || state == ui::SHOW_STATE_MAXIMIZED)
+    return;
 
-  const auto currentMode = PredictCurrentMode(widget_);
-  if (currentMode) {
-    auto* item = root_view_->GetMenuItemByID(*currentMode);
-    item->SetSelected(true);
-    item->SetMinorIcon(ui::ImageModel::FromVectorIcon(
-        ash::kHollowCheckCircleIcon,
-        ui::NativeTheme::kColorId_ProminentButtonColor));
-  }
+  window_observation_.Observe(window);
 
-  menu_runner_ = std::make_unique<views::MenuRunner>(
-      root_view_, views::MenuRunner::CONTEXT_MENU |
-                      views::MenuRunner::USE_TOUCHABLE_LAYOUT |
-                      views::MenuRunner::FIXED_ANCHOR);
-
-  const gfx::Rect client_view_rect =
-      widget_->client_view()->GetBoundsInScreen();
-  // Anchored to the right edge of the client_view.
-  const gfx::Rect anchor_rect =
-      gfx::Rect(client_view_rect.right(), client_view_rect.y(), 0,
-                client_view_rect.height());
-  menu_runner_->RunMenuAt(
-      /*widget_owner=*/widget_, /*menu_button_controller=*/nullptr, anchor_rect,
-      views::MenuAnchorPosition::kBubbleLeft, ui::MENU_SOURCE_MOUSE);
+  bubble_widget_ =
+      views::BubbleDialogDelegateView::CreateBubble(MakeBubbleDelegateView(
+          widget_, GetAnchorRect(),
+          base::BindRepeating(&ResizeToggleMenu::ApplyResizeCompatMode,
+                              base::Unretained(this))));
+  widget_observations_.AddObservation(widget_);
+  widget_observations_.AddObservation(bubble_widget_);
+  OverlayDialog::Show(widget_->GetNativeWindow(),
+                      base::BindOnce(&ResizeToggleMenu::CloseBubble,
+                                     weak_ptr_factory_.GetWeakPtr()),
+                      /*dialog_view=*/nullptr);
+  bubble_widget_->Show();
 }
 
 ResizeToggleMenu::~ResizeToggleMenu() {
-  menu_runner_->Cancel();
+  CloseBubble();
 }
 
-std::unique_ptr<ui::SimpleMenuModel> ResizeToggleMenu::MakeMenuModel() {
-  auto model = std::make_unique<ui::SimpleMenuModel>(this);
-
-  model->AddItemWithStringIdAndIcon(
-      CommandId::kResizePhone, IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_PHONE,
-      ui::ImageModel::FromVectorIcon(ash::kSystemMenuPhoneIcon));
-
-  model->AddItemWithStringIdAndIcon(
-      CommandId::kResizeTablet, IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_TABLET,
-      ui::ImageModel::FromVectorIcon(ash::kSystemMenuTabletIcon));
-
-  model->AddItemWithStringIdAndIcon(
-      CommandId::kResizeDesktop, IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_DESKTOP,
-      ui::ImageModel::FromVectorIcon(ash::kSystemMenuComputerIcon));
-
-  model->AddSeparator(ui::NORMAL_SEPARATOR);
-
-  model->AddItemWithStringIdAndIcon(
-      CommandId::kOpenSettings,
-      IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_RESIZE_SETTINGS,
-      ui::ImageModel::FromVectorIcon(ash::kSystemMenuSettingsIcon));
-  return model;
+void ResizeToggleMenu::OnWidgetClosing(views::Widget* widget) {
+  OverlayDialog::CloseIfAny(widget_->GetNativeWindow());
+  widget_observations_.RemoveAllObservations();
+  widget_ = nullptr;
+  bubble_widget_ = nullptr;
 }
 
-void ResizeToggleMenu::ExecuteCommand(int command_id, int event_flags) {
-  switch (command_id) {
-    case CommandId::kResizePhone:
-      ResizeToPhoneWithConfirmationIfNeeded(widget_, pref_delegate_);
+void ResizeToggleMenu::OnWidgetBoundsChanged(views::Widget* widget,
+                                             const gfx::Rect& new_bounds) {
+  if (widget != widget_)
+    return;
+
+  DCHECK(bubble_widget_);
+  bubble_widget_->widget_delegate()->AsBubbleDialogDelegate()->SetAnchorRect(
+      GetAnchorRect());
+
+  UpdateSelectedButton();
+}
+
+void ResizeToggleMenu::OnWindowPropertyChanged(aura::Window* window,
+                                               const void* key,
+                                               intptr_t old) {
+  DCHECK(window_observation_.IsObservingSource(window));
+  if (key != aura::client::kShowStateKey)
+    return;
+
+  const ui::WindowShowState state =
+      window->GetProperty(aura::client::kShowStateKey);
+  if (state == ui::SHOW_STATE_FULLSCREEN || state == ui::SHOW_STATE_MAXIMIZED)
+    CloseBubble();
+}
+
+void ResizeToggleMenu::OnWindowDestroying(aura::Window* window) {
+  DCHECK(window_observation_.IsObservingSource(window));
+  window_observation_.Reset();
+}
+
+gfx::Rect ResizeToggleMenu::GetAnchorRect() const {
+  DCHECK(widget_);
+  const gfx::Rect client_view_rect =
+      widget_->client_view()->GetBoundsInScreen();
+  // Anchored to the top edge of the client_view with padding.
+  constexpr auto kMarginTopDp = 8;
+  return gfx::Rect(client_view_rect.x(), client_view_rect.y() + kMarginTopDp,
+                   client_view_rect.width(), 0);
+}
+
+std::unique_ptr<views::BubbleDialogDelegateView>
+ResizeToggleMenu::MakeBubbleDelegateView(
+    views::Widget* parent,
+    gfx::Rect anchor_rect,
+    base::RepeatingCallback<void(ResizeCompatMode)> command_handler) {
+  constexpr int kCornerRadius = 16;
+
+  auto delegate_view =
+      std::make_unique<RoundedCornerBubbleDialogDelegateView>(kCornerRadius);
+
+  // Setup delegate.
+  delegate_view->SetArrow(views::BubbleBorder::Arrow::TOP_CENTER);
+  delegate_view->SetButtons(ui::DIALOG_BUTTON_NONE);
+  delegate_view->set_parent_window(parent->GetNativeView());
+  delegate_view->set_title_margins(gfx::Insets());
+  delegate_view->set_margins(gfx::Insets());
+  delegate_view->SetAnchorRect(anchor_rect);
+  delegate_view->SetTitle(
+      l10n_util::GetStringUTF16(IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_TITLE));
+  delegate_view->SetShowTitle(false);
+  delegate_view->SetAccessibleRole(ax::mojom::Role::kMenu);
+
+  // Setup view.
+  auto* const provider = views::LayoutProvider::Get();
+  delegate_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(16),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
+
+  const auto add_menu_button = [&delegate_view, &command_handler](
+                                   ResizeCompatMode command_id,
+                                   const gfx::VectorIcon& icon, int string_id) {
+    return delegate_view->AddChildView(std::make_unique<MenuButtonView>(
+        base::BindRepeating(command_handler, command_id), icon, string_id));
+  };
+  phone_button_ =
+      add_menu_button(ResizeCompatMode::kPhone, ash::kSystemMenuPhoneIcon,
+                      IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_PHONE);
+  tablet_button_ =
+      add_menu_button(ResizeCompatMode::kTablet, ash::kSystemMenuTabletIcon,
+                      IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_TABLET);
+  resizable_button_ =
+      add_menu_button(ResizeCompatMode::kResizable, kResizableIcon,
+                      IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_RESIZABLE);
+
+  UpdateSelectedButton();
+
+  return delegate_view;
+}
+
+void ResizeToggleMenu::UpdateSelectedButton() {
+  // No need to update the button states if the widget is (being) closed.
+  if (!widget_)
+    return;
+
+  const auto selected_mode = PredictCurrentMode(widget_, pref_delegate_);
+  phone_button_->SetSelected(selected_mode &&
+                             *selected_mode == ResizeCompatMode::kPhone);
+  tablet_button_->SetSelected(selected_mode &&
+                              *selected_mode == ResizeCompatMode::kTablet);
+  resizable_button_->SetSelected(
+      selected_mode && *selected_mode == ResizeCompatMode::kResizable);
+}
+
+void ResizeToggleMenu::ApplyResizeCompatMode(ResizeCompatMode mode) {
+  switch (mode) {
+    case ResizeCompatMode::kPhone:
+      ResizeLockToPhone(widget_, pref_delegate_);
       break;
-    case CommandId::kResizeTablet:
-      ResizeToTabletWithConfirmationIfNeeded(widget_, pref_delegate_);
+    case ResizeCompatMode::kTablet:
+      ResizeLockToTablet(widget_, pref_delegate_);
       break;
-    case CommandId::kResizeDesktop:
-      ResizeToDesktopWithConfirmationIfNeeded(widget_, pref_delegate_);
-      break;
-    case CommandId::kOpenSettings:
-      // TODO(b/181614585): Implement this.
-      NOTIMPLEMENTED();
-      break;
-    default:
-      NOTREACHED();
+    case ResizeCompatMode::kResizable:
+      EnableResizingWithConfirmationIfNeeded(widget_, pref_delegate_);
       break;
   }
+
+  // Enabling/disabling resizing might not trigger bounds change, so force to
+  // update selected button status here.
+  UpdateSelectedButton();
+
+  auto_close_closure_.Reset(base::BindOnce(&ResizeToggleMenu::CloseBubble,
+                                           weak_ptr_factory_.GetWeakPtr()));
+  constexpr auto kAutoCloseDelay = base::TimeDelta::FromSeconds(2);
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, auto_close_closure_.callback(), kAutoCloseDelay);
+}
+
+void ResizeToggleMenu::CloseBubble() {
+  if (!bubble_widget_ || bubble_widget_->IsClosed())
+    return;
+
+  bubble_widget_->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
 }
 
 }  // namespace arc

@@ -56,6 +56,16 @@ class TestGerritClient(unittest.TestCase):
         start=20,
         o_params=['op1', 'op2'])
 
+  @mock.patch('gerrit_util.GetRelatedChanges', return_value='')
+  def test_relatedchanges(self, util_mock):
+    gerrit_client.main([
+        'relatedchanges', '--host', 'https://example.org/foo', '--change',
+        'foo-change-id', '--revision', 'foo-revision-id'
+    ])
+    util_mock.assert_called_once_with('example.org',
+                                      change='foo-change-id',
+                                      revision='foo-revision-id')
+
   @mock.patch('gerrit_util.CreateChange', return_value={})
   def test_createchange(self, util_mock):
     gerrit_client.main([

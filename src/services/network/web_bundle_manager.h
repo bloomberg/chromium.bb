@@ -14,6 +14,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 
@@ -35,7 +36,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebBundleManager {
       const GURL& bundle_url,
       const ResourceRequest::WebBundleTokenParams& params,
       int32_t process_id,
-      const absl::optional<url::Origin>& request_initiator_origin_lock,
       mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer,
       absl::optional<std::string> devtools_request_id);
 

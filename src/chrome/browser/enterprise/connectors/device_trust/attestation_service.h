@@ -28,8 +28,8 @@ class AttestationService {
   AttestationService();
   ~AttestationService();
 
-  // Export the public key of `key_pair_`.
-  std::string ExportPEMPublicKey();
+  // Export the public key of `key_pair_` in SubjectPublicKeyInfo format.
+  std::string ExportPublicKey();
 
   void SignEnterpriseChallenge(const SignEnterpriseChallengeRequest& request,
                                SignEnterpriseChallengeReply* result);
@@ -80,6 +80,15 @@ class AttestationService {
                                             AttestationCallback callback);
 
  private:
+  // The KeyInfo message encrypted using a public encryption key, with
+  // the following parameters:
+  //   Key encryption: RSA-OAEP with no custom parameters.
+  //   Data encryption: 256-bit key, AES-CBC with PKCS5 padding.
+  //   MAC: HMAC-SHA-512 using the AES key.
+  bool EncryptEnterpriseKeyInfo(VAType va_type,
+                                const KeyInfo& key_info,
+                                EncryptedData* encrypted_data);
+
   // Sign the challenge and return the challenge response in
   // `result.challenge_response`.
   void SignEnterpriseChallengeTask(
@@ -94,11 +103,19 @@ class AttestationService {
       AttestationCallback callback,
       const std::string& challenge_response_proto);
 
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
-  std::unique_ptr<enterprise_connectors::DeviceTrustKeyPair> key_pair_;
-#endif  // defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
+  // Get customer id from policy fetch if CloudPolicyStore is loaded.
+  // If the CloudPolicyStore is not ready to retrieve the value, do nothing.
+  void MayGetCustomerId();
+
+  // Fill out `public_key_`, `customer_id` and `device_id_`.
+  void FillValuesForCBCM();
 
   GoogleKeys google_keys_;
+  std::string public_key_;
+  std::string customer_id_;
+  std::string device_id_;
+  std::unique_ptr<enterprise_connectors::DeviceTrustKeyPair> key_pair_;
+
   base::WeakPtrFactory<AttestationService> weak_factory_{this};
 };
 

@@ -13,6 +13,7 @@
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_parser.h"
 #include "core/fxcrt/retain_ptr.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "public/fpdf_doc.h"
 #include "public/fpdf_ext.h"
@@ -38,8 +39,8 @@ class CPDF_TextPage;
 class CPDF_TextPageFind;
 class CPDFSDK_FormFillEnvironment;
 class CPDFSDK_InteractiveForm;
-class FX_PATHPOINT;
 struct CPDF_JavaScript;
+struct XObjectContext;
 
 // Conversions to/from underlying types.
 IPDF_Page* IPDFPageFromFPDFPage(FPDF_PAGE page);
@@ -158,12 +159,12 @@ inline CPDF_Array* CPDFArrayFromFPDFPageRange(FPDF_PAGERANGE range) {
 }
 
 inline FPDF_PATHSEGMENT FPDFPathSegmentFromFXPathPoint(
-    const FX_PATHPOINT* segment) {
+    const CFX_Path::Point* segment) {
   return reinterpret_cast<FPDF_PATHSEGMENT>(segment);
 }
-inline const FX_PATHPOINT* FXPathPointFromFPDFPathSegment(
+inline const CFX_Path::Point* FXPathPointFromFPDFPathSegment(
     FPDF_PATHSEGMENT segment) {
-  return reinterpret_cast<const FX_PATHPOINT*>(segment);
+  return reinterpret_cast<const CFX_Path::Point*>(segment);
 }
 
 inline FPDF_STRUCTTREE FPDFStructTreeFromCPDFStructTree(
@@ -216,6 +217,14 @@ inline FPDF_SIGNATURE FPDFSignatureFromCPDFDictionary(
 inline CPDF_Dictionary* CPDFDictionaryFromFPDFSignature(
     FPDF_SIGNATURE signature) {
   return reinterpret_cast<CPDF_Dictionary*>(signature);
+}
+
+inline FPDF_XOBJECT FPDFXObjectFromXObjectContext(XObjectContext* xobject) {
+  return reinterpret_cast<FPDF_XOBJECT>(xobject);
+}
+
+inline XObjectContext* XObjectContextFromFPDFXObject(FPDF_XOBJECT xobject) {
+  return reinterpret_cast<XObjectContext*>(xobject);
 }
 
 CPDFSDK_InteractiveForm* FormHandleToInteractiveForm(FPDF_FORMHANDLE hHandle);
@@ -281,6 +290,7 @@ void ProcessParseError(CPDF_Parser::Error err);
 void SetColorFromScheme(const FPDF_COLORSCHEME* pColorScheme,
                         CPDF_RenderOptions* pRenderOptions);
 
+// Returns a vector of page indices given a page range string.
 std::vector<uint32_t> ParsePageRangeString(const ByteString& bsPageRange,
                                            uint32_t nCount);
 

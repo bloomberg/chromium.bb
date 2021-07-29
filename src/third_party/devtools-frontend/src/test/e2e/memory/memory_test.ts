@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import {$$, assertNotNull, click, getBrowserAndPages, goToResource, step, waitFor, waitForElementsWithTextContent, waitForElementWithTextContent, waitForFunction} from '../../shared/helper.js';
+import type {puppeteer} from '../../shared/helper.js';
+import {$$, assertNotNull, click, getBrowserAndPages, goToResource, step, waitFor, waitForElementsWithTextContent, waitForElementWithTextContent, waitForFunction, waitForNoElementsWithTextContent} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {changeAllocationSampleViewViaDropdown, changeViewViaDropdown, findSearchResult, getDataGridRows, navigateToMemoryTab, setSearchFilter, takeAllocationProfile, takeHeapSnapshot, waitForNonEmptyHeapSnapshotData, waitForRetainerChain, waitForSearchResultNumber, waitUntilRetainerChainSatisfies} from '../helpers/memory-helpers.js';
+import {changeAllocationSampleViewViaDropdown, changeViewViaDropdown, findSearchResult, getDataGridRows, navigateToMemoryTab, setSearchFilter, takeAllocationProfile, takeAllocationTimelineProfile, takeHeapSnapshot, waitForNonEmptyHeapSnapshotData, waitForRetainerChain, waitForSearchResultNumber, waitUntilRetainerChainSatisfies} from '../helpers/memory-helpers.js';
 
 describe('The Memory Panel', async function() {
   // These tests render large chunks of data into DevTools and filter/search
@@ -54,52 +55,78 @@ describe('The Memory Panel', async function() {
   });
 
   // Flaky test
-  it.skipOnPlatforms(['mac'], '[crbug.com/1134602] Correctly retains the path for event listeners', async () => {
-    await goToResource('memory/event-listeners.html');
-    await step('taking a heap snapshot', async () => {
-      await navigateToMemoryTab();
-      await takeHeapSnapshot();
-      await waitForNonEmptyHeapSnapshotData();
-    });
-    await step('searching for the event listener', async () => {
-      await setSearchFilter('myEventListener');
-      await waitForSearchResultNumber(4);
-    });
+  it.skipOnPlatforms(
+      ['mac', 'linux'], '[crbug.com/1134602] Correctly retains the path for event listeners', async () => {
+        await goToResource('memory/event-listeners.html');
+        await step('taking a heap snapshot', async () => {
+          await navigateToMemoryTab();
+          await takeHeapSnapshot();
+          await waitForNonEmptyHeapSnapshotData();
+        });
+        await step('searching for the event listener', async () => {
+          await setSearchFilter('myEventListener');
+          await waitForSearchResultNumber(4);
+        });
 
-    await step('selecting the search result that we need', async () => {
-      await findSearchResult(async p => {
-        const el = await p.$(':scope > td > div > .object-value-function');
-        return el !== null && await el.evaluate(el => el.textContent === 'myEventListener()');
+        await step('selecting the search result that we need', async () => {
+          await findSearchResult(async p => {
+            const el = await p.$(':scope > td > div > .object-value-function');
+            return el !== null && await el.evaluate(el => el.textContent === 'myEventListener()');
+          });
+        });
+
+        await step('waiting for retainer chain', async () => {
+          await waitForRetainerChain([
+            'V8EventListener',
+            'EventListener',
+            'InternalNode',
+            'InternalNode',
+            'HTMLBodyElement',
+            'HTMLHtmlElement',
+            'HTMLDocument',
+            'Window',
+          ]);
+        });
       });
-    });
-
-    await step('waiting for retainer chain', async () => {
-      await waitForRetainerChain([
-        'V8EventListener',
-        'EventListener',
-        'InternalNode',
-        'InternalNode',
-        'HTMLBodyElement',
-        'HTMLHtmlElement',
-        'HTMLDocument',
-        'Window',
-      ]);
-    });
-  });
 
   it('Puts all ActiveDOMObjects with pending activities into one group', async () => {
+    const {frontend} = getBrowserAndPages();
     await goToResource('memory/dom-objects.html');
     await navigateToMemoryTab();
     await takeHeapSnapshot();
     await waitForNonEmptyHeapSnapshotData();
-    await changeViewViaDropdown('Containment');
-    const pendingActiviesElement = await waitForElementWithTextContent('Pending activities');
-
-    // Focus and then expand the pending activities row to show its children
-    await click(pendingActiviesElement);
-    const {frontend} = getBrowserAndPages();
+    // The test ensures that the following structure is present:
+    // Pending activities
+    // -> Pending activities
+    //    -> InternalNode
+    //       -> MediaQueryList
+    //       -> MediaQueryList
+    await setSearchFilter('Pending activities');
+    // Here and below we have to wait until the elements are actually created
+    // and visible.
+    const [pendingActivitiesSpan] = await waitForFunction(async () => {
+      const elements = await frontend.$x('//span[text()="Pending activities"]');
+      return elements.length > 0 ? elements : undefined;
+    });
+    const [pendingActiviesRow] = await pendingActivitiesSpan.$x('ancestor-or-self::tr');
+    await waitForFunction(async () => {
+      await click(pendingActivitiesSpan);
+      const res = await pendingActiviesRow.evaluate(x => x.classList.toString());
+      return res.includes('selected');
+    });
     await frontend.keyboard.press('ArrowRight');
-
+    const [internalNodeSpan] = await waitForFunction(async () => {
+      const elements = await frontend.$x(
+          '//span[text()="InternalNode"][ancestor-or-self::tr[preceding-sibling::*[1][//span[text()="Pending activities"]]]]');
+      return elements.length === 1 ? elements : undefined;
+    });
+    const [internalNodeRow] = await internalNodeSpan.$x('ancestor-or-self::tr');
+    await waitForFunction(async () => {
+      await click(internalNodeSpan);
+      const res = await internalNodeRow.evaluate(x => x.classList.toString());
+      return res.includes('selected');
+    });
+    await frontend.keyboard.press('ArrowRight');
     await waitForFunction(async () => {
       const pendingActiviesChildren = await waitForElementsWithTextContent('MediaQueryList');
       return pendingActiviesChildren.length === 2;
@@ -183,11 +210,12 @@ describe('The Memory Panel', async function() {
     // Now we want to get the two rows below the "shared in leaking()" row and assert on them.
     // Unfortunately they are not structured in the data-grid as children, despite being children in the UI
     // So the best way to get at them is to grab the two subsequent siblings of the "shared in leaking()" row.
-    const nextRow = await sharedInLeakingElementRow.evaluateHandle(e => e.nextSibling);
+    const nextRow =
+        await sharedInLeakingElementRow.evaluateHandle<puppeteer.ElementHandle<HTMLElement>>(e => e.nextSibling);
     if (!nextRow) {
       assert.fail('Could not find row below "shared in leaking()" row');
     }
-    const nextNextRow = await nextRow.evaluateHandle(e => e.nextSibling);
+    const nextNextRow = await nextRow.evaluateHandle<puppeteer.ElementHandle<HTMLElement>>(e => e.nextSibling);
     if (!nextNextRow) {
       assert.fail('Could not find 2nd row below "shared in leaking()" row');
     }
@@ -234,5 +262,28 @@ describe('The Memory Panel', async function() {
     takeAllocationProfile(frontend);
     changeAllocationSampleViewViaDropdown('Chart');
     await waitFor('canvas.flame-chart-canvas');
+  });
+
+  it('shows allocations for an allocation timeline', async () => {
+    const {frontend} = getBrowserAndPages();
+    await goToResource('memory/allocations.html');
+    await navigateToMemoryTab();
+    takeAllocationTimelineProfile(frontend, {recordStacks: true});
+    await changeViewViaDropdown('Allocation');
+
+    const header = await waitForElementWithTextContent('Live Count');
+    const table = await header.evaluateHandle(node => {
+      return node.closest('.data-grid');
+    });
+    await waitFor('.data-grid-data-grid-node', table);
+  });
+
+  it('does not show allocations perspective when stacks not recorded', async () => {
+    const {frontend} = getBrowserAndPages();
+    await goToResource('memory/allocations.html');
+    await navigateToMemoryTab();
+    takeAllocationTimelineProfile(frontend, {recordStacks: false});
+    const dropdown = await waitFor('select[aria-label="Perspective"]');
+    await waitForNoElementsWithTextContent('Allocation', dropdown);
   });
 });

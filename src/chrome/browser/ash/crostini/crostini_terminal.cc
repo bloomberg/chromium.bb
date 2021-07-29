@@ -96,6 +96,11 @@ void LaunchTerminal(Profile* profile,
     return;
   }
 
+  // Do not track Crostini apps or terminal in session restore. Apps will fail
+  // since VMs are not restarted on restore, and we don't want terminal to
+  // force the VM to start.
+  params->omit_from_session_restore = true;
+
   // This LaunchSystemWebAppImpl call is necessary. Terminal App uses its own
   // CrostiniApps publisher for launching. Calling LaunchSystemWebAppAsync
   // would ask AppService to launch the App, which routes the launch request to
@@ -214,7 +219,7 @@ void RecordTerminalSettingsChangesUMAs(Profile* profile) {
 
   const base::DictionaryValue* settings = profile->GetPrefs()->GetDictionary(
       crostini::prefs::kCrostiniTerminalSettings);
-  for (const auto& item : settings->DictItems()) {
+  for (const auto item : settings->DictItems()) {
     // Only record settings for /hterm/profiles/default/.
     if (!base::StartsWith(item.first, kSettingPrefix,
                           base::CompareCase::SENSITIVE)) {

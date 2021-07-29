@@ -90,15 +90,16 @@ TranslateEventProto::EventType BubbleResultToTranslateEvent(
 
 ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
+  DCHECK(web_contents);
   if (translate::IsSubFrameTranslationEnabled()) {
     per_frame_translate_driver_ =
         std::make_unique<translate::PerFrameContentTranslateDriver>(
-            &web_contents->GetController(),
+            *web_contents, &web_contents->GetController(),
             UrlLanguageHistogramFactory::GetForBrowserContext(
                 web_contents->GetBrowserContext()));
   } else {
     translate_driver_ = std::make_unique<translate::ContentTranslateDriver>(
-        &web_contents->GetController(),
+        *web_contents, &web_contents->GetController(),
         UrlLanguageHistogramFactory::GetForBrowserContext(
             web_contents->GetBrowserContext()),
         TranslateModelServiceFactory::GetOrBuildForKey(
@@ -257,7 +258,7 @@ bool ChromeTranslateClient::ShowTranslateUI(
   DCHECK(TranslateService::IsTranslateBubbleEnabled());
   // Bubble UI.
   if (step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE &&
-      translate_manager_->ShouldSuppressBubbleUI()) {
+      translate_manager_->ShouldSuppressBubbleUI(target_language)) {
     return false;
   }
 
@@ -305,8 +306,8 @@ void ChromeTranslateClient::ManualTranslateWhenReady() {
     manual_translate_on_ready_ = true;
   } else {
     translate::TranslateManager* manager = GetTranslateManager();
-    manager->InitiateManualTranslation(/*auto_translate=*/true,
-                                       /*triggered_from_menu=*/true);
+    manager->ShowTranslateUI(/*auto_translate=*/true,
+                             /*triggered_from_menu=*/true);
   }
 }
 #endif
@@ -380,7 +381,7 @@ void ChromeTranslateClient::OnLanguageDetermined(
 #if defined(OS_ANDROID)
   // See ChromeTranslateClient::ManualTranslateOnReady
   if (manual_translate_on_ready_) {
-    GetTranslateManager()->InitiateManualTranslation(true);
+    GetTranslateManager()->ShowTranslateUI(/*auto_translate=*/true);
     manual_translate_on_ready_ = false;
   }
 #endif

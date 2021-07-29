@@ -78,34 +78,14 @@ void main()
     GLint mAttribLocation;
 };
 
-// Disabled in debug because it's way too slow.
-#if !defined(NDEBUG)
-#    define MAYBE_NULLData DISABLED_NULLData
-#else
-#    define MAYBE_NULLData NULLData
-#endif  // !defined(NDEBUG)
-
-TEST_P(BufferDataTest, MAYBE_NULLData)
+// If glBufferData was not called yet the capturing must not try to
+// read the data. http://anglebug.com/6093
+TEST_P(BufferDataTest, Uninitialized)
 {
+    // Trigger frame capture to try capturing the
+    // generated but uninitialized buffer
     glBindBuffer(GL_ARRAY_BUFFER, mBuffer);
-    EXPECT_GL_NO_ERROR();
-
-    const int numIterations = 128;
-    for (int i = 0; i < numIterations; ++i)
-    {
-        GLsizei bufferSize = sizeof(GLfloat) * (i + 1);
-        glBufferData(GL_ARRAY_BUFFER, bufferSize, nullptr, GL_STATIC_DRAW);
-        EXPECT_GL_NO_ERROR();
-
-        for (int j = 0; j < bufferSize; j++)
-        {
-            for (int k = 0; k < bufferSize - j; k++)
-            {
-                glBufferSubData(GL_ARRAY_BUFFER, k, j, nullptr);
-                ASSERT_GL_NO_ERROR();
-            }
-        }
-    }
+    swapBuffers();
 }
 
 TEST_P(BufferDataTest, ZeroNonNULLData)
@@ -824,6 +804,95 @@ TEST_P(BufferDataTestES3, BufferDataUnmap)
     ASSERT_GL_NO_ERROR();
 }
 
+// Ensures that mapping buffer with GL_MAP_INVALIDATE_BUFFER_BIT followed by glBufferSubData calls
+// works.  Regression test for the Vulkan backend where that flag caused use after free.
+TEST_P(BufferDataTestES3, MapInvalidateThenBufferSubData)
+{
+    // http://anglebug.com/5984
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsOpenGL() && IsIntel());
+
+    // http://anglebug.com/5985
+    ANGLE_SKIP_TEST_IF(IsNexus5X() && IsOpenGLES());
+
+    const std::array<GLColor, 4> kInitialData = {GLColor::red, GLColor::red, GLColor::red,
+                                                 GLColor::red};
+    const std::array<GLColor, 4> kUpdateData1 = {GLColor::white, GLColor::white, GLColor::white,
+                                                 GLColor::white};
+    const std::array<GLColor, 4> kUpdateData2 = {GLColor::blue, GLColor::blue, GLColor::blue,
+                                                 GLColor::blue};
+
+    GLBuffer buffer;
+    glBindBuffer(GL_UNIFORM_BUFFER, buffer);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(kInitialData), kInitialData.data(), GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, buffer);
+    EXPECT_GL_NO_ERROR();
+
+    // Draw
+    constexpr char kVerifyUBO[] = R"(#version 300 es
+precision mediump float;
+uniform block {
+    uvec4 data;
+} ubo;
+uniform uint expect;
+uniform vec4 successOutput;
+out vec4 colorOut;
+void main()
+{
+    if (all(equal(ubo.data, uvec4(expect))))
+        colorOut = successOutput;
+    else
+        colorOut = vec4(1.0, 0, 0, 1.0);
+})";
+
+    ANGLE_GL_PROGRAM(verifyUbo, essl3_shaders::vs::Simple(), kVerifyUBO);
+    glUseProgram(verifyUbo);
+
+    GLint expectLoc = glGetUniformLocation(verifyUbo, "expect");
+    EXPECT_NE(-1, expectLoc);
+    GLint successLoc = glGetUniformLocation(verifyUbo, "successOutput");
+    EXPECT_NE(-1, successLoc);
+
+    glUniform1ui(expectLoc, kInitialData[0].asUint());
+    glUniform4f(successLoc, 0, 1, 0, 1);
+
+    drawQuad(verifyUbo, essl3_shaders::PositionAttrib(), 0.5);
+    EXPECT_GL_NO_ERROR();
+
+    // Dont't verify the buffer.  This is testing GL_MAP_INVALIDATE_BUFFER_BIT while the buffer is
+    // in use by the GPU.
+
+    // Map the buffer and update it.
+    void *mappedBuffer = glMapBufferRange(GL_UNIFORM_BUFFER, 0, sizeof(kInitialData),
+                                          GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+
+    memcpy(mappedBuffer, kUpdateData1.data(), sizeof(kInitialData));
+
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
+    EXPECT_GL_NO_ERROR();
+
+    // Verify that the buffer has the updated value.
+    glUniform1ui(expectLoc, kUpdateData1[0].asUint());
+    glUniform4f(successLoc, 0, 0, 1, 1);
+
+    drawQuad(verifyUbo, essl3_shaders::PositionAttrib(), 0.5);
+    EXPECT_GL_NO_ERROR();
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
+
+    // Update the buffer with glBufferSubData
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(kUpdateData2), kUpdateData2.data());
+    EXPECT_GL_NO_ERROR();
+
+    // Verify that the buffer has the updated value.
+    glUniform1ui(expectLoc, kUpdateData2[0].asUint());
+    glUniform4f(successLoc, 0, 1, 1, 1);
+
+    drawQuad(verifyUbo, essl3_shaders::PositionAttrib(), 0.5);
+    EXPECT_GL_NO_ERROR();
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::cyan);
+}
+
 class BufferStorageTestES3 : public BufferDataTest
 {};
 
@@ -964,7 +1033,7 @@ TEST_P(BufferStorageTestES3, StorageBufferMapBufferOES)
 ANGLE_INSTANTIATE_TEST_ES2(BufferDataTest);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(BufferDataTestES3);
-ANGLE_INSTANTIATE_TEST_ES3(BufferDataTestES3);
+ANGLE_INSTANTIATE_TEST_ES3_AND(BufferDataTestES3, WithDirectSPIRVGeneration(ES3_VULKAN()));
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(BufferStorageTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(BufferStorageTestES3);
@@ -987,11 +1056,6 @@ class BufferDataOverflowTest : public ANGLETest
 // See description above.
 TEST_P(BufferDataOverflowTest, VertexBufferIntegerOverflow)
 {
-    // http://anglebug.com/3786: flaky timeout on Win10 FYI x64 Release (NVIDIA GeForce GTX 1660)
-    ANGLE_SKIP_TEST_IF(IsWindows() && IsNVIDIA() && IsD3D11());
-    // http://anglebug.com/4092
-    ANGLE_SKIP_TEST_IF(IsWindows() && (IsVulkan() || IsOpenGL()));
-
     // These values are special, to trigger the rounding bug.
     unsigned int numItems       = 0x7FFFFFE;
     constexpr GLsizei bufferCnt = 8;

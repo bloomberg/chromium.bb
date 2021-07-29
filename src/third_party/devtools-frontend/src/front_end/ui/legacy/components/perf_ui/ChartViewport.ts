@@ -5,6 +5,7 @@
 /* eslint-disable rulesdir/no_underscored_properties */
 
 import * as Common from '../../../../core/common/common.js';
+import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as UI from '../../legacy.js';
 
@@ -52,7 +53,7 @@ export class ChartViewport extends UI.Widget.VBox {
 
   constructor(delegate: ChartViewportDelegate) {
     super();
-    this.registerRequiredCSS('ui/legacy/components/perf_ui/chartViewport.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('ui/legacy/components/perf_ui/chartViewport.css');
 
     this._delegate = delegate;
 
@@ -295,7 +296,7 @@ export class ChartViewport extends UI.Widget.VBox {
     style.left = left + 'px';
     style.width = (right - left) + 'px';
     const timeSpan = rangeSelectionEnd - rangeSelectionStart;
-    this._selectedTimeSpanLabel.textContent = Number.preciseMillisToString(timeSpan, 2);
+    this._selectedTimeSpanLabel.textContent = i18n.i18n.preciseMillisToString(timeSpan, 2);
   }
 
   _onScroll(): void {

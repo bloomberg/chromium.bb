@@ -33,11 +33,10 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Extensions from '../../models/extensions/extensions.js';
-import * as Recorder from '../../models/recorder/recorder.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -46,7 +45,7 @@ import * as Snippets from '../snippets/snippets.js';
 import {CallStackSidebarPane} from './CallStackSidebarPane.js';
 import {DebuggerPausedMessage} from './DebuggerPausedMessage.js';
 import type {NavigatorView} from './NavigatorView.js'; // eslint-disable-line no-unused-vars
-import {ContentScriptsNavigatorView, FilesNavigatorView, NetworkNavigatorView, OverridesNavigatorView, RecordingsNavigatorView, SnippetsNavigatorView} from './SourcesNavigator.js';
+import {ContentScriptsNavigatorView, FilesNavigatorView, NetworkNavigatorView, OverridesNavigatorView, SnippetsNavigatorView} from './SourcesNavigator.js';
 import {Events, SourcesView} from './SourcesView.js';
 import {ThreadsSidebarPane} from './ThreadsSidebarPane.js';
 import {UISourceCodeFrame} from './UISourceCodeFrame.js';
@@ -125,6 +124,21 @@ const UIStrings = {
   */
   copyS: 'Copy {PH1}',
   /**
+  *@description A context menu item for strings in the Console, Sources, and Network panel.
+  * When clicked, the raw contents of the string is copied to the clipboard.
+  */
+  copyStringContents: 'Copy string contents',
+  /**
+  *@description A context menu item for strings in the Console, Sources, and Network panel.
+  * When clicked, the string is copied to the clipboard as a valid JavaScript literal.
+  */
+  copyStringAsJSLiteral: 'Copy string as JavaScript literal',
+  /**
+  *@description A context menu item for strings in the Console, Sources, and Network panel.
+  * When clicked, the string is copied to the clipboard as a valid JSON literal.
+  */
+  copyStringAsJSONLiteral: 'Copy string as JSON literal',
+  /**
   *@description A context menu item in the Sources Panel of the Sources panel
   */
   showFunctionDefinition: 'Show function definition',
@@ -135,10 +149,11 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/SourcesPanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const primitiveRemoteObjectTypes = new Set(['number', 'boolean', 'bigint', 'undefined']);
 let sourcesPanelInstance: SourcesPanel;
 let wrapperViewInstance: WrapperView;
 
-export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provider, SDK.SDKModel.Observer,
+export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provider, SDK.TargetManager.Observer,
                                                             UI.View.ViewLocationResolver {
   _workspace: Workspace.Workspace.WorkspaceImpl;
   _togglePauseAction: UI.ActionRegistration.Action;
@@ -172,7 +187,7 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
   sidebarPaneView?: UI.Widget.VBox|UI.SplitWidget.SplitWidget;
   constructor() {
     super('sources');
-    this.registerRequiredCSS('panels/sources/sourcesPanel.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/sources/sourcesPanel.css');
     new UI.DropTarget.DropTarget(
         this.element, [UI.DropTarget.Type.Folder], i18nString(UIStrings.dropWorkspaceFolderHere),
         this._handleDrop.bind(this));
@@ -259,25 +274,25 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
 
     this._liveLocationPool = new Bindings.LiveLocation.LiveLocationPool();
 
-    this._setTarget(UI.Context.Context.instance().flavor(SDK.SDKModel.Target));
+    this._setTarget(UI.Context.Context.instance().flavor(SDK.Target.Target));
     Common.Settings.Settings.instance()
         .moduleSetting('breakpointsActive')
         .addChangeListener(this._breakpointsActiveStateChanged, this);
-    UI.Context.Context.instance().addFlavorChangeListener(SDK.SDKModel.Target, this._onCurrentTargetChanged, this);
+    UI.Context.Context.instance().addFlavorChangeListener(SDK.Target.Target, this._onCurrentTargetChanged, this);
     UI.Context.Context.instance().addFlavorChangeListener(SDK.DebuggerModel.CallFrame, this._callFrameChanged, this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerWasEnabled, this._debuggerWasEnabled, this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed,
         event => this._debuggerResumed((event.data as SDK.DebuggerModel.DebuggerModel)));
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared,
         event => this._debuggerResumed((event.data as SDK.DebuggerModel.DebuggerModel)));
     Extensions.ExtensionServer.ExtensionServer.instance().addEventListener(
         Extensions.ExtensionServer.Events.SidebarPaneAdded, this._extensionSidebarPaneAdded, this);
-    SDK.SDKModel.TargetManager.instance().observeTargets(this);
+    SDK.TargetManager.TargetManager.instance().observeTargets(this);
     this._lastModificationTime = window.performance.now();
   }
 
@@ -312,11 +327,11 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     }
   }
 
-  targetAdded(_target: SDK.SDKModel.Target): void {
+  targetAdded(_target: SDK.Target.Target): void {
     this._showThreadsIfNeeded();
   }
 
-  targetRemoved(_target: SDK.SDKModel.Target): void {
+  targetRemoved(_target: SDK.Target.Target): void {
   }
 
   _showThreadsIfNeeded(): void {
@@ -329,7 +344,7 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     }
   }
 
-  _setTarget(target: SDK.SDKModel.Target|null): void {
+  _setTarget(target: SDK.Target.Target|null): void {
     if (!target) {
       return;
     }
@@ -349,7 +364,7 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
   }
 
   _onCurrentTargetChanged(event: Common.EventTarget.EventTargetEvent): void {
-    const target = (event.data as SDK.SDKModel.Target | null);
+    const target = (event.data as SDK.Target.Target | null);
     this._setTarget(target);
   }
   paused(): boolean {
@@ -413,10 +428,10 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
       this._setAsCurrentPanel();
     }
 
-    if (UI.Context.Context.instance().flavor(SDK.SDKModel.Target) === debuggerModel.target()) {
+    if (UI.Context.Context.instance().flavor(SDK.Target.Target) === debuggerModel.target()) {
       this._showDebuggerPausedDetails((details as SDK.DebuggerModel.DebuggerPausedDetails));
     } else if (!this._paused) {
-      UI.Context.Context.instance().setFlavor(SDK.SDKModel.Target, debuggerModel.target());
+      UI.Context.Context.instance().setFlavor(SDK.Target.Target, debuggerModel.target());
     }
   }
 
@@ -432,7 +447,7 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
 
   _debuggerResumed(debuggerModel: SDK.DebuggerModel.DebuggerModel): void {
     const target = debuggerModel.target();
-    if (UI.Context.Context.instance().flavor(SDK.SDKModel.Target) !== target) {
+    if (UI.Context.Context.instance().flavor(SDK.Target.Target) !== target) {
       return;
     }
     this._paused = false;
@@ -443,7 +458,7 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
 
   _debuggerWasEnabled(event: Common.EventTarget.EventTargetEvent): void {
     const debuggerModel = (event.data as SDK.DebuggerModel.DebuggerModel);
-    if (UI.Context.Context.instance().flavor(SDK.SDKModel.Target) !== debuggerModel.target()) {
+    if (UI.Context.Context.instance().flavor(SDK.Target.Target) !== debuggerModel.target()) {
       return;
     }
 
@@ -552,7 +567,7 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
   }
 
   async _updateDebuggerButtonsAndStatus(): Promise<void> {
-    const currentTarget = UI.Context.Context.instance().flavor(SDK.SDKModel.Target);
+    const currentTarget = UI.Context.Context.instance().flavor(SDK.Target.Target);
     const currentDebuggerModel = currentTarget ? currentTarget.model(SDK.DebuggerModel.DebuggerModel) : null;
     if (!currentDebuggerModel) {
       this._togglePauseAction.setEnabled(false);
@@ -604,9 +619,9 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
       return;
     }
 
-    for (const debuggerModel of SDK.SDKModel.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
+    for (const debuggerModel of SDK.TargetManager.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
       if (debuggerModel.isPaused()) {
-        UI.Context.Context.instance().setFlavor(SDK.SDKModel.Target, debuggerModel.target());
+        UI.Context.Context.instance().setFlavor(SDK.Target.Target, debuggerModel.target());
         break;
       }
     }
@@ -627,54 +642,6 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     }
   }
 
-  _toggleRecording(): void {
-    const uiSourceCode = this._sourcesView.currentUISourceCode();
-    if (!uiSourceCode) {
-      return;
-    }
-    const target = UI.Context.Context.instance().flavor(SDK.SDKModel.Target);
-    if (!target) {
-      return;
-    }
-    const recorderModel = target.model(Recorder.RecorderModel.RecorderModel);
-    if (!recorderModel) {
-      return;
-    }
-    recorderModel.toggleRecording(uiSourceCode);
-  }
-
-  _replayRecording(): void {
-    const uiSourceCode = this._sourcesView.currentUISourceCode();
-    if (!uiSourceCode) {
-      return;
-    }
-    const target = UI.Context.Context.instance().flavor(SDK.SDKModel.Target);
-    if (!target) {
-      return;
-    }
-    const recorderModel = target.model(Recorder.RecorderModel.RecorderModel);
-    if (!recorderModel) {
-      return;
-    }
-    recorderModel.replayRecording(uiSourceCode);
-  }
-
-  _exportRecording(): void {
-    const uiSourceCode = this._sourcesView.currentUISourceCode();
-    if (!uiSourceCode) {
-      return;
-    }
-    const target = UI.Context.Context.instance().flavor(SDK.SDKModel.Target);
-    if (!target) {
-      return;
-    }
-    const recorderModel = target.model(Recorder.RecorderModel.RecorderModel);
-    if (!recorderModel) {
-      return;
-    }
-    recorderModel.exportRecording(uiSourceCode);
-  }
-
   _editorSelected(event: Common.EventTarget.EventTargetEvent): void {
     const uiSourceCode = (event.data as Workspace.UISourceCode.UISourceCode);
     if (this.editorView.mainWidget() &&
@@ -684,7 +651,7 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
   }
 
   _togglePause(): boolean {
-    const target = UI.Context.Context.instance().flavor(SDK.SDKModel.Target);
+    const target = UI.Context.Context.instance().flavor(SDK.Target.Target);
     if (!target) {
       return true;
     }
@@ -713,7 +680,7 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     this._paused = false;
 
     this._clearInterface();
-    const target = UI.Context.Context.instance().flavor(SDK.SDKModel.Target);
+    const target = UI.Context.Context.instance().flavor(SDK.Target.Target);
     return target ? target.model(SDK.DebuggerModel.DebuggerModel) : null;
   }
 
@@ -878,7 +845,7 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     }
     const contentType = uiSourceCode.contentType();
     if (contentType.hasScripts()) {
-      const target = UI.Context.Context.instance().flavor(SDK.SDKModel.Target);
+      const target = UI.Context.Context.instance().flavor(SDK.Target.Target);
       const debuggerModel = target ? target.model(SDK.DebuggerModel.DebuggerModel) : null;
       if (debuggerModel && debuggerModel.isPaused()) {
         contextMenu.debugSection().appendItem(
@@ -914,11 +881,31 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     const copyContextMenuTitle = getObjectTitle();
 
     contextMenu.debugSection().appendItem(
-        i18nString(UIStrings.storeSAsGlobalVariable, {PH1: copyContextMenuTitle}),
+        i18nString(UIStrings.storeSAsGlobalVariable, {PH1: String(copyContextMenuTitle)}),
         () => SDK.ConsoleModel.ConsoleModel.instance().saveToTempVariable(executionContext, remoteObject));
 
-    // Copy object context menu.
-    if (remoteObject.type !== 'function') {
+    const ctxMenuClipboardSection = contextMenu.clipboardSection();
+    const inspectorFrontendHost = Host.InspectorFrontendHost.InspectorFrontendHostInstance;
+
+    if (remoteObject.type === 'string') {
+      ctxMenuClipboardSection.appendItem(i18nString(UIStrings.copyStringContents), () => {
+        inspectorFrontendHost.copyText(remoteObject.value);
+      });
+      ctxMenuClipboardSection.appendItem(i18nString(UIStrings.copyStringAsJSLiteral), () => {
+        inspectorFrontendHost.copyText(Platform.StringUtilities.formatAsJSLiteral(remoteObject.value));
+      });
+      ctxMenuClipboardSection.appendItem(i18nString(UIStrings.copyStringAsJSONLiteral), () => {
+        inspectorFrontendHost.copyText(JSON.stringify(remoteObject.value));
+      });
+    }
+    // We are trying to copy a primitive value.
+    else if (primitiveRemoteObjectTypes.has(remoteObject.type)) {
+      ctxMenuClipboardSection.appendItem(i18nString(UIStrings.copyS, {PH1: String(copyContextMenuTitle)}), () => {
+        inspectorFrontendHost.copyText(remoteObject.description);
+      });
+    }
+    // We are trying to copy a remote object.
+    else if (remoteObject.type === 'object') {
       const copyDecodedValueHandler = async(): Promise<void> => {
         const result = await remoteObject.callFunctionJSON(toStringForClipboard, [{
                                                              value: {
@@ -926,14 +913,14 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
                                                                indent: indent,
                                                              },
                                                            }]);
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(result);
+        inspectorFrontendHost.copyText(result);
       };
 
-      contextMenu.clipboardSection().appendItem(
-          i18nString(UIStrings.copyS, {PH1: copyContextMenuTitle}), copyDecodedValueHandler);
+      ctxMenuClipboardSection.appendItem(
+          i18nString(UIStrings.copyS, {PH1: String(copyContextMenuTitle)}), copyDecodedValueHandler);
     }
 
-    if (remoteObject.type === 'function') {
+    else if (remoteObject.type === 'function') {
       contextMenu.debugSection().appendItem(
           i18nString(UIStrings.showFunctionDefinition), this._showFunctionDefinition.bind(this, remoteObject));
     }
@@ -1096,7 +1083,10 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
   }
 
   _setAsCurrentPanel(): Promise<void> {
-    return UI.ViewManager.ViewManager.instance().showView('sources');
+    if (Common.Settings.Settings.instance().moduleSetting('autoFocusOnDebuggerPausedEnabled').get()) {
+      return UI.ViewManager.ViewManager.instance().showView('sources');
+    }
+    return Promise.resolve();
   }
 
   _extensionSidebarPaneAdded(event: Common.EventTarget.EventTargetEvent): void {
@@ -1285,18 +1275,6 @@ export class DebuggingActionDelegate implements UI.ActionRegistration.ActionDele
         panel._runSnippet();
         return true;
       }
-      case 'recorder.toggle-recording': {
-        panel._toggleRecording();
-        return true;
-      }
-      case 'recorder.replay-recording': {
-        panel._replayRecording();
-        return true;
-      }
-      case 'recorder.export-recording': {
-        panel._exportRecording();
-        return true;
-      }
       case 'debugger.toggle-breakpoints-active': {
         panel._toggleBreakpointsActive();
         return true;
@@ -1376,11 +1354,6 @@ const registeredNavigatorViews: NavigatorViewRegistration[] = [
     viewId: 'navigator-snippets',
     navigatorView: SnippetsNavigatorView.instance,
     experiment: undefined,
-  },
-  {
-    viewId: 'navigator-recordings',
-    navigatorView: RecordingsNavigatorView.instance,
-    experiment: Root.Runtime.ExperimentName.RECORDER,
   },
   {
     viewId: 'navigator-overrides',

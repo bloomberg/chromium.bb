@@ -318,7 +318,7 @@ TEST_F(VkLayerTest, IndexBufferBadSize) {
     TEST_DESCRIPTION("Run indexed draw call with bad index buffer size.");
 
     ASSERT_NO_FATAL_FAILURE(Init(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "vkCmdDrawIndexed() index size ");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "vkCmdDrawIndexed(): index size ");
     VKTriangleTest(BsoFailIndexBufferBadSize);
     m_errorMonitor->VerifyFound();
 }
@@ -327,7 +327,7 @@ TEST_F(VkLayerTest, IndexBufferBadOffset) {
     TEST_DESCRIPTION("Run indexed draw call with bad index buffer offset.");
 
     ASSERT_NO_FATAL_FAILURE(Init(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "vkCmdDrawIndexed() index size ");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "vkCmdDrawIndexed(): index size ");
     VKTriangleTest(BsoFailIndexBufferBadOffset);
     m_errorMonitor->VerifyFound();
 }
@@ -336,7 +336,7 @@ TEST_F(VkLayerTest, IndexBufferBadBindSize) {
     TEST_DESCRIPTION("Run bind index buffer with a size greater than the index buffer.");
 
     ASSERT_NO_FATAL_FAILURE(Init(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "vkCmdDrawIndexed() index size ");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "vkCmdDrawIndexed(): index size ");
     VKTriangleTest(BsoFailIndexBufferBadMapSize);
     m_errorMonitor->VerifyFound();
 }
@@ -345,7 +345,7 @@ TEST_F(VkLayerTest, IndexBufferBadBindOffset) {
     TEST_DESCRIPTION("Run bind index buffer with an offset greater than the size of the index buffer.");
 
     ASSERT_NO_FATAL_FAILURE(Init(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "vkCmdDrawIndexed() index size ");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "vkCmdDrawIndexed(): index size ");
     VKTriangleTest(BsoFailIndexBufferBadMapOffset);
     m_errorMonitor->VerifyFound();
 }
@@ -1114,17 +1114,16 @@ TEST_F(VkLayerTest, InvalidVertexAttributeAlignment) {
     input_attribs[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;
     input_attribs[2].offset = offsetof(VboEntry, input2);
 
-    char const *vsSource =
-        "#version 450\n"
-        "\n"
-        "layout(location = 0) in vec2 input0;"
-        "layout(location = 1) in vec4 input1;"
-        "layout(location = 2) in vec4 input2;"
-        "\n"
-        "void main(){\n"
-        "   gl_Position = input1 + input2;\n"
-        "   gl_Position.xy += input0;\n"
-        "}\n";
+    char const *vsSource = R"glsl(
+        #version 450
+        layout(location = 0) in vec2 input0;
+        layout(location = 1) in vec4 input1;
+        layout(location = 2) in vec4 input2;
+        void main(){
+           gl_Position = input1 + input2;
+           gl_Position.xy += input0;
+        }
+    )glsl";
 
     VkShaderObj vs(m_device, vsSource, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT, this);
@@ -1308,14 +1307,14 @@ TEST_F(VkLayerTest, DrawTimeImageViewTypeMismatchWithPipeline) {
     ASSERT_NO_FATAL_FAILURE(Init());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
 
-    char const *fsSource =
-        "#version 450\n"
-        "\n"
-        "layout(set=0, binding=0) uniform sampler3D s;\n"
-        "layout(location=0) out vec4 color;\n"
-        "void main() {\n"
-        "   color = texture(s, vec3(0));\n"
-        "}\n";
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(set=0, binding=0) uniform sampler3D s;
+        layout(location=0) out vec4 color;
+        void main() {
+           color = texture(s, vec3(0));
+        }
+    )glsl";
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
 
@@ -1364,14 +1363,14 @@ TEST_F(VkLayerTest, DrawTimeImageMultisampleMismatchWithPipeline) {
     ASSERT_NO_FATAL_FAILURE(Init());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
 
-    char const *fsSource =
-        "#version 450\n"
-        "\n"
-        "layout(set=0, binding=0) uniform sampler2DMS s;\n"
-        "layout(location=0) out vec4 color;\n"
-        "void main() {\n"
-        "   color = texelFetch(s, ivec2(0), 0);\n"
-        "}\n";
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(set=0, binding=0) uniform sampler2DMS s;
+        layout(location=0) out vec4 color;
+        void main() {
+           color = texelFetch(s, ivec2(0), 0);
+        }
+    )glsl";
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
 
@@ -1419,14 +1418,14 @@ TEST_F(VkLayerTest, DrawTimeImageComponentTypeMismatchWithPipeline) {
     ASSERT_NO_FATAL_FAILURE(Init());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
 
-    char const *fsSource =
-        "#version 450\n"
-        "\n"
-        "layout(set=0, binding=0) uniform isampler2D s;\n"
-        "layout(location=0) out vec4 color;\n"
-        "void main() {\n"
-        "   color = texelFetch(s, ivec2(0), 0);\n"
-        "}\n";
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(set=0, binding=0) uniform isampler2D s;
+        layout(location=0) out vec4 color;
+        void main() {
+           color = texelFetch(s, ivec2(0), 0);
+        }
+    )glsl";
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
 
@@ -4840,6 +4839,7 @@ TEST_F(VkLayerTest, ResolveImageSizeExceeded) {
     TEST_DESCRIPTION("Resolve Image with subresource region greater than size of src/dst image");
     ASSERT_NO_FATAL_FAILURE(Init());
 
+    m_errorMonitor->ExpectSuccess();
     VkImageObj srcImage2D(m_device);
     VkImageObj dstImage2D(m_device);
 
@@ -4850,7 +4850,7 @@ TEST_F(VkLayerTest, ResolveImageSizeExceeded) {
     image_create_info.extent.width = 32;
     image_create_info.extent.height = 32;
     image_create_info.extent.depth = 1;
-    image_create_info.mipLevels = 6;  // full chain from 32x32 to 1x1
+    image_create_info.mipLevels = 1;
     image_create_info.arrayLayers = 1;
     image_create_info.samples = VK_SAMPLE_COUNT_4_BIT;
     image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -4889,7 +4889,6 @@ TEST_F(VkLayerTest, ResolveImageSizeExceeded) {
     resolveRegion.extent.height = 32;
     resolveRegion.extent.depth = 1;
 
-    m_errorMonitor->ExpectSuccess();
     m_commandBuffer->ResolveImage(srcImage2D.image(), VK_IMAGE_LAYOUT_GENERAL, dstImage2D.image(), VK_IMAGE_LAYOUT_GENERAL, 1,
                                   &resolveRegion);
     m_errorMonitor->VerifyNotFound();
@@ -4910,21 +4909,20 @@ TEST_F(VkLayerTest, ResolveImageSizeExceeded) {
     m_errorMonitor->VerifyFound();
     resolveRegion.dstOffset.x = 0;
 
-    // both image exceeded in y-dim because mipLevel 3 is a 4x4 size image
-    resolveRegion.extent = {4, 8, 1};
-    resolveRegion.srcSubresource.mipLevel = 3;
+    // both image exceeded in y-dim
+    resolveRegion.srcOffset.y = 32;
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdResolveImage-srcOffset-00270");
     m_commandBuffer->ResolveImage(srcImage2D.image(), VK_IMAGE_LAYOUT_GENERAL, dstImage2D.image(), VK_IMAGE_LAYOUT_GENERAL, 1,
                                   &resolveRegion);
     m_errorMonitor->VerifyFound();
-    resolveRegion.srcSubresource.mipLevel = 0;
+    resolveRegion.srcOffset.y = 0;
 
-    resolveRegion.dstSubresource.mipLevel = 3;
+    resolveRegion.dstOffset.y = 32;
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdResolveImage-dstOffset-00275");
     m_commandBuffer->ResolveImage(srcImage2D.image(), VK_IMAGE_LAYOUT_GENERAL, dstImage2D.image(), VK_IMAGE_LAYOUT_GENERAL, 1,
                                   &resolveRegion);
     m_errorMonitor->VerifyFound();
-    resolveRegion.dstSubresource.mipLevel = 0;
+    resolveRegion.dstOffset.y = 0;
 
     // srcImage exceeded in z-dim
     resolveRegion.srcOffset.z = 1;
@@ -5821,6 +5819,151 @@ TEST_F(VkLayerTest, SetDynScissorParamMultiviewportTests) {
     }
 }
 
+TEST_F(VkLayerTest, MultiDrawTests) {
+    TEST_DESCRIPTION("Test validation of multi_draw extension");
+    SetTargetApiVersion(VK_API_VERSION_1_2);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
+        printf("%s Tests requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    auto multi_draw_features = LvlInitStruct<VkPhysicalDeviceMultiDrawFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&multi_draw_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (!multi_draw_features.multiDraw) {
+        printf("%s Test requires (unsupported) multiDraw, skipping\n", kSkipPrefix);
+        return;
+    }
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_MULTI_DRAW_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_EXT_MULTI_DRAW_EXTENSION_NAME);
+    } else {
+        printf("%s VK_EXT_multi_draw extension not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+    auto multi_draw_properties = LvlInitStruct<VkPhysicalDeviceMultiDrawPropertiesEXT>();
+    auto properties2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&multi_draw_properties);
+    vk::GetPhysicalDeviceProperties2(gpu(), &properties2);
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    auto vkCmdDrawMultiEXT = (PFN_vkCmdDrawMultiEXT)vk::GetDeviceProcAddr(m_device->device(), "vkCmdDrawMultiEXT");
+    auto vkCmdDrawMultiIndexedEXT =
+        (PFN_vkCmdDrawMultiIndexedEXT)vk::GetDeviceProcAddr(m_device->device(), "vkCmdDrawMultiIndexedEXT");
+    assert(vkCmdDrawMultiEXT != nullptr && vkCmdDrawMultiIndexedEXT != nullptr);
+
+    VkMultiDrawInfoEXT multi_draws[3] = {};
+    multi_draws[0].vertexCount = multi_draws[1].vertexCount = multi_draws[2].vertexCount = 3;
+
+    VkMultiDrawIndexedInfoEXT multi_draw_indices[3] = {};
+    multi_draw_indices[0].indexCount = multi_draw_indices[1].indexCount = multi_draw_indices[2].indexCount = 1;
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.InitState();
+    pipe.CreateGraphicsPipeline();
+
+    // Try existing VUID checks
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+
+    vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_layout_.handle(), 0, 1,
+                              &pipe.descriptor_set_->set_, 0, NULL);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawMultiEXT-None-02700");
+    vkCmdDrawMultiEXT(m_commandBuffer->handle(), 3, multi_draws, 1, 0, sizeof(VkMultiDrawInfoEXT));
+    m_errorMonitor->VerifyFound();
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawMultiIndexedEXT-None-02700");
+    vkCmdDrawMultiIndexedEXT(m_commandBuffer->handle(), 3, multi_draw_indices, 1, 0, sizeof(VkMultiDrawIndexedInfoEXT), 0);
+    m_errorMonitor->VerifyFound();
+
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+
+    // New VUIDs added with multi_draw (also see GPU-AV)
+    VkBufferObj buffer;
+    buffer.init(*m_device, 1024, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    multi_draw_indices[2].indexCount = 513;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawMultiIndexedEXT-firstIndex-04938");
+    m_commandBuffer->BindIndexBuffer(&buffer, 0, VK_INDEX_TYPE_UINT16);
+    vkCmdDrawMultiIndexedEXT(m_commandBuffer->handle(), 3, multi_draw_indices, 1, 0, sizeof(VkMultiDrawIndexedInfoEXT), 0);
+    m_errorMonitor->VerifyFound();
+    multi_draw_indices[2].indexCount = 1;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawMultiEXT-stride-04936");
+    vkCmdDrawMultiEXT(m_commandBuffer->handle(), 3, multi_draws, 1, 0, sizeof(VkMultiDrawInfoEXT) + 1);
+    m_errorMonitor->VerifyFound();
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawMultiIndexedEXT-stride-04941");
+    vkCmdDrawMultiIndexedEXT(m_commandBuffer->handle(), 3, multi_draw_indices, 1, 0, sizeof(VkMultiDrawIndexedInfoEXT) + 1, 0);
+    m_errorMonitor->VerifyFound();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawMultiEXT-drawCount-04935");
+    vkCmdDrawMultiEXT(m_commandBuffer->handle(), 3, nullptr, 1, 0, sizeof(VkMultiDrawInfoEXT));
+    m_errorMonitor->VerifyFound();
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawMultiIndexedEXT-drawCount-04940");
+    vkCmdDrawMultiIndexedEXT(m_commandBuffer->handle(), 3, nullptr, 1, 0, sizeof(VkMultiDrawIndexedInfoEXT), 0);
+    m_errorMonitor->VerifyFound();
+
+    if (multi_draw_properties.maxMultiDrawCount < UINT32_MAX) {
+        uint32_t draw_count = multi_draw_properties.maxMultiDrawCount + 1;
+        std::vector<VkMultiDrawInfoEXT> max_multi_draws(draw_count);
+        std::vector<VkMultiDrawIndexedInfoEXT> max_multi_indexed_draws(draw_count);
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawMultiEXT-drawCount-04934");
+        vkCmdDrawMultiEXT(m_commandBuffer->handle(), draw_count, max_multi_draws.data(), 1, 0, sizeof(VkMultiDrawInfoEXT));
+        m_errorMonitor->VerifyFound();
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawMultiIndexedEXT-drawCount-04939");
+        vkCmdDrawMultiIndexedEXT(m_commandBuffer->handle(), draw_count, max_multi_indexed_draws.data(), 1, 0,
+                                 sizeof(VkMultiDrawIndexedInfoEXT), 0);
+        m_errorMonitor->VerifyFound();
+    }
+}
+
+TEST_F(VkLayerTest, MultiDrawFeatures) {
+    TEST_DESCRIPTION("Test validation of multi draw feature enabled");
+    SetTargetApiVersion(VK_API_VERSION_1_2);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
+        printf("%s Tests requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
+        return;
+    }
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_MULTI_DRAW_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_EXT_MULTI_DRAW_EXTENSION_NAME);
+    } else {
+        printf("%s VK_EXT_multi_draw extension not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    auto vkCmdDrawMultiEXT = (PFN_vkCmdDrawMultiEXT)vk::GetDeviceProcAddr(m_device->device(), "vkCmdDrawMultiEXT");
+    auto vkCmdDrawMultiIndexedEXT =
+        (PFN_vkCmdDrawMultiIndexedEXT)vk::GetDeviceProcAddr(m_device->device(), "vkCmdDrawMultiIndexedEXT");
+    assert(vkCmdDrawMultiEXT != nullptr && vkCmdDrawMultiIndexedEXT != nullptr);
+
+    VkMultiDrawInfoEXT multi_draws[3] = {};
+    multi_draws[0].vertexCount = multi_draws[1].vertexCount = multi_draws[2].vertexCount = 3;
+
+    VkMultiDrawIndexedInfoEXT multi_draw_indices[3] = {};
+    multi_draw_indices[0].indexCount = multi_draw_indices[1].indexCount = multi_draw_indices[2].indexCount = 1;
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.InitState();
+    pipe.CreateGraphicsPipeline();
+
+    m_commandBuffer->begin();
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawMultiEXT-None-04933");
+    vkCmdDrawMultiEXT(m_commandBuffer->handle(), 3, multi_draws, 1, 0, sizeof(VkMultiDrawInfoEXT));
+    m_errorMonitor->VerifyFound();
+    VkBufferObj buffer;
+    buffer.init(*m_device, 1024, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    m_commandBuffer->BindIndexBuffer(&buffer, 0, VK_INDEX_TYPE_UINT16);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawMultiIndexedEXT-None-04937");
+    vkCmdDrawMultiIndexedEXT(m_commandBuffer->handle(), 3, multi_draw_indices, 1, 0, sizeof(VkMultiDrawIndexedInfoEXT), 0);
+    m_errorMonitor->VerifyFound();
+}
+
 TEST_F(VkLayerTest, IndirectDrawTests) {
     TEST_DESCRIPTION("Test covered valid usage for vkCmdDrawIndirect and vkCmdDrawIndexedIndirect");
 
@@ -6472,33 +6615,35 @@ TEST_F(VkLayerTest, MeshShaderNV) {
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
 
-    static const char vertShaderText[] =
-        "#version 450\n"
-        "vec2 vertices[3];\n"
-        "void main() {\n"
-        "      vertices[0] = vec2(-1.0, -1.0);\n"
-        "      vertices[1] = vec2( 1.0, -1.0);\n"
-        "      vertices[2] = vec2( 0.0,  1.0);\n"
-        "   gl_Position = vec4(vertices[gl_VertexIndex % 3], 0.0, 1.0);\n"
-        "   gl_PointSize = 1.0f;\n"
-        "}\n";
+    static const char vertShaderText[] = R"glsl(
+        #version 450
+        vec2 vertices[3];
+        void main() {
+              vertices[0] = vec2(-1.0, -1.0);
+              vertices[1] = vec2( 1.0, -1.0);
+              vertices[2] = vec2( 0.0,  1.0);
+           gl_Position = vec4(vertices[gl_VertexIndex % 3], 0.0, 1.0);
+           gl_PointSize = 1.0f;
+        }
+    )glsl";
 
-    static const char meshShaderText[] =
-        "#version 450\n"
-        "#extension GL_NV_mesh_shader : require\n"
-        "layout(local_size_x = 1) in;\n"
-        "layout(max_vertices = 3) out;\n"
-        "layout(max_primitives = 1) out;\n"
-        "layout(triangles) out;\n"
-        "void main() {\n"
-        "      gl_MeshVerticesNV[0].gl_Position = vec4(-1.0, -1.0, 0, 1);\n"
-        "      gl_MeshVerticesNV[1].gl_Position = vec4( 1.0, -1.0, 0, 1);\n"
-        "      gl_MeshVerticesNV[2].gl_Position = vec4( 0.0,  1.0, 0, 1);\n"
-        "      gl_PrimitiveIndicesNV[0] = 0;\n"
-        "      gl_PrimitiveIndicesNV[1] = 1;\n"
-        "      gl_PrimitiveIndicesNV[2] = 2;\n"
-        "      gl_PrimitiveCountNV = 1;\n"
-        "}\n";
+    static const char meshShaderText[] = R"glsl(
+        #version 450
+        #extension GL_NV_mesh_shader : require
+        layout(local_size_x = 1) in;
+        layout(max_vertices = 3) out;
+        layout(max_primitives = 1) out;
+        layout(triangles) out;
+        void main() {
+              gl_MeshVerticesNV[0].gl_Position = vec4(-1.0, -1.0, 0, 1);
+              gl_MeshVerticesNV[1].gl_Position = vec4( 1.0, -1.0, 0, 1);
+              gl_MeshVerticesNV[2].gl_Position = vec4( 0.0,  1.0, 0, 1);
+              gl_PrimitiveIndicesNV[0] = 0;
+              gl_PrimitiveIndicesNV[1] = 1;
+              gl_PrimitiveIndicesNV[2] = 2;
+              gl_PrimitiveCountNV = 1;
+        }
+    )glsl";
 
     VkShaderObj vs(m_device, vertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj ms(m_device, meshShaderText, VK_SHADER_STAGE_MESH_BIT_NV, this);
@@ -6682,7 +6827,7 @@ TEST_F(VkLayerTest, ViewportWScalingNV) {
     auto vkCmdSetViewportWScalingNV =
         reinterpret_cast<PFN_vkCmdSetViewportWScalingNV>(vk::GetDeviceProcAddr(m_device->device(), "vkCmdSetViewportWScalingNV"));
 
-    const char vs_src[] = R"(
+    const char vs_src[] = R"glsl(
         #version 450
         const vec2 positions[] = { vec2(-1.0f,  1.0f),
                                    vec2( 1.0f,  1.0f),
@@ -6694,15 +6839,17 @@ TEST_F(VkLayerTest, ViewportWScalingNV) {
 
         void main() {
             gl_Position = vec4(positions[gl_VertexIndex % 4], 0.0f, 1.0f);
-        })";
+        }
+    )glsl";
 
-    const char fs_src[] = R"(
+    const char fs_src[] = R"glsl(
         #version 450
         layout(location = 0) out vec4 outColor;
 
         void main() {
             outColor = vec4(0.0f, 1.0f, 0.0f, 1.0f);
-        })";
+        }
+    )glsl";
 
     const std::vector<VkViewport> vp = {
         {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f, 64.0f, 64.0f}};
@@ -7649,15 +7796,16 @@ TEST_F(VkLayerTest, InvalidMixingProtectedResources) {
                                               {VK_IMAGE_ASPECT_COLOR_BIT, 1, {m_clear_color}}};
     VkClearRect clear_rect[2] = {{render_area, 0, 1}, {render_area, 0, 1}};
 
-    const char fsSource[] =
-        "#version 450\n"
-        "layout(set=0, binding=0) uniform foo { int x; int y; } bar;\n"
-        "layout(set=0, binding=1, rgba8) uniform image2D si1;\n"
-        "layout(location=0) out vec4 x;\n"
-        "void main(){\n"
-        "   x = vec4(bar.y);\n"
-        "   imageStore(si1, ivec2(0), vec4(0));\n"
-        "}\n";
+    const char fsSource[] = R"glsl(
+        #version 450
+        layout(set=0, binding=0) uniform foo { int x; int y; } bar;
+        layout(set=0, binding=1, rgba8) uniform image2D si1;
+        layout(location=0) out vec4 x;
+        void main(){
+           x = vec4(bar.y);
+           imageStore(si1, ivec2(0), vec4(0));
+        }
+    )glsl";
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
 
     CreatePipelineHelper g_pipe(*this);
@@ -7869,13 +8017,14 @@ TEST_F(VkLayerTest, InvalidMixingProtectedResources) {
     vk::DestroyRenderPass(device(), render_pass, nullptr);
 }
 
-TEST_F(VkLayerTest, InvailStorageAtomicOperation) {
+TEST_F(VkLayerTest, InvalidStorageAtomicOperation) {
     TEST_DESCRIPTION(
         "If storage view use atomic operation, the view's format MUST support VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT or "
         "VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT ");
 
     ASSERT_NO_FATAL_FAILURE(Init());
 
+    m_errorMonitor->ExpectSuccess();
     VkImageUsageFlags usage = VK_IMAGE_USAGE_STORAGE_BIT;
     VkFormat image_format = VK_FORMAT_R8G8B8A8_UNORM;  // The format doesn't support VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT to
                                                        // cause DesiredFailure. VK_FORMAT_R32_UINT is right format.
@@ -7921,20 +8070,21 @@ TEST_F(VkLayerTest, InvailStorageAtomicOperation) {
     VkBufferView buffer_view;
     vk::CreateBufferView(m_device->device(), &bvci, NULL, &buffer_view);
 
-    char const *fsSource =
-        "#version 450\n"
-        "layout(set=0, binding=3, rgba8) uniform image2D si0;\n "
-        "layout(set=0, binding=2, rgba8) uniform image2D si1[2];\n "
-        "layout(set = 0, binding = 1, r8) uniform imageBuffer stb2;\n"
-        "layout(set = 0, binding = 0, r8) uniform imageBuffer stb3[2];\n"
-        "void main() {\n"
-        "      imageAtomicExchange(si0, ivec2(0), 1);\n"
-        "      imageAtomicExchange(si1[0], ivec2(0), 1);\n "
-        "      imageAtomicExchange(si1[1], ivec2(0), 1);\n "
-        "      imageAtomicExchange(stb2, 0, 1);\n"
-        "      imageAtomicExchange(stb3[0], 0, 1);\n "
-        "      imageAtomicExchange(stb3[1], 0, 1);\n "
-        "}\n";
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(set=0, binding=3, r32f) uniform image2D si0;
+        layout(set=0, binding=2, r32f) uniform image2D si1[2];
+        layout(set = 0, binding = 1, r32f) uniform imageBuffer stb2;
+        layout(set = 0, binding = 0, r32f) uniform imageBuffer stb3[2];
+        void main() {
+              imageAtomicExchange(si0, ivec2(0), 1);
+              imageAtomicExchange(si1[0], ivec2(0), 1);
+              imageAtomicExchange(si1[1], ivec2(0), 1);
+              imageAtomicExchange(stb2, 0, 1);
+              imageAtomicExchange(stb3[0], 0, 1);
+              imageAtomicExchange(stb3[1], 0, 1);
+        }
+    )glsl";
 
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
@@ -7963,6 +8113,7 @@ TEST_F(VkLayerTest, InvailStorageAtomicOperation) {
     vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, g_pipe.pipeline_layout_.handle(), 0, 1,
                               &g_pipe.descriptor_set_->set_, 0, nullptr);
 
+    m_errorMonitor->VerifyNotFound();
     m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "VUID-vkCmdDraw-None-02691");
     m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "VUID-vkCmdDraw-None-02691");
     m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "UNASSIGNED-None-MismatchAtomicBufferFeature");
@@ -7972,6 +8123,8 @@ TEST_F(VkLayerTest, InvailStorageAtomicOperation) {
 
     m_commandBuffer->EndRenderPass();
     m_commandBuffer->end();
+    vk::DestroyBufferView(m_device->handle(), buffer_view, nullptr);
+    vk::DestroySampler(m_device->handle(), sampler, nullptr);
 }
 
 TEST_F(VkLayerTest, DrawWithoutUpdatePushConstants) {
@@ -7981,49 +8134,49 @@ TEST_F(VkLayerTest, DrawWithoutUpdatePushConstants) {
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
 
     // push constant range: 0-99
-    char const *const vsSource =
-        "#version 450\n"
-        "\n"
-        "layout(push_constant, std430) uniform foo {\n"
-        "   bool b;\n"
-        "   float f2[3];\n"
-        "   vec3 v;\n"
-        "   vec4 v2[2];\n"
-        "   mat3 m;\n"
-        "} constants;\n"
-        "void func1( float f ){\n"
-        // use the whole v2[1]. byte: 48-63.
-        "   vec2 v2 = constants.v2[1].yz;\n"
-        "}\n"
-        "void main(){\n"
-        // use only v2[0].z. byte: 40-43.
-        "   func1( constants.v2[0].z);\n"
-        // index of m is variable. The all m is used. byte: 64-99.
-        "   for(int i=1;i<2;++i) {\n"
-        "      vec3 v3 = constants.m[i]; \n"
-        "   }\n"
-        "}\n";
+    char const *const vsSource = R"glsl(
+        #version 450
+        layout(push_constant, std430) uniform foo {
+           bool b;
+           float f2[3];
+           vec3 v;
+           vec4 v2[2];
+           mat3 m;
+        } constants;
+        void func1( float f ){
+           // use the whole v2[1]. byte: 48-63.
+           vec2 v2 = constants.v2[1].yz;
+        }
+        void main(){
+            // use only v2[0].z. byte: 40-43.
+            func1( constants.v2[0].z);
+            // index of m is variable. The all m is used. byte: 64-99.
+            for(int i=1;i<2;++i) {
+                vec3 v3 = constants.m[i];
+            }
+        }
+    )glsl";
 
     // push constant range: 0 - 95
-    char const *const fsSource =
-        "#version 450\n"
-        "\n"
-        "struct foo1{\n"
-        "   int i[4];"
-        "}f;\n"
-        "layout(push_constant, std430) uniform foo {\n"
-        "   float x[2][2][2];\n"
-        "   foo1 s;\n"
-        "   foo1 ss[3];\n"
-        "} constants;\n"
-        "void main(){\n"
-        // use s. byte: 32-47.
-        "   f = constants.s;\n"
-        // use every i[3] in ss. byte: 60-63, 76-79, 92-95.
-        "   for(int i=1;i<2;++i) {\n"
-        "      int ii = constants.ss[i].i[3]; \n"
-        "   }\n"
-        "}\n";
+    char const *const fsSource = R"glsl(
+        #version 450
+        struct foo1{
+           int i[4];
+        }f;
+        layout(push_constant, std430) uniform foo {
+           float x[2][2][2];
+           foo1 s;
+           foo1 ss[3];
+        } constants;
+        void main(){
+            // use s. byte: 32-47.
+            f = constants.s;
+            // use every i[3] in ss. byte: 60-63, 76-79, 92-95.
+            for(int i=1;i<2;++i) {
+                int ii = constants.ss[i].i[3];
+            }
+        }
+    )glsl";
 
     VkShaderObj const vs(m_device, vsSource, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj const fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
@@ -8814,12 +8967,13 @@ TEST_F(VkLayerTest, InvalidPrimitiveFragmentShadingRateWriteMultiViewportLimitDy
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
 
-    char const *vsSource =
-        "#version 450\n"
-        "#extension GL_EXT_fragment_shading_rate : enable\n"
-        "void main() {\n"
-        "      gl_PrimitiveShadingRateEXT = gl_ShadingRateFlag4VerticalPixelsEXT | gl_ShadingRateFlag4HorizontalPixelsEXT;\n"
-        "}\n";
+    char const *vsSource = R"glsl(
+        #version 450
+        #extension GL_EXT_fragment_shading_rate : enable
+        void main() {
+            gl_PrimitiveShadingRateEXT = gl_ShadingRateFlag4VerticalPixelsEXT | gl_ShadingRateFlag4HorizontalPixelsEXT;
+        }
+    )glsl";
 
     VkShaderObj fs(m_device, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT, this);
 

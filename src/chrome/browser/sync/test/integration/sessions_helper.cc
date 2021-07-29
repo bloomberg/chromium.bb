@@ -19,7 +19,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -166,7 +165,7 @@ void MoveTab(int from_browser_index, int to_browser_index, int tab_index) {
       test()
           ->GetBrowser(from_browser_index)
           ->tab_strip_model()
-          ->DetachWebContentsAt(tab_index);
+          ->DetachWebContentsAtForInsertion(tab_index);
 
   TabStripModel* target_strip =
       test()->GetBrowser(to_browser_index)->tab_strip_model();

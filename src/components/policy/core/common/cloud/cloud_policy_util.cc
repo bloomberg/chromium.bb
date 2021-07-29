@@ -33,8 +33,6 @@
 #import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
 #endif
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
 #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include <limits.h>  // For HOST_NAME_MAX
 #endif
@@ -42,8 +40,8 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/cxx17_backports.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #if defined(OS_WIN)
 #include "base/win/wmi.h"
@@ -69,8 +67,6 @@
 #include "base/system/sys_info.h"
 #endif
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
 #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/system/sys_info.h"
 #endif
@@ -101,8 +97,6 @@ std::string GetDeviceModel() {
 }
 
 std::string GetMachineName() {
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
 #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   char hostname[HOST_NAME_MAX];
   if (gethostname(hostname, HOST_NAME_MAX) == 0)  // Success.
@@ -163,7 +157,7 @@ std::string GetOSVersion() {
 #elif defined(OS_WIN)
   base::win::OSInfo::VersionNumber version_number =
       base::win::OSInfo::GetInstance()->version_number();
-  return base::StringPrintf("%d.%d.%d.%d", version_number.major,
+  return base::StringPrintf("%u.%u.%u.%u", version_number.major,
                             version_number.minor, version_number.build,
                             version_number.patch);
 #elif defined(OS_ANDROID)
@@ -183,7 +177,7 @@ std::string GetOSArchitecture() {
 }
 
 std::string GetOSUsername() {
-#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_APPLE)
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_APPLE)
   struct passwd* creds = getpwuid(getuid());
   if (!creds || !creds->pw_name)
     return std::string();
@@ -261,6 +255,8 @@ bool IsMachineLevelUserCloudPolicyType(const std::string& type) {
 std::string GetMachineLevelUserCloudPolicyTypeForCurrentOS() {
 #if defined(OS_IOS)
   return dm_protocol::kChromeMachineLevelUserCloudPolicyIOSType;
+#elif defined(OS_ANDROID)
+  return dm_protocol::kChromeMachineLevelUserCloudPolicyAndroidType;
 #else
   return dm_protocol::kChromeMachineLevelUserCloudPolicyType;
 #endif

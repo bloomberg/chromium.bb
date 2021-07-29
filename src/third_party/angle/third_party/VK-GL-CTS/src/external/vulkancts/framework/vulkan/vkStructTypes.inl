@@ -113,6 +113,15 @@ struct VkMemoryBarrier
 	VkAccessFlags	dstAccessMask;
 };
 
+struct VkPipelineCacheHeaderVersionOne
+{
+	deUint32						headerSize;
+	VkPipelineCacheHeaderVersion	headerVersion;
+	deUint32						vendorID;
+	deUint32						deviceID;
+	deUint8							pipelineCacheUUID[VK_UUID_SIZE];
+};
+
 struct VkAllocationCallbacks
 {
 	void*									pUserData;
@@ -2438,7 +2447,7 @@ struct VkAcquireNextImageInfoKHR
 struct VkDeviceGroupPresentCapabilitiesKHR
 {
 	VkStructureType						sType;
-	const void*							pNext;
+	void*								pNext;
 	deUint32							presentMask[VK_MAX_DEVICE_GROUP_SIZE];
 	VkDeviceGroupPresentModeFlagsKHR	modes;
 };
@@ -2644,7 +2653,7 @@ struct VkPhysicalDevicePerformanceQueryPropertiesKHR
 struct VkPerformanceCounterKHR
 {
 	VkStructureType					sType;
-	const void*						pNext;
+	void*							pNext;
 	VkPerformanceCounterUnitKHR		unit;
 	VkPerformanceCounterScopeKHR	scope;
 	VkPerformanceCounterStorageKHR	storage;
@@ -2654,7 +2663,7 @@ struct VkPerformanceCounterKHR
 struct VkPerformanceCounterDescriptionKHR
 {
 	VkStructureType							sType;
-	const void*								pNext;
+	void*									pNext;
 	VkPerformanceCounterDescriptionFlagsKHR	flags;
 	char									name[VK_MAX_DESCRIPTION_SIZE];
 	char									category[VK_MAX_DESCRIPTION_SIZE];
@@ -3006,6 +3015,13 @@ struct VkCheckpointData2NV
 	void*						pCheckpointMarker;
 };
 
+struct VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		shaderSubgroupUniformControlFlow;
+};
+
 struct VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR
 {
 	VkStructureType	sType;
@@ -3241,6 +3257,40 @@ struct VkPipelineRasterizationStateStreamCreateInfoEXT
 	const void*											pNext;
 	VkPipelineRasterizationStateStreamCreateFlagsEXT	flags;
 	deUint32											rasterizationStream;
+};
+
+struct VkCuModuleCreateInfoNVX
+{
+	VkStructureType	sType;
+	const void*		pNext;
+	deUintptr		dataSize;
+	const void*		pData;
+};
+
+struct VkCuFunctionCreateInfoNVX
+{
+	VkStructureType	sType;
+	const void*		pNext;
+	VkCuModuleNVX	module;
+	const char*		pName;
+};
+
+struct VkCuLaunchInfoNVX
+{
+	VkStructureType		sType;
+	const void*			pNext;
+	VkCuFunctionNVX		function;
+	deUint32			gridDimX;
+	deUint32			gridDimY;
+	deUint32			gridDimZ;
+	deUint32			blockDimX;
+	deUint32			blockDimY;
+	deUint32			blockDimZ;
+	deUint32			sharedMemBytes;
+	deUintptr			paramCount;
+	const void* const *	pParams;
+	deUintptr			extraCount;
+	const void* const *	pExtras;
 };
 
 struct VkImageViewHandleInfoNVX
@@ -4574,6 +4624,29 @@ struct VkPhysicalDeviceYcbcrImageArraysFeaturesEXT
 	VkBool32		ycbcrImageArrays;
 };
 
+struct VkPhysicalDeviceProvokingVertexFeaturesEXT
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		provokingVertexLast;
+	VkBool32		transformFeedbackPreservesProvokingVertex;
+};
+
+struct VkPhysicalDeviceProvokingVertexPropertiesEXT
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		provokingVertexModePerPipeline;
+	VkBool32		transformFeedbackPreservesTriangleFanProvokingVertex;
+};
+
+struct VkPipelineRasterizationProvokingVertexStateCreateInfoEXT
+{
+	VkStructureType				sType;
+	const void*					pNext;
+	VkProvokingVertexModeEXT	provokingVertexMode;
+};
+
 struct VkHeadlessSurfaceCreateInfoEXT
 {
 	VkStructureType					sType;
@@ -4839,7 +4912,7 @@ struct VkPhysicalDeviceDeviceMemoryReportFeaturesEXT
 struct VkDeviceMemoryReportCallbackDataEXT
 {
 	VkStructureType						sType;
-	const void*							pNext;
+	void*								pNext;
 	VkDeviceMemoryReportFlagsEXT		flags;
 	VkDeviceMemoryReportEventTypeEXT	type;
 	deUint64							memoryObjectId;
@@ -4965,6 +5038,91 @@ struct VkPipelineFragmentShadingRateEnumStateCreateInfoNV
 	VkFragmentShadingRateCombinerOpKHR	combinerOps[2];
 };
 
+union VkDeviceOrHostAddressConstKHR
+{
+	VkDeviceAddress	deviceAddress;
+	const void*		hostAddress;
+};
+
+struct VkAccelerationStructureGeometryMotionTrianglesDataNV
+{
+	VkStructureType					sType;
+	const void*						pNext;
+	VkDeviceOrHostAddressConstKHR	vertexData;
+};
+
+struct VkAccelerationStructureMotionInfoNV
+{
+	VkStructureType								sType;
+	const void*									pNext;
+	deUint32									maxInstances;
+	VkAccelerationStructureMotionInfoFlagsNV	flags;
+};
+
+struct VkAccelerationStructureMatrixMotionInstanceNV
+{
+	VkTransformMatrixKHR		transformT0;
+	VkTransformMatrixKHR		transformT1;
+	deUint32					instanceCustomIndex:24;
+	deUint32					mask:8;
+	deUint32					instanceShaderBindingTableRecordOffset:24;
+	VkGeometryInstanceFlagsKHR	flags:8;
+	deUint64					accelerationStructureReference;
+};
+
+struct VkSRTDataNV
+{
+	float	sx;
+	float	a;
+	float	b;
+	float	pvx;
+	float	sy;
+	float	c;
+	float	pvy;
+	float	sz;
+	float	pvz;
+	float	qx;
+	float	qy;
+	float	qz;
+	float	qw;
+	float	tx;
+	float	ty;
+	float	tz;
+};
+
+struct VkAccelerationStructureSRTMotionInstanceNV
+{
+	VkSRTDataNV					transformT0;
+	VkSRTDataNV					transformT1;
+	deUint32					instanceCustomIndex:24;
+	deUint32					mask:8;
+	deUint32					instanceShaderBindingTableRecordOffset:24;
+	VkGeometryInstanceFlagsKHR	flags:8;
+	deUint64					accelerationStructureReference;
+};
+
+union VkAccelerationStructureMotionInstanceDataNV
+{
+	VkAccelerationStructureInstanceKHR				staticInstance;
+	VkAccelerationStructureMatrixMotionInstanceNV	matrixMotionInstance;
+	VkAccelerationStructureSRTMotionInstanceNV		srtMotionInstance;
+};
+
+struct VkAccelerationStructureMotionInstanceNV
+{
+	VkAccelerationStructureMotionInstanceTypeNV		type;
+	VkAccelerationStructureMotionInstanceFlagsNV	flags;
+	VkAccelerationStructureMotionInstanceDataNV		data;
+};
+
+struct VkPhysicalDeviceRayTracingMotionBlurFeaturesNV
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		rayTracingMotionBlur;
+	VkBool32		rayTracingMotionBlurPipelineTraceRaysIndirect;
+};
+
 struct VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT
 {
 	VkStructureType	sType;
@@ -5059,6 +5217,55 @@ struct VkVertexInputAttributeDescription2EXT
 	deUint32		offset;
 };
 
+struct VkPhysicalDeviceDrmPropertiesEXT
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		hasPrimary;
+	VkBool32		hasRender;
+	deInt64			primaryMajor;
+	deInt64			primaryMinor;
+	deInt64			renderMajor;
+	deInt64			renderMinor;
+};
+
+struct VkSubpassShadingPipelineCreateInfoHUAWEI
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkRenderPass	renderPass;
+	deUint32		subpass;
+};
+
+struct VkPhysicalDeviceSubpassShadingFeaturesHUAWEI
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		subpassShading;
+};
+
+struct VkPhysicalDeviceSubpassShadingPropertiesHUAWEI
+{
+	VkStructureType	sType;
+	void*			pNext;
+	deUint32		maxSubpassShadingWorkgroupSizeAspectRatio;
+};
+
+struct VkMemoryGetRemoteAddressInfoNV
+{
+	VkStructureType						sType;
+	const void*							pNext;
+	VkDeviceMemory						memory;
+	VkExternalMemoryHandleTypeFlagBits	handleType;
+};
+
+struct VkPhysicalDeviceExternalMemoryRDMAFeaturesNV
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		externalMemoryRDMA;
+};
+
 struct VkPhysicalDeviceExtendedDynamicState2FeaturesEXT
 {
 	VkStructureType	sType;
@@ -5083,16 +5290,52 @@ struct VkPipelineColorWriteCreateInfoEXT
 	const VkBool32*	pColorWriteEnables;
 };
 
+struct VkPhysicalDeviceGlobalPriorityQueryFeaturesEXT
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		globalPriorityQuery;
+};
+
+struct VkQueueFamilyGlobalPriorityPropertiesEXT
+{
+	VkStructureType				sType;
+	void*						pNext;
+	deUint32					priorityCount;
+	VkQueueGlobalPriorityEXT	priorities[VK_MAX_GLOBAL_PRIORITY_SIZE_EXT];
+};
+
+struct VkPhysicalDeviceMultiDrawFeaturesEXT
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		multiDraw;
+};
+
+struct VkPhysicalDeviceMultiDrawPropertiesEXT
+{
+	VkStructureType	sType;
+	void*			pNext;
+	deUint32		maxMultiDrawCount;
+};
+
+struct VkMultiDrawInfoEXT
+{
+	deUint32	firstVertex;
+	deUint32	vertexCount;
+};
+
+struct VkMultiDrawIndexedInfoEXT
+{
+	deUint32	firstIndex;
+	deUint32	indexCount;
+	deInt32		vertexOffset;
+};
+
 union VkDeviceOrHostAddressKHR
 {
 	VkDeviceAddress	deviceAddress;
 	void*			hostAddress;
-};
-
-union VkDeviceOrHostAddressConstKHR
-{
-	VkDeviceAddress	deviceAddress;
-	const void*		hostAddress;
 };
 
 struct VkAccelerationStructureBuildRangeInfoKHR

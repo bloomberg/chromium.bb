@@ -9,7 +9,6 @@
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
-#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -29,10 +28,12 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/unified/top_shortcut_button.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/session_manager/session_manager_types.h"
+#include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/text_input_client.h"
@@ -43,6 +44,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
@@ -215,10 +217,8 @@ class ImeButtonsView : public views::View {
 
     if (show_emoji) {
       emoji_button_ = new SystemMenuButton(
-          base::BindRepeating(&ImeButtonsView::KeysetButtonPressed,
-                              base::Unretained(this),
-                              chromeos::input_method::ImeKeyset::kEmoji),
-          kImeMenuEmoticonIcon, IDS_ASH_STATUS_TRAY_IME_EMOJI);
+          base::BindRepeating(&ui::ShowEmojiPanel), kImeMenuEmoticonIcon,
+          IDS_ASH_STATUS_TRAY_IME_EMOJI);
       emoji_button_->SetID(kEmojiButtonId);
       AddChildView(emoji_button_);
     }
@@ -486,7 +486,7 @@ void ImeMenuTray::OnIMERefresh() {
   UpdateTrayLabel();
   if (bubble_ && ime_list_view_) {
     ime_list_view_->Update(
-        ime_controller_->current_ime().id, ime_controller_->available_imes(),
+        ime_controller_->current_ime().id, ime_controller_->GetVisibleImes(),
         ime_controller_->current_ime_menu_items(), ShouldShowKeyboardToggle(),
         ImeListView::SHOW_SINGLE_IME);
   }

@@ -3,14 +3,14 @@ Tests for getStackTrace.
 `;
 
 import { makeTestGroup } from '../common/framework/test_group.js';
-import { extractImportantStackTrace } from '../common/framework/util/stack.js';
+import { extractImportantStackTrace } from '../common/internal/stack.js';
 
 import { UnitTest } from './unit_test.js';
 
 export const g = makeTestGroup(UnitTest);
 
 g.test('stacks')
-  .params([
+  .paramsSimple([
     {
       case: 'node_fail',
       _expectedLines: 3,

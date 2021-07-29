@@ -7,43 +7,35 @@ package org.chromium.chrome.browser;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.net.Uri;
-import android.os.ParcelFileDescriptor;
 import android.view.Window;
 
 import androidx.test.filters.LargeTest;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.jank_tracker.DummyJankTracker;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
-import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.share.ShareDelegate;
-import org.chromium.chrome.browser.share.ShareDelegateImpl;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
-import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.WindowAndroid;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutionException;
 
@@ -73,49 +65,6 @@ public class ShareIntentTest {
         public MockChromeActivity(ChromeActivity activity) {
             mActivity = activity;
             mCheckCompleted = false;
-        }
-
-        /**
-         * Overrides startActivity and notifies check completed when the file from the uri of the
-         * intent is opened.
-         */
-        @Override
-        public void startActivity(Intent intent) {
-            processStartActivityIntent(intent);
-        }
-
-        @Override
-        public void startActivityForResult(Intent intent, int requestCode) {
-            processStartActivityIntent(intent);
-        }
-
-        private void processStartActivityIntent(Intent intent) {
-            final Uri uri = intent.getClipData().getItemAt(0).getUri();
-            PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
-                ChromeFileProvider provider = new ChromeFileProvider();
-                ParcelFileDescriptor file = null;
-                try {
-                    file = provider.openFile(uri, "r");
-                    if (file != null) file.close();
-                } catch (IOException e) {
-                    assert false : "Error while opening the file";
-                }
-                synchronized (mLock) {
-                    mCheckCompleted = true;
-                    mLock.notify();
-                }
-            });
-        }
-
-        /**
-         * Waits till the check for file opening is completed.
-         */
-        public void waitForFileCheck() throws InterruptedException {
-            synchronized (mLock) {
-                while (!mCheckCompleted) {
-                    mLock.wait();
-                }
-            }
         }
 
         @Override
@@ -194,11 +143,11 @@ public class ShareIntentTest {
                     ()
                             -> null,
                     new BrowserControlsManager(
-                            mockActivity, BrowserControlsManager.ControlsPosition.TOP));
+                            mockActivity, BrowserControlsManager.ControlsPosition.TOP),
+                    mActivityTestRule.getActivity().getWindowAndroid(), new DummyJankTracker());
         });
-        ShareHelper.setLastShareComponentName(new ComponentName("test.package", "test.activity"));
-        // Skips the capture of screenshot and notifies with an empty file.
-        ShareDelegateImpl.setScreenshotCaptureSkippedForTesting(true);
+        ShareHelper.setLastShareComponentName(
+                null, new ComponentName("test.package", "test.activity"));
 
         WindowAndroid window = TestThreadUtils.runOnUiThreadBlocking(() -> {
             return new WindowAndroid(mActivityTestRule.getActivity()) {
@@ -216,9 +165,7 @@ public class ShareIntentTest {
                         -> rootUiCoordinator.onShareMenuItemSelected(
                                 true /* shareDirectly */, false /* isIncognito */));
 
-        mockActivity.waitForFileCheck();
-
-        ShareHelper.setLastShareComponentName(new ComponentName("", ""));
+        ShareHelper.setLastShareComponentName(null, new ComponentName("", ""));
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mockActivity.getActivityTab().updateAttachment(null, null);
             window.destroy();
@@ -228,10 +175,5 @@ public class ShareIntentTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-    }
-
-    @After
-    public void tearDown() {
-        ShareDelegateImpl.setScreenshotCaptureSkippedForTesting(false);
     }
 }

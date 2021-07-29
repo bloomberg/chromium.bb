@@ -84,6 +84,9 @@ class AXRelationCache {
   // owned ids have not changed, e.g. when an object has been refreshed.
   void UpdateAriaOwnsWithCleanLayout(AXObject* owner, bool force = false);
 
+  // Is there work to be done when layout becomes clean?
+  bool IsDirty() const;
+
   static bool IsValidOwner(AXObject* owner);
   static bool IsValidOwnedChild(AXObject* child);
 
@@ -104,9 +107,17 @@ class AXRelationCache {
   void UpdateRelatedText(Node*);
 
   bool IsValidOwnsRelation(AXObject* owner, AXObject* child) const;
-  void UnmapOwnedChildren(const AXObject* owner, Vector<AXID>);
-  void MapOwnedChildren(const AXObject* owner, Vector<AXID>);
+  void UnmapOwnedChildren(const AXObject* owner,
+                          const Vector<AXID>& removed_child_ids,
+                          const Vector<AXID>& newly_owned_ids);
+
+  void MapOwnedChildren(const AXObject* owner, const Vector<AXID>&);
   void GetReverseRelated(Node*, HeapVector<Member<AXObject>>& sources);
+
+  // Set the parent of |child| to its natural parent, without any aria-owns.
+  // If no natural parent is possible, this means the child can no longer be in
+  // the AXTree, so remove the child.
+  AXObject* RestoreParentOrPrune(AXObject* child);
 
   // Updates |aria_owner_to_children_mapping_| after calling UpdateAriaOwns for
   // either the content attribute or the attr associated elements.

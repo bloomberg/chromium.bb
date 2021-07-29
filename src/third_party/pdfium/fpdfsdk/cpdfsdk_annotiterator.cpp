@@ -12,7 +12,7 @@
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "fpdfsdk/cpdfsdk_annot.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
 
 namespace {
 
@@ -28,23 +28,7 @@ bool CompareByTopDescending(const CPDFSDK_Annot* p1, const CPDFSDK_Annot* p2) {
   return GetAnnotRect(p1).top > GetAnnotRect(p2).top;
 }
 
-CPDFSDK_AnnotIterator::TabOrder GetTabOrder(CPDFSDK_PageView* pPageView) {
-  CPDF_Page* pPDFPage = pPageView->GetPDFPage();
-  ByteString sTabs = pPDFPage->GetDict()->GetStringFor("Tabs");
-  if (sTabs == "R")
-    return CPDFSDK_AnnotIterator::ROW;
-  if (sTabs == "C")
-    return CPDFSDK_AnnotIterator::COLUMN;
-  return CPDFSDK_AnnotIterator::STRUCTURE;
-}
-
 }  // namespace
-
-CPDFSDK_AnnotIterator::CPDFSDK_AnnotIterator(CPDFSDK_PageView* pPageView,
-                                             CPDF_Annot::Subtype nAnnotSubtype)
-    : CPDFSDK_AnnotIterator(
-          pPageView,
-          std::vector<CPDF_Annot::Subtype>(1, nAnnotSubtype)) {}
 
 CPDFSDK_AnnotIterator::CPDFSDK_AnnotIterator(
     CPDFSDK_PageView* pPageView,
@@ -112,13 +96,25 @@ void CPDFSDK_AnnotIterator::AddSelectedToAnnots(
     sa->erase(sa->begin() + aSelect->at(i));
 }
 
+// static
+CPDFSDK_AnnotIterator::TabOrder CPDFSDK_AnnotIterator::GetTabOrder(
+    CPDFSDK_PageView* pPageView) {
+  CPDF_Page* pPDFPage = pPageView->GetPDFPage();
+  ByteString sTabs = pPDFPage->GetDict()->GetStringFor("Tabs");
+  if (sTabs == "R")
+    return kRow;
+  if (sTabs == "C")
+    return kColumn;
+  return kStructure;
+}
+
 void CPDFSDK_AnnotIterator::GenerateResults() {
   switch (m_eTabOrder) {
-    case STRUCTURE:
+    case kStructure:
       CollectAnnots(&m_Annots);
       break;
 
-    case ROW: {
+    case kRow: {
       std::vector<UnownedPtr<CPDFSDK_Annot>> sa;
       CollectAnnots(&sa);
       std::sort(sa.begin(), sa.end(), CompareByLeftAscending);
@@ -150,7 +146,7 @@ void CPDFSDK_AnnotIterator::GenerateResults() {
       break;
     }
 
-    case COLUMN: {
+    case kColumn: {
       std::vector<UnownedPtr<CPDFSDK_Annot>> sa;
       CollectAnnots(&sa);
       std::sort(sa.begin(), sa.end(), CompareByTopDescending);

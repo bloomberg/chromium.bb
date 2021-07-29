@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/notifications/displayed_notifications_dispatch_callback.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_handler.h"
@@ -60,7 +59,7 @@ class NotificationPlatformBridgeDelegator {
 
   // Bridge responsible for displaying notifications on the platform. The
   // message center's bridge is maintained for platforms where it is available.
-  std::unique_ptr<NotificationPlatformBridge> message_center_bridge_;
+  NotificationPlatformBridge* message_center_bridge_;
   NotificationPlatformBridge* system_bridge_;
   base::OnceClosure ready_callback_;
 

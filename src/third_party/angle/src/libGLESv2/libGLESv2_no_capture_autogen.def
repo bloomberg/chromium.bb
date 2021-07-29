@@ -726,6 +726,8 @@ EXPORTS
 
     ; GL_EXT_sRGB
 
+    ; GL_EXT_sRGB_write_control
+
     ; GL_EXT_semaphore
     glDeleteSemaphoresEXT
     glGenSemaphoresEXT
@@ -914,6 +916,9 @@ EXPORTS
     glIsFramebufferOES
     glIsRenderbufferOES
     glRenderbufferStorageOES
+
+    ; GL_OES_geometry_shader
+    glFramebufferTextureOES
 
     ; GL_OES_get_program_binary
     glGetProgramBinaryOES
@@ -1214,6 +1219,7 @@ EXPORTS
     glFramebufferTextureEXTContextANGLE
     glFramebufferTextureLayerContextANGLE
     glFramebufferTextureMultiviewOVRContextANGLE
+    glFramebufferTextureOESContextANGLE
     glFrontFaceContextANGLE
     glFrustumfContextANGLE
     glFrustumxContextANGLE

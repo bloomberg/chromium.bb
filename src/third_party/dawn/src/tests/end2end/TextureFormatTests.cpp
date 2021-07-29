@@ -17,7 +17,7 @@
 #include "common/Assert.h"
 #include "common/Math.h"
 #include "utils/ComboRenderPipelineDescriptor.h"
-#include "utils/TextureFormatUtils.h"
+#include "utils/TextureUtils.h"
 #include "utils/WGPUHelpers.h"
 
 #include <cmath>
@@ -140,12 +140,12 @@ class TextureFormatTest : public DawnTest {
     // bindgroup and output its decompressed values to the render target.
     wgpu::RenderPipeline CreateSamplePipeline(FormatTestInfo sampleFormatInfo,
                                               FormatTestInfo renderFormatInfo) {
-        utils::ComboRenderPipelineDescriptor2 desc;
+        utils::ComboRenderPipelineDescriptor desc;
 
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[stage(vertex)]]
             fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
-                let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                var pos = array<vec2<f32>, 3>(
                     vec2<f32>(-3.0, -1.0),
                     vec2<f32>( 3.0, -1.0),
                     vec2<f32>( 0.0,  2.0));
@@ -174,7 +174,7 @@ class TextureFormatTest : public DawnTest {
         desc.cFragment.module = fsModule;
         desc.cTargets[0].format = renderFormatInfo.format;
 
-        return device.CreateRenderPipeline2(&desc);
+        return device.CreateRenderPipeline(&desc);
     }
 
     // The sampling test uploads the sample data in a texture with the sampleFormatInfo.format.
@@ -457,7 +457,7 @@ TEST_P(TextureFormatTest, RGBA8Unorm) {
 // Test the BGRA8Unorm format
 TEST_P(TextureFormatTest, BGRA8Unorm) {
     // TODO(crbug.com/dawn/596): BGRA is unsupported on OpenGL ES; add workaround or validation
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_SUPPRESS_TEST_IF(IsOpenGLES());
     uint8_t maxValue = std::numeric_limits<uint8_t>::max();
     std::vector<uint8_t> textureData = {maxValue, 1, 0, maxValue};
     std::vector<float> uncompressedData = {0.0f, 1.0f / maxValue, 1.0f, 1.0f};
@@ -593,7 +593,7 @@ TEST_P(TextureFormatTest, RGBA32Float) {
 TEST_P(TextureFormatTest, R16Float) {
     // TODO(https://crbug.com/swiftshader/147) Rendering INFINITY isn't handled correctly by
     // swiftshader
-    DAWN_SKIP_TEST_IF(IsVulkan() && IsSwiftshader() || IsANGLE());
+    DAWN_SUPPRESS_TEST_IF(IsVulkan() && IsSwiftshader() || IsANGLE());
 
     DoFloat16Test({wgpu::TextureFormat::R16Float, 2, wgpu::TextureComponentType::Float, 1});
 }
@@ -602,7 +602,7 @@ TEST_P(TextureFormatTest, R16Float) {
 TEST_P(TextureFormatTest, RG16Float) {
     // TODO(https://crbug.com/swiftshader/147) Rendering INFINITY isn't handled correctly by
     // swiftshader
-    DAWN_SKIP_TEST_IF(IsVulkan() && IsSwiftshader() || IsANGLE());
+    DAWN_SUPPRESS_TEST_IF(IsVulkan() && IsSwiftshader() || IsANGLE());
 
     DoFloat16Test({wgpu::TextureFormat::RG16Float, 4, wgpu::TextureComponentType::Float, 2});
 }
@@ -611,7 +611,7 @@ TEST_P(TextureFormatTest, RG16Float) {
 TEST_P(TextureFormatTest, RGBA16Float) {
     // TODO(https://crbug.com/swiftshader/147) Rendering INFINITY isn't handled correctly by
     // swiftshader
-    DAWN_SKIP_TEST_IF(IsVulkan() && IsSwiftshader() || IsANGLE());
+    DAWN_SUPPRESS_TEST_IF(IsVulkan() && IsSwiftshader() || IsANGLE());
 
     DoFloat16Test({wgpu::TextureFormat::RGBA16Float, 8, wgpu::TextureComponentType::Float, 4});
 }
@@ -642,8 +642,7 @@ TEST_P(TextureFormatTest, RGBA8UnormSrgb) {
 TEST_P(TextureFormatTest, BGRA8UnormSrgb) {
     // TODO(cwallez@chromium.org): This format doesn't exist in OpenGL, emulate it using
     // RGBA8UnormSrgb and swizzling / shader twiddling
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_SUPPRESS_TEST_IF(IsOpenGL() || IsOpenGLES());
 
     uint8_t maxValue = std::numeric_limits<uint8_t>::max();
     std::vector<uint8_t> textureData = {0, 1, maxValue, 64, 35, 68, 152, 168};
@@ -786,9 +785,6 @@ TEST_P(TextureFormatTest, RGB9E5Ufloat) {
         uncompressedData);
     // This format is not renderable.
 }
-
-// TODO(cwallez@chromium.org): Add tests for depth-stencil formats when we know if they are copyable
-// in WebGPU.
 
 DAWN_INSTANTIATE_TEST(TextureFormatTest,
                       D3D12Backend(),

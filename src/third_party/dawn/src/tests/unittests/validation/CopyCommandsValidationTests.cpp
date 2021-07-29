@@ -17,7 +17,7 @@
 #include "common/Math.h"
 #include "tests/unittests/validation/ValidationTest.h"
 #include "utils/TestUtils.h"
-#include "utils/TextureFormatUtils.h"
+#include "utils/TextureUtils.h"
 #include "utils/WGPUHelpers.h"
 
 class CopyCommandTest : public ValidationTest {
@@ -224,6 +224,22 @@ TEST_F(CopyCommandTest_B2B, Success) {
         encoder.CopyBufferToBuffer(source, 16, destination, 0, 0);
         encoder.Finish();
     }
+}
+
+// Test a successful B2B copy where the last external reference is dropped.
+// This is a regression test for crbug.com/1217741 where submitting a command
+// buffer with dropped resources when the copy size is 0 was a use-after-free.
+TEST_F(CopyCommandTest_B2B, DroppedBuffer) {
+    wgpu::Buffer source = CreateBuffer(16, wgpu::BufferUsage::CopySrc);
+    wgpu::Buffer destination = CreateBuffer(16, wgpu::BufferUsage::CopyDst);
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    encoder.CopyBufferToBuffer(source, 0, destination, 0, 0);
+    wgpu::CommandBuffer commandBuffer = encoder.Finish();
+
+    source = nullptr;
+    destination = nullptr;
+    device.GetQueue().Submit(1, &commandBuffer);
 }
 
 // Test B2B copies with OOB
@@ -564,9 +580,8 @@ TEST_F(CopyCommandTest_B2T, BytesPerRowConstraints) {
                     {0, 1, 4});
 
         // copyHeight = 1 and copyDepth = 1
-        // TODO(crbug.com/dawn/520): Change to ::Failure.
-        EXPECT_DEPRECATION_WARNING(TestB2TCopy(utils::Expectation::Success, source, 0, 0, 1,
-                                               destination, 0, {0, 0, 0}, {64, 1, 1}));
+        TestB2TCopy(utils::Expectation::Failure, source, 0, 0, 1, destination, 0, {0, 0, 0},
+                    {64, 1, 1});
     }
 
     // bytes per row is not 256-byte aligned
@@ -597,9 +612,8 @@ TEST_F(CopyCommandTest_B2T, BytesPerRowConstraints) {
                     {65, 1, 0});
 
         // copyHeight = 1 and copyDepth = 1
-        // TODO(crbug.com/dawn/520): Change to ::Failure.
-        EXPECT_DEPRECATION_WARNING(TestB2TCopy(utils::Expectation::Success, source, 0, 256, 1,
-                                               destination, 0, {0, 0, 0}, {65, 1, 1}));
+        TestB2TCopy(utils::Expectation::Failure, source, 0, 256, 1, destination, 0, {0, 0, 0},
+                    {65, 1, 1});
     }
 }
 
@@ -610,11 +624,10 @@ TEST_F(CopyCommandTest_B2T, RowsPerImageConstraints) {
         Create2DTexture(16, 16, 1, 5, wgpu::TextureFormat::RGBA8Unorm, wgpu::TextureUsage::CopyDst);
 
     // rowsPerImage is zero
-    // TODO(crbug.com/dawn/520): Change to ::Failure.
-    EXPECT_DEPRECATION_WARNING(TestB2TCopy(utils::Expectation::Success, source, 0, 256, 0,
-                                           destination, 0, {0, 0, 0}, {1, 1, 1}));
-    EXPECT_DEPRECATION_WARNING(TestB2TCopy(utils::Expectation::Success, source, 0, 256, 0,
-                                           destination, 0, {0, 0, 0}, {4, 4, 1}));
+    TestB2TCopy(utils::Expectation::Failure, source, 0, 256, 0, destination, 0, {0, 0, 0},
+                {1, 1, 1});
+    TestB2TCopy(utils::Expectation::Failure, source, 0, 256, 0, destination, 0, {0, 0, 0},
+                {4, 4, 1});
 
     // rowsPerImage is undefined
     TestB2TCopy(utils::Expectation::Success, source, 0, 256, wgpu::kCopyStrideUndefined,
@@ -640,8 +653,8 @@ TEST_F(CopyCommandTest_B2T, RowsPerImageConstraints) {
                 {4, 4, 1});
 }
 
-// Test B2T copies with incorrect buffer offset usage
-TEST_F(CopyCommandTest_B2T, IncorrectBufferOffset) {
+// Test B2T copies with incorrect buffer offset usage for color texture
+TEST_F(CopyCommandTest_B2T, IncorrectBufferOffsetForColorTexture) {
     uint64_t bufferSize = BufferSizeForTextureCopy(4, 4, 1);
     wgpu::Buffer source = CreateBuffer(bufferSize, wgpu::BufferUsage::CopySrc);
     wgpu::Texture destination =
@@ -659,6 +672,33 @@ TEST_F(CopyCommandTest_B2T, IncorrectBufferOffset) {
                     {0, 0, 0}, {1, 1, 1});
         TestB2TCopy(utils::Expectation::Failure, source, bufferSize - 7, 256, 1, destination, 0,
                     {0, 0, 0}, {1, 1, 1});
+    }
+}
+
+// Test B2T copies with incorrect buffer offset usage for depth-stencil texture
+TEST_F(CopyCommandTest_B2T, IncorrectBufferOffsetForDepthStencilTexture) {
+    // TODO(dawn:570, dawn:666, dawn:690): List other valid parameters after missing texture formats
+    // are implemented, e.g. Stencil8 and depth16unorm.
+    std::array<std::tuple<wgpu::TextureFormat, wgpu::TextureAspect>, 1> params = {
+        std::make_tuple(wgpu::TextureFormat::Depth24PlusStencil8, wgpu::TextureAspect::StencilOnly),
+    };
+
+    uint64_t bufferSize = BufferSizeForTextureCopy(32, 32, 1);
+    wgpu::Buffer source = CreateBuffer(bufferSize, wgpu::BufferUsage::CopySrc);
+
+    for (auto param : params) {
+        wgpu::TextureFormat textureFormat = std::get<0>(param);
+        wgpu::TextureAspect textureAspect = std::get<1>(param);
+
+        wgpu::Texture destination =
+            Create2DTexture(16, 16, 5, 1, textureFormat, wgpu::TextureUsage::CopyDst);
+
+        for (uint64_t srcOffset = 0; srcOffset < 8; srcOffset++) {
+            utils::Expectation expectation =
+                (srcOffset % 4 == 0) ? utils::Expectation::Success : utils::Expectation::Failure;
+            TestB2TCopy(expectation, source, srcOffset, 256, 16, destination, 0, {0, 0, 0},
+                        {16, 16, 1}, textureAspect);
+        }
     }
 }
 
@@ -1155,9 +1195,8 @@ TEST_F(CopyCommandTest_T2B, BytesPerRowConstraints) {
                     {0, 1, 4});
 
         // copyHeight = 1 and copyDepth = 1
-        // TODO(crbug.com/dawn/520): Change to ::Failure.
-        EXPECT_DEPRECATION_WARNING(TestT2BCopy(utils::Expectation::Success, source, 0, {0, 0, 0},
-                                               destination, 0, 0, 1, {64, 1, 1}));
+        TestT2BCopy(utils::Expectation::Failure, source, 0, {0, 0, 0}, destination, 0, 0, 1,
+                    {64, 1, 1});
     }
 
     // bytes per row is not 256-byte aligned
@@ -1188,9 +1227,8 @@ TEST_F(CopyCommandTest_T2B, BytesPerRowConstraints) {
                     {65, 1, 0});
 
         // copyHeight = 1 and copyDepth = 1
-        // TODO(crbug.com/dawn/520): Change to ::Failure.
-        EXPECT_DEPRECATION_WARNING(TestT2BCopy(utils::Expectation::Success, source, 0, {0, 0, 0},
-                                               destination, 0, 256, 1, {65, 1, 1}));
+        TestT2BCopy(utils::Expectation::Failure, source, 0, {0, 0, 0}, destination, 0, 256, 1,
+                    {65, 1, 1});
     }
 }
 
@@ -1201,11 +1239,10 @@ TEST_F(CopyCommandTest_T2B, RowsPerImageConstraints) {
     wgpu::Buffer destination = CreateBuffer(bufferSize, wgpu::BufferUsage::CopyDst);
 
     // rowsPerImage is zero (Valid)
-    // TODO(crbug.com/dawn/520): Change to ::Failure.
-    EXPECT_DEPRECATION_WARNING(TestT2BCopy(utils::Expectation::Success, source, 0, {0, 0, 0},
-                                           destination, 0, 256, 0, {1, 1, 1}));
-    EXPECT_DEPRECATION_WARNING(TestT2BCopy(utils::Expectation::Success, source, 0, {0, 0, 0},
-                                           destination, 0, 256, 0, {4, 4, 1}));
+    TestT2BCopy(utils::Expectation::Failure, source, 0, {0, 0, 0}, destination, 0, 256, 0,
+                {1, 1, 1});
+    TestT2BCopy(utils::Expectation::Failure, source, 0, {0, 0, 0}, destination, 0, 256, 0,
+                {4, 4, 1});
 
     // rowsPerImage is undefined
     TestT2BCopy(utils::Expectation::Success, source, 0, {0, 0, 0}, destination, 0, 256,
@@ -1231,8 +1268,8 @@ TEST_F(CopyCommandTest_T2B, RowsPerImageConstraints) {
                 {4, 4, 1});
 }
 
-// Test T2B copies with incorrect buffer offset usage
-TEST_F(CopyCommandTest_T2B, IncorrectBufferOffset) {
+// Test T2B copies with incorrect buffer offset usage for color texture
+TEST_F(CopyCommandTest_T2B, IncorrectBufferOffsetForColorTexture) {
     uint64_t bufferSize = BufferSizeForTextureCopy(128, 16, 1);
     wgpu::Texture source = Create2DTexture(128, 16, 5, 1, wgpu::TextureFormat::RGBA8Unorm,
                                            wgpu::TextureUsage::CopySrc);
@@ -1249,6 +1286,35 @@ TEST_F(CopyCommandTest_T2B, IncorrectBufferOffset) {
                 1, {1, 1, 1});
     TestT2BCopy(utils::Expectation::Failure, source, 0, {0, 0, 0}, destination, bufferSize - 7, 256,
                 1, {1, 1, 1});
+}
+
+// Test T2B copies with incorrect buffer offset usage for depth-stencil texture
+TEST_F(CopyCommandTest_T2B, IncorrectBufferOffsetForDepthStencilTexture) {
+    // TODO(dawn:570, dawn:666, dawn:690): List other valid parameters after missing texture formats
+    // are implemented, e.g. Stencil8 and depth16unorm.
+    std::array<std::tuple<wgpu::TextureFormat, wgpu::TextureAspect>, 3> params = {
+        std::make_tuple(wgpu::TextureFormat::Depth24PlusStencil8, wgpu::TextureAspect::StencilOnly),
+        std::make_tuple(wgpu::TextureFormat::Depth32Float, wgpu::TextureAspect::DepthOnly),
+        std::make_tuple(wgpu::TextureFormat::Depth32Float, wgpu::TextureAspect::All),
+    };
+
+    uint64_t bufferSize = BufferSizeForTextureCopy(32, 32, 1);
+    wgpu::Buffer destination = CreateBuffer(bufferSize, wgpu::BufferUsage::CopyDst);
+
+    for (auto param : params) {
+        wgpu::TextureFormat textureFormat = std::get<0>(param);
+        wgpu::TextureAspect textureAspect = std::get<1>(param);
+
+        wgpu::Texture source =
+            Create2DTexture(16, 16, 5, 1, textureFormat, wgpu::TextureUsage::CopySrc);
+
+        for (uint64_t dstOffset = 0; dstOffset < 8; dstOffset++) {
+            utils::Expectation expectation =
+                (dstOffset % 4 == 0) ? utils::Expectation::Success : utils::Expectation::Failure;
+            TestT2BCopy(expectation, source, 0, {0, 0, 0}, destination, dstOffset, 256, 16,
+                        {16, 16, 1}, textureAspect);
+        }
+    }
 }
 
 // Test multisampled textures cannot be used in T2B copies.

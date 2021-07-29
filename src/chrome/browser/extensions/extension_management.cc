@@ -466,19 +466,17 @@ void ExtensionManagement::Refresh() {
   }
 
   // Parse legacy preferences.
-  ExtensionId id;
-
   if (allowed_list_pref) {
     for (const auto& entry : allowed_list_pref->GetList()) {
-      if (entry.GetAsString(&id) && crx_file::id_util::IdIsValid(id))
-        AccessById(id)->installation_mode = INSTALLATION_ALLOWED;
+      if (entry.is_string() && crx_file::id_util::IdIsValid(entry.GetString()))
+        AccessById(entry.GetString())->installation_mode = INSTALLATION_ALLOWED;
     }
   }
 
   if (denied_list_pref) {
     for (const auto& entry : denied_list_pref->GetList()) {
-      if (entry.GetAsString(&id) && crx_file::id_util::IdIsValid(id))
-        AccessById(id)->installation_mode = INSTALLATION_BLOCKED;
+      if (entry.is_string() && crx_file::id_util::IdIsValid(entry.GetString()))
+        AccessById(entry.GetString())->installation_mode = INSTALLATION_BLOCKED;
     }
   }
 
@@ -487,8 +485,8 @@ void ExtensionManagement::Refresh() {
   if (install_sources_pref) {
     global_settings_->has_restricted_install_sources = true;
     for (const auto& entry : install_sources_pref->GetList()) {
-      std::string url_pattern;
-      if (entry.GetAsString(&url_pattern)) {
+      if (entry.is_string()) {
+        std::string url_pattern = entry.GetString();
         URLPattern entry(URLPattern::SCHEME_ALL);
         if (entry.Parse(url_pattern) == URLPattern::ParseResult::kSuccess) {
           global_settings_->install_sources.AddPattern(entry);
@@ -649,7 +647,6 @@ void ExtensionManagement::UpdateForcedExtensions(
   if (!extension_dict)
     return;
 
-  std::string update_url;
   InstallStageTracker* install_stage_tracker =
       InstallStageTracker::Get(profile_);
   for (base::DictionaryValue::Iterator it(*extension_dict); !it.IsAtEnd();
@@ -660,21 +657,26 @@ void ExtensionManagement::UpdateForcedExtensions(
       continue;
     }
     const base::DictionaryValue* dict_value = nullptr;
-    if (it.value().GetAsDictionary(&dict_value) &&
-        dict_value->GetStringWithoutPathExpansion(
-            ExternalProviderImpl::kExternalUpdateUrl, &update_url)) {
-      internal::IndividualSettings* by_id = AccessById(it.key());
-      by_id->installation_mode = INSTALLATION_FORCED;
-      by_id->update_url = update_url;
-      install_stage_tracker->ReportInstallationStage(
-          it.key(), InstallStageTracker::Stage::CREATED);
-      install_stage_tracker->ReportInstallCreationStage(
-          it.key(),
-          InstallStageTracker::InstallCreationStage::CREATION_INITIATED);
-    } else {
+    if (!it.value().GetAsDictionary(&dict_value)) {
       install_stage_tracker->ReportFailure(
           it.key(), InstallStageTracker::FailureReason::NO_UPDATE_URL);
+      continue;
     }
+    const std::string* update_url =
+        dict_value->FindStringKey(ExternalProviderImpl::kExternalUpdateUrl);
+    if (!update_url) {
+      install_stage_tracker->ReportFailure(
+          it.key(), InstallStageTracker::FailureReason::NO_UPDATE_URL);
+      continue;
+    }
+    internal::IndividualSettings* by_id = AccessById(it.key());
+    by_id->installation_mode = INSTALLATION_FORCED;
+    by_id->update_url = *update_url;
+    install_stage_tracker->ReportInstallationStage(
+        it.key(), InstallStageTracker::Stage::CREATED);
+    install_stage_tracker->ReportInstallCreationStage(
+        it.key(),
+        InstallStageTracker::InstallCreationStage::CREATION_INITIATED);
   }
 }
 

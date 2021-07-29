@@ -20,6 +20,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/test/base/testing_browser_process_platform_part.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
@@ -144,6 +145,9 @@ class TestingBrowserProcess : public BrowserProcess {
   resource_coordinator::TabManager* GetTabManager() override;
   resource_coordinator::ResourceCoordinatorParts* resource_coordinator_parts()
       override;
+#if !defined(OS_ANDROID)
+  SerialPolicyAllowedPorts* serial_policy_allowed_ports() override;
+#endif
   BuildState* GetBuildState() override;
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
@@ -158,10 +162,10 @@ class TestingBrowserProcess : public BrowserProcess {
           service);
   void SetSharedURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
+#if BUILDFLAG(ENABLE_CHROME_NOTIFICATIONS)
   void SetNotificationUIManager(
       std::unique_ptr<NotificationUIManager> notification_ui_manager);
-  void SetNotificationPlatformBridge(
-      std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge);
+#endif
   void SetSystemNotificationHelper(
       std::unique_ptr<SystemNotificationHelper> system_notification_helper);
   void SetShuttingDown(bool is_shutting_down);
@@ -185,7 +189,11 @@ class TestingBrowserProcess : public BrowserProcess {
   std::unique_ptr<network::TestNetworkQualityTracker>
       test_network_quality_tracker_;
   std::unique_ptr<ProfileManager> profile_manager_;
+
+#if BUILDFLAG(ENABLE_CHROME_NOTIFICATIONS)
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;
+#endif
+
   std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge_;
   std::unique_ptr<SystemNotificationHelper> system_notification_helper_;
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
@@ -228,6 +236,7 @@ class TestingBrowserProcess : public BrowserProcess {
       resource_coordinator_parts_;
 
 #if !defined(OS_ANDROID)
+  std::unique_ptr<SerialPolicyAllowedPorts> serial_policy_allowed_ports_;
   BuildState build_state_;
 #endif
 };

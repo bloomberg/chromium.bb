@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display/display_resource_provider_gl.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/dcheck_is_on.h"
@@ -12,6 +13,8 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "ui/gfx/gpu_fence.h"
+#include "ui/gl/gl_fence.h"
 
 using gpu::gles2::GLES2Interface;
 
@@ -164,6 +167,16 @@ void DisplayResourceProviderGL::UnlockForRead(ResourceId id,
       DCHECK(resource->gl_id);
       GLES2Interface* gl = ContextGL();
       DCHECK(gl);
+      if (!resource->release_fence.is_null()) {
+        auto fence = gfx::GpuFence(resource->release_fence.Clone());
+        if (gl::GLFence::IsGpuFenceSupported()) {
+          auto id = gl->CreateClientGpuFenceCHROMIUM(fence.AsClientGpuFence());
+          gl->WaitGpuFenceCHROMIUM(id);
+          gl->DestroyGpuFenceCHROMIUM(id);
+        } else {
+          fence.Wait();
+        }
+      }
       gl->EndSharedImageAccessDirectCHROMIUM(resource->gl_id);
     }
   }
@@ -369,6 +382,19 @@ DisplayResourceProviderGL::ScopedOverlayLockGL::ScopedOverlayLockGL(
 
 DisplayResourceProviderGL::ScopedOverlayLockGL::~ScopedOverlayLockGL() {
   resource_provider_->UnlockForRead(resource_id_, true /* overlay_only */);
+}
+
+void DisplayResourceProviderGL::ScopedOverlayLockGL::SetReleaseFence(
+    gfx::GpuFenceHandle release_fence) {
+  auto* resource = resource_provider_->GetResource(resource_id_);
+  DCHECK(resource);
+  resource->release_fence = std::move(release_fence);
+}
+
+bool DisplayResourceProviderGL::ScopedOverlayLockGL::HasReadLockFence() const {
+  auto* resource = resource_provider_->GetResource(resource_id_);
+  DCHECK(resource);
+  return resource->transferable.read_lock_fences_enabled;
 }
 
 DisplayResourceProviderGL::SynchronousFence::SynchronousFence(

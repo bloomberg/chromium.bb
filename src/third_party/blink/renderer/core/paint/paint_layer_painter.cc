@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_display_item_fragment.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_effectively_invisible.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_hint.h"
 #include "third_party/blink/renderer/platform/graphics/paint/subsequence_recorder.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -87,13 +88,11 @@ PaintResult PaintLayerPainter::Paint(
   // In CompositeAfterPaint we simplify this optimization by painting even when
   // effectively invisible but skipping the painted content during layerization
   // in PaintArtifactCompositor.
-  if (paint_layer_.PaintsWithTransparency(
-          painting_info.GetGlobalPaintFlags())) {
-    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-        PaintedOutputInvisible(paint_layer_.GetLayoutObject().StyleRef()))
-      return kFullyPainted;
-
-    paint_flags |= kPaintLayerHaveTransparency;
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      paint_layer_.PaintsWithTransparency(
+          painting_info.GetGlobalPaintFlags()) &&
+      PaintedOutputInvisible(paint_layer_.GetLayoutObject().StyleRef())) {
+    return kFullyPainted;
   }
 
   // If the transform can't be inverted, then don't paint anything.
@@ -277,35 +276,7 @@ void PaintLayerPainter::AdjustForPaintProperties(
       return;
 
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      auto& cull_rect = painting_info.cull_rect;
-      // CullRect::ApplyTransforms() requires the cull rect in the source
-      // transform space. Convert cull_rect from the root layer's local space.
-      //
-      // TODO(paint-dev): Become block fragmentation aware. Just using the first
-      // fragment seems wrong.
-      cull_rect.MoveBy(RoundedIntPoint(first_root_fragment.PaintOffset()));
-      absl::optional<CullRect> old_cull_rect;
-      if (!paint_layer_.SelfOrDescendantNeedsRepaint() &&
-          !RuntimeEnabledFeatures::CullRectUpdateEnabled()) {
-        old_cull_rect = paint_layer_.PreviousCullRect();
-        // Convert old_cull_rect into the layer's transform space.
-        old_cull_rect->MoveBy(RoundedIntPoint(first_fragment.PaintOffset()));
-      }
-      if (paint_flags & kPaintLayerPaintingOverflowContents) {
-        // Use PostScrollTranslation as the source transform to avoid clipping
-        // of the scrolling contents in CullRect::ApplyTransforms().
-        source_transform = &first_root_fragment.PostScrollTranslation();
-        // Map cull_rect into scrolling contents space (i.e. source_transform).
-        if (const auto* properties = first_root_fragment.PaintProperties()) {
-          if (const auto* scroll_translation = properties->ScrollTranslation())
-            cull_rect.Move(-scroll_translation->Translation2D());
-        }
-      }
-      cull_rect.ApplyTransforms(source_transform->Unalias(),
-                                destination_transform.Unalias(), old_cull_rect);
-      // Convert cull_rect from the layer's transform space to the layer's local
-      // space.
-      cull_rect.MoveBy(-RoundedIntPoint(first_fragment.PaintOffset()));
+      DCHECK(RuntimeEnabledFeatures::CullRectUpdateEnabled());
     } else if (!painting_info.cull_rect.IsInfinite()) {
       auto rect = painting_info.cull_rect.Rect();
       const FragmentData& primary_stitching_fragment =
@@ -432,21 +403,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       !paint_layer_.IsUnderSVGHiddenContainer() && is_self_painting_layer &&
       !is_painting_overlay_overflow_controls;
 
-  bool should_create_subsequence =
-      should_paint_content &&
-      ShouldCreateSubsequence(paint_layer_, context, painting_info);
-
-  absl::optional<SubsequenceRecorder> subsequence_recorder;
-  if (should_create_subsequence) {
-    if (!ShouldRepaintSubsequence(paint_layer_, painting_info) &&
-        SubsequenceRecorder::UseCachedSubsequenceIfPossible(context,
-                                                            paint_layer_)) {
-      return paint_layer_.PreviousPaintResult();
-    }
-    DCHECK(paint_layer_.SupportsSubsequenceCaching());
-    subsequence_recorder.emplace(context, paint_layer_);
-  }
-
   // TODO(paint-dev): Become block fragmentation aware. Unconditionally using
   // the first fragment doesn't seem right.
   PhysicalOffset offset_from_root = object.FirstFragment().PaintOffset();
@@ -458,17 +414,30 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   if (RuntimeEnabledFeatures::CullRectUpdateEnabled()) {
     if (object.FirstFragment().NextFragment()) {
       result = kMayBeClippedByCullRect;
-    } else if (!object.FirstFragment().GetCullRect().Rect().Contains(
-                   visual_rect)) {
-      result = kMayBeClippedByCullRect;
-    } else if (const auto* box = DynamicTo<LayoutBox>(object)) {
-      PhysicalRect contents_visual_rect =
-          box->PhysicalContentsVisualOverflowRect();
-      contents_visual_rect.Move(object.FirstFragment().PaintOffset());
-      if (!PhysicalRect(object.FirstFragment().GetContentsCullRect().Rect())
-               .Contains(contents_visual_rect)) {
+    } else {
+      IntRect cull_rect = object.FirstFragment().GetCullRect().Rect();
+      bool cull_rect_intersects_self = cull_rect.Intersects(visual_rect);
+      if (!cull_rect.Contains(visual_rect))
         result = kMayBeClippedByCullRect;
+
+      bool cull_rect_intersects_contents = true;
+      if (const auto* box = DynamicTo<LayoutBox>(object)) {
+        PhysicalRect contents_visual_rect =
+            box->PhysicalContentsVisualOverflowRect();
+        contents_visual_rect.Move(object.FirstFragment().PaintOffset());
+        PhysicalRect contents_cull_rect(
+            object.FirstFragment().GetContentsCullRect().Rect());
+        cull_rect_intersects_contents =
+            contents_cull_rect.Intersects(contents_visual_rect);
+        if (!contents_cull_rect.Contains(contents_visual_rect))
+          result = kMayBeClippedByCullRect;
+      } else {
+        cull_rect_intersects_contents = cull_rect_intersects_self;
       }
+
+      if (!cull_rect_intersects_self && !cull_rect_intersects_contents)
+        should_paint_content = false;
+
       // The above doesn't consider clips on non-self-painting contents.
       // Will update in ScopedBoxContentsPaintState.
     }
@@ -485,26 +454,45 @@ PaintResult PaintLayerPainter::PaintLayerContents(
 
   if (should_paint_content || should_paint_self_outline ||
       is_painting_overlay_overflow_controls) {
-    // Collect the fragments. This will compute the clip rectangles and paint
-    // offsets for each layer fragment.
+    // Collect the fragments. If CullRectUpdate is enabled, this will just
+    // create a light-weight adapter from FragmentData to PaintLayerFragment
+    // and we'll remove the adapter in the future. Otherwise this will compute
+    // the clip rectangles and paint offsets for each layer fragment.
     paint_layer_.CollectFragments(
         layer_fragments, local_painting_info.root_layer,
         &local_painting_info.cull_rect, kIgnoreOverlayScrollbarSize,
         respect_overflow_clip, &offset_from_root,
         local_painting_info.sub_pixel_accumulation);
 
-    // PaintLayer::CollectFragments depends on the paint dirty rect in
-    // complicated ways. For now, always assume a partially painted output
-    // for fragmented content.
-    if (layer_fragments.size() > 1)
-      result = kMayBeClippedByCullRect;
-
-    if (should_paint_content) {
-      should_paint_content = AtLeastOneFragmentIntersectsDamageRect(
-          layer_fragments, local_painting_info, paint_flags, offset_from_root);
-      if (!should_paint_content)
+    if (!RuntimeEnabledFeatures::CullRectUpdateEnabled()) {
+      // PaintLayer::CollectFragments depends on the paint dirty rect in
+      // complicated ways. For now, always assume a partially painted output
+      // for fragmented content.
+      if (layer_fragments.size() > 1)
         result = kMayBeClippedByCullRect;
+
+      if (should_paint_content) {
+        should_paint_content = AtLeastOneFragmentIntersectsDamageRect(
+            layer_fragments, local_painting_info, paint_flags,
+            offset_from_root);
+        if (!should_paint_content)
+          result = kMayBeClippedByCullRect;
+      }
     }
+  }
+
+  bool should_create_subsequence =
+      should_paint_content &&
+      ShouldCreateSubsequence(paint_layer_, context, painting_info);
+  absl::optional<SubsequenceRecorder> subsequence_recorder;
+  if (should_create_subsequence) {
+    if (!ShouldRepaintSubsequence(paint_layer_, painting_info) &&
+        SubsequenceRecorder::UseCachedSubsequenceIfPossible(context,
+                                                            paint_layer_)) {
+      return paint_layer_.PreviousPaintResult();
+    }
+    DCHECK(paint_layer_.SupportsSubsequenceCaching());
+    subsequence_recorder.emplace(context, paint_layer_);
   }
 
   bool is_painting_root_layer = (&paint_layer_) == painting_info.root_layer;
@@ -523,6 +511,11 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       is_painting_composited_foreground &&
       !is_painting_overlay_overflow_controls;
   bool is_video = IsA<LayoutVideo>(object);
+
+  absl::optional<ScopedEffectivelyInvisible> effectively_invisible;
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      PaintedOutputInvisible(object.StyleRef()))
+    effectively_invisible.emplace(context.GetPaintController());
 
   absl::optional<ScopedPaintChunkHint> paint_chunk_hint;
   if (should_paint_content) {
@@ -623,6 +616,8 @@ bool PaintLayerPainter::AtLeastOneFragmentIntersectsDamageRect(
     const PaintLayerPaintingInfo& local_painting_info,
     PaintLayerFlags local_paint_flags,
     const PhysicalOffset& offset_from_root) {
+  DCHECK(!RuntimeEnabledFeatures::CullRectUpdateEnabled());
+
   if (&paint_layer_ == local_painting_info.root_layer &&
       (local_paint_flags & kPaintLayerPaintingOverflowContents))
     return true;
@@ -736,18 +731,19 @@ void PaintLayerPainter::PaintFragmentWithPhase(
       context.GetPaintController(), chunk_properties, paint_layer_,
       DisplayItem::PaintPhaseToDrawingType(phase));
 
-  PaintInfo paint_info(
-      context, cull_rect, phase, painting_info.GetGlobalPaintFlags(),
-      paint_flags, &painting_info.root_layer->GetLayoutObject(),
-      fragment.fragment_data ? fragment.fragment_data->LogicalTopInFlowThread()
-                             : LayoutUnit());
+  PaintInfo paint_info(context, cull_rect, phase,
+                       painting_info.GetGlobalPaintFlags(), paint_flags,
+                       &painting_info.root_layer->GetLayoutObject());
   if (paint_layer_.GetLayoutObject().ChildPaintBlockedByDisplayLock())
     paint_info.SetDescendantPaintingBlocked(true);
 
-  if (fragment.physical_fragment)
+  if (fragment.physical_fragment) {
     NGBoxFragmentPainter(*fragment.physical_fragment).Paint(paint_info);
-  else
+  } else {
+    if (fragment.fragment_data)
+      paint_info.SetFragmentID(fragment.fragment_data->FragmentID());
     paint_layer_.GetLayoutObject().Paint(paint_info);
+  }
 }
 
 static CullRect LegacyCullRect(const PaintLayerFragment& fragment,

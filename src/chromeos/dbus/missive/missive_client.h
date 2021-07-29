@@ -42,25 +42,13 @@ class COMPONENT_EXPORT(MISSIVE) MissiveClient {
   virtual ~MissiveClient();
 
   scoped_refptr<reporting::MissiveStorageModule> missive_storage_module_;
-
- private:
-  virtual void AddRecord(
-      const reporting::Priority priority,
-      reporting::Record record,
-      base::OnceCallback<void(reporting::Status)> completion_callback) = 0;
-
-  virtual void Flush(
-      const reporting::Priority priority,
-      base::OnceCallback<void(reporting::Status)> completion_callback) = 0;
-
-  virtual void ReportSuccess(
-      const reporting::SequencingInformation& sequencing_information,
-      bool force_confirm) = 0;
-
-  virtual void UpdateEncryptionKey(
-      const reporting::SignedEncryptionInfo& encryption_info) = 0;
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+using ::chromeos::MissiveClient;
+}  // namespace ash
 
 #endif  // CHROMEOS_DBUS_MISSIVE_MISSIVE_CLIENT_H_

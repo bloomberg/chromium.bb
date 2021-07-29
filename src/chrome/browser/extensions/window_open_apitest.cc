@@ -5,7 +5,6 @@
 #include <stddef.h>
 
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -314,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
   content::NavigationController* controller =
       content::Source<content::NavigationController>(windowed_observer.source())
           .ptr();
-  content::WebContents* newtab = controller->GetWebContents();
+  content::WebContents* newtab = controller->DeprecatedGetWebContents();
   ASSERT_TRUE(newtab);
 
   EXPECT_EQ(content::PAGE_TYPE_ERROR,
@@ -385,8 +384,8 @@ void SetCurrentWindowPinType(chromeos::WindowPinType type) {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, OpenLockedFullscreenWindow) {
-  ASSERT_TRUE(RunExtensionTest({.name = "locked_fullscreen/with_permission",
-                                .custom_arg = "openLockedFullscreenWindow"}))
+  ASSERT_TRUE(RunExtensionTest("locked_fullscreen/with_permission",
+                               {.custom_arg = "openLockedFullscreenWindow"}))
       << message_;
 
   // Make sure the newly created window is "trusted pinned" (which means that
@@ -396,8 +395,8 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, OpenLockedFullscreenWindow) {
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, UpdateWindowToLockedFullscreen) {
   ASSERT_TRUE(
-      RunExtensionTest({.name = "locked_fullscreen/with_permission",
-                        .custom_arg = "updateWindowToLockedFullscreen"}))
+      RunExtensionTest("locked_fullscreen/with_permission",
+                       {.custom_arg = "updateWindowToLockedFullscreen"}))
       << message_;
 
   // Make sure the current window is put into the "trusted pinned" state.
@@ -411,8 +410,8 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, RemoveLockedFullscreenFromWindow) {
   browser()->command_controller()->LockedFullscreenStateChanged();
 
   ASSERT_TRUE(
-      RunExtensionTest({.name = "locked_fullscreen/with_permission",
-                        .custom_arg = "removeLockedFullscreenFromWindow"}))
+      RunExtensionTest("locked_fullscreen/with_permission",
+                       {.custom_arg = "removeLockedFullscreenFromWindow"}))
       << message_;
 
   // Make sure the current window is removed from locked-fullscreen state.
@@ -425,8 +424,8 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, VerifyCommandsInLockedFullscreen) {
   // testing.
   EXPECT_TRUE(browser()->command_controller()->IsCommandEnabled(IDC_EXIT));
   ASSERT_TRUE(
-      RunExtensionTest({.name = "locked_fullscreen/with_permission",
-                        .custom_arg = "updateWindowToLockedFullscreen"}))
+      RunExtensionTest("locked_fullscreen/with_permission",
+                       {.custom_arg = "updateWindowToLockedFullscreen"}))
       << message_;
 
   // IDC_EXIT should always be disabled in locked fullscreen.
@@ -444,8 +443,8 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, VerifyCommandsInLockedFullscreen) {
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
                        OpenLockedFullscreenWindowWithoutPermission) {
-  ASSERT_TRUE(RunExtensionTest({.name = "locked_fullscreen/without_permission",
-                                .custom_arg = "openLockedFullscreenWindow"}))
+  ASSERT_TRUE(RunExtensionTest("locked_fullscreen/without_permission",
+                               {.custom_arg = "openLockedFullscreenWindow"}))
       << message_;
 
   // Make sure no new windows get created (so only the one created by default
@@ -458,8 +457,8 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
                        UpdateWindowToLockedFullscreenWithoutPermission) {
   ASSERT_TRUE(
-      RunExtensionTest({.name = "locked_fullscreen/without_permission",
-                        .custom_arg = "updateWindowToLockedFullscreen"}))
+      RunExtensionTest("locked_fullscreen/without_permission",
+                       {.custom_arg = "updateWindowToLockedFullscreen"}))
       << message_;
 
   // chrome.windows.update call fails since this extension doesn't have the
@@ -473,8 +472,8 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
   browser()->command_controller()->LockedFullscreenStateChanged();
 
   ASSERT_TRUE(
-      RunExtensionTest({.name = "locked_fullscreen/without_permission",
-                        .custom_arg = "removeLockedFullscreenFromWindow"}))
+      RunExtensionTest("locked_fullscreen/without_permission",
+                       {.custom_arg = "removeLockedFullscreenFromWindow"}))
       << message_;
 
   // The current window is still locked-fullscreen.

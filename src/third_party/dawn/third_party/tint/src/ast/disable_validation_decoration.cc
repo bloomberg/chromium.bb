@@ -28,12 +28,18 @@ DisableValidationDecoration::DisableValidationDecoration(
 
 DisableValidationDecoration::~DisableValidationDecoration() = default;
 
-std::string DisableValidationDecoration::Name() const {
+std::string DisableValidationDecoration::InternalName() const {
   switch (validation_) {
     case DisabledValidation::kFunctionHasNoBody:
       return "disable_validation__function_has_no_body";
     case DisabledValidation::kBindingPointCollision:
       return "disable_validation__binding_point_collision";
+    case DisabledValidation::kIgnoreStorageClass:
+      return "disable_validation__ignore_storage_class";
+    case DisabledValidation::kEntryPointParameter:
+      return "disable_validation__entry_point_parameter";
+    case DisabledValidation::kIgnoreConstructibleFunctionParameter:
+      return "disable_validation__ignore_constructible_function_parameter";
   }
   return "<invalid>";
 }

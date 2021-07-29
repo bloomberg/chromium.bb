@@ -9,23 +9,23 @@
 
 #include <memory>
 
-#include "fpdfsdk/formfiller/cffl_formfiller.h"
+#include "fpdfsdk/formfiller/cffl_formfield.h"
 
 class CPDF_BAFontMap;
 
-// Class to implement common functionality for CFFL_FormFiller sub-classes with
+// Class to implement common functionality for CFFL_FormField sub-classes with
 // text fields.
-class CFFL_TextObject : public CFFL_FormFiller {
+class CFFL_TextObject : public CFFL_FormField {
  public:
-  // CFFL_FormFiller:
-  CPWL_Wnd* ResetPWLWindow(CPDFSDK_PageView* pPageView,
-                           bool bRestoreValue) override;
+  // CFFL_FormField:
+  CPWL_Wnd* ResetPWLWindow(const CPDFSDK_PageView* pPageView) override;
+  CPWL_Wnd* RestorePWLWindow(const CPDFSDK_PageView* pPageView) override;
 
  protected:
   CFFL_TextObject(CPDFSDK_FormFillEnvironment* pApp, CPDFSDK_Widget* pWidget);
   ~CFFL_TextObject() override;
 
-  CPDF_BAFontMap* MaybeCreateFontMap();
+  CPDF_BAFontMap* GetOrCreateFontMap();
 
  private:
   std::unique_ptr<CPDF_BAFontMap> m_pFontMap;

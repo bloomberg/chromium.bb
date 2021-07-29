@@ -19,6 +19,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/label.h"
@@ -90,7 +91,6 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
 
   auto image_view = std::make_unique<NonAccessibleImageView>();
   step_illustration_ = image_view.get();
-  UpdateIconImageFromModel();
   image_view->SetSize(illustration_size);
   image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   image_with_overlays->AddChildView(image_view.release());
@@ -127,6 +127,10 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
     back_arrow_ = back_arrow.get();
     back_arrow_button_ =
         image_with_overlays->AddChildView(std::move(back_arrow));
+  }
+
+  if (GetWidget()) {
+    UpdateIconImageFromModel();
     UpdateIconColors();
   }
 

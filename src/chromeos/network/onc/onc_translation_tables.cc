@@ -6,6 +6,8 @@
 
 #include <cstddef>
 
+#include "ash/constants/ash_features.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/tether_constants.h"
@@ -115,6 +117,21 @@ const FieldTranslationEntry openvpn_fields[] = {
     {::onc::vpn::kUsername, shill::kOpenVPNUserProperty},
     {::onc::openvpn::kVerb, shill::kOpenVPNVerbProperty},
     {::onc::openvpn::kVerifyHash, shill::kOpenVPNVerifyHashProperty},
+    {nullptr}};
+
+const FieldTranslationEntry wireguard_fields[] = {
+    {::onc::wireguard::kPublicKey, shill::kWireGuardPublicKey},
+    {::onc::wireguard::kPrivateKey, shill::kWireGuardPrivateKey},
+    {::onc::wireguard::kPeers, shill::kWireGuardPeers},
+    {nullptr}};
+
+const FieldTranslationEntry wireguard_peer_fields[] = {
+    {::onc::wireguard::kPublicKey, shill::kWireGuardPeerPublicKey},
+    {::onc::wireguard::kPresharedKey, shill::kWireGuardPeerPresharedKey},
+    {::onc::wireguard::kEndpoint, shill::kWireGuardPeerEndpoint},
+    {::onc::wireguard::kAllowedIPs, shill::kWireGuardPeerAllowedIPs},
+    {::onc::wireguard::kPersistentKeepalive,
+     shill::kWireGuardPeerPersistentKeepalive},
     {nullptr}};
 
 const FieldTranslationEntry arc_vpn_fields[] = {
@@ -234,6 +251,8 @@ const FieldTranslationEntry network_fields[] = {
     // {::onc::network_config::kRestrictedConnectivity, shill::kStateProperty },
     // {::onc::network_config::kSource, shill::kProfileProperty },
     // {::onc::network_config::kMacAddress, shill::kAddressProperty },
+    // {::onc::network_config::kTrafficCounterResetTime,
+    // shill::kTrafficCountersResetTime },
     {nullptr}};
 
 const FieldTranslationEntry ipconfig_fields[] = {
@@ -269,6 +288,8 @@ const OncValueTranslationEntry onc_value_translation_table[] = {
     {&kL2TPSignature, l2tp_fields},
     {&kXAUTHSignature, xauth_fields},
     {&kOpenVPNSignature, openvpn_fields},
+    {&kWireGuardSignature, wireguard_fields},
+    {&kWireGuardPeerSignature, wireguard_peer_fields},
     {&kARCVPNSignature, arc_vpn_fields},
     {&kVerifyX509Signature, verify_x509_fields},
     {&kVPNSignature, vpn_fields},
@@ -324,6 +345,7 @@ const StringTranslationEntry kNetworkTypeTable[] = {
 const StringTranslationEntry kVPNTypeTable[] = {
     {::onc::vpn::kTypeL2TP_IPsec, shill::kProviderL2tpIpsec},
     {::onc::vpn::kOpenVPN, shill::kProviderOpenVpn},
+    {::onc::vpn::kWireGuard, shill::kProviderWireGuard},
     {::onc::vpn::kThirdPartyVpn, shill::kProviderThirdPartyVpn},
     {::onc::vpn::kArcVpn, shill::kProviderArcVpn},
     {nullptr}};
@@ -400,7 +422,11 @@ const StringTranslationEntry kOpenVpnCompressionAlgorithmTable[] = {
 const FieldTranslationEntry kCellularDeviceTable[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kAPNList, shill::kCellularApnListProperty},
-    {::onc::cellular::kAllowRoaming, shill::kCellularAllowRoamingProperty},
+    {::onc::cellular::kAllowRoaming,
+     base::FeatureList::IsEnabled(
+         ash::features::kCellularAllowPerNetworkRoaming)
+         ? shill::kCellularPolicyAllowRoamingProperty
+         : shill::kCellularAllowRoamingProperty},
     {::onc::cellular::kESN, shill::kEsnProperty},
     {::onc::cellular::kFamily, shill::kTechnologyFamilyProperty},
     {::onc::cellular::kFirmwareRevision, shill::kFirmwareRevisionProperty},

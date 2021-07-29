@@ -47,6 +47,9 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
  public:
   AXNodeObject(Node*, AXObjectCacheImpl&);
   ~AXNodeObject() override;
+
+  static absl::optional<String> GetCSSAltText(const Node*);
+
   void Trace(Visitor*) const override;
 
  protected:
@@ -61,7 +64,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // The ARIA role, not taking the native role into account.
   ax::mojom::blink::Role aria_role_;
 
-  static absl::optional<String> GetCSSAltText(const Node*);
   AXObjectInclusion ShouldIncludeBasedOnSemantics(
       IgnoredReasons* = nullptr) const;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
@@ -96,7 +98,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool IsHovered() const final;
   bool IsImageButton() const;
   bool IsInputImage() const final;
-  bool IsInPageLinkTarget() const override;
+  bool IsLineBreakingObject() const override;
   bool IsLoaded() const override;
   bool IsMultiSelectable() const override;
   bool IsNativeImage() const final;
@@ -114,6 +116,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AccessibilityGrabbedState IsGrabbed() const override;
   AccessibilityExpanded IsExpanded() const override;
   AccessibilitySelectedState IsSelected() const override;
+  bool IsSelectedFromFocusSupported() const override;
   bool IsSelectedFromFocus() const override;
   bool IsRequired() const final;
   bool IsControl() const override;
@@ -192,7 +195,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   String GetName(ax::mojom::blink::NameFrom&,
                  AXObjectVector* name_objects) const override;
   String TextAlternative(bool recursive,
-                         bool in_aria_labelled_by_traversal,
+                         const AXObject* aria_label_or_description_root,
                          AXObjectSet& visited,
                          ax::mojom::blink::NameFrom&,
                          AXRelatedObjectVector*,
@@ -210,7 +213,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // Location
   void GetRelativeBounds(AXObject** out_container,
                          FloatRect& out_bounds_in_container,
-                         SkMatrix44& out_container_transform,
+                         skia::Matrix44& out_container_transform,
                          bool* clips_children = nullptr) const override;
 
   void AddChildren() override;
@@ -291,7 +294,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   String PlaceholderFromNativeAttribute() const;
   String GetValueContributionToName() const;
   bool UseNameFromSelectedOption() const;
-  bool SelectionShouldFollowFocus() const;
   virtual bool IsTabItemSelected() const;
 
   void AddChildrenImpl();

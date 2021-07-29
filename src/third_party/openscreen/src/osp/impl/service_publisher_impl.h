@@ -18,7 +18,6 @@ class ServicePublisherImpl final : public ServicePublisher,
   class Delegate {
    public:
     Delegate();
-    virtual ~Delegate();
 
     void SetPublisherImpl(ServicePublisherImpl* publisher);
 
@@ -29,6 +28,8 @@ class ServicePublisherImpl final : public ServicePublisher,
     virtual void ResumePublisher() = 0;
 
    protected:
+    virtual ~Delegate();
+
     void SetState(State state) { publisher_->SetState(state); }
 
     ServicePublisherImpl* publisher_ = nullptr;

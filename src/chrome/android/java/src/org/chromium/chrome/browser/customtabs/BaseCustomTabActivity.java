@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.util.Pair;
 import android.view.KeyEvent;
+import android.view.ViewGroup.LayoutParams;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -41,6 +42,8 @@ import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTab
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
@@ -152,7 +155,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
                         -> mNavigationController,
                 getActivityTabProvider(), mTabModelProfileSupplier, mBookmarkBridgeSupplier,
                 this::getContextualSearchManager, getTabModelSelectorSupplier(),
-                getBrowserControlsManager());
+                getBrowserControlsManager(), getWindowAndroid());
     }
 
     @Override
@@ -352,8 +355,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
                 mIntentDataProvider.isOpenedByChrome(),
                 mIntentDataProvider.shouldShowShareMenuItem(),
                 mIntentDataProvider.shouldShowStarButton(),
-                mIntentDataProvider.shouldShowDownloadButton(), mIntentDataProvider.isIncognito(),
-                mIntentDataProvider.shouldShowOpenInChromeMenuItem());
+                mIntentDataProvider.shouldShowDownloadButton(), mIntentDataProvider.isIncognito());
     }
 
     @Override
@@ -369,6 +371,18 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
     @Override
     public int getControlContainerHeightResource() {
         return R.dimen.custom_tabs_control_container_height;
+    }
+
+    @Override
+    protected int getToolbarShadowResource() {
+        final boolean themeRefactorEnabled =
+                CachedFeatureFlags.isEnabled(ChromeFeatureList.THEME_REFACTOR_ANDROID);
+        return themeRefactorEnabled ? R.drawable.toolbar_hairline : R.drawable.toolbar_shadow;
+    }
+
+    @Override
+    protected int getToolbarShadowLayoutHeight() {
+        return LayoutParams.WRAP_CONTENT;
     }
 
     @Override
@@ -444,15 +458,15 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
     @Override
     public int getActivityThemeColor() {
         BrowserServicesIntentDataProvider intentDataProvider = getIntentDataProvider();
-        if (!intentDataProvider.isOpenedByChrome() && intentDataProvider.hasCustomToolbarColor()) {
-            return intentDataProvider.getToolbarColor();
+        if (intentDataProvider.getColorProvider().hasCustomToolbarColor()) {
+            return intentDataProvider.getColorProvider().getToolbarColor();
         }
         return TabState.UNSPECIFIED_THEME_COLOR;
     }
 
     @Override
     public int getBaseStatusBarColor(Tab tab) {
-        return mStatusBarColorProvider.getBaseStatusBarColor(tab, super.getBaseStatusBarColor(tab));
+        return mStatusBarColorProvider.getBaseStatusBarColor(tab);
     }
 
     @Override
@@ -465,8 +479,9 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        Boolean result = KeyboardShortcuts.dispatchKeyEvent(
-                event, this, mToolbarCoordinator.toolbarIsInitialized());
+        Boolean result = KeyboardShortcuts.dispatchKeyEvent(event,
+                mToolbarCoordinator.toolbarIsInitialized(), getFullscreenManager(),
+                /* menuOrKeyboardActionController= */ this);
         return result != null ? result : super.dispatchKeyEvent(event);
     }
 
@@ -493,7 +508,8 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
         if (!mToolbarCoordinator.toolbarIsInitialized()) {
             return super.onKeyDown(keyCode, event);
         }
-        return KeyboardShortcuts.onKeyDown(event, this, true, false)
+        return KeyboardShortcuts.onKeyDown(event, true, false, getTabModelSelector(),
+                       /* menuOrKeyboardActionController= */ this, getToolbarManager())
                 || super.onKeyDown(keyCode, event);
     }
 

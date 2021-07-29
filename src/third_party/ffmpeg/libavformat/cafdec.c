@@ -79,7 +79,7 @@ static int read_desc_chunk(AVFormatContext *s)
     st->codecpar->channels    = avio_rb32(pb);
     st->codecpar->bits_per_coded_sample = avio_rb32(pb);
 
-    if (caf->bytes_per_packet < 0 || caf->frames_per_packet < 0)
+    if (caf->bytes_per_packet < 0 || caf->frames_per_packet < 0 || st->codecpar->channels < 0)
         return AVERROR_INVALIDDATA;
 
     /* calculate bit rate for constant size packets */
@@ -204,15 +204,20 @@ static int read_pakt_chunk(AVFormatContext *s, int64_t size)
     st->nb_frames += avio_rb32(pb); /* priming frames */
     st->nb_frames += avio_rb32(pb); /* remainder frames */
 
-    st->duration = 0;
-    for (i = 0; i < num_packets; i++) {
-        if (avio_feof(pb))
-            return AVERROR_INVALIDDATA;
-        ret = av_add_index_entry(s->streams[0], pos, st->duration, 0, 0, AVINDEX_KEYFRAME);
-        if (ret < 0)
-            return ret;
-        pos += caf->bytes_per_packet ? caf->bytes_per_packet : ff_mp4_read_descr_len(pb);
-        st->duration += caf->frames_per_packet ? caf->frames_per_packet : ff_mp4_read_descr_len(pb);
+    if (caf->bytes_per_packet > 0 && caf->frames_per_packet > 0) {
+        st->duration = caf->frames_per_packet * num_packets;
+        pos          = caf-> bytes_per_packet * num_packets;
+    } else {
+        st->duration = 0;
+        for (i = 0; i < num_packets; i++) {
+            if (avio_feof(pb))
+                return AVERROR_INVALIDDATA;
+            ret = av_add_index_entry(s->streams[0], pos, st->duration, 0, 0, AVINDEX_KEYFRAME);
+            if (ret < 0)
+                return ret;
+            pos += caf->bytes_per_packet ? caf->bytes_per_packet : ff_mp4_read_descr_len(pb);
+            st->duration += caf->frames_per_packet ? caf->frames_per_packet : ff_mp4_read_descr_len(pb);
+        }
     }
 
     if (avio_tell(pb) - ccount > size) {
@@ -452,7 +457,7 @@ static int read_seek(AVFormatContext *s, int stream_index,
     return 0;
 }
 
-AVInputFormat ff_caf_demuxer = {
+const AVInputFormat ff_caf_demuxer = {
     .name           = "caf",
     .long_name      = NULL_IF_CONFIG_SMALL("Apple CAF (Core Audio Format)"),
     .priv_data_size = sizeof(CafContext),

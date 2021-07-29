@@ -94,7 +94,7 @@ static sk_sp<SkData> getResource(const char* name) {
   return it->second;
 }
 
-static void LoadResource(std::string name, uintptr_t /* byte* */ bPtr, size_t len) {
+static void LoadResource(std::string name, WASMPointerU8 bPtr, size_t len) {
   const uint8_t* bytes = reinterpret_cast<const uint8_t*>(bPtr);
   auto data = SkData::MakeFromMalloc(bytes, len);
   gResources[name] = std::move(data);
@@ -252,6 +252,7 @@ static JSObject RunTest(std::string name) {
     if (test.needsGpu) {
         result.set("result", "passed"); // default to passing - the reporter will mark failed.
         WasmReporter reporter(name, result);
+        test.modifyGrContextOptions(&grOpts);
         test.run(&reporter, grOpts);
         return result;
     }

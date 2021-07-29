@@ -145,11 +145,11 @@ std::unique_ptr<base::DictionaryValue> GenerateTouchPoint(
   std::unique_ptr<base::DictionaryValue> point(new base::DictionaryValue());
   point->SetInteger("x", event.x);
   point->SetInteger("y", event.y);
-  point->SetDouble("radiusX", event.radiusX);
-  point->SetDouble("radiusY", event.radiusY);
-  point->SetDouble("rotationAngle", event.rotationAngle);
-  point->SetDouble("force", event.force);
-  point->SetDouble("tangentialPressure", event.tangentialPressure);
+  point->SetDoubleKey("radiusX", event.radiusX);
+  point->SetDoubleKey("radiusY", event.radiusY);
+  point->SetDoubleKey("rotationAngle", event.rotationAngle);
+  point->SetDoubleKey("force", event.force);
+  point->SetDoubleKey("tangentialPressure", event.tangentialPressure);
   point->SetInteger("tiltX", event.tiltX);
   point->SetInteger("tiltY", event.tiltY);
   point->SetInteger("twist", event.twist);
@@ -603,8 +603,8 @@ Status WebViewImpl::DispatchMouseEvents(const std::vector<MouseEvent>& events,
     params.SetString("button", GetAsString(it->button));
     params.SetInteger("buttons", it->buttons);
     params.SetInteger("clickCount", it->click_count);
-    params.SetDouble("force", it->force);
-    params.SetDouble("tangentialPressure", it->tangentialPressure);
+    params.SetDoubleKey("force", it->force);
+    params.SetDoubleKey("tangentialPressure", it->tangentialPressure);
     params.SetInteger("tiltX", it->tiltX);
     params.SetInteger("tiltY", it->tiltY);
     params.SetInteger("twist", it->twist);
@@ -633,13 +633,13 @@ Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event,
   base::DictionaryValue params;
   std::string type = GetAsString(event.type);
   params.SetString("type", type);
-  std::unique_ptr<base::ListValue> point_list(new base::ListValue);
+  base::ListValue point_list;
   Status status(kOk);
   if (type == "touchStart" || type == "touchMove") {
     std::unique_ptr<base::DictionaryValue> point = GenerateTouchPoint(event);
-    point_list->Append(std::move(point));
+    point_list.Append(std::move(point));
   }
-  params.Set("touchPoints", std::move(point_list));
+  params.SetKey("touchPoints", std::move(point_list));
   if (async_dispatch_events) {
     status = client_->SendCommandAndIgnoreResponse("Input.dispatchTouchEvent",
                                                    params);
@@ -671,7 +671,7 @@ Status WebViewImpl::DispatchTouchEventWithMultiPoints(
   Status status(kOk);
   size_t touch_count = 1;
   for (const TouchEvent& event : events) {
-    std::unique_ptr<base::ListValue> point_list(new base::ListValue);
+    base::ListValue point_list;
     int32_t current_time =
         (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds();
     params.SetInteger("timestamp", current_time);
@@ -680,8 +680,8 @@ Status WebViewImpl::DispatchTouchEventWithMultiPoints(
     if (type == "touchCancel")
       continue;
 
-    point_list->Append(GenerateTouchPoint(event));
-    params.Set("touchPoints", std::move(point_list));
+    point_list.Append(GenerateTouchPoint(event));
+    params.SetKey("touchPoints", std::move(point_list));
 
     if (async_dispatch_events || touch_count < events.size()) {
       status = client_->SendCommandAndIgnoreResponse("Input.dispatchTouchEvent",
@@ -810,7 +810,7 @@ Status WebViewImpl::GetCookies(std::unique_ptr<base::ListValue>* cookies,
   base::ListValue* cookies_tmp;
   if (!result->GetList("cookies", &cookies_tmp))
     return Status(kUnknownError, "DevTools didn't return cookies");
-  cookies->reset(cookies_tmp->DeepCopy());
+  *cookies = cookies_tmp->CreateDeepCopy();
   return Status(kOk);
 }
 
@@ -848,7 +848,7 @@ Status WebViewImpl::AddCookie(const std::string& name,
   if (!sameSite.empty())
     params.SetString("sameSite", sameSite);
   if (expiry >= 0)
-    params.SetDouble("expires", expiry);
+    params.SetDoubleKey("expires", expiry);
 
   std::unique_ptr<base::DictionaryValue> result;
   Status status =

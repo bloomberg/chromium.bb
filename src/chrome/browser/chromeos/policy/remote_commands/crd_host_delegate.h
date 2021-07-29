@@ -15,12 +15,11 @@
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_start_crd_session_job.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 
-class DeviceOAuth2TokenService;
-class Profile;
-
 namespace policy {
 
-// An implementation of the |DeviceCommandStartCRDSessionJob::Delegate|.
+// Delegate that will start a session with the CRD native host.
+// Will keep the session alive and active as long as this class lives.
+// Deleting this class object will forcefully interrupt the active CRD session.
 class CRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate,
                         public extensions::NativeMessageHost::Client {
  public:
@@ -39,21 +38,12 @@ class CRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate,
   // DeviceCommandStartCRDSessionJob::Delegate:
   bool HasActiveSession() const override;
   void TerminateSession(base::OnceClosure callback) override;
-  bool AreServicesReady() const override;
-  bool IsRunningKiosk() const override;
-  base::TimeDelta GetIdlenessPeriod() const override;
-  void FetchOAuthToken(
-      DeviceCommandStartCRDSessionJob::OAuthTokenCallback success_callback,
-      DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) override;
   void StartCRDHostAndGetCode(
-      const std::string& oauth_token,
-      bool terminate_upon_input,
+      const SessionParameters& parameters,
       DeviceCommandStartCRDSessionJob::AccessCodeCallback success_callback,
       DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) override;
 
  private:
-  class OAuthTokenFetcher;
-
   // extensions::NativeMessageHost::Client:
   // Invoked when native host sends a message
   void PostMessageFromNativeHost(const std::string& message) override;
@@ -78,13 +68,7 @@ class CRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate,
   void OnStateRemoteDisconnected();
   void OnStateReceivedAccessCode(const base::Value& message);
 
-  Profile* GetKioskProfile() const;
-
-  DeviceOAuth2TokenService* oauth_service() const;
-
   std::unique_ptr<NativeMessageHostFactory> factory_;
-
-  std::unique_ptr<OAuthTokenFetcher> oauth_token_fetcher_;
 
   DeviceCommandStartCRDSessionJob::AccessCodeCallback code_success_callback_;
   DeviceCommandStartCRDSessionJob::ErrorCallback error_callback_;

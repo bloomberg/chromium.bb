@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_item.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/media_message_center/media_notification_controller.h"
@@ -103,8 +107,9 @@ class MockSessionController : public CastMediaSessionController {
 class CastMediaNotificationItemTest : public testing::Test {
  public:
   void SetUp() override {
-    auto session_controller = std::make_unique<MockSessionController>(
-        mojo::Remote<media_router::mojom::MediaController>());
+    auto session_controller =
+        std::make_unique<testing::NiceMock<MockSessionController>>(
+            mojo::Remote<media_router::mojom::MediaController>());
     session_controller_ = session_controller.get();
     item_ = std::make_unique<CastMediaNotificationItem>(
         CreateMediaRoute(), &notification_controller_,
@@ -151,9 +156,12 @@ class CastMediaNotificationItemTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
-  MockMediaNotificationController notification_controller_;
+  testing::NiceMock<MockMediaNotificationController> notification_controller_;
   MockSessionController* session_controller_ = nullptr;
-  MockMediaNotificationView view_;
+  // This needs to be a NiceMock, because the uninteresting mock function calls
+  // slow down the tests enough to make
+  // CastMediaNotificationItemTest.MediaPositionUpdate flaky.
+  testing::NiceMock<MockMediaNotificationView> view_;
   std::unique_ptr<CastMediaNotificationItem> item_;
 };
 

@@ -945,7 +945,6 @@ void BestPractices::PostCallRecordCreateSwapchainKHR(
     VkSwapchainKHR*                             pSwapchain,
     VkResult                                    result) {
     ValidationStateTracker::PostCallRecordCreateSwapchainKHR(device, pCreateInfo, pAllocator, pSwapchain, result);
-    ManualPostCallRecordCreateSwapchainKHR(device, pCreateInfo, pAllocator, pSwapchain, result);
     if (result != VK_SUCCESS) {
         static const std::vector<VkResult> error_codes = {VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_NATIVE_WINDOW_IN_USE_KHR,VK_ERROR_INITIALIZATION_FAILED};
         static const std::vector<VkResult> success_codes = {};
@@ -2754,6 +2753,33 @@ void BestPractices::PostCallRecordCreateIndirectCommandsLayoutNV(
     }
 }
 
+void BestPractices::PostCallRecordAcquireDrmDisplayEXT(
+    VkPhysicalDevice                            physicalDevice,
+    int32_t                                     drmFd,
+    VkDisplayKHR                                display,
+    VkResult                                    result) {
+    ValidationStateTracker::PostCallRecordAcquireDrmDisplayEXT(physicalDevice, drmFd, display, result);
+    if (result != VK_SUCCESS) {
+        static const std::vector<VkResult> error_codes = {VK_ERROR_INITIALIZATION_FAILED};
+        static const std::vector<VkResult> success_codes = {};
+        ValidateReturnCodes("vkAcquireDrmDisplayEXT", result, error_codes, success_codes);
+    }
+}
+
+void BestPractices::PostCallRecordGetDrmDisplayEXT(
+    VkPhysicalDevice                            physicalDevice,
+    int32_t                                     drmFd,
+    uint32_t                                    connectorId,
+    VkDisplayKHR*                               display,
+    VkResult                                    result) {
+    ValidationStateTracker::PostCallRecordGetDrmDisplayEXT(physicalDevice, drmFd, connectorId, display, result);
+    if (result != VK_SUCCESS) {
+        static const std::vector<VkResult> error_codes = {VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_OUT_OF_HOST_MEMORY};
+        static const std::vector<VkResult> success_codes = {};
+        ValidateReturnCodes("vkGetDrmDisplayEXT", result, error_codes, success_codes);
+    }
+}
+
 void BestPractices::PostCallRecordCreatePrivateDataSlotEXT(
     VkDevice                                    device,
     const VkPrivateDataSlotCreateInfoEXT*       pCreateInfo,
@@ -2901,6 +2927,19 @@ void BestPractices::PostCallRecordGetSemaphoreZirconHandleFUCHSIA(
 }
 
 #endif // VK_USE_PLATFORM_FUCHSIA
+
+void BestPractices::PostCallRecordGetMemoryRemoteAddressNV(
+    VkDevice                                    device,
+    const VkMemoryGetRemoteAddressInfoNV*       getMemoryRemoteAddressInfo,
+    VkRemoteAddressNV*                          pAddress,
+    VkResult                                    result) {
+    ValidationStateTracker::PostCallRecordGetMemoryRemoteAddressNV(device, getMemoryRemoteAddressInfo, pAddress, result);
+    if (result != VK_SUCCESS) {
+        static const std::vector<VkResult> error_codes = {VK_ERROR_INVALID_EXTERNAL_HANDLE};
+        static const std::vector<VkResult> success_codes = {};
+        ValidateReturnCodes("vkGetMemoryRemoteAddressNV", result, error_codes, success_codes);
+    }
+}
 
 #ifdef VK_USE_PLATFORM_SCREEN_QNX
 

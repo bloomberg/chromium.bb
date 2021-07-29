@@ -119,6 +119,14 @@
       "extension", "legacy_packaged_app", "login_screen_extension"
     ]
   },
+  "cross_origin_embedder_policy": {
+    "channel": "stable",
+    "extension_types": ["extension", "platform_app"]
+  },
+  "cross_origin_opener_policy": {
+    "channel": "stable",
+    "extension_types": ["extension", "platform_app"]
+  },
   "current_locale": {
     "channel": "stable",
     "extension_types": "all"

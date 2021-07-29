@@ -51,8 +51,10 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace ash {
 namespace {
@@ -714,7 +716,7 @@ ServicesCustomizationDocument::GetDefaultAppsInProviderFormat(
           break;
         }
         entry = app_entry->CreateDeepCopy();
-        entry->Remove(kIdAttr, nullptr);
+        entry->RemoveKey(kIdAttr);
       } else {
         LOG(ERROR) << "Wrong format of default application list";
         prefs->Clear();
@@ -725,7 +727,7 @@ ServicesCustomizationDocument::GetDefaultAppsInProviderFormat(
         entry->SetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,
                          extension_urls::GetWebstoreUpdateUrl().spec());
       }
-      prefs->Set(app_id, std::move(entry));
+      prefs->SetPath(app_id, base::Value::FromUniquePtrValue(std::move(entry)));
     }
   }
 

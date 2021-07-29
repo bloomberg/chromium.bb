@@ -23,6 +23,7 @@
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
@@ -31,13 +32,13 @@ namespace content {
 QuotaManagerHost::QuotaManagerHost(
     int process_id,
     int render_frame_id,
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     storage::QuotaManager* quota_manager,
     QuotaPermissionContext* permission_context,
     scoped_refptr<QuotaChangeDispatcher> quota_change_dispatcher)
     : process_id_(process_id),
       render_frame_id_(render_frame_id),
-      origin_(origin),
+      storage_key_(storage_key),
       quota_manager_(quota_manager),
       permission_context_(permission_context),
       quota_change_dispatcher_(std::move(quota_change_dispatcher)) {
@@ -50,7 +51,7 @@ void QuotaManagerHost::AddChangeListener(
     mojo::PendingRemote<blink::mojom::QuotaChangeListener> mojo_listener,
     AddChangeListenerCallback callback) {
   if (quota_change_dispatcher_) {
-    quota_change_dispatcher_->AddChangeListener(origin_,
+    quota_change_dispatcher_->AddChangeListener(storage_key_,
                                                 std::move(mojo_listener));
   }
   std::move(callback).Run();
@@ -60,7 +61,7 @@ void QuotaManagerHost::QueryStorageUsageAndQuota(
     blink::mojom::StorageType storage_type,
     QueryStorageUsageAndQuotaCallback callback) {
   quota_manager_->GetUsageAndQuotaWithBreakdown(
-      origin_, storage_type,
+      storage_key_, storage_type,
       base::BindOnce(&QuotaManagerHost::DidQueryStorageUsageAndQuota,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -81,8 +82,8 @@ void QuotaManagerHost::RequestStorageQuota(
     return;
   }
 
-  if (origin_.opaque()) {
-    mojo::ReportBadMessage("Unique origins may not request storage quota.");
+  if (storage_key_.origin().opaque()) {
+    mojo::ReportBadMessage("Opaque origins may not request storage quota.");
     return;
   }
 
@@ -90,13 +91,13 @@ void QuotaManagerHost::RequestStorageQuota(
          storage_type == blink::mojom::StorageType::kPersistent);
   if (storage_type == blink::mojom::StorageType::kPersistent) {
     quota_manager_->GetUsageAndQuotaForWebApps(
-        origin_, storage_type,
+        storage_key_, storage_type,
         base::BindOnce(&QuotaManagerHost::DidGetPersistentUsageAndQuota,
                        weak_factory_.GetWeakPtr(), storage_type, requested_size,
                        std::move(callback)));
   } else {
     quota_manager_->GetUsageAndQuotaForWebApps(
-        origin_, storage_type,
+        storage_key_, storage_type,
         base::BindOnce(&QuotaManagerHost::DidGetTemporaryUsageAndQuota,
                        weak_factory_.GetWeakPtr(), requested_size,
                        std::move(callback)));
@@ -130,7 +131,7 @@ void QuotaManagerHost::DidGetPersistentUsageAndQuota(
   // TODO(nhiroki): The backend should accept uint64_t values.
   int64_t requested_quota_signed =
       base::saturated_cast<int64_t>(requested_quota);
-  if (quota_manager_->IsStorageUnlimited(origin_, storage_type) ||
+  if (quota_manager_->IsStorageUnlimited(storage_key_, storage_type) ||
       requested_quota_signed <= current_quota) {
     std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, current_usage,
                             requested_quota);
@@ -142,7 +143,7 @@ void QuotaManagerHost::DidGetPersistentUsageAndQuota(
   DCHECK(permission_context_);
   StorageQuotaParams params;
   params.render_frame_id = render_frame_id_;
-  params.origin_url = origin_.GetURL();
+  params.origin_url = storage_key_.origin().GetURL();
   params.storage_type = storage_type;
   params.requested_size = requested_quota;
 
@@ -168,7 +169,7 @@ void QuotaManagerHost::DidGetPermissionResponse(
 
   // Otherwise, return the new quota.
   quota_manager_->SetPersistentHostQuota(
-      origin_.host(), requested_quota,
+      storage_key_.origin().host(), requested_quota,
       base::BindOnce(&QuotaManagerHost::DidSetHostQuota,
                      weak_factory_.GetWeakPtr(), current_usage,
                      std::move(callback)));

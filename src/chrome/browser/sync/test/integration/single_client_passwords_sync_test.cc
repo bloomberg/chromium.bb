@@ -8,16 +8,17 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/test/fake_server/fake_server_nigori_helper.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_launcher.h"
@@ -25,12 +26,12 @@
 namespace {
 
 using password_manager::features_util::OptInToAccountStorage;
-using passwords_helper::AddLogin;
 using passwords_helper::CreateTestPasswordForm;
 using passwords_helper::GetPasswordCount;
-using passwords_helper::GetPasswordStore;
+using passwords_helper::GetProfilePasswordStoreInterface;
 using passwords_helper::GetVerifierPasswordCount;
 using passwords_helper::GetVerifierPasswordStore;
+using passwords_helper::GetVerifierProfilePasswordStoreInterface;
 using passwords_helper::ProfileContainsSamePasswordFormsAsVerifier;
 
 using password_manager::PasswordForm;
@@ -63,9 +64,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTestWithVerifier, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form = CreateTestPasswordForm(0);
-  AddLogin(GetVerifierPasswordStore(), form);
+  GetVerifierProfilePasswordStoreInterface()->AddLogin(form);
   ASSERT_EQ(1, GetVerifierPasswordCount());
-  AddLogin(GetPasswordStore(0), form);
+  GetProfilePasswordStoreInterface(0)->AddLogin(form);
   ASSERT_EQ(1, GetPasswordCount(0));
 
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
@@ -81,9 +82,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTestWithVerifier,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form = CreateTestPasswordForm(0);
-  AddLogin(GetVerifierPasswordStore(), form);
+  GetVerifierProfilePasswordStoreInterface()->AddLogin(form);
   ASSERT_EQ(1, GetVerifierPasswordCount());
-  AddLogin(GetPasswordStore(0), form);
+  GetProfilePasswordStoreInterface(0)->AddLogin(form);
   ASSERT_EQ(1, GetPasswordCount(0));
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
@@ -107,9 +108,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTestWithVerifier,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form = CreateTestPasswordForm(0);
-  AddLogin(GetVerifierPasswordStore(), form);
+  GetVerifierProfilePasswordStoreInterface()->AddLogin(form);
   ASSERT_EQ(1, GetVerifierPasswordCount());
-  AddLogin(GetPasswordStore(0), form);
+  GetProfilePasswordStoreInterface(0)->AddLogin(form);
   ASSERT_EQ(1, GetPasswordCount(0));
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
@@ -133,9 +134,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTestWithVerifier,
                   .Wait());
 
   PasswordForm form = CreateTestPasswordForm(0);
-  AddLogin(GetVerifierPasswordStore(), form);
+  GetVerifierProfilePasswordStoreInterface()->AddLogin(form);
   ASSERT_EQ(1, GetVerifierPasswordCount());
-  AddLogin(GetPasswordStore(0), form);
+  GetProfilePasswordStoreInterface(0)->AddLogin(form);
   ASSERT_EQ(1, GetPasswordCount(0));
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
@@ -180,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest,
                        PRE_PersistProgressMarkerOnRestart) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   PasswordForm form = CreateTestPasswordForm(0);
-  AddLogin(GetPasswordStore(0), form);
+  GetProfilePasswordStoreInterface(0)->AddLogin(form);
   ASSERT_EQ(1, GetPasswordCount(0));
   // Setup sync, wait for its completion, and make sure changes were synced.
   base::HistogramTester histogram_tester;
@@ -276,12 +277,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Make sure the password showed up in the account store and not in the
   // profile store.
-  password_manager::PasswordStore* profile_store =
-      passwords_helper::GetPasswordStore(0);
+  password_manager::PasswordStoreInterface* profile_store =
+      passwords_helper::GetProfilePasswordStoreInterface(0);
   EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
 
-  password_manager::PasswordStore* account_store =
-      passwords_helper::GetAccountPasswordStore(0);
+  password_manager::PasswordStoreInterface* account_store =
+      passwords_helper::GetAccountPasswordStoreInterface(0);
   EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 0u);
 }
 
@@ -312,12 +313,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Make sure the password showed up in the account store and not in the
   // profile store.
-  password_manager::PasswordStore* profile_store =
-      passwords_helper::GetPasswordStore(0);
+  password_manager::PasswordStoreInterface* profile_store =
+      passwords_helper::GetProfilePasswordStoreInterface(0);
   EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 0u);
 
-  password_manager::PasswordStore* account_store =
-      passwords_helper::GetAccountPasswordStore(0);
+  password_manager::PasswordStoreInterface* account_store =
+      passwords_helper::GetAccountPasswordStoreInterface(0);
   EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
 }
 
@@ -345,12 +346,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Make sure the password showed up in the account store and not in the
   // profile store.
-  password_manager::PasswordStore* profile_store =
-      passwords_helper::GetPasswordStore(0);
+  password_manager::PasswordStoreInterface* profile_store =
+      passwords_helper::GetProfilePasswordStoreInterface(0);
   EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 0u);
 
-  password_manager::PasswordStore* account_store =
-      passwords_helper::GetAccountPasswordStore(0);
+  password_manager::PasswordStoreInterface* account_store =
+      passwords_helper::GetAccountPasswordStoreInterface(0);
   EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -367,8 +368,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
 
   // Make sure the password showed up in the profile store.
-  password_manager::PasswordStore* profile_store =
-      passwords_helper::GetPasswordStore(0);
+  password_manager::PasswordStoreInterface* profile_store =
+      passwords_helper::GetProfilePasswordStoreInterface(0);
   ASSERT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
 
   // Sign out again.
@@ -402,8 +403,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   PasswordSyncActiveChecker(GetSyncService(0)).Wait();
 
   // Make sure the password showed up in the account store.
-  password_manager::PasswordStore* account_store =
-      passwords_helper::GetAccountPasswordStore(0);
+  password_manager::PasswordStoreInterface* account_store =
+      passwords_helper::GetAccountPasswordStoreInterface(0);
   ASSERT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
 
   // Sign out again.
@@ -441,8 +442,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   PasswordSyncActiveChecker(GetSyncService(0)).Wait();
 
   // Make sure the password showed up in the account store.
-  password_manager::PasswordStore* account_store =
-      passwords_helper::GetAccountPasswordStore(0);
+  password_manager::PasswordStoreInterface* account_store =
+      passwords_helper::GetAccountPasswordStoreInterface(0);
   ASSERT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
 
   // Turn on Sync-the-feature.
@@ -454,8 +455,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Make sure the password is now in the profile store, but *not* in the
   // account store anymore.
-  password_manager::PasswordStore* profile_store =
-      passwords_helper::GetPasswordStore(0);
+  password_manager::PasswordStoreInterface* profile_store =
+      passwords_helper::GetProfilePasswordStoreInterface(0);
   EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
   EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 0u);
 
@@ -494,8 +495,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   PasswordSyncActiveChecker(GetSyncService(0)).Wait();
 
   // Make sure the password showed up in the account store.
-  password_manager::PasswordStore* account_store =
-      passwords_helper::GetAccountPasswordStore(0);
+  password_manager::PasswordStoreInterface* account_store =
+      passwords_helper::GetAccountPasswordStoreInterface(0);
   ASSERT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
 
   // Make the account primary and turn on Sync-the-feature.
@@ -508,8 +509,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Make sure the password is now in the profile store, but *not* in the
   // account store anymore.
-  password_manager::PasswordStore* profile_store =
-      passwords_helper::GetPasswordStore(0);
+  password_manager::PasswordStoreInterface* profile_store =
+      passwords_helper::GetProfilePasswordStoreInterface(0);
   EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
   EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 0u);
 

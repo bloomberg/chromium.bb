@@ -1,0 +1,30 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void frexp_a2a617(thread int* const tint_symbol_2) {
+  float res = frexp(1.0f, *(&(*(tint_symbol_2))));
+}
+
+vertex tint_symbol vertex_main() {
+  thread int tint_symbol_3 = 0;
+  frexp_a2a617(&(tint_symbol_3));
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  thread int tint_symbol_4 = 0;
+  frexp_a2a617(&(tint_symbol_4));
+  return;
+}
+
+kernel void compute_main() {
+  thread int tint_symbol_5 = 0;
+  frexp_a2a617(&(tint_symbol_5));
+  return;
+}
+

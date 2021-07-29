@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_APP_UPDATE_H_
 #define COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_APP_UPDATE_H_
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -136,6 +137,9 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   apps::mojom::OptionalBool ResizeLocked() const;
   bool ResizeLockedChanged() const;
 
+  apps::mojom::WindowMode WindowMode() const;
+  bool WindowModeChanged() const;
+
   const ::AccountId& AccountId() const;
 
  private:
@@ -146,6 +150,10 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
 
   DISALLOW_COPY_AND_ASSIGN(AppUpdate);
 };
+
+// For logging and debug purposes.
+COMPONENT_EXPORT(APP_UPDATE)
+std::ostream& operator<<(std::ostream& out, const AppUpdate& app);
 
 }  // namespace apps
 

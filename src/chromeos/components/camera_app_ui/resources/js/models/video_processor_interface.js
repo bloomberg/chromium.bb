@@ -22,4 +22,11 @@ export class VideoProcessor {
    * @abstract
    */
   async close() {}
+
+  /**
+   * Cancels the remaining tasks. No more write operations are allowed.
+   * @return {!Promise}
+   * @abstract
+   */
+  async cancel() {}
 }

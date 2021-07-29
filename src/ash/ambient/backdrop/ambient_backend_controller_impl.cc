@@ -17,16 +17,18 @@
 #include "ash/public/cpp/ambient/ambient_metrics.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
+#include "ash/public/cpp/ambient/proto/photo_cache_entry.pb.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/barrier_closure.h"
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "chromeos/assistant/internal/ambient/backdrop_client_config.h"
-#include "chromeos/assistant/internal/proto/google3/backdrop/backdrop.pb.h"
+#include "chromeos/assistant/internal/proto/backdrop/backdrop.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "net/base/load_flags.h"
@@ -105,28 +107,28 @@ std::string BuildBackdropTopicDetails(
   return result;
 }
 
-AmbientModeTopicType ToAmbientModeTopicType(
+::ambient::TopicType ToAmbientModeTopicType(
     const backdrop::ScreenUpdate_Topic& topic) {
   if (!topic.has_topic_type())
-    return AmbientModeTopicType::kOther;
+    return ::ambient::TopicType::kOther;
 
   switch (topic.topic_type()) {
     case backdrop::CURATED:
-      return AmbientModeTopicType::kCurated;
+      return ::ambient::TopicType::kCurated;
     case backdrop::PERSONAL_PHOTO:
-      return AmbientModeTopicType::kPersonal;
+      return ::ambient::TopicType::kPersonal;
     case backdrop::FEATURED_PHOTO:
-      return AmbientModeTopicType::kFeatured;
+      return ::ambient::TopicType::kFeatured;
     case backdrop::GEO_PHOTO:
-      return AmbientModeTopicType::kGeo;
+      return ::ambient::TopicType::kGeo;
     case backdrop::CULTURAL_INSTITUTE:
-      return AmbientModeTopicType::kCulturalInstitute;
+      return ::ambient::TopicType::kCulturalInstitute;
     case backdrop::RSS_TOPIC:
-      return AmbientModeTopicType::kRss;
+      return ::ambient::TopicType::kRss;
     case backdrop::CAPTURED_ON_PIXEL:
-      return AmbientModeTopicType::kCapturedOnPixel;
+      return ::ambient::TopicType::kCapturedOnPixel;
     default:
-      return AmbientModeTopicType::kOther;
+      return ::ambient::TopicType::kOther;
   }
 }
 
@@ -208,10 +210,15 @@ ScreenUpdate ToScreenUpdate(
 
       AmbientModeTopic ambient_topic;
       ambient_topic.topic_type = topic_type;
-      if (backdrop_topic.has_portrait_image_url())
+
+      // If the |portrait_image_url| field is not empty, we assume the image is
+      // portrait.
+      if (backdrop_topic.has_portrait_image_url()) {
         ambient_topic.url = backdrop_topic.portrait_image_url();
-      else
+        ambient_topic.is_portrait = true;
+      } else {
         ambient_topic.url = backdrop_topic.url();
+      }
 
       if (backdrop_topic.has_related_topic()) {
         if (backdrop_topic.related_topic().has_portrait_image_url()) {
@@ -223,6 +230,8 @@ ScreenUpdate ToScreenUpdate(
         }
       }
       ambient_topic.details = BuildBackdropTopicDetails(backdrop_topic);
+      ambient_topic.related_details =
+          BuildBackdropTopicDetails(backdrop_topic.related_topic());
       screen_update.next_topics.emplace_back(ambient_topic);
     }
   }
@@ -473,7 +482,6 @@ void AmbientBackendControllerImpl::FetchScreenUpdateInfoInternal(
   // When the device is in portrait mode, where only shows one portrait photo,
   // it will cause unnecessary scaling. To reduce this effect, always requesting
   // the landscape display size.
-  // TODO(b/172075868): Support tiling in portrait mode.
   gfx::Size display_size_px = GetDisplaySizeInPixel();
   const int width = std::max(display_size_px.width(), display_size_px.height());
   const int height =

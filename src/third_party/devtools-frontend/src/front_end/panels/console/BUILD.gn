@@ -4,7 +4,18 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
+import("../../../scripts/build/ninja/generate_css.gni")
 import("../visibility.gni")
+
+generate_css("css_files") {
+  sources = [
+    "consoleContextSelector.css",
+    "consolePinPane.css",
+    "consolePrompt.css",
+    "consoleSidebar.css",
+    "consoleView.css",
+  ]
+}
 
 devtools_module("console") {
   sources = [
@@ -29,6 +40,7 @@ devtools_module("console") {
     "../../models/issues_manager:bundle",
     "../../models/logs:bundle",
     "../../models/text_utils:bundle",
+    "../../ui/components/request_link_icon:bundle",
     "../../ui/legacy:bundle",
     "../../ui/legacy/components/data_grid:bundle",
     "../../ui/legacy/components/object_ui:bundle",
@@ -39,20 +51,14 @@ devtools_module("console") {
   ]
 }
 
-copy_to_gen("legacy_css") {
-  sources = [
-    "consoleContextSelector.css",
-    "consolePinPane.css",
-    "consolePrompt.css",
-    "consoleSidebar.css",
-    "consoleView.css",
-  ]
-}
-
 devtools_entrypoint("bundle") {
   entrypoint = "console.ts"
 
-  deps = [ ":console" ]
+  deps = [
+    ":console",
+    ":css_files",
+    "../../ui/legacy/components/object_ui:css_files",
+  ]
 
   visibility = [
     ":*",

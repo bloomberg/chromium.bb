@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
@@ -35,6 +36,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/combobox_model_observer.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
@@ -523,8 +525,8 @@ bool PasswordSaveUpdateWithAccountStoreView::IsDialogButtonEnabled(
          !controller_.pending_password().password_value.empty();
 }
 
-gfx::ImageSkia PasswordSaveUpdateWithAccountStoreView::GetWindowIcon() {
-  return gfx::ImageSkia();
+ui::ImageModel PasswordSaveUpdateWithAccountStoreView::GetWindowIcon() {
+  return ui::ImageModel();
 }
 
 void PasswordSaveUpdateWithAccountStoreView::AddedToWidget() {

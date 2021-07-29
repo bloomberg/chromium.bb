@@ -16,11 +16,20 @@ _log = logging.getLogger(__name__)
 class WPTServe(server_base.ServerBase):
     def __init__(self, port_obj, output_dir):
         super(WPTServe, self).__init__(port_obj, output_dir)
+
         # These ports must match wpt_tools/wpt.config.json
-        http_port, http_alt_port, https_port, https_alt_port = (8001, 8081,
-                                                                8444, 8445)
+        http_port = 8001
+        http_alt_port = 8081
+        http_private_port = 8082
+        http_public_port = 8083
+        https_port = 8444
+        https_alt_port = 8445
+        https_private_port = 8446
+        https_public_port = 8447
         h2_port = 9000
-        ws_port, wss_port = (9001, 9444)
+        ws_port = 9001
+        wss_port = 9444
+
         self._name = 'wptserve'
         self._log_prefixes = ('wptserve_stderr', )
         self._mappings = [{
@@ -30,6 +39,12 @@ class WPTServe(server_base.ServerBase):
             'port': http_alt_port,
             'scheme': 'http'
         }, {
+            'port': http_private_port,
+            'scheme': 'http'
+        }, {
+            'port': http_public_port,
+            'scheme': 'http'
+        }, {
             'port': https_port,
             'scheme': 'https',
             'sslcert': True
@@ -37,6 +52,12 @@ class WPTServe(server_base.ServerBase):
             'port': https_alt_port,
             'scheme': 'https',
             'sslcert': True
+        }, {
+            'port': https_private_port,
+            'scheme': 'https'
+        }, {
+            'port': https_public_port,
+            'scheme': 'https'
         }, {
             'port': h2_port,
             'scheme': 'https',
@@ -90,6 +111,8 @@ class WPTServe(server_base.ServerBase):
 
         self._error_log_path = self._filesystem.join(output_dir,
                                                      'wptserve_stderr.txt')
+        self._output_log_path = self._filesystem.join(output_dir,
+                                                      'wptserve_stdout.txt')
 
         expiration_date = datetime.date(2025, 1, 4)
         if datetime.date.today() > expiration_date - datetime.timedelta(30):
@@ -117,6 +140,10 @@ class WPTServe(server_base.ServerBase):
         # The file is opened here instead in __init__ because _remove_stale_logs
         # will try to delete the log file, which causes deadlocks on Windows.
         self._stderr = fs.open_text_file_for_writing(self._error_log_path)
+
+        # The pywebsocket process started by wptserve logs to stdout. This can
+        # also cause deadlock, and so should also be redirected to a file.
+        self._stdout = fs.open_text_file_for_writing(self._output_log_path)
 
     def _stop_running_server(self):
         if not self._wait_for_action(self._check_and_kill):

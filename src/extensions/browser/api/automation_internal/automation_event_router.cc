@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "base/stl_util.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -139,8 +139,8 @@ void AutomationEventRouter::DispatchActionResult(
   auto event = std::make_unique<Event>(
       events::AUTOMATION_INTERNAL_ON_ACTION_RESULT,
       api::automation_internal::OnActionResult::kEventName, std::move(args),
-      active_context_);
-  EventRouter::Get(active_context_)
+      browser_context);
+  EventRouter::Get(browser_context)
       ->DispatchEventToExtension(data.source_extension_id, std::move(event));
 }
 
@@ -221,6 +221,8 @@ void AutomationEventRouter::Register(const ExtensionId& extension_id,
     rph_observers_.AddObservation(
         content::RenderProcessHost::FromID(listener_process_id));
     UpdateActiveProfile();
+    for (AutomationEventRouterObserver& observer : observers_)
+      observer.ExtensionListenerAdded();
     return;
   }
 

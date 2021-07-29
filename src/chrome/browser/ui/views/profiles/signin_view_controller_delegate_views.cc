@@ -14,7 +14,7 @@
 #include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/signin/reauth_util.h"
 #include "chrome/browser/signin/signin_promo.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/signin_view_controller.h"
@@ -49,7 +49,7 @@ const int kReauthDialogHeight = 520;
 int GetSyncConfirmationDialogPreferredHeight(Profile* profile) {
   // If sync is disabled, then the sync confirmation dialog looks like an error
   // dialog and thus it has the same preferred size.
-  return ProfileSyncServiceFactory::IsSyncAllowed(profile)
+  return SyncServiceFactory::IsSyncAllowed(profile)
              ? kSyncConfirmationDialogHeight
              : kSigninErrorDialogHeight;
 }
@@ -83,6 +83,34 @@ SigninViewControllerDelegateViews::CreateReauthConfirmationWebView(
                              kReauthDialogHeight, kReauthDialogWidth);
 }
 
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
+// static
+std::unique_ptr<views::WebView>
+SigninViewControllerDelegateViews::CreateEnterpriseConfirmationWebView(
+    Browser* browser,
+    const std::string& domain_name,
+    SkColor profile_color,
+    base::OnceCallback<void(bool)> callback) {
+  std::unique_ptr<views::WebView> web_view = CreateDialogWebView(
+      browser, GURL(chrome::kChromeUIEnterpriseProfileWelcomeURL),
+      kSyncConfirmationDialogHeight, kSyncConfirmationDialogWidth);
+
+  EnterpriseProfileWelcomeUI* web_dialog_ui =
+      web_view->GetWebContents()
+          ->GetWebUI()
+          ->GetController()
+          ->GetAs<EnterpriseProfileWelcomeUI>();
+  DCHECK(web_dialog_ui);
+  web_dialog_ui->Initialize(
+      browser,
+      EnterpriseProfileWelcomeUI::ScreenType::kEnterpriseAccountCreation,
+      domain_name, profile_color, std::move(callback));
+
+  return web_view;
+}
+#endif
+
 views::View* SigninViewControllerDelegateViews::GetContentsView() {
   return content_view_;
 }
@@ -93,11 +121,6 @@ views::Widget* SigninViewControllerDelegateViews::GetWidget() {
 
 const views::Widget* SigninViewControllerDelegateViews::GetWidget() const {
   return content_view_->GetWidget();
-}
-
-void SigninViewControllerDelegateViews::DeleteDelegate() {
-  NotifyModalSigninClosed();
-  delete this;
 }
 
 bool SigninViewControllerDelegateViews::ShouldShowCloseButton() const {
@@ -199,6 +222,10 @@ SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
          dialog_modal_type == ui::MODAL_TYPE_WINDOW)
       << "Unsupported dialog modal type " << dialog_modal_type;
   SetModalType(dialog_modal_type);
+
+  RegisterDeleteDelegateCallback(base::BindOnce(
+      &SigninViewControllerDelegateViews::NotifyModalSigninClosed,
+      base::Unretained(this)));
 
   if (!wait_for_size)
     DisplayModal();
@@ -306,3 +333,19 @@ SigninViewControllerDelegate::CreateReauthConfirmationDelegate(
           browser, access_point),
       browser, ui::MODAL_TYPE_CHILD, false, true);
 }
+
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
+// static
+SigninViewControllerDelegate*
+SigninViewControllerDelegate::CreateEnterpriseConfirmationDelegate(
+    Browser* browser,
+    const std::string& domain_name,
+    SkColor profile_color,
+    base::OnceCallback<void(bool)> callback) {
+  return new SigninViewControllerDelegateViews(
+      SigninViewControllerDelegateViews::CreateEnterpriseConfirmationWebView(
+          browser, domain_name, profile_color, std::move(callback)),
+      browser, ui::MODAL_TYPE_WINDOW, true, false);
+}
+#endif

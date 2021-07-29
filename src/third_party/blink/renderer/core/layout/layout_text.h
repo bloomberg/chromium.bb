@@ -123,7 +123,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
     NOT_DESTROYED();
     return 0;
   }
-  String PlainText() const;
+  virtual String PlainText() const;
 
   // Returns first letter part of |LayoutTextFragment|.
   virtual LayoutText* GetFirstLetterPart() const {
@@ -465,6 +465,11 @@ class CORE_EXPORT LayoutText : public LayoutObject {
     NOT_DESTROYED();
     return true;
   }
+
+  // Override |LayoutObject| implementation to invalidate |LayoutNGtextCombine|.
+  // Note: This isn't a virtual function.
+  void SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
+      LayoutInvalidationReasonForTracing reason);
 
  private:
   InlineTextBoxList& MutableTextBoxes();

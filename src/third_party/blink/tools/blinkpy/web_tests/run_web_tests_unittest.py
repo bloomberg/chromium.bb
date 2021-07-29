@@ -31,7 +31,6 @@
 import json
 import os
 import re
-import StringIO
 import sys
 import unittest
 
@@ -50,6 +49,8 @@ from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models.typ_types import ResultType
 from blinkpy.web_tests.port import test
 from blinkpy.web_tests.views.printing import Printer
+
+from six import StringIO
 
 import mock  # pylint: disable=wrong-import-position
 
@@ -84,7 +85,7 @@ def passing_run(extra_args=None,
     if shared_port:
         port_obj.host.port_factory.get = lambda *args, **kwargs: port_obj
 
-    printer = Printer(host, options, StringIO.StringIO())
+    printer = Printer(host, options, StringIO())
     run_details = run_web_tests.run(port_obj, options, parsed_args, printer)
     return run_details.exit_code == 0
 
@@ -109,7 +110,7 @@ def logging_run(extra_args=None,
 def run_and_capture(port_obj, options, parsed_args, shared_port=True):
     if shared_port:
         port_obj.host.port_factory.get = lambda *args, **kwargs: port_obj
-    logging_stream = StringIO.StringIO()
+    logging_stream = StringIO()
     printer = Printer(port_obj.host, options, logging_stream)
     run_details = run_web_tests.run(port_obj, options, parsed_args, printer)
     return (run_details, logging_stream)
@@ -142,7 +143,7 @@ def get_test_results(args, host=None, port_obj=None):
     port_obj = port_obj or host.port_factory.get(
         port_name=options.platform, options=options)
 
-    printer = Printer(host, options, StringIO.StringIO())
+    printer = Printer(host, options, StringIO())
     run_details = run_web_tests.run(port_obj, options, parsed_args, printer)
 
     all_results = []
@@ -183,7 +184,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
                 '/tmp/json_failing_test_results.json'
             ],
             tests_included=True)
-        logging_stream = StringIO.StringIO()
+        logging_stream = StringIO()
         host = MockHost()
         port_obj = host.port_factory.get(options.platform, options)
         printer = Printer(host, options, logging_stream)
@@ -1065,51 +1066,43 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             'passes/platform_image.html', 'passes/text.html'
         ]
 
-        with mock.patch('__builtin__.hash', len):
-            # Shard 0 of 2
-            tests_run = get_tests_run([
-                '--shard-index', '0', '--total-shards', '2', '--order',
-                'natural'
-            ] + tests_to_run)
-            self.assertEqual(
-                tests_run, ['passes/platform_image.html', 'passes/text.html'])
-            # Shard 1 of 2
-            tests_run = get_tests_run([
-                '--shard-index', '1', '--total-shards', '2', '--order',
-                'natural'
-            ] + tests_to_run)
-            self.assertEqual(tests_run,
-                             ['passes/error.html', 'passes/image.html'])
+        # Shard 0 of 2
+        tests_run = get_tests_run([
+            '--shard-index', '0', '--total-shards', '2', '--order', 'natural'
+        ] + tests_to_run)
+        self.assertEqual(tests_run, ['passes/error.html'])
+        # Shard 1 of 2
+        tests_run = get_tests_run([
+            '--shard-index', '1', '--total-shards', '2', '--order', 'natural'
+        ] + tests_to_run)
+        self.assertEqual(tests_run, [
+            'passes/image.html', 'passes/platform_image.html',
+            'passes/text.html'
+        ])
 
     def test_sharding_uneven(self):
         tests_to_run = [
             'passes/error.html', 'passes/image.html',
-            'passes/platform_image.html', 'passes/text.html',
+            'passes/platform_image.html', 'passes/args.html',
             'perf/foo/test.html'
         ]
 
-        with mock.patch('__builtin__.hash', len):
-            # Shard 0 of 3
-            tests_run = get_tests_run([
-                '--shard-index', '0', '--total-shards', '3', '--order',
-                'natural'
-            ] + tests_to_run)
-            self.assertEqual(tests_run, ['perf/foo/test.html'])
-            # Shard 1 of 3
-            tests_run = get_tests_run([
-                '--shard-index', '1', '--total-shards', '3', '--order',
-                'natural'
-            ] + tests_to_run)
-            self.assertEqual(tests_run, ['passes/text.html'])
-            # Shard 2 of 3
-            tests_run = get_tests_run([
-                '--shard-index', '2', '--total-shards', '3', '--order',
-                'natural'
-            ] + tests_to_run)
-            self.assertEqual(tests_run, [
-                'passes/error.html', 'passes/image.html',
-                'passes/platform_image.html'
-            ])
+        # Shard 0 of 3
+        tests_run = get_tests_run([
+            '--shard-index', '0', '--total-shards', '3', '--order', 'natural'
+        ] + tests_to_run)
+        self.assertEqual(tests_run,
+                         ['perf/foo/test.html', 'passes/platform_image.html'])
+        # Shard 1 of 3
+        tests_run = get_tests_run([
+            '--shard-index', '1', '--total-shards', '3', '--order', 'natural'
+        ] + tests_to_run)
+        self.assertEqual(tests_run, ['passes/args.html'])
+        # Shard 2 of 3
+        tests_run = get_tests_run([
+            '--shard-index', '2', '--total-shards', '3', '--order', 'natural'
+        ] + tests_to_run)
+        self.assertEqual(tests_run, ['passes/error.html', 'passes/image.html'])
 
     def test_sharding_incorrect_arguments(self):
         with self.assertRaises(ValueError):
@@ -1126,21 +1119,22 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         ]
         host = MockHost()
 
-        with mock.patch('__builtin__.hash', len):
-            host.environ['GTEST_SHARD_INDEX'] = '0'
-            host.environ['GTEST_TOTAL_SHARDS'] = '2'
-            shard_0_tests_run = get_tests_run(
-                ['--order', 'natural'] + tests_to_run, host=host)
-            self.assertEqual(
-                shard_0_tests_run,
-                ['passes/platform_image.html', 'passes/text.html'])
+        host.environ['GTEST_SHARD_INDEX'] = '0'
+        host.environ['GTEST_TOTAL_SHARDS'] = '2'
+        shard_0_tests_run = get_tests_run(['--order', 'natural'] +
+                                          tests_to_run,
+                                          host=host)
+        self.assertEqual(shard_0_tests_run, ['passes/error.html'])
 
-            host.environ['GTEST_SHARD_INDEX'] = '1'
-            host.environ['GTEST_TOTAL_SHARDS'] = '2'
-            shard_1_tests_run = get_tests_run(
-                ['--order', 'natural'] + tests_to_run, host=host)
-            self.assertEqual(shard_1_tests_run,
-                             ['passes/error.html', 'passes/image.html'])
+        host.environ['GTEST_SHARD_INDEX'] = '1'
+        host.environ['GTEST_TOTAL_SHARDS'] = '2'
+        shard_1_tests_run = get_tests_run(['--order', 'natural'] +
+                                          tests_to_run,
+                                          host=host)
+        self.assertEqual(shard_1_tests_run, [
+            'passes/image.html', 'passes/platform_image.html',
+            'passes/text.html'
+        ])
 
     def test_smoke_test(self):
         host = MockHost()
@@ -2223,7 +2217,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             any(path.endswith('-wdiff.html') for path in written_files))
 
     def test_unsupported_platform(self):
-        stderr = StringIO.StringIO()
+        stderr = StringIO()
         res = run_web_tests.main(['--platform', 'foo'], stderr)
 
         self.assertEqual(res, exit_codes.UNEXPECTED_ERROR_EXIT_STATUS)
@@ -2243,7 +2237,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host = MockHost()
         port_obj = host.port_factory.get(
             port_name=options.platform, options=options)
-        logging_stream = StringIO.StringIO()
+        logging_stream = StringIO()
         printer = Printer(host, options, logging_stream)
         run_web_tests.run(port_obj, options, parsed_args, printer)
         self.assertTrue('text.html passed' in logging_stream.getvalue())
@@ -2873,7 +2867,7 @@ class MainTest(unittest.TestCase):
         def exception_raising_run(port, options, args, printer):
             assert False
 
-        stderr = StringIO.StringIO()
+        stderr = StringIO()
         try:
             run_web_tests.run = interrupting_run
             res = run_web_tests.main([], stderr)

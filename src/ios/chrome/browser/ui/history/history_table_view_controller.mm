@@ -44,7 +44,6 @@
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/menu_util.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -187,16 +186,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // history content.
   self.tableView.tableFooterView = [[UIView alloc] init];
 
-  if (!IsNativeContextMenuEnabled()) {
-    // Long-press gesture recognizer.
-    UILongPressGestureRecognizer* longPressRecognizer =
-        [[UILongPressGestureRecognizer alloc]
-            initWithTarget:self
-                    action:@selector
-                    (displayContextMenuInvokedByGestureRecognizer:)];
-    [self.tableView addGestureRecognizer:longPressRecognizer];
-  }
-
   self.dragDropHandler = [[TableViewURLDragDropHandler alloc] init];
   self.dragDropHandler.origin = WindowActivityHistoryOrigin;
   self.dragDropHandler.dragDataSource = self;
@@ -290,7 +279,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(
           self.browser->GetBrowserState());
-  if (syncSetupService->IsSyncEnabled() &&
+  if (syncSetupService->CanSyncFeatureStart() &&
       syncSetupService->IsDataTypeActive(syncer::HISTORY_DELETE_DIRECTIVES) &&
       queryResultsInfo.sync_timed_out) {
     [self showHistoryMatchingQuery:_currentQuery];
@@ -639,14 +628,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 - (UIContextMenuConfiguration*)tableView:(UITableView*)tableView
     contextMenuConfigurationForRowAtIndexPath:(NSIndexPath*)indexPath
-                                        point:(CGPoint)point
-    API_AVAILABLE(ios(13.0)) {
-  if (!IsNativeContextMenuEnabled()) {
-    // Returning nil will allow the gesture to be captured and show the old
-    // context menus.
-    return nil;
-  }
-
+                                        point:(CGPoint)point {
   if (self.isEditing) {
     // Don't show the context menu when currently in editing mode.
     return nil;

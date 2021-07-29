@@ -20,8 +20,10 @@
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/surfaces/subtree_capture_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/mask_filter_info.h"
 #include "ui/gfx/transform.h"
 
@@ -176,7 +178,14 @@ class CC_EXPORT RenderSurfaceImpl {
 
   bool HasCopyRequest() const;
 
+  // The capture identifier for this render surface and its originating effect
+  // node. If empty, this surface has not been selected as a subtree capture and
+  // is either a root surface or will not be rendered separately.
   viz::SubtreeCaptureId SubtreeCaptureId() const;
+
+  // The size of this surface that should be used for cropping capture. If
+  // empty, the entire size of this surface should be used for capture.
+  gfx::Size SubtreeSize() const;
 
   bool ShouldCacheRenderSurface() const;
 

@@ -309,14 +309,9 @@ Token Lexer::try_ident() {
   }
 
   auto str = content_->data.substr(s, pos_ - s);
-  auto t = check_reserved(source, str);
-  if (!t.IsUninitialized()) {
-    return t;
-  }
-
   end_source(source);
 
-  t = check_keyword(source, str);
+  auto t = check_keyword(source, str);
   if (!t.IsUninitialized()) {
     return t;
   }
@@ -428,6 +423,10 @@ Token Lexer::try_punctuation() {
     type = Token::Type::kArrow;
     pos_ += 2;
     location_.column += 2;
+  } else if (matches(pos_, "--")) {
+    type = Token::Type::kMinusMinus;
+    pos_ += 2;
+    location_.column += 2;
   } else if (matches(pos_, "-")) {
     type = Token::Type::kMinus;
     pos_ += 1;
@@ -436,6 +435,10 @@ Token Lexer::try_punctuation() {
     type = Token::Type::kPeriod;
     pos_ += 1;
     location_.column += 1;
+  } else if (matches(pos_, "++")) {
+    type = Token::Type::kPlusPlus;
+    pos_ += 2;
+    location_.column += 2;
   } else if (matches(pos_, "+")) {
     type = Token::Type::kPlus;
     pos_ += 1;
@@ -456,6 +459,10 @@ Token Lexer::try_punctuation() {
     type = Token::Type::kStar;
     pos_ += 1;
     location_.column += 1;
+  } else if (matches(pos_, "~")) {
+    type = Token::Type::kTilde;
+    pos_ += 1;
+    location_.column += 1;
   } else if (matches(pos_, "^")) {
     type = Token::Type::kXor;
     pos_ += 1;
@@ -470,6 +477,8 @@ Token Lexer::try_punctuation() {
 Token Lexer::check_keyword(const Source& source, const std::string& str) {
   if (str == "array")
     return {Token::Type::kArray, source, "array"};
+  if (str == "atomic")
+    return {Token::Type::kAtomic, source, "atomic"};
   if (str == "bitcast")
     return {Token::Type::kBitcast, source, "bitcast"};
   if (str == "bool")
@@ -478,8 +487,6 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kBreak, source, "break"};
   if (str == "case")
     return {Token::Type::kCase, source, "case"};
-  if (str == "const")
-    return {Token::Type::kConst, source, "const"};
   if (str == "continue")
     return {Token::Type::kContinue, source, "continue"};
   if (str == "continuing")
@@ -582,8 +589,6 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kImage, source, "image"};
   if (str == "import")
     return {Token::Type::kImport, source, "import"};
-  if (str == "in")
-    return {Token::Type::kIn, source, "in"};
   if (str == "let")
     return {Token::Type::kLet, source, "let"};
   if (str == "loop")
@@ -606,8 +611,6 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kMat4x3, source, "mat4x3"};
   if (str == "mat4x4")
     return {Token::Type::kMat4x4, source, "mat4x4"};
-  if (str == "out")
-    return {Token::Type::kOut, source, "out"};
   if (str == "private")
     return {Token::Type::kPrivate, source, "private"};
   if (str == "ptr")
@@ -686,48 +689,8 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kVec3, source, "vec3"};
   if (str == "vec4")
     return {Token::Type::kVec4, source, "vec4"};
-  if (str == "void")
-    return {Token::Type::kVoid, source, "void"};
   if (str == "workgroup")
     return {Token::Type::kWorkgroup, source, "workgroup"};
-  return {};
-}
-
-Token Lexer::check_reserved(const Source& source, const std::string& str) {
-  if (str == "asm")
-    return {Token::Type::kReservedKeyword, source, "asm"};
-  if (str == "bf16")
-    return {Token::Type::kReservedKeyword, source, "bf16"};
-  if (str == "do")
-    return {Token::Type::kReservedKeyword, source, "do"};
-  if (str == "enum")
-    return {Token::Type::kReservedKeyword, source, "enum"};
-  if (str == "f16")
-    return {Token::Type::kReservedKeyword, source, "f16"};
-  if (str == "f64")
-    return {Token::Type::kReservedKeyword, source, "f64"};
-  if (str == "handle")
-    return {Token::Type::kReservedKeyword, source, "handle"};
-  if (str == "i8")
-    return {Token::Type::kReservedKeyword, source, "i8"};
-  if (str == "i16")
-    return {Token::Type::kReservedKeyword, source, "i16"};
-  if (str == "i64")
-    return {Token::Type::kReservedKeyword, source, "i64"};
-  if (str == "premerge")
-    return {Token::Type::kReservedKeyword, source, "premerge"};
-  if (str == "regardless")
-    return {Token::Type::kReservedKeyword, source, "regardless"};
-  if (str == "typedef")
-    return {Token::Type::kReservedKeyword, source, "typedef"};
-  if (str == "u8")
-    return {Token::Type::kReservedKeyword, source, "u8"};
-  if (str == "u16")
-    return {Token::Type::kReservedKeyword, source, "u16"};
-  if (str == "u64")
-    return {Token::Type::kReservedKeyword, source, "u64"};
-  if (str == "unless")
-    return {Token::Type::kReservedKeyword, source, "unless"};
   return {};
 }
 

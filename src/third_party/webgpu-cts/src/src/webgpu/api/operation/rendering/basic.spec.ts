@@ -38,7 +38,7 @@ g.test('clear').fn(async t => {
   );
   t.device.queue.submit([encoder.finish()]);
 
-  t.expectContents(dst, new Uint8Array([0x00, 0xff, 0x00, 0xff]));
+  t.expectGPUBufferValuesEqual(dst, new Uint8Array([0x00, 0xff, 0x00, 0xff]));
 });
 
 g.test('fullscreen_quad').fn(async t => {
@@ -59,9 +59,9 @@ g.test('fullscreen_quad').fn(async t => {
       module: t.device.createShaderModule({
         code: `
         [[stage(vertex)]] fn main(
-          [[builtin(vertex_index)]] VertexIndex : i32
+          [[builtin(vertex_index)]] VertexIndex : u32
           ) -> [[builtin(position)]] vec4<f32> {
-            let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+            var pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
                 vec2<f32>(-1.0, -3.0),
                 vec2<f32>(3.0, 1.0),
                 vec2<f32>(-1.0, 1.0));
@@ -105,9 +105,28 @@ g.test('fullscreen_quad').fn(async t => {
   );
   t.device.queue.submit([encoder.finish()]);
 
-  t.expectContents(dst, new Uint8Array([0x00, 0xff, 0x00, 0xff]));
+  t.expectGPUBufferValuesEqual(dst, new Uint8Array([0x00, 0xff, 0x00, 0xff]));
 });
 
 g.test('large_draw')
-  .desc(`Test reasonably-sized large {draw, drawIndexed} (see also stress tests).`)
+  .desc(
+    `Test reasonably-sized large {draw, drawIndexed} (see also stress tests).
+
+  Tests that draw calls behave reasonably with large vertex counts for
+  non-indexed draws, large index counts for indexed draws, and large instance
+  counts in both cases. Various combinations of these counts are tested with
+  both direct and indrect draw calls.
+
+  Draw call sizes are increased incrementally over these parameters until the
+  completion of a draw call exceeds a fixed time limit of 500ms.
+
+  Params:
+    - indexed= {true, false} - whether to test indexed or non-indexed draw calls
+    - indirect= {true, false} - whether to use indirect or direct draw calls`
+  )
+  .params(u =>
+    u //
+      .combine('indexed', [true, false])
+      .combine('indirect', [true, false])
+  )
   .unimplemented();

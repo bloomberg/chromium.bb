@@ -13,6 +13,7 @@
 #include "components/qr_code_generator/qr_code_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/skia_util.h"
 
 namespace qrcode_generator {
 
@@ -78,7 +79,7 @@ void QRCodeGeneratorServiceImpl::DrawDino(SkCanvas* canvas,
                                           const int dino_border_px,
                                           const SkPaint& paint_foreground,
                                           const SkPaint& paint_background) {
-  int dino_width_px = pixels_per_dino_tile * dino_image::kDinoHeight;
+  int dino_width_px = pixels_per_dino_tile * dino_image::kDinoWidth;
   int dino_height_px = pixels_per_dino_tile * dino_image::kDinoHeight;
 
   // If we request too big a dino, we'll clip. In practice the dino size
@@ -96,14 +97,16 @@ void QRCodeGeneratorServiceImpl::DrawDino(SkCanvas* canvas,
 
   // Clear out a little room for a border, snapped to some number of modules.
   SkRect background = SkRect::MakeLTRB(
-      (dest_rect.left() - dino_border_px) / kModuleSizePixels *
+      std::floor((dest_rect.left() - dino_border_px) / kModuleSizePixels) *
           kModuleSizePixels,
-      (dest_rect.top() - dino_border_px) / kModuleSizePixels *
+      std::floor((dest_rect.top() - dino_border_px) / kModuleSizePixels) *
           kModuleSizePixels,
-      (dest_rect.right() + dino_border_px + kModuleSizePixels - 1) /
-          kModuleSizePixels * kModuleSizePixels,
-      (dest_rect.bottom() + dino_border_px + kModuleSizePixels - 1) /
-          kModuleSizePixels * kModuleSizePixels);
+      std::floor((dest_rect.right() + dino_border_px + kModuleSizePixels - 1) /
+                 kModuleSizePixels) *
+          kModuleSizePixels,
+      std::floor((dest_rect.bottom() + dino_border_px + kModuleSizePixels - 1) /
+                 kModuleSizePixels) *
+          kModuleSizePixels);
   canvas->drawRect(background, paint_background);
 
   // Center the dino within the cleared space, and draw it.
@@ -135,24 +138,24 @@ static void DrawLocators(SkCanvas* canvas,
     int top_y_pixels = top_y_modules * kModuleSizePixels;
     int dim_pixels = kModuleSizePixels * kLocatorSizeModules;
     canvas->drawRoundRect(
-        {left_x_pixels, top_y_pixels, left_x_pixels + dim_pixels,
-         top_y_pixels + dim_pixels},
+        gfx::RectToSkRect(
+            gfx::Rect(left_x_pixels, top_y_pixels, dim_pixels, dim_pixels)),
         radius, radius, paint_foreground);
     // Middle square, one module smaller in all dimensions (5x5).
     left_x_pixels += kModuleSizePixels;
     top_y_pixels += kModuleSizePixels;
     dim_pixels -= 2 * kModuleSizePixels;
     canvas->drawRoundRect(
-        {left_x_pixels, top_y_pixels, left_x_pixels + dim_pixels,
-         top_y_pixels + dim_pixels},
+        gfx::RectToSkRect(
+            gfx::Rect(left_x_pixels, top_y_pixels, dim_pixels, dim_pixels)),
         radius, radius, paint_background);
     // Inner square, one additional module smaller in all dimensions (3x3).
     left_x_pixels += kModuleSizePixels;
     top_y_pixels += kModuleSizePixels;
     dim_pixels -= 2 * kModuleSizePixels;
     canvas->drawRoundRect(
-        {left_x_pixels, top_y_pixels, left_x_pixels + dim_pixels,
-         top_y_pixels + dim_pixels},
+        gfx::RectToSkRect(
+            gfx::Rect(left_x_pixels, top_y_pixels, dim_pixels, dim_pixels)),
         radius, radius, paint_foreground);
   };
 
@@ -206,10 +209,10 @@ void QRCodeGeneratorServiceImpl::RenderBitmap(
           SkScalar radius = kModuleSizePixels / 2 - 1;
           canvas.drawCircle(xc, yc, radius, paint_black);
         } else {
-          canvas.drawRect(
-              {x * kModuleSizePixels, y * kModuleSizePixels,
-               (x + 1) * kModuleSizePixels, (y + 1) * kModuleSizePixels},
-              paint_black);
+          canvas.drawRect(gfx::RectToSkRect(gfx::Rect(
+                              x * kModuleSizePixels, y * kModuleSizePixels,
+                              kModuleSizePixels, kModuleSizePixels)),
+                          paint_black);
         }
       }
     }

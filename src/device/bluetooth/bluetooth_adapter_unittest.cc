@@ -48,6 +48,11 @@
 #include "device/bluetooth/test/bluetooth_test_fuchsia.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "device/bluetooth/bluetooth_low_energy_scan_filter.h"
+#include "device/bluetooth/bluetooth_low_energy_scan_session.h"
+#endif
+
 using device::BluetoothDevice;
 
 namespace device {
@@ -137,6 +142,13 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
   void SetServiceAllowList(const UUIDList& uuids,
                            base::OnceClosure callback,
                            ErrorCallback error_callback) override {}
+
+  std::unique_ptr<BluetoothLowEnergyScanSession> StartLowEnergyScanSession(
+      std::unique_ptr<BluetoothLowEnergyScanFilter> filter,
+      base::WeakPtr<BluetoothLowEnergyScanSession::Delegate> delegate)
+      override {
+    return nullptr;
+  }
 #endif
 
   void OnStartDiscoverySessionQuitLoop(
@@ -1460,8 +1472,8 @@ TEST_F(BluetoothTest, MAYBE_TurnOffAdapterWithConnectedDevice) {
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
 
-  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
-                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  device->CreateGattConnection(
+      GetGattConnectionCallback(Call::EXPECTED, Result::SUCCESS));
   SimulateGattConnection(device);
   base::RunLoop().RunUntilIdle();
 
@@ -1913,8 +1925,8 @@ TEST_F(BluetoothTest, MAYBE_RemoveOutdatedDeviceGattConnect) {
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(1);
   device->SetAsExpiredForTesting();
-  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
-                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  device->CreateGattConnection(
+      GetGattConnectionCallback(Call::EXPECTED, Result::SUCCESS));
   SimulateGattConnection(device);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, adapter_->GetDevices().size());

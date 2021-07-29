@@ -201,7 +201,7 @@ SenderSession::Client::~Client() = default;
 
 SenderSession::SenderSession(Configuration config)
     : config_(config),
-      messager_(
+      messenger_(
           config_.message_port,
           config_.message_source_id,
           config_.message_destination_id,
@@ -210,6 +210,9 @@ SenderSession::SenderSession(Configuration config)
             config_.client->OnError(this, error);
           },
           config_.environment->task_runner()),
+      rpc_messenger_([this](std::vector<uint8_t> message) {
+        SendRpcMessage(std::move(message));
+      }),
       packet_router_(config_.environment) {
   OSP_DCHECK(config_.client);
   OSP_DCHECK(config_.environment);
@@ -217,10 +220,10 @@ SenderSession::SenderSession(Configuration config)
   // We may or may not do remoting this session, however our RPC handler
   // is not negotiation-specific and registering on construction here allows us
   // to record any unexpected RPC messages.
-  messager_.SetHandler(ReceiverMessage::Type::kRpc,
-                       [this](ReceiverMessage message) {
-                         this->OnRpcMessage(std::move(message));
-                       });
+  messenger_.SetHandler(ReceiverMessage::Type::kRpc,
+                        [this](ReceiverMessage message) {
+                          this->OnRpcMessage(std::move(message));
+                        });
 }
 
 SenderSession::~SenderSession() = default;
@@ -265,7 +268,6 @@ void SenderSession::ResetState() {
   current_negotiation_.reset();
   current_audio_sender_.reset();
   current_video_sender_.reset();
-  broker_.reset();
 }
 
 Error SenderSession::StartNegotiation(
@@ -276,7 +278,7 @@ Error SenderSession::StartNegotiation(
       std::unique_ptr<InProcessNegotiation>(new InProcessNegotiation{
           offer, std::move(audio_configs), std::move(video_configs)});
 
-  return messager_.SendRequest(
+  return messenger_.SendRequest(
       SenderMessage{SenderMessage::Type::kOffer, ++current_sequence_number_,
                     true, std::move(offer)},
       ReceiverMessage::Type::kAnswer,
@@ -299,7 +301,7 @@ void SenderSession::OnAnswer(ReceiverMessage message) {
       return;
     }
 
-    state_ = State::kMirroring;
+    state_ = State::kStreaming;
     config_.client->OnNegotiated(
         this, std::move(senders),
         capture_recommendations::GetRecommendations(answer));
@@ -310,7 +312,7 @@ void SenderSession::OnAnswer(ReceiverMessage message) {
     // receiver's capabilities are. So, we cache the Answer until the
     // capabilites request is completed.
     current_negotiation_->answer = answer;
-    const Error result = messager_.SendRequest(
+    const Error result = messenger_.SendRequest(
         SenderMessage{SenderMessage::Type::kGetCapabilities,
                       ++current_sequence_number_, true},
         ReceiverMessage::Type::kCapabilitiesResponse,
@@ -361,27 +363,12 @@ void SenderSession::OnCapabilitiesResponse(ReceiverMessage message) {
                                   "Failed to negotiate a remoting session."));
     return;
   }
-  broker_ = std::make_unique<RpcBroker>([this](std::vector<uint8_t> message) {
-    Error error = this->messager_.SendOutboundMessage(SenderMessage{
-        SenderMessage::Type::kRpc, ++(this->current_sequence_number_), true,
-        std::move(message)});
-
-    if (!error.ok()) {
-      OSP_LOG_WARN << "Failed to send RPC message: " << error;
-    }
-  });
 
   config_.client->OnRemotingNegotiated(
-      this, RemotingNegotiation{std::move(senders), ToCapabilities(caps),
-                                broker_.get()});
+      this, RemotingNegotiation{std::move(senders), ToCapabilities(caps)});
 }
 
 void SenderSession::OnRpcMessage(ReceiverMessage message) {
-  if (!broker_) {
-    OSP_LOG_INFO << "Received an RPC message without having an RPCBroker.";
-    return;
-  }
-
   if (!message.valid) {
     HandleErrorMessage(
         message,
@@ -390,7 +377,7 @@ void SenderSession::OnRpcMessage(ReceiverMessage message) {
   }
 
   const auto& body = absl::get<std::vector<uint8_t>>(message.body);
-  broker_->ProcessMessageFromRemote(body.data(), body.size());
+  rpc_messenger_.ProcessMessageFromRemote(body.data(), body.size());
 }
 
 void SenderSession::HandleErrorMessage(ReceiverMessage message,
@@ -490,6 +477,16 @@ SenderSession::ConfiguredSenders SenderSession::SpawnSenders(
     }
   }
   return senders;
+}
+
+void SenderSession::SendRpcMessage(std::vector<uint8_t> message_body) {
+  Error error = this->messenger_.SendOutboundMessage(SenderMessage{
+      SenderMessage::Type::kRpc, ++(this->current_sequence_number_), true,
+      std::move(message_body)});
+
+  if (!error.ok()) {
+    OSP_LOG_WARN << "Failed to send RPC message: " << error;
+  }
 }
 
 }  // namespace cast

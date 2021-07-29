@@ -227,6 +227,8 @@ class TType
     void toArrayElementType();
     // Removes all array sizes.
     void toArrayBaseType();
+    // Turns a matrix into a column of it.
+    void toMatrixColumnType();
 
     const TInterfaceBlock *getInterfaceBlock() const { return mInterfaceBlock; }
     void setInterfaceBlock(const TInterfaceBlock *interfaceBlockIn);
@@ -237,6 +239,7 @@ class TType
 
     bool isVector() const { return primarySize > 1 && secondarySize == 1; }
     bool isVectorArray() const { return primarySize > 1 && secondarySize == 1 && isArray(); }
+    bool isRank0() const { return primarySize == 1 && secondarySize == 1; }
     bool isScalar() const
     {
         return primarySize == 1 && secondarySize == 1 && !mStructure && !isArray();

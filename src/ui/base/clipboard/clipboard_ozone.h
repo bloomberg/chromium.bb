@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "ui/base/clipboard/clipboard.h"
 
 namespace ui {
@@ -17,6 +16,10 @@ namespace ui {
 // ClipboardOzone is not yet shipped in production. It is a work in progress
 // for desktop Linux Wayland support.
 class ClipboardOzone : public Clipboard {
+ public:
+  ClipboardOzone(const ClipboardOzone&) = delete;
+  ClipboardOzone& operator=(const ClipboardOzone&) = delete;
+
  private:
   friend class Clipboard;
 
@@ -75,12 +78,11 @@ class ClipboardOzone : public Clipboard {
                 const DataTransferEndpoint* data_dst,
                 std::string* result) const override;
   bool IsSelectionBufferAvailable() const override;
-  void WritePortableRepresentations(
+  void WritePortableTextRepresentation(ClipboardBuffer buffer,
+                                       const ObjectMap& objects);
+  void WritePortableAndPlatformRepresentations(
       ClipboardBuffer buffer,
       const ObjectMap& objects,
-      std::unique_ptr<DataTransferEndpoint> data_src) override;
-  void WritePlatformRepresentations(
-      ClipboardBuffer buffer,
       std::vector<Clipboard::PlatformRepresentation> platform_representations,
       std::unique_ptr<DataTransferEndpoint> data_src) override;
   void WriteText(const char* text_data, size_t text_len) override;
@@ -101,15 +103,13 @@ class ClipboardOzone : public Clipboard {
                  const char* data_data,
                  size_t data_len) override;
 
-  SkBitmap ReadImageInternal(ClipboardBuffer buffer) const;
+  std::vector<uint8_t> ReadPngInternal(ClipboardBuffer buffer) const;
 
   class AsyncClipboardOzone;
 
   std::unique_ptr<AsyncClipboardOzone> async_clipboard_ozone_;
   base::flat_map<ClipboardBuffer, std::unique_ptr<DataTransferEndpoint>>
       data_src_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClipboardOzone);
 };
 
 }  // namespace ui

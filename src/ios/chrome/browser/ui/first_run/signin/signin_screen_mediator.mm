@@ -5,12 +5,12 @@
 #import "ios/chrome/browser/ui/first_run/signin/signin_screen_mediator.h"
 
 #include "ios/chrome/browser/chrome_browser_provider_observer_bridge.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
-#import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/first_run_signin_logger.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/user_signin_logger.h"
 #import "ios/chrome/browser/ui/first_run/signin/signin_screen_consumer.h"
-#import "ios/chrome/browser/ui/first_run/signin/signin_screen_mediator_delegate.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
@@ -26,55 +26,60 @@
 }
 
 @property(nonatomic, readonly) ios::ChromeIdentityService* identityService;
-// Manager for the authentication flow.
-@property(nonatomic, strong) AuthenticationFlow* authenticationFlow;
 // Logger used to record sign in metrics.
 @property(nonatomic, strong) UserSigninLogger* logger;
-// Pref service to retrieve preference values.
-@property(nonatomic, assign) PrefService* prefService;
+// Account manager service to retrieve Chrome identities.
+@property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
+// Authentication service for sign in.
+@property(nonatomic, assign) AuthenticationService* authenticationService;
 
 @end
 
 @implementation SigninScreenMediator
 
-- (instancetype)initWithPrefService:(PrefService*)prefService {
+- (instancetype)initWithAccountManagerService:
+                    (ChromeAccountManagerService*)accountManagerService
+                        authenticationService:
+                            (AuthenticationService*)authenticationService {
   self = [super init];
   if (self) {
-    _prefService = prefService;
+    DCHECK(accountManagerService);
+    DCHECK(authenticationService);
+
+    _accountManagerService = accountManagerService;
+    _authenticationService = authenticationService;
     _browserProviderObserver =
         std::make_unique<ChromeBrowserProviderObserverBridge>(self);
     _identityServiceObserver =
         std::make_unique<ChromeIdentityServiceObserverBridge>(self);
 
     _logger = [[FirstRunSigninLogger alloc]
-        initWithAccessPoint:signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE
-                promoAction:signin_metrics::PromoAction::
-                                PROMO_ACTION_NO_SIGNIN_PROMO
-                prefService:prefService];
+          initWithAccessPoint:signin_metrics::AccessPoint::
+                                  ACCESS_POINT_START_PAGE
+                  promoAction:signin_metrics::PromoAction::
+                                  PROMO_ACTION_NO_SIGNIN_PROMO
+        accountManagerService:accountManagerService];
+
+    [_logger logSigninStarted];
   }
   return self;
 }
 
 - (void)dealloc {
-  DCHECK(!self.prefService);
+  DCHECK(!self.accountManagerService);
 }
 
 - (void)disconnect {
   [self.logger disconnect];
-  self.prefService = nullptr;
+  self.accountManagerService = nullptr;
 }
 
-- (void)startSignInWithAuthenticationFlow:
-    (AuthenticationFlow*)authenticationFlow {
-  DCHECK(!self.authenticationFlow);
+- (void)startSignIn {
+  self.authenticationService->SignIn(self.selectedIdentity);
 
-  [self.consumer setUIEnabled:NO];
-
-  self.authenticationFlow = authenticationFlow;
-  __weak __typeof(self) weakSelf = self;
-  [self.authenticationFlow startSignInWithCompletion:^(BOOL success) {
-    [weakSelf onAccountSigninCompletionWithSuccess:success];
-  }];
+  [self.logger logSigninCompletedWithResult:SigninCoordinatorResultSuccess
+                               addedAccount:self.addedAccount
+                      advancedSettingsShown:NO];
 }
 
 #pragma mark - Properties
@@ -83,7 +88,7 @@
   if ([self.selectedIdentity isEqual:selectedIdentity])
     return;
   // nil is allowed only if there is no other identity.
-  DCHECK(selectedIdentity || !self.identityService->HasIdentities());
+  DCHECK(selectedIdentity || !self.accountManagerService->HasIdentities());
   _selectedIdentity = selectedIdentity;
 
   [self updateConsumer];
@@ -98,7 +103,7 @@
 }
 
 - (ios::ChromeIdentityService*)identityService {
-  return ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+  return ios::GetChromeBrowserProvider().GetChromeIdentityService();
 }
 
 #pragma mark - ChromeBrowserProviderObserver
@@ -116,20 +121,13 @@
 #pragma mark - ChromeIdentityServiceObserver
 
 - (void)identityListChanged {
-  if (!self.prefService) {
+  if (!self.accountManagerService) {
     return;
   }
 
   if (!self.selectedIdentity ||
-      !self.identityService->IsValidIdentity(self.selectedIdentity)) {
-    NSArray* identities =
-        self.identityService->GetAllIdentitiesSortedForDisplay(
-            self.prefService);
-    ChromeIdentity* newIdentity = nil;
-    if (identities.count != 0) {
-      newIdentity = identities[0];
-    }
-    self.selectedIdentity = newIdentity;
+      !self.accountManagerService->IsValidIdentity(self.selectedIdentity)) {
+    self.selectedIdentity = self.accountManagerService->GetDefaultIdentity();
   }
 }
 
@@ -156,7 +154,8 @@
   if (self.selectedIdentity) {
     [self.consumer
         setSelectedIdentityUserName:self.selectedIdentity.userFullName
-                              email:self.selectedIdentity.userEmail];
+                              email:self.selectedIdentity.userEmail
+                          givenName:self.selectedIdentity.userGivenName];
 
     ChromeIdentity* selectedIdentity = self.selectedIdentity;
     __weak __typeof(self) weakSelf = self;
@@ -171,20 +170,5 @@
   }
 }
 
-// Callback used when the sign in flow is complete, with |success|.
-- (void)onAccountSigninCompletionWithSuccess:(BOOL)success {
-  self.authenticationFlow = nil;
-  [self.consumer setUIEnabled:YES];
-
-  if (success) {
-    // Only log if the sign-in is successful.
-    [self.logger logSigninCompletedWithResult:SigninCoordinatorResultSuccess
-                                 addedAccount:self.addedAccount
-                        advancedSettingsShown:NO];
-
-    [self.delegate signinScreenMediator:self
-              didFinishSigninWithResult:SigninCoordinatorResultSuccess];
-  }
-}
 
 @end

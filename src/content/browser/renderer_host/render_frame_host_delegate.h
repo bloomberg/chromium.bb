@@ -150,6 +150,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void OnDidFinishLoad(RenderFrameHostImpl* render_frame_host,
                                const GURL& url) {}
 
+  // Notifies that the manifest URL is updated.
+  virtual void OnManifestUrlChanged(const PageImpl& page) {}
+
   // Gets the last committed URL. See WebContents::GetLastCommittedURL for a
   // description of the semantics.
   virtual const GURL& GetMainFrameLastCommittedURL();
@@ -299,6 +302,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Returns whether entering fullscreen with EnterFullscreenMode() is allowed.
   virtual bool CanEnterFullscreenMode();
 
+  // Returns whether this frame is already fullscreen.
+  virtual bool HasEnteredFullscreenMode();
+
   // Notification that the frame with the given host wants to enter fullscreen
   // mode. Must only be called if CanEnterFullscreenMode returns true.
   virtual void EnterFullscreenMode(
@@ -315,7 +321,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void FullscreenStateChanged(
       RenderFrameHostImpl* rfh,
       bool is_fullscreen,
-      blink::mojom::FullscreenOptionsPtr options) {}
+      blink::mojom::FullscreenOptionsPtr options);
 
 #if defined(OS_ANDROID)
   // Updates information to determine whether a user gesture should carryover to
@@ -361,9 +367,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // WebContents is not live.
   virtual RenderFrameHostImpl* GetFocusedFrameIncludingInnerWebContents();
 
-  // Returns the main frame for the delegate.
-  virtual RenderFrameHostImpl* GetMainFrame();
-
   // Called by when |source_rfh| advances focus to a RenderFrameProxyHost.
   virtual void OnAdvanceFocus(RenderFrameHostImpl* source_rfh) {}
 
@@ -398,12 +401,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Note: this is not called "CreateWindow" because that will clash with
   // the Windows function which is actually a #define.
   //
-  // On success, a non-owning pointer to the new RenderFrameHostDelegate is
-  // returned.
+  // On success, a non-owning pointer to the new FrameTree is returned.
   //
   // The caller is expected to handle cleanup if this operation fails or is
   // suppressed by checking if the return value is null.
-  virtual RenderFrameHostDelegate* CreateNewWindow(
+  virtual FrameTree* CreateNewWindow(
       RenderFrameHostImpl* opener,
       const mojom::CreateNewWindowParams& params,
       bool is_new_browsing_instance,
@@ -473,11 +475,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       const base::UnguessableToken& guid,
       RenderFrameHostImpl* render_frame_host) {}
 
-  // Updates the Picture-in-Picture controller with the relevant viz::SurfaceId
-  // of the video to be in Picture-in-Picture mode.
-  virtual void UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,
-                                               const gfx::Size& natural_size) {}
-
   // Returns a copy of the current WebPreferences associated with this
   // RenderFrameHost's WebContents. If it does not exist, this will create one
   // and send the newly computed value to all renderers.
@@ -491,15 +488,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Returns the visibility of the delegate.
   virtual Visibility GetVisibility();
-
-  // Get the UKM source ID for current content from the last committed
-  // navigation, either a cross-document or same-document navigation. This is
-  // for providing data about the content to the URL-keyed metrics service.
-  // Use this method if UKM events should be attributed to the latest
-  // navigation, that is, attribute events to the new source after each
-  // same-document navigation, if any.
-  virtual ukm::SourceId
-  GetUkmSourceIdForLastCommittedSourceIncludingSameDocument() const;
 
   // Notify observers if WebAudio AudioContext has started (or stopped) playing
   // audible sounds.
@@ -574,7 +562,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   virtual void OnTextAutosizerPageInfoChanged(
       RenderFrameHostImpl* source,
-      blink::mojom::TextAutosizerPageInfoPtr page_info) {}
+      blink::mojom::TextAutosizerPageInfoPtr page_info);
 
   // Return true if we have seen a recent orientation change, which is used to
   // decide if we should consume user activation when entering fullscreen.

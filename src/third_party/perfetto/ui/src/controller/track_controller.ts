@@ -68,7 +68,7 @@ export abstract class TrackController<
   // Must be overridden by the track implementation. Is invoked when the track
   // frontend runs out of cached data. The derived track controller is expected
   // to publish new track data in response to this call.
-  abstract async onBoundsChange(start: number, end: number, resolution: number):
+  abstract onBoundsChange(start: number, end: number, resolution: number):
       Promise<Data>;
 
   get trackState(): TrackState {
@@ -118,6 +118,11 @@ export abstract class TrackController<
     return result;
   }
 
+  protected async queryV2(query: string) {
+    const result = await this.engine.queryV2(query);
+    return result;
+  }
+
   private shouldReload(): boolean {
     const {lastTrackReloadRequest} = globals.state;
     return !!lastTrackReloadRequest &&
@@ -151,7 +156,7 @@ export abstract class TrackController<
         globals.state.frontendLocalState.visibleState.resolution;
   }
 
-  // Decides, based on the the length of the trace and the number of rows
+  // Decides, based on the length of the trace and the number of rows
   // provided whether a TrackController subclass should cache its quantized
   // data. Returns the bucket size (in ns) if caching should happen and
   // undefined otherwise.

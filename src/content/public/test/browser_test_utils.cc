@@ -84,6 +84,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/did_commit_navigation_interceptor.h"
+#include "content/test/mock_commit_deferring_condition.h"
 #include "ipc/ipc_security_test_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -94,6 +95,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_util.h"
+#include "net/cookies/same_party_context.h"
 #include "net/filter/gzip_header.h"
 #include "net/filter/gzip_source_stream.h"
 #include "net/filter/mock_source_stream.h"
@@ -128,6 +130,7 @@
 #include "ui/resources/grit/webui_generated_resources.h"
 
 #if defined(OS_WIN)
+#include <combaseapi.h>
 #include <uiautomation.h>
 #include <wrl/client.h>
 #include "base/win/scoped_safearray.h"
@@ -631,6 +634,37 @@ class BoundingBoxUpdateWaiter : public TextInputManager::Observer {
 };
 
 #endif
+
+// Observer for RenderFrameProxyHost by setting itself through
+// RenderFrameProxyHost::SetObserverForTesting.
+class ProxyHostObserver : public RenderFrameProxyHost::TestObserver {
+ public:
+  using CreatedCallback = base::RepeatingCallback<void(RenderFrameProxyHost*)>;
+
+  ProxyHostObserver() = default;
+  ~ProxyHostObserver() override = default;
+
+  void Reset() { created_callback_ = CreatedCallback(); }
+
+  void set_created_callback(CreatedCallback callback) {
+    created_callback_ = std::move(callback);
+  }
+
+ private:
+  // RenderFrameProxyHost::TestObserver:
+  void OnCreated(RenderFrameProxyHost* rfph) override {
+    if (created_callback_)
+      created_callback_.Run(rfph);
+  }
+
+  // Callback which runs on RenderFrameProxyHost is created.
+  CreatedCallback created_callback_;
+};
+
+ProxyHostObserver* GetProxyHostObserver() {
+  static base::NoDestructor<ProxyHostObserver> observer;
+  return observer.get();
+}
 
 }  // namespace
 
@@ -1345,9 +1379,17 @@ bool ExecuteScriptAndExtractDouble(const ToRenderFrameHost& adapter,
                                    const std::string& script, double* result) {
   DCHECK(result);
   std::unique_ptr<base::Value> value;
-  return ExecuteScriptHelper(adapter.render_frame_host(), script, true,
-                             ISOLATED_WORLD_ID_GLOBAL, &value) &&
-         value && value->GetAsDouble(result);
+  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, true,
+                           ISOLATED_WORLD_ID_GLOBAL, &value))
+    return false;
+  if (!value)
+    return false;
+  absl::optional<double> maybe_value = value->GetIfDouble();
+  if (!maybe_value.has_value())
+    return false;
+
+  *result = maybe_value.value();
+  return true;
 }
 
 bool ExecuteScriptAndExtractInt(const ToRenderFrameHost& adapter,
@@ -1935,7 +1977,7 @@ bool SetCookie(BrowserContext* browser_context,
                const GURL& url,
                const std::string& value,
                net::CookieOptions::SameSiteCookieContext context,
-               net::CookieOptions::SamePartyCookieContextType party_context) {
+               net::SamePartyContext::Type party_context) {
   bool result = false;
   base::RunLoop run_loop;
   mojo::Remote<network::mojom::CookieManager> cookie_manager;
@@ -1949,7 +1991,7 @@ bool SetCookie(BrowserContext* browser_context,
   net::CookieOptions options;
   options.set_include_httponly();
   options.set_same_site_cookie_context(context);
-  options.set_same_party_cookie_context_type(party_context);
+  options.set_same_party_context(net::SamePartyContext(party_context));
   cookie_manager->SetCanonicalCookie(
       *cc.get(), url, options,
       base::BindOnce(
@@ -2908,24 +2950,22 @@ void FrameDeletedObserver::Wait() {
 
 TestNavigationManager::TestNavigationManager(WebContents* web_contents,
                                              const GURL& url)
-    : WebContentsObserver(web_contents),
-      url_(url),
-      request_(nullptr),
-      navigation_paused_(false),
-      current_state_(NavigationState::INITIAL),
-      desired_state_(NavigationState::STARTED) {}
+    : WebContentsObserver(web_contents), url_(url) {}
 
 TestNavigationManager::~TestNavigationManager() {
-  if (navigation_paused_)
-    request_->GetNavigationThrottleRunnerForTesting()->CallResumeForTesting();
+  ResumeIfPaused();
+}
+
+void TestNavigationManager::WaitForFirstYieldAfterDidStartNavigation() {
+  if (current_state_ >= NavigationState::WILL_START)
+    return;
+
+  DCHECK_EQ(desired_state_, NavigationState::WILL_START);
+  WaitForDesiredState();
 }
 
 bool TestNavigationManager::WaitForRequestStart() {
-  // This is the default desired state. A browser-initiated navigation can reach
-  // this state synchronously, so the TestNavigationManager is set to always
-  // pause navigations at WillStartRequest. This ensures the user can always
-  // call WaitForWillStartRequest.
-  DCHECK(desired_state_ == NavigationState::STARTED);
+  desired_state_ = NavigationState::STARTED;
   return WaitForDesiredState();
 }
 
@@ -2934,8 +2974,7 @@ void TestNavigationManager::ResumeNavigation() {
          current_state_ == NavigationState::RESPONSE);
   DCHECK_EQ(current_state_, desired_state_);
   DCHECK(navigation_paused_);
-  navigation_paused_ = false;
-  request_->GetNavigationThrottleRunnerForTesting()->CallResumeForTesting();
+  ResumeIfPaused();
 }
 
 NavigationHandle* TestNavigationManager::GetNavigationHandle() {
@@ -2956,14 +2995,49 @@ void TestNavigationManager::DidStartNavigation(NavigationHandle* handle) {
   if (!ShouldMonitorNavigation(handle))
     return;
 
+  was_prerendered_page_activation_ = handle->IsPrerenderedPageActivation();
+
   request_ = NavigationRequest::From(handle);
-  auto throttle = std::make_unique<TestNavigationManagerThrottle>(
-      request_,
-      base::BindOnce(&TestNavigationManager::OnWillStartRequest,
-                     weak_factory_.GetWeakPtr()),
-      base::BindOnce(&TestNavigationManager::OnWillProcessResponse,
-                     weak_factory_.GetWeakPtr()));
-  request_->RegisterThrottleForTesting(std::move(throttle));
+  if (request_->IsPageActivation()) {
+    // For activating navigations, we have no way of stopping at
+    // WillStartRequest since we don't run throttles. Callers should use
+    // WaitForResponse() or WaitForFirstYieldAfterDidStartNavigation().
+    DCHECK_NE(desired_state_, NavigationState::STARTED);
+
+    // For prerendered page activation, CommitDeferringConditions has already
+    // been run before starting navigation. Don't run them again.
+    if (!request_->IsPrerenderedPageActivation()) {
+      auto condition = std::make_unique<MockCommitDeferringCondition>(
+          /*is_ready_to_commit=*/false,
+          base::BindOnce(
+              &TestNavigationManager::OnRunningCommitDeferringConditions,
+              weak_factory_.GetWeakPtr()));
+      request_->RegisterCommitDeferringConditionForTesting(
+          std::move(condition));
+    }
+  } else {
+    auto throttle = std::make_unique<TestNavigationManagerThrottle>(
+        request_,
+        base::BindOnce(&TestNavigationManager::OnWillStartRequest,
+                       weak_factory_.GetWeakPtr()),
+        base::BindOnce(&TestNavigationManager::OnWillProcessResponse,
+                       weak_factory_.GetWeakPtr()));
+    request_->RegisterThrottleForTesting(std::move(throttle));
+  }
+
+  current_state_ = NavigationState::WILL_START;
+
+  OnNavigationStateChanged();
+
+  // This is the default desired state. A browser-initiated navigation can
+  // reach WillStartRequest state synchronously, so the TestNavigationManager
+  // is set to always pause navigations at WillStartRequest. This ensures the
+  // navigation will defer and the user can always call
+  // WaitForRequestStart.
+  if (!request_->IsPageActivation() &&
+      desired_state_ == NavigationState::WILL_START) {
+    desired_state_ = NavigationState::STARTED;
+  }
 }
 
 void TestNavigationManager::DidFinishNavigation(NavigationHandle* handle) {
@@ -2971,6 +3045,8 @@ void TestNavigationManager::DidFinishNavigation(NavigationHandle* handle) {
     return;
   was_committed_ = handle->HasCommitted();
   was_successful_ = was_committed_ && !handle->IsErrorPage();
+  DCHECK_EQ(was_prerendered_page_activation_.value(),
+            request_->IsPrerenderedPageActivation());
   current_state_ = NavigationState::FINISHED;
   navigation_paused_ = false;
   request_ = nullptr;
@@ -2995,16 +3071,23 @@ void TestNavigationManager::OnWillProcessResponse() {
   OnNavigationStateChanged();
 }
 
+void TestNavigationManager::OnRunningCommitDeferringConditions(
+    base::OnceClosure resume_closure) {
+  current_state_ = NavigationState::RESPONSE;
+  commit_deferring_condition_resume_closure_ = std::move(resume_closure);
+  navigation_paused_ = true;
+  OnNavigationStateChanged();
+}
+
 // TODO(csharrison): Remove CallResumeForTesting method calls in favor of doing
 // it through the throttle.
 bool TestNavigationManager::WaitForDesiredState() {
-  // If the desired state has laready been reached, just return.
+  // If the desired state has already been reached, just return.
   if (current_state_ == desired_state_)
     return true;
 
   // Resume the navigation if it was paused.
-  if (navigation_paused_)
-    request_->GetNavigationThrottleRunnerForTesting()->CallResumeForTesting();
+  ResumeIfPaused();
 
   // Wait for the desired state if needed.
   if (current_state_ < desired_state_) {
@@ -3020,6 +3103,12 @@ bool TestNavigationManager::WaitForDesiredState() {
 }
 
 void TestNavigationManager::OnNavigationStateChanged() {
+  if (request_ && request_->IsPageActivation()) {
+    DCHECK_NE(desired_state_, NavigationState::STARTED)
+        << "Cannot use WaitForRequestStart() when managing an activating "
+           "navigation. Use either WaitForFirstYieldAfterDidStartNavigation() "
+           "or WaitForResponse()";
+  }
   // If the state the user was waiting for has been reached, exit the message
   // loop.
   if (current_state_ >= desired_state_) {
@@ -3029,8 +3118,19 @@ void TestNavigationManager::OnNavigationStateChanged() {
   }
 
   // Otherwise, the navigation should be resumed if it was previously paused.
-  if (navigation_paused_)
+  ResumeIfPaused();
+}
+
+void TestNavigationManager::ResumeIfPaused() {
+  if (!navigation_paused_)
+    return;
+
+  navigation_paused_ = false;
+
+  if (!request_->IsPageActivation())
     request_->GetNavigationThrottleRunnerForTesting()->CallResumeForTesting();
+  else if (commit_deferring_condition_resume_closure_)
+    std::move(commit_deferring_condition_resume_closure_).Run();
 }
 
 bool TestNavigationManager::ShouldMonitorNavigation(NavigationHandle* handle) {
@@ -3603,13 +3703,17 @@ void DidStartNavigationObserver::DidFinishNavigation(NavigationHandle* handle) {
 }
 
 ProxyDSFObserver::ProxyDSFObserver() {
-  RenderFrameProxyHost::SetCreatedCallbackForTesting(base::BindRepeating(
+  // Set callback and observer to track the creation of RenderFrameProxyHosts.
+  ProxyHostObserver* observer = GetProxyHostObserver();
+  observer->set_created_callback(base::BindRepeating(
       &ProxyDSFObserver::OnCreation, base::Unretained(this)));
+  RenderFrameProxyHost::SetObserverForTesting(observer);
 }
 
 ProxyDSFObserver::~ProxyDSFObserver() {
-  RenderFrameProxyHost::SetCreatedCallbackForTesting(
-      RenderFrameProxyHost::CreatedCallback());
+  // Stop observing RenderFrameProxyHosts.
+  GetProxyHostObserver()->Reset();
+  RenderFrameProxyHost::SetObserverForTesting(nullptr);
 }
 
 void ProxyDSFObserver::WaitForOneProxyHostCreation() {

@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Entry point for it replaces background_scripts.js.
+ * @fileoverview Entry point for the background page.
  */
 
-import './error_util.m.js';
-import './test_util.m.js';
-import './video_player_metrics.m.js';
-import './background.m.js';
+import './error_util.js';
+import './test_util.js';
+import './video_player_metrics.js';
+import './background.js';

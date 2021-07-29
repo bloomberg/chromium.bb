@@ -55,21 +55,21 @@ namespace dawn_native {
             };
 
             [[group(0), binding(0)]]
-                var<storage> timestamps : [[access(read_write)]] TimestampArr;
+                var<storage, read_write> timestamps : TimestampArr;
             [[group(0), binding(1)]]
-                var<storage> availability : [[access(read)]] AvailabilityArr;
+                var<storage, read> availability : AvailabilityArr;
             [[group(0), binding(2)]] var<uniform> params : TimestampParams;
 
 
-            const sizeofTimestamp : u32 = 8u;
+            let sizeofTimestamp : u32 = 8u;
 
             [[stage(compute), workgroup_size(8, 1, 1)]]
             fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
                 if (GlobalInvocationID.x >= params.count) { return; }
 
-                var index : u32 = GlobalInvocationID.x + params.offset / sizeofTimestamp;
+                var index = GlobalInvocationID.x + params.offset / sizeofTimestamp;
 
-                var timestamp : Timestamp = timestamps.t[index];
+                var timestamp = timestamps.t[index];
 
                 // Return 0 for the unavailable value.
                 if (availability.v[GlobalInvocationID.x + params.first] == 0u) {
@@ -79,8 +79,8 @@ namespace dawn_native {
                 }
 
                 // Multiply the values in timestamps buffer by the period.
-                var period : f32 = params.period;
-                var w : u32 = 0u;
+                var period = params.period;
+                var w = 0u;
 
                 // If the product of low 32-bits and the period does not exceed the maximum of u32,
                 // directly do the multiplication, otherwise, use two u32 to represent the high
@@ -88,14 +88,14 @@ namespace dawn_native {
                 if (timestamp.low <= u32(f32(0xFFFFFFFFu) / period)) {
                     timestamps.t[index].low = u32(round(f32(timestamp.low) * period));
                 } else {
-                    var lo : u32 = timestamp.low & 0xFFFFu;
-                    var hi : u32 = timestamp.low >> 16u;
+                    var lo = timestamp.low & 0xFFFFu;
+                    var hi = timestamp.low >> 16u;
 
-                    var t0 : u32 = u32(round(f32(lo) * period));
-                    var t1 : u32 = u32(round(f32(hi) * period)) + (t0 >> 16u);
+                    var t0 = u32(round(f32(lo) * period));
+                    var t1 = u32(round(f32(hi) * period)) + (t0 >> 16u);
                     w = t1 >> 16u;
 
-                    var result : u32 = t1 << 16u;
+                    var result = t1 << 16u;
                     result = result | (t0 & 0xFFFFu);
                     timestamps.t[index].low = result;
                 }
@@ -121,12 +121,35 @@ namespace dawn_native {
                     DAWN_TRY_ASSIGN(store->timestampCS, device->CreateShaderModule(&descriptor));
                 }
 
+                // Create binding group layout
+                std::array<BindGroupLayoutEntry, 3> entries = {};
+                for (uint32_t i = 0; i < entries.size(); i++) {
+                    entries[i].binding = i;
+                    entries[i].visibility = wgpu::ShaderStage::Compute;
+                }
+                entries[0].buffer.type = kInternalStorageBufferBinding;
+                entries[1].buffer.type = wgpu::BufferBindingType::ReadOnlyStorage;
+                entries[2].buffer.type = wgpu::BufferBindingType::Uniform;
+
+                BindGroupLayoutDescriptor bglDesc;
+                bglDesc.entryCount = static_cast<uint32_t>(entries.size());
+                bglDesc.entries = entries.data();
+                Ref<BindGroupLayoutBase> bgl;
+                DAWN_TRY_ASSIGN(bgl, device->CreateBindGroupLayout(&bglDesc, true));
+
+                // Create pipeline layout
+                PipelineLayoutDescriptor plDesc;
+                plDesc.bindGroupLayoutCount = 1;
+                plDesc.bindGroupLayouts = &bgl.Get();
+                Ref<PipelineLayoutBase> layout;
+                DAWN_TRY_ASSIGN(layout, device->CreatePipelineLayout(&plDesc));
+
                 // Create ComputePipeline.
                 ComputePipelineDescriptor computePipelineDesc = {};
                 // Generate the layout based on shader module.
-                computePipelineDesc.layout = nullptr;
-                computePipelineDesc.computeStage.module = store->timestampCS.Get();
-                computePipelineDesc.computeStage.entryPoint = "main";
+                computePipelineDesc.layout = layout.Get();
+                computePipelineDesc.compute.module = store->timestampCS.Get();
+                computePipelineDesc.compute.entryPoint = "main";
 
                 DAWN_TRY_ASSIGN(store->timestampComputePipeline,
                                 device->CreateComputePipeline(&computePipelineDesc));

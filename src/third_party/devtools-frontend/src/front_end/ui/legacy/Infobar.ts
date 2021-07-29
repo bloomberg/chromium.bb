@@ -38,6 +38,7 @@ export class Infobar {
   _mainRow: HTMLElement;
   _detailsRows: HTMLElement;
   _hasDetails: boolean;
+  _detailsMessage: string;
   _infoContainer: HTMLElement;
   _infoMessage: HTMLElement;
   _infoText: HTMLElement;
@@ -56,16 +57,17 @@ export class Infobar {
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(type: Type, text: string, actions?: InfobarAction[], disableSetting?: Common.Settings.Setting<any>) {
-    this.element = (document.createElement('div') as HTMLElement);
+    this.element = document.createElement('div');
     this.element.classList.add('flex-none');
-    this._shadowRoot = createShadowRootWithCoreStyles(
-        this.element, {cssFile: 'ui/legacy/infobar.css', enableLegacyPatching: false, delegatesFocus: undefined});
+    this._shadowRoot =
+        createShadowRootWithCoreStyles(this.element, {cssFile: 'ui/legacy/infobar.css', delegatesFocus: undefined});
 
     this._contentElement = this._shadowRoot.createChild('div', 'infobar infobar-' + type) as HTMLDivElement;
 
     this._mainRow = this._contentElement.createChild('div', 'infobar-main-row');
     this._detailsRows = this._contentElement.createChild('div', 'infobar-details-rows hidden');
     this._hasDetails = false;
+    this._detailsMessage = '';
 
     this._infoContainer = this._mainRow.createChild('div', 'infobar-info-container');
 
@@ -80,6 +82,8 @@ export class Infobar {
 
     this._actionContainer = this._infoContainer.createChild('div', 'infobar-info-actions');
     if (actions) {
+      this._contentElement.setAttribute('role', 'group');
+
       for (const action of actions) {
         const actionCallback = this._actionCallbackFactory(action);
         let buttonClass = 'infobar-button';
@@ -202,14 +206,16 @@ export class Infobar {
     this._detailsRows.classList.remove('hidden');
     this._toggleElement.remove();
     this._onResize();
+    ARIAUtils.alert(this._detailsMessage);
   }
 
   createDetailsRowMessage(message?: string): Element {
     this._hasDetails = true;
+    this._detailsMessage = message || '';
     this._toggleElement.classList.remove('hidden');
     const infobarDetailsRow = this._detailsRows.createChild('div', 'infobar-details-row');
     const detailsRowMessage = infobarDetailsRow.createChild('span', 'infobar-row-message');
-    detailsRowMessage.textContent = message || '';
+    detailsRowMessage.textContent = this._detailsMessage;
     return detailsRowMessage;
   }
 }

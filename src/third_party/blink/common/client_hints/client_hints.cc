@@ -7,8 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -19,24 +19,23 @@
 
 namespace blink {
 
-const char* const kClientHintsHeaderMapping[] = {
-    "device-memory",
-    "dpr",
-    "width",
-    "viewport-width",
-    "rtt",
-    "downlink",
-    "ect",
-    "sec-ch-lang",
-    "sec-ch-ua",
-    "sec-ch-ua-arch",
-    "sec-ch-ua-platform",
-    "sec-ch-ua-model",
-    "sec-ch-ua-mobile",
-    "sec-ch-ua-full-version",
-    "sec-ch-ua-platform-version",
-    "sec-ch-prefers-color-scheme",
-};
+const char* const kClientHintsHeaderMapping[] = {"device-memory",
+                                                 "dpr",
+                                                 "width",
+                                                 "viewport-width",
+                                                 "rtt",
+                                                 "downlink",
+                                                 "ect",
+                                                 "sec-ch-lang",
+                                                 "sec-ch-ua",
+                                                 "sec-ch-ua-arch",
+                                                 "sec-ch-ua-platform",
+                                                 "sec-ch-ua-model",
+                                                 "sec-ch-ua-mobile",
+                                                 "sec-ch-ua-full-version",
+                                                 "sec-ch-ua-platform-version",
+                                                 "sec-ch-prefers-color-scheme",
+                                                 "sec-ch-ua-bitness"};
 
 const unsigned kClientHintsNumberOfLegacyHints = 4;
 
@@ -60,6 +59,7 @@ const mojom::PermissionsPolicyFeature kClientHintsPermissionsPolicyMapping[] = {
     mojom::PermissionsPolicyFeature::kClientHintUAFullVersion,
     mojom::PermissionsPolicyFeature::kClientHintUAPlatformVersion,
     mojom::PermissionsPolicyFeature::kClientHintPrefersColorScheme,
+    mojom::PermissionsPolicyFeature::kClientHintUABitness,
 };
 
 const size_t kClientHintsMappingsCount = base::size(kClientHintsHeaderMapping);
@@ -117,6 +117,7 @@ absl::optional<std::vector<network::mojom::WebClientHintsType>> FilterAcceptCH(
       case network::mojom::WebClientHintsType::kUAModel:
       case network::mojom::WebClientHintsType::kUAMobile:
       case network::mojom::WebClientHintsType::kUAFullVersion:
+      case network::mojom::WebClientHintsType::kUABitness:
         if (permit_ua_hints)
           result.push_back(hint);
         break;
@@ -132,8 +133,16 @@ absl::optional<std::vector<network::mojom::WebClientHintsType>> FilterAcceptCH(
 }
 
 bool IsClientHintSentByDefault(network::mojom::WebClientHintsType type) {
-  return (type == network::mojom::WebClientHintsType::kUA ||
-          type == network::mojom::WebClientHintsType::kUAMobile);
+  switch (type) {
+    case network::mojom::WebClientHintsType::kUA:
+    case network::mojom::WebClientHintsType::kUAMobile:
+      return true;
+    case network::mojom::WebClientHintsType::kUAPlatform:
+      return base::FeatureList::IsEnabled(
+          features::kUACHPlatformEnabledByDefault);
+    default:
+      return false;
+  }
 }
 
 // Add a list of Client Hints headers to be removed to the output vector, based

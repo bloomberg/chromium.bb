@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
 #include "base/macros.h"
@@ -111,7 +112,7 @@ class GLOzoneEGLScenic : public GLOzoneEGL {
   scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
       const gfx::Size& size) override {
     return gl::InitializeGLSurface(
-        base::MakeRefCounted<gl::PbufferGLSurfaceEGL>(size));
+        base::MakeRefCounted<gl::SurfacelessEGL>(size));
   }
 
   gl::EGLDisplayPlatform GetNativeDisplay() override {

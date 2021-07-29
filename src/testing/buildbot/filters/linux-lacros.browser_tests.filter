@@ -6,8 +6,6 @@
 -AdsPageLoadMetricsObserverBrowserTest.PageAdDensityMultipleFrames
 -AdsPageLoadMetricsObserverBrowserTest.PageAdDensityRecordsPageMax
 -All/DownloadReferrerPolicyTest.SaveLinkAsReferrerPolicy*
-# TODO(https://crbug.com/1125474): Emphemeral guest profile support.
--All/GuestProfileMenuClickTest.ProfileMenuClickTest_*
 -All/HostedAppProcessModelTest.BackgroundPageWithAppCoveringDifferentSites/0
 -All/HostedOrWebAppTest.CtrlClickLink/HostedApp
 -All/HostedOrWebAppTest.CtrlClickLink/WebApp
@@ -83,7 +81,7 @@
 -ExtensionManagementApiEscalationTest.SetEnabled
 -ExtensionOverrideTest.SubframeNavigationInOverridenNTPDoesNotAffectFocus
 -ExtensionPreferenceApiTest.Standard
--ExtensionsMenuViewBrowserTest.ClickingContextMenuButton
+-ExtensionsMenuViewInteractiveUITest.ClickingContextMenuButton
 -ExtensionWebRequestApiTest.WebSocketRequest
 -ExtensionWebRequestApiTest.WebSocketRequestAuthRequired
 -ExternalProtocolDialogBrowserTest.TestFocus
@@ -119,8 +117,8 @@
 -OutOfProcessPPAPITest.NetAddress
 -OutOfProcessPPAPITest.Printing
 -OutOfProcessPPAPITest.URLRequest_CreateAndIsURLRequestInfo
--PageInfoBubbleViewBrowserTest.FocusDoesNotReturnToContentsOnReloadPrompt
--PageInfoBubbleViewBrowserTest.FocusReturnsToContentOnClose
+-All/PageInfoBubbleViewBrowserTest.FocusDoesNotReturnToContentsOnReloadPrompt/*
+-All/PageInfoBubbleViewBrowserTest.FocusReturnsToContentOnClose/*
 -PageLoadMetricsBrowserTest.MainFrameIntersectionsMainFrame
 -PaymentRequestCompletionStatusMetricsTest.UserAborted_TabClosed
 -PaymentRequestCreditCardEditorTest.EditingExpiredCard

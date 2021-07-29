@@ -13,12 +13,18 @@
 #include "base/time/time.h"
 #include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/conversion_test_utils.h"
+#include "content/browser/conversions/storable_impression.h"
 #include "sql/database.h"
+#include "sql/statement.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace content {
+
+namespace {
+
+using ::testing::ElementsAre;
 
 class RateLimitTableTest : public testing::Test {
  public:
@@ -30,15 +36,19 @@ class RateLimitTableTest : public testing::Test {
     table_ = std::make_unique<RateLimitTable>(delegate_.get(), &clock_);
   }
 
-  ConversionReport NewConversionReport(const url::Origin& impression_origin,
-                                       const url::Origin& conversion_origin,
-                                       int64_t impression_id = 0) {
+  ConversionReport NewConversionReport(
+      const url::Origin& impression_origin,
+      const url::Origin& conversion_origin,
+      int64_t impression_id = 0,
+      StorableImpression::SourceType source_type =
+          StorableImpression::SourceType::kNavigation) {
     return ConversionReport(ImpressionBuilder(clock()->Now())
                                 .SetImpressionOrigin(impression_origin)
                                 .SetConversionOrigin(conversion_origin)
                                 .SetImpressionId(impression_id)
+                                .SetSourceType(source_type)
                                 .Build(),
-                            /*conversion_data=*/"",
+                            /*conversion_data=*/0,
                             /*conversion_time=*/clock()->Now(),
                             /*report_time=*/clock()->Now(),
                             /*conversion_id=*/absl::nullopt);
@@ -48,6 +58,17 @@ class RateLimitTableTest : public testing::Test {
     size_t rows = 0;
     EXPECT_TRUE(sql::test::CountTableRows(db, "rate_limits", &rows));
     return rows;
+  }
+
+  std::vector<std::string> GetRateLimitImpressionOrigins(sql::Database* db) {
+    const char kSelectSql[] =
+        "SELECT impression_origin FROM rate_limits ORDER BY rate_limit_id ASC";
+    sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSelectSql));
+    std::vector<std::string> impression_origins;
+    while (statement.Step()) {
+      impression_origins.push_back(statement.ColumnString(0));
+    }
+    return impression_origins;
   }
 
   base::FilePath db_path() {
@@ -68,6 +89,8 @@ class RateLimitTableTest : public testing::Test {
   base::SimpleTestClock clock_;
   std::unique_ptr<RateLimitTable> table_;
 };
+
+}  // namespace
 
 TEST_F(RateLimitTableTest, TableCreated_TableAndIndicesInitialized) {
   sql::Database db;
@@ -148,15 +171,15 @@ TEST_F(RateLimitTableTest, IsAttributionAllowed) {
   const auto report_b_c = NewConversionReport(example_b, example_c);
   // conversion doesn't match
   const auto report_a_b = NewConversionReport(example_a, example_b);
-  // neither impression and conversion match
-  const auto report_b_d = NewConversionReport(example_a, example_b);
+  // neither impression nor conversion match
+  const auto report_b_a = NewConversionReport(example_b, example_a);
 
   base::Time now = clock()->Now();
   EXPECT_FALSE(table()->IsAttributionAllowed(&db, report_a_c, now));
   EXPECT_TRUE(table()->IsAttributionAllowed(&db, report_a_d, now));
   EXPECT_TRUE(table()->IsAttributionAllowed(&db, report_b_c, now));
   EXPECT_TRUE(table()->IsAttributionAllowed(&db, report_a_b, now));
-  EXPECT_TRUE(table()->IsAttributionAllowed(&db, report_b_d, now));
+  EXPECT_TRUE(table()->IsAttributionAllowed(&db, report_b_a, now));
 
   // Expire the first row above by advancing to +10d.
   clock()->Advance(base::TimeDelta::FromDays(4));
@@ -165,9 +188,54 @@ TEST_F(RateLimitTableTest, IsAttributionAllowed) {
   EXPECT_TRUE(table()->IsAttributionAllowed(&db, report_a_d, now));
   EXPECT_TRUE(table()->IsAttributionAllowed(&db, report_b_c, now));
   EXPECT_TRUE(table()->IsAttributionAllowed(&db, report_a_b, now));
-  EXPECT_TRUE(table()->IsAttributionAllowed(&db, report_b_d, now));
+  EXPECT_TRUE(table()->IsAttributionAllowed(&db, report_b_a, now));
 
   EXPECT_EQ(3u, GetRateLimitRows(&db));
+}
+
+TEST_F(RateLimitTableTest, IsAttributionAllowed_SourceTypesIndependent) {
+  // Tests that limits are calculated independently for each
+  // `StorableImpression::SourceType`. In the future, we may change this so that
+  // there is a combined calculation but each source type is weighted
+  // differently.
+
+  sql::Database db;
+  EXPECT_TRUE(db.Open(db_path()));
+  EXPECT_TRUE(table()->CreateTable(&db));
+
+  delegate()->set_rate_limits({
+      .time_window = base::TimeDelta::FromDays(2),
+      .max_attributions_per_window = 2,
+  });
+
+  const url::Origin example_a = url::Origin::Create(GURL("https://a.example/"));
+  const url::Origin example_c = url::Origin::Create(GURL("https://c.example/"));
+
+  const auto report_navigation =
+      NewConversionReport(example_a, example_c, /*impression_id=*/0,
+                          StorableImpression::SourceType::kNavigation);
+  const auto report_event =
+      NewConversionReport(example_a, example_c, /*impression_id=*/0,
+                          StorableImpression::SourceType::kEvent);
+
+  // Add distinct source types on the same origin to ensure independence.
+  EXPECT_TRUE(table()->AddRateLimit(&db, report_navigation));
+  EXPECT_TRUE(table()->AddRateLimit(&db, report_event));
+  EXPECT_EQ(2u, GetRateLimitRows(&db));
+
+  base::Time now = clock()->Now();
+  EXPECT_TRUE(table()->IsAttributionAllowed(&db, report_navigation, now));
+  EXPECT_TRUE(table()->IsAttributionAllowed(&db, report_event, now));
+
+  EXPECT_TRUE(table()->AddRateLimit(&db, report_navigation));
+  EXPECT_EQ(3u, GetRateLimitRows(&db));
+  EXPECT_FALSE(table()->IsAttributionAllowed(&db, report_navigation, now));
+  EXPECT_TRUE(table()->IsAttributionAllowed(&db, report_event, now));
+
+  EXPECT_TRUE(table()->AddRateLimit(&db, report_event));
+  EXPECT_EQ(4u, GetRateLimitRows(&db));
+  EXPECT_FALSE(table()->IsAttributionAllowed(&db, report_navigation, now));
+  EXPECT_FALSE(table()->IsAttributionAllowed(&db, report_event, now));
 }
 
 TEST_F(RateLimitTableTest,
@@ -379,17 +447,39 @@ TEST_F(RateLimitTableTest, AddRateLimit_DeletesExpiredRateLimits) {
       &db,
       NewConversionReport(url::Origin::Create(GURL("https://c.example/")),
                           url::Origin::Create(GURL("https://d.example/")))));
+  EXPECT_THAT(GetRateLimitImpressionOrigins(&db),
+              ElementsAre("https://a.example", "https://c.example"));
 
   delegate()->set_rate_limits({
-      .time_window = base::TimeDelta::FromDays(3),
+      .time_window = base::TimeDelta::FromMinutes(2),
       .max_attributions_per_window = INT_MAX,
   });
-  clock()->Advance(base::TimeDelta::FromDays(4));
+  clock()->Advance(base::TimeDelta::FromMinutes(1));
   EXPECT_TRUE(table()->AddRateLimit(
       &db,
       NewConversionReport(url::Origin::Create(GURL("https://e.example/")),
                           url::Origin::Create(GURL("https://f.example/")))));
-  EXPECT_EQ(1u, GetRateLimitRows(&db));
+  EXPECT_THAT(GetRateLimitImpressionOrigins(&db),
+              ElementsAre("https://a.example", "https://c.example",
+                          "https://e.example"));
+
+  clock()->Advance(base::TimeDelta::FromMinutes(3));
+  EXPECT_TRUE(table()->AddRateLimit(
+      &db,
+      NewConversionReport(url::Origin::Create(GURL("https://g.example/")),
+                          url::Origin::Create(GURL("https://h.example/")))));
+  EXPECT_EQ(4u, GetRateLimitRows(&db));
+  EXPECT_THAT(GetRateLimitImpressionOrigins(&db),
+              ElementsAre("https://a.example", "https://c.example",
+                          "https://e.example", "https://g.example"));
+
+  clock()->Advance(base::TimeDelta::FromMinutes(1));
+  EXPECT_TRUE(table()->AddRateLimit(
+      &db,
+      NewConversionReport(url::Origin::Create(GURL("https://i.example/")),
+                          url::Origin::Create(GURL("https://j.example/")))));
+  EXPECT_THAT(GetRateLimitImpressionOrigins(&db),
+              ElementsAre("https://g.example", "https://i.example"));
 }
 
 TEST_F(RateLimitTableTest, ClearDataForImpressionIds) {

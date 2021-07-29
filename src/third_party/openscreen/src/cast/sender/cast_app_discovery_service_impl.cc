@@ -41,10 +41,10 @@ CastAppDiscoveryServiceImpl::StartObservingAvailability(
   const std::string& source_id = source.source_id();
 
   // Return cached results immediately, if available.
-  std::vector<std::string> cached_device_ids =
-      availability_tracker_.GetAvailableDevices(source);
-  if (!cached_device_ids.empty()) {
-    callback(source, GetReceiversByIds(cached_device_ids));
+  std::vector<std::string> cached_receiver_ids =
+      availability_tracker_.GetAvailableReceivers(source);
+  if (!cached_receiver_ids.empty()) {
+    callback(source, GetReceiversByIds(cached_receiver_ids));
   }
 
   auto& callbacks = avail_queries_[source_id];
@@ -76,54 +76,54 @@ void CastAppDiscoveryServiceImpl::Refresh() {
 }
 
 void CastAppDiscoveryServiceImpl::AddOrUpdateReceiver(
-    const ServiceInfo& receiver) {
-  const std::string& device_id = receiver.unique_id;
-  receivers_by_id_[device_id] = receiver;
+    const ReceiverInfo& receiver) {
+  const std::string& receiver_id = receiver.unique_id;
+  receivers_by_id_[receiver_id] = receiver;
 
   // Any queries that currently contain this receiver should be updated.
   UpdateAvailabilityQueries(
-      availability_tracker_.GetSupportedSources(device_id));
+      availability_tracker_.GetSupportedSources(receiver_id));
 
   for (const std::string& app_id : availability_tracker_.GetRegisteredApps()) {
-    RequestAppAvailability(device_id, app_id);
+    RequestAppAvailability(receiver_id, app_id);
   }
 }
 
-void CastAppDiscoveryServiceImpl::RemoveReceiver(const ServiceInfo& receiver) {
-  const std::string& device_id = receiver.unique_id;
-  receivers_by_id_.erase(device_id);
+void CastAppDiscoveryServiceImpl::RemoveReceiver(const ReceiverInfo& receiver) {
+  const std::string& receiver_id = receiver.unique_id;
+  receivers_by_id_.erase(receiver_id);
   UpdateAvailabilityQueries(
-      availability_tracker_.RemoveResultsForDevice(device_id));
+      availability_tracker_.RemoveResultsForReceiver(receiver_id));
 }
 
 void CastAppDiscoveryServiceImpl::RequestAppAvailability(
-    const std::string& device_id,
+    const std::string& receiver_id,
     const std::string& app_id) {
-  if (ShouldRefreshAppAvailability(device_id, app_id, clock_())) {
+  if (ShouldRefreshAppAvailability(receiver_id, app_id, clock_())) {
     platform_client_->RequestAppAvailability(
-        device_id, app_id,
-        [self = weak_factory_.GetWeakPtr(), device_id](
+        receiver_id, app_id,
+        [self = weak_factory_.GetWeakPtr(), receiver_id](
             const std::string& app_id, AppAvailabilityResult availability) {
           if (self) {
-            self->UpdateAppAvailability(device_id, app_id, availability);
+            self->UpdateAppAvailability(receiver_id, app_id, availability);
           }
         });
   }
 }
 
 void CastAppDiscoveryServiceImpl::UpdateAppAvailability(
-    const std::string& device_id,
+    const std::string& receiver_id,
     const std::string& app_id,
     AppAvailabilityResult availability) {
-  if (receivers_by_id_.find(device_id) == receivers_by_id_.end()) {
+  if (receivers_by_id_.find(receiver_id) == receivers_by_id_.end()) {
     return;
   }
 
-  OSP_DVLOG << "App " << app_id << " on receiver " << device_id << " is "
+  OSP_DVLOG << "App " << app_id << " on receiver " << receiver_id << " is "
             << ToString(availability);
 
   UpdateAvailabilityQueries(availability_tracker_.UpdateAppAvailability(
-      device_id, app_id, {availability, clock_()}));
+      receiver_id, app_id, {availability, clock_()}));
 }
 
 void CastAppDiscoveryServiceImpl::UpdateAvailabilityQueries(
@@ -133,20 +133,20 @@ void CastAppDiscoveryServiceImpl::UpdateAvailabilityQueries(
     auto it = avail_queries_.find(source_id);
     if (it == avail_queries_.end())
       continue;
-    std::vector<std::string> device_ids =
-        availability_tracker_.GetAvailableDevices(source);
-    std::vector<ServiceInfo> receivers = GetReceiversByIds(device_ids);
+    std::vector<std::string> receiver_ids =
+        availability_tracker_.GetAvailableReceivers(source);
+    std::vector<ReceiverInfo> receivers = GetReceiversByIds(receiver_ids);
     for (const auto& callback : it->second) {
       callback.callback(source, receivers);
     }
   }
 }
 
-std::vector<ServiceInfo> CastAppDiscoveryServiceImpl::GetReceiversByIds(
-    const std::vector<std::string>& device_ids) const {
-  std::vector<ServiceInfo> receivers;
-  for (const std::string& device_id : device_ids) {
-    auto entry = receivers_by_id_.find(device_id);
+std::vector<ReceiverInfo> CastAppDiscoveryServiceImpl::GetReceiversByIds(
+    const std::vector<std::string>& receiver_ids) const {
+  std::vector<ReceiverInfo> receivers;
+  for (const std::string& receiver_id : receiver_ids) {
+    auto entry = receivers_by_id_.find(receiver_id);
     if (entry != receivers_by_id_.end()) {
       receivers.push_back(entry->second);
     }
@@ -155,13 +155,14 @@ std::vector<ServiceInfo> CastAppDiscoveryServiceImpl::GetReceiversByIds(
 }
 
 bool CastAppDiscoveryServiceImpl::ShouldRefreshAppAvailability(
-    const std::string& device_id,
+    const std::string& receiver_id,
     const std::string& app_id,
     Clock::time_point now) const {
   // TODO(btolsch): Consider an exponential backoff mechanism instead.
   // Receivers will typically respond with "unavailable" immediately after boot
   // and then become available 10-30 seconds later.
-  auto availability = availability_tracker_.GetAvailability(device_id, app_id);
+  auto availability =
+      availability_tracker_.GetAvailability(receiver_id, app_id);
   switch (availability.availability) {
     case AppAvailabilityResult::kAvailable:
       return false;

@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
-#include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
+#include "chrome/browser/ash/smb_client/smb_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace chromeos {
@@ -81,18 +81,16 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
     return;
   }
 
-  chromeos::file_system_provider::MountOptions mo;
-  mo.display_name = mount_name.empty() ? mount_url : mount_name;
-  mo.writable = true;
+  std::string display_name = mount_name.empty() ? mount_url : mount_name;
 
   auto mount_response =
       base::BindOnce(&SmbHandler::HandleSmbMountResponse,
                      weak_ptr_factory_.GetWeakPtr(), callback_id);
-  auto mount_call =
-      base::BindOnce(&smb_client::SmbService::Mount, base::Unretained(service),
-                     mo, base::FilePath(mount_url), username, password,
-                     use_kerberos, should_open_file_manager_after_mount,
-                     save_credentials, std::move(mount_response));
+  auto mount_call = base::BindOnce(
+      &smb_client::SmbService::Mount, base::Unretained(service), display_name,
+      base::FilePath(mount_url), username, password, use_kerberos,
+      should_open_file_manager_after_mount, save_credentials,
+      std::move(mount_response));
 
   if (host_discovery_done_) {
     std::move(mount_call).Run();
@@ -102,7 +100,7 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
 }
 
 void SmbHandler::HandleSmbMountResponse(const std::string& callback_id,
-                                        SmbMountResult result) {
+                                        smb_client::SmbMountResult result) {
   AllowJavascript();
   ResolveJavascriptCallback(base::Value(callback_id),
                             base::Value(static_cast<int>(result)));

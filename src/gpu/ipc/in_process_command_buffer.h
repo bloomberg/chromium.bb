@@ -193,7 +193,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       SurfaceHandle parent_window,
       SurfaceHandle child_window) override;
 #endif
-  void DidSwapBuffersComplete(SwapBuffersCompleteParams params) override;
+  void DidSwapBuffersComplete(SwapBuffersCompleteParams params,
+                              gfx::GpuFenceHandle release_fence) override;
   const gles2::FeatureInfo* GetFeatureInfo() const override;
   const GpuPreferences& GetGpuPreferences() const override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
@@ -346,7 +347,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   // Callback implementations on the client thread.
   void OnContextLost();
-  void DidSwapBuffersCompleteOnOriginThread(SwapBuffersCompleteParams params);
+  void DidSwapBuffersCompleteOnOriginThread(SwapBuffersCompleteParams params,
+                                            gfx::GpuFenceHandle release_fence);
   void BufferPresentedOnOriginThread(uint64_t swap_id,
                                      uint32_t flags,
                                      const gfx::PresentationFeedback& feedback);
@@ -374,7 +376,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
   std::unique_ptr<CommandBufferService> command_buffer_;
   std::unique_ptr<DecoderContext> decoder_;
-  absl::optional<raster::GrCacheController> gr_cache_controller_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<SyncPointClientState> sync_point_client_state_;

@@ -139,7 +139,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 
 export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper implements
-    SDK.SDKModel.SDKModelObserver<SDK.ServiceWorkerManager.ServiceWorkerManager> {
+    SDK.TargetManager.SDKModelObserver<SDK.ServiceWorkerManager.ServiceWorkerManager> {
   _manager?: SDK.ServiceWorkerManager.ServiceWorkerManager|null;
   _serviceWorkerListeners?: Common.EventTarget.EventDescriptor[];
   _inspectedURL?: string;
@@ -158,9 +158,9 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper imp
       runtimeSetting.setting.addChangeListener(this.recomputePageAuditability.bind(this));
     }
 
-    SDK.SDKModel.TargetManager.instance().observeModels(SDK.ServiceWorkerManager.ServiceWorkerManager, this);
-    SDK.SDKModel.TargetManager.instance().addEventListener(
-        SDK.SDKModel.Events.InspectedURLChanged, this.recomputePageAuditability, this);
+    SDK.TargetManager.TargetManager.instance().observeModels(SDK.ServiceWorkerManager.ServiceWorkerManager, this);
+    SDK.TargetManager.TargetManager.instance().addEventListener(
+        SDK.TargetManager.Events.InspectedURLChanged, this.recomputePageAuditability, this);
   }
 
   modelAdded(serviceWorkerManager: SDK.ServiceWorkerManager.ServiceWorkerManager): void {
@@ -184,7 +184,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper imp
       return;
     }
     if (this._serviceWorkerListeners) {
-      Common.EventTarget.EventTarget.removeEventListeners(this._serviceWorkerListeners);
+      Common.EventTarget.removeEventListeners(this._serviceWorkerListeners);
     }
     this._manager = null;
     this.recomputePageAuditability();
@@ -251,7 +251,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper imp
                           .map(i18nStringFn => i18nStringFn ? i18nStringFn() : undefined)
                           .filter(Boolean);
     if (locations.length === 1) {
-      return i18nString(UIStrings.thereMayBeStoredDataAffectingSingular, {PH1: locations[0]});
+      return i18nString(UIStrings.thereMayBeStoredDataAffectingSingular, {PH1: String(locations[0])});
     }
     if (locations.length > 1) {
       return i18nString(UIStrings.thereMayBeStoredDataAffectingLoadingPlural, {PH1: locations.join(', ')});

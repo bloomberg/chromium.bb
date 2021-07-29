@@ -138,6 +138,14 @@ TEST(ReactorUnitTests, Trampoline)
 
 TEST(ReactorUnitTests, Uninitialized)
 {
+#if __has_feature(memory_sanitizer)
+	// Building the static C++ code with MemorySanitizer enabled does not
+	// automatically enable MemorySanitizer instrumentation for Reactor
+	// routines. False positives can also be prevented by unpoisoning all
+	// memory writes. This Pragma ensures proper instrumentation is enabled.
+	Pragma(MemorySanitizerInstrumentation, true);
+#endif
+
 	FunctionT<int()> function;
 	{
 		Int a;
@@ -159,7 +167,7 @@ TEST(ReactorUnitTests, Uninitialized)
 
 	auto routine = function(testName().c_str());
 
-	if(!__has_feature(memory_sanitizer) || !REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION)
+	if(!__has_feature(memory_sanitizer))
 	{
 		int result = routine();
 		EXPECT_EQ(result, result);  // Anything is fine, just don't crash
@@ -177,6 +185,8 @@ TEST(ReactorUnitTests, Uninitialized)
 		    },
 		    "MemorySanitizer: use-of-uninitialized-value");
 	}
+
+	Pragma(MemorySanitizerInstrumentation, false);
 }
 
 TEST(ReactorUnitTests, Unreachable)

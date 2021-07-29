@@ -24,7 +24,7 @@
 namespace tint {
 namespace ast {
 
-class NamedType;
+class TypeDecl;
 
 /// Module holds the top-level AST types, functions and global variables used by
 /// a Program.
@@ -73,18 +73,16 @@ class Module : public Castable<Module, Node> {
   /// @returns the global variables for the translation unit
   VariableList& GlobalVariables() { return global_variables_; }
 
-  /// Adds a constructed type to the Builder.
-  /// @param type the constructed type to add
-  void AddConstructedType(ast::NamedType* type);
+  /// Adds a type declaration to the Builder.
+  /// @param decl the type declaration to add
+  void AddTypeDecl(ast::TypeDecl* decl);
 
-  /// @returns the NamedType registered as a ConstructedType()
+  /// @returns the TypeDecl registered as a TypeDecl()
   /// @param name the name of the type to search for
-  const ast::NamedType* LookupType(Symbol name) const;
+  const ast::TypeDecl* LookupType(Symbol name) const;
 
-  /// @returns the constructed types in the translation unit
-  const std::vector<ast::NamedType*>& ConstructedTypes() const {
-    return constructed_types_;
-  }
+  /// @returns the declared types in the translation unit
+  const std::vector<ast::TypeDecl*>& TypeDecls() const { return type_decls_; }
 
   /// Add a function to the Builder
   /// @param func the function to add
@@ -118,7 +116,7 @@ class Module : public Castable<Module, Node> {
 
  private:
   std::vector<ast::Node*> global_declarations_;
-  std::vector<ast::NamedType*> constructed_types_;
+  std::vector<ast::TypeDecl*> type_decls_;
   FunctionList functions_;
   VariableList global_variables_;
 };

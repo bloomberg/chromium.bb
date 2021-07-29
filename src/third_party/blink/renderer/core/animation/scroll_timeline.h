@@ -15,7 +15,6 @@
 
 namespace blink {
 
-class DoubleOrScrollTimelineAutoKeyword;
 class ScrollTimelineOptions;
 class V8UnionDoubleOrScrollTimelineAutoKeyword;
 
@@ -44,17 +43,23 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
                                 ExceptionState&);
 
   ScrollTimeline(Document*,
-                 Element*,
+                 absl::optional<Element*> scroll_source,
                  ScrollDirection,
                  HeapVector<Member<ScrollTimelineOffset>>,
                  absl::optional<double>);
 
   bool IsScrollTimeline() const override { return true; }
+  // TODO (crbug.com/1216655): Time range should be removed from ScrollTimeline
+  // at which point this function becomes redundant as all scroll timelines will
+  // then be progress based timelines.
+  bool IsProgressBasedTimeline() const override { return !time_range_; }
   // ScrollTimeline is not active if scrollSource is null, does not currently
   // have a CSS layout box, or if its layout box is not a scroll container.
   // https://github.com/WICG/scroll-animations/issues/31
   bool IsActive() const override;
   absl::optional<base::TimeDelta> InitialStartTimeForAnimations() override;
+  AnimationTimeDelta CalculateIntrinsicIterationDuration(
+      const Timing&) override;
   AnimationTimeDelta ZeroTime() override { return AnimationTimeDelta(); }
 
   void ServiceAnimations(TimingUpdateReason) override;
@@ -63,21 +68,12 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // IDL API implementation.
   Element* scrollSource() const;
   String orientation();
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   const HeapVector<Member<V8ScrollTimelineOffset>> scrollOffsets() const;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  const HeapVector<ScrollTimelineOffsetValue> scrollOffsets() const;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8CSSNumberish* currentTime() override;
   V8CSSNumberish* duration() override;
   V8UnionDoubleOrScrollTimelineAutoKeyword* timeRange() const;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void currentTime(CSSNumberish&) override;
-  void duration(CSSNumberish&) override;
-  void timeRange(DoubleOrScrollTimelineAutoKeyword&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8CSSNumberish* ConvertTimeToProgress(AnimationTimeDelta time) const;
 
   // Returns the Node that should actually have the ScrollableArea (if one
   // exists). This can differ from |scrollSource| when |scroll_source_| is the
@@ -128,9 +124,22 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // overflow, adding and removal of scrollable area.
   static void Invalidate(Node* node);
 
+  // TODO (crbug.com/1216655): Time range should be removed from ScrollTimeline.
+  // Currently still left in for the sake of backwards compatibility with
+  // existing tests.
+  double GetTimeRange() const { return time_range_ ? time_range_.value() : 0; }
+
+  // Duration is the maximum value a timeline may generate for current time.
+  // Used to convert time values to proportional values.
+  absl::optional<AnimationTimeDelta> GetDuration() const override {
+    return time_range_
+               ? absl::nullopt
+               // Any arbitrary value should be able to be used here.
+               : absl::make_optional(AnimationTimeDelta::FromSecondsD(100));
+  }
+
  protected:
   PhaseAndTime CurrentPhaseAndTime() override;
-  double GetTimeRange() const { return time_range_ ? time_range_.value() : 0; }
   bool ScrollOffsetsEqual(
       const HeapVector<Member<ScrollTimelineOffset>>& other) const;
 
@@ -179,6 +188,9 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   ScrollDirection orientation_;
   HeapVector<Member<ScrollTimelineOffset>> scroll_offsets_;
 
+  // TODO (crbug.com/1216655): Time range should be removed from ScrollTimeline.
+  // Currently still left in for the sake of backwards compatibility with
+  // existing tests.
   absl::optional<double> time_range_;
 
   // Snapshotted value produced by the last SnapshotState call.

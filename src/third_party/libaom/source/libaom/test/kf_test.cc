@@ -100,10 +100,36 @@ class KeyFrameIntervalTestLarge
   aom_rc_mode end_usage_check_;
 };
 
+// Because valgrind builds take a very long time to run, use a lower
+// resolution video for valgrind runs.
+const char *TestFileName() {
+#if AOM_VALGRIND_BUILD
+  return "hantro_collage_w176h144.yuv";
+#else
+  return "hantro_collage_w352h288.yuv";
+#endif  // AOM_VALGRIND_BUILD
+}
+
+int TestFileWidth() {
+#if AOM_VALGRIND_BUILD
+  return 176;
+#else
+  return 352;
+#endif  // AOM_VALGRIND_BUILD
+}
+
+int TestFileHeight() {
+#if AOM_VALGRIND_BUILD
+  return 144;
+#else
+  return 288;
+#endif  // AOM_VALGRIND_BUILD
+}
+
 TEST_P(KeyFrameIntervalTestLarge, KeyFrameIntervalTest) {
-  libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                     cfg_.g_timebase.den, cfg_.g_timebase.num,
-                                     0, 75);
+  libaom_test::I420VideoSource video(TestFileName(), TestFileWidth(),
+                                     TestFileHeight(), cfg_.g_timebase.den,
+                                     cfg_.g_timebase.num, 0, 75);
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
   ASSERT_EQ(is_kf_interval_violated_, false) << kf_dist_param_;
 }
@@ -187,9 +213,9 @@ TEST_P(ForcedKeyTestLarge, Frame1IsKey) {
     frame_num_ = 0;
     cfg_.g_lag_in_frames = lag_values[i];
     is_kf_placement_violated_ = false;
-    libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                       timebase.den, timebase.num, 0,
-                                       fwd_kf_enabled_ ? 60 : 30);
+    libaom_test::I420VideoSource video(
+        TestFileName(), TestFileWidth(), TestFileHeight(), timebase.den,
+        timebase.num, 0, fwd_kf_enabled_ ? 60 : 30);
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
     ASSERT_EQ(is_kf_placement_violated_, false)
         << "Frame #" << frame_num_ << " isn't a keyframe!";
@@ -207,9 +233,9 @@ TEST_P(ForcedKeyTestLarge, ForcedFrameIsKey) {
     forced_kf_frame_num_ = lag_values[i] - 1;
     cfg_.g_lag_in_frames = lag_values[i];
     is_kf_placement_violated_ = false;
-    libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                       timebase.den, timebase.num, 0,
-                                       fwd_kf_enabled_ ? 60 : 30);
+    libaom_test::I420VideoSource video(
+        TestFileName(), TestFileWidth(), TestFileHeight(), timebase.den,
+        timebase.num, 0, fwd_kf_enabled_ ? 60 : 30);
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
     ASSERT_EQ(is_kf_placement_violated_, false)
         << "Frame #" << frame_num_ << " isn't a keyframe!";
@@ -237,9 +263,9 @@ TEST_P(ForcedKeyTestLarge, ForcedFrameIsKeyCornerCases) {
     forced_kf_frame_num_ = (int)cfg_.kf_max_dist + kf_offsets[i];
     forced_kf_frame_num_ = forced_kf_frame_num_ > 0 ? forced_kf_frame_num_ : 1;
     is_kf_placement_violated_ = false;
-    libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                       timebase.den, timebase.num, 0,
-                                       fwd_kf_enabled_ ? 60 : 30);
+    libaom_test::I420VideoSource video(
+        TestFileName(), TestFileWidth(), TestFileHeight(), timebase.den,
+        timebase.num, 0, fwd_kf_enabled_ ? 60 : 30);
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
     ASSERT_EQ(is_kf_placement_violated_, false)
         << "Frame #" << frame_num_ << " isn't a keyframe!";

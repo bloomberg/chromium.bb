@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -35,6 +36,7 @@
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/views/layout/animating_layout_manager_test_util.h"
 #include "ui/views/test/widget_test.h"
 
 namespace {
@@ -92,7 +94,7 @@ class ExtensionsToolbarContainerBrowserTest
 };
 
 // TODO(devlin): There are probably some tests from
-// ExtensionsMenuViewBrowserTest that should move here (if they test the
+// ExtensionsMenuViewInteractiveUITest that should move here (if they test the
 // toolbar container more than the menu).
 
 // Tests that invocation metrics are properly recorded when triggering
@@ -413,6 +415,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerBrowserTest,
   }
 
   Browser* incognito_browser = CreateIncognitoBrowser();
+
+  views::test::WaitForAnimatingLayoutManager(GetExtensionsToolbarContainer());
+  views::test::WaitForAnimatingLayoutManager(
+      GetExtensionsToolbarContainerForBrowser(incognito_browser));
 
   // Verify the extension has a (visible) action for both the incognito and
   // on-the-record browser.

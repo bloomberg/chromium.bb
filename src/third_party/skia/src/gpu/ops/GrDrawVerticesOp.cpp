@@ -216,7 +216,7 @@ public:
 
     const char* name() const override { return "DrawVerticesOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
         if (fProgramInfo) {
             fProgramInfo->visitFPProxies(func);
         } else {
@@ -234,12 +234,13 @@ private:
     void onCreateProgramInfo(const GrCaps*,
                              SkArenaAlloc*,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&&,
-                             const GrXferProcessor::DstProxyView&,
+                             const GrDstProxyView&,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override;
 
-    void onPrepareDraws(Target*) override;
+    void onPrepareDraws(GrMeshDrawTarget*) override;
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
 #if GR_TEST_UTILS
     SkString onDumpInfo() const override;
@@ -394,8 +395,9 @@ GrGeometryProcessor* DrawVerticesOp::makeGP(SkArenaAlloc* arena) {
 void DrawVerticesOp::onCreateProgramInfo(const GrCaps* caps,
                                          SkArenaAlloc* arena,
                                          const GrSurfaceProxyView& writeView,
+                                         bool usesMSAASurface,
                                          GrAppliedClip&& appliedClip,
-                                         const GrXferProcessor::DstProxyView& dstProxyView,
+                                         const GrDstProxyView& dstProxyView,
                                          GrXferBarrierFlags renderPassXferBarriers,
                                          GrLoadOp colorLoadOp) {
     GrGeometryProcessor* gp = this->makeGP(arena);
@@ -404,7 +406,7 @@ void DrawVerticesOp::onCreateProgramInfo(const GrCaps* caps,
                                              renderPassXferBarriers, colorLoadOp);
 }
 
-void DrawVerticesOp::onPrepareDraws(Target* target) {
+void DrawVerticesOp::onPrepareDraws(GrMeshDrawTarget* target) {
     // Allocate buffers.
     size_t vertexStride = this->vertexStride();
     sk_sp<const GrBuffer> vertexBuffer;

@@ -18,15 +18,14 @@
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/controls/webview/webview_export.h"
-#include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 
 namespace content {
 class BrowserContext;
 class RenderFrameHost;
-struct GlobalRequestID;
 }  // namespace content
 
 namespace views {
@@ -45,10 +44,6 @@ class ObservableWebView : public WebView {
   // content::WebContentsObserver
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
-  void ResourceLoadComplete(
-      content::RenderFrameHost* render_frame_host,
-      const content::GlobalRequestID& request_id,
-      const blink::mojom::ResourceLoadInfo& resource_load_info) override;
 
   // Resets the delegate. The delegate will no longer receive calls after this
   // point.
@@ -74,7 +69,7 @@ class ObservableWebView : public WebView {
 class WEBVIEW_EXPORT WebDialogView : public ClientView,
                                      public ui::WebDialogWebContentsDelegate,
                                      public ui::WebDialogDelegate,
-                                     public WidgetDelegate {
+                                     public DialogDelegate {
  public:
   METADATA_HEADER(WebDialogView);
 
@@ -91,6 +86,7 @@ class WEBVIEW_EXPORT WebDialogView : public ClientView,
   content::WebContents* web_contents();
 
   // ClientView:
+  void AddedToWidget() override;
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;

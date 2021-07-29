@@ -11,11 +11,16 @@ import {
 // eslint-disable-next-line no-unused-vars
 import {DeviceInfoUpdater} from '../device/device_info_updater.js';
 import * as dom from '../dom.js';
+import {reportError} from '../error.js';
+import {setExpertMode} from '../expert.js';
+import {I18nString} from '../i18n_string.js';
 import * as loadTimeData from '../models/load_time_data.js';
 import {ChromeHelper} from '../mojo/chrome_helper.js';
 import * as nav from '../nav.js';
 import * as state from '../state.js';
 import {
+  ErrorLevel,
+  ErrorType,
   Facing,
   Resolution,      // eslint-disable-line no-unused-vars
   ResolutionList,  // eslint-disable-line no-unused-vars
@@ -103,7 +108,7 @@ export class BaseSettings extends View {
    * Opens sub-settings.
    * @param {!HTMLElement} opener The DOM element triggering the open.
    * @param {!ViewName} name Name of settings view.
-   * @private
+   * @protected
    */
   openSubSettings(opener, name) {
     this.focusElement_ = opener;
@@ -118,9 +123,11 @@ export class BaseSettings extends View {
  */
 export class PrimarySettings extends BaseSettings {
   /**
-   * @public
+   * @param {!DeviceInfoUpdater} infoUpdater
+   * @param {!PhotoConstraintsPreferrer} photoPreferrer
+   * @param {!VideoConstraintsPreferrer} videoPreferrer
    */
-  constructor() {
+  constructor(infoUpdater, photoPreferrer, videoPreferrer) {
     const openHandler = (openerId, viewName) => {
       const opener = dom.get(`#${openerId}`, HTMLElement);
       return {[openerId]: () => this.openSubSettings(opener, viewName)};
@@ -135,10 +142,69 @@ export class PrimarySettings extends BaseSettings {
         // feedback screenshot b/155938542.
         this.leave();
         ChromeHelper.getInstance().openFeedbackDialog(
-            loadTimeData.getI18nMessage('feedback_description_placeholder'));
+            loadTimeData.getI18nMessage(
+                I18nString.FEEDBACK_DESCRIPTION_PLACEHOLDER));
       },
       'settings-help': () => util.openHelp(),
     });
+
+    /**
+     * @const {!Array<!View>}
+     * @private
+     */
+    this.subViews_ = [
+      new BaseSettings(ViewName.GRID_SETTINGS),
+      new BaseSettings(ViewName.TIMER_SETTINGS),
+      new ResolutionSettings(infoUpdater, photoPreferrer, videoPreferrer),
+      new BaseSettings(ViewName.EXPERT_SETTINGS),
+    ];
+
+    /**
+     * @type {number}
+     * @private
+     */
+    this.headerClickedCount_ = 0;
+
+    /**
+     * @type {number|null}
+     * @private
+     */
+    this.headerClickedLastTime_ = null;
+
+    const header = dom.get('#settings-header', HTMLElement);
+    header.addEventListener('click', () => this.onHeaderClicked_());
+  }
+
+  /**
+   * Handle click on primary settings header (used to trigger expert mode).
+   * @private
+   */
+  onHeaderClicked_() {
+    const reset = () => {
+      this.headerClickedCount_ = 0;
+      this.headerClickedLastTime_ = null;
+    };
+
+    // Reset the counter if last click is more than 1 second ago.
+    if (this.headerClickedLastTime_ !== null &&
+        (Date.now() - this.headerClickedLastTime_) > 1000) {
+      reset();
+    }
+
+    this.headerClickedCount_++;
+    this.headerClickedLastTime_ = Date.now();
+
+    if (this.headerClickedCount_ === 5) {
+      setExpertMode(true);
+      reset();
+    }
+  }
+
+  /**
+   * @override
+   */
+  getSubViews() {
+    return this.subViews_;
   }
 }
 
@@ -161,7 +227,9 @@ export class ResolutionSettings extends BaseSettings {
     const createOpenMenuHandler = (getSetting, getElement, isPhoto) => () => {
       const setting = getSetting();
       if (setting === null) {
-        console.error('Open settings of non-exist device.');
+        reportError(
+            ErrorType.DEVICE_NOT_EXIST, ErrorLevel.ERROR,
+            new Error('Open settings of non-exist device.'));
         return;
       }
       const element = getElement();
@@ -325,7 +393,9 @@ export class ResolutionSettings extends BaseSettings {
             this.externalSettings_.push(deviceSetting);
             break;
           default:
-            console.error(`Ignore device of unknown facing: ${facing}`);
+            reportError(
+                ErrorType.UNKNOWN_FACING, ErrorLevel.ERROR,
+                new Error(`Ignore device of unknown facing: ${facing}`));
         }
       });
       this.updateResolutions_();
@@ -346,6 +416,16 @@ export class ResolutionSettings extends BaseSettings {
             });
       });
     });
+  }
+
+  /**
+   * @override
+   */
+  getSubViews() {
+    return [
+      this.photoResolutionSettings,
+      this.videoResolutionSettings,
+    ];
   }
 
   /**
@@ -373,11 +453,12 @@ export class ResolutionSettings extends BaseSettings {
             (findR) => !findR.equals(r) && r.aspectRatioEquals(findR) &&
                 toMegapixel(r) === toMegapixel(findR))) {
       return loadTimeData.getI18nMessage(
-          'label_detail_photo_resolution', r.width / d, r.height / d, r.width,
-          r.height, toMegapixel(r));
+          I18nString.LABEL_DETAIL_PHOTO_RESOLUTION, r.width / d, r.height / d,
+          r.width, r.height, toMegapixel(r));
     } else {
       return loadTimeData.getI18nMessage(
-          'label_photo_resolution', r.width / d, r.height / d, toMegapixel(r));
+          I18nString.LABEL_PHOTO_RESOLUTION, r.width / d, r.height / d,
+          toMegapixel(r));
     }
   }
 
@@ -389,7 +470,7 @@ export class ResolutionSettings extends BaseSettings {
    */
   videoOptTextTempl_(r) {
     return loadTimeData.getI18nMessage(
-        'label_video_resolution', r.height, r.width);
+        I18nString.LABEL_VIDEO_RESOLUTION, r.height, r.width);
   }
 
   /**
@@ -644,7 +725,7 @@ export class ResolutionSettings extends BaseSettings {
       const input = dom.getFrom(item, 'input', HTMLInputElement);
       dom.getFrom(item, 'span', HTMLSpanElement).textContent =
           optTextTempl(r, resolutions);
-      input.name = menu.dataset['name'];
+      input.name = menu.dataset[I18nString.NAME];
       input.dataset['width'] = r.width.toString();
       input.dataset['height'] = r.height.toString();
       if (r.equals(selectedR)) {

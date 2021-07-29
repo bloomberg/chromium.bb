@@ -8,13 +8,13 @@
 
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -1443,7 +1443,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
     EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_FOUND,
                                   "ihfokbkgjpifnbbojhneepfflplebdkc")).Times(1);
     EXPECT_CALL(observer, OnEvent(Events::COMPONENT_WAIT,
-                                  "ihfokbkgjpifnbbojhneepfflplebdkc")).Times(1);
+                                  "ihfokbkgjpifnbbojhneepfflplebdkc"))
+        .Times(AnyNumber());
     EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_DOWNLOADING,
                                   "ihfokbkgjpifnbbojhneepfflplebdkc"))
         .Times(AtLeast(1));

@@ -5,12 +5,25 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/file_info.mojom";
+import "mojo/public/mojom/base/file.mojom";
 import "third_party/blink/public/mojom/blob/blob.mojom";
 import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
 import "third_party/blink/public/mojom/file_system_access/file_system_access_error.mojom";
 import "third_party/blink/public/mojom/file_system_access/file_system_access_file_writer.mojom";
 import "third_party/blink/public/mojom/file_system_access/file_system_access_transfer_token.mojom";
 import "third_party/blink/public/mojom/permissions/permission_status.mojom";
+
+// Representation of a file for an AccessHandle.
+// `regular_file` is an OS-level file which provides direct read/write access.
+// 'incognito_file_delegate' is used only in Incognito mode. It routes all file
+// operations to the browser.
+union FileSystemAccessAccessHandleFile {
+    mojo_base.mojom.File regular_file;
+    pending_remote<FileSystemAccessFileDelegateHost> incognito_file_delegate;
+};
+
+// TODO(crbug.com/1225653): Implement this.
+interface FileSystemAccessFileDelegateHost {};
 
 // This interface represents a handle to a directory in the File System Access
 // API.
@@ -28,6 +41,15 @@ interface FileSystemAccessFileHandle {
   // Returns a FileWriter object. The FileWriter provides write operations on a file.
   CreateFileWriter(bool keep_existing_data, bool auto_close) => (
       FileSystemAccessError result, pending_remote<FileSystemAccessFileWriter>? writer);
+
+  // Deletes the file represented by this handle.
+  // Returns an error if the file does not exist.
+  Remove() => (FileSystemAccessError result);
+
+  // TODO(fivedots): Change the return type to a host object once the access
+  // handle locking implementation is clearer.
+  // Returns a file object which can be used initiate file operations from the renderer.
+  OpenAccessHandle() =>  (FileSystemAccessError result, FileSystemAccessAccessHandleFile? file);
 
   // Returns true if |other| represents the same file on disk as this handle.
   IsSameEntry(pending_remote<FileSystemAccessTransferToken> other) =>

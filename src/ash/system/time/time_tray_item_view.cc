@@ -4,7 +4,7 @@
 
 #include "ash/system/time/time_tray_item_view.h"
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -12,6 +12,7 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/time/time_view.h"
 #include "ash/system/tray/tray_utils.h"
+#include "ui/views/border.h"
 
 namespace ash {
 

@@ -43,10 +43,10 @@ class ScriptLoader;
 
 class CORE_EXPORT ScriptRunner final
     : public GarbageCollected<ScriptRunner>,
-      public ExecutionContextLifecycleStateObserver,
       public NameClient {
  public:
   explicit ScriptRunner(Document*);
+  ~ScriptRunner() override = default;
   ScriptRunner(const ScriptRunner&) = delete;
   ScriptRunner& operator=(const ScriptRunner&) = delete;
 
@@ -57,8 +57,6 @@ class CORE_EXPORT ScriptRunner final
   }
   void NotifyScriptReady(PendingScript*);
   void NotifyDelayedAsyncScriptsMilestoneReached();
-  void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
-  void ContextDestroyed() final {}
 
   static void MovePendingScript(Document&, Document&, ScriptLoader*);
 
@@ -66,7 +64,7 @@ class CORE_EXPORT ScriptRunner final
     task_runner_ = task_runner;
   }
 
-  void Trace(Visitor*) const override;
+  void Trace(Visitor*) const;
   const char* NameInHeapSnapshot() const override { return "ScriptRunner"; }
 
   // HTML parser can defer async scripts until after it's processed sequential
@@ -91,7 +89,6 @@ class CORE_EXPORT ScriptRunner final
   void DelayAsyncScript(PendingScript*);
 
   void PostTask(const base::Location&);
-  void PostTasksForReadyScripts(const base::Location&);
 
   // Execute the first task in in_order_scripts_to_execute_soon_.
   // Returns true if task was run, and false otherwise.

@@ -7,8 +7,6 @@
 #include <string>
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/overview_test_api.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_prefs.h"
@@ -1553,13 +1551,12 @@ TEST_F(TabletModeWindowManagerTest, DontChangeBoundsForMinimizedWindow) {
   EXPECT_TRUE(window_state->IsMinimized());
   EXPECT_EQ(window->bounds(), rect);
 
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
   EXPECT_EQ(window->bounds(), rect);
 
   // Exit overview mode will update all windows' bounds. However, if the window
   // is minimized, the bounds will not be updated.
-  overview_controller->EndOverview();
+  ExitOverview();
   EXPECT_EQ(window->bounds(), rect);
 }
 
@@ -1625,7 +1622,7 @@ TEST_F(TabletModeWindowManagerTest, ClamshellTabletTransitionTest) {
   // 1. Clamshell -> tablet. If overview is active, it should still be kept
   // active after transition.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  EXPECT_TRUE(overview_controller->StartOverview());
+  EXPECT_TRUE(EnterOverview());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   TabletModeWindowManager* manager = CreateTabletModeWindowManager();
   EXPECT_TRUE(manager);
@@ -1638,7 +1635,7 @@ TEST_F(TabletModeWindowManagerTest, ClamshellTabletTransitionTest) {
 
   // 3. Clamshell -> tablet. If overview is inactive, it should still be kept
   // inactive after transition. All windows will be maximized.
-  EXPECT_TRUE(overview_controller->EndOverview());
+  EXPECT_TRUE(ExitOverview());
   EXPECT_FALSE(overview_controller->InOverviewSession());
   CreateTabletModeWindowManager();
   EXPECT_FALSE(overview_controller->InOverviewSession());
@@ -1651,7 +1648,7 @@ TEST_F(TabletModeWindowManagerTest, ClamshellTabletTransitionTest) {
 
   // 5. Clamshell -> Tablet. If the window is snapped, it will be carried over
   // to splitview in tablet mode.
-  const WMEvent event(WM_EVENT_SNAP_LEFT);
+  const WMEvent event(WM_EVENT_SNAP_PRIMARY);
   WindowState::Get(window.get())->OnWMEvent(&event);
   EXPECT_TRUE(WindowState::Get(window.get())->IsSnapped());
   // After transition, we should be in single split screen.
@@ -1700,7 +1697,7 @@ TEST_F(TabletModeWindowManagerTest, ClamshellTabletTransitionTest) {
 
   // 10. Tablet -> Clamshell. If overview and splitview are both active, after
   // transition, they will remain both active.
-  overview_controller->StartOverview();
+  EnterOverview();
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   DestroyTabletModeWindowManager();
@@ -1723,7 +1720,7 @@ TEST_F(TabletModeWindowManagerTest,
   OverviewController* overview_controller = Shell::Get()->overview_controller();
 
   // First test 1 window case.
-  const WMEvent left_snap_event(WM_EVENT_SNAP_LEFT);
+  const WMEvent left_snap_event(WM_EVENT_SNAP_PRIMARY);
   WindowState::Get(window.get())->OnWMEvent(&left_snap_event);
   const gfx::Rect left_snapped_bounds =
       gfx::Rect(1200 / 2, 800 - ShelfConfig::Get()->shelf_size());
@@ -1746,7 +1743,7 @@ TEST_F(TabletModeWindowManagerTest,
   std::unique_ptr<aura::Window> window2(
       CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
   WindowState::Get(window.get())->OnWMEvent(&left_snap_event);
-  const WMEvent right_snap_event(WM_EVENT_SNAP_RIGHT);
+  const WMEvent right_snap_event(WM_EVENT_SNAP_SECONDARY);
   WindowState::Get(window2.get())->OnWMEvent(&right_snap_event);
   // Change their bounds horizontally and then enter tablet mode.
   window->SetBounds(gfx::Rect(400, left_snapped_bounds.height()));
@@ -1779,7 +1776,7 @@ TEST_F(TabletModeWindowManagerTest, HomeLauncherVisibilityTest) {
   // Clamshell -> Tablet mode transition. If overview is active, it will remain
   // in overview.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  EXPECT_TRUE(overview_controller->StartOverview());
+  EXPECT_TRUE(EnterOverview());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   TabletModeWindowManager* manager = CreateTabletModeWindowManager();
   EXPECT_TRUE(manager);

@@ -41,8 +41,6 @@ class NetworkSmsHandler::NetworkSmsDeviceHandler {
  public:
   NetworkSmsDeviceHandler() = default;
   virtual ~NetworkSmsDeviceHandler() = default;
-
-  virtual void RequestUpdate() = 0;
 };
 
 class NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler
@@ -51,8 +49,6 @@ class NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler
   ModemManager1NetworkSmsDeviceHandler(NetworkSmsHandler* host,
                                        const std::string& service_name,
                                        const dbus::ObjectPath& object_path);
-
-  void RequestUpdate() override;
 
  private:
   void ListCallback(absl::optional<std::vector<dbus::ObjectPath>> paths);
@@ -96,16 +92,6 @@ NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::
   // List the existing messages.
   ModemMessagingClient::Get()->List(
       service_name_, object_path_,
-      base::BindOnce(&NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::
-                         ListCallback,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::RequestUpdate() {
-  // Calling List using the service "AddSMS" causes the stub
-  // implementation to deliver new sms messages.
-  ModemMessagingClient::Get()->List(
-      std::string("AddSMS"), dbus::ObjectPath("/"),
       base::BindOnce(&NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::
                          ListCallback,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -216,6 +202,10 @@ NetworkSmsHandler::NetworkSmsHandler() {}
 
 NetworkSmsHandler::~NetworkSmsHandler() {
   ShillManagerClient::Get()->RemovePropertyChangedObserver(this);
+  if (!cellular_device_path_.empty()) {
+    ShillDeviceClient::Get()->RemovePropertyChangedObserver(
+        dbus::ObjectPath(cellular_device_path_), this);
+  }
 }
 
 void NetworkSmsHandler::Init() {
@@ -228,15 +218,9 @@ void NetworkSmsHandler::Init() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void NetworkSmsHandler::RequestUpdate(bool request_existing) {
-  // If we already received messages and |request_existing| is true, send
-  // updates for existing messages.
+void NetworkSmsHandler::RequestUpdate() {
   for (const auto& message : received_messages_) {
     NotifyMessageReceived(message);
-  }
-  // Request updates from each device.
-  for (auto& handler : device_handlers_) {
-    handler->RequestUpdate();
   }
 }
 
@@ -250,9 +234,16 @@ void NetworkSmsHandler::RemoveObserver(Observer* observer) {
 
 void NetworkSmsHandler::OnPropertyChanged(const std::string& name,
                                           const base::Value& value) {
-  if (name != shill::kDevicesProperty || !value.is_list())
+  // Device property change
+  if (name == shill::kDBusObjectProperty) {
+    OnObjectPathChanged(value);
     return;
-  UpdateDevices(value);
+  }
+
+  // Manager property change
+  if (name == shill::kDevicesProperty && value.is_list()) {
+    UpdateDevices(value);
+  }
 }
 
 // Private methods
@@ -340,7 +331,33 @@ void NetworkSmsHandler::DevicePropertiesCallback(
     device_handlers_.push_back(
         std::make_unique<ModemManager1NetworkSmsDeviceHandler>(
             this, *service_name, object_path));
+
+    if (!cellular_device_path_.empty()) {
+      ShillDeviceClient::Get()->RemovePropertyChangedObserver(
+          dbus::ObjectPath(cellular_device_path_), this);
+    }
+    cellular_device_path_ = device_path;
+    ShillDeviceClient::Get()->AddPropertyChangedObserver(
+        dbus::ObjectPath(cellular_device_path_), this);
   }
+}
+
+void NetworkSmsHandler::OnObjectPathChanged(const base::Value& object_path) {
+  // Remove any old handlers.
+  device_handlers_.clear();
+
+  std::string object_path_string =
+      object_path.is_string() ? object_path.GetString() : "";
+  // If the new object path is empty, there is no SIM. Don't create a new
+  // handler.
+  if (object_path_string.empty() || object_path_string == "/") {
+    return;
+  }
+
+  // Recreate handler for the new object path.
+  ShillManagerClient::Get()->GetProperties(
+      base::BindOnce(&NetworkSmsHandler::ManagerPropertiesCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace chromeos

@@ -23,8 +23,9 @@
 #include "core/fxcodec/scanlinedecoder.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxcrt/span_util.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
 
 namespace {
 
@@ -273,18 +274,17 @@ uint32_t RunLengthDecode(pdfium::span<const uint8_t> src_span,
       if (buf_left < copy_len) {
         uint32_t delta = copy_len - buf_left;
         copy_len = buf_left;
-        memset(&dest_span[dest_count + copy_len], '\0', delta);
+        fxcrt::spanclr(dest_span.subspan(dest_count + copy_len, delta));
       }
       auto copy_span = src_span.subspan(i + 1, copy_len);
-      memcpy(&dest_span[dest_count], copy_span.data(), copy_span.size());
+      fxcrt::spancpy(dest_span.subspan(dest_count), copy_span);
       dest_count += src_span[i] + 1;
       i += src_span[i] + 2;
     } else {
-      int fill = 0;
-      if (i < src_span.size() - 1)
-        fill = src_span[i + 1];
-      memset(&dest_span[dest_count], fill, 257 - src_span[i]);
-      dest_count += 257 - src_span[i];
+      const uint8_t fill = i < src_span.size() - 1 ? src_span[i + 1] : 0;
+      const size_t fill_size = 257 - src_span[i];
+      fxcrt::spanset(dest_span.subspan(dest_count, fill_size), fill);
+      dest_count += fill_size;
       i += 2;
     }
   }
@@ -559,20 +559,9 @@ ByteString PDF_EncodeText(const WideString& str) {
   return result;
 }
 
-ByteString PDF_EncodeString(const ByteString& src, bool bHex) {
+ByteString PDF_EncodeString(const ByteString& src) {
   std::ostringstream result;
   int srclen = src.GetLength();
-  if (bHex) {
-    result << '<';
-    for (int i = 0; i < srclen; ++i) {
-      char buf[2];
-      FXSYS_IntToTwoHexChars(src[i], buf);
-      result << buf[0];
-      result << buf[1];
-    }
-    result << '>';
-    return ByteString(result);
-  }
   result << '(';
   for (int i = 0; i < srclen; ++i) {
     uint8_t ch = src[i];
@@ -589,6 +578,20 @@ ByteString PDF_EncodeString(const ByteString& src, bool bHex) {
     result << static_cast<char>(ch);
   }
   result << ')';
+  return ByteString(result);
+}
+
+ByteString PDF_HexEncodeString(const ByteString& src) {
+  std::ostringstream result;
+  int srclen = src.GetLength();
+  result << '<';
+  for (int i = 0; i < srclen; ++i) {
+    char buf[2];
+    FXSYS_IntToTwoHexChars(src[i], buf);
+    result << buf[0];
+    result << buf[1];
+  }
+  result << '>';
   return ByteString(result);
 }
 

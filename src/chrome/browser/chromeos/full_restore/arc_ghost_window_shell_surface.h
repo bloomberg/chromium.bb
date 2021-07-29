@@ -23,6 +23,7 @@ std::unique_ptr<exo::ClientControlledShellSurface> InitArcGhostWindow(
     gfx::Rect bounds,
     absl::optional<gfx::Size> maximum_size,
     absl::optional<gfx::Size> minimum_size,
+    absl::optional<std::u16string> title,
     absl::optional<uint32_t> color,
     base::RepeatingClosure close_callback);
 
@@ -32,17 +33,26 @@ class ArcGhostWindowShellSurface : public exo::ClientControlledShellSurface {
  public:
   ArcGhostWindowShellSurface(std::unique_ptr<exo::Surface> surface,
                              int container,
-                             double scale_factor);
+                             double scale_factor,
+                             const std::string& application_id);
   ArcGhostWindowShellSurface(const ArcGhostWindowShellSurface&) = delete;
   ArcGhostWindowShellSurface& operator=(const ArcGhostWindowShellSurface&) =
       delete;
   ~ArcGhostWindowShellSurface() override;
 
+  void OverrideInitParams(views::Widget::InitParams* params) override;
+
   void InitContentOverlay(const std::string& app_id, uint32_t theme_color);
+  void SetAppId(const absl::optional<std::string>& id);
 
   exo::Surface* controller_surface();
 
  private:
+  void SetShellAppId(ui::PropertyHandler* property_handler,
+                     const absl::optional<std::string>& id);
+
+  absl::optional<std::string> app_id_;
+
   std::unique_ptr<exo::Surface> controller_surface_;
   std::unique_ptr<exo::Buffer> buffer_;
 };

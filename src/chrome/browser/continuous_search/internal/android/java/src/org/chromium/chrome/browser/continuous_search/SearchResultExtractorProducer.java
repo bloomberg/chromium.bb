@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.continuous_search;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
@@ -28,14 +29,22 @@ import java.util.Set;
  */
 @JNINamespace("continuous_search")
 public class SearchResultExtractorProducer extends SearchResultProducer {
-    private static final String MINIUM_URL_COUNT_PARAM = "minimum_url_count";
-    private static final int DEFAULT_MINIUM_URL_COUNT = 5;
+    private static final String MINIMUM_URL_COUNT_PARAM = "minimum_url_count";
+    private static final int DEFAULT_MINIMUM_URL_COUNT = 5;
+
+    private static final String USE_PROVIDER_ICON_PARAM = "use_provider_icon";
+    private static final boolean USE_PROVIDER_ICON_DEFAULT_VALUE = true;
+
+    @VisibleForTesting
+    static final @DrawableRes int PROVIDER_ICON_RESOURCE = R.drawable.ic_logo_googleg_20dp;
 
     private long mNativeSearchResultExtractorProducer;
     private @State int mState;
 
     @VisibleForTesting
     int mMinimumUrlCount;
+    @VisibleForTesting
+    boolean mUseProviderIcon;
 
     @IntDef({State.READY, State.CAPTURING, State.CANCELLED})
     @Retention(RetentionPolicy.SOURCE)
@@ -50,8 +59,11 @@ public class SearchResultExtractorProducer extends SearchResultProducer {
         mNativeSearchResultExtractorProducer = SearchResultExtractorProducerJni.get().create(this);
         mState = State.READY;
         mMinimumUrlCount = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.CONTINUOUS_SEARCH, MINIUM_URL_COUNT_PARAM,
-                DEFAULT_MINIUM_URL_COUNT);
+                ChromeFeatureList.CONTINUOUS_SEARCH, MINIMUM_URL_COUNT_PARAM,
+                DEFAULT_MINIMUM_URL_COUNT);
+        mUseProviderIcon = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.CONTINUOUS_SEARCH, USE_PROVIDER_ICON_PARAM,
+                USE_PROVIDER_ICON_DEFAULT_VALUE);
     }
 
     @CalledByNative
@@ -63,6 +75,21 @@ public class SearchResultExtractorProducer extends SearchResultProducer {
         mState = State.READY;
     }
 
+    /**
+     * Called when results are returned from native and forwards the result to {@link mListener}.
+     * This can succeed even after a web contents or tab is destroyed. Ensure {@link #cancel()} is
+     * called on this producer when the tab or web contents is destroyed if this behavior is not
+     * desired.
+     * @param url The URL of SRP data was fetched for.
+     * @param query The query associated with the SRP.
+     * @param resultCategory The type of results: news, organic, etc.
+     * @param groupLabel One entry per group (g) naming the type of results.
+     * @param isAdGroup One entry per group (g) specifying the size of the group.
+     * @param groupSize One entry per group (g) specifying the number (n_g) of titles and urls in
+     *     the respective group.
+     * @param titles One title per item ordered by group. There will be (sum n_g forall g) entries.
+     * @param urls One URL per item ordered by group. There will be (sum n_g forall g) entries.
+     */
     @CalledByNative
     void onResultsAvailable(GURL url, String query, int resultCategory, String[] groupLabel,
             boolean[] isAdGroup, int[] groupSize, String[] titles, GURL[] urls) {
@@ -74,6 +101,12 @@ public class SearchResultExtractorProducer extends SearchResultProducer {
         int urlCount = 0;
         List<PageGroup> groups = new ArrayList<PageGroup>();
         for (int i = 0; i < groupLabel.length; i++) {
+            if (isAdGroup[i]) {
+                // Account for the resulting group offset to ensure proper indexing.
+                groupOffset += groupSize[i];
+                continue;
+            }
+
             List<PageItem> results = new ArrayList<PageItem>();
             Set<GURL> groupUrls = new HashSet<>();
             for (int j = 0; j < groupSize[i]; j++) {
@@ -83,8 +116,8 @@ public class SearchResultExtractorProducer extends SearchResultProducer {
                 results.add(new PageItem(urls[groupOffset + j], titles[groupOffset + j]));
                 urlCount++;
             }
-            groupOffset += groupSize[i];
 
+            groupOffset += groupSize[i];
             groups.add(new PageGroup(groupLabel[i], isAdGroup[i], results));
         }
 
@@ -95,8 +128,11 @@ public class SearchResultExtractorProducer extends SearchResultProducer {
 
         assert !GURL.isEmptyOrInvalid(url);
         assert query != null && !query.isEmpty();
+        ContinuousNavigationMetadata.Provider provider = new ContinuousNavigationMetadata.Provider(
+                resultCategory, getProviderName(resultCategory),
+                mUseProviderIcon ? PROVIDER_ICON_RESOURCE : 0);
         ContinuousNavigationMetadata metadata =
-                new ContinuousNavigationMetadata(url, query, resultCategory, groups);
+                new ContinuousNavigationMetadata(url, query, provider, groups);
         mListener.onResult(metadata);
     }
 
@@ -143,6 +179,20 @@ public class SearchResultExtractorProducer extends SearchResultProducer {
 
         SearchResultExtractorProducerJni.get().destroy(mNativeSearchResultExtractorProducer);
         mNativeSearchResultExtractorProducer = 0;
+    }
+
+    private String getProviderName(int resultCategory) {
+        if (mUseProviderIcon) return null;
+
+        // (TODO:crbug/1199339) Replace hardcoded string with translated resources.
+        switch (resultCategory) {
+            case PageCategory.ORGANIC_SRP:
+            case PageCategory.NEWS_SRP:
+                return "Google Search";
+            default:
+                assert false : "Invalid result category: " + resultCategory;
+                return null;
+        }
     }
 
     @NativeMethods

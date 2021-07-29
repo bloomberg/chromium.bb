@@ -23,13 +23,13 @@
 #include "chrome/browser/ash/login/ui/signin_ui.h"
 #include "chrome/browser/ash/login/ui/webui_accelerator_mapping.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system/device_disabling_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chromeos/diagnostics_dialog.h"
@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/locale_switch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/management_transition_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/os_install_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_fatal_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
@@ -297,7 +298,7 @@ void LoginDisplayHostCommon::StartKiosk(const KioskAppId& kiosk_app_id,
 void LoginDisplayHostCommon::AttemptShowEnableConsumerKioskScreen() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (!connector->IsEnterpriseManaged() &&
+  if (!connector->IsDeviceEnterpriseManaged() &&
       KioskAppManager::IsConsumerKioskEnabled()) {
     ShowEnableConsumerKioskScreen();
   }
@@ -415,6 +416,11 @@ void LoginDisplayHostCommon::StartManagementTransition() {
   StartWizard(ManagementTransitionScreenView::kScreenId);
 }
 
+void LoginDisplayHostCommon::ShowTosForExistingUser() {
+  GetWizardController()->EndOnboardingAfterToS();
+  StartUserOnboarding();
+}
+
 void LoginDisplayHostCommon::SetAuthSessionForOnboarding(
     const UserContext& user_context) {
   if (PinSetupScreen::ShouldSkipBecauseOfPolicy())
@@ -441,10 +447,8 @@ void LoginDisplayHostCommon::StartEncryptionMigration(
 }
 
 void LoginDisplayHostCommon::ShowSigninError(SigninError error,
-                                             const std::string& details,
-                                             int login_attempts) {
-  VLOG(1) << "Show error, error_id: " << static_cast<int>(error)
-          << ", attempts:" << login_attempts;
+                                             const std::string& details) {
+  VLOG(1) << "Show error, error_id: " << static_cast<int>(error);
 
   std::string error_text;
   switch (error) {
@@ -473,13 +477,11 @@ void LoginDisplayHostCommon::ShowSigninError(SigninError error,
     }
   }
 
-  std::string help_link_text;
-  if (login_attempts > 1)
-    help_link_text = l10n_util::GetStringUTF8(IDS_LEARN_MORE);
+  std::string help_link_text = l10n_util::GetStringUTF8(IDS_LEARN_MORE);
 
   GetWizardController()->GetScreen<SignInFatalErrorScreen>()->SetCustomError(
       error_text, keyboard_hint, details, help_link_text);
-  GetWizardController()->AdvanceToScreen(SignInFatalErrorView::kScreenId);
+  StartWizard(SignInFatalErrorView::kScreenId);
 }
 
 void LoginDisplayHostCommon::OnBrowserAdded(Browser* browser) {
@@ -543,6 +545,10 @@ void LoginDisplayHostCommon::ShowGaiaDialogCommon(
     gaia_screen->LoadOnline(prefilled_account);
     StartWizard(GaiaView::kScreenId);
   }
+}
+
+void LoginDisplayHostCommon::ShowOsInstallScreen() {
+  StartWizard(OsInstallScreenView::kScreenId);
 }
 
 void LoginDisplayHostCommon::Cleanup() {

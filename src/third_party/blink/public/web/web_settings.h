@@ -172,7 +172,6 @@ class WebSettings {
   virtual void SetMinimumLogicalFontSize(int) = 0;
   virtual void SetHideScrollbars(bool) = 0;
   virtual void SetOfflineWebApplicationCacheEnabled(bool) = 0;
-  virtual void SetPassiveEventListenerDefault(PassiveEventListenerDefault) = 0;
   virtual void SetPasswordEchoDurationInSeconds(double) = 0;
   virtual void SetPasswordEchoEnabled(bool) = 0;
   virtual void SetPictographFontFamily(const WebString&,
@@ -285,6 +284,7 @@ class WebSettings {
   virtual void SetSelectionClipboardBufferAvailable(bool) = 0;
   virtual void SetAccessibilityIncludeSvgGElement(bool) = 0;
   virtual void SetWebXRImmersiveArAllowed(bool) = 0;
+  virtual void SetLitePageSubresourceRedirectOrigin(const WebString&) = 0;
 
  protected:
   ~WebSettings() = default;

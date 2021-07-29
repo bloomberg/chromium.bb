@@ -54,8 +54,10 @@
 #include "services/device/public/cpp/geolocation/location_provider.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/web_transport.mojom.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -363,7 +365,7 @@ bool ContentBrowserClient::AllowSharedWorker(
     const GURL& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,
     const std::string& name,
-    const storage::StorageKey& storage_key,
+    const blink::StorageKey& storage_key,
     BrowserContext* context,
     int render_process_id,
     int render_frame_id) {
@@ -400,7 +402,7 @@ void ContentBrowserClient::UpdateRendererPreferencesForWorker(
 void ContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     BrowserContext* browser_context,
-    const std::vector<GlobalFrameRoutingId>& render_frames,
+    const std::vector<GlobalRenderFrameHostId>& render_frames,
     base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(true);
 }
@@ -408,21 +410,21 @@ void ContentBrowserClient::AllowWorkerFileSystem(
 bool ContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
     BrowserContext* browser_context,
-    const std::vector<GlobalFrameRoutingId>& render_frames) {
+    const std::vector<GlobalRenderFrameHostId>& render_frames) {
   return true;
 }
 
 bool ContentBrowserClient::AllowWorkerCacheStorage(
     const GURL& url,
     BrowserContext* browser_context,
-    const std::vector<GlobalFrameRoutingId>& render_frames) {
+    const std::vector<GlobalRenderFrameHostId>& render_frames) {
   return true;
 }
 
 bool ContentBrowserClient::AllowWorkerWebLocks(
     const GURL& url,
     BrowserContext* browser_context,
-    const std::vector<GlobalFrameRoutingId>& render_frames) {
+    const std::vector<GlobalRenderFrameHostId>& render_frames) {
   return true;
 }
 
@@ -444,11 +446,6 @@ bool ContentBrowserClient::IsInterestGroupAPIAllowed(
     const url::Origin& top_frame_origin,
     const GURL& api_url) {
   return false;
-}
-
-bool ContentBrowserClient::IsConversionMeasurementAllowed(
-    content::BrowserContext* browser_context) {
-  return true;
 }
 
 bool ContentBrowserClient::IsConversionMeasurementOperationAllowed(
@@ -742,6 +739,13 @@ std::wstring ContentBrowserClient::GetAppContainerSidForSandboxType(
       L"924012148-129201922");
 }
 
+std::wstring ContentBrowserClient::GetLPACCapabilityNameForNetworkService() {
+  // Embedders should override this method and return different LPAC capability
+  // name. This will be used to secure the user data files required for the
+  // network service.
+  return std::wstring(L"lpacContentNetworkService");
+}
+
 bool ContentBrowserClient::IsRendererCodeIntegrityEnabled() {
   return false;
 }
@@ -981,7 +985,7 @@ std::unique_ptr<LoginDelegate> ContentBrowserClient::CreateLoginDelegate(
 
 bool ContentBrowserClient::HandleExternalProtocol(
     const GURL& url,
-    WebContents::OnceGetter web_contents_getter,
+    WebContents::Getter web_contents_getter,
     int child_id,
     int frame_tree_node_id,
     NavigationUIData* navigation_data,
@@ -1086,6 +1090,11 @@ std::unique_ptr<TtsEnvironmentAndroid>
 ContentBrowserClient::CreateTtsEnvironmentAndroid() {
   return nullptr;
 }
+
+bool ContentBrowserClient::
+    ShouldObserveContainerViewLocationForDialogOverlays() {
+  return false;
+}
 #endif
 
 base::flat_set<std::string>
@@ -1133,7 +1142,7 @@ bool ContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
 
 base::OnceClosure ContentBrowserClient::FetchRemoteSms(
     content::WebContents* web_contents,
-    const url::Origin& origin,
+    const std::vector<url::Origin>& origin_list,
     base::OnceCallback<void(absl::optional<std::vector<url::Origin>>,
                             absl::optional<std::string>,
                             absl::optional<content::SmsFetchFailureType>)>
@@ -1196,6 +1205,11 @@ bool ContentBrowserClient::ShouldAllowInsecurePrivateNetworkRequests(
   return false;
 }
 
+bool ContentBrowserClient::IsJitDisabledForSite(BrowserContext* browser_context,
+                                                const GURL& site_url) {
+  return false;
+}
+
 ukm::UkmService* ContentBrowserClient::GetUkmService() {
   return nullptr;
 }
@@ -1234,6 +1248,14 @@ std::unique_ptr<SpeculationHostDelegate>
 ContentBrowserClient::CreateSpeculationHostDelegate(
     RenderFrameHost& render_frame_host) {
   return nullptr;
+}
+
+void ContentBrowserClient::ShowDirectSocketsConnectionDialog(
+    content::RenderFrameHost* owner,
+    const std::string& address,
+    base::OnceCallback<void(bool, const std::string&, const std::string&)>
+        callback) {
+  std::move(callback).Run(false, std::string(), std::string());
 }
 
 }  // namespace content

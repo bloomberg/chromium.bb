@@ -299,8 +299,6 @@ public:
 typedef enum ValidationCheckDisables {
     VALIDATION_CHECK_DISABLE_COMMAND_BUFFER_STATE,
     VALIDATION_CHECK_DISABLE_OBJECT_IN_USE,
-    VALIDATION_CHECK_DISABLE_IDLE_DESCRIPTOR_SET,
-    VALIDATION_CHECK_DISABLE_PUSH_CONSTANT_RANGE,
     VALIDATION_CHECK_DISABLE_QUERY_VALIDATION,
     VALIDATION_CHECK_DISABLE_IMAGE_LAYOUT_VALIDATION,
 } ValidationCheckDisables;
@@ -320,8 +318,6 @@ typedef enum VkValidationFeatureEnable {
 typedef enum DisableFlags {
     command_buffer_state,
     object_in_use,
-    idle_descriptor_set,
-    push_constant_range,
     query_validation,
     image_layout_validation,
     object_tracking,
@@ -330,6 +326,7 @@ typedef enum DisableFlags {
     stateless_checks,
     handle_wrapping,
     shader_validation,
+    shader_validation_caching,
     // Insert new disables above this line
     kMaxDisableFlags,
 } DisableFlags;
@@ -1712,46 +1709,65 @@ VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkNegotiateLoaderLayerInterfaceVe
     return VK_SUCCESS;
 }"""
 
-    inline_dispatch_vector_macro_defs = """
-
-#define INTERCEPTIDNAME(name) InterceptId ## name
+    init_object_dispatch_vector = """
 #define BUILD_DISPATCH_VECTOR(name) \\
-    for (auto item : object_dispatch) { \\
-        auto intercept_vector = &intercept_vectors[INTERCEPTIDNAME(name)];  \\
-        switch (item->container_type) { \\
-            case LayerObjectTypeThreading:  \\
-                if (typeid(&ThreadSafety::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);  \\
-                break;  \\
-            case LayerObjectTypeParameterValidation:    \\
-                if (typeid(&StatelessValidation::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);   \\
-                break;  \\
-            case LayerObjectTypeObjectTracker:  \\
-                if (typeid(&ObjectLifetimes::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);   \\
-                break;  \\
-            case LayerObjectTypeCoreValidation: \\
-                if (typeid(&CoreChecks::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);    \\
-                break;  \\
-            case LayerObjectTypeBestPractices:  \\
-                if (typeid(&BestPractices::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);     \\
-                break;  \\
-            case LayerObjectTypeGpuAssisted:    \\
-                if (typeid(&GpuAssisted::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);   \\
-                break;  \\
-            case LayerObjectTypeDebugPrintf:    \\
-                if (typeid(&DebugPrintf::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);   \\
-                break;  \\
-            case LayerObjectTypeSyncValidation: \\
-                if (typeid(&SyncValidator::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);     \\
-                break;  \\
-            case LayerObjectTypeInstance: \\
-            case LayerObjectTypeDevice:   \\
-                break;  \\
-            default:    \\
-                /* Chassis codegen needs to be updated for unknown validation object type */ \\
-                assert(0);  \\
-        }   \\
-    }"""
+    init_object_dispatch_vector(InterceptId ## name, \\
+                                typeid(&ValidationObject::name), \\
+                                typeid(&ThreadSafety::name), \\
+                                typeid(&StatelessValidation::name), \\
+                                typeid(&ObjectLifetimes::name), \\
+                                typeid(&CoreChecks::name), \\
+                                typeid(&BestPractices::name), \\
+                                typeid(&GpuAssisted::name), \\
+                                typeid(&DebugPrintf::name), \\
+                                typeid(&SyncValidator::name));
 
+    auto init_object_dispatch_vector = [this](InterceptId id,
+                                              const std::type_info& vo_typeid,
+                                              const std::type_info& tt_typeid,
+                                              const std::type_info& tpv_typeid,
+                                              const std::type_info& tot_typeid,
+                                              const std::type_info& tcv_typeid,
+                                              const std::type_info& tbp_typeid,
+                                              const std::type_info& tga_typeid,
+                                              const std::type_info& tdp_typeid,
+                                              const std::type_info& tsv_typeid) {
+        for (auto item : this->object_dispatch) {
+            auto intercept_vector = &this->intercept_vectors[id];
+            switch (item->container_type) {
+            case LayerObjectTypeThreading:
+                if (tt_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeParameterValidation:
+                if (tpv_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeObjectTracker:
+                if (tot_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeCoreValidation:
+                if (tcv_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeBestPractices:
+                if (tbp_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeGpuAssisted:
+                if (tga_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeDebugPrintf:
+                if (tdp_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeSyncValidation:
+                if (tsv_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeInstance:
+            case LayerObjectTypeDevice:
+                break;
+            default:
+                /* Chassis codegen needs to be updated for unknown validation object type */
+                assert(0);
+            }
+        }
+    };"""
 
     def __init__(self,
                  errFile = sys.stderr,
@@ -1836,10 +1852,10 @@ VK_LAYER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkNegotiateLoaderLayerInterfaceVe
             helper_content += 'typedef enum InterceptId{\n'
             helper_content += self.intercept_enums
             helper_content += '    InterceptIdCount,\n'
-            helper_content += '} InterceptId;\n'
-            helper_content += self.inline_dispatch_vector_macro_defs
-            helper_content += '\n\n'
+            helper_content += '} InterceptId;\n\n'
             helper_content += 'void ValidationObject::InitObjectDispatchVectors() {\n'
+            helper_content += self.init_object_dispatch_vector
+            helper_content += '\n\n'
             helper_content += '    intercept_vectors.resize(InterceptIdCount);\n\n'
             helper_content += self.dispatch_vector_fcns;
             helper_content += '};\n'

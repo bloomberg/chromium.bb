@@ -42,7 +42,6 @@ std::unique_ptr<views::Label> CreateIndexLabel() {
   index_label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   index_label->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kPadding / 2, 0)));
-
   return index_label;
 }
 
@@ -58,7 +57,6 @@ std::unique_ptr<views::StyledLabel> CreateSuggestionLabel() {
   // Explicitly sets can_process_events_within_subtree to false for
   // SuggestionView's hover to work correctly.
   suggestion_label->SetCanProcessEventsWithinSubtree(false);
-
   return suggestion_label;
 }
 
@@ -78,6 +76,16 @@ std::unique_ptr<views::Label> CreateEnterLabel() {
                                    gfx::Font::Weight::MEDIUM));
   label->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(0, kEnterKeyHorizontalPadding)));
+  return label;
+}
+
+std::unique_ptr<views::Label> CreateTabLabel() {
+  auto label = std::make_unique<views::Label>();
+  label->SetEnabledColor(kSuggestionColor);
+  label->SetText(l10n_util::GetStringUTF16(IDS_SUGGESTION_TAB_KEY));
+  label->SetFontList(gfx::FontList({kFontStyle}, gfx::Font::NORMAL,
+                                   kAnnotationFontSize,
+                                   gfx::Font::Weight::MEDIUM));
   return label;
 }
 
@@ -102,17 +110,38 @@ SuggestionView::SuggestionView(PressedCallback callback)
   index_label_ = AddChildView(CreateIndexLabel());
   index_label_->SetVisible(false);
   suggestion_label_ = AddChildView(CreateSuggestionLabel());
-  annotation_label_ = AddChildView(CreateAnnotationLabel());
-  annotation_label_->SetVisible(false);
+
+  annotation_container_ = AddChildView(CreateAnnotationContainer());
+  down_and_enter_annotation_label_ =
+      annotation_container_->AddChildView(CreateDownAndEnterAnnotationLabel());
+  tab_annotation_label_ =
+      annotation_container_->AddChildView(CreateTabAnnotationLabel());
+
+  annotation_container_->SetVisible(false);
+  down_and_enter_annotation_label_->SetVisible(false);
+  tab_annotation_label_->SetVisible(false);
 
   SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
 }
 
 SuggestionView::~SuggestionView() = default;
 
-std::unique_ptr<views::View> SuggestionView::CreateAnnotationLabel() {
+std::unique_ptr<views::View> SuggestionView::CreateAnnotationContainer() {
   auto label = std::make_unique<views::View>();
-  label->SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kPadding, 0, 0)));
+  label->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
+  // AnnotationLabel's ChildViews eat events simmilar to StyledLabel.
+  // Explicitly sets can_process_events_within_subtree to false for
+  // AnnotationLabel's hover to work correctly.
+  label->SetCanProcessEventsWithinSubtree(false);
+  return label;
+}
+
+std::unique_ptr<views::View>
+SuggestionView::CreateDownAndEnterAnnotationLabel() {
+  auto label = std::make_unique<views::View>();
+  label->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(0, kAnnotationPaddingLeft, 0, 0)));
   label
       ->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal))
@@ -121,17 +150,26 @@ std::unique_ptr<views::View> SuggestionView::CreateAnnotationLabel() {
       label->AddChildView(CreateKeyContainer())->AddChildView(CreateDownIcon());
   arrow_icon_ = label->AddChildView(std::make_unique<views::ImageView>());
   label->AddChildView(CreateKeyContainer())->AddChildView(CreateEnterLabel());
-  // AnnotationLabel's ChildViews eat events simmilar to StyledLabel.
-  // Explicitly sets can_process_events_within_subtree to false for
-  // AnnotationLabel's hover to work correctly.
-  label->SetCanProcessEventsWithinSubtree(false);
+  return label;
+}
+
+std::unique_ptr<views::View> SuggestionView::CreateTabAnnotationLabel() {
+  auto label = std::make_unique<views::View>();
+  label->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(0, kAnnotationPaddingLeft, 0, 0)));
+  label->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
+  label->AddChildView(CreateTabLabel());
   return label;
 }
 
 void SuggestionView::SetView(const SuggestionDetails& details) {
-  SetSuggestionText(details.text, details.confirmed_length);
+  SetSuggestionText(details.text, details.confirmed_length, details.text_color);
   suggestion_width_ = suggestion_label_->GetPreferredSize().width();
-  annotation_label_->SetVisible(details.show_annotation);
+  down_and_enter_annotation_label_->SetVisible(details.show_accept_annotation);
+  tab_annotation_label_->SetVisible(details.show_quick_accept_annotation);
+  annotation_container_->SetVisible(details.show_accept_annotation ||
+                                    details.show_quick_accept_annotation);
 }
 
 void SuggestionView::SetViewWithIndex(const std::u16string& index,
@@ -144,13 +182,15 @@ void SuggestionView::SetViewWithIndex(const std::u16string& index,
 }
 
 void SuggestionView::SetSuggestionText(const std::u16string& text,
-                                       const size_t confirmed_length) {
+                                       const size_t confirmed_length,
+                                       SkColor text_color) {
   // SetText clears the existing style only if the text to set is different from
   // the previous one.
   suggestion_label_->SetText(base::EmptyString16());
   suggestion_label_->SetText(text);
   gfx::FontList kSuggestionFont({kFontStyle}, gfx::Font::NORMAL,
                                 kSuggestionFontSize, gfx::Font::Weight::NORMAL);
+
   if (confirmed_length != 0) {
     views::StyledLabel::RangeStyleInfo confirmed_style;
     confirmed_style.custom_font = kSuggestionFont;
@@ -161,7 +201,7 @@ void SuggestionView::SetSuggestionText(const std::u16string& text,
 
   views::StyledLabel::RangeStyleInfo suggestion_style;
   suggestion_style.custom_font = kSuggestionFont;
-  suggestion_style.override_color = kSuggestionColor;
+  suggestion_style.override_color = text_color;
   suggestion_label_->AddStyleRange(gfx::Range(confirmed_length, text.length()),
                                    suggestion_style);
 
@@ -207,11 +247,13 @@ void SuggestionView::Layout() {
 
   suggestion_label_->SetBounds(left, 0, suggestion_width_, height());
 
-  if (annotation_label_->GetVisible()) {
-    int annotation_left = left + suggestion_width_ + kPadding;
-    int right = bounds().right();
-    annotation_label_->SetBounds(annotation_left, kAnnotationPaddingHeight,
-                                 right - annotation_left - kPadding / 2, 16);
+  if (annotation_container_->GetVisible()) {
+    int annotation_left = left + suggestion_width_;
+    int container_right = bounds().right();
+    int annotation_width = container_right - annotation_left - kPadding;
+    annotation_container_->SetBounds(annotation_left, kAnnotationPaddingTop,
+                                     annotation_width,
+                                     kAnnotationPaddingBottom);
   }
 }
 
@@ -226,9 +268,9 @@ gfx::Size SuggestionView::CalculatePreferredSize() const {
   suggestion_size.SetToMax(gfx::Size(suggestion_width_, 0));
   size.Enlarge(suggestion_size.width() + 2 * kPadding, 0);
   size.SetToMax(suggestion_size);
-  if (annotation_label_->GetVisible()) {
-    gfx::Size annotation_size = annotation_label_->GetPreferredSize();
-    size.Enlarge(annotation_size.width() + kPadding, 0);
+  if (annotation_container_->GetVisible()) {
+    gfx::Size annotation_size = annotation_container_->GetPreferredSize();
+    size.Enlarge(annotation_size.width(), 0);
   }
   if (min_width_ > size.width())
     size.Enlarge(min_width_ - size.width(), 0);
@@ -237,6 +279,10 @@ gfx::Size SuggestionView::CalculatePreferredSize() const {
 
 void SuggestionView::SetMinWidth(int min_width) {
   min_width_ = min_width;
+}
+
+std::u16string SuggestionView::GetSuggestionForTesting() {
+  return suggestion_label_->GetText();
 }
 
 BEGIN_METADATA(SuggestionView, views::Button)

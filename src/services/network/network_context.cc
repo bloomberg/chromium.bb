@@ -14,13 +14,13 @@
 #include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/dcheck_is_on.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
@@ -124,6 +124,7 @@
 #include "net/cert/cert_and_ct_verifier.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
+#include "services/network/ct_log_list_distributor.h"
 #include "services/network/expect_ct_reporter.h"
 #include "services/network/sct_auditing/sct_auditing_cache.h"
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
@@ -371,6 +372,30 @@ bool SCTAuditingDelegate::IsSCTAuditingEnabled() {
     return false;
   return context_->is_sct_auditing_enabled();
 }
+
+// Filters `log_list` for disqualified or Google-operated logs,
+// returning them as sorted vectors in `disqualified_logs` and
+// `operated_by_google_logs` suitable for use with a `CTPolicyEnforcer`.
+void GetCTPolicyConfigForCTLogInfo(
+    const std::vector<mojom::CTLogInfoPtr>& log_list,
+    std::vector<std::pair<std::string, base::TimeDelta>>* disqualified_logs,
+    std::vector<std::string>* operated_by_google_logs) {
+  for (const auto& log : log_list) {
+    if (log->operated_by_google || log->disqualified_at) {
+      std::string log_id = crypto::SHA256HashString(log->public_key);
+      if (log->operated_by_google)
+        operated_by_google_logs->push_back(log_id);
+      if (log->disqualified_at) {
+        disqualified_logs->emplace_back(std::move(log_id),
+                                        log->disqualified_at.value());
+      }
+    }
+  }
+
+  std::sort(std::begin(*operated_by_google_logs),
+            std::end(*operated_by_google_logs));
+  std::sort(std::begin(*disqualified_logs), std::end(*disqualified_logs));
+}
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 }  // namespace
@@ -396,6 +421,19 @@ NetworkContext::NetworkContext(
 #endif
       receiver_(this, std::move(receiver)),
       cors_preflight_controller_(network_service) {
+#if defined(OS_WIN) && DCHECK_IS_ON()
+  if (params_->cookie_path.has_value() ||
+      params_->http_cache_path.has_value() ||
+      params_->http_server_properties_path.has_value() ||
+      params_->transport_security_persister_path.has_value() ||
+      params_->reporting_and_nel_store_path.has_value() ||
+      params_->trust_token_path.has_value()) {
+    DCHECK(params_->win_permissions_set)
+        << "Permissions not set on files. Call "
+           "CreateNetworkContextInNetworkService or "
+           "MaybeSetNetworkContextSandboxPermissions.";
+  }
+#endif  // defined(OS_WIN) && DCHECK_IS_ON()
   mojo::PendingRemote<mojom::URLLoaderFactory>
       url_loader_factory_for_cert_net_fetcher;
   mojo::PendingReceiver<mojom::URLLoaderFactory>
@@ -882,6 +920,18 @@ void NetworkContext::ClearNetworkErrorLogging(
   std::move(callback).Run();
 }
 
+void NetworkContext::SetDocumentReportingEndpoints(
+    const url::Origin& origin,
+    const net::NetworkIsolationKey& network_isolation_key,
+    const base::flat_map<std::string, std::string>& endpoints) {
+  net::ReportingService* reporting_service =
+      url_request_context()->reporting_service();
+  if (reporting_service) {
+    reporting_service->SetDocumentReportingEndpoints(
+        origin, network_isolation_key, endpoints);
+  }
+}
+
 void NetworkContext::QueueReport(
     const std::string& type,
     const std::string& group,
@@ -902,7 +952,6 @@ void NetworkContext::QueueReport(
       request_context->reporting_service();
   // TODO(paulmeyer): Remove this once the network service ships everywhere.
   if (!reporting_service) {
-    net::ReportingReport::RecordReportDiscardedForNoReportingService();
     return;
   }
 
@@ -969,6 +1018,13 @@ void NetworkContext::ClearNetworkErrorLogging(
   NOTREACHED();
 }
 
+void NetworkContext::SetDocumentReportingEndpoints(
+    const url::Origin& origin,
+    const net::NetworkIsolationKey& network_isolation_key,
+    const base::flat_map<std::string, std::string>& endpoints) {
+  NOTREACHED();
+}
+
 void NetworkContext::QueueReport(
     const std::string& type,
     const std::string& group,
@@ -1008,14 +1064,13 @@ void NetworkContext::ClearDomainReliability(
 void NetworkContext::GetDomainReliabilityJSON(
     GetDomainReliabilityJSONCallback callback) {
   if (!domain_reliability_monitor_) {
-    base::DictionaryValue data;
-    data.SetString("error", "no_service");
+    base::Value data(base::Value::Type::DICTIONARY);
+    data.SetStringKey("error", "no_service");
     std::move(callback).Run(std::move(data));
     return;
   }
 
-  std::move(callback).Run(
-      std::move(*domain_reliability_monitor_->GetWebUIData()));
+  std::move(callback).Run(domain_reliability_monitor_->GetWebUIData());
 }
 
 void NetworkContext::CloseAllConnections(CloseAllConnectionsCallback callback) {
@@ -1124,8 +1179,8 @@ void NetworkContext::SetExpectCTTestReport(
   bool decoded = base::Base64Decode(kTestReportCert, &decoded_dummy_cert);
   DCHECK(decoded);
   scoped_refptr<net::X509Certificate> dummy_cert =
-      net::X509Certificate::CreateFromBytes(decoded_dummy_cert.data(),
-                                            decoded_dummy_cert.size());
+      net::X509Certificate::CreateFromBytes(
+          base::as_bytes(base::make_span(decoded_dummy_cert)));
 
   LazyCreateExpectCTReporter(url_request_context());
 
@@ -1180,7 +1235,7 @@ void NetworkContext::GetExpectCTState(
     const std::string& domain,
     const net::NetworkIsolationKey& network_isolation_key,
     GetExpectCTStateCallback callback) {
-  base::DictionaryValue result;
+  base::Value result(base::Value::Type::DICTIONARY);
   if (base::IsStringASCII(domain)) {
     net::TransportSecurityState* transport_security_state =
         url_request_context()->transport_security_state();
@@ -1191,23 +1246,23 @@ void NetworkContext::GetExpectCTState(
 
       // TODO(estark): query static Expect-CT state as well.
       if (found) {
-        result.SetString("dynamic_expect_ct_domain", domain);
-        result.SetDouble("dynamic_expect_ct_observed",
-                         dynamic_expect_ct_state.last_observed.ToDoubleT());
-        result.SetDouble("dynamic_expect_ct_expiry",
-                         dynamic_expect_ct_state.expiry.ToDoubleT());
-        result.SetBoolean("dynamic_expect_ct_enforce",
+        result.SetStringKey("dynamic_expect_ct_domain", domain);
+        result.SetDoubleKey("dynamic_expect_ct_observed",
+                            dynamic_expect_ct_state.last_observed.ToDoubleT());
+        result.SetDoubleKey("dynamic_expect_ct_expiry",
+                            dynamic_expect_ct_state.expiry.ToDoubleT());
+        result.SetBoolKey("dynamic_expect_ct_enforce",
                           dynamic_expect_ct_state.enforce);
-        result.SetString("dynamic_expect_ct_report_uri",
-                         dynamic_expect_ct_state.report_uri.spec());
+        result.SetStringKey("dynamic_expect_ct_report_uri",
+                            dynamic_expect_ct_state.report_uri.spec());
       }
 
-      result.SetBoolean("result", found);
+      result.SetBoolKey("result", found);
     } else {
-      result.SetString("error", "no Expect-CT state active");
+      result.SetStringKey("error", "no Expect-CT state active");
     }
   } else {
-    result.SetString("error", "non-ASCII domain name");
+    result.SetStringKey("error", "non-ASCII domain name");
   }
 
   std::move(callback).Run(std::move(result));
@@ -1227,6 +1282,20 @@ void NetworkContext::MaybeEnqueueSCTReport(
 
 void NetworkContext::SetSCTAuditingEnabled(bool enabled) {
   is_sct_auditing_enabled_ = enabled;
+}
+
+void NetworkContext::OnCTLogListUpdated(
+    const std::vector<network::mojom::CTLogInfoPtr>& log_list,
+    base::Time update_time) {
+  if (!ct_policy_enforcer_)
+    return;
+  std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs;
+  std::vector<std::string> operated_by_google_logs;
+  GetCTPolicyConfigForCTLogInfo(log_list, &disqualified_logs,
+                                &operated_by_google_logs);
+  ct_policy_enforcer_->UpdateCTLogList(update_time,
+                                       std::move(disqualified_logs),
+                                       std::move(operated_by_google_logs));
 }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
@@ -1330,7 +1399,8 @@ void NetworkContext::CreateWebSocket(
     mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>
         url_loader_network_observer,
     mojo::PendingRemote<mojom::WebSocketAuthenticationHandler> auth_handler,
-    mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) {
+    mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
+    const absl::optional<base::UnguessableToken>& throttling_profile_id) {
 #if !defined(OS_IOS)
   if (!websocket_factory_)
     websocket_factory_ = std::make_unique<WebSocketFactory>(this);
@@ -1342,7 +1412,7 @@ void NetworkContext::CreateWebSocket(
       std::move(additional_headers), process_id, origin, options,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(handshake_client), std::move(url_loader_network_observer),
-      std::move(auth_handler), std::move(header_client));
+      std::move(auth_handler), std::move(header_client), throttling_profile_id);
 #endif  // !defined(OS_IOS)
 }
 
@@ -1455,13 +1525,6 @@ void NetworkContext::VerifyCertForSignedExchange(
     OnVerifyCertForSignedExchangeComplete(cert_verify_id, result);
 }
 
-void NetworkContext::ParseHeaders(
-    const GURL& url,
-    const scoped_refptr<net::HttpResponseHeaders>& headers,
-    ParseHeadersCallback callback) {
-  std::move(callback).Run(PopulateParsedHeaders(headers.get(), url));
-}
-
 void NetworkContext::NotifyExternalCacheHit(
     const GURL& url,
     const std::string& http_method,
@@ -1510,7 +1573,7 @@ void NetworkContext::IsHSTSActiveForHost(const std::string& host,
 
 void NetworkContext::GetHSTSState(const std::string& domain,
                                   GetHSTSStateCallback callback) {
-  base::DictionaryValue result;
+  base::Value result(base::Value::Type::DICTIONARY);
 
   if (base::IsStringASCII(domain)) {
     net::TransportSecurityState* transport_security_state =
@@ -1521,24 +1584,24 @@ void NetworkContext::GetHSTSState(const std::string& domain,
       bool found_static = transport_security_state->GetStaticDomainState(
           domain, &static_sts_state, &static_pkp_state);
       if (found_static) {
-        result.SetInteger("static_upgrade_mode",
-                          static_cast<int>(static_sts_state.upgrade_mode));
-        result.SetBoolean("static_sts_include_subdomains",
+        result.SetIntKey("static_upgrade_mode",
+                         static_cast<int>(static_sts_state.upgrade_mode));
+        result.SetBoolKey("static_sts_include_subdomains",
                           static_sts_state.include_subdomains);
-        result.SetDouble("static_sts_observed",
-                         static_sts_state.last_observed.ToDoubleT());
-        result.SetDouble("static_sts_expiry",
-                         static_sts_state.expiry.ToDoubleT());
-        result.SetBoolean("static_pkp_include_subdomains",
+        result.SetDoubleKey("static_sts_observed",
+                            static_sts_state.last_observed.ToDoubleT());
+        result.SetDoubleKey("static_sts_expiry",
+                            static_sts_state.expiry.ToDoubleT());
+        result.SetBoolKey("static_pkp_include_subdomains",
                           static_pkp_state.include_subdomains);
-        result.SetDouble("static_pkp_observed",
-                         static_pkp_state.last_observed.ToDoubleT());
-        result.SetDouble("static_pkp_expiry",
-                         static_pkp_state.expiry.ToDoubleT());
-        result.SetString("static_spki_hashes",
-                         HashesToBase64String(static_pkp_state.spki_hashes));
-        result.SetString("static_sts_domain", static_sts_state.domain);
-        result.SetString("static_pkp_domain", static_pkp_state.domain);
+        result.SetDoubleKey("static_pkp_observed",
+                            static_pkp_state.last_observed.ToDoubleT());
+        result.SetDoubleKey("static_pkp_expiry",
+                            static_pkp_state.expiry.ToDoubleT());
+        result.SetStringKey("static_spki_hashes",
+                            HashesToBase64String(static_pkp_state.spki_hashes));
+        result.SetStringKey("static_sts_domain", static_sts_state.domain);
+        result.SetStringKey("static_pkp_domain", static_pkp_state.domain);
       }
 
       net::TransportSecurityState::STSState dynamic_sts_state;
@@ -1549,36 +1612,37 @@ void NetworkContext::GetHSTSState(const std::string& domain,
       bool found_pkp_dynamic = transport_security_state->GetDynamicPKPState(
           domain, &dynamic_pkp_state);
       if (found_sts_dynamic) {
-        result.SetInteger("dynamic_upgrade_mode",
-                          static_cast<int>(dynamic_sts_state.upgrade_mode));
-        result.SetBoolean("dynamic_sts_include_subdomains",
+        result.SetIntKey("dynamic_upgrade_mode",
+                         static_cast<int>(dynamic_sts_state.upgrade_mode));
+        result.SetBoolKey("dynamic_sts_include_subdomains",
                           dynamic_sts_state.include_subdomains);
-        result.SetDouble("dynamic_sts_observed",
-                         dynamic_sts_state.last_observed.ToDoubleT());
-        result.SetDouble("dynamic_sts_expiry",
-                         dynamic_sts_state.expiry.ToDoubleT());
-        result.SetString("dynamic_sts_domain", dynamic_sts_state.domain);
+        result.SetDoubleKey("dynamic_sts_observed",
+                            dynamic_sts_state.last_observed.ToDoubleT());
+        result.SetDoubleKey("dynamic_sts_expiry",
+                            dynamic_sts_state.expiry.ToDoubleT());
+        result.SetStringKey("dynamic_sts_domain", dynamic_sts_state.domain);
       }
 
       if (found_pkp_dynamic) {
-        result.SetBoolean("dynamic_pkp_include_subdomains",
+        result.SetBoolKey("dynamic_pkp_include_subdomains",
                           dynamic_pkp_state.include_subdomains);
-        result.SetDouble("dynamic_pkp_observed",
-                         dynamic_pkp_state.last_observed.ToDoubleT());
-        result.SetDouble("dynamic_pkp_expiry",
-                         dynamic_pkp_state.expiry.ToDoubleT());
-        result.SetString("dynamic_spki_hashes",
-                         HashesToBase64String(dynamic_pkp_state.spki_hashes));
-        result.SetString("dynamic_pkp_domain", dynamic_pkp_state.domain);
+        result.SetDoubleKey("dynamic_pkp_observed",
+                            dynamic_pkp_state.last_observed.ToDoubleT());
+        result.SetDoubleKey("dynamic_pkp_expiry",
+                            dynamic_pkp_state.expiry.ToDoubleT());
+        result.SetStringKey(
+            "dynamic_spki_hashes",
+            HashesToBase64String(dynamic_pkp_state.spki_hashes));
+        result.SetStringKey("dynamic_pkp_domain", dynamic_pkp_state.domain);
       }
 
-      result.SetBoolean("result",
+      result.SetBoolKey("result",
                         found_static || found_sts_dynamic || found_pkp_dynamic);
     } else {
-      result.SetString("error", "no TransportSecurityState active");
+      result.SetStringKey("error", "no TransportSecurityState active");
     }
   } else {
-    result.SetString("error", "non-ASCII domain name");
+    result.SetStringKey("error", "non-ASCII domain name");
   }
 
   std::move(callback).Run(std::move(result));
@@ -1900,21 +1964,20 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
     std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
-    if (!params_->ct_logs.empty()) {
-      for (const auto& log : params_->ct_logs) {
-        scoped_refptr<const net::CTLogVerifier> log_verifier =
-            net::CTLogVerifier::Create(log->public_key, log->name);
-        if (!log_verifier) {
-          // TODO: Signal bad configuration (such as bad key).
-          continue;
-        }
-        ct_logs.push_back(std::move(log_verifier));
+    for (const auto& log : network_service_->log_list()) {
+      scoped_refptr<const net::CTLogVerifier> log_verifier =
+          net::CTLogVerifier::Create(log->public_key, log->name);
+      if (!log_verifier) {
+        // TODO: Signal bad configuration (such as bad key).
+        continue;
       }
-      auto ct_verifier = std::make_unique<net::MultiLogCTVerifier>();
-      ct_verifier->AddLogs(ct_logs);
-      cert_verifier = std::make_unique<net::CertAndCTVerifier>(
-          std::move(cert_verifier), std::move(ct_verifier));
+      ct_logs.push_back(std::move(log_verifier));
     }
+    auto ct_verifier = std::make_unique<net::MultiLogCTVerifier>(
+        network_service_->ct_log_list_distributor());
+    ct_verifier->SetLogs(ct_logs);
+    cert_verifier = std::make_unique<net::CertAndCTVerifier>(
+        std::move(cert_verifier), std::move(ct_verifier));
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
     // Whether the cert verifier is remote or in-process, we should wrap it in
@@ -1942,28 +2005,14 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   if (params_->enforce_chrome_ct_policy) {
     std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs;
     std::vector<std::string> operated_by_google_logs;
-    if (!params_->ct_logs.empty()) {
-      for (const auto& log : params_->ct_logs) {
-        if (log->operated_by_google || log->disqualified_at) {
-          std::string log_id = crypto::SHA256HashString(log->public_key);
-          if (log->operated_by_google)
-            operated_by_google_logs.push_back(log_id);
-          if (log->disqualified_at) {
-            disqualified_logs.push_back(
-                std::make_pair(log_id, log->disqualified_at.value()));
-          }
-        }
-      }
-    }
-
-    std::sort(std::begin(operated_by_google_logs),
-              std::end(operated_by_google_logs));
-    std::sort(std::begin(disqualified_logs), std::end(disqualified_logs));
-
-    builder.set_ct_policy_enforcer(
+    GetCTPolicyConfigForCTLogInfo(network_service_->log_list(),
+                                  &disqualified_logs, &operated_by_google_logs);
+    auto ct_policy_enforcer =
         std::make_unique<certificate_transparency::ChromeCTPolicyEnforcer>(
-            params_->ct_log_update_time, disqualified_logs,
-            operated_by_google_logs));
+            network_service_->ct_log_list_update_time(),
+            std::move(disqualified_logs), std::move(operated_by_google_logs));
+    ct_policy_enforcer_ = ct_policy_enforcer.get();
+    builder.set_ct_policy_enforcer(std::move(ct_policy_enforcer));
   }
 
   builder.set_sct_auditing_delegate(

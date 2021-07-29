@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/sek</translation>
 <translation id="2353636109065292463">Kontrollera internetanslutningen</translation>
 <translation id="2388990488038464401">Vill du ringa det här numret från telefonen?</translation>
+<translation id="2435457462613246316">Visa lösenord</translation>
 <translation id="24452542372838207">Utöka avisering</translation>
 <translation id="2445449901874883781">Använd hög densitet</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 år sedan}other{# år sedan}}</translation>
 <translation id="2878511608894704031">Radera allt</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{om 1 dag}other{om # dgr}}</translation>
+<translation id="2922712708897119705">Kolumnen <ph name="COLUMN_NAME" /> har sorterats i fallande ordning.</translation>
 <translation id="2931838996092594335">klicka</translation>
 <translation id="2981684127883932071">Visar förslag</translation>
 <translation id="3036649622769666520">Öppna filer</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3909791450649380159">&amp;Klipp ut</translation>
 <translation id="3990502903496589789">Högerkant</translation>
+<translation id="3994749195054421561">Kolumnen <ph name="COLUMN_NAME" /> har sorterats i stigande ordning.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 oläst avisering}other{# olästa aviseringar}}</translation>
 <translation id="4202807286478387388">fortsätta</translation>
 <translation id="4250229828105606438">Skärmbild</translation>
@@ -123,7 +126,8 @@
 <translation id="4306392492252714209">Ta bort från urklipp.</translation>
 <translation id="4316910396681052118">ALLA APPAR</translation>
 <translation id="4491109536499578614">Bild</translation>
-<translation id="4588090240171750605">Rulla åt höger</translation>
+<translation id="4565377596337484307">Dölj lösenord</translation>
+<translation id="4588090240171750605">Scrolla åt höger</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, betyg <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, apprekommendation</translation>
 <translation id="4690510401873698237">Hyllan längst ned</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Sida <ph name="SELECTED_PAGE" /> av <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Rensa sökrutan</translation>
 <translation id="6040143037577758943">Stäng</translation>
+<translation id="6117103120090651229">Mittenknapp</translation>
 <translation id="6119846243427417423">aktivera</translation>
 <translation id="6129953537138746214">Blanksteg</translation>
 <translation id="6134259848159370930">Sök på enheten, i appar, inställningar och på webben.</translation>
@@ -173,9 +178,10 @@
 <translation id="6156262341071374681">Utöka till alla appar</translation>
 <translation id="6165508094623778733">Läs mer</translation>
 <translation id="6166852626429024716">Sök på enheten, i appar, inställningar och på webben …</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> har markerats.</translation>
 <translation id="6264365405983206840">Markera &amp;alla</translation>
 <translation id="6351032674660237738">APPFÖRSLAG</translation>
-<translation id="6364916375976753737">Rulla åt vänster</translation>
+<translation id="6364916375976753737">Scrolla åt vänster</translation>
 <translation id="6394627529324717982">Komma</translation>
 <translation id="6397363302884558537">Sluta tala</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{för 1 sek sedan}other{för # sek sedan}}</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut kvar}other{# minuter kvar}}</translation>
 <translation id="7430878839542012341">Vill du radera den här sökningen från historiken?</translation>
+<translation id="7437971918971306061">Kolumnen <ph name="COLUMN_NAME" /> är osorterad.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7620655452534002301">Borttagen.</translation>

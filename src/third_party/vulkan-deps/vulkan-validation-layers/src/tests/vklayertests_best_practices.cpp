@@ -15,6 +15,7 @@
 
 #include "cast_utils.h"
 #include "layer_validation_tests.h"
+#include "best_practices_error_enums.h"
 
 void VkBestPracticesLayerTest::InitBestPracticesFramework() {
     // Enable all vendor-specific checks
@@ -247,8 +248,79 @@ TEST_F(VkBestPracticesLayerTest, CmdClearAttachmentTest) {
 
     // Call for full-sized FB Color attachment prior to issuing a Draw
     m_errorMonitor->SetDesiredFailureMsg(kPerformanceWarningBit, "UNASSIGNED-BestPractices-DrawState-ClearCmdBeforeDraw");
+
     vk::CmdClearAttachments(m_commandBuffer->handle(), 1, &color_attachment, 1, &clear_rect);
     m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkBestPracticesLayerTest, CmdClearAttachmentTestSecondary) {
+    TEST_DESCRIPTION("Test for validating usage of vkCmdClearAttachments with secondary command buffers");
+
+    InitBestPracticesFramework();
+    InitState();
+
+    if (IsPlatform(PlatformType::kShieldTV) || IsPlatform(PlatformType::kShieldTVb)) {
+        printf("%s Test CmdClearAttachmentTestSecondary is unstable on ShieldTV, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    m_commandBuffer->begin();
+
+    VkCommandBufferObj secondary_full_clear(m_device, m_commandPool, VK_COMMAND_BUFFER_LEVEL_SECONDARY);
+    VkCommandBufferObj secondary_small_clear(m_device, m_commandPool, VK_COMMAND_BUFFER_LEVEL_SECONDARY);
+    VkCommandBufferBeginInfo begin_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT |
+                       VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+    VkCommandBufferInheritanceInfo inherit_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO };
+    begin_info.pInheritanceInfo = &inherit_info;
+    inherit_info.subpass = 0;
+    inherit_info.renderPass = m_renderPassBeginInfo.renderPass;
+
+    // Main thing we care about for this test is that the VkImage obj we're
+    // clearing matches Color Attachment of FB
+    //  Also pass down other dummy params to keep driver and paramchecker happy
+    VkClearAttachment color_attachment;
+    color_attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    color_attachment.clearValue.color.float32[0] = 1.0;
+    color_attachment.clearValue.color.float32[1] = 1.0;
+    color_attachment.clearValue.color.float32[2] = 1.0;
+    color_attachment.clearValue.color.float32[3] = 1.0;
+    color_attachment.colorAttachment = 0;
+    VkClearRect clear_rect_small = {{{0, 0}, {(uint32_t)m_width - 1u, (uint32_t)m_height - 1u}}, 0, 1};
+    VkClearRect clear_rect = {{{0, 0}, {(uint32_t)m_width, (uint32_t)m_height}}, 0, 1};
+
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    {
+        // Small clears which don't cover the render area should not trigger the warning.
+        vk::CmdClearAttachments(m_commandBuffer->handle(), 1, &color_attachment, 1, &clear_rect_small);
+        m_errorMonitor->VerifyNotFound();
+        // Call for full-sized FB Color attachment prior to issuing a Draw
+        m_errorMonitor->SetDesiredFailureMsg(kPerformanceWarningBit, "UNASSIGNED-BestPractices-DrawState-ClearCmdBeforeDraw");
+        vk::CmdClearAttachments(m_commandBuffer->handle(), 1, &color_attachment, 1, &clear_rect);
+        m_errorMonitor->VerifyFound();
+    }
+    m_commandBuffer->EndRenderPass();
+
+    secondary_small_clear.begin(&begin_info);
+    secondary_full_clear.begin(&begin_info);
+    vk::CmdClearAttachments(secondary_small_clear.handle(), 1, &color_attachment, 1, &clear_rect_small);
+    vk::CmdClearAttachments(secondary_full_clear.handle(), 1, &color_attachment, 1, &clear_rect);
+    secondary_small_clear.end();
+    secondary_full_clear.end();
+
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+    {
+        // Small clears which don't cover the render area should not trigger the warning.
+        vk::CmdExecuteCommands(m_commandBuffer->handle(), 1, &secondary_small_clear.handle());
+        m_errorMonitor->VerifyNotFound();
+        // Call for full-sized FB Color attachment prior to issuing a Draw
+        m_errorMonitor->SetDesiredFailureMsg(kPerformanceWarningBit, "UNASSIGNED-BestPractices-DrawState-ClearCmdBeforeDraw");
+        vk::CmdExecuteCommands(m_commandBuffer->handle(), 1, &secondary_full_clear.handle());
+        m_errorMonitor->VerifyFound();
+    }
+    m_commandBuffer->EndRenderPass();
 }
 
 TEST_F(VkBestPracticesLayerTest, VtxBufferBadIndex) {
@@ -645,6 +717,9 @@ TEST_F(VkBestPracticesLayerTest, ClearAttachmentsAfterLoad) {
     // On tiled renderers, this can also trigger a warning about LOAD_OP_LOAD causing a readback
     m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-vkCmdBeginRenderPass-attachment-needs-readback");
     m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-DrawState-ClearCmdBeforeDraw");
+    m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-RenderPass-redundant-store");
+    m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-RenderPass-redundant-clear");
+    m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-RenderPass-inefficient-clear");
 
     m_commandBuffer->begin();
     m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
@@ -661,6 +736,139 @@ TEST_F(VkBestPracticesLayerTest, ClearAttachmentsAfterLoad) {
     vk::CmdClearAttachments(m_commandBuffer->handle(), 1, &color_attachment, 1, &clear_rect);
 
     m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkBestPracticesLayerTest, ClearAttachmentsAfterLoadSecondary) {
+    TEST_DESCRIPTION("Test for clearing attachments after load with secondary command buffers");
+
+    InitBestPracticesFramework();
+    InitState();
+
+    if (IsPlatform(PlatformType::kShieldTV) || IsPlatform(PlatformType::kShieldTVb)) {
+        printf("%s Test CmdClearAttachmentAfterLoadSecondary is unstable on ShieldTV, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
+    m_clear_via_load_op = false;  // Force LOAD_OP_LOAD
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    // On tiled renderers, this can also trigger a warning about LOAD_OP_LOAD causing a readback
+    m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-vkCmdBeginRenderPass-attachment-needs-readback");
+    m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-RenderPass-redundant-store");
+    m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-RenderPass-redundant-clear");
+    m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-RenderPass-inefficient-clear");
+
+    CreatePipelineHelper pipe_masked(*this);
+    pipe_masked.InitInfo();
+    pipe_masked.InitState();
+    pipe_masked.cb_attachments_.colorWriteMask = 0;
+    pipe_masked.CreateGraphicsPipeline();
+
+    CreatePipelineHelper pipe_writes(*this);
+    pipe_writes.InitInfo();
+    pipe_writes.InitState();
+    pipe_writes.cb_attachments_.colorWriteMask = 0xf;
+    pipe_writes.CreateGraphicsPipeline();
+
+    m_commandBuffer->begin();
+
+    VkClearAttachment color_attachment;
+    color_attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    color_attachment.clearValue.color.float32[0] = 1.0;
+    color_attachment.clearValue.color.float32[1] = 1.0;
+    color_attachment.clearValue.color.float32[2] = 1.0;
+    color_attachment.clearValue.color.float32[3] = 1.0;
+    color_attachment.colorAttachment = 0;
+    VkClearRect clear_rect = {{{0, 0}, {(uint32_t)m_width, (uint32_t)m_height}}, 0, 1};
+
+    // Plain clear after load.
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    m_errorMonitor->SetDesiredFailureMsg(kPerformanceWarningBit, "UNASSIGNED-BestPractices-vkCmdClearAttachments-clear-after-load");
+    m_errorMonitor->SetDesiredFailureMsg(kPerformanceWarningBit, "UNASSIGNED-BestPractices-DrawState-ClearCmdBeforeDraw");
+    {
+        vk::CmdClearAttachments(m_commandBuffer->handle(), 1, &color_attachment, 1, &clear_rect);
+        m_errorMonitor->VerifyFound();
+    }
+    m_commandBuffer->EndRenderPass();
+
+    // Test that a masked write is ignored before clear
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    m_errorMonitor->SetDesiredFailureMsg(kPerformanceWarningBit, "UNASSIGNED-BestPractices-vkCmdClearAttachments-clear-after-load");
+    {
+        vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe_masked.pipeline_);
+        m_commandBuffer->Draw(1, 0, 0, 0);
+        vk::CmdClearAttachments(m_commandBuffer->handle(), 1, &color_attachment, 1, &clear_rect);
+        m_errorMonitor->VerifyFound();
+    }
+    m_commandBuffer->EndRenderPass();
+
+    // Test that an actual write will not trigger the clear warning
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    {
+        vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe_writes.pipeline_);
+        m_commandBuffer->Draw(1, 0, 0, 0);
+        vk::CmdClearAttachments(m_commandBuffer->handle(), 1, &color_attachment, 1, &clear_rect);
+        m_errorMonitor->VerifyNotFound();
+    }
+    m_commandBuffer->EndRenderPass();
+
+    // Try the same thing, but now with secondary command buffers.
+    VkCommandBufferBeginInfo begin_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT |
+                       VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+    VkCommandBufferInheritanceInfo inherit_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO };
+    begin_info.pInheritanceInfo = &inherit_info;
+    inherit_info.subpass = 0;
+    inherit_info.renderPass = m_renderPassBeginInfo.renderPass;
+
+    VkCommandBufferObj secondary_clear(m_device, m_commandPool, VK_COMMAND_BUFFER_LEVEL_SECONDARY);
+    VkCommandBufferObj secondary_draw_masked(m_device, m_commandPool, VK_COMMAND_BUFFER_LEVEL_SECONDARY);
+    VkCommandBufferObj secondary_draw_write(m_device, m_commandPool, VK_COMMAND_BUFFER_LEVEL_SECONDARY);
+
+    secondary_clear.begin(&begin_info);
+    secondary_draw_masked.begin(&begin_info);
+    secondary_draw_write.begin(&begin_info);
+
+    vk::CmdClearAttachments(secondary_clear.handle(), 1, &color_attachment, 1, &clear_rect);
+
+    vk::CmdBindPipeline(secondary_draw_masked.handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe_masked.pipeline_);
+    secondary_draw_masked.Draw(1, 0, 0, 0);
+
+    vk::CmdBindPipeline(secondary_draw_write.handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe_writes.pipeline_);
+    secondary_draw_write.Draw(1, 0, 0, 0);
+
+    secondary_clear.end();
+    secondary_draw_masked.end();
+    secondary_draw_write.end();
+
+    // Plain clear after load.
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+    m_errorMonitor->SetDesiredFailureMsg(kPerformanceWarningBit, "UNASSIGNED-BestPractices-vkCmdClearAttachments-clear-after-load");
+    m_errorMonitor->SetDesiredFailureMsg(kPerformanceWarningBit, "UNASSIGNED-BestPractices-DrawState-ClearCmdBeforeDraw");
+    {
+        vk::CmdExecuteCommands(m_commandBuffer->handle(), 1, &secondary_clear.handle());
+        m_errorMonitor->VerifyFound();
+    }
+    m_commandBuffer->EndRenderPass();
+
+    // Test that a masked write is ignored before clear
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+    m_errorMonitor->SetDesiredFailureMsg(kPerformanceWarningBit, "UNASSIGNED-BestPractices-vkCmdClearAttachments-clear-after-load");
+    {
+        vk::CmdExecuteCommands(m_commandBuffer->handle(), 1, &secondary_draw_masked.handle());
+        vk::CmdExecuteCommands(m_commandBuffer->handle(), 1, &secondary_clear.handle());
+        m_errorMonitor->VerifyFound();
+    }
+    m_commandBuffer->EndRenderPass();
+
+    // Test that an actual write will not trigger the clear warning
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+    {
+        vk::CmdExecuteCommands(m_commandBuffer->handle(), 1, &secondary_draw_write.handle());
+        vk::CmdExecuteCommands(m_commandBuffer->handle(), 1, &secondary_clear.handle());
+        m_errorMonitor->VerifyNotFound();
+    }
+    m_commandBuffer->EndRenderPass();
 }
 
 TEST_F(VkBestPracticesLayerTest, TripleBufferingTest) {
@@ -850,7 +1058,6 @@ TEST_F(VkBestPracticesLayerTest, MissingQueryDetails) {
 
     // Now get information correctly
     m_errorMonitor->ExpectSuccess(kErrorBit | kWarningBit);
-
     vk_testing::QueueCreateInfoArray queue_info(phys_device_obj.queue_properties());
     // Only request creation with queuefamilies that have at least one queue
     std::vector<VkDeviceQueueCreateInfo> create_queue_infos;
@@ -880,4 +1087,60 @@ TEST_F(VkBestPracticesLayerTest, MissingQueryDetails) {
     VkDevice device;
     vk::CreateDevice(phys_device_obj.handle(), &device_ci, nullptr, &device);
     m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkBestPracticesLayerTest, GetSwapchainImagesInvalidCount) {
+    TEST_DESCRIPTION("Pass an 'incorrect' count to the second GetSwapchainImagesKHR call");
+
+    if (!AddSurfaceInstanceExtension()) {
+        printf("%s surface extensions not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitBestPracticesFramework());
+
+    if (!AddSwapchainDeviceExtension()) {
+        printf("%s swapchain extensions not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+    if (!InitSwapchain()) {
+        printf("%s Cannot create surface or swapchain, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    uint32_t swapchain_images_count = 0;
+    vk::GetSwapchainImagesKHR(device(), m_swapchain, &swapchain_images_count, nullptr);
+
+    m_errorMonitor->SetDesiredFailureMsg(kWarningBit, kVUID_BestPractices_Swapchain_InvalidCount);
+    ++swapchain_images_count;  // Set the image count to something greater (i.e., "invalid") than what was returned
+    std::vector<VkImage> swapchain_images(swapchain_images_count, VK_NULL_HANDLE);
+    vk::GetSwapchainImagesKHR(device(), m_swapchain, &swapchain_images_count, swapchain_images.data());
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkBestPracticesLayerTest, DepthBiasNoAttachment) {
+    TEST_DESCRIPTION("Enable depthBias without a depth attachment");
+
+    InitBestPracticesFramework();
+    InitState();
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.rs_state_ci_.depthBiasEnable = VK_TRUE;
+    pipe.rs_state_ci_.depthBiasConstantFactor = 1.0f;
+    pipe.InitState();
+    pipe.CreateGraphicsPipeline();
+
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+
+    m_errorMonitor->SetDesiredFailureMsg(kWarningBit, kVUID_BestPractices_DepthBiasNoAttachment);
+    vk::CmdDraw(m_commandBuffer->handle(), 3, 1, 0, 0);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->end();
 }

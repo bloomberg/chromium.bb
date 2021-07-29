@@ -47,6 +47,8 @@ class ManifestUnitTest : public testing::Test {
               manifest->is_shared_module());
     EXPECT_EQ(type == Manifest::TYPE_LOGIN_SCREEN_EXTENSION,
               manifest->is_login_screen_extension());
+    EXPECT_EQ(type == Manifest::TYPE_CHROMEOS_SYSTEM_EXTENSION,
+              manifest->is_chromeos_system_extension());
   }
 
   // Helper function that replaces the Manifest held by |manifest| with a copy
@@ -59,7 +61,7 @@ class ManifestUnitTest : public testing::Test {
     if (value)
       manifest_value->Set(key, std::move(value));
     else
-      manifest_value->Remove(key, nullptr);
+      manifest_value->RemovePath(key);
     ExtensionId extension_id = manifest->get()->extension_id();
     *manifest = std::make_unique<Manifest>(
         ManifestLocation::kInternal, std::move(manifest_value), extension_id);

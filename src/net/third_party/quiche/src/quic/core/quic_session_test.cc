@@ -27,7 +27,6 @@
 #include "quic/core/quic_versions.h"
 #include "quic/platform/api/quic_expect_bug.h"
 #include "quic/platform/api/quic_flags.h"
-#include "quic/platform/api/quic_map_util.h"
 #include "quic/platform/api/quic_mem_slice_storage.h"
 #include "quic/platform/api/quic_test.h"
 #include "quic/platform/api/quic_test_mem_slice_vector.h"
@@ -452,7 +451,7 @@ class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
           QuicUtils::GetCryptoStreamId(connection_->transport_version());
     }
     for (QuicStreamId i = first_stream_id; i < 100; i++) {
-      if (!QuicContainsKey(closed_streams_, i)) {
+      if (closed_streams_.find(i) == closed_streams_.end()) {
         EXPECT_FALSE(session_.IsClosedStream(i)) << " stream id: " << i;
       } else {
         EXPECT_TRUE(session_.IsClosedStream(i)) << " stream id: " << i;
@@ -1529,56 +1528,6 @@ TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedStream) {
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
 }
 
-TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedCryptoStream) {
-  if (QuicVersionUsesCryptoFrames(GetParam().transport_version) ||
-      connection_->encrypted_control_frames()) {
-    // QUIC version 47 onwards uses CRYPTO frames for the handshake, so this
-    // test doesn't make sense for those versions since CRYPTO frames aren't
-    // flow controlled.
-    return;
-  }
-  // Test that if the crypto stream is flow control blocked, then if the SHLO
-  // contains a larger send window offset, the stream becomes unblocked.
-  session_.set_writev_consumes_all_data(true);
-  TestCryptoStream* crypto_stream = session_.GetMutableCryptoStream();
-  EXPECT_FALSE(crypto_stream->IsFlowControlBlocked());
-  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-  EXPECT_CALL(*connection_, SendControlFrame(_))
-      .WillOnce(Invoke(&ClearControlFrame));
-  for (QuicStreamId i = 0; !crypto_stream->IsFlowControlBlocked() && i < 1000u;
-       i++) {
-    EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-    EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-    QuicStreamOffset offset = crypto_stream->stream_bytes_written();
-    QuicConfig config;
-    CryptoHandshakeMessage crypto_message;
-    config.ToHandshakeMessage(&crypto_message, transport_version());
-    crypto_stream->SendHandshakeMessage(crypto_message, ENCRYPTION_INITIAL);
-    char buf[1000];
-    QuicDataWriter writer(1000, buf, quiche::NETWORK_BYTE_ORDER);
-    crypto_stream->WriteStreamData(offset, crypto_message.size(), &writer);
-  }
-  EXPECT_TRUE(crypto_stream->IsFlowControlBlocked());
-  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-  EXPECT_TRUE(session_.IsStreamFlowControlBlocked());
-  EXPECT_FALSE(session_.HasDataToWrite());
-  EXPECT_TRUE(crypto_stream->HasBufferedData());
-
-  // Now complete the crypto handshake, resulting in an increased flow control
-  // send window.
-  CompleteHandshake();
-  EXPECT_TRUE(QuicSessionPeer::IsStreamWriteBlocked(
-      &session_,
-      QuicUtils::GetCryptoStreamId(connection_->transport_version())));
-  // Stream is now unblocked and will no longer have buffered data.
-  EXPECT_FALSE(crypto_stream->IsFlowControlBlocked());
-  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-}
-
 TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingRstOutOfOrder) {
   CompleteHandshake();
   // Test that when we receive an out of order stream RST we correctly adjust
@@ -2451,36 +2400,26 @@ TEST_P(QuicSessionTestServer, RetransmitLostDataCausesConnectionClose) {
 TEST_P(QuicSessionTestServer, SendMessage) {
   // Cannot send message when encryption is not established.
   EXPECT_FALSE(session_.OneRttKeysAvailable());
-  quic::QuicMemSliceStorage storage(nullptr, 0, nullptr, 0);
   EXPECT_EQ(MessageResult(MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED, 0),
-            session_.SendMessage(
-                MakeSpan(connection_->helper()->GetStreamSendBufferAllocator(),
-                         "", &storage)));
+            session_.SendMessage(MemSliceFromString("")));
 
   CompleteHandshake();
   EXPECT_TRUE(session_.OneRttKeysAvailable());
 
-  absl::string_view message;
   EXPECT_CALL(*connection_, SendMessage(1, _, false))
       .WillOnce(Return(MESSAGE_STATUS_SUCCESS));
   EXPECT_EQ(MessageResult(MESSAGE_STATUS_SUCCESS, 1),
-            session_.SendMessage(
-                MakeSpan(connection_->helper()->GetStreamSendBufferAllocator(),
-                         message, &storage)));
+            session_.SendMessage(MemSliceFromString("")));
   // Verify message_id increases.
   EXPECT_CALL(*connection_, SendMessage(2, _, false))
       .WillOnce(Return(MESSAGE_STATUS_TOO_LARGE));
   EXPECT_EQ(MessageResult(MESSAGE_STATUS_TOO_LARGE, 0),
-            session_.SendMessage(
-                MakeSpan(connection_->helper()->GetStreamSendBufferAllocator(),
-                         message, &storage)));
+            session_.SendMessage(MemSliceFromString("")));
   // Verify unsent message does not consume a message_id.
   EXPECT_CALL(*connection_, SendMessage(2, _, false))
       .WillOnce(Return(MESSAGE_STATUS_SUCCESS));
   EXPECT_EQ(MessageResult(MESSAGE_STATUS_SUCCESS, 2),
-            session_.SendMessage(
-                MakeSpan(connection_->helper()->GetStreamSendBufferAllocator(),
-                         message, &storage)));
+            session_.SendMessage(MemSliceFromString("")));
 
   QuicMessageFrame frame(1);
   QuicMessageFrame frame2(2);
@@ -2507,7 +2446,7 @@ TEST_P(QuicSessionTestServer, LocallyResetZombieStreams) {
   EXPECT_TRUE(stream2->IsWaitingForAcks());
   // Verify stream2 is a zombie streams.
   auto& stream_map = QuicSessionPeer::stream_map(&session_);
-  ASSERT_TRUE(QuicContainsKey(stream_map, stream2->id()));
+  ASSERT_TRUE(stream_map.contains(stream2->id()));
   auto* stream = stream_map.find(stream2->id())->second.get();
   EXPECT_TRUE(stream->IsZombie());
 
@@ -2556,7 +2495,7 @@ TEST_P(QuicSessionTestServer, WriteUnidirectionalStream) {
   stream4->WriteOrBufferData(body, false, nullptr);
   stream4->WriteOrBufferData(body, true, nullptr);
   auto& stream_map = QuicSessionPeer::stream_map(&session_);
-  ASSERT_TRUE(QuicContainsKey(stream_map, stream4->id()));
+  ASSERT_TRUE(stream_map.contains(stream4->id()));
   auto* stream = stream_map.find(stream4->id())->second.get();
   EXPECT_TRUE(stream->IsZombie());
 }

@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "include/base/cef_bind.h"
+#include "include/base/cef_callback.h"
 #include "include/wrapper/cef_closure_task.h"
 
 #include "tests/ceftests/routing_test_handler.h"
@@ -44,12 +44,14 @@ class DisplayTestHandler : public RoutingTestHandler, public CefRenderHandler {
     if (!got_paint_[status_]) {
       got_paint_[status_].yes();
 
-      if (status_ == START)
+      if (status_ == START) {
         OnStartIfDone();
-      else if (status_ == SHOW)
-        CefPostTask(TID_UI, base::Bind(&DisplayTestHandler::DestroyTest, this));
-      else
-        EXPECT_FALSE(true);  // Not reached.
+      } else if (status_ == SHOW) {
+        CefPostTask(TID_UI,
+                    base::BindOnce(&DisplayTestHandler::DestroyTest, this));
+      } else {
+        ADD_FAILURE();
+      }
     }
   }
 
@@ -81,7 +83,7 @@ class DisplayTestHandler : public RoutingTestHandler, public CefRenderHandler {
         got_navigate_msg_.yes();
         // Wait a bit to verify no OnPaint callback.
         CefPostDelayedTask(
-            TID_UI, base::Bind(&DisplayTestHandler::OnNavigate, this), 250);
+            TID_UI, base::BindOnce(&DisplayTestHandler::OnNavigate, this), 250);
       }
     }
     callback->Success("");
@@ -123,8 +125,9 @@ class DisplayTestHandler : public RoutingTestHandler, public CefRenderHandler {
   }
 
   void OnStartIfDone() {
-    if (got_start_msg_ && got_paint_[START])
-      CefPostTask(TID_UI, base::Bind(&DisplayTestHandler::OnStart, this));
+    if (got_start_msg_ && got_paint_[START]) {
+      CefPostTask(TID_UI, base::BindOnce(&DisplayTestHandler::OnStart, this));
+    }
   }
 
   void OnStart() {
@@ -259,7 +262,8 @@ class OsrPopupJSOtherClientTestHandler : public TestHandler,
       got_load_end_popup_.yes();
       CefPostDelayedTask(
           TID_UI,
-          base::Bind(&OsrPopupJSOtherClientTestHandler::Close, this, browser),
+          base::BindOnce(&OsrPopupJSOtherClientTestHandler::Close, this,
+                         browser),
           100);
     } else {
       browser->GetMainFrame()->LoadURL("javascript:window.open('about:blank')");
@@ -312,7 +316,7 @@ class OsrPopupJSOtherCefClient : public CefClient,
                                  public CefLifeSpanHandler,
                                  public CefRenderHandler {
  public:
-  OsrPopupJSOtherCefClient() { handler_ = NULL; }
+  OsrPopupJSOtherCefClient() { handler_ = nullptr; }
 
   void SetHandler(CefRefPtr<OsrPopupJSOtherClientTestHandler> handler) {
     handler_ = handler;

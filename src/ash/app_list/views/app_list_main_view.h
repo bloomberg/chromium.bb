@@ -69,9 +69,6 @@ class ASH_EXPORT AppListMainView : public views::View,
   // changes, necessitating a cancel of the drag operation.
   void CancelDragInActiveFolder();
 
-  // Called when the app represented by |result| is installed.
-  void OnResultInstalled(SearchResult* result);
-
   // AppListModelObserver overrides:
   void OnAppListStateChanged(AppListState new_state,
                              AppListState old_state) override;
@@ -87,8 +84,11 @@ class ASH_EXPORT AppListMainView : public views::View,
   void QueryChanged(SearchBoxViewBase* sender) override;
   void AssistantButtonPressed() override;
   void BackButtonPressed() override;
+  void CloseButtonPressed() override;
   void ActiveChanged(SearchBoxViewBase* sender) override;
   void SearchBoxFocusChanged(SearchBoxViewBase* sender) override;
+  void OnSearchBoxKeyEvent(ui::KeyEvent* event) override;
+  bool CanSelectSearchResults() override;
 
   AppListViewDelegate* delegate_;  // Owned by parent view (AppListView).
   AppListModel* model_;        // Unowned; ownership is handled by |delegate_|.

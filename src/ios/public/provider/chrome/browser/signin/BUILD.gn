@@ -22,6 +22,7 @@ source_set("signin") {
   ]
   deps = [
     "//base",
+    "//components/signin/internal/identity_manager",
     "//components/sync/driver",
     "//google_apis",
   ]
@@ -35,6 +36,8 @@ source_set("test_support") {
     "fake_chrome_identity_interaction_manager.mm",
     "fake_chrome_identity_service.h",
     "fake_chrome_identity_service.mm",
+    "fake_chrome_trusted_vault_service.h",
+    "fake_chrome_trusted_vault_service.mm",
     "test_signin_resources_provider.h",
     "test_signin_resources_provider.mm",
   ]
@@ -80,10 +83,16 @@ source_set("constants") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [ "chrome_trusted_vault_service_unittest.mm" ]
+  sources = [
+    "chrome_identity_service_unittest.mm",
+    "chrome_trusted_vault_service_unittest.mm",
+  ]
   deps = [
+    ":fake_chrome_identity",
     ":signin",
     "//base",
+    "//base/test:test_support",
+    "//components/signin/internal/identity_manager",
     "//testing/gmock",
     "//testing/gtest",
   ]

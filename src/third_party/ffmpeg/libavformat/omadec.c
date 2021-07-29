@@ -413,7 +413,7 @@ static int oma_read_header(AVFormatContext *s)
     uint8_t buf[EA3_HEADER_SIZE];
     uint8_t *edata;
     AVStream *st;
-    ID3v2ExtraMeta *extra_meta = NULL;
+    ID3v2ExtraMeta *extra_meta;
     OMAContext *oc = s->priv_data;
 
     ff_id3v2_read(s, ID3v2_EA3_MAGIC, &extra_meta, 0);
@@ -520,7 +520,7 @@ static int oma_read_header(AVFormatContext *s)
         avpriv_set_pts_info(st, 64, 1, samplerate);
         break;
     case OMA_CODECID_MP3:
-        st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
+        st->internal->need_parsing = AVSTREAM_PARSE_FULL_RAW;
         framesize = 1024;
         break;
     case OMA_CODECID_LPCM:
@@ -624,7 +624,7 @@ wipe:
     return err;
 }
 
-AVInputFormat ff_oma_demuxer = {
+const AVInputFormat ff_oma_demuxer = {
     .name           = "oma",
     .long_name      = NULL_IF_CONFIG_SMALL("Sony OpenMG audio"),
     .priv_data_size = sizeof(OMAContext),

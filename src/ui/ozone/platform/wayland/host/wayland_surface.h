@@ -6,7 +6,11 @@
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_SURFACE_H_
 
 #include <cstdint>
+#include <vector>
 
+#include "base/callback.h"
+#include "base/containers/flat_map.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/gpu_fence_handle.h"
@@ -14,15 +18,21 @@
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 
+struct zwp_linux_buffer_release_v1;
+
 namespace ui {
 
 class WaylandConnection;
+class WaylandOutput;
 class WaylandWindow;
 
 // Wrapper of a wl_surface, owned by a WaylandWindow or a WlSubsurface.
 class WaylandSurface {
  public:
-  WaylandSurface(WaylandConnection* connection, WaylandWindow* root_window);
+  using ExplicitReleaseCallback =
+      base::RepeatingCallback<void(wl_buffer*, absl::optional<int32_t>)>;
+
+  WaylandSurface(WaylandConnection* connection, WaylandWindow* ro_window);
   WaylandSurface(const WaylandSurface&) = delete;
   WaylandSurface& operator=(const WaylandSurface&) = delete;
   ~WaylandSurface();
@@ -30,11 +40,16 @@ class WaylandSurface {
   WaylandWindow* root_window() const { return root_window_; }
   wl_surface* surface() const { return surface_.get(); }
   wp_viewport* viewport() const { return viewport_.get(); }
-  zwp_linux_surface_synchronization_v1* surface_sync() const {
-    return surface_sync_.get();
+
+  const std::vector<WaylandOutput*>& entered_outputs() const {
+    return entered_outputs_;
   }
+
+  void set_explicit_release_callback(ExplicitReleaseCallback callback) {
+    explicit_release_callback_ = callback;
+  }
+
   int32_t buffer_scale() const { return buffer_scale_; }
-  void set_buffer_scale(int32_t scale) { buffer_scale_ = scale; }
 
   // Returns an id that identifies the |wl_surface_|.
   uint32_t GetSurfaceId() const;
@@ -70,8 +85,11 @@ class WaylandSurface {
   // the contents of the buffer attached to this surface.
   void SetBufferTransform(gfx::OverlayTransform transform);
 
-  // Sets the buffer scale for this surface.
-  void SetBufferScale(int32_t scale, bool update_bounds);
+  // Sets the |buffer_scale| (with respect to the scale factor used by the GPU
+  // process) for the next submitted buffer. This helps Wayland compositor to
+  // determine buffer size in dip (GPU operates in pixels. So, when buffers are
+  // created, their requested size is in pixels).
+  void SetSurfaceBufferScale(int32_t scale);
 
   // Sets the region that is opaque on this surface in physical pixels. This is
   // expected to be called whenever the region that the surface span changes or
@@ -105,20 +123,55 @@ class WaylandSurface {
   wl::Object<wl_subsurface> CreateSubsurface(WaylandSurface* parent);
 
  private:
+  // Holds information about each explicit synchronization buffer release.
+  struct ExplicitReleaseInfo {
+    ExplicitReleaseInfo(
+        wl::Object<zwp_linux_buffer_release_v1>&& linux_buffer_release,
+        wl_buffer* buffer);
+    ~ExplicitReleaseInfo();
+
+    ExplicitReleaseInfo(const ExplicitReleaseInfo&) = delete;
+    ExplicitReleaseInfo& operator=(const ExplicitReleaseInfo&) = delete;
+
+    ExplicitReleaseInfo(ExplicitReleaseInfo&&);
+    ExplicitReleaseInfo& operator=(ExplicitReleaseInfo&&);
+
+    wl::Object<zwp_linux_buffer_release_v1> linux_buffer_release;
+    // The buffer associated with this explicit release.
+    wl_buffer* buffer;
+  };
+
   wl::Object<wl_region> CreateAndAddRegion(const gfx::Rect& region_px);
+
+  // Creates (if not created) the synchronization surface and returns a pointer
+  // to it.
+  zwp_linux_surface_synchronization_v1* GetSurfaceSync();
 
   WaylandConnection* const connection_;
   WaylandWindow* root_window_ = nullptr;
   wl::Object<wl_surface> surface_;
   wl::Object<wp_viewport> viewport_;
   wl::Object<zwp_linux_surface_synchronization_v1> surface_sync_;
+  base::flat_map<zwp_linux_buffer_release_v1*, ExplicitReleaseInfo>
+      linux_buffer_releases_;
+  ExplicitReleaseCallback explicit_release_callback_;
+  wl_buffer* buffer_attached_since_last_commit_ = nullptr;
+
+  // For top level window, stores outputs that the window is currently rendered
+  // at.
+  //
+  // Not used by popups.  When sub-menus are hidden and shown again, Wayland
+  // 'repositions' them to wrong outputs by sending them leave and enter
+  // events so their list of entered outputs becomes meaningless after they have
+  // been hidden at least once.  To determine which output the popup belongs to,
+  // we ask its parent.
+  std::vector<WaylandOutput*> entered_outputs_;
 
   // Transformation for how the compositor interprets the contents of the
   // buffer.
   gfx::OverlayTransform buffer_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
 
-  // Wayland's scale factor for the output that this surface currently belongs
-  // to.
+  // Current scale factor of a next attached buffer used by the GPU process.
   int32_t buffer_scale_ = 1;
 
   // Following fields are used to help determine the damage_region in
@@ -127,11 +180,13 @@ class WaylandSurface {
   // If empty, no cropping is applied.
   gfx::RectF crop_rect_ = gfx::RectF();
 
-  // Current size of the destination of the viewport in physical pixels. Wayland
-  // compositor will scale the (cropped) buffer content to fit the
-  // |display_size_px_|.
+  // Current size of the destination of the viewport in DIP. Wayland compositor
+  // will scale the (cropped) buffer content to fit the |display_size_dip_|.
   // If empty, no scaling is applied.
-  gfx::Size display_size_px_ = gfx::Size();
+  gfx::Size display_size_dip_ = gfx::Size();
+
+  void ExplicitRelease(struct zwp_linux_buffer_release_v1* linux_buffer_release,
+                       absl::optional<int32_t> fence);
 
   // wl_surface_listener
   static void Enter(void* data,
@@ -140,6 +195,15 @@ class WaylandSurface {
   static void Leave(void* data,
                     struct wl_surface* wl_surface,
                     struct wl_output* output);
+
+  // zwp_linux_buffer_release_v1_listener
+  static void FencedRelease(
+      void* data,
+      struct zwp_linux_buffer_release_v1* linux_buffer_release,
+      int32_t fence);
+  static void ImmediateRelease(
+      void* data,
+      struct zwp_linux_buffer_release_v1* linux_buffer_release);
 };
 
 }  // namespace ui

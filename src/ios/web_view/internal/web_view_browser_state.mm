@@ -27,6 +27,7 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/driver/glue/sync_transport_data_prefs.h"
 #include "components/sync_device_info/device_info_prefs.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -49,7 +50,7 @@
 #import "ios/web_view/internal/sync/web_view_gcm_profile_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
-#import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
+#import "ios/web_view/internal/sync/web_view_sync_service_factory.h"
 #include "ios/web_view/internal/translate/web_view_translate_accept_languages_factory.h"
 #include "ios/web_view/internal/translate/web_view_translate_ranker_factory.h"
 #include "ios/web_view/internal/web_view_download_manager.h"
@@ -178,6 +179,7 @@ void WebViewBrowserState::RegisterPrefs(
   autofill::prefs::RegisterProfilePrefs(pref_registry);
   password_manager::PasswordManager::RegisterProfilePrefs(pref_registry);
   syncer::SyncPrefs::RegisterProfilePrefs(pref_registry);
+  syncer::SyncTransportDataPrefs::RegisterProfilePrefs(pref_registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(pref_registry);
   safe_browsing::RegisterProfilePrefs(pref_registry);
   unified_consent::UnifiedConsentService::RegisterPrefs(pref_registry);
@@ -199,7 +201,7 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewIdentityManagerFactory::GetInstance();
   WebViewGCMProfileServiceFactory::GetInstance();
   WebViewProfileInvalidationProviderFactory::GetInstance();
-  WebViewProfileSyncServiceFactory::GetInstance();
+  WebViewSyncServiceFactory::GetInstance();
   WebViewModelTypeStoreServiceFactory::GetInstance();
 
   BrowserStateDependencyManager::GetInstance()

@@ -19,8 +19,8 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/metrics/demographics/demographic_metrics_test_utils.h"
 #include "components/sync/base/pref_names.h"
-#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/engine/loopback_server/loopback_server_entity.h"
 #include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/nigori/nigori_test_utils.h"
@@ -37,7 +37,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -53,16 +53,15 @@ fake_server::FakeServer* gSyncFakeServer = nullptr;
 
 NSString* const kSyncTestErrorDomain = @"SyncTestDomain";
 
-// Overrides the network callback of the current ProfileSyncService with
+// Overrides the network callback of the current SyncServiceImpl with
 // |create_http_post_provider_factory_cb|.
 void OverrideSyncNetwork(const syncer::CreateHttpPostProviderFactory&
                              create_http_post_provider_factory_cb) {
   ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   DCHECK(browser_state);
-  syncer::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
-          browser_state);
+  syncer::SyncServiceImpl* service =
+      SyncServiceFactory::GetAsSyncServiceImplForBrowserState(browser_state);
   service->OverrideNetworkForTest(create_http_post_provider_factory_cb);
 }
 
@@ -105,9 +104,8 @@ void StartSync() {
   SyncSetupService* sync_setup_service =
       SyncSetupServiceFactory::GetForBrowserState(browser_state);
   sync_setup_service->SetSyncEnabled(true);
-  syncer::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
-          browser_state);
+  syncer::SyncServiceImpl* sync_service =
+      SyncServiceFactory::GetAsSyncServiceImplForBrowserState(browser_state);
   sync_service->TriggerPoliciesLoadedForTest();
 }
 
@@ -124,7 +122,7 @@ void TriggerSyncCycle(syncer::ModelType type) {
   ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForBrowserState(browser_state);
+      SyncServiceFactory::GetForBrowserState(browser_state);
   sync_service->TriggerRefresh({type});
 }
 
@@ -191,7 +189,7 @@ bool IsSyncInitialized() {
       chrome_test_util::GetOriginalBrowserState();
   DCHECK(browser_state);
   syncer::SyncService* syncService =
-      ProfileSyncServiceFactory::GetForBrowserState(browser_state);
+      SyncServiceFactory::GetForBrowserState(browser_state);
   return syncService->IsEngineInitialized();
 }
 

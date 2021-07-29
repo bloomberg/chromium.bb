@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "include/base/cef_bind.h"
+#include "include/base/cef_callback.h"
 #include "include/test/cef_test_helpers.h"
 #include "include/wrapper/cef_closure_task.h"
 #include "tests/ceftests/test_handler.h"
@@ -136,8 +136,8 @@ class JSDialogTestHandler : public TestHandler {
       callback->Continue(success_, user_input_);
     } else if (mode_ == MODE_RUN_DELAYED) {
       // Continue asynchronously.
-      CefPostTask(TID_UI,
-                  base::Bind(&JSDialogTestHandler::Continue, this, callback));
+      CefPostTask(TID_UI, base::BindOnce(&JSDialogTestHandler::Continue, this,
+                                         callback));
     }
 
     return true;
@@ -162,8 +162,8 @@ class JSDialogTestHandler : public TestHandler {
       callback->Continue(success_, user_input_);
     } else if (mode_ == MODE_RUN_DELAYED) {
       // Continue asynchronously.
-      CefPostTask(TID_UI,
-                  base::Bind(&JSDialogTestHandler::Continue, this, callback));
+      CefPostTask(TID_UI, base::BindOnce(&JSDialogTestHandler::Continue, this,
+                                         callback));
     }
 
     return true;

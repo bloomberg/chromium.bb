@@ -87,16 +87,12 @@ void SetMenuItemToMenu(
             input.style);
   }
 
-  if (input.visible)
-    out->modified |= InputMethodEngine::MENU_ITEM_MODIFIED_VISIBLE;
   out->visible = input.visible ? *input.visible : true;
 
   if (input.checked)
     out->modified |= InputMethodEngine::MENU_ITEM_MODIFIED_CHECKED;
   out->checked = input.checked ? *input.checked : false;
 
-  if (input.enabled)
-    out->modified |= InputMethodEngine::MENU_ITEM_MODIFIED_ENABLED;
   out->enabled = input.enabled ? *input.enabled : true;
 }
 
@@ -133,6 +129,7 @@ input_ime::AssistiveWindowButton ConvertAssistiveWindowButton(
     case ui::ime::ButtonId::kSmartInputsSettingLink:
     case ui::ime::ButtonId::kSuggestion:
     case ui::ime::ButtonId::kLearnMore:
+    case ui::ime::ButtonId::kIgnoreSuggestion:
       return input_ime::ASSISTIVE_WINDOW_BUTTON_NONE;
     case ui::ime::ButtonId::kUndo:
       return input_ime::ASSISTIVE_WINDOW_BUTTON_UNDO;
@@ -147,6 +144,7 @@ input_ime::AssistiveWindowType ConvertAssistiveWindowType(
     case ui::ime::AssistiveWindowType::kNone:
     case ui::ime::AssistiveWindowType::kEmojiSuggestion:
     case ui::ime::AssistiveWindowType::kPersonalInfoSuggestion:
+    case ui::ime::AssistiveWindowType::kGrammarSuggestion:
       return input_ime::AssistiveWindowType::ASSISTIVE_WINDOW_TYPE_NONE;
     case ui::ime::AssistiveWindowType::kUndoWindow:
       return input_ime::AssistiveWindowType::ASSISTIVE_WINDOW_TYPE_UNDO;

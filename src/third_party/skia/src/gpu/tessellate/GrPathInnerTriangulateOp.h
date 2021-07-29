@@ -10,12 +10,12 @@
 
 #include "src/gpu/GrInnerFanTriangulator.h"
 #include "src/gpu/ops/GrDrawOp.h"
-#include "src/gpu/tessellate/GrPathShader.h"
 #include "src/gpu/tessellate/GrTessellationPathRenderer.h"
+#include "src/gpu/tessellate/shaders/GrTessellationShader.h"
 
-class GrPathTessellator;
+class GrPathCurveTessellator;
 
-// This op is a 3-pass twist on the standard Redbook "stencil then fill" algorithm:
+// This op is a 3-pass twist on the standard Redbook "stencil then cover" algorithm:
 //
 // 1) Tessellate the path's outer curves into the stencil buffer.
 // 2) Triangulate the path's inner fan and fill it with a stencil test against the curves.
@@ -28,37 +28,36 @@ private:
     DEFINE_OP_CLASS_ID
 
     GrPathInnerTriangulateOp(const SkMatrix& viewMatrix, const SkPath& path, GrPaint&& paint,
-                       GrAAType aaType, GrTessellationPathRenderer::OpFlags opFlags)
+                       GrAAType aaType, GrTessellationPathRenderer::PathFlags pathFlags,
+                       const SkRect& drawBounds)
             : GrDrawOp(ClassID())
-            , fOpFlags(opFlags)
+            , fPathFlags(pathFlags)
             , fViewMatrix(viewMatrix)
             , fPath(path)
             , fAAType(aaType)
             , fColor(paint.getColor4f())
             , fProcessors(std::move(paint)) {
-        SkRect devBounds;
-        fViewMatrix.mapRect(&devBounds, path.getBounds());
-        this->setBounds(devBounds, HasAABloat::kNo, IsHairline::kNo);
+        SkASSERT(!fPath.isInverseFillType());
+        this->setBounds(drawBounds, HasAABloat::kNo, IsHairline::kNo);
     }
 
     const char* name() const override { return "GrPathInnerTriangulateOp"; }
-    void visitProxies(const VisitProxyFunc& fn) const override;
+    void visitProxies(const GrVisitProxyFunc&) const override;
     FixedFunctionFlags fixedFunctionFlags() const override;
     GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override;
 
     // These calls set up the stencil & fill programs we will use prior to preparing and executing.
-    void pushFanStencilProgram(const GrPathShader::ProgramArgs&,
+    void pushFanStencilProgram(const GrTessellationShader::ProgramArgs&,
                                const GrPipeline* pipelineForStencils, const GrUserStencilSettings*);
-    void pushFanFillProgram(const GrPathShader::ProgramArgs&, const GrUserStencilSettings*);
-    void prePreparePrograms(const GrPathShader::ProgramArgs&, GrAppliedClip&&);
+    void pushFanFillProgram(const GrTessellationShader::ProgramArgs&, const GrUserStencilSettings*);
+    void prePreparePrograms(const GrTessellationShader::ProgramArgs&, GrAppliedClip&&);
 
     void onPrePrepare(GrRecordingContext*, const GrSurfaceProxyView&, GrAppliedClip*,
-                      const GrXferProcessor::DstProxyView&, GrXferBarrierFlags,
-                      GrLoadOp colorLoadOp) override;
+                      const GrDstProxyView&, GrXferBarrierFlags, GrLoadOp colorLoadOp) override;
     void onPrepare(GrOpFlushState*) override;
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
 
-    const GrTessellationPathRenderer::OpFlags fOpFlags;
+    const GrTessellationPathRenderer::PathFlags fPathFlags;
     const SkMatrix fViewMatrix;
     const SkPath fPath;
     const GrAAType fAAType;
@@ -74,7 +73,7 @@ private:
     const GrPipeline* fPipelineForFills = nullptr;
 
     // Tessellates the outer curves.
-    GrPathTessellator* fTessellator = nullptr;
+    GrPathCurveTessellator* fTessellator = nullptr;
 
     // Pass 1: Tessellate the outer curves into the stencil buffer.
     const GrProgramInfo* fStencilCurvesProgram = nullptr;
@@ -84,12 +83,15 @@ private:
     SkSTArray<2, const GrProgramInfo*> fFanPrograms;
 
     // Pass 3: Draw convex hulls around each curve.
-    const GrProgramInfo* fFillHullsProgram = nullptr;
+    const GrProgramInfo* fCoverHullsProgram = nullptr;
 
     // This buffer gets created by fFanTriangulator during onPrepare.
     sk_sp<const GrBuffer> fFanBuffer;
     int fBaseFanVertex = 0;
     int fFanVertexCount = 0;
+
+    // Only used if sk_VertexID is not supported.
+    sk_sp<const GrGpuBuffer> fHullVertexBufferIfNoIDSupport;
 
     friend class GrOp;  // For ctor.
 };

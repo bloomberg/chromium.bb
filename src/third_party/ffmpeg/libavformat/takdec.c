@@ -65,7 +65,7 @@ static int tak_read_header(AVFormatContext *s)
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id   = AV_CODEC_ID_TAK;
-    st->need_parsing         = AVSTREAM_PARSE_FULL_RAW;
+    st->internal->need_parsing         = AVSTREAM_PARSE_FULL_RAW;
 
     tc->mlast_frame = 0;
     if (avio_rl32(pb) != MKTAG('t', 'B', 'a', 'K')) {
@@ -214,7 +214,7 @@ static int raw_read_packet(AVFormatContext *s, AVPacket *pkt)
 }
 
 FF_RAW_DEMUXER_CLASS(tak)
-AVInputFormat ff_tak_demuxer = {
+const AVInputFormat ff_tak_demuxer = {
     .name           = "tak",
     .long_name      = NULL_IF_CONFIG_SMALL("raw TAK"),
     .priv_data_size = sizeof(TAKDemuxContext),

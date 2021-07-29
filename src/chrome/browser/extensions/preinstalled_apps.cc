@@ -10,8 +10,8 @@
 #include <set>
 #include <string>
 
+#include "base/cxx17_backports.h"
 #include "base/lazy_instance.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -167,12 +167,12 @@ void Provider::SetPrefs(std::unique_ptr<base::DictionaryValue> prefs) {
     // Filter out the new pre-installed apps for migrating users, so that we
     // don't randomly install them out of the blue. Two-pass to keep iterators
     // nice and happy.
-    for (const auto& entry : prefs->DictItems()) {
+    for (auto entry : prefs->DictItems()) {
       if (!IsOldPreinstalledApp(entry.first))
         keys_to_erase.insert(entry.first);
     }
     for (const auto& key : keys_to_erase)
-      prefs->Remove(key, nullptr);
+      prefs->RemoveKey(key);
   }
 
   // Next, the more fun case. It's possible that these apps were uninstalled
@@ -205,7 +205,7 @@ void Provider::SetPrefs(std::unique_ptr<base::DictionaryValue> prefs) {
     };
 
     std::set<std::string> keys_to_erase;
-    for (const auto& entry : prefs->DictItems()) {
+    for (auto entry : prefs->DictItems()) {
       bool should_re_add = should_re_add_app(entry.first, entry.second);
       if (should_re_add) {
         // Since it will be re-added, mark it as no-longer-migrated.
@@ -216,7 +216,7 @@ void Provider::SetPrefs(std::unique_ptr<base::DictionaryValue> prefs) {
     }
 
     for (const auto& key : keys_to_erase) {
-      prefs->Remove(key, nullptr);
+      prefs->RemoveKey(key);
     }
   }
 

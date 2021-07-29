@@ -14,6 +14,15 @@ bool IsSyncAllowedByFlag() {
       switches::kDisableSync);
 }
 
+#if defined(OS_IOS)
+bool IsSyncTrustedVaultPassphraseiOSRPCEnabled() {
+  return base::FeatureList::IsEnabled(
+             switches::kSyncTrustedVaultPassphraseRecovery) &&
+         base::FeatureList::IsEnabled(
+             switches::kSyncTrustedVaultPassphraseiOSRPC);
+}
+#endif  // defined(OS_IOS)
+
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[] = "disable-sync";
 
@@ -67,13 +76,20 @@ const base::FeatureParam<base::TimeDelta> kSyncPolicyLoadTimeout{
     &kSyncRequiresPoliciesLoaded, "SyncPolicyLoadTimeout",
     base::TimeDelta::FromSeconds(10)};
 
-const base::Feature kSyncSupportTrustedVaultPassphraseRecovery{
-    "SyncSupportTrustedVaultPassphraseRecovery",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+#if defined(OS_IOS)
+// Whether RPC is enabled.
+const base::Feature kSyncTrustedVaultPassphraseiOSRPC{
+    "SyncTrustedVaultPassphraseiOSRPC", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_IOS)
+
+// Keep this entry in sync with the equivalent name in
+// ChromeFeatureList.java.
+const base::Feature kSyncTrustedVaultPassphraseRecovery{
+    "SyncTrustedVaultPassphraseRecovery", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Whether the entry point to opt in to trusted vault in settings should be
 // shown.
-const base::Feature kSyncOfferTrustedVaultOptIn{
-    "SyncOfferTrustedVaultOptIn", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSyncTrustedVaultPassphrasePromo{
+    "SyncTrustedVaultPassphrasePromo", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace switches

@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_set_return_value.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
@@ -101,12 +102,10 @@ static void LocationAttributeGet(const CallbackInfo& info) {
   V8SetReturnValue(info, wrapper);
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
 void V8Window::LocationAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocationAttributeGet(info);
 }
-#endif  // USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE
 
 void V8Window::LocationAttributeGetterCustom(
     const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -175,13 +174,11 @@ static void OpenerAttributeSet(v8::Local<v8::Value> value,
   }
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
 void V8Window::OpenerAttributeSetterCustom(
     v8::Local<v8::Value> value,
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   OpenerAttributeSet(value, info);
 }
-#endif  // USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE
 
 void V8Window::OpenerAttributeSetterCustom(
     v8::Local<v8::Value> value,

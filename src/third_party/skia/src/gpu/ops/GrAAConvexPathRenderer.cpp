@@ -732,7 +732,7 @@ public:
 
     const char* name() const override { return "AAConvexPathOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
         if (fProgramInfo) {
             fProgramInfo->visitFPProxies(func);
         } else {
@@ -755,8 +755,9 @@ private:
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&& appliedClip,
-                             const GrXferProcessor::DstProxyView& dstProxyView,
+                             const GrDstProxyView& dstProxyView,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override {
         SkMatrix invert;
@@ -775,7 +776,7 @@ private:
                                                             renderPassXferBarriers, colorLoadOp);
     }
 
-    void onPrepareDraws(Target* target) override {
+    void onPrepareDraws(GrMeshDrawTarget* target) override {
         int instanceCount = fPaths.count();
 
         if (!fProgramInfo) {
@@ -920,9 +921,9 @@ private:
 }  // anonymous namespace
 
 bool GrAAConvexPathRenderer::onDrawPath(const DrawPathArgs& args) {
-    GR_AUDIT_TRAIL_AUTO_FRAME(args.fRenderTargetContext->auditTrail(),
+    GR_AUDIT_TRAIL_AUTO_FRAME(args.fContext->priv().auditTrail(),
                               "GrAAConvexPathRenderer::onDrawPath");
-    SkASSERT(args.fRenderTargetContext->numSamples() <= 1);
+    SkASSERT(args.fSurfaceDrawContext->numSamples() <= 1);
     SkASSERT(!args.fShape->isEmpty());
 
     SkPath path;
@@ -931,7 +932,7 @@ bool GrAAConvexPathRenderer::onDrawPath(const DrawPathArgs& args) {
     GrOp::Owner op = AAConvexPathOp::Make(args.fContext, std::move(args.fPaint),
                                           *args.fViewMatrix,
                                           path, args.fUserStencilSettings);
-    args.fRenderTargetContext->addDrawOp(args.fClip, std::move(op));
+    args.fSurfaceDrawContext->addDrawOp(args.fClip, std::move(op));
     return true;
 }
 

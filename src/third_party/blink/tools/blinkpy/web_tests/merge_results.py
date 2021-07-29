@@ -210,7 +210,7 @@ class JSONMerger(Merger):
                 dict_mid.setdefault(key, []).append(dobj[key])
 
         dict_out = dicts[0].__class__({})
-        for k, v in dict_mid.iteritems():
+        for k, v in dict_mid.items():
             assert v
             if len(v) == 1:
                 dict_out[k] = v[0]
@@ -490,7 +490,7 @@ class DirMerger(Merger):
 
         # Go through each file and try to merge it.
         # partial_file_path is the file relative to the directories.
-        for partial_file_path, in_dirs in sorted(files.iteritems()):
+        for partial_file_path, in_dirs in sorted(files.items()):
             out_path = self.filesystem.join(output_dir, partial_file_path)
             if self.filesystem.exists(out_path):
                 raise MergeFailure('File %s already exist in output.',
@@ -520,6 +520,38 @@ class DirMerger(Merger):
 
 # Classes specific to merging web test results directory.
 # ------------------------------------------------------------------------
+
+
+class JSONWptReportsMerger(JSONMerger):
+    """Merger for the 'wpt report' format.
+
+    The JSON format is described at
+    https://github.com/web-platform-tests/wpt.fyi/tree/main/api#apiresultsupload
+
+    """
+
+    def __init__(self):
+        JSONMerger.__init__(self)
+
+        # results is a list, and we want to add them together.
+        self.add_helper(
+            NameRegexMatch(':results$'),
+            self.merge_listlike)
+
+        # pick run_info from shard 0.
+        self.add_helper(
+            NameRegexMatch(':run_info$'),
+            lambda o, name=None: o[0])
+
+        # We just take the earliest for time_start.
+        self.add_helper(
+            NameRegexMatch(':time_start$'),
+            lambda o, name=None: min(*o))
+
+        # and the last for time_end.
+        self.add_helper(
+            NameRegexMatch(':time_end$'),
+            lambda o, name=None: max(*o))
 
 
 class JSONTestResultsMerger(JSONMerger):
@@ -626,6 +658,8 @@ class WebTestDirMerger(DirMerger):
         self.add_helper(
             FilenameRegexMatch(r'wptserve_stderr\.txt$'),
             MergeFilesKeepFiles(self.filesystem))
+        self.add_helper(FilenameRegexMatch(r'wptserve_stdout\.txt$'),
+                        MergeFilesKeepFiles(self.filesystem))
         # keep chromedriver log for webdriver tests
         self.add_helper(FilenameRegexMatch(r'chromedriver\.log$'),
                         MergeFilesKeepFiles(self.filesystem))
@@ -633,6 +667,15 @@ class WebTestDirMerger(DirMerger):
         # keep system log for tests on fuchsia platform. See ./port/fuchsia.py
         self.add_helper(FilenameRegexMatch(r'system_log$'),
                         MergeFilesKeepFiles(self.filesystem))
+
+        # Merge WPT report JSON files
+        # https://github.com/web-platform-tests/wpt.fyi/tree/main/api#apiresultsupload
+        wpt_reports_json_merger = MergeFilesJSONP(
+            self.filesystem,
+            JSONWptReportsMerger())
+        self.add_helper(
+            FilenameRegexMatch(r'reports\.json$'),
+            wpt_reports_json_merger)
 
         # These JSON files have "result style" JSON in them.
         results_json_file_merger = MergeFilesJSONP(

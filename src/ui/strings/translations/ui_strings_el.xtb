@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Έλεγχος της σύνδεσής σας στο διαδίκτυο</translation>
 <translation id="2388990488038464401">Θέλετε να καλέσετε αυτόν τον αριθμό στο τηλέφωνό σας;</translation>
+<translation id="2435457462613246316">Εμφάνιση κωδικού πρόσβασης</translation>
 <translation id="24452542372838207">Ανάπτυξη ειδοποίησης</translation>
 <translation id="2445449901874883781">Χρήση υψηλής πυκνότητας</translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{Πριν από 1 χρόνο}other{Πριν από # χρόνια}}</translation>
 <translation id="2878511608894704031">Διαγραφή όλων</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{σε 1 η.}other{σε # η.}}</translation>
+<translation id="2922712708897119705">Η στήλη <ph name="COLUMN_NAME" /> ταξινομήθηκε με φθίνουσα σειρά.</translation>
 <translation id="2931838996092594335">κάνω κλικ</translation>
 <translation id="2981684127883932071">Προβολή προτάσεων</translation>
 <translation id="3036649622769666520">Άνοιγμα Αρχείων</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Μενού</translation>
 <translation id="3909791450649380159">Απο&amp;κοπή</translation>
 <translation id="3990502903496589789">Δεξιά άκρη</translation>
+<translation id="3994749195054421561">Η στήλη <ph name="COLUMN_NAME" /> ταξινομήθηκε σε αύξουσα σειρά.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 μη αναγνωσμένη ειδοποίηση}other{# μη αναγνωσμένες ειδοποιήσεις}}</translation>
 <translation id="4202807286478387388">μεταπήδηση</translation>
 <translation id="4250229828105606438">Στιγμιότυπο οθόνης</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Κατάργηση από το πρόχειρο.</translation>
 <translation id="4316910396681052118">ΟΛΕΣ ΟΙ ΕΦΑΡΜΟΓΕΣ</translation>
 <translation id="4491109536499578614">Εικόνα</translation>
+<translation id="4565377596337484307">Απόκρυψη κωδικού πρόσβασης</translation>
 <translation id="4588090240171750605">Κύλιση δεξιά</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Αξιολόγηση με αστέρι <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Πρόταση εφαρμογής</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Σελίδα <ph name="SELECTED_PAGE" /> από <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Διαγραφή κειμένου πλαισίου αναζήτησης</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
+<translation id="6117103120090651229">Κεντρικό κουμπί</translation>
 <translation id="6119846243427417423">ενεργοποίηση</translation>
 <translation id="6129953537138746214">Κενό</translation>
 <translation id="6134259848159370930">Κάντε αναζήτηση στη συσκευή, στις εφαρμογές, στις ρυθμίσεις και στον ιστό.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Επέκταση σε όλες τις εφαρμογές</translation>
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
 <translation id="6166852626429024716">Κάντε αναζήτηση στη συσκευή, στις εφαρμογές, στις ρυθμίσεις και στον ιστό…</translation>
+<translation id="6237461503717005873">Η σειρά <ph name="ROW_NAME" /> είναι επιλεγμένη.</translation>
 <translation id="6264365405983206840">Επιλογή Όλ&amp;ων</translation>
 <translation id="6351032674660237738">ΠΡΟΤΑΣΕΙΣ ΕΦΑΡΜΟΓΩΝ</translation>
 <translation id="6364916375976753737">Κύλιση αριστερά</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Απομένει 1 λεπτό}other{Απομένουν # λεπτά}}</translation>
 <translation id="7430878839542012341">Να διαγραφεί αυτή η αναζήτηση από το ιστορικό σας;</translation>
+<translation id="7437971918971306061">Η ταξινόμηση της στήλης <ph name="COLUMN_NAME" /> καταργήθηκε.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7620655452534002301">Καταργήθηκε.</translation>

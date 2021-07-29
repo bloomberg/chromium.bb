@@ -48,6 +48,8 @@
 #include "av1/encoder/tokenize.h"
 
 #define ENC_MISMATCH_DEBUG 0
+#define SETUP_TIME_OH_CONST 5     // Setup time overhead constant per worker
+#define JOB_DISP_TIME_OH_CONST 1  // Job dispatch time overhead per tile
 
 static INLINE void write_uniform(aom_writer *w, int n, int v) {
   const int l = get_unsigned_bits(n);
@@ -2817,10 +2819,9 @@ static int check_frame_refs_short_signaling(AV1_COMMON *const cm) {
 
 // New function based on HLS R18
 static AOM_INLINE void write_uncompressed_header_obu(
-    AV1_COMP *cpi, MACROBLOCK *const x, struct aom_write_bit_buffer *saved_wb,
+    AV1_COMP *cpi, MACROBLOCKD *const xd, struct aom_write_bit_buffer *saved_wb,
     struct aom_write_bit_buffer *wb) {
   AV1_COMMON *const cm = &cpi->common;
-  MACROBLOCKD *const xd = &x->e_mbd;
   const SequenceHeader *const seq_params = cm->seq_params;
   const CommonQuantParams *quant_params = &cm->quant_params;
   CurrentFrame *const current_frame = &cm->current_frame;
@@ -2901,7 +2902,7 @@ static AOM_INLINE void write_uncompressed_header_obu(
 
     if (cm->superres_upscaled_width > seq_params->max_frame_width ||
         cm->superres_upscaled_height > seq_params->max_frame_height) {
-      aom_internal_error(x->error_info, AOM_CODEC_UNSUP_BITSTREAM,
+      aom_internal_error(cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                          "Frame dimensions are larger than the maximum values");
     }
 
@@ -2928,19 +2929,19 @@ static AOM_INLINE void write_uncompressed_header_obu(
       for (int op_num = 0;
            op_num < seq_params->operating_points_cnt_minus_1 + 1; op_num++) {
         if (seq_params->op_params[op_num].decoder_model_param_present_flag) {
-          if (((seq_params->operating_point_idc[op_num] >>
+          if (seq_params->operating_point_idc[op_num] == 0 ||
+              ((seq_params->operating_point_idc[op_num] >>
                 cm->temporal_layer_id) &
                    0x1 &&
                (seq_params->operating_point_idc[op_num] >>
                 (cm->spatial_layer_id + 8)) &
-                   0x1) ||
-              seq_params->operating_point_idc[op_num] == 0) {
+                   0x1)) {
             aom_wb_write_unsigned_literal(
                 wb, cm->buffer_removal_times[op_num],
                 seq_params->decoder_model_info.buffer_removal_time_length);
             cm->buffer_removal_times[op_num]++;
             if (cm->buffer_removal_times[op_num] == 0) {
-              aom_internal_error(x->error_info, AOM_CODEC_UNSUP_BITSTREAM,
+              aom_internal_error(cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                                  "buffer_removal_time overflowed");
             }
           }
@@ -3027,7 +3028,7 @@ static AOM_INLINE void write_uncompressed_header_obu(
               1;
           if (delta_frame_id_minus_1 < 0 ||
               delta_frame_id_minus_1 >= (1 << diff_len)) {
-            aom_internal_error(x->error_info, AOM_CODEC_ERROR,
+            aom_internal_error(cm->error, AOM_CODEC_ERROR,
                                "Invalid delta_frame_id_minus_1");
           }
           aom_wb_write_literal(wb, delta_frame_id_minus_1, diff_len);
@@ -3402,12 +3403,12 @@ uint32_t av1_write_sequence_header_obu(const SequenceHeader *seq_params,
   return size;
 }
 
-static uint32_t write_frame_header_obu(AV1_COMP *cpi, MACROBLOCK *const x,
+static uint32_t write_frame_header_obu(AV1_COMP *cpi, MACROBLOCKD *const xd,
                                        struct aom_write_bit_buffer *saved_wb,
                                        uint8_t *const dst,
                                        int append_trailing_bits) {
   struct aom_write_bit_buffer wb = { dst, 0 };
-  write_uncompressed_header_obu(cpi, x, saved_wb, &wb);
+  write_uncompressed_header_obu(cpi, xd, saved_wb, &wb);
   if (append_trailing_bits) add_trailing_bits(&wb);
   return aom_wb_bytes_written(&wb);
 }
@@ -3453,7 +3454,7 @@ static uint32_t init_large_scale_tile_obu_header(
   *data += lst_obu->tg_hdr_size;
 
   const uint32_t frame_header_size =
-      write_frame_header_obu(cpi, &cpi->td.mb, saved_wb, *data, 0);
+      write_frame_header_obu(cpi, &cpi->td.mb.e_mbd, saved_wb, *data, 0);
   *data += frame_header_size;
   lst_obu->frame_header_size = frame_header_size;
   // (yunqing) This test ensures the correctness of large scale tile coding.
@@ -3547,7 +3548,6 @@ static void write_large_scale_tile_obu(
       // even for the last one, unless no tiling is used at all.
       *total_size += data_offset;
       cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
-      cpi->td.mb.error_info = cm->error;
       mode_bc.allow_update_cdf = !tiles->large_scale;
       mode_bc.allow_update_cdf =
           mode_bc.allow_update_cdf && !cm->features.disable_cdf_update;
@@ -3631,7 +3631,7 @@ static INLINE uint32_t pack_large_scale_tiles_in_tg_obus(
 }
 
 // Writes obu, tile group and uncompressed headers to bitstream.
-void av1_write_obu_tg_tile_headers(AV1_COMP *const cpi, MACROBLOCK *const x,
+void av1_write_obu_tg_tile_headers(AV1_COMP *const cpi, MACROBLOCKD *const xd,
                                    PackBSParams *const pack_bs_params,
                                    const int tile_idx) {
   AV1_COMMON *const cm = &cpi->common;
@@ -3651,7 +3651,7 @@ void av1_write_obu_tg_tile_headers(AV1_COMP *const cpi, MACROBLOCK *const x,
 
   if (cpi->num_tg == 1)
     *curr_tg_hdr_size += write_frame_header_obu(
-        cpi, x, pack_bs_params->saved_wb,
+        cpi, xd, pack_bs_params->saved_wb,
         pack_bs_params->tile_data_curr + *curr_tg_hdr_size, 0);
   *curr_tg_hdr_size += write_tile_group_header(
       pack_bs_params->tile_data_curr + *curr_tg_hdr_size, tile_idx,
@@ -3759,9 +3759,15 @@ void av1_reset_pack_bs_thread_data(ThreadData *const td) {
 
 void av1_accumulate_pack_bs_thread_data(AV1_COMP *const cpi,
                                         ThreadData const *td) {
+  int do_max_mv_magnitude_update = 1;
   cpi->rc.coefficient_size += td->coefficient_size;
 
-  if (cpi->sf.mv_sf.auto_mv_step_size)
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  // Disable max_mv_magnitude update for parallel frames based on update flag.
+  if (!cpi->do_frame_data_update) do_max_mv_magnitude_update = 0;
+#endif
+
+  if (cpi->sf.mv_sf.auto_mv_step_size && do_max_mv_magnitude_update)
     cpi->mv_search_params.max_mv_magnitude =
         AOMMAX(cpi->mv_search_params.max_mv_magnitude, td->max_mv_magnitude);
 
@@ -3778,7 +3784,7 @@ static void write_tile_obu(
     unsigned int *max_tile_size, uint32_t *const obu_header_size,
     uint8_t **tile_data_start) {
   AV1_COMMON *const cm = &cpi->common;
-  MACROBLOCK *const x = &cpi->td.mb;
+  MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   const CommonTileParams *const tiles = &cm->tiles;
   const int tile_cols = tiles->cols;
   const int tile_rows = tiles->rows;
@@ -3807,8 +3813,7 @@ static void write_tile_obu(
       if (tile_count == tg_size || tile_idx == (tile_cols * tile_rows - 1))
         is_last_tile_in_tg = 1;
 
-      cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
-      cpi->td.mb.error_info = cm->error;
+      xd->tile_ctx = &this_tile->tctx;
 
       // PackBSParams stores all parameters required to pack tile and header
       // info.
@@ -3826,7 +3831,7 @@ static void write_tile_obu(
       pack_bs_params.total_size = total_size;
 
       if (new_tg)
-        av1_write_obu_tg_tile_headers(cpi, x, &pack_bs_params, tile_idx);
+        av1_write_obu_tg_tile_headers(cpi, xd, &pack_bs_params, tile_idx);
 
       av1_pack_tile_info(cpi, &cpi->td, &pack_bs_params);
 
@@ -3912,6 +3917,41 @@ static void write_tile_obu_size(AV1_COMP *const cpi, uint8_t *const dst,
   }
 }
 
+// As per the experiments, single-thread bitstream packing is better for
+// frames with a smaller bitstream size. This behavior is due to setup time
+// overhead of multithread function would be more than that of time required
+// to pack the smaller bitstream of such frames. This function computes the
+// number of required number of workers based on setup time overhead and job
+// dispatch time overhead for given tiles and available workers.
+int calc_pack_bs_mt_workers(const TileDataEnc *tile_data, int num_tiles,
+                            int avail_workers) {
+  if (AOMMIN(avail_workers, num_tiles) <= 1) return 1;
+
+  uint64_t frame_abs_sum_level = 0;
+
+  for (int idx = 0; idx < num_tiles; idx++)
+    frame_abs_sum_level += tile_data[idx].abs_sum_level;
+
+  aom_clear_system_state();
+  int ideal_num_workers = 1;
+  const float job_disp_time_const = (float)num_tiles * JOB_DISP_TIME_OH_CONST;
+  float max_sum = 0.0;
+
+  for (int num_workers = avail_workers; num_workers > 1; num_workers--) {
+    const float fas_per_worker_const =
+        ((float)(num_workers - 1) / num_workers) * frame_abs_sum_level;
+    const float setup_time_const = (float)num_workers * SETUP_TIME_OH_CONST;
+    const float this_sum = fas_per_worker_const - setup_time_const -
+                           job_disp_time_const / num_workers;
+
+    if (this_sum > max_sum) {
+      max_sum = this_sum;
+      ideal_num_workers = num_workers;
+    }
+  }
+  return ideal_num_workers;
+}
+
 static INLINE uint32_t pack_tiles_in_tg_obus(
     AV1_COMP *const cpi, uint8_t *const dst,
     struct aom_write_bit_buffer *saved_wb, uint8_t obu_extension_header,
@@ -3921,22 +3961,17 @@ static INLINE uint32_t pack_tiles_in_tg_obus(
   unsigned int max_tile_size = 0;
   uint32_t obu_header_size = 0;
   uint8_t *tile_data_start = dst;
-  const int num_workers = cpi->mt_info.num_mod_workers[MOD_PACK_BS];
   const int tile_cols = tiles->cols;
   const int tile_rows = tiles->rows;
   const int num_tiles = tile_rows * tile_cols;
 
-  // As per the experiments, single-thread bitstream packing is better for
-  // source alt-ref frames. This behavior is due to setup time overhead of
-  // multithread function would be more than that of time required to pack
-  // the smaller bitstream of source alt-ref frame.
-  const int enable_mt =
-      AOMMIN(num_workers, num_tiles) > 1 && !cpi->rc.is_src_frame_alt_ref;
+  const int num_workers = calc_pack_bs_mt_workers(
+      cpi->tile_data, num_tiles, cpi->mt_info.num_mod_workers[MOD_PACK_BS]);
 
-  if (enable_mt) {
+  if (num_workers > 1) {
     av1_write_tile_obu_mt(cpi, dst, &total_size, saved_wb, obu_extension_header,
                           fh_info, largest_tile_id, &max_tile_size,
-                          &obu_header_size, &tile_data_start);
+                          &obu_header_size, &tile_data_start, num_workers);
   } else {
     write_tile_obu(cpi, dst, &total_size, saved_wb, obu_extension_header,
                    fh_info, largest_tile_id, &max_tile_size, &obu_header_size,
@@ -4047,8 +4082,9 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
 
   // The TD is now written outside the frame encode loop
 
-  // write sequence header obu if KEY_FRAME, preceded by 4-byte size
-  if (cm->current_frame.frame_type == KEY_FRAME && !cpi->no_show_fwd_kf) {
+  // write sequence header obu at each key frame, preceded by 4-byte size
+  if (cm->current_frame.frame_type == KEY_FRAME &&
+      cpi->ppi->gf_group.refbuf_state[cpi->gf_frame_index] == REFBUF_RESET) {
     obu_header_size = av1_write_obu_header(
         level_params, &cpi->frame_header_count, OBU_SEQUENCE_HEADER, 0, data);
 
@@ -4077,7 +4113,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
     obu_header_size =
         av1_write_obu_header(level_params, &cpi->frame_header_count,
                              OBU_FRAME_HEADER, obu_extension_header, data);
-    obu_payload_size = write_frame_header_obu(cpi, &cpi->td.mb, &saved_wb,
+    obu_payload_size = write_frame_header_obu(cpi, &cpi->td.mb.e_mbd, &saved_wb,
                                               data + obu_header_size, 1);
 
     length_field = av1_obu_memmove(obu_header_size, obu_payload_size, data);

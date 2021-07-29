@@ -7,9 +7,9 @@
  * that's potentially `null` you can use this function to assert that it isn't,
  * and satisfy TypeScript that the value is present.
  */
-export function assertNotNull<T>(val: T): asserts val is NonNullable<T> {
-  if (val === null) {
-    throw new Error(`Expected given value to not be null but it was: ${val}`);
+export function assertNotNullOrUndefined<T>(val: T): asserts val is NonNullable<T> {
+  if (val === null || val === undefined) {
+    throw new Error(`Expected given value to not be null/undefined but it was: ${val}`);
   }
 }
 
@@ -21,3 +21,9 @@ export function assertNotNull<T>(val: T): asserts val is NonNullable<T> {
 export function assertUnhandled<T>(_caseVariable: T): T {
   return _caseVariable;
 }
+
+export type FieldsThatExtend<Type, Selector> = {
+  [Key in keyof Type]: Type[Key] extends Selector ? Key : never;
+}[keyof Type];
+
+export type PickFieldsThatExtend<Type, Selector> = Pick<Type, FieldsThatExtend<Type, Selector>>;

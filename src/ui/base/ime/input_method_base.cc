@@ -86,31 +86,24 @@ TextInputType InputMethodBase::GetTextInputType() const {
   return client ? client->GetTextInputType() : TEXT_INPUT_TYPE_NONE;
 }
 
-TextInputMode InputMethodBase::GetTextInputMode() const {
-  TextInputClient* client = GetTextInputClient();
-  return client ? client->GetTextInputMode() : TEXT_INPUT_MODE_DEFAULT;
-}
-
-int InputMethodBase::GetTextInputFlags() const {
-  TextInputClient* client = GetTextInputClient();
-  return client ? client->GetTextInputFlags() : 0;
-}
-
-bool InputMethodBase::CanComposeInline() const {
-  TextInputClient* client = GetTextInputClient();
-  return client ? client->CanComposeInline() : true;
-}
-
-bool InputMethodBase::GetClientShouldDoLearning() {
-  TextInputClient* client = GetTextInputClient();
-  return client && client->ShouldDoLearning();
-}
-
 void InputMethodBase::ShowVirtualKeyboardIfEnabled() {
   for (InputMethodObserver& observer : observer_list_)
     observer.OnShowVirtualKeyboardIfEnabled();
   if (auto* keyboard = GetVirtualKeyboardController())
     keyboard->DisplayVirtualKeyboard();
+}
+
+void InputMethodBase::SetVirtualKeyboardVisibilityIfEnabled(bool should_show) {
+  for (InputMethodObserver& observer : observer_list_)
+    observer.OnVirtualKeyboardVisibilityChangedIfEnabled(should_show);
+  auto* keyboard = GetVirtualKeyboardController();
+  if (keyboard) {
+    if (should_show) {
+      keyboard->DisplayVirtualKeyboard();
+    } else {
+      keyboard->DismissVirtualKeyboard();
+    }
+  }
 }
 
 void InputMethodBase::AddObserver(InputMethodObserver* observer) {

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 
+#include "base/trace_event/trace_event.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -17,7 +18,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_fragment_child_iterator.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/mobile_metrics/mobile_friendliness_checker.h"
 #include "third_party/blink/renderer/core/page/link_highlight.h"
@@ -32,14 +32,12 @@
 namespace blink {
 
 void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
-                                           PaintInvalidatorContext& context,
-                                           bool is_ng_painting) {
+                                           PaintInvalidatorContext& context) {
   if (object.HasLayer() &&
       To<LayoutBoxModelObject>(object).HasSelfPaintingLayer()) {
     context.painting_layer = To<LayoutBoxModelObject>(object).Layer();
-  } else if (!is_ng_painting &&
-             (object.IsColumnSpanAll() ||
-              object.IsFloatingWithNonContainingBlockParent())) {
+  } else if (object.IsColumnSpanAll() ||
+             object.IsFloatingWithNonContainingBlockParent()) {
     // See |LayoutObject::PaintingLayer| for the special-cases of floating under
     // inline and multicolumn.
     // Post LayoutNG the |LayoutObject::IsFloatingWithNonContainingBlockParent|
@@ -68,8 +66,7 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
 
 void PaintInvalidator::UpdateDirectlyCompositedContainer(
     const LayoutObject& object,
-    PaintInvalidatorContext& context,
-    bool is_ng_painting) {
+    PaintInvalidatorContext& context) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
@@ -88,9 +85,8 @@ void PaintInvalidator::UpdateDirectlyCompositedContainer(
     context.directly_composited_container_for_stacked_contents =
         context.directly_composited_container =
             &object.DirectlyCompositableContainer();
-  } else if (!is_ng_painting &&
-             (object.IsColumnSpanAll() ||
-              object.IsFloatingWithNonContainingBlockParent())) {
+  } else if (object.IsColumnSpanAll() ||
+             object.IsFloatingWithNonContainingBlockParent()) {
     // In these cases, the object may belong to an ancestor of the current
     // paint invalidation container, in paint order.
     // Post LayoutNG the |LayoutObject::IsFloatingWithNonContainingBlockParent|
@@ -141,11 +137,6 @@ void PaintInvalidator::UpdateDirectlyCompositedContainer(
       context.subtree_flags = 0;
     }
   }
-
-  DCHECK_EQ(context.directly_composited_container,
-            object.DirectlyCompositableContainer())
-      << object;
-  DCHECK_EQ(context.painting_layer, object.PaintingLayer()) << object;
 }
 
 void PaintInvalidator::UpdateFromTreeBuilderContext(
@@ -227,6 +218,7 @@ void PaintInvalidator::UpdateLayoutShiftTracking(
         adjusted_old_paint_offset,
         tree_builder_context.translation_2d_to_layout_shift_root_delta,
         tree_builder_context.current.scroll_offset_to_layout_shift_root_delta,
+        tree_builder_context.current.pending_scroll_anchor_adjustment,
         new_paint_offset, logical_height);
     return;
   }
@@ -288,6 +280,7 @@ void PaintInvalidator::UpdateLayoutShiftTracking(
         box, property_tree_state, old_rect, new_rect, adjusted_old_paint_offset,
         tree_builder_context.translation_2d_to_layout_shift_root_delta,
         tree_builder_context.current.scroll_offset_to_layout_shift_root_delta,
+        tree_builder_context.current.pending_scroll_anchor_adjustment,
         new_paint_offset);
   }
 }
@@ -309,9 +302,29 @@ bool PaintInvalidator::InvalidatePaint(
 
   object.GetMutableForPainting().EnsureIsReadyForPaintInvalidation();
 
-  UpdatePaintingLayer(object, context, /* is_ng_painting */ !!pre_paint_info);
-  UpdateDirectlyCompositedContainer(object, context,
-                                    /* is_ng_painting */ !!pre_paint_info);
+  UpdatePaintingLayer(object, context);
+  UpdateDirectlyCompositedContainer(object, context);
+
+#if DCHECK_IS_ON()
+  // Assert that the container state in the invalidation context is consistent
+  // with what the LayoutObject tree says. We cannot do this if we're fragment-
+  // traversing an "orphaned" object (an object that has a fragment inside a
+  // fragmentainer, even though not all its ancestor objects have it; this may
+  // happen to OOFs, and also to floats, if they are inside a non-atomic
+  // inline). In such cases we'll just have to live with the inconsitency, which
+  // means that we'll lose any paint effects from such "missing" ancestors.
+  if (!pre_paint_info || !pre_paint_info->is_inside_orphaned_object) {
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      DCHECK_EQ(context.directly_composited_container,
+                object.DirectlyCompositableContainer())
+          << object;
+    }
+    DCHECK_EQ(context.painting_layer, object.PaintingLayer()) << object;
+  }
+#endif  // DCHECK_IS_ON()
+
+  if (AXObjectCache* cache = object.GetDocument().ExistingAXObjectCache())
+    cache->InvalidateBoundingBox(&object);
 
   if (!object.ShouldCheckForPaintInvalidation() && !context.NeedsSubtreeWalk())
     return false;
@@ -337,7 +350,7 @@ bool PaintInvalidator::InvalidatePaint(
   }
 
   if (pre_paint_info) {
-    FragmentData& fragment_data = pre_paint_info->fragment_data;
+    FragmentData& fragment_data = *pre_paint_info->fragment_data;
     context.fragment_data = &fragment_data;
 
     if (tree_builder_context) {
@@ -368,10 +381,6 @@ bool PaintInvalidator::InvalidatePaint(
         UpdateFromTreeBuilderContext(fragment_tree_builder_context, context);
         UpdateLayoutShiftTracking(object, fragment_tree_builder_context,
                                   context);
-
-        if (auto* mf_checker =
-                object.GetFrameView()->GetMobileFriendlinessChecker())
-          mf_checker->NotifyInvalidatePaint(object);
       } else {
         context.old_paint_offset = fragment_data->PaintOffset();
       }
@@ -388,8 +397,12 @@ bool PaintInvalidator::InvalidatePaint(
        reason == PaintInvalidationReason::kJustCreated))
     pending_delayed_paint_invalidations_.push_back(&object);
 
-  if (AXObjectCache* cache = object.GetDocument().ExistingAXObjectCache())
-    cache->InvalidateBoundingBox(&object);
+  if (auto* mf_checker =
+          object.GetFrameView()->GetMobileFriendlinessChecker()) {
+    if (tree_builder_context &&
+        (!pre_paint_info || pre_paint_info->is_last_for_node))
+      mf_checker->NotifyInvalidatePaint(object);
+  }
 
   return reason != PaintInvalidationReason::kNone;
 }

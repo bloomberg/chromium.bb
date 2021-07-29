@@ -4,7 +4,7 @@
 
 #include "content/browser/media/session/media_session_controllers_manager.h"
 
-#include "base/stl_util.h"
+#include "base/containers/cxx20_erase.h"
 #include "content/browser/media/session/media_session_controller.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "media/base/media_switches.h"
@@ -36,7 +36,7 @@ void MediaSessionControllersManager::RenderFrameDeleted(
   base::EraseIf(
       controllers_map_,
       [render_frame_host](const ControllersMap::value_type& id_and_controller) {
-        return render_frame_host->GetGlobalFrameRoutingId() ==
+        return render_frame_host->GetGlobalId() ==
                id_and_controller.first.frame_routing_id;
       });
 }

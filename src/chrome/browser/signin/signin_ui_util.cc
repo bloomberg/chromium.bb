@@ -84,22 +84,6 @@ class AvatarButtonUserData : public base::SupportsUserData::Data {
     GetOrCreateForProfile(profile)->animated_identity_last_shown_ = time;
   }
 
-  // Returns the last time the avatar was highlighted. Returns the null time if
-  // it was never shown.
-  static base::TimeTicks GetAvatarLastHighlighted(Profile* profile) {
-    DCHECK(profile);
-    AvatarButtonUserData* data = GetForProfile(profile);
-    if (!data)
-      return base::TimeTicks();
-    return data->avatar_last_highlighted_;
-  }
-
-  // Sets the time when the avatar was highlighted.
-  static void SetAvatarLastHighlighted(Profile* profile, base::TimeTicks time) {
-    DCHECK(!time.is_null());
-    GetOrCreateForProfile(profile)->avatar_last_highlighted_ = time;
-  }
-
  private:
   // Returns nullptr if there is no AvatarButtonUserData attached to the
   // profile.
@@ -122,7 +106,6 @@ class AvatarButtonUserData : public base::SupportsUserData::Data {
   }
 
   base::TimeTicks animated_identity_last_shown_;
-  base::TimeTicks avatar_last_highlighted_;
 };
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -339,15 +322,14 @@ std::u16string GetShortProfileIdentityToDisplay(
   if (core_info.IsEmpty())
     return profile_attributes_entry.GetName();
 
-  absl::optional<AccountInfo> extended_info =
-      identity_manager
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              core_info.account_id);
+  AccountInfo extended_info =
+      identity_manager->FindExtendedAccountInfoByAccountId(
+          core_info.account_id);
   // If there's no given name available, return the user email.
-  if (!extended_info.has_value() || extended_info->given_name.empty())
+  if (extended_info.given_name.empty())
     return base::UTF8ToUTF16(core_info.email);
 
-  return base::UTF8ToUTF16(extended_info->given_name);
+  return base::UTF8ToUTF16(extended_info.given_name);
 }
 
 std::string GetAllowedDomain(std::string signin_pattern) {
@@ -412,8 +394,6 @@ void RecordAnimatedIdentityTriggered(Profile* profile) {
 
 void RecordAvatarIconHighlighted(Profile* profile) {
   base::RecordAction(base::UserMetricsAction("AvatarToolbarButtonHighlighted"));
-  AvatarButtonUserData::SetAvatarLastHighlighted(profile,
-                                                 base::TimeTicks::Now());
 }
 
 void RecordProfileMenuViewShown(Profile* profile) {
@@ -433,12 +413,6 @@ void RecordProfileMenuViewShown(Profile* profile) {
       AvatarButtonUserData::GetAnimatedIdentityLastShown(profile);
   if (!last_shown.is_null()) {
     base::UmaHistogramLongTimes("Profile.Menu.OpenedAfterAvatarAnimation",
-                                base::TimeTicks::Now() - last_shown);
-  }
-
-  last_shown = AvatarButtonUserData::GetAvatarLastHighlighted(profile);
-  if (!last_shown.is_null()) {
-    base::UmaHistogramLongTimes("Profile.Menu.OpenedAfterAvatarHighlight",
                                 base::TimeTicks::Now() - last_shown);
   }
 }

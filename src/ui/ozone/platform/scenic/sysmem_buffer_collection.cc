@@ -49,6 +49,28 @@ VkFormat VkFormatForBufferFormat(gfx::BufferFormat buffer_format) {
   }
 }
 
+size_t GetBytesPerPixel(gfx::BufferFormat buffer_format) {
+  switch (buffer_format) {
+    case gfx::BufferFormat::YVU_420:
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::R_8:
+      return 1U;
+
+    case gfx::BufferFormat::RG_88:
+      return 2U;
+
+    case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+      return 4U;
+
+    default:
+      NOTREACHED();
+      return 1;
+  }
+}
+
 }  // namespace
 
 // static
@@ -178,10 +200,10 @@ scoped_refptr<gfx::NativePixmap> SysmemBufferCollection::CreateNativePixmap(
       buffers_info_.settings.image_format_constraints;
 
   // The logic should match LogicalBufferCollection::Allocate().
-  size_t stride = RoundUp(
-      std::max(static_cast<size_t>(format.min_bytes_per_row),
-               gfx::RowSizeForBufferFormat(image_size_.width(), format_, 0)),
-      format.bytes_per_row_divisor);
+  size_t stride =
+      RoundUp(std::max(static_cast<size_t>(format.min_bytes_per_row),
+                       image_size_.width() * GetBytesPerPixel(format_)),
+              format.bytes_per_row_divisor);
   size_t plane_offset = buffers_info_.buffers[buffer_index].vmo_usable_start;
   size_t plane_size = stride * image_size_.height();
   handle.planes.emplace_back(stride, plane_offset, plane_size,
@@ -468,7 +490,8 @@ void SysmemBufferCollection::InitializeImageCreateInfo(
   vk_image_info->flags = is_protected_ ? VK_IMAGE_CREATE_PROTECTED_BIT : 0u;
   vk_image_info->imageType = VK_IMAGE_TYPE_2D;
   vk_image_info->format = VkFormatForBufferFormat(format_);
-  vk_image_info->extent = VkExtent3D{size.width(), size.height(), 1};
+  vk_image_info->extent = VkExtent3D{static_cast<uint32_t>(size.width()),
+                                     static_cast<uint32_t>(size.height()), 1};
   vk_image_info->mipLevels = 1;
   vk_image_info->arrayLayers = 1;
   vk_image_info->samples = VK_SAMPLE_COUNT_1_BIT;

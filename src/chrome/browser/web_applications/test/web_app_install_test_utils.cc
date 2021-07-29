@@ -8,20 +8,28 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "build/build_config.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+#include "chrome/browser/web_applications/components/os_integration_manager.h"
+#include "chrome/browser/web_applications/components/url_handler_manager.h"
+#include "components/services/app_service/public/cpp/url_handler_info.h"
+#endif
 
 namespace web_app {
 namespace test {
@@ -55,7 +63,7 @@ void AwaitStartWebAppProviderAndSubsystems(Profile* profile) {
 AppId InstallDummyWebApp(Profile* profile,
                          const std::string& app_name,
                          const GURL& start_url) {
-  const AppId app_id = GenerateAppIdFromURL(start_url);
+  const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
   WebApplicationInfo web_app_info;
 
   web_app_info.start_url = start_url;
@@ -71,16 +79,14 @@ AppId InstallDummyWebApp(Profile* profile,
   // Hence we use FinalizeInstall instead of InstallWebAppFromManifest
   // to install the web app.
   base::RunLoop run_loop;
-  WebAppProviderBase::GetProviderBase(profile)
-      ->install_finalizer()
-      .FinalizeInstall(
-          web_app_info, options,
-          base::BindLambdaForTesting(
-              [&](const AppId& installed_app_id, InstallResultCode code) {
-                EXPECT_EQ(installed_app_id, app_id);
-                EXPECT_EQ(code, InstallResultCode::kSuccessNewInstall);
-                run_loop.Quit();
-              }));
+  WebAppProvider::Get(profile)->install_finalizer().FinalizeInstall(
+      web_app_info, options,
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(installed_app_id, app_id);
+            EXPECT_EQ(code, InstallResultCode::kSuccessNewInstall);
+            run_loop.Quit();
+          }));
   run_loop.Run();
 
   return app_id;
@@ -110,6 +116,37 @@ AppId InstallWebApp(Profile* profile,
   run_loop.Run();
   return app_id;
 }
+
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+AppId InstallWebAppWithUrlHandlers(
+    Profile* profile,
+    const GURL& start_url,
+    const std::u16string& app_name,
+    const std::vector<apps::UrlHandlerInfo>& url_handlers) {
+  std::unique_ptr<WebApplicationInfo> info =
+      std::make_unique<WebApplicationInfo>();
+  info->start_url = start_url;
+  info->title = app_name;
+  info->open_as_window = true;
+  info->url_handlers = url_handlers;
+  web_app::AppId app_id =
+      web_app::test::InstallWebApp(profile, std::move(info));
+
+  auto& url_handler_manager = WebAppProvider::Get(profile)
+                                  ->os_integration_manager()
+                                  .url_handler_manager_for_testing();
+
+  base::RunLoop run_loop;
+  url_handler_manager.RegisterUrlHandlers(
+      app_id, base::BindLambdaForTesting([&](bool success) {
+        EXPECT_TRUE(success);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  return app_id;
+}
+#endif
 
 }  // namespace test
 }  // namespace web_app

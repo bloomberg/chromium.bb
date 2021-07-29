@@ -9,6 +9,7 @@
 #include <string>
 
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/native_theme/caption_style.h"
 
 namespace captions {
@@ -38,7 +39,7 @@ class CaptionBubbleController {
   // Transcriptions will halt if this returns false.
   virtual bool OnTranscription(
       LiveCaptionSpeechRecognitionHost* live_caption_speech_recognition_host,
-      const media::mojom::SpeechRecognitionResultPtr& result) = 0;
+      const media::SpeechRecognitionResult& result) = 0;
 
   // Called when the speech service has an error.
   virtual void OnError(LiveCaptionSpeechRecognitionHost*

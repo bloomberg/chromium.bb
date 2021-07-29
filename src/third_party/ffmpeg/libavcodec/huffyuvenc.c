@@ -222,19 +222,6 @@ static av_cold int encode_init(AVCodecContext *avctx)
     if (!avctx->extradata)
         return AVERROR(ENOMEM);
 
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-    avctx->coded_frame->pict_type = AV_PICTURE_TYPE_I;
-    avctx->coded_frame->key_frame = 1;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
-#if FF_API_PRIVATE_OPT
-FF_DISABLE_DEPRECATION_WARNINGS
-    if (avctx->context_model == 1)
-        s->context = avctx->context_model;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
-
     s->bps = desc->comp[0].depth;
     s->yuv = !(desc->flags & AV_PIX_FMT_FLAG_RGB) && desc->nb_components >= 2;
     s->chroma = desc->nb_components > 2;
@@ -309,12 +296,6 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
     avctx->bits_per_coded_sample = s->bitstream_bpp;
     s->decorrelate = s->bitstream_bpp >= 24 && !s->yuv && !(desc->flags & AV_PIX_FMT_FLAG_PLANAR);
-#if FF_API_PRIVATE_OPT
-FF_DISABLE_DEPRECATION_WARNINGS
-    if (avctx->prediction_method)
-        s->predictor = avctx->prediction_method;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     s->interlaced = avctx->flags & AV_CODEC_FLAG_INTERLACED_ME ? 1 : 0;
     if (s->context) {
         if (s->flags & (AV_CODEC_FLAG_PASS1 | AV_CODEC_FLAG_PASS2)) {
@@ -332,20 +313,6 @@ FF_ENABLE_DEPRECATION_WARNINGS
                    "vcodec=ffvhuff or format=422p\n");
             return AVERROR(EINVAL);
         }
-#if FF_API_PRIVATE_OPT
-        if (s->context) {
-            av_log(avctx, AV_LOG_ERROR,
-                   "Error: per-frame huffman tables are not supported "
-                   "by huffyuv; use vcodec=ffvhuff\n");
-            return AVERROR(EINVAL);
-        }
-        if (s->version > 2) {
-            av_log(avctx, AV_LOG_ERROR,
-                   "Error: ver>2 is not supported "
-                   "by huffyuv; use vcodec=ffvhuff\n");
-            return AVERROR(EINVAL);
-        }
-#endif
         if (s->interlaced != ( s->height > 288 ))
             av_log(avctx, AV_LOG_INFO,
                    "using huffyuv 2.2.0 or newer interlacing flag\n");
@@ -443,7 +410,7 @@ static int encode_422_bitstream(HYuvContext *s, int offset, int count)
     const uint8_t *u = s->temp[1] + offset / 2;
     const uint8_t *v = s->temp[2] + offset / 2;
 
-    if (s->pb.buf_end - s->pb.buf - (put_bits_count(&s->pb) >> 3) < 2 * 4 * count) {
+    if (put_bytes_left(&s->pb, 0) < 2 * 4 * count) {
         av_log(s->avctx, AV_LOG_ERROR, "encoded frame too large\n");
         return -1;
     }
@@ -495,7 +462,7 @@ static int encode_plane_bitstream(HYuvContext *s, int width, int plane)
 {
     int i, count = width/2;
 
-    if (s->pb.buf_end - s->pb.buf - (put_bits_count(&s->pb) >> 3) < count * s->bps / 2) {
+    if (put_bytes_left(&s->pb, 0) < count * s->bps / 2) {
         av_log(s->avctx, AV_LOG_ERROR, "encoded frame too large\n");
         return -1;
     }
@@ -657,7 +624,7 @@ static int encode_gray_bitstream(HYuvContext *s, int count)
 {
     int i;
 
-    if (s->pb.buf_end - s->pb.buf - (put_bits_count(&s->pb) >> 3) < 4 * count) {
+    if (put_bytes_left(&s->pb, 0) < 4 * count) {
         av_log(s->avctx, AV_LOG_ERROR, "encoded frame too large\n");
         return -1;
     }
@@ -702,8 +669,7 @@ static inline int encode_bgra_bitstream(HYuvContext *s, int count, int planes)
 {
     int i;
 
-    if (s->pb.buf_end - s->pb.buf - (put_bits_count(&s->pb) >> 3) <
-        4 * planes * count) {
+    if (put_bytes_left(&s->pb, 0) < 4 * planes * count) {
         av_log(s->avctx, AV_LOG_ERROR, "encoded frame too large\n");
         return -1;
     }
@@ -1039,7 +1005,6 @@ static av_cold int encode_end(AVCodecContext *avctx)
 
     ff_huffyuv_common_end(s);
 
-    av_freep(&avctx->extradata);
     av_freep(&avctx->stats_out);
 
     return 0;
@@ -1082,7 +1047,7 @@ static const AVClass ff_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_huffyuv_encoder = {
+const AVCodec ff_huffyuv_encoder = {
     .name           = "huffyuv",
     .long_name      = NULL_IF_CONFIG_SMALL("Huffyuv / HuffYUV"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -1102,7 +1067,7 @@ AVCodec ff_huffyuv_encoder = {
 };
 
 #if CONFIG_FFVHUFF_ENCODER
-AVCodec ff_ffvhuff_encoder = {
+const AVCodec ff_ffvhuff_encoder = {
     .name           = "ffvhuff",
     .long_name      = NULL_IF_CONFIG_SMALL("Huffyuv FFmpeg variant"),
     .type           = AVMEDIA_TYPE_VIDEO,

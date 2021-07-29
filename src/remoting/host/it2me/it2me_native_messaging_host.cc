@@ -10,12 +10,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringize_macros.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -26,12 +24,13 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/base/name_value_map.h"
 #include "remoting/base/passthrough_oauth_token_getter.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/it2me/it2me_constants.h"
+#include "remoting/host/it2me/it2me_helpers.h"
+#include "remoting/host/native_messaging/native_messaging_helpers.h"
 #include "remoting/host/policy_watcher.h"
 #include "remoting/host/remoting_register_support_host_request.h"
 #include "remoting/host/xmpp_register_support_host_request.h"
@@ -56,17 +55,6 @@ namespace remoting {
 using protocol::ErrorCode;
 
 namespace {
-
-const NameMapElement<It2MeHostState> kIt2MeHostStates[] = {
-    {kDisconnected, kHostStateDisconnected},
-    {kStarting, kHostStateStarting},
-    {kRequestedAccessCode, kHostStateRequestedAccessCode},
-    {kReceivedAccessCode, kHostStateReceivedAccessCode},
-    {kConnecting, kHostStateConnecting},
-    {kConnected, kHostStateConnected},
-    {kError, kHostStateError},
-    {kInvalidDomainError, kHostStateDomainError},
-};
 
 #if defined(OS_WIN)
 const base::FilePath::CharType kBaseHostBinaryName[] =
@@ -132,44 +120,40 @@ It2MeNativeMessagingHost::~It2MeNativeMessagingHost() {
 void It2MeNativeMessagingHost::OnMessage(const std::string& message) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
-  std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
-  std::unique_ptr<base::Value> message_value =
-      base::JSONReader::ReadDeprecated(message);
-  if (!message_value->is_dict()) {
-    LOG(ERROR) << "Received a message that's not a dictionary.";
+  std::string type;
+  base::Value request;
+  if (!ParseNativeMessageJson(message, type, request)) {
     client_->CloseChannel(std::string());
     return;
   }
 
-  std::unique_ptr<base::DictionaryValue> message_dict(
-      static_cast<base::DictionaryValue*>(message_value.release()));
-
-  // If the client supplies an ID, it will expect it in the response. This
-  // might be a string or a number, so cope with both.
-  const base::Value* id;
-  if (message_dict->Get(kMessageId, &id))
-    response->SetKey(kMessageId, id->Clone());
-
-  std::string type;
-  if (!message_dict->GetString(kMessageType, &type)) {
-    LOG(ERROR) << "'type' not found in request.";
-    SendErrorAndExit(std::move(response), ErrorCode::INCOMPATIBLE_PROTOCOL);
+  base::Value response = CreateNativeMessageResponse(request);
+  if (response.is_none()) {
+    SendErrorAndExit(std::make_unique<base::DictionaryValue>(),
+                     ErrorCode::INCOMPATIBLE_PROTOCOL);
     return;
   }
 
-  response->SetString(kMessageType, type + "Response");
+  auto dictionary_request = base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(std::move(request)));
+  auto dictionary_response = base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(std::move(response)));
 
   if (type == kHelloMessage) {
-    ProcessHello(std::move(message_dict), std::move(response));
+    ProcessHello(std::move(dictionary_request), std::move(dictionary_response));
   } else if (type == kConnectMessage) {
-    ProcessConnect(std::move(message_dict), std::move(response));
+    ProcessConnect(std::move(dictionary_request),
+                   std::move(dictionary_response));
   } else if (type == kDisconnectMessage) {
-    ProcessDisconnect(std::move(message_dict), std::move(response));
+    ProcessDisconnect(std::move(dictionary_request),
+                      std::move(dictionary_response));
   } else if (type == kIncomingIqMessage) {
-    ProcessIncomingIq(std::move(message_dict), std::move(response));
+    ProcessIncomingIq(std::move(dictionary_request),
+                      std::move(dictionary_response));
   } else {
     LOG(ERROR) << "Unsupported request type: " << type;
-    SendErrorAndExit(std::move(response), ErrorCode::INCOMPATIBLE_PROTOCOL);
+    SendErrorAndExit(std::move(dictionary_response),
+                     ErrorCode::INCOMPATIBLE_PROTOCOL);
   }
 }
 
@@ -198,10 +182,11 @@ void It2MeNativeMessagingHost::ProcessHello(
 
   // No need to forward to the elevated process since no internal state is set.
 
-  response->SetString(kHostVersion, STRINGIZE(VERSION));
+  base::Value features(base::Value::Type::LIST);
+  features.Append(kFeatureAccessTokenAuth);
+  features.Append(kFeatureDelegatedSignaling);
 
-  // This list will be populated when new features are added.
-  response->Set(kSupportedFeatures, std::make_unique<base::ListValue>());
+  ProcessNativeMessageHelloResponse(*response, std::move(features));
 
   SendMessageToClient(std::move(response));
 }
@@ -307,6 +292,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
              ChromotingHostContext* host_context) {
             auto connection_context =
                 std::make_unique<It2MeHost::DeferredConnectContext>();
+            connection_context->use_ftl_signaling = true;
             connection_context->signal_strategy =
                 std::make_unique<FtlSignalStrategy>(
                     std::make_unique<PassthroughOAuthTokenGetter>(username,
@@ -324,6 +310,9 @@ void It2MeNativeMessagingHost::ProcessConnect(
                     std::make_unique<PassthroughOAuthTokenGetter>(username,
                                                                   access_token),
                     host_context->url_loader_factory());
+            connection_context->oauth_token_getter =
+                std::make_unique<PassthroughOAuthTokenGetter>(username,
+                                                              access_token);
             return connection_context;
           },
           username, access_token);
@@ -421,7 +410,8 @@ void It2MeNativeMessagingHost::ProcessIncomingIq(
     incoming_message_callback_.Run(iq);
   } else {
     LOG(WARNING) << "Dropping message because signaling is not connected. "
-                 << "Current It2MeHost state: " << state_;
+                 << "Current It2MeHost state: "
+                 << It2MeHostStateToString(state_);
   }
   SendMessageToClient(std::move(response));
 }
@@ -466,24 +456,24 @@ void It2MeNativeMessagingHost::OnStateChanged(It2MeHostState state,
   std::unique_ptr<base::DictionaryValue> message(new base::DictionaryValue());
 
   message->SetString(kMessageType, kHostStateChangedMessage);
-  message->SetString(kState, HostStateToString(state));
+  message->SetString(kState, It2MeHostStateToString(state));
 
   switch (state_) {
-    case kReceivedAccessCode:
+    case It2MeHostState::kReceivedAccessCode:
       message->SetString(kAccessCode, access_code_);
       message->SetInteger(kAccessCodeLifetime,
                           access_code_lifetime_.InSeconds());
       break;
 
-    case kConnected:
+    case It2MeHostState::kConnected:
       message->SetString(kClient, client_username_);
       break;
 
-    case kDisconnected:
+    case It2MeHostState::kDisconnected:
       client_username_.clear();
       break;
 
-    case kError:
+    case It2MeHostState::kError:
       // kError is an internal-only state, sent to the web-app by a separate
       // "error" message so that errors that occur before the "connect" message
       // is sent can be communicated.
@@ -543,23 +533,23 @@ It2MeNativeMessagingHost::task_runner() const {
 }
 
 /* static */
-std::string It2MeNativeMessagingHost::HostStateToString(
-    It2MeHostState host_state) {
-  return ValueToName(kIt2MeHostStates, host_state);
-}
 
 void It2MeNativeMessagingHost::OnPolicyUpdate(
     std::unique_ptr<base::DictionaryValue> policies) {
+  // If an It2MeHost exists, provide it with the updated policies first.
+  // That way it won't appear that the policies have changed if the pending
+  // connect callback is run. If done the other way around, there is a race
+  // condition which could cause the connection to be canceled before it starts.
+  if (it2me_host_) {
+    it2me_host_->OnPolicyUpdate(std::move(policies));
+  }
+
   if (!policy_received_) {
     policy_received_ = true;
 
     if (pending_connect_) {
       std::move(pending_connect_).Run();
     }
-  }
-
-  if (it2me_host_) {
-    it2me_host_->OnPolicyUpdate(std::move(policies));
   }
 }
 

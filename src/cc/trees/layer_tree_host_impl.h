@@ -601,27 +601,37 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
 
   uint32_t next_frame_token() const { return *next_frame_token_; }
 
-  // Buffers |callback| until a relevant frame swap ocurrs, at which point the
-  // callback will be posted to run on the main thread. A frame swap is
-  // considered relevant if the swapped frame's token is greater than or equal
-  // to |frame_token|.
-  void RegisterMainThreadPresentationTimeCallback(
+  // Buffers `callback` until a relevant presentation feedback arrives, at which
+  // point the callback will be posted to run on the main thread. A presentation
+  // feedback is considered relevant if the frame's token is greater than or
+  // equal to `frame_token`.
+  void RegisterMainThreadPresentationTimeCallbackForTesting(
       uint32_t frame_token,
-      LayerTreeHost::PresentationTimeCallback callback);
+      PresentationTimeCallbackBuffer::MainCallback callback);
 
-  // Buffers |callback| until a relevant frame swap ocurrs, at which point the
-  // callback will be run on the compositor thread. A frame swap is considered
-  // relevant if the swapped frame's token is greater than or equal to
-  // |frame_token|.
+  // Buffers `callback` until a relevant successful presentation occurs, at
+  // which point the callback will be run on the compositor thread. A successful
+  // presentation is considered relevant if the presented frame's token is
+  // greater than or equal to `frame_token`.
   void RegisterCompositorPresentationTimeCallback(
       uint32_t frame_token,
-      LayerTreeHost::PresentationTimeCallback callback);
+      PresentationTimeCallbackBuffer::CompositorCallback callback);
 
   virtual bool WillBeginImplFrame(const viz::BeginFrameArgs& args);
   virtual void DidFinishImplFrame(const viz::BeginFrameArgs& args);
   void DidNotProduceFrame(const viz::BeginFrameAck& ack,
                           FrameSkippedReason reason);
   void DidModifyTilePriorities();
+  // Requests that we do not produce frames until the new viz::LocalSurfaceId
+  // has been activated.
+  void SetTargetLocalSurfaceId(
+      const viz::LocalSurfaceId& target_local_surface_id);
+  const viz::LocalSurfaceId& target_local_surface_id() const {
+    return target_local_surface_id_;
+  }
+  const viz::LocalSurfaceId& last_draw_local_surface_id() const {
+    return last_draw_local_surface_id_;
+  }
 
   LayerTreeImpl* active_tree() { return active_tree_.get(); }
   const LayerTreeImpl* active_tree() const { return active_tree_.get(); }
@@ -820,7 +830,7 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   // was presented.
   void NotifyDidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,
-      std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
+      std::vector<PresentationTimeCallbackBuffer::CompositorCallback> callbacks,
       const viz::FrameTimingDetails& details);
 
   CompositorFrameReportingController* compositor_frame_reporting_controller()
@@ -853,6 +863,10 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
 
   RasterQueryQueue* GetRasterQueryQueueForTesting() const {
     return pending_raster_queries_.get();
+  }
+
+  base::flat_set<viz::FrameSinkId> GetFrameSinksToThrottleForTesting() const {
+    return throttle_decider_.ids();
   }
 
  protected:
@@ -1183,6 +1197,8 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   viz::LocalSurfaceId last_draw_local_surface_id_;
   base::flat_set<viz::SurfaceRange> last_draw_referenced_surfaces_;
   absl::optional<RenderFrameMetadata> last_draw_render_frame_metadata_;
+  // The viz::LocalSurfaceId to unthrottle drawing for.
+  viz::LocalSurfaceId target_local_surface_id_;
   viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;
 
   // Indicates the direction of the last vertical scroll of the root layer.

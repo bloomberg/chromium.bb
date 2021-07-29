@@ -11,6 +11,7 @@ const vk::VkPhysicalDeviceDescriptorIndexingProperties&				getDescriptorIndexing
 const vk::VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV&		getDeviceGeneratedCommandsProperties		(void) const;
 const vk::VkPhysicalDeviceDiscardRectanglePropertiesEXT&			getDiscardRectanglePropertiesEXT			(void) const;
 const vk::VkPhysicalDeviceDriverProperties&							getDriverProperties							(void) const;
+const vk::VkPhysicalDeviceDrmPropertiesEXT&							getDrmPropertiesEXT							(void) const;
 const vk::VkPhysicalDeviceExternalMemoryHostPropertiesEXT&			getExternalMemoryHostPropertiesEXT			(void) const;
 const vk::VkPhysicalDeviceFloatControlsProperties&					getFloatControlsProperties					(void) const;
 const vk::VkPhysicalDeviceFragmentDensityMapPropertiesEXT&			getFragmentDensityMapPropertiesEXT			(void) const;
@@ -24,10 +25,12 @@ const vk::VkPhysicalDeviceMaintenance3Properties&					getMaintenance3Properties	
 const vk::VkPhysicalDeviceMeshShaderPropertiesNV&					getMeshShaderProperties						(void) const;
 const vk::VkPhysicalDeviceMultiviewProperties&						getMultiviewProperties						(void) const;
 const vk::VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX&	getMultiviewPerViewAttributesPropertiesX	(void) const;
+const vk::VkPhysicalDeviceMultiDrawPropertiesEXT&					getMultiDrawPropertiesEXT					(void) const;
 const vk::VkPhysicalDevicePerformanceQueryPropertiesKHR&			getPerformanceQueryProperties				(void) const;
 const vk::VkPhysicalDevicePointClippingProperties&					getPointClippingProperties					(void) const;
 const vk::VkPhysicalDevicePortabilitySubsetPropertiesKHR&			getPortabilitySubsetProperties				(void) const;
 const vk::VkPhysicalDeviceProtectedMemoryProperties&				getProtectedMemoryProperties				(void) const;
+const vk::VkPhysicalDeviceProvokingVertexPropertiesEXT&				getProvokingVertexPropertiesEXT				(void) const;
 const vk::VkPhysicalDevicePushDescriptorPropertiesKHR&				getPushDescriptorProperties					(void) const;
 const vk::VkPhysicalDeviceRayTracingPropertiesNV&					getRayTracingPropertiesNV					(void) const;
 const vk::VkPhysicalDeviceRayTracingPipelinePropertiesKHR&			getRayTracingPipelineProperties				(void) const;
@@ -39,6 +42,7 @@ const vk::VkPhysicalDeviceShaderCoreProperties2AMD&					getShaderCoreProperties2
 const vk::VkPhysicalDeviceShadingRateImagePropertiesNV&				getShadingRateImageProperties				(void) const;
 const vk::VkPhysicalDeviceSubgroupProperties&						getSubgroupProperties						(void) const;
 const vk::VkPhysicalDeviceSubgroupSizeControlPropertiesEXT&			getSubgroupSizeControlPropertiesEXT			(void) const;
+const vk::VkPhysicalDeviceSubpassShadingPropertiesHUAWEI&			getSubpassShadingPropertiesHUAWEI			(void) const;
 const vk::VkPhysicalDeviceTexelBufferAlignmentPropertiesEXT&		getTexelBufferAlignmentPropertiesEXT		(void) const;
 const vk::VkPhysicalDeviceTimelineSemaphoreProperties&				getTimelineSemaphoreProperties				(void) const;
 const vk::VkPhysicalDeviceTransformFeedbackPropertiesEXT&			getTransformFeedbackPropertiesEXT			(void) const;

@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
+#include "third_party/blink/renderer/platform/geometry/double_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
@@ -83,6 +84,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/inspector_protocol/crdtp/json.h"
+#include "ui/accessibility/ax_mode.h"
 #include "v8/include/v8.h"
 
 using crdtp::SpanFrom;
@@ -436,7 +438,7 @@ Response InspectorOverlayAgent::enable() {
 void InspectorOverlayAgent::EnsureAXContext(Node* node) {
   Document& document = node->GetDocument();
   if (!document_to_ax_context_.Contains(&document)) {
-    auto context = std::make_unique<AXContext>(document);
+    auto context = std::make_unique<AXContext>(document, ui::kAXModeComplete);
     document_to_ax_context_.Set(&document, std::move(context));
   }
 }
@@ -677,6 +679,11 @@ Response InspectorOverlayAgent::highlightNode(
   if (!response.IsSuccess())
     return response;
 
+  if (node->GetDocument().Lifecycle().GetState() <=
+      DocumentLifecycle::LifecycleState::kInactive) {
+    return Response::InvalidRequest("The node's document is not active");
+  }
+
   std::unique_ptr<InspectorHighlightConfig> highlight_config;
   response = HighlightConfigFromInspectorObject(
       std::move(highlight_inspector_object), &highlight_config);
@@ -772,6 +779,38 @@ Response InspectorOverlayAgent::setShowScrollSnapOverlays(
   }
 
   persistent_tool_->SetScrollSnapConfigs(std::move(configs));
+
+  PickTheRightTool();
+
+  return Response::Success();
+}
+
+Response InspectorOverlayAgent::setShowContainerQueryOverlays(
+    std::unique_ptr<
+        protocol::Array<protocol::Overlay::ContainerQueryHighlightConfig>>
+        container_query_highlight_configs) {
+  if (!persistent_tool_) {
+    persistent_tool_ =
+        MakeGarbageCollected<PersistentTool>(this, GetFrontend());
+  }
+
+  Vector<std::pair<
+      Member<Node>,
+      std::unique_ptr<InspectorContainerQueryContainerHighlightConfig>>>
+      configs;
+
+  for (std::unique_ptr<protocol::Overlay::ContainerQueryHighlightConfig>&
+           config : *container_query_highlight_configs) {
+    Node* node = nullptr;
+    Response response = dom_agent_->AssertNode(config->getNodeId(), node);
+    if (!response.IsSuccess())
+      return response;
+    configs.push_back(std::make_pair(
+        node, InspectorOverlayAgent::ToContainerQueryContainerHighlightConfig(
+                  config->getContainerQueryContainerHighlightConfig())));
+  }
+
+  persistent_tool_->SetContainerQueryConfigs(std::move(configs));
 
   PickTheRightTool();
 
@@ -1049,7 +1088,9 @@ void InspectorOverlayAgent::PaintOverlayPage() {
     return;
 
   LocalFrame* overlay_frame = OverlayMainFrame();
-  IntSize viewport_size = frame->GetPage()->GetVisualViewport().Size();
+  blink::VisualViewport& visual_viewport =
+      frame->GetPage()->GetVisualViewport();
+  IntSize viewport_size = visual_viewport.Size();
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // To make overlay render the same size text with any emulation scale,
     // compensate the emulation scale using page scale.
@@ -1064,7 +1105,9 @@ void InspectorOverlayAgent::PaintOverlayPage() {
   overlay_frame->SetPageZoomFactor(WindowToViewportScale());
   overlay_frame->View()->Resize(viewport_size);
 
-  Reset(viewport_size);
+  DoubleSize visual_viewport_size(visual_viewport.VisibleWidthCSSPx(),
+                                  visual_viewport.VisibleHeightCSSPx());
+  Reset(viewport_size, visual_viewport_size);
 
   float scale = WindowToViewportScale();
 
@@ -1091,6 +1134,15 @@ static std::unique_ptr<protocol::DictionaryValue> BuildObjectForSize(
       protocol::DictionaryValue::create();
   result->setInteger("width", size.Width());
   result->setInteger("height", size.Height());
+  return result;
+}
+
+static std::unique_ptr<protocol::DictionaryValue> BuildObjectForSize(
+    const DoubleSize& size) {
+  std::unique_ptr<protocol::DictionaryValue> result =
+      protocol::DictionaryValue::create();
+  result->setDouble("width", size.Width());
+  result->setDouble("height", size.Height());
   return result;
 }
 
@@ -1190,7 +1242,8 @@ LocalFrame* InspectorOverlayAgent::OverlayMainFrame() {
   return To<LocalFrame>(overlay_page_->MainFrame());
 }
 
-void InspectorOverlayAgent::Reset(const IntSize& viewport_size) {
+void InspectorOverlayAgent::Reset(const IntSize& viewport_size,
+                                  const DoubleSize& visual_viewport_size) {
   std::unique_ptr<protocol::DictionaryValue> reset_data =
       protocol::DictionaryValue::create();
   reset_data->setDouble("deviceScaleFactor",
@@ -1206,6 +1259,8 @@ void InspectorOverlayAgent::Reset(const IntSize& viewport_size) {
           IntRect(IntPoint(), viewport_size), GetFrame()->View());
   reset_data->setObject("viewportSize",
                         BuildObjectForSize(viewport_in_screen.Size()));
+  reset_data->setObject("visualViewportSize",
+                        BuildObjectForSize(visual_viewport_size));
 
   // The zoom factor in the overlay frame already has been multiplied by the
   // window to viewport scale (aka device scale factor), so cancel it.
@@ -1601,6 +1656,22 @@ InspectorOverlayAgent::ToScrollSnapContainerHighlightConfig(
 }
 
 // static
+std::unique_ptr<InspectorContainerQueryContainerHighlightConfig>
+InspectorOverlayAgent::ToContainerQueryContainerHighlightConfig(
+    protocol::Overlay::ContainerQueryContainerHighlightConfig* config) {
+  if (!config) {
+    return nullptr;
+  }
+  std::unique_ptr<InspectorContainerQueryContainerHighlightConfig>
+      highlight_config =
+          std::make_unique<InspectorContainerQueryContainerHighlightConfig>();
+  highlight_config->container_border =
+      InspectorOverlayAgent::ToLineStyle(config->getContainerBorder(nullptr));
+
+  return highlight_config;
+}
+
+// static
 std::unique_ptr<InspectorFlexItemHighlightConfig>
 InspectorOverlayAgent::ToFlexItemHighlightConfig(
     protocol::Overlay::FlexItemHighlightConfig* config) {
@@ -1715,6 +1786,10 @@ InspectorOverlayAgent::ToHighlightConfig(
   highlight_config->flex_item_highlight_config =
       InspectorOverlayAgent::ToFlexItemHighlightConfig(
           config->getFlexItemHighlightConfig(nullptr));
+
+  highlight_config->container_query_container_highlight_config =
+      InspectorOverlayAgent::ToContainerQueryContainerHighlightConfig(
+          config->getContainerQueryContainerHighlightConfig(nullptr));
 
   return highlight_config;
 }

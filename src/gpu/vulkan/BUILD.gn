@@ -105,7 +105,6 @@ if (enable_vulkan) {
     deps = [
       ":buildflags",
       "//base",
-      "//base/util/type_safety",
       "//build:chromeos_buildflags",
       "//components/crash/core/common:crash_key",
       "//gpu/ipc/common:vulkan_ycbcr_info",
@@ -144,14 +143,15 @@ if (enable_vulkan) {
 
       public_deps += [ "//third_party/fuchsia-sdk/sdk/pkg/zx" ]
 
-      data_deps += [ "//third_party/fuchsia-sdk:vulkan_base" ]
+      data_deps += [ "//third_party/fuchsia-sdk/sdk/pkg/vulkan" ]
 
-      # TODO(fxbug.dev/73208): Vulkan validation is disabled temporarily.
-      # Re-enable once Vulkan is updated.
-      #
-      # if (is_debug || dcheck_always_on) {
-      #   data_deps += [ "//third_party/fuchsia-sdk:vulkan_validation" ]
-      # }
+      # VulkanInstance enables validation layer in Debug builds and when DCHECKs
+      # are enabled in Release builds. In these cases the validation layer
+      # libraries and configs need to be included in the generated Fuchsia
+      # package.
+      if (is_debug || dcheck_always_on) {
+        data_deps += [ "//third_party/fuchsia-sdk:vulkan_validation" ]
+      }
     }
   }
 

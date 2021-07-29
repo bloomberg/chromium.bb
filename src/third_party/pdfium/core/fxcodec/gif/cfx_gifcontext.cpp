@@ -10,7 +10,8 @@
 #include <utility>
 
 #include "core/fxcodec/cfx_codec_memory.h"
-#include "third_party/base/stl_util.h"
+#include "core/fxcrt/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace fxcodec {
 
@@ -25,8 +26,8 @@ CFX_GifContext::CFX_GifContext(GifDecoder::Delegate* delegate)
 
 CFX_GifContext::~CFX_GifContext() = default;
 
-void CFX_GifContext::RecordCurrentPosition(uint32_t* cur_pos) {
-  delegate_->GifRecordCurrentPosition(*cur_pos);
+uint32_t CFX_GifContext::CurrentPosition() const {
+  return delegate_->GifCurrentPosition();
 }
 
 void CFX_GifContext::ReadScanline(int32_t row_num, uint8_t* row_buf) {
@@ -40,14 +41,11 @@ bool CFX_GifContext::GetRecordPosition(uint32_t cur_pos,
                                        int32_t height,
                                        int32_t pal_num,
                                        CFX_GifPalette* pal,
-                                       int32_t delay_time,
-                                       bool user_input,
                                        int32_t trans_index,
-                                       int32_t disposal_method,
                                        bool interlace) {
   return delegate_->GifInputRecordPositionBuf(
       cur_pos, FX_RECT(left, top, left + width, top + height), pal_num, pal,
-      delay_time, user_input, trans_index, disposal_method, interlace);
+      trans_index, interlace);
 }
 
 GifDecoder::Status CFX_GifContext::ReadHeader() {
@@ -153,11 +151,10 @@ GifDecoder::Status CFX_GifContext::GetFrame() {
       }
     }
   }
-  return GifDecoder::Status::kSuccess;
 }
 
 GifDecoder::Status CFX_GifContext::LoadFrame(int32_t frame_num) {
-  if (!pdfium::IndexInBounds(images_, frame_num))
+  if (!fxcrt::IndexInBounds(images_, frame_num))
     return GifDecoder::Status::kError;
 
   CFX_GifImage* gif_image = images_[static_cast<size_t>(frame_num)].get();
@@ -182,7 +179,7 @@ GifDecoder::Status CFX_GifContext::LoadFrame(int32_t frame_num) {
       bool bRes = GetRecordPosition(
           gif_image->data_pos, gif_image->image_info.left,
           gif_image->image_info.top, gif_image->image_info.width,
-          gif_image->image_info.height, loc_pal_num, pLocalPalette, 0, 0, -1, 0,
+          gif_image->image_info.height, loc_pal_num, pLocalPalette, -1,
           gif_image->image_info.local_flags.interlace);
       if (!bRes) {
         gif_image->row_buffer.clear();
@@ -193,12 +190,9 @@ GifDecoder::Status CFX_GifContext::LoadFrame(int32_t frame_num) {
           gif_image->data_pos, gif_image->image_info.left,
           gif_image->image_info.top, gif_image->image_info.width,
           gif_image->image_info.height, loc_pal_num, pLocalPalette,
-          static_cast<int32_t>(gif_image->image_GCE->delay_time),
-          gif_image->image_GCE->gce_flags.user_input,
           gif_image->image_GCE->gce_flags.transparency
               ? static_cast<int32_t>(gif_image->image_GCE->trans_index)
               : -1,
-          static_cast<int32_t>(gif_image->image_GCE->gce_flags.disposal_method),
           gif_image->image_info.local_flags.interlace);
       if (!bRes) {
         gif_image->row_buffer.clear();
@@ -393,9 +387,9 @@ GifDecoder::Status CFX_GifContext::ReadLogicalScreenDescriptor() {
   }
 
   width_ = static_cast<int>(
-      FXWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&lsd.width)));
+      FXSYS_WORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&lsd.width)));
   height_ = static_cast<int>(
-      FXWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&lsd.height)));
+      FXSYS_WORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&lsd.height)));
 
   return GifDecoder::Status::kSuccess;
 }
@@ -437,8 +431,8 @@ GifDecoder::Status CFX_GifContext::DecodeExtension() {
             std::make_unique<CFX_GifGraphicControlExtension>();
       graphic_control_extension_->block_size = gif_gce.block_size;
       graphic_control_extension_->gce_flags = gif_gce.gce_flags;
-      graphic_control_extension_->delay_time =
-          FXWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&gif_gce.delay_time));
+      graphic_control_extension_->delay_time = FXSYS_WORD_GET_LSBFIRST(
+          reinterpret_cast<uint8_t*>(&gif_gce.delay_time));
       graphic_control_extension_->trans_index = gif_gce.trans_index;
       break;
     }
@@ -467,13 +461,13 @@ GifDecoder::Status CFX_GifContext::DecodeImageInfo() {
 
   auto gif_image = std::make_unique<CFX_GifImage>();
   gif_image->image_info.left =
-      FXWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&img_info.left));
+      FXSYS_WORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&img_info.left));
   gif_image->image_info.top =
-      FXWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&img_info.top));
+      FXSYS_WORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&img_info.top));
   gif_image->image_info.width =
-      FXWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&img_info.width));
+      FXSYS_WORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&img_info.width));
   gif_image->image_info.height =
-      FXWORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&img_info.height));
+      FXSYS_WORD_GET_LSBFIRST(reinterpret_cast<uint8_t*>(&img_info.height));
   gif_image->image_info.local_flags = img_info.local_flags;
   if (gif_image->image_info.left + gif_image->image_info.width > width_ ||
       gif_image->image_info.top + gif_image->image_info.height > height_)
@@ -500,7 +494,7 @@ GifDecoder::Status CFX_GifContext::DecodeImageInfo() {
   }
 
   gif_image->code_exp = code_size;
-  RecordCurrentPosition(&gif_image->data_pos);
+  gif_image->data_pos = CurrentPosition();
   gif_image->data_pos += input_buffer_->GetPosition();
   gif_image->image_GCE = nullptr;
   if (graphic_control_extension_.get()) {

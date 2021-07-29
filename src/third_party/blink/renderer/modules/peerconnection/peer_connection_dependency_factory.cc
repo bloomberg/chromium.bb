@@ -11,11 +11,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "crypto/openssl_util.h"
 #include "jingle/glue/thread_wrapper.h"
@@ -53,10 +56,11 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/webrtc/api/call/call_factory_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtc_event_log/rtc_event_log_factory.h"
-#include "third_party/webrtc/api/video_track_source_proxy.h"
+#include "third_party/webrtc/api/video_track_source_proxy_factory.h"
 #include "third_party/webrtc/media/engine/fake_video_codec_factory.h"
 #include "third_party/webrtc/media/engine/multiplex_codec_factory.h"
 #include "third_party/webrtc/media/engine/webrtc_media_engine.h"
@@ -65,6 +69,15 @@
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 #include "third_party/webrtc/rtc_base/ssl_adapter.h"
 #include "third_party/webrtc_overrides/task_queue_factory.h"
+
+namespace WTF {
+template <>
+struct CrossThreadCopier<base::RepeatingCallback<void(base::TimeDelta)>>
+    : public CrossThreadCopierPassThrough<
+          base::RepeatingCallback<void(base::TimeDelta)>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+}  // namespace WTF
 
 namespace blink {
 
@@ -100,7 +113,7 @@ bool IsValidPortRange(uint16_t min_port, uint16_t max_port) {
 // class.
 class ProxyAsyncResolverFactory final : public webrtc::AsyncResolverFactory {
  public:
-  ProxyAsyncResolverFactory(IpcPacketSocketFactory* ipc_psf)
+  explicit ProxyAsyncResolverFactory(IpcPacketSocketFactory* ipc_psf)
       : ipc_psf_(ipc_psf) {
     DCHECK(ipc_psf);
   }
@@ -149,10 +162,14 @@ class PeerConnectionStaticDeps {
     if (!worker_thread_) {
       PostCrossThreadTask(
           *chrome_worker_thread_->task_runner(), FROM_HERE,
-          CrossThreadBindOnce(&PeerConnectionStaticDeps::InitializeOnThread,
-                              CrossThreadUnretained(this),
-                              CrossThreadUnretained(&worker_thread_),
-                              CrossThreadUnretained(&init_worker_event)));
+          CrossThreadBindOnce(
+              &PeerConnectionStaticDeps::InitializeOnThread,
+              CrossThreadUnretained(&worker_thread_),
+              CrossThreadUnretained(&init_worker_event),
+              ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+                  PeerConnectionStaticDeps::LogTaskLatencyWorker)),
+              ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+                  PeerConnectionStaticDeps::LogTaskDurationWorker))));
     }
     return init_worker_event;
   }
@@ -161,10 +178,14 @@ class PeerConnectionStaticDeps {
     if (!network_thread_) {
       PostCrossThreadTask(
           *chrome_network_thread_.task_runner(), FROM_HERE,
-          CrossThreadBindOnce(&PeerConnectionStaticDeps::InitializeOnThread,
-                              CrossThreadUnretained(this),
-                              CrossThreadUnretained(&network_thread_),
-                              CrossThreadUnretained(&init_network_event)));
+          CrossThreadBindOnce(
+              &PeerConnectionStaticDeps::InitializeOnThread,
+              CrossThreadUnretained(&network_thread_),
+              CrossThreadUnretained(&init_network_event),
+              ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+                  PeerConnectionStaticDeps::LogTaskLatencyNetwork)),
+              ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+                  PeerConnectionStaticDeps::LogTaskDurationNetwork))));
     }
     return init_network_event;
   }
@@ -173,10 +194,14 @@ class PeerConnectionStaticDeps {
     if (!signaling_thread_) {
       PostCrossThreadTask(
           *chrome_signaling_thread_.task_runner(), FROM_HERE,
-          CrossThreadBindOnce(&PeerConnectionStaticDeps::InitializeOnThread,
-                              CrossThreadUnretained(this),
-                              CrossThreadUnretained(&signaling_thread_),
-                              CrossThreadUnretained(&init_signaling_event)));
+          CrossThreadBindOnce(
+              &PeerConnectionStaticDeps::InitializeOnThread,
+              CrossThreadUnretained(&signaling_thread_),
+              CrossThreadUnretained(&init_signaling_event),
+              ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+                  PeerConnectionStaticDeps::LogTaskLatencySignaling)),
+              ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+                  PeerConnectionStaticDeps::LogTaskDurationSignaling))));
     }
     return init_signaling_event;
   }
@@ -192,9 +217,53 @@ class PeerConnectionStaticDeps {
   base::Thread& GetChromeNetworkThread() { return chrome_network_thread_; }
 
  private:
-  void InitializeOnThread(rtc::Thread** thread, base::WaitableEvent* event) {
+  static void LogTaskLatencyWorker(base::TimeDelta sample) {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "WebRTC.PeerConnection.Latency.Worker", sample,
+        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+        50);
+  }
+  static void LogTaskDurationWorker(base::TimeDelta sample) {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "WebRTC.PeerConnection.Duration.Worker", sample,
+        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+        50);
+  }
+  static void LogTaskLatencyNetwork(base::TimeDelta sample) {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "WebRTC.PeerConnection.Latency.Network", sample,
+        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+        50);
+  }
+  static void LogTaskDurationNetwork(base::TimeDelta sample) {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "WebRTC.PeerConnection.Duration.Network", sample,
+        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+        50);
+  }
+  static void LogTaskLatencySignaling(base::TimeDelta sample) {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "WebRTC.PeerConnection.Latency.Signaling", sample,
+        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+        50);
+  }
+  static void LogTaskDurationSignaling(base::TimeDelta sample) {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "WebRTC.PeerConnection.Duration.Signaling", sample,
+        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+        50);
+  }
+
+  static void InitializeOnThread(
+      rtc::Thread** thread,
+      base::WaitableEvent* event,
+      base::RepeatingCallback<void(base::TimeDelta)> latency_callback,
+      base::RepeatingCallback<void(base::TimeDelta)> duration_callback) {
     jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
     jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
+    jingle_glue::JingleThreadWrapper::current()
+        ->SetLatencyAndTaskDurationCallbacks(std::move(latency_callback),
+                                             std::move(duration_callback));
     if (!*thread) {
       *thread = jingle_glue::JingleThreadWrapper::current();
       event->Signal();
@@ -354,8 +423,8 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
           blink::features::kWebRtcHideLocalIpsWithMdns)) {
     // Note that MdnsResponderAdapter is created on the main thread to have
     // access to the connector to the service manager.
-    // TODO(crbug.com/1178670): Pass MojoBindingContext and use its BIB to bind.
-    mdns_responder = std::make_unique<MdnsResponderAdapter>();
+    mdns_responder =
+        std::make_unique<MdnsResponderAdapter>(*GetSupplementable());
   }
 #endif  // BUILDFLAG(ENABLE_MDNS)
   PostCrossThreadTask(
@@ -658,8 +727,8 @@ PeerConnectionDependencyFactory::CreateVideoTrackSourceProxy(
   if (!PeerConnectionFactoryCreated())
     CreatePeerConnectionFactory();
 
-  return webrtc::VideoTrackSourceProxy::Create(GetSignalingThread(),
-                                               GetNetworkThread(), source)
+  return webrtc::CreateVideoTrackSourceProxy(GetSignalingThread(),
+                                             GetNetworkThread(), source)
       .get();
 }
 

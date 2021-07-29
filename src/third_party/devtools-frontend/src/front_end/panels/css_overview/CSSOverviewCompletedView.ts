@@ -234,9 +234,9 @@ export class CSSOverviewCompletedView extends UI.Panel.PanelWithSidebar {
   _data: OverviewData|null;
   _fragment?: UI.Fragment.Fragment;
 
-  constructor(controller: OverviewController, target: SDK.SDKModel.Target) {
+  constructor(controller: OverviewController, target: SDK.Target.Target) {
     super('css_overview_completed_view');
-    this.registerRequiredCSS('panels/css_overview/cssOverviewCompletedView.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/css_overview/cssOverviewCompletedView.css');
 
     this._controller = controller;
     this._formatter = new Intl.NumberFormat('en-US');
@@ -253,8 +253,7 @@ export class CSSOverviewCompletedView extends UI.Panel.PanelWithSidebar {
     });
 
     // Dupe the styles into the main container because of the shadow root will prevent outer styles.
-    this._mainContainer.registerRequiredCSS(
-        'panels/css_overview/cssOverviewCompletedView.css', {enableLegacyPatching: true});
+    this._mainContainer.registerRequiredCSS('panels/css_overview/cssOverviewCompletedView.css');
 
     this._mainContainer.setMainWidget(this._resultsContainer);
     this._mainContainer.setSidebarWidget(this._elementContainer);
@@ -830,7 +829,7 @@ export class CSSOverviewCompletedView extends UI.Panel.PanelWithSidebar {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  static readonly pushedNodes = new Set<unknown>();
+  static readonly pushedNodes = new Set<Protocol.DOM.BackendNodeId>();
 }
 export class DetailsView extends UI.Widget.VBox {
   _tabbedPane: UI.TabbedPane.TabbedPane;
@@ -988,7 +987,8 @@ export class ElementDetailsView extends UI.Widget.Widget {
     this._controller.dispatchEventToListeners(Events.RequestNodeHighlight, backendNodeId);
   }
 
-  async populateNodes(data: {nodeId: number, hasChildren: boolean, [x: string]: unknown}[]): Promise<void> {
+  async populateNodes(data: {nodeId: Protocol.DOM.BackendNodeId, hasChildren: boolean, [x: string]: unknown}[]):
+      Promise<void> {
     this._elementGrid.rootNode().removeChildren();
 
     if (!data.length) {
@@ -1012,7 +1012,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
         }
         CSSOverviewCompletedView.pushedNodes.add(curr.nodeId);
         return prev.add(curr.nodeId);
-      }, new Set<number>()));
+      }, new Set<Protocol.DOM.BackendNodeId>()));
       relatedNodesMap = await this._domModel.pushNodesByBackendIdsToFrontend(nodeIds);
     }
 

@@ -42,6 +42,7 @@ enum AndroidDeviceID : uint32_t
     ANDROID_DEVICE_ID_NEXUS5X     = 0x4010800,
     ANDROID_DEVICE_ID_PIXEL2      = 0x5040001,
     ANDROID_DEVICE_ID_PIXEL1XL    = 0x5030004,
+    ANDROID_DEVICE_ID_PIXEL4      = 0x6040001,
     ANDROID_DEVICE_ID_SWIFTSHADER = 0xC0DE,
 };
 
@@ -120,6 +121,11 @@ inline bool IsPixel2(uint32_t vendorId, uint32_t deviceId)
     return IsQualcomm(vendorId) && deviceId == ANDROID_DEVICE_ID_PIXEL2;
 }
 
+inline bool IsPixel4(uint32_t vendorId, uint32_t deviceId)
+{
+    return IsQualcomm(vendorId) && deviceId == ANDROID_DEVICE_ID_PIXEL4;
+}
+
 inline bool IsSwiftshader(uint32_t vendorId, uint32_t deviceId)
 {
     return IsGoogle(vendorId) && deviceId == ANDROID_DEVICE_ID_SWIFTSHADER;
@@ -182,6 +188,15 @@ inline bool IsApple()
 #endif
 }
 
+inline bool IsMac()
+{
+#if defined(ANGLE_PLATFORM_APPLE) && defined(ANGLE_PLATFORM_MACOS)
+    return true;
+#else
+    return false;
+#endif
+}
+
 inline bool IsFuchsia()
 {
 #if defined(ANGLE_PLATFORM_FUCHSIA)
@@ -218,6 +233,8 @@ bool operator<(const OSVersion &a, const OSVersion &b);
 bool operator>=(const OSVersion &a, const OSVersion &b);
 
 OSVersion GetMacOSVersion();
+
+OSVersion GetiOSVersion();
 
 OSVersion GetLinuxOSVersion();
 

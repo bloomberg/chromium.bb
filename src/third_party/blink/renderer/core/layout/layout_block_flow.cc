@@ -36,6 +36,7 @@
 
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
+#include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/glyph_overflow.h"
 #include "third_party/blink/renderer/core/layout/line/inline_iterator.h"
@@ -3001,6 +3003,8 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
     if (new_child->IsInline() && !new_child->IsLayoutNGOutsideListMarker()) {
       // No suitable existing anonymous box - create a new one.
       auto* new_block = To<LayoutBlockFlow>(CreateAnonymousBlock());
+      if (new_block->IsLayoutNGObject() && IsLayoutFlowThread())
+        new_block->SetIsAnonymousNGMulticolInlineWrapper();
       LayoutBox::AddChild(new_block, before_child);
       // Reparent adjacent floating or out-of-flow siblings to the new box.
       new_block->ReparentPrecedingFloatingOrOutOfFlowSiblings();
@@ -4280,6 +4284,26 @@ void LayoutBlockFlow::UpdateAncestorShouldPaintFloatingObject(
   }
 }
 
+bool LayoutBlockFlow::AllowsColumns() const {
+  // Ruby elements manage child insertion in a special way, and would mess up
+  // insertion of the flow thread. The flow thread needs to be a direct child of
+  // the multicol block (|this|).
+  if (IsRuby())
+    return false;
+
+  // We don't allow custom layout and multicol on the same object. This is
+  // similar to not allowing it for flexbox, grids and tables (although those
+  // don't create LayoutBlockFlow, so we don't need to check for those here).
+  if (StyleRef().IsDisplayLayoutCustomBox())
+    return false;
+
+  // MathML layout objects don't support multicol.
+  if (IsMathML())
+    return false;
+
+  return true;
+}
+
 bool LayoutBlockFlow::AllowsPaginationStrut() const {
   NOT_DESTROYED();
   // The block needs to be contained by a LayoutBlockFlow (and not by e.g. a
@@ -4463,10 +4487,7 @@ void LayoutBlockFlow::CreateOrDestroyMultiColumnFlowThreadIfNeeded(
   if (IsListItemIncludingNG())
     UseCounter::Count(GetDocument(), WebFeature::kMultiColAndListItem);
 
-  // Ruby elements manage child insertion in a special way, and would mess up
-  // insertion of the flow thread. The flow thread needs to be a direct child of
-  // the multicol block (|this|).
-  if (IsRuby())
+  if (!AllowsColumns())
     return;
 
   // Fieldsets look for a legend special child (layoutSpecialExcludedChild()).
@@ -4484,18 +4505,18 @@ void LayoutBlockFlow::CreateOrDestroyMultiColumnFlowThreadIfNeeded(
   if (element && element->IsFormControlElement())
     return;
 
-  // We don't allow custom layout and multicol on the same object. This is
-  // similar to not allowing it for flexbox, grids and tables (although those
-  // don't create LayoutBlockFlow, so we don't need to check for those here).
-  if (IsLayoutNGCustom())
-    return;
-
-  // MathML layout objects don't support multicol.
-  if (IsMathML())
-    return;
+  // Make sure that we don't attempt to create a LayoutNG multicol container
+  // when the feature isn't enabled. There is a mechanism that causes us to fall
+  // back to legacy layout if columns are specified when
+  // LayoutNGBlockFragmentation is disabled, but then there are cases where
+  // we'll override this and force NG anyway (if the layout type isn't
+  // implemented in the legacy engine, which is the case for things like custom
+  // layout).
+  DCHECK(!IsLayoutNGObject() ||
+         RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled());
 
   auto* flow_thread = LayoutMultiColumnFlowThread::CreateAnonymous(
-      GetDocument(), StyleRef(), !CanTraversePhysicalFragments());
+      GetDocument(), StyleRef(), !IsLayoutNGObject());
   AddChild(flow_thread);
   pagination_state_changed_ = true;
   if (IsLayoutNGObject()) {

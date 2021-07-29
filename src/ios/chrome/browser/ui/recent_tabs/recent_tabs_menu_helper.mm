@@ -51,8 +51,7 @@
 
 - (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
                                    (TableViewURLItem*)item
-                                                      fromView:(UIView*)view
-    API_AVAILABLE(ios(13.0)) {
+                                                      fromView:(UIView*)view {
   __weak __typeof(self) weakSelf = self;
 
   UIContextMenuActionProvider actionProvider = ^(
@@ -94,9 +93,11 @@
     [menuElements addObject:[actionFactory actionToCopyURL:item.URL]];
 
     [menuElements addObject:[actionFactory actionToShareWithBlock:^{
-                    [weakSelf.contextMenuDelegate shareURL:item.URL
-                                                     title:item.title
-                                                  fromView:view];
+                    [weakSelf.contextMenuDelegate
+                        shareURL:item.URL
+                           title:item.title
+                        scenario:ActivityScenario::RecentTabsEntry
+                        fromView:view];
                   }]];
 
     return [UIMenu menuWithTitle:@"" children:menuElements];
@@ -110,7 +111,7 @@
 
 - (UIContextMenuConfiguration*)
     contextMenuConfigurationForHeaderWithSectionIdentifier:
-        (NSInteger)sectionIdentifier API_AVAILABLE(ios(13.0)) {
+        (NSInteger)sectionIdentifier {
   __weak __typeof(self) weakSelf = self;
 
   UIContextMenuActionProvider actionProvider =

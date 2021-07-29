@@ -4,10 +4,9 @@
 
 #include "content/browser/conversions/conversion_policy.h"
 
-#include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/ranges.h"
 #include "base/rand_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 
 namespace content {
@@ -17,6 +16,10 @@ namespace {
 // Maximum number of allowed conversion metadata values. Higher entropy
 // conversion metadata is stripped to these lower bits.
 const int kMaxAllowedConversionValues = 8;
+
+// Maximum number of allowed event source trigger data values. Higher entropy
+// event source trigger data is stripped to these lower bits.
+const int kMaxAllowedEventSourceTriggerDataValues = 2;
 
 }  // namespace
 
@@ -31,6 +34,26 @@ uint64_t ConversionPolicy::NoiseProvider::GetNoisedConversionData(
   // (kMaxAllowedConversionValues - 1) / kMaxAllowedConversionValues percent of
   // the time.
   return static_cast<uint64_t>(base::RandInt(0, kMaxAllowedConversionValues));
+}
+
+// static
+uint64_t ConversionPolicy::NoiseProvider::GetNoisedEventSourceTriggerDataImpl(
+    uint64_t event_source_trigger_data) {
+  // Return |event_source_trigger_data| without any noise 95% of the time.
+  if (base::RandDouble() > .05)
+    return event_source_trigger_data;
+
+  // 5% of the time return a random number in the allowed range. Note that the
+  // value is noised 5% of the time, but only wrong 5 *
+  // (kMaxAllowedEventSourceTriggerDataValues - 1) /
+  // kMaxAllowedEventSourceTriggerDataValues percent of the time.
+  return static_cast<uint64_t>(
+      base::RandInt(0, kMaxAllowedEventSourceTriggerDataValues));
+}
+
+uint64_t ConversionPolicy::NoiseProvider::GetNoisedEventSourceTriggerData(
+    uint64_t event_source_trigger_data) const {
+  return GetNoisedEventSourceTriggerDataImpl(event_source_trigger_data);
 }
 
 // static
@@ -51,7 +74,7 @@ ConversionPolicy::ConversionPolicy(
 
 ConversionPolicy::~ConversionPolicy() = default;
 
-std::string ConversionPolicy::GetSanitizedConversionData(
+uint64_t ConversionPolicy::GetSanitizedConversionData(
     uint64_t conversion_data) const {
   // Add noise to the conversion when the value is first sanitized from a
   // conversion registration event. This noised data will be used for all
@@ -60,26 +83,49 @@ std::string ConversionPolicy::GetSanitizedConversionData(
     conversion_data = noise_provider_->GetNoisedConversionData(conversion_data);
 
   // Allow at most 3 bits of entropy in conversion data.
-  return base::NumberToString(conversion_data % kMaxAllowedConversionValues);
+  return conversion_data % kMaxAllowedConversionValues;
 }
 
-std::string ConversionPolicy::GetSanitizedImpressionData(
+uint64_t ConversionPolicy::GetSanitizedEventSourceTriggerData(
+    uint64_t event_source_trigger_data) const {
+  // Add noise to the conversion when the value is first sanitized from a
+  // conversion registration event. This noised data will be used for all
+  // associated impressions that convert.
+  if (noise_provider_) {
+    event_source_trigger_data =
+        noise_provider_->GetNoisedEventSourceTriggerData(
+            event_source_trigger_data);
+  }
+
+  // Allow at most 1 bit of entropy in event source trigger data.
+  return event_source_trigger_data % kMaxAllowedEventSourceTriggerDataValues;
+}
+
+uint64_t ConversionPolicy::GetSanitizedImpressionData(
     uint64_t impression_data) const {
   // Impression data is allowed the full 64 bits.
-  return base::NumberToString(impression_data);
+  return impression_data;
 }
 
 base::Time ConversionPolicy::GetExpiryTimeForImpression(
     const absl::optional<base::TimeDelta>& declared_expiry,
-    base::Time impression_time) const {
-  static constexpr base::TimeDelta kDefaultImpressionExpiry =
+    base::Time impression_time,
+    StorableImpression::SourceType source_type) const {
+  constexpr base::TimeDelta kMinImpressionExpiry = base::TimeDelta::FromDays(1);
+  constexpr base::TimeDelta kDefaultImpressionExpiry =
       base::TimeDelta::FromDays(30);
 
   // Default to the maximum expiry time.
   base::TimeDelta expiry = declared_expiry.value_or(kDefaultImpressionExpiry);
 
-  // If the impression specified its own expiry, clamp it to the maximum.
-  return impression_time + std::min(expiry, kDefaultImpressionExpiry);
+  // Expiry time for event sources must be a whole number of days.
+  if (source_type == StorableImpression::SourceType::kEvent)
+    expiry = expiry.RoundToMultiple(base::TimeDelta::FromDays(1));
+
+  // If the impression specified its own expiry, clamp it to the minimum and
+  // maximum.
+  return impression_time + base::ClampToRange(expiry, kMinImpressionExpiry,
+                                              kDefaultImpressionExpiry);
 }
 
 base::Time ConversionPolicy::GetReportTimeForExpiredReportAtStartup(

@@ -8,7 +8,6 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/ash/file_system_provider/mount_path_util.h"
 #include "chrome/browser/ash/file_system_provider/observer.h"
@@ -23,8 +22,9 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "storage/browser/file_system/external_mount_points.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 
 const char kPrefKeyFileSystemId[] = "file-system-id";
@@ -121,7 +121,7 @@ void Registry::ForgetFileSystem(const ProviderId& provider_id,
 
   file_systems_per_extension->RemoveKey(file_system_id);
   if (file_systems_per_extension->DictEmpty())
-    dict_update->Remove(provider_id.ToString(), NULL);
+    dict_update->RemoveKey(provider_id.ToString());
 }
 
 std::unique_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
@@ -145,45 +145,45 @@ std::unique_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
   for (base::DictionaryValue::Iterator it(*file_systems_per_extension);
        !it.IsAtEnd();
        it.Advance()) {
-    const base::Value* file_system_value = NULL;
     const base::DictionaryValue* file_system = NULL;
-    file_systems_per_extension->GetWithoutPathExpansion(it.key(),
-                                                        &file_system_value);
+    const base::Value* file_system_value =
+        file_systems_per_extension->FindKey(it.key());
     DCHECK(file_system_value);
 
-    std::string file_system_id;
-    std::string display_name;
-    bool writable = false;
-    bool supports_notify_tag = false;
-    int opened_files_limit = 0;
+    if (!file_system_value->GetAsDictionary(&file_system)) {
+      LOG(ERROR)
+          << "Malformed provided file system information in preferences.";
+      continue;
+    }
+
+    const std::string* file_system_id =
+        file_system->FindStringKey(kPrefKeyFileSystemId);
+    const std::string* display_name =
+        file_system->FindStringKey(kPrefKeyDisplayName);
+    absl::optional<bool> writable = file_system->FindBoolKey(kPrefKeyWritable);
+    absl::optional<bool> supports_notify_tag =
+        file_system->FindBoolKey(kPrefKeySupportsNotifyTag);
+    absl::optional<int> opened_files_limit =
+        file_system->FindIntKey(kPrefKeyOpenedFilesLimit);
 
     // TODO(mtomasz): Move opened files limit to the mandatory list above in
     // M42.
-    if ((!file_system_value->GetAsDictionary(&file_system) ||
-         !file_system->GetStringWithoutPathExpansion(kPrefKeyFileSystemId,
-                                                     &file_system_id) ||
-         !file_system->GetStringWithoutPathExpansion(kPrefKeyDisplayName,
-                                                     &display_name) ||
-         !file_system->GetBooleanWithoutPathExpansion(kPrefKeyWritable,
-                                                      &writable) ||
-         !file_system->GetBooleanWithoutPathExpansion(kPrefKeySupportsNotifyTag,
-                                                      &supports_notify_tag) ||
-         file_system_id.empty() || display_name.empty()) ||
+    if ((!file_system_id || !display_name || !writable ||
+         !supports_notify_tag || file_system_id->empty() ||
+         display_name->empty()) ||
         // Optional fields.
-        (file_system->GetIntegerWithoutPathExpansion(kPrefKeyOpenedFilesLimit,
-                                                     &opened_files_limit) &&
-         opened_files_limit < 0)) {
+        (opened_files_limit.has_value() && opened_files_limit.value() < 0)) {
       LOG(ERROR)
           << "Malformed provided file system information in preferences.";
       continue;
     }
 
     MountOptions options;
-    options.file_system_id = file_system_id;
-    options.display_name = display_name;
-    options.writable = writable;
-    options.supports_notify_tag = supports_notify_tag;
-    options.opened_files_limit = opened_files_limit;
+    options.file_system_id = *file_system_id;
+    options.display_name = *display_name;
+    options.writable = writable.value();
+    options.supports_notify_tag = supports_notify_tag.value();
+    options.opened_files_limit = opened_files_limit.value_or(0);
 
     RestoredFileSystem restored_file_system;
     restored_file_system.provider_id = provider_id;
@@ -195,49 +195,49 @@ std::unique_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
                                                        &watchers)) {
       for (base::DictionaryValue::Iterator it(*watchers); !it.IsAtEnd();
            it.Advance()) {
-        const base::Value* watcher_value = NULL;
         const base::DictionaryValue* watcher = NULL;
-        watchers->GetWithoutPathExpansion(it.key(), &watcher_value);
-        DCHECK(file_system_value);
+        const base::Value* watcher_value = watchers->FindKey(it.key());
+        DCHECK(watcher_value);
 
-        std::string entry_path;
-        bool recursive = false;
-        std::string last_tag;
+        if (!watcher_value->GetAsDictionary(&watcher)) {
+          LOG(ERROR) << "Malformed watcher information in preferences.";
+          continue;
+        }
+
+        const std::string* entry_path =
+            watcher->FindStringKey(kPrefKeyWatcherEntryPath);
+        absl::optional<bool> recursive =
+            watcher->FindBoolKey(kPrefKeyWatcherRecursive);
+        const std::string* last_tag =
+            watcher->FindStringKey(kPrefKeyWatcherLastTag);
         const base::ListValue* persistent_origins = NULL;
 
-        if (!watcher_value->GetAsDictionary(&watcher) ||
-            !watcher->GetStringWithoutPathExpansion(kPrefKeyWatcherEntryPath,
-                                                    &entry_path) ||
-            !watcher->GetBooleanWithoutPathExpansion(kPrefKeyWatcherRecursive,
-                                                     &recursive) ||
-            !watcher->GetStringWithoutPathExpansion(kPrefKeyWatcherLastTag,
-                                                    &last_tag) ||
+        if (!entry_path || !recursive || !last_tag ||
             !watcher->GetListWithoutPathExpansion(
                 kPrefKeyWatcherPersistentOrigins, &persistent_origins) ||
-            it.key() != entry_path || entry_path.empty() ||
+            it.key() != *entry_path || entry_path->empty() ||
             (!options.supports_notify_tag &&
-             (!last_tag.empty() || persistent_origins->GetSize()))) {
+             (!last_tag->empty() || persistent_origins->GetSize()))) {
           LOG(ERROR) << "Malformed watcher information in preferences.";
           continue;
         }
 
         Watcher restored_watcher;
         restored_watcher.entry_path =
-            base::FilePath::FromUTF8Unsafe(entry_path);
-        restored_watcher.recursive = recursive;
-        restored_watcher.last_tag = last_tag;
+            base::FilePath::FromUTF8Unsafe(*entry_path);
+        restored_watcher.recursive = recursive.value();
+        restored_watcher.last_tag = *last_tag;
         for (const auto& persistent_origin : persistent_origins->GetList()) {
-          std::string origin;
-          if (persistent_origin.GetAsString(&origin)) {
+          if (!persistent_origin.is_string()) {
             LOG(ERROR) << "Malformed subscriber information in preferences.";
             continue;
           }
-          const GURL origin_as_gurl(origin);
+          const GURL origin_as_gurl(persistent_origin.GetString());
           restored_watcher.subscribers[origin_as_gurl].origin = origin_as_gurl;
           restored_watcher.subscribers[origin_as_gurl].persistent = true;
         }
         restored_file_system.watchers[WatcherKey(
-            base::FilePath::FromUTF8Unsafe(entry_path), recursive)] =
+            base::FilePath::FromUTF8Unsafe(*entry_path), recursive.value())] =
             restored_watcher;
       }
     }
@@ -281,4 +281,4 @@ void Registry::UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
 }
 
 }  // namespace file_system_provider
-}  // namespace chromeos
+}  // namespace ash

@@ -6,6 +6,7 @@
 <translation id="1013923882670373915">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לבצע התאמה. יש להזין את קוד האימות הבא במכשיר: <ph name="PINCODE" /></translation>
 <translation id="1024261588257374085">נבחר צילום מסך חלקי</translation>
 <translation id="1032891413405719768">סוללת הסטיילוס חלשה</translation>
+<translation id="1036073649888683237">כדי לנהל את ההתראות, צריך לעבור אל 'הגדרות'</translation>
 <translation id="1036672894875463507">‏אני Google Assistant, ואוכל לעזור לך לכל אורך היום!
 הנה כמה דברים שאפשר לנסות בתור התחלה.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> נוסף</translation>
@@ -14,6 +15,8 @@
 <translation id="1052916631016577720">סריקת פריטים</translation>
 <translation id="1056775291175587022">אין רשתות</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1073899992769346247">צריך להחליף את הסוללה או לטעון אותה</translation>
+<translation id="1077253978657569125">אנחנו רוצים לשפר את התכונה הזו!</translation>
 <translation id="108486256082349153">סלולרי: <ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426">אחה"צ טובים <ph name="GIVEN_NAME" />,</translation>
 <translation id="109942774857561566">משעמם לי</translation>
@@ -61,6 +64,7 @@
 <translation id="1341651618736211726">אפשרויות נוספות</translation>
 <translation id="1346748346194534595">ימינה</translation>
 <translation id="1351937230027495976">כיווץ התפריט</translation>
+<translation id="1383597849754832576">אין אפשרות להוריד קובצי דיבור. יש לנסות שוב מאוחר יותר.</translation>
 <translation id="1383876407941801731">חיפוש</translation>
 <translation id="1391102559483454063">מופעלת</translation>
 <translation id="1407069428457324124">עיצוב כהה</translation>
@@ -79,13 +83,13 @@
 <translation id="1516740043221086139">מצב 'נא לא להפריע' מופעל.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{צפייה בהגדרות של הודעות. ההודעות מושבתות באפליקציה אחת}two{צפייה בהגדרות של הודעות. ההודעות מושבתות ב-# אפליקציות}many{צפייה בהגדרות של הודעות. ההודעות מושבתות ב-# אפליקציות}other{צפייה בהגדרות של הודעות. ההודעות מושבתות ב-# אפליקציות}}</translation>
 <translation id="1525508553941733066">סגירה</translation>
+<translation id="1536604384701784949">כדי להשתמש ב-<ph name="USER_EMAIL_ADDRESS" />, עליך לצאת תחילה מכל החשבונות. כדי לצאת, בוחרים ב'ביטול' וחוזרים חזרה. לוחצים על השעון כדי לפתוח את אזור הסטטוס ובוחרים באפשרות 'יציאה'. אחר כך נכנסים שוב אל <ph name="USER_EMAIL_ADDRESS_2" />.</translation>
 <translation id="15373452373711364">סמן עכבר גדול</translation>
 <translation id="1546492247443594934">שולחן עבודה 2</translation>
 <translation id="1550523713251050646">יש ללחוץ לקבלת אפשרויות נוספות</translation>
 <translation id="1555130319947370107">כחול</translation>
 <translation id="1570871743947603115">‏הפעלה או השבתה של Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">גישה לכל הפעילות שלך בסשן הזה</translation>
-<translation id="159255010947577753">סמן</translation>
 <translation id="1611993646327628135">פועל</translation>
 <translation id="1615402009686901181">בהתאם למדיניות מנהל המערכת, צילום המסך מושבת כשמוצג תוכן סודי</translation>
 <translation id="1632985212731562677">ניתן להשבית את התכונה 'גישה באמצעות מתג' דרך 'הגדרות' &gt; 'נגישות'.</translation>
@@ -131,9 +135,10 @@
 <translation id="1972950159383891558">שלום, <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">קלט טקסט</translation>
 <translation id="1989113344093894667">לא ניתן לצלם תוכן</translation>
+<translation id="1990046457226896323">הסתיימה ההורדה של קובצי הדיבור</translation>
 <translation id="1993072747612765854">מידע נוסף על העדכון האחרון של <ph name="SYSTEM_APP_NAME" /></translation>
-<translation id="1995660704900986789">כיבוי</translation>
 <translation id="1998100899771863792">שולחן העבודה הווירטואלי הנוכחי</translation>
+<translation id="1999628559811343244">תיעוד חבילת הרשת התחיל</translation>
 <translation id="2016340657076538683">כאן מקלידים את ההודעה</translation>
 <translation id="2018630726571919839">אני רוצה לשמוע בדיחה</translation>
 <translation id="2021864487439853900">יש ללחוץ כדי לבטל את הנעילה</translation>
@@ -153,13 +158,10 @@
 <translation id="2127372758936585790">מטען בעל מתח נמוך</translation>
 <translation id="2132302418721800944">הקלטה של מסך מלא</translation>
 <translation id="2135456203358955318">מגדיל במצב מעוגן</translation>
-<translation id="2146800439053023141">החלפת המצב של מיקום הסרגל</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: ניסיון נוסף</translation>
-<translation id="2167870087604746126">V +</translation>
 <translation id="2170530631236737939">כדי לצאת מ'מסכים אחרונים', יש להחליק למטה בעזרת שלוש אצבעות</translation>
 <translation id="2208323208084708176">מצב שולחן עבודה מאוחד</translation>
 <translation id="2220572644011485463">קוד אימות או סיסמה</translation>
-<translation id="2222338659135520253">נדרשת כניסה</translation>
 <translation id="2222841058024245321">שולחן עבודה וירטואלי 7</translation>
 <translation id="2224075387478458881">הקלטת המסך אסורה כשמוצג תוכן מוגן</translation>
 <translation id="225680501294068881">מתבצעת סריקה לאיתור מכשירים...</translation>
@@ -180,7 +182,6 @@
 <translation id="2352467521400612932">הגדרות סטיילוס</translation>
 <translation id="2354174487190027830">המערכת מפעילה את <ph name="NAME" /></translation>
 <translation id="2359808026110333948">המשך</translation>
-<translation id="2365393535144473978">‏כשמפעילים את חבילת הגלישה, מופעלת גם תקשורת Bluetooth.</translation>
 <translation id="2369165858548251131">"שלום" בסינית</translation>
 <translation id="2390318262976603432">הגדרות שילוב של שפה ואזור</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -202,10 +203,12 @@
 <translation id="2542089167727451762">יש להקיש על תמונת הפרופיל</translation>
 <translation id="255671100581129685">‏Google Assistant אינה זמינה בסשן ציבורי.</translation>
 <translation id="256712445991462162">הזכוכית המגדלת שהוצמדה</translation>
+<translation id="2573588302192866788">לא ניתן היה לחבר את <ph name="NAME" /></translation>
 <translation id="2575685495496069081">הכניסה עם מספר חשבונות הושבתה</translation>
 <translation id="2582112259361606227">צריך להפעיל מחדש כדי לעדכן</translation>
 <translation id="2595239820337756193">כמה מיילים יש ב-5 קילומטרים</translation>
 <translation id="2596078834055697711">צילום מסך של חלון</translation>
+<translation id="2607678425161541573">נדרשת כניסה אונליין</translation>
 <translation id="2617342710774726426">‏כרטיס ה-SIM נעול</translation>
 <translation id="2621713457727696555">מאובטחת</translation>
 <translation id="2653019840645008922">צילום חלון</translation>
@@ -290,7 +293,6 @@
 <translation id="3307642347673023554">עברת למצב מחשב נייד</translation>
 <translation id="3308453408813785101">ל-<ph name="USER_EMAIL_ADDRESS" /> תהיה עדיין אפשרות להיכנס לחשבון מאוחר יותר.</translation>
 <translation id="3321628682574733415">קוד הורה שגוי</translation>
-<translation id="332587331255250389">יש להחליף את הסוללה</translation>
 <translation id="3341303451326249809">צילום המסך בוצע</translation>
 <translation id="334252345105450327">יצירת צילום מסך</translation>
 <translation id="3351879221545518001">מתבצעת עכשיו העברה של מסך.</translation>
@@ -307,6 +309,7 @@
 <translation id="3430396595145920809">יש להחליק מצד ימין כדי לחזור אחורה</translation>
 <translation id="343571671045587506">עריכת תזכורת</translation>
 <translation id="3435967511775410570">טביעת האצבע זוהתה</translation>
+<translation id="3441920967307853524"><ph name="TOTAL_BYTES" />/<ph name="RECEIVED_BYTES" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> דק'</translation>
 <translation id="3445925074670675829">‏מכשיר עם יציאת USB-C</translation>
 <translation id="3454224730401036106">החיבור שלך הועבר לרשת מאובטחת יותר</translation>
@@ -318,6 +321,7 @@
 <translation id="3510164367642747937">הדגשה של סמן העכבר</translation>
 <translation id="3513798432020909783">החשבון מנוהל על-ידי <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3552189655002856821">‏Wi-Fi כבוי</translation>
+<translation id="3560866052109807830">כלי השרטוט להדגשה</translation>
 <translation id="3563775809269155755">הפעלת נקודה לשיתוף אינטרנט</translation>
 <translation id="3571734092741541777">הגדרה</translation>
 <translation id="3573179567135747900">לשינוי בחזרה ל"<ph name="FROM_LOCALE" />" (נדרשת הפעלה מחדש)</translation>
@@ -327,6 +331,7 @@
 <translation id="3595596368722241419">סוללה מלאה</translation>
 <translation id="3604801046548457007">שולחן העבודה <ph name="DESK_TITILE" /> נוצר</translation>
 <translation id="3606978283550408104">צג ברייל מחובר</translation>
+<translation id="3615926715408477684">‏כשמפעילים את חבילת הגלישה, מופעל גם Bluetooth</translation>
 <translation id="3616883743181209306">התפריט הועבר לפינה השמאלית העליונה של המסך.</translation>
 <translation id="3621202678540785336">קלט</translation>
 <translation id="3621712662352432595">הגדרות אודיו</translation>
@@ -344,9 +349,11 @@
 <translation id="370665806235115550">בטעינה...</translation>
 <translation id="3712407551474845318">צילום אזור</translation>
 <translation id="371370241367527062">מיקרופון קדמי</translation>
+<translation id="3713734891607377840">פתיחה לאחר השלמת ההורדה</translation>
 <translation id="3742055079367172538">צילום המסך בוצע</translation>
 <translation id="3771549900096082774">מצב ניגודיות גבוהה</translation>
 <translation id="3773700760453577392">מנהל מערכת ביטל הרשאה של כניסה עם מספר חשבונות עבור <ph name="USER_EMAIL" />. כדי להמשיך, כל המשתמשים חייבים לבצע יציאה.</translation>
+<translation id="3779139509281456663">מתבצע חיבור של <ph name="NAME" /></translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">נעילה</translation>
 <translation id="3796746699333205839">אפליקציה כלשהי משתמשת במצלמה ובמיקרופון שלך</translation>
@@ -372,6 +379,7 @@
 <translation id="394485226368336402">הגדרות אודיו</translation>
 <translation id="3945319193631853098">יש להקיש כדי להשלים את ההגדרה</translation>
 <translation id="3945867833895287237">מתבצע חיבור אל לנקודת אינטרנט…</translation>
+<translation id="3950820424414687140">כניסה</translation>
 <translation id="3958465044488004317">‏ניתן להציג תוצאה ב-Assistant</translation>
 <translation id="3962859241508114581">הטראק הקודם</translation>
 <translation id="3969043077941541451">כבוי</translation>
@@ -412,6 +420,7 @@
 <translation id="4274537685965975248">‏מקשי הקיצור Ctrl ‏+ ‏Alt + חץ למטה הוחלפו. כדי לדמות את הפעולה של המקש End, יש להקיש על <ph name="LAUNCHER_KEY_NAME" /> + החץ ימינה.</translation>
 <translation id="4279490309300973883">שיקוף</translation>
 <translation id="4285498937028063278">ביטול הצמדה</translation>
+<translation id="429402653707266969">החלפת המצב של מיקום סרגל הכלים</translation>
 <translation id="4294319844246081198">בוקר טוב <ph name="GIVEN_NAME" />,</translation>
 <translation id="4296136865091727875">ניקוי כל <ph name="COUNT" /> ההתראות</translation>
 <translation id="4302592941791324970">לא זמינה</translation>
@@ -429,6 +438,7 @@
 <translation id="4378551569595875038">התחברות...</translation>
 <translation id="4379531060876907730">אלה כלי הסטיילוס שלך</translation>
 <translation id="4389184120735010762">הקשת על מקש הקיצור של זכוכית מגדלת במצב עגינה. להפעיל אותה?</translation>
+<translation id="439598569299422042">בהשהיה, <ph name="SIZE_INFO" /></translation>
 <translation id="4412944820643904175">התכונה <ph name="FEATURE_NAME" /> מושבתת.</translation>
 <translation id="4421231901400348175">שיתוף השליטה במסך עם <ph name="HELPER_NAME" /> דרך סיוע מרחוק.</translation>
 <translation id="4424159417645388645">שולחן עבודה וירטואלי 5</translation>
@@ -439,6 +449,7 @@
 <translation id="4451374464530248585">‏מקשי הקיצור Alt + חץ למטה הוחלפו. כדי לדמות את הפעולה של המקש Page Down, יש להקיש על <ph name="LAUNCHER_KEY_NAME" /> + החץ למטה.</translation>
 <translation id="445864333228800152">ערב טוב,</translation>
 <translation id="4458688154122353284">הפסקה של הקלטת המסך</translation>
+<translation id="4471354919263203780">‏מתבצעת הורדה של קובצי זיהוי דיבור… ‎<ph name="PERCENT" />%‎</translation>
 <translation id="4472575034687746823">תחילת העבודה</translation>
 <translation id="4477350412780666475">הטראק הבא</translation>
 <translation id="4477892968187500306">‏המכשיר הזה עשוי להכיל אפליקציות שלא אומתו על-ידי Google.</translation>
@@ -522,6 +533,7 @@
 <translation id="5033299697334913360">כדי לצלם את המסך המלא, יש ללחוץ במקום כלשהו</translation>
 <translation id="5035236842988137213">מכשיר <ph name="DEVICE_NAME" /> התחבר לטלפון חדש</translation>
 <translation id="5035389544768382859">אישור הגדרת המסך</translation>
+<translation id="5039804452771397117">זה בסדר</translation>
 <translation id="504465286040788597">הפיסקה הקודמת</translation>
 <translation id="5071064518267176975">אפליקציה כלשהי מבקשת להשתמש במיקרופון</translation>
 <translation id="5075554201838155866">לפתיחת הכתוביות</translation>
@@ -542,8 +554,10 @@
 <translation id="5283198616748585639">הוספת דקה</translation>
 <translation id="528468243742722775">סיום</translation>
 <translation id="5286194356314741248">הסריקה מתבצעת</translation>
+<translation id="5297423144044956168">לא נמצאו מכשירים ניידים</translation>
 <translation id="5297704307811127955">כבויה</translation>
 <translation id="5302048478445481009">שפה</translation>
+<translation id="5308380583665731573">התחברות</translation>
 <translation id="5313326810920013265">‏הגדרות Bluetooth</translation>
 <translation id="5314219114274263156">התבצעה הקלטת מסך</translation>
 <translation id="5322611492012084517">לא ניתן למצוא את הטלפון</translation>
@@ -696,6 +710,7 @@
 <translation id="6614169507485700968">מסך הפרטיות פועל</translation>
 <translation id="6627638273713273709">‏חיפוש+Shift‏+K</translation>
 <translation id="6629480180092995136">האפליקציה <ph name="APP_NAME" /> מבקשת להשתמש במיקרופון</translation>
+<translation id="6630773993843701741">‏יש לפתוח את הגדרות ה-Bluetooth כדי להתאים את המכשיר ידנית</translation>
 <translation id="6637729079642709226">שינוי הזמן</translation>
 <translation id="6641720045729354415">החלפה למצב 'כתוביות מיידיות'. <ph name="STATE_TEXT" /></translation>
 <translation id="6650072551060208490">כדי להתחבר אל <ph name="ORIGIN_NAME" /> יש לאמת את זהותך</translation>
@@ -709,7 +724,6 @@
 <translation id="6696025732084565524">למקלדת הניתנת לניתוק דרוש עדכון קריטי</translation>
 <translation id="6700713906295497288">‏לחצן תפריט IME</translation>
 <translation id="6713285437468012787">‏מכשיר ה-Bluetooth‏ "<ph name="DEVICE_NAME" />" הותאם והוא זמין כעת לכל המשתמשים. ניתן להסיר את ההתאמה הזו ב'הגדרות'.</translation>
-<translation id="6715542151869432661">לא נמצאו מכשירים ניידים.</translation>
 <translation id="6723839937902243910">חשמל</translation>
 <translation id="6727969043791803658">‏מחובר, ‎<ph name="BATTERY_PERCENTAGE" />%‎ סוללה</translation>
 <translation id="6732800389263199929">‎+<ph name="COUNT" /></translation>
@@ -717,12 +731,14 @@
 <translation id="6751826523481687655">מעקב הביצועים פועל</translation>
 <translation id="6752912906630585008">שולחן העבודה <ph name="REMOVED_DESK" /> הוסר ושולב עם שולחן העבודה <ph name="RECEIVE_DESK" /></translation>
 <translation id="6757237461819837179">מדיה לא מופעלת</translation>
+<translation id="6773040085467426602">כדי לעצור פעילות מתמשכת של תיעוד חבילות, מקישים על 'עצירה'.</translation>
 <translation id="6777216307882431711">‏אספקת חשמל למכשירים המחוברים ב-USB-C</translation>
 <translation id="6790428901817661496">הפעלה</translation>
 <translation id="6803622936009808957">לא ניתן היה לשקף מסכים מכיוון שלא נמצאה רזולוציה נתמכת. במקום זאת התצוגה עברה למצב שולחן עבודה מורחב.</translation>
 <translation id="6816797338148849397">יש מידע בקשר לבחירה שלך. כדי לגשת אליו, יש להקיש על מקש החץ למעלה.</translation>
 <translation id="6818242057446442178">מילה אחת אחורה</translation>
 <translation id="6820676911989879663">הגיע הזמן להפסקה</translation>
+<translation id="6837064795450991317">הסתרת הסרגל של שולחנות העבודה הווירטואליים</translation>
 <translation id="6850010208275816200">האפליקציה הנוכחית מוצגת במסך מלא. אם התבקשת להזין סיסמה, עליך קודם לצאת ממסך מלא.</translation>
 <translation id="6852052252232534364">תופעל בלחיצה</translation>
 <translation id="6857725247182211756"><ph name="SECONDS" /> שניות</translation>
@@ -758,6 +774,7 @@
 <translation id="7076293881109082629">כניסה</translation>
 <translation id="7088960765736518739">גישה באמצעות מתג</translation>
 <translation id="7098389117866926363">‏מכשיר עם יציאת USB-C (יציאה שמאלית מאחור)</translation>
+<translation id="7106330611027933926">הצגת הסרגל של שולחנות העבודה הווירטואליים</translation>
 <translation id="7118268675952955085">צילום מסך</translation>
 <translation id="7131634465328662194">המערכת תוציא אותך מהחשבון באופן אוטומטי.</translation>
 <translation id="7143207342074048698">מתבצע חיבור</translation>
@@ -779,6 +796,7 @@
 <translation id="7348093485538360975">מקלדת על המסך</translation>
 <translation id="735745346212279324">‏VPN מנותק</translation>
 <translation id="7360036564632145207">הביצועים עשויים להשתפר אם ההגדרות של הגנת הגישה לנתונים עבור ציוד היקפי ישונו</translation>
+<translation id="7366890467478514168">חיבור <ph name="NAME" /></translation>
 <translation id="7371404428569700291">חלון ההקלטה</translation>
 <translation id="7377169924702866686">‏Caps Lock מופעל.</translation>
 <translation id="7378203170292176219">יש לגרור כדי לבחור אזור להקלטה</translation>
@@ -799,7 +817,9 @@
 <translation id="7461924472993315131">הצמדה</translation>
 <translation id="746232733191930409">מצב הקלטת מסך</translation>
 <translation id="7466449121337984263">יש לגעת בחיישן</translation>
+<translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7477793887173910789">שליטה במוזיקה, בסרטונים ועוד</translation>
+<translation id="7482097454533720217">בלחיצה ימנית או בלחיצה ארוכה על טקסט, יוצגו הגדרות, תרגומים או המרת יחידות.</translation>
 <translation id="7483025031359818980">אזור הבחירה הוגדר כמסך מלא</translation>
 <translation id="7486227320194954040">כיווץ כלי הסימון</translation>
 <translation id="7497767806359279797">בחירת שפה ומקלדת</translation>
@@ -927,6 +947,7 @@
 <translation id="8433977262951327081">שינינו את קיצור הדרך להצגת בועת התפריט של אפשרויות הקלט במדף. יש להשתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8444246603146515890">שולחן העבודה <ph name="DESK_TITILE" /> הופעל</translation>
 <translation id="8452135315243592079">‏כרטיס SIM חסר</translation>
+<translation id="8456543082656546101">‏<ph name="SHORTCUT_KEY_NAME" /> + ‏V</translation>
 <translation id="8462305545768648477">סגירת הקראה</translation>
 <translation id="847056008324733326">הגדרות קנה המידה של התצוגה</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> <ph name="FEATURE_STATE" /> את <ph name="FEATURE_NAME" />.</translation>
@@ -978,6 +999,7 @@
 <translation id="8843682306134542540">הפעלה או השבתה של נעילת הסיבוב. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8853703225951107899">לא הצלחנו לאמת את קוד האימות או את הסיסמה שלך. הערה: אם שינית לאחרונה את הסיסמה, עליך לנסות להיכנס עם הסיסמה הישנה. הסיסמה החדשה תיכנס לתוקף לאחר היציאה מהחשבון.</translation>
+<translation id="8863888432376731307">לקבלת ה<ph name="INTENT" /> עבור "<ph name="QUERY" />" ועוד</translation>
 <translation id="8870509716567206129">האפליקציה אינה תומכת במסך מפוצל.</translation>
 <translation id="8871580645200179206">מעבר לעיצוב כהה. <ph name="STATE_TEXT" /></translation>
 <translation id="8874184842967597500">לא מחובר</translation>
@@ -1013,6 +1035,7 @@
 <translation id="9080132581049224423">כדי לחזור לדף הבית, מחליקים כלפי מעלה</translation>
 <translation id="9080206825613744995">המיקרופון נמצא בשימוש.</translation>
 <translation id="9084606467167974638">שינוי מיקום התפריט</translation>
+<translation id="9087578468327036362">דיווח על השאילתה הזו</translation>
 <translation id="9089416786594320554">שיטות קלט</translation>
 <translation id="9091626656156419976">הוסרה התצוגה של <ph name="DISPLAY_NAME" /></translation>
 <translation id="9098969848082897657">השתקת הטלפון</translation>
@@ -1030,6 +1053,7 @@
 <translation id="9193626018745640770">מתבצעת העברה במכשיר לא ידוע</translation>
 <translation id="9194617393863864469">הוספת משתמש אחר...</translation>
 <translation id="9198992156681343238">הרזולוציה של <ph name="DISPLAY_NAME" /> שונתה ל-<ph name="RESOLUTION" />. לשמירת השינויים, יש ללחוץ על 'אישור'. ההגדרות הקודמות ישוחזרו בעוד <ph name="TIMEOUT_SECONDS" />.</translation>
+<translation id="9201044636667689546">‏יש לחבר את <ph name="NAME" /> ל-Chromebook הזה</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, הרשת מנוהלת על ידי מנהל המערכת שלך</translation>
 <translation id="9210037371811586452">‏יציאה ממצב Unified Desktop</translation>
 <translation id="9211490828691860325">כל שולחנות העבודה הווירטואליים</translation>

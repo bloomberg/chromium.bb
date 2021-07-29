@@ -242,6 +242,9 @@ static int decode_frame(AVCodecContext *avctx,
         return AVERROR_PATCHWELCOME;
     }
 
+    if (bits_per_color > 32)
+        return AVERROR_INVALIDDATA;
+
     buf += 820;
     avctx->sample_aspect_ratio.num = read32(&buf, endian);
     avctx->sample_aspect_ratio.den = read32(&buf, endian);
@@ -759,7 +762,7 @@ static int decode_frame(AVCodecContext *avctx,
     return buf_size;
 }
 
-AVCodec ff_dpx_decoder = {
+const AVCodec ff_dpx_decoder = {
     .name           = "dpx",
     .long_name      = NULL_IF_CONFIG_SMALL("DPX (Digital Picture Exchange) image"),
     .type           = AVMEDIA_TYPE_VIDEO,

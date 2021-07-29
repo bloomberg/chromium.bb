@@ -35,9 +35,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_iterator.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_base_keyframe.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_base_property_indexed_keyframe.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_compositeoperationorauto_compositeoperationorautosequence.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_double_doubleornullsequence_null.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_string_stringsequence.h"
 #include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
@@ -65,21 +67,25 @@ namespace {
 // vector of absl::optional<EffectModel::CompositeOperation> enums.
 Vector<absl::optional<EffectModel::CompositeOperation>> ParseCompositeProperty(
     const BasePropertyIndexedKeyframe* keyframe) {
-  const CompositeOperationOrAutoOrCompositeOperationOrAutoSequence& composite =
-      keyframe->composite();
-
-  if (composite.IsCompositeOperationOrAuto()) {
-    return {EffectModel::StringToCompositeOperation(
-        composite.GetAsCompositeOperationOrAuto())};
+  const auto* composite = keyframe->composite();
+  switch (composite->GetContentType()) {
+    case V8UnionCompositeOperationOrAutoOrCompositeOperationOrAutoSequence::
+        ContentType::kCompositeOperationOrAuto:
+      return {EffectModel::StringToCompositeOperation(
+          composite->GetAsCompositeOperationOrAuto().AsString())};
+    case V8UnionCompositeOperationOrAutoOrCompositeOperationOrAutoSequence::
+        ContentType::kCompositeOperationOrAutoSequence: {
+      Vector<absl::optional<EffectModel::CompositeOperation>> result;
+      for (const auto& composite_operation :
+           composite->GetAsCompositeOperationOrAutoSequence()) {
+        result.push_back(EffectModel::StringToCompositeOperation(
+            composite_operation.AsString()));
+      }
+      return result;
+    }
   }
-
-  Vector<absl::optional<EffectModel::CompositeOperation>> result;
-  for (const String& composite_operation_string :
-       composite.GetAsCompositeOperationOrAutoSequence()) {
-    result.push_back(
-        EffectModel::StringToCompositeOperation(composite_operation_string));
-  }
-  return result;
+  NOTREACHED();
+  return {};
 }
 
 void SetKeyframeValue(Element* element,
@@ -414,17 +420,19 @@ bool GetPropertyIndexedKeyframeValues(const v8::Local<v8::Object>& keyframe,
     return {};
   }
 
-  StringOrStringSequence string_or_string_sequence;
-  V8StringOrStringSequence::ToImpl(
-      script_state->GetIsolate(), v8_value, string_or_string_sequence,
-      UnionTypeConversionMode::kNotNullable, exception_state);
+  auto* string_or_string_sequence =
+      V8UnionStringOrStringSequence::Create(isolate, v8_value, exception_state);
   if (exception_state.HadException())
     return false;
 
-  if (string_or_string_sequence.IsString())
-    result.push_back(string_or_string_sequence.GetAsString());
-  else
-    result = string_or_string_sequence.GetAsStringSequence();
+  switch (string_or_string_sequence->GetContentType()) {
+    case V8UnionStringOrStringSequence::ContentType::kString:
+      result.push_back(string_or_string_sequence->GetAsString());
+      break;
+    case V8UnionStringOrStringSequence::ContentType::kStringSequence:
+      result = string_or_string_sequence->GetAsStringSequence();
+      break;
+  }
 
   return true;
 }
@@ -451,20 +459,20 @@ StringKeyframeVector ConvertObjectForm(Element* element,
     return {};
 
   Vector<absl::optional<double>> offsets;
-  if (property_indexed_keyframe->offset().IsNull())
+  if (property_indexed_keyframe->offset()->IsNull())
     offsets.push_back(absl::nullopt);
-  else if (property_indexed_keyframe->offset().IsDouble())
-    offsets.push_back(property_indexed_keyframe->offset().GetAsDouble());
+  else if (property_indexed_keyframe->offset()->IsDouble())
+    offsets.push_back(property_indexed_keyframe->offset()->GetAsDouble());
   else
-    offsets = property_indexed_keyframe->offset().GetAsDoubleOrNullSequence();
+    offsets = property_indexed_keyframe->offset()->GetAsDoubleOrNullSequence();
 
   // The web-animations spec explicitly states that easings should be kept as
   // DOMStrings here and not parsed into timing functions until later.
   Vector<String> easings;
-  if (property_indexed_keyframe->easing().IsString())
-    easings.push_back(property_indexed_keyframe->easing().GetAsString());
+  if (property_indexed_keyframe->easing()->IsString())
+    easings.push_back(property_indexed_keyframe->easing()->GetAsString());
   else
-    easings = property_indexed_keyframe->easing().GetAsStringSequence();
+    easings = property_indexed_keyframe->easing()->GetAsStringSequence();
 
   Vector<absl::optional<EffectModel::CompositeOperation>> composite_operations =
       ParseCompositeProperty(property_indexed_keyframe);
@@ -657,6 +665,7 @@ bool HasAdditiveCompositeCSSKeyframe(
   }
   return false;
 }
+
 }  // namespace
 
 KeyframeEffectModelBase* EffectInput::Convert(
@@ -751,4 +760,5 @@ EffectModel::CompositeOperation EffectInput::ResolveCompositeOperation(
   }
   return result;
 }
+
 }  // namespace blink

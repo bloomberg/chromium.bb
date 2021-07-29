@@ -51,6 +51,12 @@
       fakeIdentity);
 }
 
++ (void)setCapabilities:(NSDictionary*)capabilities
+            forIdentity:(FakeChromeIdentity*)fakeIdentity {
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+      ->SetCapabilities(fakeIdentity, capabilities);
+}
+
 + (void)forgetFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->ForgetIdentity(fakeIdentity, nil);
@@ -90,12 +96,13 @@
                     grey_sufficientlyVisible(), nil);
 }
 
-+ (BOOL)isAuthenticated {
++ (BOOL)hasPrimaryIdentity {
   ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   AuthenticationService* authentication_service =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
-  return authentication_service->IsAuthenticated();
+  return authentication_service->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin);
 }
 
 + (void)signOut {

@@ -54,26 +54,6 @@ const base::Feature kVeryHighPriorityForCompositingAfterDelay{
 constexpr base::FeatureParam<int> kCompositingDelayLength{
     &kVeryHighPriorityForCompositingAfterDelay, "CompositingDelayLength", 100};
 
-// If enabled, compositor priority will be set to kVeryHighPriority until
-// a budget has been exhausted. Once the budget runs out, the priority will
-// be set to kNormalPriority until there is enough budget to reprioritize.
-const base::Feature kVeryHighPriorityForCompositingBudget{
-    "BlinkSchedulerVeryHighPriorityForCompositingBudget",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Param for kVeryHighPriorityForCompositingBudget experiment. This param
-// controls how much CPU time the compositor will be prioritized for, its
-// budget. Measured in ms.
-constexpr base::FeatureParam<int> kInitialCompositorBudgetInMilliseconds{
-    &kVeryHighPriorityForCompositingBudget,
-    "InitialCompositorBudgetInMilliseconds", 250};
-
-// Param for kVeryHighPriorityForCompositingBudget experiment. This param
-// controls the rate at which the budget is recovered.
-constexpr base::FeatureParam<double> kCompositorBudgetRecoveryRate{
-    &kVeryHighPriorityForCompositingBudget, "CompositorBudgetRecoveryRate",
-    0.25};
-
 // This feature functions as an experiment parameter for the
 // VeryHighPriorityForCompositing alternating, delay, and budget experiments.
 // When enabled, it does nothing unless one of these experiments is also
@@ -182,11 +162,8 @@ const base::Feature kHighPriorityDatabaseTaskType{
     "HighPriorityDatabaseTaskType", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When features::kIntensiveWakeUpThrottling is enabled, wake ups from timers
-// with a high nesting level are limited to 1 per
-// GetIntensiveWakeUpThrottlingDurationBetweenWakeUp() in a page that has been
-// backgrounded for GetIntensiveWakeUpThrottlingGracePeriod(). If
-// CanIntensivelyThrottleLowNestingLevel() is true, this policy is also applied
-// to timers with a non-zero delay and a low nesting level.
+// with a high nesting level are limited to 1 per minute on a page that has been
+// backgrounded for GetIntensiveWakeUpThrottlingGracePeriod().
 //
 // Intensive wake up throttling is enforced in addition to other throttling
 // mechanisms:
@@ -200,18 +177,7 @@ const base::Feature kHighPriorityDatabaseTaskType{
 // the managed policy override of the feature.
 //
 // Parameter name and default values, exposed for testing.
-constexpr int kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Default =
-    60;
-constexpr const char*
-    kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Name =
-        "duration_between_wake_ups_seconds";
 constexpr int kIntensiveWakeUpThrottling_GracePeriodSeconds_Default = 5 * 60;
-constexpr const char*
-    kIntensiveWakeUpThrottling_CanIntensivelyThrottleLowNestingLevel_Name =
-        "can_intensively_throttle_low_nesting_level";
-constexpr const bool
-    kIntensiveWakeUpThrottling_CanIntensivelyThrottleLowNestingLevel_Default =
-        false;
 
 // Exposed so that multiple tests can tinker with the policy override.
 PLATFORM_EXPORT void
@@ -219,87 +185,9 @@ ClearIntensiveWakeUpThrottlingPolicyOverrideCacheForTesting();
 // Determines if the feature is enabled, taking into account base::Feature
 // settings and policy overrides.
 PLATFORM_EXPORT bool IsIntensiveWakeUpThrottlingEnabled();
-// Duration between wake ups for the kIntensiveWakeUpThrottling feature.
-PLATFORM_EXPORT base::TimeDelta
-GetIntensiveWakeUpThrottlingDurationBetweenWakeUps();
 // Grace period after hiding a page during which there is no intensive wake up
 // throttling for the kIntensiveWakeUpThrottling feature.
 PLATFORM_EXPORT base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod();
-// The duration for which intensive throttling should be inhibited for
-// same-origin frames when the page title or favicon is updated. 0 seconds means
-// that updating the title or favicon has no effect on intensive throttling.
-PLATFORM_EXPORT base::TimeDelta
-GetTimeToInhibitIntensiveThrottlingOnTitleOrFaviconUpdate();
-// Whether timers with a non-zero delay and a low nesting level can be
-// intensively throttled.
-PLATFORM_EXPORT bool CanIntensivelyThrottleLowNestingLevel();
-
-// Per-agent scheduling experiments.
-constexpr base::Feature kPerAgentSchedulingExperiments{
-    "BlinkSchedulerPerAgentSchedulingExperiments",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Queues the per-agent scheduling experiment should affect.
-enum class PerAgentAffectedQueues {
-  // Strategy only applies to non-main agent timer queues. These can be safely
-  // disabled/deprioritized without causing any known issues.
-  kTimerQueues,
-  // Strategy applies to all non-main agent queues. This may cause some task
-  // ordering issues.
-  kAllQueues,
-};
-
-constexpr base::FeatureParam<PerAgentAffectedQueues>::Option
-    kPerAgentQueuesOptions[] = {
-        {PerAgentAffectedQueues::kTimerQueues, "timer-queues"},
-        {PerAgentAffectedQueues::kAllQueues, "all-queues"}};
-
-constexpr base::FeatureParam<PerAgentAffectedQueues> kPerAgentQueues{
-    &kPerAgentSchedulingExperiments, "queues",
-    PerAgentAffectedQueues::kTimerQueues, &kPerAgentQueuesOptions};
-
-// Effect the per-agent scheduling strategy should have.
-enum class PerAgentSlowDownMethod {
-  // Affected queues will be disabled.
-  kDisable,
-  // Affected queues will have their priority reduced to |kBestEffortPriority|.
-  kBestEffort,
-};
-
-constexpr base::FeatureParam<PerAgentSlowDownMethod>::Option
-    kPerAgentMethodOptions[] = {
-        {PerAgentSlowDownMethod::kDisable, "disable"},
-        {PerAgentSlowDownMethod::kBestEffort, "best-effort"}};
-
-constexpr base::FeatureParam<PerAgentSlowDownMethod> kPerAgentMethod{
-    &kPerAgentSchedulingExperiments, "method", PerAgentSlowDownMethod::kDisable,
-    &kPerAgentMethodOptions};
-
-// Delay to wait after the signal is reached, before "stopping" the strategy.
-constexpr base::FeatureParam<int> kPerAgentDelayMs{
-    &kPerAgentSchedulingExperiments, "delay_ms", 0};
-
-// Signal the per-agent scheduling strategy should wait for.
-enum class PerAgentSignal {
-  // Strategy will be active until all main frames reach First Meaningful Paint
-  // (+delay, if set).
-  kFirstMeaningfulPaint,
-  // Strategy will be active until all main frames finish loading (+delay, if
-  // set).
-  kOnLoad,
-  // Strategy will be active until the delay has passed since all main frames
-  // were created (or navigated).
-  kDelayOnly,
-};
-
-constexpr base::FeatureParam<PerAgentSignal>::Option kPerAgentSignalOptions[] =
-    {{PerAgentSignal::kFirstMeaningfulPaint, "fmp"},
-     {PerAgentSignal::kOnLoad, "onload"},
-     {PerAgentSignal::kDelayOnly, "delay"}};
-
-constexpr base::FeatureParam<PerAgentSignal> kPerAgentSignal{
-    &kPerAgentSchedulingExperiments, "signal",
-    PerAgentSignal::kFirstMeaningfulPaint, &kPerAgentSignalOptions};
 
 // If enabled, base::ThreadTaskRunnerHandle::Get() and
 // base::SequencedTaskRunnerHandle::Get() returns the current active
@@ -313,8 +201,30 @@ const base::Feature kMbiCompositorTaskRunnerPerAgentSchedulingGroup{
     "MbiCompositorTaskRunnerPerAgentSchedulingGroup",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kThrottleVisibleNotFocusedTimers{
-    "ThrottleVisibleNotFocusedTimers", base::FEATURE_DISABLED_BY_DEFAULT};
+// If enabled, Javascript timers are throttled to 1 wake up per
+// GetForegroundTimersThrottledWakeUpInterval() on foreground pages.
+PLATFORM_EXPORT extern const base::Feature kThrottleForegroundTimers;
+PLATFORM_EXPORT base::TimeDelta GetForegroundTimersThrottledWakeUpInterval();
+
+// Deprioritizes JS timer tasks during a particular phase of page loading.
+PLATFORM_EXPORT extern const base::Feature
+    kDeprioritizeDOMTimersDuringPageLoading;
+
+// The phase in which we deprioritize JS timer tasks.
+enum class DeprioritizeDOMTimersPhase {
+  // Until the DOMContentLoaded event is fired.
+  kOnDOMContentLoaded,
+  // Until First Contentful Paint is reached.
+  kFirstContentfulPaint,
+  // Until the load event is fired.
+  kOnLoad,
+};
+
+PLATFORM_EXPORT extern const base::FeatureParam<
+    DeprioritizeDOMTimersPhase>::Option kDeprioritizeDOMTimersPhaseOptions[];
+
+PLATFORM_EXPORT extern const base::FeatureParam<DeprioritizeDOMTimersPhase>
+    kDeprioritizeDOMTimersPhase;
 
 }  // namespace scheduler
 }  // namespace blink

@@ -23,8 +23,6 @@ extern const char kDisableSigninScopedDeviceId[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const base::Feature kAccountIdMigration;
-#else
-extern const base::Feature kForceAccountIdMigration;
 #endif
 
 #if defined(OS_ANDROID)
@@ -35,13 +33,17 @@ extern const base::Feature kDeprecateMenagerieAPI;
 extern const base::Feature kWipeDataOnChildAccountSignin;
 #endif  // defined(OS_ANDROID)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// Killswitch for PO2TS migration to AccountManagerFacade.
-extern const base::Feature kUseAccountManagerFacade;
+#if defined(OS_ANDROID) || defined(OS_IOS)
+// Features to trigger the startup sign-in promo at boot.
+extern const base::Feature kForceStartupSigninPromo;
 #endif
 
 // Support for the minor mode.
 extern const base::Feature kMinorModeSupport;
+
+// This feature disables all extended sync promos.
+extern const base::Feature kForceDisableExtendedSyncPromos;
+
 }  // namespace switches
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_BASE_SIGNIN_SWITCHES_H_

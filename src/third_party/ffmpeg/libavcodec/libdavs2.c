@@ -23,6 +23,7 @@
  */
 
 #include "avcodec.h"
+#include "internal.h"
 #include "davs2.h"
 
 typedef struct DAVS2Context {
@@ -211,7 +212,7 @@ static int davs2_decode_frame(AVCodecContext *avctx, void *data,
     return ret == 0 ? buf_size : ret;
 }
 
-AVCodec ff_libdavs2_decoder = {
+const AVCodec ff_libdavs2_decoder = {
     .name           = "libdavs2",
     .long_name      = NULL_IF_CONFIG_SMALL("libdavs2 AVS2-P2/IEEE1857.4"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -221,7 +222,8 @@ AVCodec ff_libdavs2_decoder = {
     .close          = davs2_end,
     .decode         = davs2_decode_frame,
     .flush          = davs2_flush,
-    .capabilities   =  AV_CODEC_CAP_DELAY | AV_CODEC_CAP_AUTO_THREADS,
+    .capabilities   =  AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS,
+    .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV420P,
                                                      AV_PIX_FMT_NONE },
     .wrapper_name   = "libdavs2",

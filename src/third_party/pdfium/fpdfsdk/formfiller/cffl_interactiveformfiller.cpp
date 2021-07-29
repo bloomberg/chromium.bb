@@ -17,7 +17,7 @@
 #include "fpdfsdk/cpdfsdk_widget.h"
 #include "fpdfsdk/formfiller/cffl_checkbox.h"
 #include "fpdfsdk/formfiller/cffl_combobox.h"
-#include "fpdfsdk/formfiller/cffl_formfiller.h"
+#include "fpdfsdk/formfiller/cffl_formfield.h"
 #include "fpdfsdk/formfiller/cffl_listbox.h"
 #include "fpdfsdk/formfiller/cffl_privatedata.h"
 #include "fpdfsdk/formfiller/cffl_pushbutton.h"
@@ -26,7 +26,7 @@
 #include "public/fpdf_fwlevent.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/numerics/ranges.h"
 
 CFFL_InteractiveFormFiller::CFFL_InteractiveFormFiller(
     CPDFSDK_FormFillEnvironment* pFormFillEnv)
@@ -40,10 +40,11 @@ bool CFFL_InteractiveFormFiller::Annot_HitTest(CPDFSDK_PageView* pPageView,
   return pAnnot->GetRect().Contains(point);
 }
 
-FX_RECT CFFL_InteractiveFormFiller::GetViewBBox(CPDFSDK_PageView* pPageView,
-                                                CPDFSDK_Annot* pAnnot) {
-  if (CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot))
-    return pFormFiller->GetViewBBox(pPageView);
+FX_RECT CFFL_InteractiveFormFiller::GetViewBBox(
+    const CPDFSDK_PageView* pPageView,
+    CPDFSDK_Annot* pAnnot) {
+  if (CFFL_FormField* pFormField = GetFormField(pAnnot))
+    return pFormField->GetViewBBox(pPageView);
 
   DCHECK(pPageView);
 
@@ -65,13 +66,13 @@ void CFFL_InteractiveFormFiller::OnDraw(CPDFSDK_PageView* pPageView,
   if (!IsVisible(pWidget))
     return;
 
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot);
-  if (pFormFiller && pFormFiller->IsValid()) {
-    pFormFiller->OnDraw(pPageView, pAnnot, pDevice, mtUser2Device);
+  CFFL_FormField* pFormField = GetFormField(pAnnot);
+  if (pFormField && pFormField->IsValid()) {
+    pFormField->OnDraw(pPageView, pAnnot, pDevice, mtUser2Device);
     if (m_pFormFillEnv->GetFocusAnnot() != pAnnot)
       return;
 
-    CFX_FloatRect rcFocus = pFormFiller->GetFocusBox(pPageView);
+    CFX_FloatRect rcFocus = pFormField->GetFocusBox(pPageView);
     if (rcFocus.IsEmpty())
       return;
 
@@ -80,8 +81,8 @@ void CFFL_InteractiveFormFiller::OnDraw(CPDFSDK_PageView* pPageView,
     return;
   }
 
-  if (pFormFiller) {
-    pFormFiller->OnDrawDeactive(pPageView, pAnnot, pDevice, mtUser2Device);
+  if (pFormField) {
+    pFormField->OnDrawDeactive(pPageView, pAnnot, pDevice, mtUser2Device);
   } else {
     pWidget->DrawAppearance(pDevice, mtUser2Device, CPDF_Annot::Normal,
                             nullptr);
@@ -92,7 +93,7 @@ void CFFL_InteractiveFormFiller::OnDraw(CPDFSDK_PageView* pPageView,
 }
 
 void CFFL_InteractiveFormFiller::OnDelete(CPDFSDK_Annot* pAnnot) {
-  UnRegisterFormFiller(pAnnot);
+  UnregisterFormField(pAnnot);
 }
 
 void CFFL_InteractiveFormFiller::OnMouseEnter(
@@ -119,15 +120,14 @@ void CFFL_InteractiveFormFiller::OnMouseEnter(
         return;
 
       if (pWidget->IsAppModified()) {
-        if (CFFL_FormFiller* pFormFiller = GetFormFiller(pWidget)) {
-          pFormFiller->ResetPWLWindow(pPageView,
-                                      pWidget->GetValueAge() == nValueAge);
-        }
+        CFFL_FormField* pFormField = GetFormField(pWidget);
+        if (pFormField)
+          pFormField->ResetPWLWindowForValueAge(pPageView, pWidget, nValueAge);
       }
     }
   }
-  if (CFFL_FormFiller* pFormFiller = GetOrCreateFormFiller(pAnnot->Get()))
-    pFormFiller->OnMouseEnter(pPageView);
+  if (CFFL_FormField* pFormField = GetOrCreateFormField(pAnnot->Get()))
+    pFormField->OnMouseEnter(pPageView);
 }
 
 void CFFL_InteractiveFormFiller::OnMouseExit(CPDFSDK_PageView* pPageView,
@@ -153,15 +153,14 @@ void CFFL_InteractiveFormFiller::OnMouseExit(CPDFSDK_PageView* pPageView,
         return;
 
       if (pWidget->IsAppModified()) {
-        if (CFFL_FormFiller* pFormFiller = GetFormFiller(pWidget)) {
-          pFormFiller->ResetPWLWindow(pPageView,
-                                      nValueAge == pWidget->GetValueAge());
-        }
+        CFFL_FormField* pFormField = GetFormField(pWidget);
+        if (pFormField)
+          pFormField->ResetPWLWindowForValueAge(pPageView, pWidget, nValueAge);
       }
     }
   }
-  if (CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot->Get()))
-    pFormFiller->OnMouseExit(pPageView);
+  if (CFFL_FormField* pFormField = GetFormField(pAnnot->Get()))
+    pFormField->OnMouseExit(pPageView);
 }
 
 bool CFFL_InteractiveFormFiller::OnLButtonDown(
@@ -193,16 +192,15 @@ bool CFFL_InteractiveFormFiller::OnLButtonDown(
         return true;
 
       if (pWidget->IsAppModified()) {
-        if (CFFL_FormFiller* pFormFiller = GetFormFiller(pWidget)) {
-          pFormFiller->ResetPWLWindow(pPageView,
-                                      nValueAge == pWidget->GetValueAge());
-        }
+        CFFL_FormField* pFormField = GetFormField(pWidget);
+        if (pFormField)
+          pFormField->ResetPWLWindowForValueAge(pPageView, pWidget, nValueAge);
       }
     }
   }
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot->Get());
-  return pFormFiller &&
-         pFormFiller->OnLButtonDown(pPageView, pAnnot->Get(), nFlags, point);
+  CFFL_FormField* pFormField = GetFormField(pAnnot->Get());
+  return pFormField &&
+         pFormField->OnLButtonDown(pPageView, pAnnot->Get(), nFlags, point);
 }
 
 bool CFFL_InteractiveFormFiller::OnLButtonUp(CPDFSDK_PageView* pPageView,
@@ -230,9 +228,9 @@ bool CFFL_InteractiveFormFiller::OnLButtonUp(CPDFSDK_PageView* pPageView,
   if (bSetFocus)
     m_pFormFillEnv->SetFocusAnnot(pAnnot);
 
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot->Get());
-  bool bRet = pFormFiller &&
-              pFormFiller->OnLButtonUp(pPageView, pAnnot->Get(), nFlags, point);
+  CFFL_FormField* pFormField = GetFormField(pAnnot->Get());
+  bool bRet = pFormField &&
+              pFormField->OnLButtonUp(pPageView, pAnnot->Get(), nFlags, point);
   if (m_pFormFillEnv->GetFocusAnnot() != pAnnot->Get())
     return bRet;
   if (OnButtonUp(pAnnot, pPageView, nFlags) || !pAnnot)
@@ -245,7 +243,7 @@ bool CFFL_InteractiveFormFiller::OnLButtonUp(CPDFSDK_PageView* pPageView,
 }
 
 bool CFFL_InteractiveFormFiller::OnButtonUp(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                                            CPDFSDK_PageView* pPageView,
+                                            const CPDFSDK_PageView* pPageView,
                                             uint32_t nFlag) {
   if (m_bNotifying)
     return false;
@@ -270,9 +268,9 @@ bool CFFL_InteractiveFormFiller::OnButtonUp(ObservedPtr<CPDFSDK_Annot>* pAnnot,
   if (nAge == pWidget->GetAppearanceAge())
     return false;
 
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pWidget);
-  if (pFormFiller)
-    pFormFiller->ResetPWLWindow(pPageView, nValueAge == pWidget->GetValueAge());
+  CFFL_FormField* pFormField = GetFormField(pWidget);
+  if (pFormField)
+    pFormField->ResetPWLWindowForValueAge(pPageView, pWidget, nValueAge);
   return true;
 }
 
@@ -283,8 +281,8 @@ bool CFFL_InteractiveFormFiller::SetIndexSelected(
   DCHECK_EQ((*pAnnot)->GetPDFAnnot()->GetSubtype(),
             CPDF_Annot::Subtype::WIDGET);
 
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot->Get());
-  return pFormFiller && pFormFiller->SetIndexSelected(index, selected);
+  CFFL_FormField* pFormField = GetFormField(pAnnot->Get());
+  return pFormField && pFormField->SetIndexSelected(index, selected);
 }
 
 bool CFFL_InteractiveFormFiller::IsIndexSelected(
@@ -293,8 +291,8 @@ bool CFFL_InteractiveFormFiller::IsIndexSelected(
   DCHECK_EQ((*pAnnot)->GetPDFAnnot()->GetSubtype(),
             CPDF_Annot::Subtype::WIDGET);
 
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot->Get());
-  return pFormFiller && pFormFiller->IsIndexSelected(index);
+  CFFL_FormField* pFormField = GetFormField(pAnnot->Get());
+  return pFormField && pFormField->IsIndexSelected(index);
 }
 
 bool CFFL_InteractiveFormFiller::OnLButtonDblClk(
@@ -304,8 +302,8 @@ bool CFFL_InteractiveFormFiller::OnLButtonDblClk(
     const CFX_PointF& point) {
   DCHECK_EQ((*pAnnot)->GetPDFAnnot()->GetSubtype(),
             CPDF_Annot::Subtype::WIDGET);
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot->Get());
-  return pFormFiller && pFormFiller->OnLButtonDblClk(pPageView, nFlags, point);
+  CFFL_FormField* pFormField = GetFormField(pAnnot->Get());
+  return pFormField && pFormField->OnLButtonDblClk(pPageView, nFlags, point);
 }
 
 bool CFFL_InteractiveFormFiller::OnMouseMove(CPDFSDK_PageView* pPageView,
@@ -314,8 +312,8 @@ bool CFFL_InteractiveFormFiller::OnMouseMove(CPDFSDK_PageView* pPageView,
                                              const CFX_PointF& point) {
   DCHECK_EQ((*pAnnot)->GetPDFAnnot()->GetSubtype(),
             CPDF_Annot::Subtype::WIDGET);
-  CFFL_FormFiller* pFormFiller = GetOrCreateFormFiller(pAnnot->Get());
-  return pFormFiller && pFormFiller->OnMouseMove(pPageView, nFlags, point);
+  CFFL_FormField* pFormField = GetOrCreateFormField(pAnnot->Get());
+  return pFormField && pFormField->OnMouseMove(pPageView, nFlags, point);
 }
 
 bool CFFL_InteractiveFormFiller::OnMouseWheel(
@@ -326,9 +324,9 @@ bool CFFL_InteractiveFormFiller::OnMouseWheel(
     const CFX_Vector& delta) {
   DCHECK_EQ((*pAnnot)->GetPDFAnnot()->GetSubtype(),
             CPDF_Annot::Subtype::WIDGET);
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot->Get());
-  return pFormFiller &&
-         pFormFiller->OnMouseWheel(pPageView, nFlags, point, delta);
+  CFFL_FormField* pFormField = GetFormField(pAnnot->Get());
+  return pFormField &&
+         pFormField->OnMouseWheel(pPageView, nFlags, point, delta);
 }
 
 bool CFFL_InteractiveFormFiller::OnRButtonDown(
@@ -338,8 +336,8 @@ bool CFFL_InteractiveFormFiller::OnRButtonDown(
     const CFX_PointF& point) {
   DCHECK_EQ((*pAnnot)->GetPDFAnnot()->GetSubtype(),
             CPDF_Annot::Subtype::WIDGET);
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot->Get());
-  return pFormFiller && pFormFiller->OnRButtonDown(pPageView, nFlags, point);
+  CFFL_FormField* pFormField = GetFormField(pAnnot->Get());
+  return pFormField && pFormField->OnRButtonDown(pPageView, nFlags, point);
 }
 
 bool CFFL_InteractiveFormFiller::OnRButtonUp(CPDFSDK_PageView* pPageView,
@@ -348,8 +346,8 @@ bool CFFL_InteractiveFormFiller::OnRButtonUp(CPDFSDK_PageView* pPageView,
                                              const CFX_PointF& point) {
   DCHECK_EQ((*pAnnot)->GetPDFAnnot()->GetSubtype(),
             CPDF_Annot::Subtype::WIDGET);
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot->Get());
-  return pFormFiller && pFormFiller->OnRButtonUp(pPageView, nFlags, point);
+  CFFL_FormField* pFormField = GetFormField(pAnnot->Get());
+  return pFormField && pFormField->OnRButtonUp(pPageView, nFlags, point);
 }
 
 bool CFFL_InteractiveFormFiller::OnKeyDown(CPDFSDK_Annot* pAnnot,
@@ -357,8 +355,8 @@ bool CFFL_InteractiveFormFiller::OnKeyDown(CPDFSDK_Annot* pAnnot,
                                            uint32_t nFlags) {
   DCHECK_EQ(pAnnot->GetPDFAnnot()->GetSubtype(), CPDF_Annot::Subtype::WIDGET);
 
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot);
-  return pFormFiller && pFormFiller->OnKeyDown(nKeyCode, nFlags);
+  CFFL_FormField* pFormField = GetFormField(pAnnot);
+  return pFormField && pFormField->OnKeyDown(nKeyCode, nFlags);
 }
 
 bool CFFL_InteractiveFormFiller::OnChar(CPDFSDK_Annot* pAnnot,
@@ -368,8 +366,8 @@ bool CFFL_InteractiveFormFiller::OnChar(CPDFSDK_Annot* pAnnot,
   if (nChar == FWL_VKEY_Tab)
     return true;
 
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot);
-  return pFormFiller && pFormFiller->OnChar(pAnnot, nChar, nFlags);
+  CFFL_FormField* pFormField = GetFormField(pAnnot);
+  return pFormField && pFormField->OnChar(pAnnot, nChar, nFlags);
 }
 
 bool CFFL_InteractiveFormFiller::OnSetFocus(ObservedPtr<CPDFSDK_Annot>* pAnnot,
@@ -387,8 +385,8 @@ bool CFFL_InteractiveFormFiller::OnSetFocus(ObservedPtr<CPDFSDK_Annot>* pAnnot,
       uint32_t nValueAge = pWidget->GetValueAge();
       pWidget->ClearAppModified();
 
-      CFFL_FormFiller* pFormFiller = GetOrCreateFormFiller(pWidget);
-      if (!pFormFiller)
+      CFFL_FormField* pFormField = GetOrCreateFormField(pWidget);
+      if (!pFormField)
         return false;
 
       CPDFSDK_PageView* pPageView = (*pAnnot)->GetPageView();
@@ -397,23 +395,22 @@ bool CFFL_InteractiveFormFiller::OnSetFocus(ObservedPtr<CPDFSDK_Annot>* pAnnot,
       CPDFSDK_FieldAction fa;
       fa.bModifier = CPWL_Wnd::IsCTRLKeyDown(nFlag);
       fa.bShift = CPWL_Wnd::IsSHIFTKeyDown(nFlag);
-      pFormFiller->GetActionData(pPageView, CPDF_AAction::kGetFocus, fa);
+      pFormField->GetActionData(pPageView, CPDF_AAction::kGetFocus, fa);
       pWidget->OnAAction(CPDF_AAction::kGetFocus, &fa, pPageView);
       m_bNotifying = false;
       if (!pAnnot->HasObservable())
         return false;
 
       if (pWidget->IsAppModified()) {
-        if (CFFL_FormFiller* pFiller = GetFormFiller(pWidget)) {
-          pFiller->ResetPWLWindow(pPageView,
-                                  nValueAge == pWidget->GetValueAge());
-        }
+        CFFL_FormField* pFiller = GetFormField(pWidget);
+        if (pFiller)
+          pFiller->ResetPWLWindowForValueAge(pPageView, pWidget, nValueAge);
       }
     }
   }
 
-  if (CFFL_FormFiller* pFormFiller = GetOrCreateFormFiller(pAnnot->Get()))
-    pFormFiller->SetFocusForAnnot(pAnnot->Get(), nFlag);
+  if (CFFL_FormField* pFormField = GetOrCreateFormField(pAnnot->Get()))
+    pFormField->SetFocusForAnnot(pAnnot->Get(), nFlag);
 
   return true;
 }
@@ -425,11 +422,11 @@ bool CFFL_InteractiveFormFiller::OnKillFocus(ObservedPtr<CPDFSDK_Annot>* pAnnot,
 
   DCHECK_EQ((*pAnnot)->GetPDFAnnot()->GetSubtype(),
             CPDF_Annot::Subtype::WIDGET);
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot->Get());
-  if (!pFormFiller)
+  CFFL_FormField* pFormField = GetFormField(pAnnot->Get());
+  if (!pFormField)
     return true;
 
-  pFormFiller->KillFocusForAnnot(nFlag);
+  pFormField->KillFocusForAnnot(nFlag);
   if (!pAnnot->HasObservable())
     return false;
 
@@ -449,7 +446,7 @@ bool CFFL_InteractiveFormFiller::OnKillFocus(ObservedPtr<CPDFSDK_Annot>* pAnnot,
   CPDFSDK_FieldAction fa;
   fa.bModifier = CPWL_Wnd::IsCTRLKeyDown(nFlag);
   fa.bShift = CPWL_Wnd::IsSHIFTKeyDown(nFlag);
-  pFormFiller->GetActionData(pPageView, CPDF_AAction::kLoseFocus, fa);
+  pFormField->GetActionData(pPageView, CPDF_AAction::kLoseFocus, fa);
   pWidget->OnAAction(CPDF_AAction::kLoseFocus, &fa, pPageView);
   m_bNotifying = false;
   return pAnnot->HasObservable();
@@ -475,43 +472,43 @@ bool CFFL_InteractiveFormFiller::IsFillingAllowed(
       pdfium::access_permissions::kModifyContent);
 }
 
-CFFL_FormFiller* CFFL_InteractiveFormFiller::GetFormFiller(
+CFFL_FormField* CFFL_InteractiveFormFiller::GetFormField(
     CPDFSDK_Annot* pAnnot) {
   auto it = m_Map.find(pAnnot);
   return it != m_Map.end() ? it->second.get() : nullptr;
 }
 
-CFFL_FormFiller* CFFL_InteractiveFormFiller::GetOrCreateFormFiller(
+CFFL_FormField* CFFL_InteractiveFormFiller::GetOrCreateFormField(
     CPDFSDK_Annot* pAnnot) {
-  CFFL_FormFiller* result = GetFormFiller(pAnnot);
+  CFFL_FormField* result = GetFormField(pAnnot);
   if (result)
     return result;
 
   CPDFSDK_Widget* pWidget = ToCPDFSDKWidget(pAnnot);
-  std::unique_ptr<CFFL_FormFiller> pFormFiller;
+  std::unique_ptr<CFFL_FormField> pFormField;
   switch (pWidget->GetFieldType()) {
     case FormFieldType::kPushButton:
-      pFormFiller =
+      pFormField =
           std::make_unique<CFFL_PushButton>(m_pFormFillEnv.Get(), pWidget);
       break;
     case FormFieldType::kCheckBox:
-      pFormFiller =
+      pFormField =
           std::make_unique<CFFL_CheckBox>(m_pFormFillEnv.Get(), pWidget);
       break;
     case FormFieldType::kRadioButton:
-      pFormFiller =
+      pFormField =
           std::make_unique<CFFL_RadioButton>(m_pFormFillEnv.Get(), pWidget);
       break;
     case FormFieldType::kTextField:
-      pFormFiller =
+      pFormField =
           std::make_unique<CFFL_TextField>(m_pFormFillEnv.Get(), pWidget);
       break;
     case FormFieldType::kListBox:
-      pFormFiller =
+      pFormField =
           std::make_unique<CFFL_ListBox>(m_pFormFillEnv.Get(), pWidget);
       break;
     case FormFieldType::kComboBox:
-      pFormFiller =
+      pFormField =
           std::make_unique<CFFL_ComboBox>(m_pFormFillEnv.Get(), pWidget);
       break;
     case FormFieldType::kUnknown:
@@ -519,64 +516,64 @@ CFFL_FormFiller* CFFL_InteractiveFormFiller::GetOrCreateFormFiller(
       return nullptr;
   }
 
-  result = pFormFiller.get();
-  m_Map[pAnnot] = std::move(pFormFiller);
+  result = pFormField.get();
+  m_Map[pAnnot] = std::move(pFormField);
   return result;
 }
 
 WideString CFFL_InteractiveFormFiller::GetText(CPDFSDK_Annot* pAnnot) {
   DCHECK_EQ(pAnnot->GetPDFAnnot()->GetSubtype(), CPDF_Annot::Subtype::WIDGET);
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot);
-  return pFormFiller ? pFormFiller->GetText() : WideString();
+  CFFL_FormField* pFormField = GetFormField(pAnnot);
+  return pFormField ? pFormField->GetText() : WideString();
 }
 
 WideString CFFL_InteractiveFormFiller::GetSelectedText(CPDFSDK_Annot* pAnnot) {
   DCHECK_EQ(pAnnot->GetPDFAnnot()->GetSubtype(), CPDF_Annot::Subtype::WIDGET);
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot);
-  return pFormFiller ? pFormFiller->GetSelectedText() : WideString();
+  CFFL_FormField* pFormField = GetFormField(pAnnot);
+  return pFormField ? pFormField->GetSelectedText() : WideString();
 }
 
 void CFFL_InteractiveFormFiller::ReplaceSelection(CPDFSDK_Annot* pAnnot,
                                                   const WideString& text) {
   DCHECK_EQ(pAnnot->GetPDFAnnot()->GetSubtype(), CPDF_Annot::Subtype::WIDGET);
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot);
-  if (!pFormFiller)
+  CFFL_FormField* pFormField = GetFormField(pAnnot);
+  if (!pFormField)
     return;
 
-  pFormFiller->ReplaceSelection(text);
+  pFormField->ReplaceSelection(text);
 }
 
 bool CFFL_InteractiveFormFiller::SelectAllText(CPDFSDK_Annot* pAnnot) {
   DCHECK_EQ(pAnnot->GetPDFAnnot()->GetSubtype(), CPDF_Annot::Subtype::WIDGET);
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot);
-  return pAnnot && pFormFiller->SelectAllText();
+  CFFL_FormField* pFormField = GetFormField(pAnnot);
+  return pAnnot && pFormField->SelectAllText();
 }
 
 bool CFFL_InteractiveFormFiller::CanUndo(CPDFSDK_Annot* pAnnot) {
   DCHECK_EQ(pAnnot->GetPDFAnnot()->GetSubtype(), CPDF_Annot::Subtype::WIDGET);
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot);
-  return pFormFiller && pFormFiller->CanUndo();
+  CFFL_FormField* pFormField = GetFormField(pAnnot);
+  return pFormField && pFormField->CanUndo();
 }
 
 bool CFFL_InteractiveFormFiller::CanRedo(CPDFSDK_Annot* pAnnot) {
   DCHECK_EQ(pAnnot->GetPDFAnnot()->GetSubtype(), CPDF_Annot::Subtype::WIDGET);
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot);
-  return pFormFiller && pFormFiller->CanRedo();
+  CFFL_FormField* pFormField = GetFormField(pAnnot);
+  return pFormField && pFormField->CanRedo();
 }
 
 bool CFFL_InteractiveFormFiller::Undo(CPDFSDK_Annot* pAnnot) {
   DCHECK_EQ(pAnnot->GetPDFAnnot()->GetSubtype(), CPDF_Annot::Subtype::WIDGET);
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot);
-  return pFormFiller && pFormFiller->Undo();
+  CFFL_FormField* pFormField = GetFormField(pAnnot);
+  return pFormField && pFormField->Undo();
 }
 
 bool CFFL_InteractiveFormFiller::Redo(CPDFSDK_Annot* pAnnot) {
   DCHECK_EQ(pAnnot->GetPDFAnnot()->GetSubtype(), CPDF_Annot::Subtype::WIDGET);
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pAnnot);
-  return pFormFiller && pFormFiller->Redo();
+  CFFL_FormField* pFormField = GetFormField(pAnnot);
+  return pFormField && pFormField->Redo();
 }
 
-void CFFL_InteractiveFormFiller::UnRegisterFormFiller(CPDFSDK_Annot* pAnnot) {
+void CFFL_InteractiveFormFiller::UnregisterFormField(CPDFSDK_Annot* pAnnot) {
   auto it = m_Map.find(pAnnot);
   if (it == m_Map.end())
     return;
@@ -647,7 +644,7 @@ void CFFL_InteractiveFormFiller::QueryWherePopup(
 
 bool CFFL_InteractiveFormFiller::OnKeyStrokeCommit(
     ObservedPtr<CPDFSDK_Annot>* pAnnot,
-    CPDFSDK_PageView* pPageView,
+    const CPDFSDK_PageView* pPageView,
     uint32_t nFlag) {
   if (m_bNotifying)
     return true;
@@ -667,9 +664,9 @@ bool CFFL_InteractiveFormFiller::OnKeyStrokeCommit(
   fa.bKeyDown = true;
   fa.bRC = true;
 
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pWidget);
-  pFormFiller->GetActionData(pPageView, CPDF_AAction::kKeyStroke, fa);
-  pFormFiller->SaveState(pPageView);
+  CFFL_FormField* pFormField = GetFormField(pWidget);
+  pFormField->GetActionData(pPageView, CPDF_AAction::kKeyStroke, fa);
+  pFormField->SavePWLWindowState(pPageView);
   pWidget->OnAAction(CPDF_AAction::kKeyStroke, &fa, pPageView);
   if (!pAnnot->HasObservable())
     return true;
@@ -679,7 +676,7 @@ bool CFFL_InteractiveFormFiller::OnKeyStrokeCommit(
 }
 
 bool CFFL_InteractiveFormFiller::OnValidate(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                                            CPDFSDK_PageView* pPageView,
+                                            const CPDFSDK_PageView* pPageView,
                                             uint32_t nFlag) {
   if (m_bNotifying)
     return true;
@@ -698,9 +695,9 @@ bool CFFL_InteractiveFormFiller::OnValidate(ObservedPtr<CPDFSDK_Annot>* pAnnot,
   fa.bKeyDown = true;
   fa.bRC = true;
 
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pWidget);
-  pFormFiller->GetActionData(pPageView, CPDF_AAction::kValidate, fa);
-  pFormFiller->SaveState(pPageView);
+  CFFL_FormField* pFormField = GetFormField(pWidget);
+  pFormField->GetActionData(pPageView, CPDF_AAction::kValidate, fa);
+  pFormField->SavePWLWindowState(pPageView);
   pWidget->OnAAction(CPDF_AAction::kValidate, &fa, pPageView);
   if (!pAnnot->HasObservable())
     return true;
@@ -710,7 +707,7 @@ bool CFFL_InteractiveFormFiller::OnValidate(ObservedPtr<CPDFSDK_Annot>* pAnnot,
 }
 
 void CFFL_InteractiveFormFiller::OnCalculate(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                                             CPDFSDK_PageView* pPageView,
+                                             const CPDFSDK_PageView* pPageView,
                                              uint32_t nFlag) {
   if (m_bNotifying)
     return;
@@ -725,7 +722,7 @@ void CFFL_InteractiveFormFiller::OnCalculate(ObservedPtr<CPDFSDK_Annot>* pAnnot,
 }
 
 void CFFL_InteractiveFormFiller::OnFormat(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                                          CPDFSDK_PageView* pPageView,
+                                          const CPDFSDK_PageView* pPageView,
                                           uint32_t nFlag) {
   if (m_bNotifying)
     return;
@@ -749,7 +746,7 @@ void CFFL_InteractiveFormFiller::OnFormat(ObservedPtr<CPDFSDK_Annot>* pAnnot,
 
 #ifdef PDF_ENABLE_XFA
 bool CFFL_InteractiveFormFiller::OnClick(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                                         CPDFSDK_PageView* pPageView,
+                                         const CPDFSDK_PageView* pPageView,
                                          uint32_t nFlag) {
   if (m_bNotifying)
     return false;
@@ -773,13 +770,14 @@ bool CFFL_InteractiveFormFiller::OnClick(ObservedPtr<CPDFSDK_Annot>* pAnnot,
   if (nAge == pWidget->GetAppearanceAge())
     return false;
 
-  if (CFFL_FormFiller* pFormFiller = GetFormFiller(pWidget))
-    pFormFiller->ResetPWLWindow(pPageView, nValueAge == pWidget->GetValueAge());
+  CFFL_FormField* pFormField = GetFormField(pWidget);
+  if (pFormField)
+    pFormField->ResetPWLWindowForValueAge(pPageView, pWidget, nValueAge);
   return false;
 }
 
 bool CFFL_InteractiveFormFiller::OnFull(ObservedPtr<CPDFSDK_Widget>* pAnnot,
-                                        CPDFSDK_PageView* pPageView,
+                                        const CPDFSDK_PageView* pPageView,
                                         uint32_t nFlag) {
   if (m_bNotifying)
     return false;
@@ -803,14 +801,14 @@ bool CFFL_InteractiveFormFiller::OnFull(ObservedPtr<CPDFSDK_Widget>* pAnnot,
   if (nAge == pWidget->GetAppearanceAge())
     return false;
 
-  if (CFFL_FormFiller* pFormFiller = GetFormFiller(pWidget))
-    pFormFiller->ResetPWLWindow(pPageView, nValueAge == pWidget->GetValueAge());
-
+  CFFL_FormField* pFormField = GetFormField(pWidget);
+  if (pFormField)
+    pFormField->ResetPWLWindowForValueAge(pPageView, pWidget, nValueAge);
   return true;
 }
 
 bool CFFL_InteractiveFormFiller::OnPreOpen(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                                           CPDFSDK_PageView* pPageView,
+                                           const CPDFSDK_PageView* pPageView,
                                            uint32_t nFlag) {
   if (m_bNotifying)
     return false;
@@ -834,14 +832,14 @@ bool CFFL_InteractiveFormFiller::OnPreOpen(ObservedPtr<CPDFSDK_Annot>* pAnnot,
   if (nAge == pWidget->GetAppearanceAge())
     return false;
 
-  if (CFFL_FormFiller* pFormFiller = GetFormFiller(pWidget))
-    pFormFiller->ResetPWLWindow(pPageView, nValueAge == pWidget->GetValueAge());
-
+  CFFL_FormField* pFormField = GetFormField(pWidget);
+  if (pFormField)
+    pFormField->ResetPWLWindowForValueAge(pPageView, pWidget, nValueAge);
   return true;
 }
 
 bool CFFL_InteractiveFormFiller::OnPostOpen(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                                            CPDFSDK_PageView* pPageView,
+                                            const CPDFSDK_PageView* pPageView,
                                             uint32_t nFlag) {
   if (m_bNotifying)
     return false;
@@ -862,17 +860,19 @@ bool CFFL_InteractiveFormFiller::OnPostOpen(ObservedPtr<CPDFSDK_Annot>* pAnnot,
   m_bNotifying = false;
   if (!pAnnot->HasObservable() || !IsValidAnnot(pPageView, pWidget))
     return true;
+
   if (nAge == pWidget->GetAppearanceAge())
     return false;
 
-  if (CFFL_FormFiller* pFormFiller = GetFormFiller(pWidget))
-    pFormFiller->ResetPWLWindow(pPageView, nValueAge == pWidget->GetValueAge());
-
+  CFFL_FormField* pFormField = GetFormField(pWidget);
+  if (pFormField)
+    pFormField->ResetPWLWindowForValueAge(pPageView, pWidget, nValueAge);
   return true;
 }
 #endif  // PDF_ENABLE_XFA
 
-bool CFFL_InteractiveFormFiller::IsValidAnnot(CPDFSDK_PageView* pPageView,
+// static
+bool CFFL_InteractiveFormFiller::IsValidAnnot(const CPDFSDK_PageView* pPageView,
                                               CPDFSDK_Annot* pAnnot) {
   return pPageView && pPageView->IsValidAnnot(pAnnot->GetPDFAnnot());
 }
@@ -887,14 +887,14 @@ std::pair<bool, bool> CFFL_InteractiveFormFiller::OnBeforeKeyStroke(
     uint32_t nFlag) {
   // Copy out of private data since the window owning it may not survive.
   auto* pPrivateData = static_cast<const CFFL_PrivateData*>(pAttached);
-  CPDFSDK_PageView* pPageView = pPrivateData->GetPageView();
+  const CPDFSDK_PageView* pPageView = pPrivateData->GetPageView();
   ObservedPtr<CPDFSDK_Widget> pWidget(pPrivateData->GetWidget());
   DCHECK(pWidget);
 
-  CFFL_FormFiller* pFormFiller = GetFormFiller(pWidget.Get());
+  CFFL_FormField* pFormField = GetFormField(pWidget.Get());
 
 #ifdef PDF_ENABLE_XFA
-  if (pFormFiller->IsFieldFull(pPageView)) {
+  if (pFormField->IsFieldFull(pPageView)) {
     if (OnFull(&pWidget, pPageView, nFlag) || !pWidget)
       return {true, true};
   }
@@ -922,8 +922,8 @@ std::pair<bool, bool> CFFL_InteractiveFormFiller::OnBeforeKeyStroke(
   fa.bRC = true;
   fa.nSelStart = nSelStart;
   fa.nSelEnd = nSelEnd;
-  pFormFiller->GetActionData(pPageView, CPDF_AAction::kKeyStroke, fa);
-  pFormFiller->SaveState(pPageView);
+  pFormField->GetActionData(pPageView, CPDF_AAction::kKeyStroke, fa);
+  pFormField->SavePWLWindowState(pPageView);
 
   bool action_status =
       pWidget->OnAAction(CPDF_AAction::kKeyStroke, &fa, pPageView);
@@ -936,8 +936,8 @@ std::pair<bool, bool> CFFL_InteractiveFormFiller::OnBeforeKeyStroke(
 
   bool bExit = false;
   if (nAge != pWidget->GetAppearanceAge()) {
-    CPWL_Wnd* pWnd = pFormFiller->ResetPWLWindow(
-        pPageView, nValueAge == pWidget->GetValueAge());
+    CPWL_Wnd* pWnd = pFormField->ResetPWLWindowForValueAge(
+        pPageView, pWidget.Get(), nValueAge);
     if (!pWnd)
       return {true, true};
 
@@ -948,14 +948,14 @@ std::pair<bool, bool> CFFL_InteractiveFormFiller::OnBeforeKeyStroke(
     bExit = true;
   }
   if (fa.bRC) {
-    pFormFiller->SetActionData(pPageView, CPDF_AAction::kKeyStroke, fa);
+    pFormField->SetActionData(pPageView, CPDF_AAction::kKeyStroke, fa);
   } else {
-    pFormFiller->RestoreState(pPageView);
+    pFormField->RecreatePWLWindowFromSavedState(pPageView);
   }
   if (pFormFillEnv->GetFocusAnnot() == pWidget)
     return {false, bExit};
 
-  pFormFiller->CommitData(pPageView, nFlag);
+  pFormField->CommitData(pPageView, nFlag);
   return {false, true};
 }
 

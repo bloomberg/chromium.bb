@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
-#include "chrome/browser/prefetch/no_state_prefetch/prerender_test_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -104,6 +103,12 @@ class InterceptingRendererStartupHelper : public RendererStartupHelper,
   void TransferBlobs(TransferBlobsCallback callback) override {
     std::move(callback).Run();
   }
+  void UpdatePermissions(const std::string& extension_id,
+                         PermissionSet active_permissions,
+                         PermissionSet withheld_permissions,
+                         URLPatternSet policy_blocked_hosts,
+                         URLPatternSet policy_allowed_hosts,
+                         bool uses_default_policy_host_restrictions) override {}
   void UpdateDefaultPolicyHostRestrictions(
       URLPatternSet default_policy_blocked_hosts,
       URLPatternSet default_policy_allowed_hosts) override {}

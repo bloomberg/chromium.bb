@@ -9,6 +9,7 @@ import("../visibility.gni")
 
 devtools_module("elements") {
   sources = [
+    "AccessibilityTreeUtils.ts",
     "AccessibilityTreeView.ts",
     "ClassesPaneWidget.ts",
     "ColorSwatchPopoverIcon.ts",
@@ -52,6 +53,7 @@ devtools_module("elements") {
     "../../panels/emulation:bundle",
     "../../panels/event_listeners:bundle",
     "../../panels/mobile_throttling:bundle",
+    "../../ui/components/adorners:bundle",
     "../../ui/components/tree_outline:bundle",
     "../../ui/legacy:bundle",
     "../../ui/legacy/components/color_picker:bundle",
@@ -90,7 +92,6 @@ devtools_entrypoint("bundle") {
     "../../ui/components/docs/layout_pane/*",
 
     # TODO(crbug.com/1202788): Remove invalid dependents
-    "../../models/recorder/*",
     "../issues/*",
     "../network/*",
   ]

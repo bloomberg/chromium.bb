@@ -23,6 +23,8 @@
 #include "third_party/blink/renderer/modules/peerconnection/identifiability_metrics.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtls_transport.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_receiver_sink_optimizer.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_receiver_source_optimizer.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_underlying_sink.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_underlying_source.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_underlying_sink.h"
@@ -33,7 +35,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/peerconnection/rtc_encoded_audio_stream_transformer.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_encoded_video_stream_transformer.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
@@ -49,7 +50,8 @@ RTCRtpReceiver::RTCRtpReceiver(RTCPeerConnection* pc,
                                MediaStreamVector streams,
                                bool force_encoded_audio_insertable_streams,
                                bool force_encoded_video_insertable_streams)
-    : pc_(pc),
+    : ExecutionContextLifecycleObserver(pc->GetExecutionContext()),
+      pc_(pc),
       receiver_(std::move(receiver)),
       track_(track),
       streams_(std::move(streams)),
@@ -60,17 +62,22 @@ RTCRtpReceiver::RTCRtpReceiver(RTCPeerConnection* pc,
   DCHECK(pc_);
   DCHECK(receiver_);
   DCHECK(track_);
-  if (force_encoded_audio_insertable_streams_ && track_->kind() == "audio")
+  if (force_encoded_audio_insertable_streams_ && track_->kind() == "audio") {
+    encoded_audio_transformer_ =
+        receiver_->GetEncodedAudioStreamTransformer()->GetBroker();
     RegisterEncodedAudioStreamCallback();
+  }
   if (force_encoded_video_insertable_streams_ && track_->kind() == "video")
     RegisterEncodedVideoStreamCallback();
 }
 
 MediaStreamTrack* RTCRtpReceiver::track() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return track_;
 }
 
 RTCDtlsTransport* RTCRtpReceiver::transport() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return transport_;
 }
 
@@ -80,11 +87,13 @@ RTCDtlsTransport* RTCRtpReceiver::rtcpTransport() {
 }
 
 absl::optional<double> RTCRtpReceiver::playoutDelayHint() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return playout_delay_hint_;
 }
 
 void RTCRtpReceiver::setPlayoutDelayHint(absl::optional<double> hint,
                                          ExceptionState& exception_state) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (hint.has_value() && hint.value() < 0.0) {
     exception_state.ThrowTypeError("playoutDelayHint can't be negative");
     return;
@@ -97,6 +106,7 @@ void RTCRtpReceiver::setPlayoutDelayHint(absl::optional<double> hint,
 HeapVector<Member<RTCRtpSynchronizationSource>>
 RTCRtpReceiver::getSynchronizationSources(ScriptState* script_state,
                                           ExceptionState& exception_state) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Window is detached");
@@ -139,6 +149,7 @@ RTCRtpReceiver::getSynchronizationSources(ScriptState* script_state,
 HeapVector<Member<RTCRtpContributingSource>>
 RTCRtpReceiver::getContributingSources(ScriptState* script_state,
                                        ExceptionState& exception_state) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Window is detached");
@@ -179,6 +190,7 @@ RTCRtpReceiver::getContributingSources(ScriptState* script_state,
 }
 
 ScriptPromise RTCRtpReceiver::getStats(ScriptState* script_state) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   receiver_->GetStats(
@@ -190,6 +202,7 @@ ScriptPromise RTCRtpReceiver::getStats(ScriptState* script_state) {
 RTCInsertableStreams* RTCRtpReceiver::createEncodedStreams(
     ScriptState* script_state,
     ExceptionState& exception_state) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (track_->kind() == "audio")
     return createEncodedAudioStreams(script_state, exception_state);
   DCHECK_EQ(track_->kind(), "video");
@@ -199,6 +212,7 @@ RTCInsertableStreams* RTCRtpReceiver::createEncodedStreams(
 RTCInsertableStreams* RTCRtpReceiver::createEncodedAudioStreams(
     ScriptState* script_state,
     ExceptionState& exception_state) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!force_encoded_audio_insertable_streams_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -218,6 +232,7 @@ RTCInsertableStreams* RTCRtpReceiver::createEncodedAudioStreams(
 RTCInsertableStreams* RTCRtpReceiver::createEncodedVideoStreams(
     ScriptState* script_state,
     ExceptionState& exception_state) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!force_encoded_video_insertable_streams_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -235,26 +250,32 @@ RTCInsertableStreams* RTCRtpReceiver::createEncodedVideoStreams(
 }
 
 RTCRtpReceiverPlatform* RTCRtpReceiver::platform_receiver() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return receiver_.get();
 }
 
 MediaStreamVector RTCRtpReceiver::streams() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return streams_;
 }
 
 void RTCRtpReceiver::set_streams(MediaStreamVector streams) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   streams_ = std::move(streams);
 }
 
 void RTCRtpReceiver::set_transceiver(RTCRtpTransceiver* transceiver) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   transceiver_ = transceiver;
 }
 
 void RTCRtpReceiver::set_transport(RTCDtlsTransport* transport) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   transport_ = transport;
 }
 
 void RTCRtpReceiver::UpdateSourcesIfNeeded() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!web_sources_needs_updating_)
     return;
   web_sources_ = receiver_->GetSources();
@@ -269,7 +290,19 @@ void RTCRtpReceiver::UpdateSourcesIfNeeded() {
                 WrapWeakPersistent(this)));
 }
 
+void RTCRtpReceiver::ContextDestroyed() {
+  {
+    WTF::MutexLocker locker(audio_underlying_source_mutex_);
+    audio_from_depacketizer_underlying_source_.Clear();
+  }
+  {
+    WTF::MutexLocker locker(audio_underlying_sink_mutex_);
+    audio_to_decoder_underlying_sink_.Clear();
+  }
+}
+
 void RTCRtpReceiver::SetContributingSourcesNeedsUpdating() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   web_sources_needs_updating_ = true;
 }
 
@@ -279,13 +312,12 @@ void RTCRtpReceiver::Trace(Visitor* visitor) const {
   visitor->Trace(transport_);
   visitor->Trace(streams_);
   visitor->Trace(transceiver_);
-  visitor->Trace(audio_from_depacketizer_underlying_source_);
-  visitor->Trace(audio_to_decoder_underlying_sink_);
   visitor->Trace(encoded_audio_streams_);
   visitor->Trace(video_from_depacketizer_underlying_source_);
   visitor->Trace(video_to_decoder_underlying_sink_);
   visitor->Trace(encoded_video_streams_);
   ScriptWrappable::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 RTCRtpCapabilities* RTCRtpReceiver::getCapabilities(ScriptState* state,
@@ -350,6 +382,7 @@ RTCRtpCapabilities* RTCRtpReceiver::getCapabilities(ScriptState* state,
 }
 
 RTCRtpReceiveParameters* RTCRtpReceiver::getParameters() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   RTCRtpReceiveParameters* parameters = RTCRtpReceiveParameters::Create();
   std::unique_ptr<webrtc::RtpParameters> webrtc_parameters =
       receiver_->GetParameters();
@@ -390,72 +423,116 @@ RTCRtpReceiveParameters* RTCRtpReceiver::getParameters() {
 }
 
 void RTCRtpReceiver::RegisterEncodedAudioStreamCallback() {
-  DCHECK(!platform_receiver()
-              ->GetEncodedAudioStreamTransformer()
-              ->HasTransformerCallback());
-  DCHECK_EQ(track_->kind(), "audio");
-  platform_receiver()
-      ->GetEncodedAudioStreamTransformer()
-      ->SetTransformerCallback(
-          WTF::BindRepeating(&RTCRtpReceiver::OnAudioFrameFromDepacketizer,
-                             WrapWeakPersistent(this)));
+  encoded_audio_transformer_->SetTransformerCallback(
+      WTF::CrossThreadBindRepeating(
+          &RTCRtpReceiver::OnAudioFrameFromDepacketizer,
+          WrapCrossThreadWeakPersistent(this)));
 }
 
 void RTCRtpReceiver::UnregisterEncodedAudioStreamCallback() {
-  DCHECK_EQ(track_->kind(), "audio");
-  platform_receiver()
-      ->GetEncodedAudioStreamTransformer()
-      ->ResetTransformerCallback();
+  encoded_audio_transformer_->ResetTransformerCallback();
+}
+
+void RTCRtpReceiver::SetAudioUnderlyingSource(
+    RTCEncodedAudioUnderlyingSource* new_underlying_source,
+    scoped_refptr<base::SingleThreadTaskRunner> new_source_task_runner) {
+  if (!GetExecutionContext()) {
+    // If our context is destroyed, then the RTCRtpReceiver, underlying
+    // source(s), and transformer are about to be garbage collected, so there's
+    // no reason to continue.
+    return;
+  }
+  {
+    WTF::MutexLocker locker(audio_underlying_source_mutex_);
+    audio_from_depacketizer_underlying_source_->OnSourceTransferStarted();
+    audio_from_depacketizer_underlying_source_ = new_underlying_source;
+  }
+
+  encoded_audio_transformer_->SetSourceTaskRunner(
+      std::move(new_source_task_runner));
+}
+
+void RTCRtpReceiver::SetAudioUnderlyingSink(
+    RTCEncodedAudioUnderlyingSink* new_underlying_sink) {
+  if (!GetExecutionContext()) {
+    // If our context is destroyed, then the RTCRtpReceiver and underlying
+    // sink(s) are about to be garbage collected, so there's no reason to
+    // continue.
+    return;
+  }
+  WTF::MutexLocker locker(audio_underlying_sink_mutex_);
+  audio_to_decoder_underlying_sink_ = new_underlying_sink;
 }
 
 void RTCRtpReceiver::InitializeEncodedAudioStreams(ScriptState* script_state) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!encoded_audio_streams_);
-  DCHECK(!audio_from_depacketizer_underlying_source_);
-  DCHECK(!audio_to_decoder_underlying_sink_);
   DCHECK(force_encoded_audio_insertable_streams_);
 
   encoded_audio_streams_ = RTCInsertableStreams::Create();
 
-  // Set up readable.
-  audio_from_depacketizer_underlying_source_ =
-      MakeGarbageCollected<RTCEncodedAudioUnderlyingSource>(
-          script_state,
-          WTF::Bind(&RTCRtpReceiver::UnregisterEncodedAudioStreamCallback,
-                    WrapWeakPersistent(this)),
-          /*is_receiver=*/true);
-  // The high water mark for the readable stream is set to 0 so that frames are
-  // removed from the queue right away, without introducing a new buffer.
-  ReadableStream* readable_stream =
-      ReadableStream::CreateWithCountQueueingStrategy(
-          script_state, audio_from_depacketizer_underlying_source_,
-          /*high_water_mark=*/0);
-  encoded_audio_streams_->setReadableStream(readable_stream);
-  encoded_audio_streams_->setReadable(readable_stream);
+  {
+    WTF::MutexLocker locker(audio_underlying_source_mutex_);
+    DCHECK(!audio_from_depacketizer_underlying_source_);
 
-  // Set up writable.
-  audio_to_decoder_underlying_sink_ =
-      MakeGarbageCollected<RTCEncodedAudioUnderlyingSink>(
-          script_state,
-          WTF::BindRepeating(
-              [](RTCRtpReceiver* receiver)
-                  -> RTCEncodedAudioStreamTransformer* {
-                return receiver ? receiver->platform_receiver()
-                                      ->GetEncodedAudioStreamTransformer()
-                                : nullptr;
-              },
-              WrapWeakPersistent(this)));
-  // The high water mark for the stream is set to 1 so that the stream seems
-  // ready to write, but without queuing frames.
-  WritableStream* writable_stream =
-      WritableStream::CreateWithCountQueueingStrategy(
-          script_state, audio_to_decoder_underlying_sink_,
-          /*high_water_mark=*/1);
+    // Set up readable.
+    audio_from_depacketizer_underlying_source_ =
+        MakeGarbageCollected<RTCEncodedAudioUnderlyingSource>(
+            script_state,
+            WTF::CrossThreadBindOnce(
+                &RTCRtpReceiver::UnregisterEncodedAudioStreamCallback,
+                WrapCrossThreadWeakPersistent(this)),
+            /*is_receiver=*/true);
+
+    auto set_underlying_source =
+        WTF::CrossThreadBindRepeating(&RTCRtpReceiver::SetAudioUnderlyingSource,
+                                      WrapCrossThreadWeakPersistent(this));
+    auto disconnect_callback = WTF::CrossThreadBindOnce(
+        &RTCRtpReceiver::UnregisterEncodedAudioStreamCallback,
+        WrapCrossThreadWeakPersistent(this));
+    // The high water mark for the readable stream is set to 0 so that frames
+    // are removed from the queue right away, without introducing a new buffer.
+    ReadableStream* readable_stream =
+        ReadableStream::CreateWithCountQueueingStrategy(
+            script_state, audio_from_depacketizer_underlying_source_,
+            /*high_water_mark=*/0, AllowPerChunkTransferring(false),
+            absl::make_unique<RtcEncodedAudioReceiverSourceOptimizer>(
+                std::move(set_underlying_source),
+                std::move(disconnect_callback)));
+    encoded_audio_streams_->setReadableStream(readable_stream);
+    encoded_audio_streams_->setReadable(readable_stream);
+  }
+
+  WritableStream* writable_stream;
+  {
+    WTF::MutexLocker locker(audio_underlying_sink_mutex_);
+    DCHECK(!audio_to_decoder_underlying_sink_);
+
+    // Set up writable.
+    audio_to_decoder_underlying_sink_ =
+        MakeGarbageCollected<RTCEncodedAudioUnderlyingSink>(
+            script_state, encoded_audio_transformer_);
+
+    auto set_underlying_sink =
+        WTF::CrossThreadBindOnce(&RTCRtpReceiver::SetAudioUnderlyingSink,
+                                 WrapCrossThreadWeakPersistent(this));
+
+    // The high water mark for the stream is set to 1 so that the stream seems
+    // ready to write, but without queuing frames.
+    writable_stream = WritableStream::CreateWithCountQueueingStrategy(
+        script_state, audio_to_decoder_underlying_sink_,
+        /*high_water_mark=*/1,
+        absl::make_unique<RtcEncodedAudioReceiverSinkOptimizer>(
+            std::move(set_underlying_sink), encoded_audio_transformer_));
+  }
+
   encoded_audio_streams_->setWritableStream(writable_stream);
   encoded_audio_streams_->setWritable(writable_stream);
 }
 
 void RTCRtpReceiver::OnAudioFrameFromDepacketizer(
     std::unique_ptr<webrtc::TransformableFrameInterface> encoded_audio_frame) {
+  WTF::MutexLocker locker(audio_underlying_source_mutex_);
   if (audio_from_depacketizer_underlying_source_) {
     audio_from_depacketizer_underlying_source_->OnFrameFromSource(
         std::move(encoded_audio_frame));
@@ -463,6 +540,7 @@ void RTCRtpReceiver::OnAudioFrameFromDepacketizer(
 }
 
 void RTCRtpReceiver::RegisterEncodedVideoStreamCallback() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!platform_receiver()
               ->GetEncodedVideoStreamTransformer()
               ->HasTransformerCallback());
@@ -475,6 +553,7 @@ void RTCRtpReceiver::RegisterEncodedVideoStreamCallback() {
 }
 
 void RTCRtpReceiver::UnregisterEncodedVideoStreamCallback() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(track_->kind(), "video");
   platform_receiver()
       ->GetEncodedVideoStreamTransformer()
@@ -482,6 +561,7 @@ void RTCRtpReceiver::UnregisterEncodedVideoStreamCallback() {
 }
 
 void RTCRtpReceiver::InitializeEncodedVideoStreams(ScriptState* script_state) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!encoded_video_streams_);
   DCHECK(!video_from_depacketizer_underlying_source_);
   DCHECK(!video_to_decoder_underlying_sink_);
@@ -529,6 +609,7 @@ void RTCRtpReceiver::InitializeEncodedVideoStreams(ScriptState* script_state) {
 void RTCRtpReceiver::OnVideoFrameFromDepacketizer(
     std::unique_ptr<webrtc::TransformableVideoFrameInterface>
         encoded_video_frame) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (video_from_depacketizer_underlying_source_) {
     video_from_depacketizer_underlying_source_->OnFrameFromSource(
         std::move(encoded_video_frame));

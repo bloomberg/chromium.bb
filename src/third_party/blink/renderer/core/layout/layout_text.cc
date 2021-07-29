@@ -32,10 +32,12 @@
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/bidi_adjustment.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/inline_box_position.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -46,6 +48,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
+#include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -54,6 +57,7 @@
 #include "third_party/blink/renderer/core/layout/line/glyph_overflow.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_abstract_inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
@@ -61,7 +65,9 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -826,12 +832,17 @@ PositionWithAffinity CreatePositionWithAffinityForBox(
                      : TextAffinity::kDownstream;
       break;
   }
-  int text_start_offset =
-      box->GetLineLayoutItem().IsText()
-          ? LineLayoutText(box->GetLineLayoutItem()).TextStartOffset()
-          : 0;
-  return box->GetLineLayoutItem().CreatePositionWithAffinity(
-      offset + text_start_offset, affinity);
+  const LineLayoutItem& layout_item = box->GetLineLayoutItem();
+  if (!layout_item.IsText()) {
+    if (const Node* node = layout_item.NonPseudoNode()) {
+      if (offset && UNLIKELY(offset > Position::LastOffsetInNode(*node)))
+        return layout_item.PositionAfterThis();
+    }
+    return layout_item.CreatePositionWithAffinity(offset, affinity);
+  }
+  int text_start_offset = LineLayoutText(layout_item).TextStartOffset();
+  return layout_item.CreatePositionWithAffinity(offset + text_start_offset,
+                                                affinity);
 }
 
 PositionWithAffinity
@@ -879,27 +890,29 @@ PositionWithAffinity LayoutText::PositionForPoint(
       point_in_contents += PhysicalOffset(
           containing_block_flow->PixelSnappedScrolledContentOffset());
     }
+    const auto* const text_combine = DynamicTo<LayoutNGTextCombine>(Parent());
     const NGPhysicalBoxFragment* container_fragment = nullptr;
     PhysicalOffset point_in_container_fragment;
+    DCHECK(!IsSVGInlineText());
     for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
       DCHECK(&cursor.ContainerFragment());
       if (container_fragment != &cursor.ContainerFragment()) {
         container_fragment = &cursor.ContainerFragment();
         point_in_container_fragment =
             point_in_contents - container_fragment->OffsetFromOwnerLayoutBox();
+        if (UNLIKELY(text_combine)) {
+          point_in_container_fragment =
+              text_combine->AdjustOffsetForHitTest(point_in_container_fragment);
+        }
       }
       if (!EnclosingIntRect(cursor.Current().RectInContainerFragment())
                .Contains(FlooredIntPoint(point_in_container_fragment)))
         continue;
       if (auto position_with_affinity =
               cursor.PositionForPointInChild(point_in_container_fragment)) {
-        // Note: Due by Bidi adjustment, |position| isn't relative to this.
-        const Position& position = position_with_affinity.GetPosition();
-        DCHECK(position.IsOffsetInAnchor()) << position;
-        return position.ComputeContainerNode()
-            ->GetLayoutObject()
-            ->CreatePositionWithAffinity(position.OffsetInContainerNode(),
-                                         position_with_affinity.Affinity());
+        // Note: Due by Bidi adjustment, |position_with_affinity| isn't
+        // relative to this.
+        return AdjustForEditingBoundary(position_with_affinity);
       }
     }
     // Try for leading and trailing spaces between lines.
@@ -2144,6 +2157,21 @@ void LayoutText::ForceSetText(scoped_refptr<StringImpl> text) {
   TextDidChange();
 }
 
+void LayoutText::SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
+    LayoutInvalidationReasonForTracing reason) {
+  auto* const text_combine = DynamicTo<LayoutNGTextCombine>(Parent());
+  if (UNLIKELY(text_combine)) {
+    // Number of characters in text may change compressed font or scaling of
+    // text combine. So, we should invalidate |LayoutNGTextCombine| to repaint.
+    text_combine
+        ->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
+            reason);
+    return;
+  }
+  LayoutObject::SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
+      reason);
+}
+
 void LayoutText::TextDidChange() {
   NOT_DESTROYED();
   // If preferredLogicalWidthsDirty() of an orphan child is true,
@@ -2317,6 +2345,10 @@ PhysicalRect LayoutText::PhysicalLinesBoundingBox() const {
   // Some callers expect correct offset even if the rect is empty.
   if (result == PhysicalRect())
     result.offset = FirstLineBoxTopLeft();
+  // Note: |result.offset| is relative to container fragment.
+  const auto* const text_combine = DynamicTo<LayoutNGTextCombine>(Parent());
+  if (UNLIKELY(text_combine))
+    return text_combine->AdjustRectForBoundingBox(result);
   return result;
 }
 
@@ -2385,6 +2417,9 @@ PhysicalRect LayoutText::LocalSelectionVisualRect() const {
 
   const FrameSelection& frame_selection = GetFrame()->Selection();
   if (IsInLayoutNGInlineFormattingContext()) {
+    const auto* svg_inline_text = DynamicTo<LayoutSVGInlineText>(this);
+    float scaling_factor =
+        svg_inline_text ? svg_inline_text->ScalingFactor() : 1.0f;
     PhysicalRect rect;
     NGInlineCursor cursor(*ContainingNGBlockFlow());
     for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
@@ -2395,7 +2430,20 @@ PhysicalRect LayoutText::LocalSelectionVisualRect() const {
       if (status.start == status.end)
         continue;
       PhysicalRect item_rect = cursor.CurrentLocalSelectionRectForText(status);
-      item_rect.offset += cursor.Current().OffsetInContainerFragment();
+      if (svg_inline_text) {
+        FloatRect float_rect(item_rect);
+        const NGFragmentItem& item = *cursor.CurrentItem();
+        float_rect.MoveBy(item.SvgFragmentData()->rect.Location());
+        if (item.HasSvgTransformForBoundingBox()) {
+          float_rect =
+              item.BuildSvgTransformForBoundingBox().MapRect(float_rect);
+        }
+        if (scaling_factor != 1.0f)
+          float_rect.Scale(1 / scaling_factor);
+        item_rect = PhysicalRect::EnclosingRect(float_rect);
+      } else {
+        item_rect.offset += cursor.Current().OffsetInContainerFragment();
+      }
       rect.Unite(item_rect);
     }
     return rect;
@@ -2752,16 +2800,20 @@ void LayoutText::InvalidateDisplayItemClients(
 
 const DisplayItemClient* LayoutText::GetSelectionDisplayItemClient() const {
   NOT_DESTROYED();
+  if (UNLIKELY(!IsInLayoutNGInlineFormattingContext()))
+    return nullptr;
+  // When |this| is in text-combine box, we should use text-combine box as
+  // display client item to paint caret with affine transform.
+  const auto* const text_combine = DynamicTo<LayoutNGTextCombine>(Parent());
+  if (UNLIKELY(text_combine) && text_combine->NeedsAffineTransformInPaint())
+    return text_combine;
   if (!IsSelected())
     return nullptr;
-  if (IsInLayoutNGInlineFormattingContext()) {
-    if (const auto* client = GetSelectionDisplayItemClientMap().at(this))
-      return client;
-    return GetSelectionDisplayItemClientMap()
-        .insert(this, std::make_unique<SelectionDisplayItemClient>())
-        .stored_value->value.get();
-  }
-  return nullptr;
+  if (const auto* client = GetSelectionDisplayItemClientMap().at(this))
+    return client;
+  return GetSelectionDisplayItemClientMap()
+      .insert(this, std::make_unique<SelectionDisplayItemClient>())
+      .stored_value->value.get();
 }
 
 PhysicalRect LayoutText::DebugRect() const {

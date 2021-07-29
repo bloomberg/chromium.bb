@@ -9,10 +9,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -24,6 +24,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace chromeos {
 
@@ -201,9 +202,9 @@ bool ParseServerResponse(const GURL& server_url,
     return false;
   }
 
-  std::string status;
+  const std::string* status = response_object->FindStringKey(kStatusString);
 
-  if (!response_object->GetStringWithoutPathExpansion(kStatusString, &status)) {
+  if (!status) {
     PrintTimeZoneError(server_url, "Missing status attribute.", timezone);
     RecordUmaEvent(TIMEZONE_REQUEST_EVENT_RESPONSE_MALFORMED);
     return false;
@@ -211,7 +212,7 @@ bool ParseServerResponse(const GURL& server_url,
 
   bool found = false;
   for (size_t i = 0; i < base::size(statusString2Enum); ++i) {
-    if (status != statusString2Enum[i].string)
+    if (*status != statusString2Enum[i].string)
       continue;
 
     timezone->status = statusString2Enum[i].value;
@@ -221,48 +222,58 @@ bool ParseServerResponse(const GURL& server_url,
 
   if (!found) {
     PrintTimeZoneError(
-        server_url, "Bad status attribute value: '" + status + "'", timezone);
+        server_url, "Bad status attribute value: '" + *status + "'", timezone);
     RecordUmaEvent(TIMEZONE_REQUEST_EVENT_RESPONSE_MALFORMED);
     return false;
   }
 
   const bool status_ok = (timezone->status == TimeZoneResponseData::OK);
 
-  if (!response_object->GetDoubleWithoutPathExpansion(kDstOffsetString,
-                                                      &timezone->dstOffset) &&
-      status_ok) {
+  absl::optional<double> dst_offset =
+      response_object->FindDoubleKey(kDstOffsetString);
+  if (dst_offset.has_value()) {
+    timezone->dstOffset = dst_offset.value();
+  } else if (status_ok) {
     PrintTimeZoneError(server_url, "Missing dstOffset attribute.", timezone);
     RecordUmaEvent(TIMEZONE_REQUEST_EVENT_RESPONSE_MALFORMED);
     return false;
   }
 
-  if (!response_object->GetDoubleWithoutPathExpansion(kRawOffsetString,
-                                                      &timezone->rawOffset) &&
-      status_ok) {
+  absl::optional<double> raw_offset =
+      response_object->FindDoubleKey(kRawOffsetString);
+  if (raw_offset.has_value()) {
+    timezone->rawOffset = raw_offset.value();
+  } else if (status_ok) {
     PrintTimeZoneError(server_url, "Missing rawOffset attribute.", timezone);
     RecordUmaEvent(TIMEZONE_REQUEST_EVENT_RESPONSE_MALFORMED);
     return false;
   }
 
-  if (!response_object->GetStringWithoutPathExpansion(kTimeZoneIdString,
-                                                      &timezone->timeZoneId) &&
-      status_ok) {
+  const std::string* time_zone_id =
+      response_object->FindStringKey(kTimeZoneIdString);
+  if (time_zone_id) {
+    timezone->timeZoneId = *time_zone_id;
+  } else if (status_ok) {
     PrintTimeZoneError(server_url, "Missing timeZoneId attribute.", timezone);
     RecordUmaEvent(TIMEZONE_REQUEST_EVENT_RESPONSE_MALFORMED);
     return false;
   }
 
-  if (!response_object->GetStringWithoutPathExpansion(
-          kTimeZoneNameString, &timezone->timeZoneName) &&
-      status_ok) {
+  const std::string* time_zone_name =
+      response_object->FindStringKey(kTimeZoneNameString);
+  if (time_zone_name) {
+    timezone->timeZoneName = *time_zone_name;
+  } else if (status_ok) {
     PrintTimeZoneError(server_url, "Missing timeZoneName attribute.", timezone);
     RecordUmaEvent(TIMEZONE_REQUEST_EVENT_RESPONSE_MALFORMED);
     return false;
   }
 
   // "error_message" field is optional. Ignore result.
-  response_object->GetStringWithoutPathExpansion(kErrorMessageString,
-                                                 &timezone->error_message);
+  const std::string* error_message =
+      response_object->FindStringKey(kErrorMessageString);
+  if (error_message)
+    timezone->error_message = *error_message;
 
   return true;
 }

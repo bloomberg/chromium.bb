@@ -9,9 +9,10 @@ import android.accounts.AccountManager;
 import android.accounts.AuthenticatorDescription;
 import android.app.Activity;
 import android.content.Intent;
-import android.os.SystemClock;
 import android.text.TextUtils;
 
+import androidx.annotation.MainThread;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -19,19 +20,20 @@ import com.google.common.base.Optional;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
+import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
+import org.chromium.components.signin.AccountManagerDelegate.CapabilityResponse;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -52,6 +54,9 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
     @VisibleForTesting
     public static final String FEATURE_IS_USM_ACCOUNT_KEY = "service_usm";
 
+    @VisibleForTesting
+    static final String CAN_OFFER_EXTENDED_CHROME_SYNC_PROMOS = "gi2tklldmfya";
+
     private final AccountManagerDelegate mDelegate;
     private final AccountRestrictionPatternReceiver mAccountRestrictionPatternReceiver;
 
@@ -60,14 +65,12 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
     private final AtomicReference<List<Account>> mAllAccounts = new AtomicReference<>();
     private final AtomicReference<List<PatternMatcher>> mAccountRestrictionPatterns =
             new AtomicReference<>();
-    private final AtomicReference<List<Account>> mFilteredAccounts = new AtomicReference<>();
-    private final CountDownLatch mPopulateAccountCacheLatch = new CountDownLatch(1);
 
-    private int mUpdateTasksCounter;
-    private final Queue<Callback<List<Account>>> mCallbacksWaitingForAccountsFetch =
-            new ArrayDeque<>();
-    // The map stores the boolean for whether an account is subject to minor mode restrictions
-    private final Map<String, Boolean> mSubjectToMinorModeRestrictions = new HashMap<>();
+    // The map stores the boolean for whether an account can offer extended chrome sync promos
+    private final AtomicReference<Map<String, Boolean>> mCanOfferExtendedSyncPromos =
+            new AtomicReference<>(new HashMap<>());
+
+    private @NonNull Promise<List<Account>> mAccountsPromise = new Promise<>();
 
     /**
      * @param delegate the AccountManagerDelegate to use as a backend
@@ -75,11 +78,11 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
     public AccountManagerFacadeImpl(AccountManagerDelegate delegate) {
         ThreadUtils.assertOnUiThread();
         mDelegate = delegate;
-        mDelegate.attachAccountsChangeObserver(this::updateAccounts);
+        mDelegate.attachAccountsChangeObserver(this::onAccountsUpdated);
         mAccountRestrictionPatternReceiver =
                 new AccountRestrictionPatternReceiver(this::onAccountRestrictionPatternsUpdated);
 
-        tryGetGoogleAccounts(accounts -> {
+        getAccounts().then(accounts -> {
             RecordHistogram.recordExactLinearHistogram(
                     "Signin.AndroidNumberOfDeviceAccounts", accounts.size(), 50);
         });
@@ -108,53 +111,10 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
         assert success : "Can't find observer";
     }
 
-    /**
-     * Returns whether the account cache has already been populated. {@link #tryGetGoogleAccounts()}
-     * and similar methods will return instantly if the cache has been populated, otherwise these
-     * methods may block waiting for the cache to be populated.
-     */
     @Override
-    public boolean isCachePopulated() {
-        return mFilteredAccounts.get() != null;
-    }
-
-    @Override
-    public Optional<List<Account>> getGoogleAccounts() {
-        return Optional.fromNullable(mFilteredAccounts.get());
-    }
-
-    @Override
-    public List<Account> tryGetGoogleAccounts() {
-        List<Account> maybeAccounts = mFilteredAccounts.get();
-        if (maybeAccounts == null) {
-            try {
-                // First call to update hasn't finished executing yet, should wait for it
-                long now = SystemClock.elapsedRealtime();
-                mPopulateAccountCacheLatch.await();
-                maybeAccounts = mFilteredAccounts.get();
-                if (ThreadUtils.runningOnUiThread()) {
-                    RecordHistogram.recordTimesHistogram(
-                            "Signin.AndroidPopulateAccountCacheWaitingTime",
-                            SystemClock.elapsedRealtime() - now);
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Interrupted waiting for accounts", e);
-            }
-        }
-        return maybeAccounts;
-    }
-
-    /**
-     * Asynchronous version of {@link #tryGetGoogleAccounts()}.
-     */
-    @Override
-    public void tryGetGoogleAccounts(Callback<List<Account>> callback) {
+    public Promise<List<Account>> getAccounts() {
         ThreadUtils.assertOnUiThread();
-        if (isCachePopulated()) {
-            ThreadUtils.postOnUiThread(callback.bind(tryGetGoogleAccounts()));
-        } else {
-            mCallbacksWaitingForAccountsFetch.add(callback);
-        }
+        return mAccountsPromise;
     }
 
     /**
@@ -221,9 +181,9 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
     }
 
     @Override
-    public Optional<Boolean> isAccountSubjectToMinorModeRestrictions(Account account) {
+    public Optional<Boolean> canOfferExtendedSyncPromos(Account account) {
         return Optional.fromNullable(
-                mSubjectToMinorModeRestrictions.get(AccountUtils.canonicalizeName(account.name)));
+                mCanOfferExtendedSyncPromos.get().get(AccountUtils.canonicalizeName(account.name)));
     }
 
     /**
@@ -270,21 +230,40 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
         return mDelegate.getAccountGaiaId(accountEmail);
     }
 
-    /**
-     * Checks whether Google Play services is available.
-     */
-    @Override
-    public boolean isGooglePlayServicesAvailable() {
-        return mDelegate.isGooglePlayServicesAvailable();
+    private void updateCanOfferExtendedSyncPromos(List<Account> accounts) {
+        PostTask.postTask(TaskTraits.USER_VISIBLE, () -> {
+            final Map<String, Boolean> canOfferExtendedSyncPromos = new HashMap<>();
+            for (Account account : accounts) {
+                canOfferExtendedSyncPromos.put(AccountUtils.canonicalizeName(account.name),
+                        mDelegate.hasCapability(account, CAN_OFFER_EXTENDED_CHROME_SYNC_PROMOS)
+                                == CapabilityResponse.YES);
+            }
+            mCanOfferExtendedSyncPromos.set(canOfferExtendedSyncPromos);
+        });
     }
 
-    private void updateAccounts() {
+    private void onAccountsUpdated() {
         ThreadUtils.assertOnUiThread();
         new UpdateAccountsTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
-    private List<Account> getAllAccounts() {
-        return Collections.unmodifiableList(Arrays.asList(mDelegate.getAccounts()));
+    private void onAccountRestrictionPatternsUpdated(List<PatternMatcher> patternMatchers) {
+        mAccountRestrictionPatterns.set(patternMatchers);
+        updateAccounts();
+    }
+
+    @MainThread
+    private void updateAccounts() {
+        final List<Account> newAccounts = getFilteredAccounts();
+        updateCanOfferExtendedSyncPromos(newAccounts);
+        if (mAccountsPromise.isFulfilled()) {
+            mAccountsPromise = Promise.fulfilled(newAccounts);
+        } else {
+            mAccountsPromise.fulfill(newAccounts);
+        }
+        for (AccountsChangeObserver observer : mObservers) {
+            observer.onAccountsChanged();
+        }
     }
 
     private List<Account> getFilteredAccounts() {
@@ -303,74 +282,26 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
         return Collections.unmodifiableList(filteredAccounts);
     }
 
-    private void onAccountRestrictionPatternsUpdated(List<PatternMatcher> patternMatchers) {
-        mAccountRestrictionPatterns.set(patternMatchers);
-        mFilteredAccounts.set(getFilteredAccounts());
-        fireOnAccountsChangedNotification();
-    }
-
-    private void setAllAccounts(List<Account> allAccounts) {
-        mAllAccounts.set(allAccounts);
-        mFilteredAccounts.set(getFilteredAccounts());
-        fireOnAccountsChangedNotification();
-    }
-
-    private void fireOnAccountsChangedNotification() {
-        for (AccountsChangeObserver observer : mObservers) {
-            observer.onAccountsChanged();
-        }
-    }
-
-    private void incrementUpdateCounter() {
-        assert mUpdateTasksCounter >= 0;
-        if (mUpdateTasksCounter++ > 0) return;
-    }
-
-    private void decrementUpdateCounter() {
-        assert mUpdateTasksCounter > 0;
-        if (--mUpdateTasksCounter > 0) return;
-
-        while (!mCallbacksWaitingForAccountsFetch.isEmpty()) {
-            final Callback<List<Account>> callback = mCallbacksWaitingForAccountsFetch.remove();
-            callback.onResult(tryGetGoogleAccounts());
-        }
+    private List<Account> getAllAccounts() {
+        return Collections.unmodifiableList(Arrays.asList(mDelegate.getAccounts()));
     }
 
     private class InitializeTask extends AsyncTask<Void> {
-        @Override
-        protected void onPreExecute() {
-            incrementUpdateCounter();
-        }
-
         @Override
         protected Void doInBackground() {
             mAccountRestrictionPatterns.set(
                     mAccountRestrictionPatternReceiver.getRestrictionPatterns());
             mAllAccounts.set(getAllAccounts());
-            mFilteredAccounts.set(getFilteredAccounts());
-            // It's important that countDown() is called on background thread and not in
-            // onPostExecute, as UI thread may be blocked in getGoogleAccounts waiting on the latch.
-            mPopulateAccountCacheLatch.countDown();
             return null;
         }
 
         @Override
         protected void onPostExecute(Void v) {
-            while (!mCallbacksWaitingForAccountsFetch.isEmpty()) {
-                final Callback<List<Account>> callback = mCallbacksWaitingForAccountsFetch.remove();
-                callback.onResult(mFilteredAccounts.get());
-            }
-            fireOnAccountsChangedNotification();
-            decrementUpdateCounter();
+            updateAccounts();
         }
     }
 
     private class UpdateAccountsTask extends AsyncTask<List<Account>> {
-        @Override
-        protected void onPreExecute() {
-            incrementUpdateCounter();
-        }
-
         @Override
         protected List<Account> doInBackground() {
             return getAllAccounts();
@@ -378,8 +309,8 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
 
         @Override
         protected void onPostExecute(List<Account> allAccounts) {
-            setAllAccounts(allAccounts);
-            decrementUpdateCounter();
+            mAllAccounts.set(allAccounts);
+            updateAccounts();
         }
     }
 }

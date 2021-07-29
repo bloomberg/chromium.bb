@@ -5,7 +5,8 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/stl_util.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/cxx17_backports.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/policy/policy_test_utils.h"
@@ -55,14 +56,6 @@ class RestoreOnStartupPolicyTest : public PolicyTest,
  public:
   RestoreOnStartupPolicyTest() = default;
   ~RestoreOnStartupPolicyTest() override = default;
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // TODO(nkostylev): Investigate if we can remove this switch.
-    command_line->AppendSwitch(switches::kCreateBrowserOnStartupForTests);
-    PolicyTest::SetUpCommandLine(command_line);
-  }
-#endif
 
   void SetUpInProcessBrowserTestFixture() override {
     PolicyTest::SetUpInProcessBrowserTestFixture();

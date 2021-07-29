@@ -42,15 +42,15 @@ type t1 = array<vec4<f32>>;
 var<private> g0 : u32 = 20u;
 var<private> g1 : f32 = 123.0;
 [[group(0), binding(0)]] var g2 : texture_2d<f32>;
-[[group(1), binding(0)]] var g3 : [[access(read)]] texture_storage_2d<r32uint>;
-[[group(2), binding(0)]] var g4 : [[access(write)]] texture_storage_2d<rg32float>;
-[[group(3), binding(0)]] var g5 : [[access(read)]] texture_storage_2d<r32uint>;
-[[group(4), binding(0)]] var g6 : [[access(write)]] texture_storage_2d<rg32float>;
+[[group(1), binding(0)]] var g3 : texture_storage_2d<r32uint, read>;
+[[group(2), binding(0)]] var g4 : texture_storage_2d<rg32float, write>;
+[[group(3), binding(0)]] var g5 : texture_storage_2d<r32uint, read>;
+[[group(4), binding(0)]] var g6 : texture_storage_2d<rg32float, write>;
 
 var<private> g7 : vec3<f32>;
-[[group(0), binding(1)]] var<storage> g8 : [[access(write)]] S;
-[[group(1), binding(1)]] var<storage> g9 : [[access(read)]] S;
-[[group(2), binding(1)]] var<storage> g10 : [[access(read_write)]] S;
+[[group(0), binding(1)]] var<storage, write> g8 : S;
+[[group(1), binding(1)]] var<storage, read> g9 : S;
+[[group(2), binding(1)]] var<storage, read_write> g10 : S;
 
 fn f0(p0 : bool) -> f32 {
   if (p0) {
@@ -66,7 +66,7 @@ fn f1(p0 : f32, p1 : i32) -> f32 {
   var l3 : vec2<u32> = vec2<u32>(u32(l0), u32(l1));
   var l4 : S;
   var l5 : u32 = l4.m1[5];
-  var l6 : ptr<private, u32>;
+  let l6 : ptr<private, u32> = &g0;
   loop {
     l0 = (p1 + 2);
     if (((l0 % 4) == 0)) {
@@ -97,7 +97,7 @@ fn f1(p0 : f32, p1 : i32) -> f32 {
 
 [[stage(fragment)]]
 fn main() {
-  f1(1.0, 2);
+  ignore(f1(1.0, 2));
 }
 
 let declaration_order_check_0 : i32 = 1;
@@ -144,11 +144,12 @@ let declaration_order_check_3 : i32 = 1;
   // Regenerate the wgsl for the src program. We use this instead of the
   // original source so that reformatting doesn't impact the final wgsl
   // comparison.
+  writer::wgsl::Options options;
   std::string src_wgsl;
   {
-    writer::wgsl::Generator src_gen(&src);
-    ASSERT_TRUE(src_gen.Generate()) << src_gen.error();
-    src_wgsl = src_gen.result();
+    auto result = writer::wgsl::Generate(&src, options);
+    ASSERT_TRUE(result.success) << result.error;
+    src_wgsl = result.wgsl;
 
     // Move the src program to a temporary that'll be dropped, so that the src
     // program is released before we attempt to print the dst program. This
@@ -159,9 +160,9 @@ let declaration_order_check_3 : i32 = 1;
   }
 
   // Print the dst module, check it matches the original source
-  writer::wgsl::Generator dst_gen(&dst);
-  ASSERT_TRUE(dst_gen.Generate());
-  auto dst_wgsl = dst_gen.result();
+  auto result = writer::wgsl::Generate(&dst, options);
+  ASSERT_TRUE(result.success);
+  auto dst_wgsl = result.wgsl;
   ASSERT_EQ(src_wgsl, dst_wgsl);
 
 #else  // #if TINT_BUILD_WGSL_READER && TINT_BUILD_WGSL_WRITER

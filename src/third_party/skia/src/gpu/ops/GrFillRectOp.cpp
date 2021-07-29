@@ -84,9 +84,9 @@ public:
             , fQuads(1, !fHelper.isTrivial()) {
         // Set bounds before clipping so we don't have to worry about unioning the bounds of
         // the two potential quads (GrQuad::bounds() is perspective-safe).
+        bool hairline = GrQuadUtils::WillUseHairline(quad->fDevice, aaType, quad->fEdgeFlags);
         this->setBounds(quad->fDevice.bounds(), HasAABloat(aaType == GrAAType::kCoverage),
-                        IsHairline::kNo);
-
+                        hairline ? IsHairline::kYes : IsHairline::kNo);
         DrawQuad extra;
         // Always crop to W>0 to remain consistent with GrQuad::bounds()
         int count = GrQuadUtils::ClipToW0(quad, &extra);
@@ -110,7 +110,7 @@ public:
 
     const char* name() const override { return "FillRectOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
         if (fProgramInfo) {
             fProgramInfo->visitFPProxies(func);
         } else {
@@ -200,8 +200,9 @@ private:
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&& appliedClip,
-                             const GrXferProcessor::DstProxyView& dstProxyView,
+                             const GrDstProxyView& dstProxyView,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override {
         const VertexSpec vertexSpec = this->vertexSpec();
@@ -219,7 +220,7 @@ private:
     void onPrePrepareDraws(GrRecordingContext* rContext,
                            const GrSurfaceProxyView& writeView,
                            GrAppliedClip* clip,
-                           const GrXferProcessor::DstProxyView& dstProxyView,
+                           const GrDstProxyView& dstProxyView,
                            GrXferBarrierFlags renderPassXferBarriers,
                            GrLoadOp colorLoadOp) override {
         TRACE_EVENT0("skia.gpu", TRACE_FUNC);
@@ -256,7 +257,7 @@ private:
         }
     }
 
-    void onPrepareDraws(Target* target) override {
+    void onPrepareDraws(GrMeshDrawTarget* target) override {
         TRACE_EVENT0("skia.gpu", TRACE_FUNC);
 
         const VertexSpec vertexSpec = this->vertexSpec();

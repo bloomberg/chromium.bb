@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 
 #include "base/callback_helpers.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -429,6 +430,9 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   }
 
   void WaitForEnterPictureInPicture() {
+    if (GetActiveWebContents()->HasPictureInPictureVideo())
+      return;
+
     content::MediaStartStopObserver observer(
         GetActiveWebContents(),
         content::MediaStartStopObserver::Type::kEnterPictureInPicture);
@@ -436,6 +440,9 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   }
 
   void WaitForExitPictureInPicture() {
+    if (!GetActiveWebContents()->HasPictureInPictureVideo())
+      return;
+
     content::MediaStartStopObserver observer(
         GetActiveWebContents(),
         content::MediaStartStopObserver::Type::kExitPictureInPicture);
@@ -615,8 +622,11 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(MediaDialogViewBrowserTest);
 };
 
+// This test was first disabled on defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// for https://crbug.com/1222873.
+// Then got disabled on all platforms for https://crbug.com/1225531.
 IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
-                       ShowsMetadataAndControlsMedia) {
+                       DISABLED_ShowsMetadataAndControlsMedia) {
   // The toolbar icon should not start visible.
   EXPECT_FALSE(IsToolbarIconVisible());
 
@@ -664,8 +674,16 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
   EXPECT_FALSE(IsDialogVisible());
 }
 
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1222873
+#define MAYBE_ShowsMetadataAndControlsMediaInRTL \
+  DISABLED_ShowsMetadataAndControlsMediaInRTL
+#else
+#define MAYBE_ShowsMetadataAndControlsMediaInRTL \
+  ShowsMetadataAndControlsMediaInRTL
+#endif
 IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
-                       ShowsMetadataAndControlsMediaInRTL) {
+                       MAYBE_ShowsMetadataAndControlsMediaInRTL) {
   base::i18n::SetICUDefaultLocale("ar");
   ASSERT_TRUE(base::i18n::IsRTL());
 
@@ -827,7 +845,14 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, ShowsCastSession) {
   WaitForNotificationCount(1);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, PictureInPicture) {
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1224071
+#define MAYBE_PictureInPicture DISABLED_PictureInPicture
+#else
+#define MAYBE_PictureInPicture PictureInPicture
+#endif
+// Test is flaky crbug.com/1213256.
+IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, MAYBE_PictureInPicture) {
   // Open a tab and play media.
   OpenTestURL();
   StartPlayback();
@@ -866,8 +891,15 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
   WaitForPictureInPictureButtonVisibility(true);
 }
 
+// Flaky on linux (https://crbug.com/1218003).
+#if defined(OS_LINUX)
+#define MAYBE_PlayingSessionAlwaysDisplayFirst \
+  DISABLED_PlayingSessionAlwaysDisplayFirst
+#else
+#define MAYBE_PlayingSessionAlwaysDisplayFirst PlayingSessionAlwaysDisplayFirst
+#endif
 IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
-                       PlayingSessionAlwaysDisplayFirst) {
+                       MAYBE_PlayingSessionAlwaysDisplayFirst) {
   OpenTestURL();
   StartPlayback();
   WaitForStart();
@@ -899,7 +931,13 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
   EXPECT_TRUE(IsPlayingSessionDisplayedFirst());
 }
 
-IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, LiveCaption) {
+#if defined(OS_MAC)
+// https://crbug.com/1222873
+#define MAYBE_LiveCaption DISABLED_LiveCaption
+#else
+#define MAYBE_LiveCaption LiveCaption
+#endif
+IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, MAYBE_LiveCaption) {
   // Open a tab and play media.
   OpenTestURL();
   StartPlayback();
@@ -953,7 +991,14 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, LiveCaption) {
   EXPECT_TRUE(GetLiveCaptionTitleLabel()->GetVisible());
 }
 
-IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, LiveCaptionProgressUpdate) {
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1222873
+#define MAYBE_LiveCaptionProgressUpdate DISABLED_LiveCaptionProgressUpdate
+#else
+#define MAYBE_LiveCaptionProgressUpdate LiveCaptionProgressUpdate
+#endif
+IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
+                       MAYBE_LiveCaptionProgressUpdate) {
   // Open a tab and play media.
   OpenTestURL();
   StartPlayback();

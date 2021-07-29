@@ -4,15 +4,16 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_canvas_context.h"
 
-#include "third_party/blink/renderer/bindings/modules/v8/offscreen_rendering_context.h"
-#include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_swap_chain_descriptor.h"
+#include "components/viz/common/resources/resource_format_utils.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_htmlcanvaselement_offscreencanvas.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_canvas_configuration.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasrenderingcontext2d_gpucanvascontext_imagebitmaprenderingcontext_webgl2renderingcontext_webglrenderingcontext.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpucanvascontext_imagebitmaprenderingcontext_offscreencanvasrenderingcontext2d_webgl2renderingcontext_webglrenderingcontext.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
 
 namespace blink {
 
@@ -25,25 +26,24 @@ CanvasRenderingContext* GPUCanvasContext::Factory::Create(
   CanvasRenderingContext* rendering_context =
       MakeGarbageCollected<GPUCanvasContext>(host, attrs);
   DCHECK(host);
-  rendering_context->RecordUKMCanvasRenderingAPI(
-      CanvasRenderingContext::CanvasRenderingAPI::kWebgpu);
   return rendering_context;
 }
 
 CanvasRenderingContext::ContextType GPUCanvasContext::Factory::GetContextType()
     const {
-  return CanvasRenderingContext::kContextGPUPresent;
+  return CanvasRenderingContext::kContextWebGPU;
 }
 
 GPUCanvasContext::GPUCanvasContext(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attrs)
-    : CanvasRenderingContext(host, attrs) {}
+    : CanvasRenderingContext(host, attrs, CanvasRenderingAPI::kWebgpu) {}
 
 GPUCanvasContext::~GPUCanvasContext() {}
 
 void GPUCanvasContext::Trace(Visitor* visitor) const {
   visitor->Trace(swapchain_);
+  visitor->Trace(configured_device_);
   CanvasRenderingContext::Trace(visitor);
 }
 
@@ -53,10 +53,8 @@ const IntSize& GPUCanvasContext::CanvasSize() const {
 
 // CanvasRenderingContext implementation
 CanvasRenderingContext::ContextType GPUCanvasContext::GetContextType() const {
-  return CanvasRenderingContext::kContextGPUPresent;
+  return CanvasRenderingContext::kContextWebGPU;
 }
-
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 V8RenderingContext* GPUCanvasContext::AsV8RenderingContext() {
   return MakeGarbageCollected<V8RenderingContext>(this);
@@ -66,24 +64,12 @@ V8OffscreenRenderingContext* GPUCanvasContext::AsV8OffscreenRenderingContext() {
   return MakeGarbageCollected<V8OffscreenRenderingContext>(this);
 }
 
-#else  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
-void GPUCanvasContext::SetCanvasGetContextResult(RenderingContext& result) {
-  result.SetGPUCanvasContext(this);
-}
-
-void GPUCanvasContext::SetOffscreenCanvasGetContextResult(
-    OffscreenRenderingContext& result) {
-  result.SetGPUCanvasContext(this);
-}
-
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
 void GPUCanvasContext::Stop() {
   if (swapchain_) {
     swapchain_->Neuter();
     swapchain_ = nullptr;
   }
+  configured_device_ = nullptr;
   stopped_ = true;
 }
 
@@ -92,6 +78,53 @@ cc::Layer* GPUCanvasContext::CcLayer() const {
     return swapchain_->CcLayer();
   }
   return nullptr;
+}
+
+scoped_refptr<StaticBitmapImage> GPUCanvasContext::GetImage() {
+  if (!swapchain_)
+    return nullptr;
+
+  CanvasResourceParams resource_params;
+  resource_params.SetSkColorType(viz::ResourceFormatToClosestSkColorType(
+      /*gpu_compositing=*/true, swapchain_->Format()));
+
+  auto resource_provider = CanvasResourceProvider::CreateWebGPUImageProvider(
+      IntSize(swapchain_->Size()), resource_params,
+      /*is_origin_top_left=*/true);
+  if (!resource_provider)
+    return nullptr;
+
+  if (!swapchain_->CopyToResourceProvider(resource_provider.get()))
+    return nullptr;
+
+  return resource_provider->Snapshot();
+}
+
+bool GPUCanvasContext::PaintRenderingResultsToCanvas(
+    SourceDrawingBuffer source_buffer) {
+  DCHECK_EQ(source_buffer, kBackBuffer);
+  if (!swapchain_)
+    return false;
+
+  if (Host()->ResourceProvider() &&
+      Host()->ResourceProvider()->Size() != IntSize(swapchain_->Size())) {
+    Host()->DiscardResourceProvider();
+  }
+
+  CanvasResourceProvider* resource_provider =
+      Host()->GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU);
+
+  return CopyRenderingResultsFromDrawingBuffer(resource_provider,
+                                               source_buffer);
+}
+
+bool GPUCanvasContext::CopyRenderingResultsFromDrawingBuffer(
+    CanvasResourceProvider* resource_provider,
+    SourceDrawingBuffer source_buffer) {
+  DCHECK_EQ(source_buffer, kBackBuffer);
+  if (swapchain_)
+    return swapchain_->CopyToResourceProvider(resource_provider);
+  return false;
 }
 
 void GPUCanvasContext::SetFilterQuality(SkFilterQuality filter_quality) {
@@ -121,23 +154,104 @@ ImageBitmap* GPUCanvasContext::TransferToImageBitmap(
       swapchain_->TransferToStaticBitmapImage());
 }
 
-// gpu_canvas_context.idl
-GPUSwapChain* GPUCanvasContext::configureSwapChain(
-    const GPUSwapChainDescriptor* descriptor,
-    ExceptionState& exception_state) {
+// gpu_presentation_context.idl
+V8UnionHTMLCanvasElementOrOffscreenCanvas*
+GPUCanvasContext::getHTMLOrOffscreenCanvas() const {
+  if (Host()->IsOffscreenCanvas()) {
+    return MakeGarbageCollected<V8UnionHTMLCanvasElementOrOffscreenCanvas>(
+        static_cast<OffscreenCanvas*>(Host()));
+  }
+  return MakeGarbageCollected<V8UnionHTMLCanvasElementOrOffscreenCanvas>(
+      static_cast<HTMLCanvasElement*>(Host()));
+}
+
+void GPUCanvasContext::configure(const GPUCanvasConfiguration* descriptor,
+                                 ExceptionState& exception_state) {
+  ConfigureInternal(descriptor, exception_state);
+}
+
+void GPUCanvasContext::unconfigure() {
   if (stopped_) {
-    // This is probably not possible, or at least would only happen during page
-    // shutdown.
-    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
-                                      "canvas has been destroyed");
-    return nullptr;
+    return;
   }
 
   if (swapchain_) {
     // Tell any previous swapchain that it will no longer be used and can
     // destroy all its resources (and produce errors when used).
     swapchain_->Neuter();
+    swapchain_ = nullptr;
   }
+
+  configured_device_ = nullptr;
+}
+
+String GPUCanvasContext::getPreferredFormat(const GPUAdapter* adapter) {
+  // TODO(crbug.com/1007166): Return actual preferred format for the swap chain.
+  return "bgra8unorm";
+}
+
+GPUTexture* GPUCanvasContext::getCurrentTexture(
+    ExceptionState& exception_state) {
+  if (!configured_device_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                      "context is not configured");
+    return nullptr;
+  }
+  if (!swapchain_) {
+    configured_device_->InjectError(WGPUErrorType_Validation,
+                                    "context configuration is invalid.");
+    return GPUTexture::CreateError(configured_device_);
+  }
+  return swapchain_->getCurrentTexture();
+}
+
+// gpu_canvas_context.idl (Deprecated)
+GPUSwapChain* GPUCanvasContext::configureSwapChain(
+    const GPUCanvasConfiguration* descriptor,
+    ExceptionState& exception_state) {
+  descriptor->device()->AddConsoleWarning(
+      "configureSwapChain() is deprecated. Use configure() instead and call "
+      "getCurrentTexture() directly on the context. Note that configure() must "
+      "also be called if you want to change the size of the textures returned "
+      "by getCurrentTexture()");
+  ConfigureInternal(descriptor, exception_state, true);
+  return swapchain_;
+}
+
+String GPUCanvasContext::getSwapChainPreferredFormat(
+    ExecutionContext* execution_context,
+    GPUAdapter* adapter) {
+  adapter->AddConsoleWarning(
+      execution_context,
+      "getSwapChainPreferredFormat() is deprecated. Use getPreferredFormat() "
+      "instead.");
+  return getPreferredFormat(adapter);
+}
+
+void GPUCanvasContext::ConfigureInternal(
+    const GPUCanvasConfiguration* descriptor,
+    ExceptionState& exception_state,
+    bool deprecated_resize_behavior) {
+  DCHECK(descriptor);
+
+  if (stopped_) {
+    // This is probably not possible, or at least would only happen during page
+    // shutdown.
+    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
+                                      "canvas has been destroyed");
+    return;
+  }
+
+  if (swapchain_) {
+    // Tell any previous swapchain that it will no longer be used and can
+    // destroy all its resources (and produce errors when used).
+    swapchain_->Neuter();
+    swapchain_ = nullptr;
+  }
+
+  // Store the configured device separately, even if the configuration fails, so
+  // that errors can be generated in the appropriate error scope.
+  configured_device_ = descriptor->device();
 
   WGPUTextureUsage usage = AsDawnEnum<WGPUTextureUsage>(descriptor->usage());
   WGPUTextureFormat format =
@@ -146,32 +260,51 @@ GPUSwapChain* GPUCanvasContext::configureSwapChain(
     case WGPUTextureFormat_BGRA8Unorm:
       break;
     case WGPUTextureFormat_RGBA16Float:
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kUnknownError,
+      configured_device_->InjectError(
+          WGPUErrorType_Validation,
           "rgba16float swap chain is not yet supported");
-      return nullptr;
+      return;
     default:
-      exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
-                                        "unsupported swap chain format");
-      return nullptr;
+      configured_device_->InjectError(WGPUErrorType_Validation,
+                                      "unsupported swap chain format");
+      return;
+  }
+
+  // Set the default size.
+  IntSize size;
+  if (deprecated_resize_behavior) {
+    // A negative size will indicate to the swap chain that it should follow the
+    // deprecated behavior of resizing to match the canvas size each frame.
+    size = IntSize(-1, -1);
+  } else if (descriptor->hasSize()) {
+    WGPUExtent3D dawn_extent = AsDawnType(descriptor->size());
+    size = IntSize(dawn_extent.width, dawn_extent.height);
+
+    if (dawn_extent.depthOrArrayLayers != 1) {
+      configured_device_->InjectError(
+          WGPUErrorType_Validation,
+          "swap chain size must have depthOrArrayLayers set to 1");
+      return;
+    }
+    if (size.IsEmpty()) {
+      configured_device_->InjectError(
+          WGPUErrorType_Validation,
+          "context width and height must be greater than 0");
+      return;
+    }
+  } else {
+    size = CanvasSize();
   }
 
   swapchain_ = MakeGarbageCollected<GPUSwapChain>(
-      this, descriptor->device(), usage, format, filter_quality_);
+      this, configured_device_, usage, format, filter_quality_, size);
   swapchain_->CcLayer()->SetContentsOpaque(!CreationAttributes().alpha);
-  swapchain_->setLabel(descriptor->label());
+  if (descriptor->hasLabel())
+    swapchain_->setLabel(descriptor->label());
 
   // If we don't notify the host that something has changed it may never check
   // for the new cc::Layer.
   Host()->SetNeedsCompositingUpdate();
-
-  return swapchain_;
-}
-
-String GPUCanvasContext::getSwapChainPreferredFormat(
-    const GPUAdapter* adapter) {
-  // TODO(crbug.com/1007166): Return actual preferred format for the swap chain.
-  return "bgra8unorm";
 }
 
 }  // namespace blink

@@ -20,7 +20,7 @@ namespace rx
 {
 class RendererVk;
 
-using ShareContextSet = std::set<ContextVk *>;
+using ContextVkSet = std::set<ContextVk *>;
 
 class ShareGroupVk : public ShareGroupImpl
 {
@@ -33,7 +33,7 @@ class ShareGroupVk : public ShareGroupImpl
     // synchronous update to the caches.
     PipelineLayoutCache &getPipelineLayoutCache() { return mPipelineLayoutCache; }
     DescriptorSetLayoutCache &getDescriptorSetLayoutCache() { return mDescriptorSetLayoutCache; }
-    ShareContextSet *getShareContextSet() { return &mShareContextSet; }
+    ContextVkSet *getContexts() { return &mContexts; }
 
     std::vector<vk::ResourceUseList> &&releaseResourceUseLists()
     {
@@ -56,7 +56,7 @@ class ShareGroupVk : public ShareGroupImpl
     DescriptorSetLayoutCache mDescriptorSetLayoutCache;
 
     // The list of contexts within the share group
-    ShareContextSet mShareContextSet;
+    ContextVkSet mContexts;
 
     // List of resources currently used that need to be freed when any ContextVk in this
     // ShareGroupVk submits the next command.
@@ -123,6 +123,7 @@ class DisplayVk : public DisplayImpl, public vk::Context
 
     virtual const char *getWSIExtension() const = 0;
     virtual const char *getWSILayer() const;
+    virtual bool isUsingSwapchain() const;
 
     // Determine if a config with given formats and sample counts is supported.  This callback may
     // modify the config to add or remove platform specific attributes such as nativeVisualID.  If

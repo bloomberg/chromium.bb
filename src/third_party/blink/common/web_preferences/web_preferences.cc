@@ -153,7 +153,6 @@ WebPreferences::WebPreferences()
       animation_policy(
           blink::mojom::ImageAnimationPolicy::kImageAnimationPolicyAllowed),
       user_gesture_required_for_presentation(true),
-      base_background_color(0xFFFFFFFF),  // Color::kWhite
       text_tracks_enabled(false),
       text_track_margin_percentage(0.0f),
       immersive_mode_enabled(false),

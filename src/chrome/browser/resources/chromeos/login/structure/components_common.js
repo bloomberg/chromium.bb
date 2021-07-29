@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
 
 function loadCommonComponents() {
 // TODO(crbug.com/1111387) - Remove excessive logging.
@@ -9,8 +10,6 @@ function loadCommonComponents() {
 // This inclusion is types-only. No actual code to execute.
 // <include src="../components/oobe_types.js">
 
-// <include src="../components/oobe_buttons.js">
-// <include src="../components/oobe_modal_dialog.js">
 // <include src="../components/html-echo.js">
 // <include src="../notification_card.js">
 // <include src="../gaia_dialog.js">
@@ -51,8 +50,10 @@ function loadCommonComponents() {
 // <include src="../screen_app_launch_splash.js">
 // <include src="../oobe_screen_autolaunch.js">
 // <include src="../screen_error_message.js">
+// <include src="../managed_terms_of_service.js">
 
 // <include src="components_[OOBE].js">
+// <include src="components_[OS_INSTALL].js">
 // TODO(crbug.com/1111387) - Remove excessive logging.
   console.warn('loadCommonComponents() : Common components have loaded.');
 }

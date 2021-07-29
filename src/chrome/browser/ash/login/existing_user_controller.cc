@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/barrier_closure.h"
@@ -20,7 +20,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -52,6 +51,11 @@
 #include "chrome/browser/ash/login/user_flow.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_local_account.h"
+#include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
+#include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
+#include "chrome/browser/ash/policy/handlers/powerwash_requirements_checker.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/system/device_disabling_manager.h"
@@ -59,11 +63,8 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
-#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -230,8 +231,8 @@ bool IsUpdateRequiredDeadlineReached() {
 }
 
 void RecordPasswordChangeFlow(LoginPasswordChangeFlow flow) {
-  UMA_HISTOGRAM_ENUMERATION("Login.PasswordChangeFlow", flow,
-                            LOGIN_PASSWORD_CHANGE_FLOW_COUNT);
+  base::UmaHistogramEnumeration("Login.PasswordChangeFlow", flow,
+                                LOGIN_PASSWORD_CHANGE_FLOW_COUNT);
 }
 
 bool IsTestingMigrationUI() {
@@ -242,11 +243,6 @@ bool IsTestingMigrationUI() {
 bool ShouldForceDircrypto(const AccountId& account_id) {
   if (IsTestingMigrationUI())
     return true;
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableEncryptionMigration)) {
-    return false;
-  }
 
   // If the device is not officially supported to run ARC, we don't need to
   // force Ext4 dircrypto.
@@ -292,7 +288,7 @@ void SetLoginExtensionApiLaunchExtensionIdPref(const AccountId& account_id,
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
   DCHECK(profile);
   PrefService* prefs = profile->GetPrefs();
-  prefs->SetString(prefs::kLoginExtensionApiLaunchExtensionId, extension_id);
+  prefs->SetString(::prefs::kLoginExtensionApiLaunchExtensionId, extension_id);
   prefs->CommitPendingWrite();
 }
 
@@ -481,9 +477,6 @@ void ExistingUserController::UpdateLoginDisplay(
     // KioskAppManager, ArcKioskAppManager and WebKioskAppManager.
     if (user->IsKioskType())
       continue;
-    // TODO(xiyuan): Clean user profile whose email is not in allowlist.
-    if (user->GetType() == user_manager::USER_TYPE_SUPERVISED_DEPRECATED)
-      continue;
     // Allow offline login from the error screen if user of one of these types
     // has already logged in.
     if (user->GetType() == user_manager::USER_TYPE_REGULAR ||
@@ -557,6 +550,9 @@ void ExistingUserController::Observe(
 // ExistingUserController, private:
 
 ExistingUserController::~ExistingUserController() {
+  if (browser_shutdown::IsTryingToQuit() || chrome::IsAttemptingShutdown())
+    return;
+  CHECK(UserSessionManager::GetInstance());
   UserSessionManager::GetInstance()->DelegateDeleted(this);
 }
 
@@ -946,13 +942,14 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   login_performer_->set_delegate(nullptr);
   ignore_result(login_performer_.release());
 
-  if (user_context.GetAuthFlow() == UserContext::AUTH_FLOW_OFFLINE)
-    UMA_HISTOGRAM_COUNTS_100("Login.OfflineSuccess.Attempts",
-                             num_login_attempts_);
+  if (user_context.GetAuthFlow() == UserContext::AUTH_FLOW_OFFLINE) {
+    base::UmaHistogramCounts100("Login.OfflineSuccess.Attempts",
+                                num_login_attempts_);
+  }
 
   const bool is_enterprise_managed = g_browser_process->platform_part()
                                          ->browser_policy_connector_chromeos()
-                                         ->IsEnterpriseManaged();
+                                         ->IsDeviceEnterpriseManaged();
 
   // Mark device will be consumer owned if the device is not managed and this is
   // the first user on the device.
@@ -1020,7 +1017,7 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
 void ExistingUserController::ShowAutoLaunchManagedGuestSessionNotification() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  DCHECK(connector->IsEnterpriseManaged());
+  DCHECK(connector->IsDeviceEnterpriseManaged());
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(
       l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_BUTTON)));
@@ -1220,9 +1217,6 @@ user_manager::UserList ExistingUserController::ExtractLoginUsers(
     // kiosk UI) is currently disabled and it gets the apps directly from
     // KioskAppManager, ArcKioskAppManager and WebKioskAppManager.
     if (user->IsKioskType())
-      continue;
-    // TODO(xiyuan): Clean user profile whose email is not in allowlist.
-    if (user->GetType() == user_manager::USER_TYPE_SUPERVISED_DEPRECATED)
       continue;
     const bool meets_allowlist_requirements =
         !user->HasGaiaAccount() ||
@@ -1482,7 +1476,7 @@ void ExistingUserController::StartAutoLoginTimer() {
   if (data_snapshotd_manager && !data_snapshotd_manager->IsAutoLoginAllowed() &&
       data_snapshotd_manager->IsAutoLoginConfigured()) {
     data_snapshotd_manager->set_reset_autologin_callback(
-        base::BindOnce(&ExistingUserController::ResetAutoLoginTimer,
+        base::BindOnce(&ExistingUserController::StartAutoLoginTimer,
                        weak_factory_.GetWeakPtr()));
     return;
   }
@@ -1509,7 +1503,7 @@ void ExistingUserController::ShowError(SigninError error,
     // being deprecated anyway.
     return;
   }
-  signin_ui->ShowSigninError(error, details, num_login_attempts_);
+  signin_ui->ShowSigninError(error, details);
 }
 
 void ExistingUserController::SendAccessibilityAlert(

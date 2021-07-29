@@ -80,12 +80,10 @@ namespace {
                     ostream << "var<uniform> b" << index << " : S" << index << ";\n";
                     break;
                 case wgpu::BufferBindingType::Storage:
-                    ostream << "var<storage> b" << index << " : [[access(read_write)]] S" << index
-                            << ";\n";
+                    ostream << "var<storage, read_write> b" << index << " : S" << index << ";\n";
                     break;
                 case wgpu::BufferBindingType::ReadOnlyStorage:
-                    ostream << "var<storage> b" << index << " : [[access(read)]] S" << index
-                            << ";\n";
+                    ostream << "var<storage, read> b" << index << " : S" << index << ";\n";
                     break;
                 default:
                     UNREACHABLE();
@@ -173,8 +171,8 @@ class MinBufferSizeTestsBase : public ValidationTest {
             descriptor.bindGroupLayouts = layouts.data();
             csDesc.layout = device.CreatePipelineLayout(&descriptor);
         }
-        csDesc.computeStage.module = csModule;
-        csDesc.computeStage.entryPoint = "main";
+        csDesc.compute.module = csModule;
+        csDesc.compute.entryPoint = "main";
 
         return device.CreateComputePipeline(&csDesc);
     }
@@ -192,7 +190,7 @@ class MinBufferSizeTestsBase : public ValidationTest {
 
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fragShader.c_str());
 
-        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        utils::ComboRenderPipelineDescriptor pipelineDescriptor;
         pipelineDescriptor.vertex.module = vsModule;
         pipelineDescriptor.cFragment.module = fsModule;
         pipelineDescriptor.layout = nullptr;
@@ -203,7 +201,7 @@ class MinBufferSizeTestsBase : public ValidationTest {
             pipelineDescriptor.layout = device.CreatePipelineLayout(&descriptor);
         }
 
-        return device.CreateRenderPipeline2(&pipelineDescriptor);
+        return device.CreateRenderPipeline(&pipelineDescriptor);
     }
 
     // Creates render pipeline with default layout

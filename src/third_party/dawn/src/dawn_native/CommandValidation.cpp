@@ -143,45 +143,6 @@ namespace dawn_native {
         return {};
     }
 
-    TextureDataLayout FixUpDeprecatedTextureDataLayoutOptions(
-        DeviceBase* device,
-        const TextureDataLayout& originalLayout,
-        const TexelBlockInfo& blockInfo,
-        const Extent3D& copyExtent) {
-        // TODO(crbug.com/dawn/520): Remove deprecated functionality.
-        TextureDataLayout layout = originalLayout;
-
-        if (copyExtent.height != 0 && layout.rowsPerImage == 0) {
-            if (copyExtent.depthOrArrayLayers > 1) {
-                device->EmitDeprecationWarning(
-                    "rowsPerImage soon must be non-zero if copy depth > 1 (it will no longer "
-                    "default to the copy height).");
-                ASSERT(copyExtent.height % blockInfo.height == 0);
-                uint32_t heightInBlocks = copyExtent.height / blockInfo.height;
-                layout.rowsPerImage = heightInBlocks;
-            } else if (copyExtent.depthOrArrayLayers == 1) {
-                device->EmitDeprecationWarning(
-                    "rowsPerImage soon must be non-zero or unspecified if copy depth == 1 (it will "
-                    "no longer default to the copy height).");
-                layout.rowsPerImage = wgpu::kCopyStrideUndefined;
-            }
-        }
-
-        // Only bother to fix-up for height == 1 && depth == 1.
-        // The other cases that used to be allowed were zero-size copies.
-        ASSERT(copyExtent.width % blockInfo.width == 0);
-        uint32_t widthInBlocks = copyExtent.width / blockInfo.width;
-        uint32_t bytesInLastRow = widthInBlocks * blockInfo.byteSize;
-        if (copyExtent.height == 1 && copyExtent.depthOrArrayLayers == 1 &&
-            bytesInLastRow > layout.bytesPerRow) {
-            device->EmitDeprecationWarning(
-                "Soon, even if copy height == 1, bytesPerRow must be >= the byte size of each row "
-                "or left unspecified.");
-            layout.bytesPerRow = wgpu::kCopyStrideUndefined;
-        }
-        return layout;
-    }
-
     // Replace wgpu::kCopyStrideUndefined with real values, so backends don't have to think about
     // it.
     void ApplyDefaultTextureDataLayoutOptions(TextureDataLayout* layout,
@@ -303,18 +264,9 @@ namespace dawn_native {
     MaybeError ValidateTextureCopyRange(DeviceBase const* device,
                                         const ImageCopyTexture& textureCopy,
                                         const Extent3D& copySize) {
-        // TODO(jiawei.shao@intel.com): add validations on the texture-to-texture copies within the
-        // same texture.
         const TextureBase* texture = textureCopy.texture;
 
         ASSERT(texture->GetDimension() != wgpu::TextureDimension::e1D);
-
-        // Disallow copy to/from a 3D texture as unsafe until it is fully implemented.
-        if (texture->GetDimension() == wgpu::TextureDimension::e3D &&
-            device->IsToggleEnabled(Toggle::DisallowUnsafeAPIs)) {
-            return DAWN_VALIDATION_ERROR(
-                "Copy to/from a 3D texture is disallowed because it is not fully implemented");
-        }
 
         // Validation for the copy being in-bounds:
         Extent3D mipSize = texture->GetMipLevelPhysicalSize(textureCopy.mipLevel);
@@ -370,12 +322,10 @@ namespace dawn_native {
                 if (HasOneBit(format.aspects)) {
                     Aspect single = format.aspects;
                     return single;
-                } else {
-                    return DAWN_VALIDATION_ERROR(
-                        "A single aspect must be selected for multi-planar formats in "
-                        "texture <-> linear data copies");
                 }
-                break;
+                return DAWN_VALIDATION_ERROR(
+                    "A single aspect must be selected for multi-planar formats in "
+                    "texture <-> linear data copies");
             case wgpu::TextureAspect::DepthOnly:
                 ASSERT(format.aspects & Aspect::Depth);
                 return Aspect::Depth;

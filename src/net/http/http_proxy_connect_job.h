@@ -88,6 +88,20 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
 class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
                                                public ConnectJob::Delegate {
  public:
+  class NET_EXPORT_PRIVATE Factory {
+   public:
+    Factory() = default;
+    virtual ~Factory() = default;
+
+    virtual std::unique_ptr<HttpProxyConnectJob> Create(
+        RequestPriority priority,
+        const SocketTag& socket_tag,
+        const CommonConnectJobParams* common_connect_job_params,
+        scoped_refptr<HttpProxySocketParams> params,
+        ConnectJob::Delegate* delegate,
+        const NetLogWithSource* net_log);
+  };
+
   HttpProxyConnectJob(RequestPriority priority,
                       const SocketTag& socket_tag,
                       const CommonConnectJobParams* common_connect_job_params,
@@ -201,7 +215,7 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
 
   void OnAuthChallenge();
 
-  const HostPortPair& GetDestination();
+  const HostPortPair& GetDestination() const;
 
   std::string GetUserAgent() const;
 

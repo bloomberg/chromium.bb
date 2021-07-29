@@ -9,6 +9,7 @@
 #include "base/task/thread_pool.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview_readablestream.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_decode_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_decode_result.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_decoder_init.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/renderer/modules/webcodecs/image_track_list.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
+#include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
@@ -83,7 +85,13 @@ ImageDecoderExternal::DecodeRequest::DecodeRequest(
     bool complete_frames_only)
     : resolver(resolver),
       frame_index(frame_index),
-      complete_frames_only(complete_frames_only) {}
+      complete_frames_only(complete_frames_only),
+      abort_flag(std::make_unique<base::AtomicFlag>()) {}
+
+ImageDecoderExternal::DecodeRequest::~DecodeRequest() {
+  // This must have already been released to the decoder thread manually.
+  DCHECK(!abort_flag);
+}
 
 void ImageDecoderExternal::DecodeRequest::Trace(Visitor* visitor) const {
   visitor->Trace(resolver);
@@ -112,11 +120,19 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
       tracks_(MakeGarbageCollected<ImageTrackList>(this)),
       completed_property_(
           MakeGarbageCollected<CompletedProperty>(GetExecutionContext())) {
+  // If the context is already destroyed we will never get an OnContextDestroyed
+  // callback, which is critical to invalidating any pending WeakPtr operations.
+  if (GetExecutionContext()->IsContextDestroyed()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                      "Invalid context.");
+    return;
+  }
+
   UseCounter::Count(GetExecutionContext(), WebFeature::kWebCodecs);
 
   // |data| is a required field.
   DCHECK(init->hasData());
-  DCHECK(!init->data().IsNull());
+  DCHECK(init->data());
 
   constexpr char kNoneOption[] = "none";
   auto color_behavior = ColorBehavior::Tag();
@@ -142,13 +158,13 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
     animation_option_ = AnimationOptionFromIsAnimated(*prefer_animation_);
   }
 
-  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+  decode_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
       {base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
-  if (init->data().IsReadableStream()) {
-    if (init->data().GetAsReadableStream()->IsLocked() ||
-        init->data().GetAsReadableStream()->IsDisturbed()) {
+  if (init->data()->IsReadableStream()) {
+    if (init->data()->GetAsReadableStream()->IsLocked() ||
+        init->data()->GetAsReadableStream()->IsDisturbed()) {
       exception_state.ThrowTypeError(
           "ImageDecoder can only accept readable streams that are not yet "
           "locked to a reader");
@@ -156,11 +172,12 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
     }
 
     decoder_ = std::make_unique<WTF::SequenceBound<ImageDecoderCore>>(
-        task_runner, mime_type_, /*data=*/nullptr, /*data_complete=*/false,
-        alpha_option, color_behavior, desired_size, animation_option_);
+        decode_task_runner_, mime_type_, /*data=*/nullptr,
+        /*data_complete=*/false, alpha_option, color_behavior, desired_size,
+        animation_option_);
 
     consumer_ = MakeGarbageCollected<ReadableStreamBytesConsumer>(
-        script_state, init->data().GetAsReadableStream());
+        script_state, init->data()->GetAsReadableStream());
 
     construction_succeeded_ = true;
 
@@ -172,25 +189,27 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
   }
 
   DOMArrayPiece buffer;
-  if (init->data().IsArrayBuffer()) {
-    buffer = DOMArrayPiece(init->data().GetAsArrayBuffer());
-  } else if (init->data().IsArrayBufferView()) {
-    buffer = DOMArrayPiece(init->data().GetAsArrayBufferView().Get());
-  } else {
-    NOTREACHED();
-    return;
+  switch (init->data()->GetContentType()) {
+    case V8ImageBufferSource::ContentType::kArrayBuffer:
+      buffer = DOMArrayPiece(init->data()->GetAsArrayBuffer());
+      break;
+    case V8ImageBufferSource::ContentType::kArrayBufferView:
+      buffer = DOMArrayPiece(init->data()->GetAsArrayBufferView().Get());
+      break;
+    case V8ImageBufferSource::ContentType::kReadableStream:
+      NOTREACHED();
+      return;
   }
 
   if (!buffer.ByteLength()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kConstraintError,
-                                      "No image data provided");
+    exception_state.ThrowTypeError("No image data provided");
     return;
   }
 
   auto segment_reader = SegmentReader::CreateFromSkData(
       SkData::MakeWithCopy(buffer.Data(), buffer.ByteLength()));
   if (!segment_reader) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kConstraintError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
                                       "Failed to read image data");
     return;
   }
@@ -199,8 +218,9 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
   data_complete_ = true;
   completed_property_->ResolveWithUndefined();
   decoder_ = std::make_unique<WTF::SequenceBound<ImageDecoderCore>>(
-      task_runner, mime_type_, std::move(segment_reader), data_complete_,
-      alpha_option, color_behavior, desired_size, animation_option_);
+      decode_task_runner_, mime_type_, std::move(segment_reader),
+      data_complete_, alpha_option, color_behavior, desired_size,
+      animation_option_);
 
   DecodeMetadata();
 }
@@ -300,12 +320,18 @@ void ImageDecoderExternal::reset(DOMException* exception) {
   num_submitted_decodes_ = 0u;
   decode_weak_factory_.InvalidateWeakPtrs();
 
-  // Move all state to local variables since promise resolution is reentrant.
+  // Move all state to local variables since promise resolution is re-entrant.
   HeapVector<Member<DecodeRequest>> local_pending_decodes;
   local_pending_decodes.swap(pending_decodes_);
 
-  for (auto& request : local_pending_decodes)
+  for (auto& request : local_pending_decodes) {
     request->resolver->Reject(exception);
+    request->abort_flag->Set();
+
+    // Since the AtomicFlag may still be referenced by the decoder sequence, we
+    // need to delete it on that sequence.
+    decode_task_runner_->DeleteSoon(FROM_HERE, std::move(request->abort_flag));
+  }
 }
 
 void ImageDecoderExternal::close() {
@@ -454,7 +480,8 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
 
     ++num_submitted_decodes_;
     decoder_->AsyncCall(&ImageDecoderCore::Decode)
-        .WithArgs(request->frame_index, request->complete_frames_only)
+        .WithArgs(request->frame_index, request->complete_frames_only,
+                  WTF::CrossThreadUnretained(request->abort_flag.get()))
         .Then(CrossThreadBindOnce(&ImageDecoderExternal::OnDecodeReady,
                                   decode_weak_factory_.GetWeakPtr()));
   }
@@ -472,6 +499,7 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
 
   // Note: Promise resolution may invoke calls into this class.
   for (auto& request : completed_decodes) {
+    DCHECK(!request->abort_flag->IsSet());
     if (request->exception) {
       request->resolver->Reject(request->exception);
     } else if (request->range_error_message) {
@@ -481,6 +509,10 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
     } else {
       request->resolver->Resolve(request->result);
     }
+
+    // Since the AtomicFlag may still be referenced by the decoder sequence, we
+    // need to delete it on that sequence.
+    decode_task_runner_->DeleteSoon(FROM_HERE, std::move(request->abort_flag));
   }
 }
 
@@ -501,6 +533,11 @@ void ImageDecoderExternal::OnDecodeReady(
   }
 
   request->pending = false;
+
+  // Abort always invalidates WeakPtrs, so OnDecodeReady() should never receive
+  // the kAborted status.
+  DCHECK_NE(result->status, ImageDecoderCore::Status::kAborted);
+
   if (result->status == ImageDecoderCore::Status::kIndexError) {
     request->range_error_message =
         ExceptionMessages::IndexOutsideRange<uint32_t>(

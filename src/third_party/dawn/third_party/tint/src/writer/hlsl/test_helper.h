@@ -29,29 +29,6 @@ namespace tint {
 namespace writer {
 namespace hlsl {
 
-/// EnableHLSLValidation enables verification of HLSL shaders by running DXC and
-/// checking no errors are reported.
-/// @param dxc_path the path to the DXC executable
-void EnableHLSLValidation(const char* dxc_path);
-
-/// The return structure of Compile()
-struct CompileResult {
-  /// Status is an enumerator of status codes from Compile()
-  enum class Status { kSuccess, kFailed, kVerificationNotEnabled };
-  /// The resulting status of the compile
-  Status status;
-  /// Output of DXC.
-  std::string output;
-  /// The HLSL source that was compiled
-  std::string hlsl;
-};
-
-/// Compile attempts to compile the shader with DXC if found on PATH.
-/// @param program the HLSL program
-/// @param generator the HLSL generator
-/// @return the result of the compile
-CompileResult Compile(Program* program, GeneratorImpl* generator);
-
 /// Helper class for testing
 template <typename BODY>
 class TestHelperBase : public BODY, public ProgramBuilder {
@@ -67,15 +44,17 @@ class TestHelperBase : public BODY, public ProgramBuilder {
     if (gen_) {
       return *gen_;
     }
-    diag::Formatter formatter;
+    // Fake that the HLSL sanitizer has been applied, so that we can unit test
+    // the writer without it erroring.
+    SetTransformApplied<transform::Hlsl>();
     [&]() {
       ASSERT_TRUE(IsValid()) << "Builder program is not valid\n"
-                             << formatter.format(Diagnostics());
+                             << diag::Formatter().format(Diagnostics());
     }();
     program = std::make_unique<Program>(std::move(*this));
     [&]() {
       ASSERT_TRUE(program->IsValid())
-          << formatter.format(program->Diagnostics());
+          << diag::Formatter().format(program->Diagnostics());
     }();
     gen_ = std::make_unique<GeneratorImpl>(program.get());
     return *gen_;
@@ -102,12 +81,12 @@ class TestHelperBase : public BODY, public ProgramBuilder {
     }();
 
     transform::Manager transform_manager;
-    transform::Renamer::Config renamer_config{
-        transform::Renamer::Target::kHlslKeywords};
-    transform_manager.append(
-        std::make_unique<tint::transform::Renamer>(renamer_config));
-    transform_manager.append(std::make_unique<tint::transform::Hlsl>());
-    auto result = transform_manager.Run(program.get());
+    transform::DataMap transform_data;
+    transform_data.Add<transform::Renamer::Config>(
+        transform::Renamer::Target::kHlslKeywords);
+    transform_manager.Add<tint::transform::Renamer>();
+    transform_manager.Add<tint::transform::Hlsl>();
+    auto result = transform_manager.Run(program.get(), transform_data);
     [&]() {
       ASSERT_TRUE(result.program.IsValid())
           << formatter.format(result.program.Diagnostics());
@@ -117,29 +96,6 @@ class TestHelperBase : public BODY, public ProgramBuilder {
     return *gen_;
   }
 
-  /// Validate passes the generated HLSL from the generator to the DXC compiler
-  /// on `PATH` for checking the program can be compiled.
-  /// If DXC finds problems the test will fail.
-  /// If DXC is not on `PATH` then Validate() does nothing.
-  void Validate() const {
-    auto res = Compile(program.get(), gen_.get());
-    if (res.status == CompileResult::Status::kFailed) {
-      FAIL() << "HLSL Validation failed.\n\n"
-             << res.hlsl << "\n\n"
-             << res.output;
-    }
-  }
-
-  /// @returns the result string
-  std::string result() const { return out.str(); }
-
-  /// @returns the pre result string
-  std::string pre_result() const { return pre.str(); }
-
-  /// The output stream
-  std::ostringstream out;
-  /// The pre-output stream
-  std::ostringstream pre;
   /// The program built with a call to Build()
   std::unique_ptr<Program> program;
 

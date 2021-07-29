@@ -55,6 +55,7 @@ size_t GrRingBuffer::getAllocationOffset(size_t size) {
 }
 
 GrRingBuffer::Slice GrRingBuffer::suballocate(size_t size) {
+    fNewAllocation = true;
     if (fCurrentBuffer) {
         size_t offset = this->getAllocationOffset(size);
         if (offset < fTotalSize) {
@@ -63,13 +64,14 @@ GrRingBuffer::Slice GrRingBuffer::suballocate(size_t size) {
 
         // Try to grow allocation (old allocation will age out).
         fTotalSize *= 2;
+        // Add current buffer to be tracked for next submit.
+        fPreviousBuffers.push_back(std::move(fCurrentBuffer));
     }
 
     GrResourceProvider* resourceProvider = fGpu->getContext()->priv().resourceProvider();
     fCurrentBuffer = resourceProvider->createBuffer(fTotalSize, fType, kDynamic_GrAccessPattern);
 
     SkASSERT(fCurrentBuffer);
-    fTrackedBuffers.push_back(fCurrentBuffer);
     fHead = 0;
     fTail = 0;
     fGenID++;
@@ -80,18 +82,26 @@ GrRingBuffer::Slice GrRingBuffer::suballocate(size_t size) {
 
 // used when current command buffer/command list is submitted
 void GrRingBuffer::startSubmit(GrGpu* gpu) {
-    for (unsigned int i = 0; i < fTrackedBuffers.size(); ++i) {
-        gpu->takeOwnershipOfBuffer(std::move(fTrackedBuffers[i]));
+    for (unsigned int i = 0; i < fPreviousBuffers.size(); ++i) {
+        fPreviousBuffers[i]->unmap();
+        gpu->takeOwnershipOfBuffer(std::move(fPreviousBuffers[i]));
     }
-    fTrackedBuffers.clear();
-    // add current buffer to be tracked for next submit
-    fTrackedBuffers.push_back(fCurrentBuffer);
+    fPreviousBuffers.clear();
 
-    SubmitData* submitData = new SubmitData();
-    submitData->fOwner = this;
-    submitData->fLastHead = fHead;
-    submitData->fGenID = fGenID;
-    gpu->addFinishedProc(FinishSubmit, submitData);
+    if (fNewAllocation) {
+#ifdef SK_BUILD_FOR_MAC
+        // Since we're using a Managed buffer on MacOS we need to unmap to write back to GPU
+        // TODO: once we set up persistently mapped UPLOAD buffers on D3D, we can remove the
+        // platform restriction.
+        fCurrentBuffer->unmap();
+#endif
+        SubmitData* submitData = new SubmitData();
+        submitData->fOwner = this;
+        submitData->fLastHead = fHead;
+        submitData->fGenID = fGenID;
+        gpu->addFinishedProc(FinishSubmit, submitData);
+        fNewAllocation = false;
+    }
 }
 
 // used when current command buffer/command list is completed

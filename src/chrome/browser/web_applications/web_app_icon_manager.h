@@ -14,9 +14,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
@@ -92,6 +92,7 @@ class WebAppIconManager : public AppIconManager, public AppRegistrarObserver {
   SkBitmap GetFavicon(const AppId& app_id) const override;
 
   gfx::ImageSkia GetFaviconImageSkia(const AppId& app_id) const;
+  gfx::ImageSkia GetMonochromeFavicon(const AppId& app_id) const;
 
   // AppRegistrarObserver:
   void OnWebAppInstalled(const AppId& app_id) override;
@@ -111,10 +112,17 @@ class WebAppIconManager : public AppIconManager, public AppRegistrarObserver {
   // for all supported UI scale factors (matches only bigger icons, no
   // upscaling).
   void ReadUiScaleFactorsIcons(const AppId& app_id,
+                               IconPurpose purpose,
                                SquareSizeDip size_in_dip,
                                ReadImageSkiaCallback callback);
 
   void SetFaviconReadCallbackForTesting(FaviconReadCallback callback);
+  void SetFaviconMonochromeReadCallbackForTesting(FaviconReadCallback callback);
+
+  // Collects icon read/write errors (unbounded) if the |kRecordWebAppDebugInfo|
+  // flag is enabled to be used by: chrome://web-app-internals
+  const std::vector<std::string>* error_log() const { return error_log_.get(); }
+  std::vector<std::string>* error_log() { return error_log_.get(); }
 
  private:
   absl::optional<IconSizeAndPurpose> FindIconMatchSmaller(
@@ -129,20 +137,29 @@ class WebAppIconManager : public AppIconManager, public AppRegistrarObserver {
   void ReadFavicon(const AppId& app_id);
   void OnReadFavicon(const AppId& app_id, gfx::ImageSkia image_skia);
 
+  void ReadMonochromeFavicon(const AppId& app_id);
+  void OnReadMonochromeFavicon(const AppId& app_id,
+                               gfx::ImageSkia manifest_monochrome_image);
+  void OnMonochromeIconConverted(const AppId& app_id,
+                                 gfx::ImageSkia converted_image);
+
   WebAppRegistrar& registrar_;
   base::FilePath web_apps_directory_;
   std::unique_ptr<FileUtilsWrapper> utils_;
 
-  base::ScopedObservation<AppRegistrar, AppRegistrarObserver>
+  base::ScopedObservation<WebAppRegistrar, AppRegistrarObserver>
       registrar_observation_{this};
 
   // We cache different densities for high-DPI displays per each app.
   std::map<AppId, gfx::ImageSkia> favicon_cache_;
+  std::map<AppId, gfx::ImageSkia> favicon_monochrome_cache_;
 
   FaviconReadCallback favicon_read_callback_;
+  FaviconReadCallback favicon_monochrome_read_callback_;
+
+  std::unique_ptr<std::vector<std::string>> error_log_;
 
   base::WeakPtrFactory<WebAppIconManager> weak_ptr_factory_{this};
-
 };
 
 }  // namespace web_app

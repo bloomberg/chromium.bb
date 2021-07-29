@@ -33,12 +33,12 @@ class DrawQuad {
     }
 
     void Draw(wgpu::RenderPassEncoder* pass) {
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.layout = pipelineLayout;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
 
-        auto renderPipeline = device.CreateRenderPipeline2(&descriptor);
+        auto renderPipeline = device.CreateRenderPipeline(&descriptor);
 
         pass->SetPipeline(renderPipeline);
         pass->Draw(6, 1, 0, 0);
@@ -79,7 +79,7 @@ class RenderPassLoadOpTests : public DawnTest {
         const char* vsSource = R"(
             [[stage(vertex)]]
             fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
-                let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                var pos = array<vec2<f32>, 6>(
                     vec2<f32>( 0.0, -1.0),
                     vec2<f32>( 1.0, -1.0),
                     vec2<f32>( 0.0,  1.0),
@@ -242,7 +242,7 @@ TEST_P(RenderPassLoadOpTests, LoadOpClearOnIntegerFormats) {
 TEST_P(RenderPassLoadOpTests, LoadOpClearIntegerFormatsToLargeValues) {
     // TODO(http://crbug.com/dawn/537): Implemement a workaround to enable clearing integer formats
     // to large values on D3D12.
-    DAWN_SKIP_TEST_IF(IsD3D12());
+    DAWN_SUPPRESS_TEST_IF(IsD3D12());
 
     constexpr double kUint32MaxDouble = 4294967295.0;
     constexpr uint32_t kUint32Max = static_cast<uint32_t>(kUint32MaxDouble);

@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//chrome/test/base/js2gtest.gni")
+import("//chromeos/components/help_app_ui/help_app_ui.gni")
 import("//chromeos/components/web_applications/system_apps.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/closure_compiler/compile_js.gni")
@@ -11,6 +13,8 @@ assert(is_chromeos, "Help App is Chrome OS only")
 
 static_library("help_app_ui") {
   sources = [
+    "help_app_kids_magazine_untrusted_ui.cc",
+    "help_app_kids_magazine_untrusted_ui.h",
     "help_app_manager.cc",
     "help_app_manager.h",
     "help_app_manager_factory.cc",
@@ -93,7 +97,7 @@ group("closure_compile") {
 js2gtest("browser_tests_js") {
   test_type = "mojo_lite_webui"
 
-  sources = [ "test/help_app_ui_browsertest.js" ]
+  sources = [ "test/help_app_ui_gtest_browsertest.js" ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
@@ -122,6 +126,7 @@ source_set("browser_test_support") {
     "test/driver.js",
     "test/driver_api.js",
     "test/guest_query_receiver.js",
+    "test/help_app_ui_browsertest.js",
     "test/help_app_guest_ui_browsertest.js",
   ]
 }
@@ -144,6 +149,7 @@ js_type_check("closure_compile_browsertests") {
   deps = [
     ":test_help_app_guest_ui_browsertest_js",
     ":test_help_app_ui_browsertest_js",
+    ":test_help_app_ui_gtest_browsertest_js",
   ]
 }
 
@@ -173,11 +179,17 @@ js_library("test_driver_js") {
   ]
 }
 
+js_library("test_help_app_ui_gtest_browsertest_js") {
+  testonly = true
+  sources = [ "test/help_app_ui_gtest_browsertest.js" ]
+  externs_list =
+      [ "//chromeos/components/web_applications/js2gtest_support.externs.js" ]
+  deps = [ ":test_help_app_ui_browsertest_js" ]
+}
+
 js_library("test_help_app_ui_browsertest_js") {
   testonly = true
   sources = [ "test/help_app_ui_browsertest.js" ]
-  externs_list =
-      [ "//chromeos/components/web_applications/js2gtest_support.externs.js" ]
   deps = [
     ":test_driver_js",
     "//chromeos/components/help_app_ui/resources:browser_proxy",
@@ -195,4 +207,11 @@ js_library("test_help_app_guest_ui_browsertest_js") {
     "//chromeos/components/help_app_ui/resources:receiver",
     "//chromeos/components/system_apps/public/js:message_pipe",
   ]
+}
+
+# Used to turn off tests that only work with our CIPD package.
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+
+  flags = [ "ENABLE_CROS_HELP_APP=$enable_cros_help_app" ]
 }

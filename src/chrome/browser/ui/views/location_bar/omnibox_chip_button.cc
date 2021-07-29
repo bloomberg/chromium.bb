@@ -4,12 +4,11 @@
 
 #include "chrome/browser/ui/views/location_bar/omnibox_chip_button.h"
 
-#include "base/location.h"
-#include "base/time/time.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -40,7 +39,7 @@ OmniboxChipButton::OmniboxChipButton(PressedCallback callback,
   animation_ = std::make_unique<gfx::SlideAnimation>(this);
   animation_->SetSlideDuration(kAnimationDuration);
 
-  UpdateColors();
+  UpdateIconAndColors();
 }
 
 OmniboxChipButton::~OmniboxChipButton() = default;
@@ -79,7 +78,7 @@ gfx::Size OmniboxChipButton::CalculatePreferredSize() const {
 
 void OmniboxChipButton::OnThemeChanged() {
   MdTextButton::OnThemeChanged();
-  UpdateColors();
+  UpdateIconAndColors();
 }
 
 void OmniboxChipButton::AnimationEnded(const gfx::Animation* animation) {
@@ -98,30 +97,36 @@ void OmniboxChipButton::AnimationProgressed(const gfx::Animation* animation) {
 
 void OmniboxChipButton::SetTheme(Theme theme) {
   theme_ = theme;
-  UpdateColors();
+  UpdateIconAndColors();
 }
 
 int OmniboxChipButton::GetIconSize() const {
   return GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
 }
 
-void OmniboxChipButton::UpdateColors() {
+void OmniboxChipButton::UpdateIconAndColors() {
+  if (!GetWidget())
+    return;
   SetEnabledTextColors(GetForegroundColor());
-  SetImageModel(views::Button::STATE_NORMAL,
-                ui::ImageModel::FromVectorIcon(icon_, GetForegroundColor(),
-                                               GetIconSize()));
+  SetImageModel(
+      views::Button::STATE_NORMAL,
+      ui::ImageModel::FromVectorIcon(
+          icon_, GetForegroundColor(), GetIconSize(),
+          show_blocked_badge_ ? &vector_icons::kBlockedBadgeIcon : nullptr));
   SetBgColorOverride(GetBackgroundColor());
 }
 
 SkColor OmniboxChipButton::GetMainColor() {
-  ui::NativeTheme* native_theme = GetNativeTheme();
   switch (theme_) {
     case Theme::kBlue:
       // TODO(crbug.com/1003612): ui::NativeTheme::kColorId_ProminentButtonColor
       // does not always represent the blue color we need, but it is OK to use
       // for now.
-      return native_theme->GetSystemColor(
+      return GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_ProminentButtonColor);
+    case Theme::kGray:
+      return GetThemeProvider()->GetColor(
+          ThemeProperties::COLOR_OMNIBOX_TEXT_DIMMED);
   }
 }
 
@@ -141,6 +146,13 @@ SkColor OmniboxChipButton::GetBackgroundColor() {
 void OmniboxChipButton::SetForceExpandedForTesting(
     bool force_expanded_for_testing) {
   force_expanded_for_testing_ = force_expanded_for_testing;
+}
+
+void OmniboxChipButton::SetShowBlockedBadge(bool show_blocked_badge) {
+  if (show_blocked_badge_ != show_blocked_badge) {
+    show_blocked_badge_ = show_blocked_badge;
+    UpdateIconAndColors();
+  }
 }
 
 BEGIN_METADATA(OmniboxChipButton, views::MdTextButton)

@@ -29,6 +29,7 @@ config("protobuf_warnings") {
       "-Wno-extra-semi",
       "-Wno-unneeded-internal-declaration",
       "-Wno-unused-private-field",
+      "-Wno-inconsistent-missing-override",
     ]
   }
 
@@ -73,7 +74,6 @@ lite_sources = [
   "src/src/google/protobuf/has_bits.h",
   "src/src/google/protobuf/implicit_weak_message.cc",
   "src/src/google/protobuf/implicit_weak_message.h",
-  "src/src/google/protobuf/inlined_string_field.h",
   "src/src/google/protobuf/io/coded_stream.cc",
   "src/src/google/protobuf/io/coded_stream.h",
   "src/src/google/protobuf/io/io_win32.cc",
@@ -103,7 +103,6 @@ lite_sources = [
   "src/src/google/protobuf/stubs/casts.h",
   "src/src/google/protobuf/stubs/common.cc",
   "src/src/google/protobuf/stubs/common.h",
-  "src/src/google/protobuf/stubs/fastmem.h",
   "src/src/google/protobuf/stubs/hash.h",
   "src/src/google/protobuf/stubs/int128.cc",
   "src/src/google/protobuf/stubs/int128.h",
@@ -313,6 +312,8 @@ if (current_toolchain == host_toolchain) {
       "src/src/google/protobuf/compiler/cpp/cpp_options.h",
       "src/src/google/protobuf/compiler/cpp/cpp_padding_optimizer.cc",
       "src/src/google/protobuf/compiler/cpp/cpp_padding_optimizer.h",
+      "src/src/google/protobuf/compiler/cpp/cpp_parse_function_generator.cc",
+      "src/src/google/protobuf/compiler/cpp/cpp_parse_function_generator.h",
       "src/src/google/protobuf/compiler/cpp/cpp_primitive_field.cc",
       "src/src/google/protobuf/compiler/cpp/cpp_primitive_field.h",
       "src/src/google/protobuf/compiler/cpp/cpp_service.cc",
@@ -378,6 +379,8 @@ if (current_toolchain == host_toolchain) {
       "src/src/google/protobuf/compiler/java/java_generator_factory.h",
       "src/src/google/protobuf/compiler/java/java_helpers.cc",
       "src/src/google/protobuf/compiler/java/java_helpers.h",
+      "src/src/google/protobuf/compiler/java/java_kotlin_generator.cc",
+      "src/src/google/protobuf/compiler/java/java_kotlin_generator.h",
       "src/src/google/protobuf/compiler/java/java_map_field.cc",
       "src/src/google/protobuf/compiler/java/java_map_field.h",
       "src/src/google/protobuf/compiler/java/java_map_field_lite.cc",

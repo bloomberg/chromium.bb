@@ -22,15 +22,16 @@ namespace {
 using MslGeneratorImplTest = TestHelper;
 
 TEST_F(MslGeneratorImplTest, EmitExpression_MemberAccessor) {
-  Global("str", Structure("my_str", {Member("mem", ty.f32())}),
+  Global("str", ty.Of(Structure("my_str", {Member("mem", ty.f32())})),
          ast::StorageClass::kPrivate);
   auto* expr = MemberAccessor("str", "mem");
   WrapInFunction(expr);
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(expr)) << gen.error();
-  EXPECT_EQ(gen.result(), "str.mem");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(), "str.mem");
 }
 
 TEST_F(MslGeneratorImplTest, EmitExpression_MemberAccessor_Swizzle_xyz) {
@@ -40,8 +41,9 @@ TEST_F(MslGeneratorImplTest, EmitExpression_MemberAccessor_Swizzle_xyz) {
   WrapInFunction(expr);
 
   GeneratorImpl& gen = Build();
-  ASSERT_TRUE(gen.EmitExpression(expr)) << gen.error();
-  EXPECT_EQ(gen.result(), "my_vec.xyz");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(), "my_vec.xyz");
 }
 
 TEST_F(MslGeneratorImplTest, EmitExpression_MemberAccessor_Swizzle_gbr) {
@@ -51,8 +53,9 @@ TEST_F(MslGeneratorImplTest, EmitExpression_MemberAccessor_Swizzle_gbr) {
   WrapInFunction(expr);
 
   GeneratorImpl& gen = Build();
-  ASSERT_TRUE(gen.EmitExpression(expr)) << gen.error();
-  EXPECT_EQ(gen.result(), "my_vec.gbr");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, expr)) << gen.error();
+  EXPECT_EQ(out.str(), "my_vec.gbr");
 }
 
 }  // namespace

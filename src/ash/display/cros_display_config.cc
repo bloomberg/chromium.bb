@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/display/display_alignment_controller.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_highlight_controller.h"
@@ -15,7 +16,6 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/touch_calibrator_controller.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "ash/shell.h"
@@ -515,7 +515,6 @@ class CrosDisplayConfig::ObserverImpl
       public ScreenOrientationController::Observer {
  public:
   explicit ObserverImpl() {
-    display::Screen::GetScreen()->AddObserver(this);
     Shell::Get()->tablet_mode_controller()->AddObserver(this);
     Shell::Get()->screen_orientation_controller()->AddObserver(this);
   }
@@ -523,7 +522,6 @@ class CrosDisplayConfig::ObserverImpl
   ~ObserverImpl() override {
     Shell::Get()->screen_orientation_controller()->RemoveObserver(this);
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-    display::Screen::GetScreen()->RemoveObserver(this);
   }
 
   void AddObserver(
@@ -564,6 +562,7 @@ class CrosDisplayConfig::ObserverImpl
   }
 
   mojo::AssociatedRemoteSet<mojom::CrosDisplayConfigObserver> observers_;
+  display::ScopedDisplayObserver display_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ObserverImpl);
 };

@@ -63,39 +63,13 @@ default_args = {
 # their includes checked for proper dependencies when you run either
 # "gn check" or "gn gen --check".
 no_check_targets = [
-  "//chrome/test:browser_tests",
-  "//chrome/test:browser_tests_runner",
-  "//chrome/test:interactive_ui_tests",
-  "//chrome/test:unit_tests",
-  "//chrome/test:unit_tests__library",
-  "//chrome/test:usage_time_limit_unittests",
-  "//chrome/test:xr_browser_tests_common",
-  "//extensions/browser/api:*",  # 7 errors
   "//extensions/browser:*",  # 20 errors
-  "//extensions:*",  # 75 errors
-  "//headless:*",  # 167 errors
-  "//native_client/src/trusted/service_runtime:*",  # 2 errors
-  "//ppapi/cpp/private:*",  # 1 error
-  "//ppapi/host:*",  # 1 error
-  "//ppapi/native_client/src/untrusted/pnacl_irt_shim:*",  # 197 errors
-  "//ppapi/proxy:*",  # 31 errors
+  "//extensions:*",  # 28 errors
+  "//headless:*",  # 107 errors
+  "//ppapi/proxy:ipc_sources",  # 13 errors
   "//ppapi/thunk:*",  # 1071 errors
-  "//ppapi:*",  # 3 errors
-  "//remoting/host/file_transfer:*",  # 43 errors
-  "//remoting/host/installer/mac:*",  # 1 error
-  "//remoting/host/mac:*",  # 49 errors
-  "//remoting/host/security_key:*",  # 68 errors
+  "//remoting/host/security_key:*",  # 10 errors
   "//remoting/host/win:*",  # 43 errors
-  "//remoting/ios/app/settings:*",  # 6 errors
-  "//remoting/ios/app:*",  # 9 errors
-  "//remoting/ios/audio:*",  # 5 errors
-  "//remoting/ios/domain:*",  # 2 errors
-  "//remoting/ios/facade:*",  # 8 errors
-  "//remoting/ios/persistence:*",  # 10 errors
-  "//remoting/ios/session:*",  # 7 errors
-  "//remoting/ios:*",  # 2 errors
-  "//remoting/protocol:*",  # 3 errors
-  "//remoting/test:*",  # 2 error
   "//sandbox/win:*",  # 7 errors
 
   "//third_party/icu/*",

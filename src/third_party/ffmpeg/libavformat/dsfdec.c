@@ -50,7 +50,7 @@ static const uint64_t dsf_channel_layout[] = {
 
 static void read_id3(AVFormatContext *s, uint64_t id3pos)
 {
-    ID3v2ExtraMeta *id3v2_extra_meta = NULL;
+    ID3v2ExtraMeta *id3v2_extra_meta;
     if (avio_seek(s->pb, id3pos, SEEK_SET) < 0)
         return;
 
@@ -199,7 +199,7 @@ static int dsf_read_packet(AVFormatContext *s, AVPacket *pkt)
     return 0;
 }
 
-AVInputFormat ff_dsf_demuxer = {
+const AVInputFormat ff_dsf_demuxer = {
     .name           = "dsf",
     .long_name      = NULL_IF_CONFIG_SMALL("DSD Stream File (DSF)"),
     .priv_data_size = sizeof(DSFContext),

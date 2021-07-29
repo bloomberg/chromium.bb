@@ -143,8 +143,6 @@ LayoutShiftTracker::LayoutShiftTracker(LocalFrameView* frame_view)
       // SVGImage::DataChanged.
       is_active_(
           !frame_view->GetFrame().GetChromeClient().IsSVGImageChromeClient()),
-      enable_m90_improvements_(
-          base::FeatureList::IsEnabled(features::kCLSM90Improvements)),
       score_(0.0),
       weighted_score_(0.0),
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
@@ -175,13 +173,11 @@ bool LayoutShiftTracker::NeedsToTrack(const LayoutObject& object) const {
       return false;
     if (object.IsBR())
       return false;
-    if (enable_m90_improvements_) {
-      if (To<LayoutText>(object).ContainsOnlyWhitespaceOrNbsp() ==
-          OnlyWhitespaceOrNbsp::kYes)
-        return false;
-      if (object.StyleRef().GetFont().ShouldSkipDrawing())
-        return false;
-    }
+    if (To<LayoutText>(object).ContainsOnlyWhitespaceOrNbsp() ==
+        OnlyWhitespaceOrNbsp::kYes)
+      return false;
+    if (object.StyleRef().GetFont().ShouldSkipDrawing())
+      return false;
     return true;
   }
 
@@ -216,7 +212,7 @@ bool LayoutShiftTracker::NeedsToTrack(const LayoutObject& object) const {
       return false;
   }
 
-  if (enable_m90_improvements_ && box.IsLayoutBlock()) {
+  if (box.IsLayoutBlock()) {
     // Just check the simplest case. For more complex cases, we should suggest
     // the developer to use visibility:hidden.
     if (To<LayoutBlock>(box).FirstChild())
@@ -238,6 +234,7 @@ void LayoutShiftTracker::ObjectShifted(
     const FloatPoint& old_starting_point,
     const FloatSize& translation_delta,
     const FloatSize& scroll_delta,
+    const FloatSize& scroll_anchor_adjustment,
     const FloatPoint& new_starting_point) {
   // The caller should ensure these conditions.
   DCHECK(!old_rect.IsEmpty());
@@ -246,25 +243,30 @@ void LayoutShiftTracker::ObjectShifted(
   float threshold_physical_px =
       kMovementThreshold * object.StyleRef().EffectiveZoom();
 
-  if (enable_m90_improvements_) {
-    // Check shift of starting point, including 2d-translation and scroll
-    // deltas.
-    if (EqualWithinMovementThreshold(old_starting_point, new_starting_point,
-                                     threshold_physical_px))
-      return;
+  // Check shift of starting point, including 2d-translation and scroll
+  // deltas.
+  if (EqualWithinMovementThreshold(old_starting_point, new_starting_point,
+                                   threshold_physical_px))
+    return;
 
-    // Check shift of 2d-translation-indifferent starting point.
-    if (!translation_delta.IsZero() &&
-        EqualWithinMovementThreshold(old_starting_point + translation_delta,
-                                     new_starting_point, threshold_physical_px))
-      return;
+  // Check shift of 2d-translation-indifferent starting point.
+  if (!translation_delta.IsZero() &&
+      EqualWithinMovementThreshold(old_starting_point + translation_delta,
+                                   new_starting_point, threshold_physical_px))
+    return;
 
-    // Check shift of scroll-indifferent starting point.
-    if (!scroll_delta.IsZero() &&
-        EqualWithinMovementThreshold(old_starting_point + scroll_delta,
-                                     new_starting_point, threshold_physical_px))
-      return;
-  }
+  // Check shift of scroll-indifferent starting point.
+  if (!scroll_delta.IsZero() &&
+      EqualWithinMovementThreshold(old_starting_point + scroll_delta,
+                                   new_starting_point, threshold_physical_px))
+    return;
+
+  if (RuntimeEnabledFeatures::CLSScrollAnchoringEnabled() &&
+      !scroll_anchor_adjustment.IsZero() &&
+      EqualWithinMovementThreshold(
+          old_starting_point + scroll_delta + scroll_anchor_adjustment,
+          new_starting_point, threshold_physical_px))
+    return;
 
   // Check shift of 2d-translation-and-scroll-indifferent starting point.
   FloatSize translation_and_scroll_delta = scroll_delta + translation_delta;
@@ -293,9 +295,8 @@ void LayoutShiftTracker::ObjectShifted(
       property_tree_state.Transform(), root_state.Transform());
   // TODO(crbug.com/1187979): Shift by |scroll_delta| to keep backward
   // compatibility in https://crrev.com/c/2754969. See the bug for details.
-  FloatPoint old_starting_point_in_root = transform.MapPoint(
-      old_starting_point +
-      (enable_m90_improvements_ ? scroll_delta : translation_and_scroll_delta));
+  FloatPoint old_starting_point_in_root =
+      transform.MapPoint(old_starting_point + scroll_delta);
   FloatPoint new_starting_point_in_root =
       transform.MapPoint(new_starting_point);
 
@@ -304,22 +305,10 @@ void LayoutShiftTracker::ObjectShifted(
                                    threshold_physical_px))
     return;
 
-  if (enable_m90_improvements_) {
-    DCHECK(frame_scroll_delta_.IsZero());
-  } else if (EqualWithinMovementThreshold(
-                 old_starting_point_in_root + frame_scroll_delta_,
-                 new_starting_point_in_root, threshold_physical_px)) {
-    // TODO(skobes): Checking frame_scroll_delta_ is an imperfect solution to
-    // allowing counterscrolled layout shifts. Ideally, we would map old_rect
-    // to viewport coordinates using the previous frame's scroll tree.
-    return;
-  }
-
   FloatRect old_rect_in_root(old_rect);
   // TODO(crbug.com/1187979): Shift by |scroll_delta| to keep backward
   // compatibility in https://crrev.com/c/2754969. See the bug for details.
-  old_rect_in_root.Move(
-      enable_m90_improvements_ ? scroll_delta : translation_and_scroll_delta);
+  old_rect_in_root.Move(scroll_delta);
   transform.MapRect(old_rect_in_root);
   FloatRect new_rect_in_root(new_rect);
   transform.MapRect(new_rect_in_root);
@@ -333,8 +322,7 @@ void LayoutShiftTracker::ObjectShifted(
 
   // If the object moved from or to out of view, ignore the shift if it's in
   // the inline direction only.
-  if (enable_m90_improvements_ &&
-      (visible_old_rect.IsEmpty() || visible_new_rect.IsEmpty())) {
+  if (visible_old_rect.IsEmpty() || visible_new_rect.IsEmpty()) {
     FloatPoint old_inline_direction_indifferent_starting_point_in_root =
         old_starting_point_in_root;
     if (object.IsHorizontalWritingMode()) {
@@ -441,11 +429,12 @@ void LayoutShiftTracker::NotifyBoxPrePaint(
     const PhysicalOffset& old_paint_offset,
     const FloatSize& translation_delta,
     const FloatSize& scroll_delta,
+    const FloatSize& scroll_anchor_adjustment,
     const PhysicalOffset& new_paint_offset) {
   DCHECK(NeedsToTrack(box));
   ObjectShifted(box, property_tree_state, old_rect, new_rect,
                 StartingPoint(old_paint_offset, box, box.PreviousSize()),
-                translation_delta, scroll_delta,
+                translation_delta, scroll_delta, scroll_anchor_adjustment,
                 StartingPoint(new_paint_offset, box, box.Size()));
 }
 
@@ -457,6 +446,7 @@ void LayoutShiftTracker::NotifyTextPrePaint(
     const PhysicalOffset& old_paint_offset,
     const FloatSize& translation_delta,
     const FloatSize& scroll_delta,
+    const FloatSize& scroll_anchor_adjustment,
     const PhysicalOffset& new_paint_offset,
     LayoutUnit logical_height) {
   DCHECK(NeedsToTrack(text));
@@ -486,7 +476,8 @@ void LayoutShiftTracker::NotifyTextPrePaint(
 
   ObjectShifted(text, property_tree_state, old_rect, new_rect,
                 FloatPoint(old_physical_starting_point), translation_delta,
-                scroll_delta, FloatPoint(new_physical_starting_point));
+                scroll_delta, scroll_anchor_adjustment,
+                FloatPoint(new_physical_starting_point));
 }
 
 double LayoutShiftTracker::SubframeWeightingFactor() const {
@@ -551,7 +542,8 @@ void LayoutShiftTracker::NotifyPrePaintFinishedInternal() {
             << SubframeWeightingFactor();
   }
 
-  if (pointerdown_pending_data_.saw_pointerdown) {
+  if (pointerdown_pending_data_.num_pointerdowns > 0 ||
+      pointerdown_pending_data_.num_pressed_mouse_buttons > 0) {
     pointerdown_pending_data_.score_delta += score_delta;
     pointerdown_pending_data_.weighted_score_delta += weighted_score_delta;
   } else {
@@ -568,7 +560,6 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
   // Reset accumulated state.
   region_.Reset();
   frame_max_distance_ = 0.0;
-  frame_scroll_delta_ = ScrollOffset();
   attributions_.fill(Attribution());
 }
 
@@ -633,11 +624,21 @@ void LayoutShiftTracker::ReportShift(double score_delta,
 
 void LayoutShiftTracker::NotifyInput(const WebInputEvent& event) {
   const WebInputEvent::Type type = event.GetType();
-  const bool saw_pointerdown = pointerdown_pending_data_.saw_pointerdown;
-  const bool pointerdown_became_tap =
-      saw_pointerdown && type == WebInputEvent::Type::kPointerUp;
+  bool release_all_mouse_buttons = false;
+  if (type == WebInputEvent::Type::kMouseUp) {
+    if (pointerdown_pending_data_.num_pressed_mouse_buttons > 0)
+      pointerdown_pending_data_.num_pressed_mouse_buttons--;
+    release_all_mouse_buttons =
+        pointerdown_pending_data_.num_pressed_mouse_buttons == 0;
+  }
+  bool release_all_pointers = false;
+  if (type == WebInputEvent::Type::kPointerUp) {
+    if (pointerdown_pending_data_.num_pointerdowns > 0)
+      pointerdown_pending_data_.num_pointerdowns--;
+    release_all_pointers = pointerdown_pending_data_.num_pointerdowns == 0;
+  }
+
   const bool event_type_stops_pointerdown_buffering =
-      type == WebInputEvent::Type::kPointerUp ||
       type == WebInputEvent::Type::kPointerCausedUaAction ||
       type == WebInputEvent::Type::kPointerCancel;
 
@@ -653,7 +654,7 @@ void LayoutShiftTracker::NotifyInput(const WebInputEvent& event) {
       // We need to explicitly include tap, as if there are no listeners, we
       // won't receive the pointer events.
       type == WebInputEvent::Type::kGestureTap || is_hovering_pointerdown ||
-      pointerdown_became_tap;
+      release_all_pointers || release_all_mouse_buttons;
 
   if (should_trigger_shift_exclusion) {
     observed_input_or_scroll_ = true;
@@ -663,14 +664,17 @@ void LayoutShiftTracker::NotifyInput(const WebInputEvent& event) {
     UpdateInputTimestamp(event.TimeStamp());
   }
 
-  if (saw_pointerdown && event_type_stops_pointerdown_buffering) {
+  if (event_type_stops_pointerdown_buffering || release_all_mouse_buttons ||
+      release_all_pointers) {
     double score_delta = pointerdown_pending_data_.score_delta;
     if (score_delta > 0)
       ReportShift(score_delta, pointerdown_pending_data_.weighted_score_delta);
     pointerdown_pending_data_ = PointerdownPendingData();
   }
   if (type == WebInputEvent::Type::kPointerDown && !is_hovering_pointerdown)
-    pointerdown_pending_data_.saw_pointerdown = true;
+    pointerdown_pending_data_.num_pointerdowns++;
+  if (type == WebInputEvent::Type::kMouseDown)
+    pointerdown_pending_data_.num_pressed_mouse_buttons++;
 }
 
 void LayoutShiftTracker::UpdateInputTimestamp(base::TimeTicks timestamp) {
@@ -680,15 +684,10 @@ void LayoutShiftTracker::UpdateInputTimestamp(base::TimeTicks timestamp) {
   } else if (timestamp > most_recent_input_timestamp_) {
     most_recent_input_timestamp_ = timestamp;
   }
-  LocalFrame& frame = frame_view_->GetFrame();
-  frame.Client()->DidObserveInputForLayoutShiftTracking(timestamp);
 }
 
 void LayoutShiftTracker::NotifyScroll(mojom::blink::ScrollType scroll_type,
                                       ScrollOffset delta) {
-  if (!enable_m90_improvements_)
-    frame_scroll_delta_ += delta;
-
   // Only set observed_input_or_scroll_ for user-initiated scrolls, and not
   // other scrolls such as hash fragment navigations.
   if (scroll_type == mojom::blink::ScrollType::kUser ||
@@ -793,6 +792,10 @@ void LayoutShiftTracker::SendLayoutShiftRectsToHud(
       cc_layer->layer_tree_host()->hud_layer()->SetNeedsPushProperties();
     }
   }
+}
+
+void LayoutShiftTracker::ResetTimerForTesting() {
+  timer_.Stop();
 }
 
 void LayoutShiftTracker::Trace(Visitor* visitor) const {

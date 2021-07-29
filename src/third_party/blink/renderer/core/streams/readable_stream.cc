@@ -4,9 +4,8 @@
 
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
-#include "third_party/blink/renderer/bindings/core/v8/readable_stream_default_reader_or_readable_stream_byob_reader.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_abort_signal.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
@@ -96,6 +95,8 @@ class ReadableStream::PipeToEngine final
  public:
   PipeToEngine(ScriptState* script_state, PipeOptions* pipe_options)
       : script_state_(script_state), pipe_options_(pipe_options) {}
+  PipeToEngine(const PipeToEngine&) = delete;
+  PipeToEngine& operator=(const PipeToEngine&) = delete;
 
   // This is the main entrypoint for ReadableStreamPipeTo().
   ScriptPromise Start(ReadableStream* readable, WritableStream* destination) {
@@ -702,13 +703,13 @@ class ReadableStream::PipeToEngine final
   TraceWrapperV8Reference<v8::Value> shutdown_error_;
   bool is_shutting_down_ = false;
   bool is_reading_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(PipeToEngine);
 };
 
 class ReadableStream::TeeEngine final : public GarbageCollected<TeeEngine> {
  public:
   TeeEngine() = default;
+  TeeEngine(const TeeEngine&) = delete;
+  TeeEngine& operator=(const TeeEngine&) = delete;
 
   // Create the streams and start copying data.
   void Start(ScriptState*, ReadableStream*, ExceptionState&);
@@ -746,8 +747,6 @@ class ReadableStream::TeeEngine final : public GarbageCollected<TeeEngine> {
   TraceWrapperV8Reference<v8::Value> reason_[2];
   Member<ReadableStream> branch_[2];
   Member<ReadableStreamDefaultController> controller_[2];
-
-  DISALLOW_COPY_AND_ASSIGN(TeeEngine);
 };
 
 class ReadableStream::TeeEngine::PullAlgorithm final : public StreamAlgorithm {
@@ -1115,30 +1114,42 @@ ReadableStream* ReadableStream::CreateWithCountQueueingStrategy(
     AllowPerChunkTransferring allow_per_chunk_transferring,
     std::unique_ptr<ReadableStreamTransferringOptimizer> optimizer) {
   auto* isolate = script_state->GetIsolate();
-
-  auto strategy = CreateTrivialQueuingStrategy(isolate, high_water_mark);
-
   ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
                                  "ReadableStream");
   v8::MicrotasksScope microtasks_scope(
       isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
 
-  v8::Local<v8::Value> underlying_source_v8 =
-      ToV8(underlying_source, script_state);
-
   auto* stream = MakeGarbageCollected<ReadableStream>();
-  stream->InitInternal(script_state, ScriptValue(isolate, underlying_source_v8),
-                       strategy, true, exception_state);
-
+  stream->InitWithCountQueueingStrategy(
+      script_state, underlying_source, high_water_mark,
+      allow_per_chunk_transferring, std::move(optimizer), exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
     DLOG(WARNING)
         << "Ignoring an exception in CreateWithCountQueuingStrategy().";
   }
-
-  stream->allow_per_chunk_transferring_ = allow_per_chunk_transferring;
-  stream->transferring_optimizer_ = std::move(optimizer);
   return stream;
+}
+
+void ReadableStream::InitWithCountQueueingStrategy(
+    ScriptState* script_state,
+    UnderlyingSourceBase* underlying_source,
+    size_t high_water_mark,
+    AllowPerChunkTransferring allow_per_chunk_transferring,
+    std::unique_ptr<ReadableStreamTransferringOptimizer> optimizer,
+    ExceptionState& exception_state) {
+  auto* isolate = script_state->GetIsolate();
+
+  auto strategy = CreateTrivialQueuingStrategy(isolate, high_water_mark);
+
+  v8::Local<v8::Value> underlying_source_v8 =
+      ToV8(underlying_source, script_state);
+
+  InitInternal(script_state, ScriptValue(isolate, underlying_source_v8),
+               strategy, true, exception_state);
+
+  allow_per_chunk_transferring_ = allow_per_chunk_transferring;
+  transferring_optimizer_ = std::move(optimizer);
 }
 
 ReadableStream* ReadableStream::Create(ScriptState* script_state,
@@ -1216,7 +1227,6 @@ ScriptPromise ReadableStream::cancel(ScriptState* script_state,
   return ScriptPromise(script_state, result);
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 V8ReadableStreamReader* ReadableStream::getReader(
     ScriptState* script_state,
     ExceptionState& exception_state) {
@@ -1229,20 +1239,7 @@ V8ReadableStreamReader* ReadableStream::getReader(
     return nullptr;
   return MakeGarbageCollected<V8ReadableStreamReader>(reader);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void ReadableStream::getReader(
-    ScriptState* script_state,
-    ReadableStreamDefaultReaderOrReadableStreamBYOBReader& return_value,
-    ExceptionState& exception_state) {
-  // https://streams.spec.whatwg.org/#rs-get-reader
-  // 1. If options["mode"] does not exist, return ?
-  // AcquireReadableStreamDefaultReader(this).
-  return_value.SetReadableStreamDefaultReader(
-      AcquireDefaultReader(script_state, this, true, exception_state));
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 V8ReadableStreamReader* ReadableStream::getReader(
     ScriptState* script_state,
     const ReadableStreamGetReaderOptions* options,
@@ -1263,40 +1260,14 @@ V8ReadableStreamReader* ReadableStream::getReader(
 
   return getReader(script_state, exception_state);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void ReadableStream::getReader(
-    ScriptState* script_state,
-    ReadableStreamGetReaderOptions* options,
-    ReadableStreamDefaultReaderOrReadableStreamBYOBReader& return_value,
-    ExceptionState& exception_state) {
-  // https://streams.spec.whatwg.org/#rs-get-reader
-  if (options->hasMode()) {
-    DCHECK_EQ(options->mode(), "byob");
-
-    UseCounter::Count(ExecutionContext::From(script_state),
-                      WebFeature::kReadableStreamBYOBReader);
-
-    return_value.SetReadableStreamBYOBReader(
-        AcquireBYOBReader(script_state, this, exception_state));
-  } else {
-    getReader(script_state, return_value, exception_state);
-  }
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 ReadableStreamDefaultReader* ReadableStream::GetDefaultReaderForTesting(
     ScriptState* script_state,
     ExceptionState& exception_state) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   auto* result = getReader(script_state, exception_state);
   if (!result)
     return nullptr;
   return result->GetAsReadableStreamDefaultReader();
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  ReadableStreamDefaultReaderOrReadableStreamBYOBReader return_value;
-  getReader(script_state, return_value, exception_state);
-  return return_value.GetAsReadableStreamDefaultReader();
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 }
 
 ReadableStream* ReadableStream::pipeThrough(ScriptState* script_state,

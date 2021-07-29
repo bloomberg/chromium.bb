@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" />TB/s</translation>
 <translation id="2353636109065292463">인터넷 연결 상태를 확인하세요.</translation>
 <translation id="2388990488038464401">휴대전화에서 이 번호로 전화를 거시겠습니까?</translation>
+<translation id="2435457462613246316">비밀번호 표시</translation>
 <translation id="24452542372838207">알림 펼치기</translation>
 <translation id="2445449901874883781">고밀도 사용</translation>
 <translation id="2482878487686419369">알림</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1년 전}other{#년 전}}</translation>
 <translation id="2878511608894704031">모두 삭제</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1일 후}other{#일 후}}</translation>
+<translation id="2922712708897119705"><ph name="COLUMN_NAME" /> 열은 내림차순으로 정렬되어 있습니다.</translation>
 <translation id="2931838996092594335">클릭</translation>
 <translation id="2981684127883932071">추천 표시 중</translation>
 <translation id="3036649622769666520">파일 열기</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">메뉴</translation>
 <translation id="3909791450649380159">잘라내기(&amp;T)</translation>
 <translation id="3990502903496589789">오른쪽 모서리</translation>
+<translation id="3994749195054421561"><ph name="COLUMN_NAME" /> 열은 오름차순으로 정렬되어 있습니다.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{읽지 않은 알림 1개}other{읽지 않은 알림 #개}}</translation>
 <translation id="4202807286478387388">건너뛰기</translation>
 <translation id="4250229828105606438">스크린샷</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">클립보드에서 삭제합니다.</translation>
 <translation id="4316910396681052118">모든 앱</translation>
 <translation id="4491109536499578614">이미지</translation>
+<translation id="4565377596337484307">비밀번호 숨김</translation>
 <translation id="4588090240171750605">오른쪽 스크롤</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, 별표 평점 <ph name="RATING_SCORE" />점</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, 앱 추천</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" />페이지</translation>
 <translation id="6022924867608035986">검색창 텍스트 삭제</translation>
 <translation id="6040143037577758943">닫기</translation>
+<translation id="6117103120090651229">가운데 버튼</translation>
 <translation id="6119846243427417423">활성화</translation>
 <translation id="6129953537138746214">Space</translation>
 <translation id="6134259848159370930">기기, 앱, 설정, 웹에서 검색합니다.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">펼쳐서 모든 앱 보기</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="6166852626429024716">기기, 앱, 설정, 웹에서 검색...</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> 선택됨</translation>
 <translation id="6264365405983206840">모두 선택(&amp;A)</translation>
 <translation id="6351032674660237738">앱 추천</translation>
 <translation id="6364916375976753737">왼쪽으로 스크롤</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1분 남음}other{#분 남음}}</translation>
 <translation id="7430878839542012341">기록에서 검색어를 삭제하시겠습니까?</translation>
+<translation id="7437971918971306061"><ph name="COLUMN_NAME" /> 열은 정렬되어 있지 않습니다.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" />TB</translation>
 <translation id="7507604095951736240">그림 이모티콘</translation>
 <translation id="7620655452534002301">삭제되었습니다.</translation>

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_items_builder.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
@@ -71,6 +72,13 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
         &GetDocument(), style_, LegacyLayout::kAuto);
     anonymous_objects_.push_back(layout_block_flow);
     builder->AppendAtomicInline(layout_block_flow);
+  }
+
+  void AppendBlockInInline(NGInlineItemsBuilder* builder) {
+    LayoutBlockFlow* layout_block_flow = LayoutBlockFlow::CreateAnonymous(
+        &GetDocument(), style_, LegacyLayout::kAuto);
+    anonymous_objects_.push_back(layout_block_flow);
+    builder->AppendBlockInInline(layout_block_flow);
   }
 
   void AppendRubyRun(NGInlineItemsBuilder* builder) {
@@ -530,6 +538,16 @@ TEST_F(NGInlineItemsBuilderTest, BidiIsolateOverride) {
                    u" World"),
             builder.ToString());
   isolate_override_rtl->Destroy();
+}
+
+TEST_F(NGInlineItemsBuilderTest, BlockInInline) {
+  Vector<NGInlineItem> items;
+  NGInlineItemsBuilder builder(GetLayoutBlockFlow(), &items);
+  AppendText("Hello ", &builder);
+  AppendBlockInInline(&builder);
+  AppendText(" World", &builder);
+  // Collapsible spaces before and after block-in-inline should be collapsed.
+  EXPECT_EQ(String(u"Hello\uFFFCWorld"), builder.ToString());
 }
 
 TEST_F(NGInlineItemsBuilderTest, HasRuby) {

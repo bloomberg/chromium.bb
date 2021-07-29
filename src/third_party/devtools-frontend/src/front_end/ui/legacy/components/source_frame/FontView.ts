@@ -61,7 +61,7 @@ export class FontView extends UI.View.SimpleView {
   _inResize!: boolean|null;
   constructor(mimeType: string, contentProvider: TextUtils.ContentProvider.ContentProvider) {
     super(i18nString(UIStrings.font));
-    this.registerRequiredCSS('ui/legacy/components/source_frame/fontView.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('ui/legacy/components/source_frame/fontView.css');
     this.element.classList.add('font-view');
     this._url = contentProvider.contentURL();
     UI.ARIAUtils.setAccessibleName(this.element, i18nString(UIStrings.previewOfFontFromS, {PH1: this._url}));
@@ -91,13 +91,13 @@ export class FontView extends UI.View.SimpleView {
     }
 
     const uniqueFontName = 'WebInspectorFontPreview' + (++_fontId);
-    this.fontStyleElement = (document.createElement('style') as HTMLStyleElement);
+    this.fontStyleElement = document.createElement('style');
     this._contentProvider.requestContent().then(deferredContent => {
       this._onFontContentLoaded(uniqueFontName, deferredContent);
     });
     this.element.appendChild(this.fontStyleElement);
 
-    const fontPreview = (document.createElement('div') as HTMLDivElement);
+    const fontPreview = document.createElement('div');
     for (let i = 0; i < _fontPreviewLines.length; ++i) {
       if (i > 0) {
         fontPreview.createChild('br');

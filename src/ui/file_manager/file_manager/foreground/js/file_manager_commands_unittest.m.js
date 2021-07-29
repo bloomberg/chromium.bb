@@ -5,13 +5,13 @@
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertArrayEquals, assertEquals, assertNotEquals, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {MockVolumeManager} from '../../background/js/mock_volume_manager.m.js';
-import {installMockChrome} from '../../common/js/mock_chrome.m.js';
-import {MockDirectoryEntry, MockEntry} from '../../common/js/mock_entry.m.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
+import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
+import {installMockChrome} from '../../common/js/mock_chrome.js';
+import {MockDirectoryEntry, MockEntry} from '../../common/js/mock_entry.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 
-import {CommandHandler, CommandUtil} from './file_manager_commands.m.js';
-import {FileTasks} from './file_tasks.m.js';
+import {CommandHandler, CommandUtil} from './file_manager_commands.js';
+import {FileTasks} from './file_tasks.js';
 
 /**
  * Checks that a correct sharing action source is extracted from an event.
@@ -55,8 +55,7 @@ export function testToggleHoldingSpaceCommand() {
   assertNotEquals(command, undefined);
 
   // Enable the holding space feature and provide strings.
-  loadTimeData.resetForTesting();
-  loadTimeData.overrideValues({
+  loadTimeData.resetForTesting({
     HOLDING_SPACE_ENABLED: true,
     HOLDING_SPACE_PIN_TO_SHELF_COMMAND_LABEL: 'Pin to shelf',
     HOLDING_SPACE_UNPIN_TO_SHELF_COMMAND_LABEL: 'Unpin to shelf',

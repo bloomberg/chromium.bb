@@ -157,7 +157,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflineIndicator.ShownDurationV2" units="ms"
-    expires_after="2021-10-04">
+    expires_after="2021-12-05">
   <owner>curranmax@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -174,7 +174,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflineIndicator.ShownDurationV2.InBackground" units="ms"
-    expires_after="2021-08-01">
+    expires_after="2021-12-05">
   <owner>curranmax@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -190,7 +190,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflineIndicator.ShownDurationV2.InForeground" units="ms"
-    expires_after="2021-08-01">
+    expires_after="2021-12-05">
   <owner>curranmax@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -205,7 +205,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="OfflineIndicator.ShownDurationV2.InForegroundWithoutBeingBackgrounded"
-    units="ms" expires_after="2021-08-01">
+    units="ms" expires_after="2021-12-05">
   <owner>curranmax@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -221,7 +221,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflineIndicator.ShownDurationV2.NumTimesBackgrounded"
-    units="times backgrounded" expires_after="2021-08-01">
+    units="times backgrounded" expires_after="2021-12-05">
   <owner>curranmax@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -235,7 +235,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflineIndicator.ShownDurationV2.UntilFirstTimeBackgrounded"
-    units="ms" expires_after="2021-08-01">
+    units="ms" expires_after="2021-12-05">
   <owner>curranmax@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -813,7 +813,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflinePages.OfflineUsage" enum="OfflinePagesOfflineUsage"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>dimich@chromium.org</owner>
   <owner>offline-dev@chromium.org</owner>
   <summary>
@@ -828,7 +828,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflinePages.OfflineUsage.NotOfflineResilient"
-    enum="OfflinePagesOfflineUsage" expires_after="2021-10-04">
+    enum="OfflinePagesOfflineUsage" expires_after="2021-12-05">
   <owner>sclittle@chromium.org</owner>
   <owner>offline-dev@chromium.org</owner>
   <summary>
@@ -948,7 +948,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflinePages.Prefetching.FinishedItemErrorCode"
-    enum="OfflinePrefetchItemErrorCode" expires_after="2021-10-31">
+    enum="OfflinePrefetchItemErrorCode" expires_after="2022-01-02">
   <owner>carlosk@chromium.org</owner>
   <owner>offline-dev@chromium.org</owner>
   <summary>
@@ -1046,7 +1046,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="OfflinePages.PrefetchUsage" enum="OfflinePagesPrefetchUsage"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>dimich@chromium.org</owner>
   <owner>offline-dev@chromium.org</owner>
   <summary>

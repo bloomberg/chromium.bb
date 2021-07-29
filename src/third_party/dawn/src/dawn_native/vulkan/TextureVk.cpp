@@ -26,6 +26,7 @@
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
 #include "dawn_native/vulkan/ResourceHeapVk.h"
+#include "dawn_native/vulkan/ResourceMemoryAllocatorVk.h"
 #include "dawn_native/vulkan/StagingBufferVk.h"
 #include "dawn_native/vulkan/UtilsVulkan.h"
 #include "dawn_native/vulkan/VulkanError.h"
@@ -55,7 +56,7 @@ namespace dawn_native { namespace vulkan {
         }
 
         // Computes which vulkan access type could be required for the given Dawn usage.
-        // TODO(cwallez@chromium.org): We shouldn't need any access usages for srcAccessMask when
+        // TODO(crbug.com/dawn/269): We shouldn't need any access usages for srcAccessMask when
         // the previous usage is readonly because an execution dependency is sufficient.
         VkAccessFlags VulkanAccessFlags(wgpu::TextureUsage usage, const Format& format) {
             VkAccessFlags flags = 0;
@@ -119,7 +120,7 @@ namespace dawn_native { namespace vulkan {
                 flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
             }
             if (usage & (wgpu::TextureUsage::Sampled | kReadOnlyStorageTexture)) {
-                // TODO(cwallez@chromium.org): Only transition to the usage we care about to avoid
+                // TODO(crbug.com/dawn/851): Only transition to the usage we care about to avoid
                 // introducing FS -> VS dependencies that would prevent parallelization on tiler
                 // GPUs
                 flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
@@ -134,8 +135,6 @@ namespace dawn_native { namespace vulkan {
                 if (format.HasDepthOrStencil()) {
                     flags |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
                              VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-                    // TODO(cwallez@chromium.org): This is missing the stage where the depth and
-                    // stencil values are written, but it isn't clear which one it is.
                 } else {
                     flags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
                 }
@@ -410,7 +409,7 @@ namespace dawn_native { namespace vulkan {
                 // or a combination with something else, the texture could be in a combination of
                 // GENERAL and TRANSFER_SRC_OPTIMAL. This would be a problem, so we make CopySrc use
                 // GENERAL.
-                // TODO(cwallez@chromium.org): We no longer need to transition resources all at
+                // TODO(crbug.com/dawn/851): We no longer need to transition resources all at
                 // once and can instead track subresources so we should lift this limitation.
             case wgpu::TextureUsage::CopySrc:
                 // Read-only and write-only storage textures must use general layout because load
@@ -564,7 +563,8 @@ namespace dawn_native { namespace vulkan {
         VkMemoryRequirements requirements;
         device->fn.GetImageMemoryRequirements(device->GetVkDevice(), mHandle, &requirements);
 
-        DAWN_TRY_ASSIGN(mMemoryAllocation, device->AllocateMemory(requirements, false));
+        DAWN_TRY_ASSIGN(mMemoryAllocation, device->GetResourceMemoryAllocator()->Allocate(
+                                               requirements, MemoryKind::Opaque));
 
         DAWN_TRY(CheckVkSuccess(
             device->fn.BindImageMemory(device->GetVkDevice(), mHandle,
@@ -726,7 +726,7 @@ namespace dawn_native { namespace vulkan {
 
             // For textures created from a VkImage, the allocation if kInvalid so the Device knows
             // to skip the deallocation of the (absence of) VkDeviceMemory.
-            device->DeallocateMemory(&mMemoryAllocation);
+            device->GetResourceMemoryAllocator()->Deallocate(&mMemoryAllocation);
 
             if (mHandle != VK_NULL_HANDLE) {
                 device->GetFencedDeleter()->DeleteWhenUnused(mHandle);
@@ -904,8 +904,8 @@ namespace dawn_native { namespace vulkan {
         wgpu::TextureUsage allUsages = wgpu::TextureUsage::None;
         wgpu::TextureUsage allLastUsages = wgpu::TextureUsage::None;
 
-        // This transitions assume it is a 2D texture
-        ASSERT(GetDimension() == wgpu::TextureDimension::e2D);
+        // TODO(crbug.com/dawn/814): support 1D textures.
+        ASSERT(GetDimension() != wgpu::TextureDimension::e1D);
 
         mSubresourceLastUsages.Merge(
             subresourceUsages, [&](const SubresourceRange& range, wgpu::TextureUsage* lastUsage,
@@ -1072,7 +1072,7 @@ namespace dawn_native { namespace vulkan {
             device->fn.CmdCopyBufferToImage(
                 recordingContext->commandBuffer,
                 ToBackend(uploadHandle.stagingBuffer)->GetBufferHandle(), GetHandle(),
-                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, regions.data());
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, regions.size(), regions.data());
         } else {
             for (uint32_t level = range.baseMipLevel; level < range.baseMipLevel + range.levelCount;
                  ++level) {

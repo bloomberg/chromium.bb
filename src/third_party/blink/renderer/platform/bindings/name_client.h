@@ -5,9 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_NAME_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_NAME_CLIENT_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/platform/bindings/buildflags.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/buildflags.h"
+
+#if BUILDFLAG(USE_V8_OILPAN)
+#include "v8/include/cppgc/name-provider.h"
+#endif  // BUILDFLAG(USE_V8_OILPAN)
 
 namespace blink {
 
@@ -36,6 +40,26 @@ namespace blink {
 //   Don't:
 //     class Bar : public GarbageCollected<Bar> {...};
 //     class Baz : public Bar, public NameClient {...};
+#if BUILDFLAG(USE_V8_OILPAN)
+
+class PLATFORM_EXPORT NameClient : public cppgc::NameProvider {
+ public:
+  NameClient() = default;
+  NameClient(const NameClient&) = delete;
+  NameClient& operator=(const NameClient&) = delete;
+  ~NameClient() override = default;
+
+  // Human-readable name of this object. The DevTools heap snapshot uses
+  // this method to show the object.
+  virtual const char* NameInHeapSnapshot() const = 0;
+
+  const char* GetHumanReadableName() const final {
+    return NameInHeapSnapshot();
+  }
+};
+
+#else  // !USE_V8_OILPAN
+
 class PLATFORM_EXPORT NameClient {
  public:
   static constexpr bool HideInternalName() {
@@ -48,15 +72,16 @@ class PLATFORM_EXPORT NameClient {
   }
 
   NameClient() = default;
-  ~NameClient() = default;
+  NameClient(const NameClient&) = delete;
+  NameClient& operator=(const NameClient&) = delete;
+  virtual ~NameClient() = default;
 
   // Human-readable name of this object. The DevTools heap snapshot uses
   // this method to show the object.
   virtual const char* NameInHeapSnapshot() const = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NameClient);
 };
+
+#endif  // !USE_V8_OILPAN
 
 }  // namespace blink
 

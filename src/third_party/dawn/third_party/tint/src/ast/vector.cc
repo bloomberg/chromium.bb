@@ -26,8 +26,9 @@ Vector::Vector(ProgramID program_id,
                Type const* subtype,
                uint32_t size)
     : Base(program_id, source), subtype_(subtype), size_(size) {
-  TINT_ASSERT(size_ > 1);
-  TINT_ASSERT(size_ < 5);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, subtype, program_id);
+  TINT_ASSERT(AST, size_ > 1);
+  TINT_ASSERT(AST, size_ < 5);
 }
 
 Vector::Vector(Vector&&) = default;

@@ -11,7 +11,6 @@
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/no_destructor.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
@@ -71,11 +70,17 @@ class COMPONENT_EXPORT(POWER_SCHEDULER) PowerModeArbiter
   // pool is available.
   void OnThreadPoolAvailable();
 
+  // Enables or disables the kCharging PowerMode. Defaults to enabled, i.e.
+  // kCharging will preempt all other PowerModes while the device is on a
+  // charger.
+  void SetChargingModeEnabled(bool enabled);
+
   // Provide a custom task runner for unit tests. Replaces a call to
   // OnThreadPoolAvailable().
   void SetTaskRunnerForTesting(scoped_refptr<base::SequencedTaskRunner>);
 
   PowerMode GetActiveModeForTesting();
+  // TODO(eseckler): Replace this with SetChargingModeEnabled() in tests.
   void SetOnBatteryPowerForTesting(bool on_battery_power);
 
  private:
@@ -98,11 +103,17 @@ class COMPONENT_EXPORT(POWER_SCHEDULER) PowerModeArbiter
 
   PowerMode ComputeActiveModeLocked() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
+  void UpdateTraceObserver() LOCKS_EXCLUDED(lock_, trace_observer_lock_);
+
   // trace_event::TraceLog::EnabledStateObserver implementation:
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 
-  std::unique_ptr<Observer> trace_observer_;
+  // Protects trace_observer_{,added_}. Should only be acquired when |lock_| is
+  // not held.
+  base::Lock trace_observer_lock_;
+  std::unique_ptr<Observer> trace_observer_ GUARDED_BY(trace_observer_lock_);
+  bool trace_observer_added_ GUARDED_BY(trace_observer_lock_) = false;
 
   base::Lock lock_;  // Protects subsequent members.
   scoped_refptr<base::SequencedTaskRunner> task_runner_ GUARDED_BY(lock_);
@@ -111,10 +122,12 @@ class COMPONENT_EXPORT(POWER_SCHEDULER) PowerModeArbiter
       GUARDED_BY(lock_);
   base::TimeTicks next_pending_vote_update_time_ GUARDED_BY(lock_);
   TracedPowerMode active_mode_ GUARDED_BY(lock_);
+  base::TimeTicks active_mode_changed_timestamp_ GUARDED_BY(lock_);
   int update_task_sequence_number_ GUARDED_BY(lock_) = 0;
   scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_
       GUARDED_BY(lock_);
   bool has_observers_ GUARDED_BY(lock_) = false;
+  bool charging_mode_enabled_ = true;
 
   // Owned by the arbiter but otherwise behaves like a regular voter.
   std::unique_ptr<ChargingPowerModeVoter> charging_voter_;

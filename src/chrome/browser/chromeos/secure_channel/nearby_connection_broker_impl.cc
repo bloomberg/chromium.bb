@@ -4,9 +4,11 @@
 
 #include "chrome/browser/chromeos/secure_channel/nearby_connection_broker_impl.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/secure_channel/nearby_endpoint_finder.h"
 #include "chrome/browser/chromeos/secure_channel/util/histogram_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
@@ -39,6 +41,24 @@ constexpr base::TimeDelta kConnectionStatusChangeTimeout =
 constexpr base::TimeDelta kWebRtcUpgradeDelay =
     base::TimeDelta::FromSeconds(30);
 
+// These values are set to help with Phone Hub battery drain (see: b/183505430)
+// by making the Nearby Connections layer 'keep alive' ping and activity timeout
+// longer. There are additional values at the WebRTC peer connection layer that
+// are independent of these values and both must also be set longer than the
+// defaults for battery life to improve. These two layers  (Nearby Connections
+// and WebRtc) do not have to be synced explicitly, but the shortest interval
+// will drive the number of kernel wakeups that cause the battery drain on the
+// phone side. Both layers produce their own pings/keep alive messages so Nearby
+// Connections is not responsible for sending data to keep the WebRTC layer
+// alive. If these values need to be tweaked, make sure to run a power analysis
+// for Phone battery drain with a persistent Phone Hub connection and understand
+// the impact.
+//
+// Nearby Connections keep alive interval default is 5 seconds.
+constexpr base::TimeDelta kKeepAliveInterval = base::TimeDelta::FromSeconds(15);
+// Nearby Connections keep alive timeout default is 30 seconds.
+constexpr base::TimeDelta kKeepAliveTimeout = base::TimeDelta::FromSeconds(60);
+
 // Numerical values should not be reused or changed since this is used by
 // metrics.
 enum class ConnectionMedium {
@@ -69,6 +89,7 @@ void RecordWebRtcUpgradeDuration(base::TimeDelta duration) {
 std::unique_ptr<NearbyConnectionBroker>
 NearbyConnectionBrokerImpl::Factory::Create(
     const std::vector<uint8_t>& bluetooth_public_address,
+    const std::vector<uint8_t>& eid,
     NearbyEndpointFinder* endpoint_finder,
     mojo::PendingReceiver<mojom::NearbyMessageSender> message_sender_receiver,
     mojo::PendingRemote<mojom::NearbyMessageReceiver> message_receiver_remote,
@@ -85,7 +106,7 @@ NearbyConnectionBrokerImpl::Factory::Create(
   }
 
   return base::WrapUnique(new NearbyConnectionBrokerImpl(
-      bluetooth_public_address, endpoint_finder,
+      bluetooth_public_address, eid, endpoint_finder,
       std::move(message_sender_receiver), std::move(message_receiver_remote),
       nearby_connections, std::move(on_connected_callback),
       std::move(on_disconnected_callback), std::move(timer)));
@@ -99,6 +120,7 @@ void NearbyConnectionBrokerImpl::Factory::SetFactoryForTesting(
 
 NearbyConnectionBrokerImpl::NearbyConnectionBrokerImpl(
     const std::vector<uint8_t>& bluetooth_public_address,
+    const std::vector<uint8_t>& eid,
     NearbyEndpointFinder* endpoint_finder,
     mojo::PendingReceiver<mojom::NearbyMessageSender> message_sender_receiver,
     mojo::PendingRemote<mojom::NearbyMessageReceiver> message_receiver_remote,
@@ -116,7 +138,7 @@ NearbyConnectionBrokerImpl::NearbyConnectionBrokerImpl(
       timer_(std::move(timer)) {
   TransitionToStatus(ConnectionStatus::kDiscoveringEndpoint);
   endpoint_finder_->FindEndpoint(
-      bluetooth_public_address,
+      bluetooth_public_address, eid,
       base::BindOnce(&NearbyConnectionBrokerImpl::OnEndpointDiscovered,
                      base::Unretained(this)),
       base::BindOnce(&NearbyConnectionBrokerImpl::OnDiscoveryFailure,
@@ -206,7 +228,13 @@ void NearbyConnectionBrokerImpl::OnEndpointDiscovered(
                                                   /*ble=*/false,
                                                   /*webrtc=*/true,
                                                   /*wifi_lan=*/false),
-                             /*remote_bluetooth_mac_address=*/absl::nullopt),
+                             /*remote_bluetooth_mac_address=*/absl::nullopt,
+                             ash::features::IsNearbyKeepAliveFixEnabled()
+                                 ? absl::make_optional(kKeepAliveInterval)
+                                 : absl::nullopt,
+                             ash::features::IsNearbyKeepAliveFixEnabled()
+                                 ? absl::make_optional(kKeepAliveTimeout)
+                                 : absl::nullopt),
       connection_lifecycle_listener_receiver_.BindNewPipeAndPassRemote(),
       base::BindOnce(&NearbyConnectionBrokerImpl::OnRequestConnectionResult,
                      weak_ptr_factory_.GetWeakPtr()));

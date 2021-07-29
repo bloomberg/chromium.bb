@@ -8,6 +8,7 @@ import android.net.Uri;
 
 import androidx.annotation.IntDef;
 
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.url.GURL;
@@ -192,11 +193,6 @@ public interface ContextMenuItemDelegate {
     void onOpenInChrome(GURL linkUrl, GURL pageUrl);
 
     /**
-     * Returns true if menu entries should be added for open in chrome.
-     */
-    boolean supportsOpenInChromeFromCct();
-
-    /**
      * Called when the {@code url} should be opened in a new Chrome tab from CCT.
      * @param linkUrl The URL to open.
      * @param isIncognito true if the {@code url} should be opened in a new incognito tab.
@@ -230,6 +226,7 @@ public interface ContextMenuItemDelegate {
 
     /**
      * Called when a text fragment should be removed from the page.
+     * @param {@link RenderFrameHost} The RenderFrameHost that triggered the context menu.
      */
-    void removeHighlighting();
+    void removeHighlighting(RenderFrameHost renderFrameHost);
 }

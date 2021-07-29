@@ -20,8 +20,8 @@
 
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/pending_task.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/task/common/task_annotator.h"
 #include "base/trace_event/base_tracing.h"
@@ -157,7 +157,7 @@ int g_min_log_level = 0;
 
 // Specifies the process' logging sink(s), represented as a combination of
 // LoggingDestination values joined by bitwise OR.
-int g_logging_destination = LOG_DEFAULT;
+uint32_t g_logging_destination = LOG_DEFAULT;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Specifies the format of log header for chrome os.

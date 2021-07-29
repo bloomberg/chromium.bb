@@ -7644,6 +7644,7 @@ VKAPI_ATTR void VKAPI_CALL GetQueueCheckpointData2NV(
 
 
 
+
 VKAPI_ATTR void VKAPI_CALL CmdCopyBuffer2KHR(
     VkCommandBuffer                             commandBuffer,
     const VkCopyBufferInfo2KHR*                 pCopyBufferInfo) {
@@ -10845,6 +10846,54 @@ VKAPI_ATTR void VKAPI_CALL DestroyIndirectCommandsLayoutNV(
 
 
 
+VKAPI_ATTR VkResult VKAPI_CALL AcquireDrmDisplayEXT(
+    VkPhysicalDevice                            physicalDevice,
+    int32_t                                     drmFd,
+    VkDisplayKHR                                display) {
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(physicalDevice), layer_data_map);
+    bool skip = false;
+    for (auto intercept : layer_data->object_dispatch) {
+        auto lock = intercept->read_lock();
+        skip |= (const_cast<const ValidationObject*>(intercept))->PreCallValidateAcquireDrmDisplayEXT(physicalDevice, drmFd, display);
+        if (skip) return VK_ERROR_VALIDATION_FAILED_EXT;
+    }
+    for (auto intercept : layer_data->object_dispatch) {
+        auto lock = intercept->write_lock();
+        intercept->PreCallRecordAcquireDrmDisplayEXT(physicalDevice, drmFd, display);
+    }
+    VkResult result = DispatchAcquireDrmDisplayEXT(physicalDevice, drmFd, display);
+    for (auto intercept : layer_data->object_dispatch) {
+        auto lock = intercept->write_lock();
+        intercept->PostCallRecordAcquireDrmDisplayEXT(physicalDevice, drmFd, display, result);
+    }
+    return result;
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL GetDrmDisplayEXT(
+    VkPhysicalDevice                            physicalDevice,
+    int32_t                                     drmFd,
+    uint32_t                                    connectorId,
+    VkDisplayKHR*                               display) {
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(physicalDevice), layer_data_map);
+    bool skip = false;
+    for (auto intercept : layer_data->object_dispatch) {
+        auto lock = intercept->read_lock();
+        skip |= (const_cast<const ValidationObject*>(intercept))->PreCallValidateGetDrmDisplayEXT(physicalDevice, drmFd, connectorId, display);
+        if (skip) return VK_ERROR_VALIDATION_FAILED_EXT;
+    }
+    for (auto intercept : layer_data->object_dispatch) {
+        auto lock = intercept->write_lock();
+        intercept->PreCallRecordGetDrmDisplayEXT(physicalDevice, drmFd, connectorId, display);
+    }
+    VkResult result = DispatchGetDrmDisplayEXT(physicalDevice, drmFd, connectorId, display);
+    for (auto intercept : layer_data->object_dispatch) {
+        auto lock = intercept->write_lock();
+        intercept->PostCallRecordGetDrmDisplayEXT(physicalDevice, drmFd, connectorId, display, result);
+    }
+    return result;
+}
+
+
 
 
 
@@ -10968,6 +11017,7 @@ VKAPI_ATTR void VKAPI_CALL CmdSetFragmentShadingRateEnumNV(
         intercept->PostCallRecordCmdSetFragmentShadingRateEnumNV(commandBuffer, shadingRate, combinerOps);
     }
 }
+
 
 
 
@@ -11098,6 +11148,7 @@ VKAPI_ATTR void VKAPI_CALL CmdSetVertexInputEXT(
     }
 }
 
+
 #ifdef VK_USE_PLATFORM_FUCHSIA
 
 VKAPI_ATTR VkResult VKAPI_CALL GetMemoryZirconHandleFUCHSIA(
@@ -11195,6 +11246,30 @@ VKAPI_ATTR VkResult VKAPI_CALL GetSemaphoreZirconHandleFUCHSIA(
     return result;
 }
 #endif // VK_USE_PLATFORM_FUCHSIA
+
+
+VKAPI_ATTR VkResult VKAPI_CALL GetMemoryRemoteAddressNV(
+    VkDevice                                    device,
+    const VkMemoryGetRemoteAddressInfoNV*       getMemoryRemoteAddressInfo,
+    VkRemoteAddressNV*                          pAddress) {
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    bool skip = false;
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallValidateGetMemoryRemoteAddressNV]) {
+        auto lock = intercept->read_lock();
+        skip |= (const_cast<const ValidationObject*>(intercept))->PreCallValidateGetMemoryRemoteAddressNV(device, getMemoryRemoteAddressInfo, pAddress);
+        if (skip) return VK_ERROR_VALIDATION_FAILED_EXT;
+    }
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallRecordGetMemoryRemoteAddressNV]) {
+        auto lock = intercept->write_lock();
+        intercept->PreCallRecordGetMemoryRemoteAddressNV(device, getMemoryRemoteAddressInfo, pAddress);
+    }
+    VkResult result = DispatchGetMemoryRemoteAddressNV(device, getMemoryRemoteAddressInfo, pAddress);
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPostCallRecordGetMemoryRemoteAddressNV]) {
+        auto lock = intercept->write_lock();
+        intercept->PostCallRecordGetMemoryRemoteAddressNV(device, getMemoryRemoteAddressInfo, pAddress, result);
+    }
+    return result;
+}
 
 
 VKAPI_ATTR void VKAPI_CALL CmdSetPatchControlPointsEXT(
@@ -11372,6 +11447,59 @@ VKAPI_ATTR void                                    VKAPI_CALL CmdSetColorWriteEn
     for (auto intercept : layer_data->intercept_vectors[InterceptIdPostCallRecordCmdSetColorWriteEnableEXT]) {
         auto lock = intercept->write_lock();
         intercept->PostCallRecordCmdSetColorWriteEnableEXT(commandBuffer, attachmentCount, pColorWriteEnables);
+    }
+}
+
+
+
+VKAPI_ATTR void VKAPI_CALL CmdDrawMultiEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    drawCount,
+    const VkMultiDrawInfoEXT*                   pVertexInfo,
+    uint32_t                                    instanceCount,
+    uint32_t                                    firstInstance,
+    uint32_t                                    stride) {
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    bool skip = false;
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallValidateCmdDrawMultiEXT]) {
+        auto lock = intercept->read_lock();
+        skip |= (const_cast<const ValidationObject*>(intercept))->PreCallValidateCmdDrawMultiEXT(commandBuffer, drawCount, pVertexInfo, instanceCount, firstInstance, stride);
+        if (skip) return;
+    }
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallRecordCmdDrawMultiEXT]) {
+        auto lock = intercept->write_lock();
+        intercept->PreCallRecordCmdDrawMultiEXT(commandBuffer, drawCount, pVertexInfo, instanceCount, firstInstance, stride);
+    }
+    DispatchCmdDrawMultiEXT(commandBuffer, drawCount, pVertexInfo, instanceCount, firstInstance, stride);
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPostCallRecordCmdDrawMultiEXT]) {
+        auto lock = intercept->write_lock();
+        intercept->PostCallRecordCmdDrawMultiEXT(commandBuffer, drawCount, pVertexInfo, instanceCount, firstInstance, stride);
+    }
+}
+
+VKAPI_ATTR void VKAPI_CALL CmdDrawMultiIndexedEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    drawCount,
+    const VkMultiDrawIndexedInfoEXT*            pIndexInfo,
+    uint32_t                                    instanceCount,
+    uint32_t                                    firstInstance,
+    uint32_t                                    stride,
+    const int32_t*                              pVertexOffset) {
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    bool skip = false;
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallValidateCmdDrawMultiIndexedEXT]) {
+        auto lock = intercept->read_lock();
+        skip |= (const_cast<const ValidationObject*>(intercept))->PreCallValidateCmdDrawMultiIndexedEXT(commandBuffer, drawCount, pIndexInfo, instanceCount, firstInstance, stride, pVertexOffset);
+        if (skip) return;
+    }
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPreCallRecordCmdDrawMultiIndexedEXT]) {
+        auto lock = intercept->write_lock();
+        intercept->PreCallRecordCmdDrawMultiIndexedEXT(commandBuffer, drawCount, pIndexInfo, instanceCount, firstInstance, stride, pVertexOffset);
+    }
+    DispatchCmdDrawMultiIndexedEXT(commandBuffer, drawCount, pIndexInfo, instanceCount, firstInstance, stride, pVertexOffset);
+    for (auto intercept : layer_data->intercept_vectors[InterceptIdPostCallRecordCmdDrawMultiIndexedEXT]) {
+        auto lock = intercept->write_lock();
+        intercept->PostCallRecordCmdDrawMultiIndexedEXT(commandBuffer, drawCount, pIndexInfo, instanceCount, firstInstance, stride, pVertexOffset);
     }
 }
 
@@ -12406,6 +12534,8 @@ const layer_data::unordered_map<std::string, function_data> name_to_funcptr_map 
     {"vkCmdBindPipelineShaderGroupNV", {kFuncTypeDev, (void*)CmdBindPipelineShaderGroupNV}},
     {"vkCreateIndirectCommandsLayoutNV", {kFuncTypeDev, (void*)CreateIndirectCommandsLayoutNV}},
     {"vkDestroyIndirectCommandsLayoutNV", {kFuncTypeDev, (void*)DestroyIndirectCommandsLayoutNV}},
+    {"vkAcquireDrmDisplayEXT", {kFuncTypePdev, (void*)AcquireDrmDisplayEXT}},
+    {"vkGetDrmDisplayEXT", {kFuncTypePdev, (void*)GetDrmDisplayEXT}},
     {"vkCreatePrivateDataSlotEXT", {kFuncTypeDev, (void*)CreatePrivateDataSlotEXT}},
     {"vkDestroyPrivateDataSlotEXT", {kFuncTypeDev, (void*)DestroyPrivateDataSlotEXT}},
     {"vkSetPrivateDataEXT", {kFuncTypeDev, (void*)SetPrivateDataEXT}},
@@ -12436,6 +12566,7 @@ const layer_data::unordered_map<std::string, function_data> name_to_funcptr_map 
 #ifdef VK_USE_PLATFORM_FUCHSIA
     {"vkGetSemaphoreZirconHandleFUCHSIA", {kFuncTypeDev, (void*)GetSemaphoreZirconHandleFUCHSIA}},
 #endif
+    {"vkGetMemoryRemoteAddressNV", {kFuncTypeDev, (void*)GetMemoryRemoteAddressNV}},
     {"vkCmdSetPatchControlPointsEXT", {kFuncTypeDev, (void*)CmdSetPatchControlPointsEXT}},
     {"vkCmdSetRasterizerDiscardEnableEXT", {kFuncTypeDev, (void*)CmdSetRasterizerDiscardEnableEXT}},
     {"vkCmdSetDepthBiasEnableEXT", {kFuncTypeDev, (void*)CmdSetDepthBiasEnableEXT}},
@@ -12448,6 +12579,8 @@ const layer_data::unordered_map<std::string, function_data> name_to_funcptr_map 
     {"vkGetPhysicalDeviceScreenPresentationSupportQNX", {kFuncTypePdev, (void*)GetPhysicalDeviceScreenPresentationSupportQNX}},
 #endif
     {"vkCmdSetColorWriteEnableEXT", {kFuncTypeDev, (void*)CmdSetColorWriteEnableEXT}},
+    {"vkCmdDrawMultiEXT", {kFuncTypeDev, (void*)CmdDrawMultiEXT}},
+    {"vkCmdDrawMultiIndexedEXT", {kFuncTypeDev, (void*)CmdDrawMultiIndexedEXT}},
     {"vkCreateAccelerationStructureKHR", {kFuncTypeDev, (void*)CreateAccelerationStructureKHR}},
     {"vkDestroyAccelerationStructureKHR", {kFuncTypeDev, (void*)DestroyAccelerationStructureKHR}},
     {"vkCmdBuildAccelerationStructuresKHR", {kFuncTypeDev, (void*)CmdBuildAccelerationStructuresKHR}},

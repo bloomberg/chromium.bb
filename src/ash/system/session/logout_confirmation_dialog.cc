@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/session/logout_confirmation_controller.h"
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/time/tick_clock.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -105,9 +106,9 @@ void LogoutConfirmationDialog::UpdateLabel() {
   if (time_remaining >= base::TimeDelta::FromMilliseconds(kHalfSecondInMs)) {
     label_->SetText(l10n_util::GetStringFUTF16(
         IDS_ASH_LOGOUT_CONFIRMATION_WARNING,
-        ui::TimeFormat::Detailed(ui::TimeFormat::FORMAT_DURATION,
-                                 ui::TimeFormat::LENGTH_LONG, 10,
-                                 time_remaining)));
+        l10n_util::GetStringFUTF16Int(
+            IDS_ASH_STATUS_TRAY_NEARBY_SHARE_REMAINING_SECONDS,
+            (int)time_remaining.InSeconds())));
   } else {
     label_->SetText(
         l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_WARNING_NOW));

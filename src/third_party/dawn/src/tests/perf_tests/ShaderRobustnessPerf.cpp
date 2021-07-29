@@ -29,9 +29,9 @@ namespace {
             numbers: array<f32>;
         };
 
-        [[group(0), binding(0)]] var<storage> firstMatrix : [[access(read)]] Matrix;
-        [[group(0), binding(1)]] var<storage> secondMatrix : [[access(read)]] Matrix;
-        [[group(0), binding(2)]] var<storage> resultMatrix : [[access(write)]] Matrix;
+        [[group(0), binding(0)]] var<storage, read> firstMatrix : Matrix;
+        [[group(0), binding(1)]] var<storage, read> secondMatrix : Matrix;
+        [[group(0), binding(2)]] var<storage, write> resultMatrix : Matrix;
         [[group(0), binding(3)]] var<uniform> uniforms : Uniforms;
 
         fn mm_readA(row : u32, col : u32) -> f32  {
@@ -196,9 +196,9 @@ namespace {
             numbers: array<vec4<f32>>;
         };
 
-        [[group(0), binding(0)]] var<storage> firstMatrix : [[access(read)]] Matrix;
-        [[group(0), binding(1)]] var<storage> secondMatrix : [[access(read)]] Matrix;
-        [[group(0), binding(2)]] var<storage> resultMatrix : [[access(write)]] Matrix;
+        [[group(0), binding(0)]] var<storage, read> firstMatrix : Matrix;
+        [[group(0), binding(1)]] var<storage, read> secondMatrix : Matrix;
+        [[group(0), binding(2)]] var<storage, write> resultMatrix : Matrix;
         [[group(0), binding(3)]] var<uniform> uniforms : Uniforms;
 
         fn mm_readA(row : u32, col : u32) -> vec4<f32>  {
@@ -407,7 +407,10 @@ void ShaderRobustnessPerf::SetUp() {
     DawnPerfTestWithParams<ShaderRobustnessParams>::SetUp();
 
     // TODO(crbug.com/dawn/786): D3D12_Microsoft_Basic_Render_Driver_CPU
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsWARP());
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsWARP());
+
+    // TODO(crbug.com/dawn/945): Generation via SPIRV-Cross fails
+    DAWN_SUPPRESS_TEST_IF(IsOpenGL() || !HasToggleEnabled("use_tint_generator"));
 
     const size_t dataASize = mDimAOuter * mDimInner;
     std::vector<float> dataA(dataASize);
@@ -460,8 +463,8 @@ void ShaderRobustnessPerf::SetUp() {
     }
 
     wgpu::ComputePipelineDescriptor csDesc;
-    csDesc.computeStage.module = module;
-    csDesc.computeStage.entryPoint = "main";
+    csDesc.compute.module = module;
+    csDesc.compute.entryPoint = "main";
     mPipeline = device.CreateComputePipeline(&csDesc);
 
     mBindGroup = utils::MakeBindGroup(device, mPipeline.GetBindGroupLayout(0),
@@ -497,11 +500,8 @@ TEST_P(ShaderRobustnessPerf, Run) {
 }
 
 DAWN_INSTANTIATE_TEST_P(ShaderRobustnessPerf,
-                        // TODO: Remove "use_tint_generator" once the following bug is
-                        // fixed https://bugs.chromium.org/p/tint/issues/detail?id=744.
-                        {D3D12Backend({}, {"use_tint_generator"}),
-                         D3D12Backend({"disable_robustness"}, {"use_tint_generator"}),
-                         MetalBackend(), MetalBackend({"disable_robustness"}, {}), OpenGLBackend(),
+                        {D3D12Backend(), D3D12Backend({"disable_robustness"}, {}), MetalBackend(),
+                         MetalBackend({"disable_robustness"}, {}), OpenGLBackend(),
                          OpenGLBackend({"disable_robustness"}, {}), VulkanBackend(),
                          VulkanBackend({"disable_robustness"}, {})},
                         {MatMulMethod::MatMulFloatOneDimSharedArray,

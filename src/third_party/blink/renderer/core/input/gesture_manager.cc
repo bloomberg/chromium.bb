@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/input/gesture_manager.h"
 
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -328,8 +329,11 @@ WebInputEventResult GestureManager::HandleGestureTap(
       click_event_result);
 
   if (RuntimeEnabledFeatures::TextFragmentTapOpensContextMenuEnabled() &&
-      TextFragmentHandler::IsOverTextFragment(current_hit_test)) {
-    if (event_result == WebInputEventResult::kNotHandled) {
+      current_hit_test.InnerNodeFrame()) {
+    current_hit_test.InnerNodeFrame()->View()->UpdateLifecycleToPrePaintClean(
+        DocumentUpdateReason::kHitTest);
+    if (TextFragmentHandler::IsOverTextFragment(current_hit_test) &&
+        event_result == WebInputEventResult::kNotHandled) {
       return SendContextMenuEventForGesture(targeted_event);
     }
   }

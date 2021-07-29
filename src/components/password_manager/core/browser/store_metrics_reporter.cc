@@ -10,7 +10,9 @@
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_reuse_manager.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 
@@ -186,12 +188,20 @@ StoreMetricsReporter::StoreMetricsReporter(
     // May be null in tests. The account store is also null if the
     // kEnablePasswordsAccountStorage feature is disabled.
     if (store) {
-      store->ReportMetrics(
+      std::string sync_username =
           password_manager::sync_util::GetSyncUsernameIfSyncingPasswords(
-              sync_service, identity_manager),
+              sync_service, identity_manager);
+      store->ReportMetrics(
+          sync_username,
           client->GetPasswordSyncState() ==
               password_manager::SyncState::kSyncingWithCustomPassphrase,
           client->IsUnderAdvancedProtection());
+
+      PasswordReuseManager* reuse_manager = client->GetPasswordReuseManager();
+      if (reuse_manager) {
+        reuse_manager->ReportMetrics(sync_username,
+                                     client->IsUnderAdvancedProtection());
+      }
     }
   }
   base::UmaHistogramBoolean(

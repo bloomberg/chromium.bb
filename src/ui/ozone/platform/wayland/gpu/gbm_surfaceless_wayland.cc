@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
 
 #include <sync/sync.h>
+#include <cmath>
 #include <memory>
 
 #include "base/bind.h"

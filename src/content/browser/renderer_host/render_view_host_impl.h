@@ -85,7 +85,7 @@ using WillSendRendererPreferencesCallbackForTesting =
 //
 // DEPRECATED: RenderViewHostImpl is being removed as part of the SiteIsolation
 // project. New code should not be added here, but to either RenderFrameHostImpl
-// (if frame specific) or WebContentsImpl (if page specific).
+// (if frame specific) or PageImpl (if page specific).
 //
 // For context, please see https://crbug.com/467770 and
 // https://www.chromium.org/developers/design-documents/site-isolation.
@@ -97,6 +97,8 @@ class CONTENT_EXPORT RenderViewHostImpl
       public IPC::Listener,
       public base::RefCounted<RenderViewHostImpl> {
  public:
+  static constexpr int kUnloadTimeoutInMSec = 500;
+
   // Convenience function, just like RenderViewHost::FromID.
   static RenderViewHostImpl* FromID(int process_id, int routing_id);
 
@@ -238,6 +240,8 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   bool is_in_back_forward_cache() const { return is_in_back_forward_cache_; }
 
+  void ActivatePrerenderedPage();
+
   void SetFrameTreeVisibility(blink::mojom::PageVisibilityState visibility);
 
   void SetIsFrozen(bool frozen);
@@ -252,39 +256,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Called during frame eviction to return all SurfaceIds in the frame tree.
   // Marks all views in the frame tree as evicted.
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
-
-  // Resets any per page state. This should be called when a main frame
-  // associated with this RVH commits a navigation to a new document. Note that
-  // this means it should NOT be called for same document navigations or when
-  // restoring a page from the back-forward cache.
-  void ResetPerPageState();
-
-  bool did_first_visually_non_empty_paint() const {
-    return did_first_visually_non_empty_paint_;
-  }
-
-  void OnThemeColorChanged(RenderFrameHostImpl* rfh,
-                           const absl::optional<SkColor>& theme_color);
-
-  void DidChangeBackgroundColor(RenderFrameHostImpl* rfh,
-                                const SkColor& background_color,
-                                bool color_adjust);
-
-  absl::optional<SkColor> theme_color() const {
-    return main_frame_theme_color_;
-  }
-
-  absl::optional<SkColor> background_color() const {
-    return main_frame_background_color_;
-  }
-
-  void SetContentsMimeType(std::string mime_type);
-  const std::string& contents_mime_type() { return contents_mime_type_; }
-
-  // Notifies that / returns whether main document's onload() handler was
-  // completed.
-  void DocumentOnLoadCompletedInMainFrame();
-  bool IsDocumentOnLoadCompletedInMainFrame();
 
   // Manual RTTI to ensure safe downcasts in tests.
   virtual bool IsTestRenderViewHost() const;
@@ -331,7 +302,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   ~RenderViewHostImpl() override;
 
   // RenderWidgetHostOwnerDelegate overrides.
-  void RenderWidgetDidFirstVisuallyNonEmptyPaint() override;
   void RenderWidgetGotFocus() override;
   void RenderWidgetLostFocus() override;
   void RenderWidgetDidForwardMouseEvent(
@@ -381,7 +351,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Delay to wait on closing the WebContents for a beforeunload/unload handler
   // to fire.
   static constexpr base::TimeDelta kUnloadTimeout =
-      base::TimeDelta::FromMilliseconds(500);
+      base::TimeDelta::FromMilliseconds(kUnloadTimeoutInMSec);
 
   // The RenderWidgetHost.
   const std::unique_ptr<RenderWidgetHostImpl> render_widget_host_;
@@ -438,31 +408,8 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   bool updating_web_preferences_ = false;
 
-  // ---------- Per page state START ------------------------------------------
-  // The following members will get reset when this RVH commits a navigation to
-  // a new document. See ResetPerPageState()
-
-  // Whether the first visually non-empty paint has occurred.
-  bool did_first_visually_non_empty_paint_ = false;
-
-  // The theme color for the underlying document as specified
-  // by theme-color meta tag.
-  absl::optional<SkColor> main_frame_theme_color_;
-
-  // The background color for the underlying document as computed by CSS.
-  absl::optional<SkColor> main_frame_background_color_;
-
-  // Contents MIME type for the main document. It can be used to check whether
-  // we can do something for special contents.
-  std::string contents_mime_type_;
-
-  // ---------- Per page state END --------------------------------------------
-
   // BackForwardCache:
   bool is_in_back_forward_cache_ = false;
-
-  // True if the current main document finished executing onload() handler.
-  bool is_document_on_load_completed_in_main_frame_ = false;
 
   WillEnterBackForwardCacheCallbackForTesting
       will_enter_back_forward_cache_callback_for_testing_;

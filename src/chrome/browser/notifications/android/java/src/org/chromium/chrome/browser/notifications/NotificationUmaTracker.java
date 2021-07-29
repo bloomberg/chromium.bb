@@ -58,7 +58,9 @@ public class NotificationUmaTracker {
             SystemNotificationType.TWA_DISCLOSURE_SUBSEQUENT,
             SystemNotificationType.CHROME_REENGAGEMENT_1,
             SystemNotificationType.CHROME_REENGAGEMENT_2,
-            SystemNotificationType.CHROME_REENGAGEMENT_3, SystemNotificationType.PRICE_DROP_ALERTS})
+            SystemNotificationType.CHROME_REENGAGEMENT_3, SystemNotificationType.PRICE_DROP_ALERTS,
+            SystemNotificationType.WEBAPK_INSTALL_IN_PROGRESS,
+            SystemNotificationType.WEBAPK_INSTALL_COMPLETE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SystemNotificationType {
         int UNKNOWN = -1;
@@ -92,8 +94,10 @@ public class NotificationUmaTracker {
         int CHROME_REENGAGEMENT_3 = 27;
         int PRICE_DROP_ALERTS = 28;
         int SMS_FETCHER = 29;
+        int WEBAPK_INSTALL_IN_PROGRESS = 30;
+        int WEBAPK_INSTALL_COMPLETE = 31;
 
-        int NUM_ENTRIES = 30;
+        int NUM_ENTRIES = 32;
     }
 
     /*
@@ -161,7 +165,12 @@ public class NotificationUmaTracker {
         int PRICE_DROP_VISIT_SITE = 24;
         int PRICE_DROP_TURN_OFF_ALERT = 25;
 
-        int NUM_ENTRIES = 26;
+        // Confirm button on sharing notification.
+        int SHARING_CONFIRM = 26;
+        // Cancel button on sharing notification.
+        int SHARING_CANCEL = 27;
+
+        int NUM_ENTRIES = 28;
     }
 
     private static class LazyHolder {

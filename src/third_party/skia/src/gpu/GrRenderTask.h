@@ -14,7 +14,6 @@
 #include "src/gpu/GrSurfaceProxyView.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/GrTextureResolveManager.h"
-#include "src/gpu/ops/GrOp.h"
 
 class GrMockRenderTask;
 class GrOpFlushState;
@@ -30,7 +29,7 @@ public:
     GrRenderTask();
     SkDEBUGCODE(~GrRenderTask() override);
 
-    void makeClosed(const GrCaps&);
+    void makeClosed(GrRecordingContext*);
 
     void prePrepare(GrRecordingContext* context) { this->onPrePrepare(context); }
 
@@ -116,12 +115,12 @@ public:
 #ifdef SK_DEBUG
     virtual int numClips() const { return 0; }
 
-    virtual void visitProxies_debugOnly(const GrOp::VisitProxyFunc&) const = 0;
+    virtual void visitProxies_debugOnly(const GrVisitProxyFunc&) const = 0;
 
-    void visitTargetAndSrcProxies_debugOnly(const GrOp::VisitProxyFunc& fn) const {
-        this->visitProxies_debugOnly(fn);
+    void visitTargetAndSrcProxies_debugOnly(const GrVisitProxyFunc& func) const {
+        this->visitProxies_debugOnly(func);
         for (const sk_sp<GrSurfaceProxy>& target : fTargets) {
-            fn(target.get(), GrMipmapped::kNo);
+            func(target.get(), GrMipmapped::kNo);
         }
     }
 #endif
@@ -168,7 +167,7 @@ protected:
     // modify in targetUpdateBounds.
     //
     // targetUpdateBounds must not extend beyond the proxy bounds.
-    virtual ExpectedOutcome onMakeClosed(const GrCaps&, SkIRect* targetUpdateBounds) = 0;
+    virtual ExpectedOutcome onMakeClosed(GrRecordingContext*, SkIRect* targetUpdateBounds) = 0;
 
     SkSTArray<1, sk_sp<GrSurfaceProxy>> fTargets;
 
@@ -181,9 +180,10 @@ protected:
         kClosed_Flag    = 0x01,   //!< This task can't accept any more dependencies.
         kDisowned_Flag  = 0x02,   //!< This task is disowned by its creating GrDrawingManager.
         kSkippable_Flag = 0x04,   //!< This task is skippable.
+        kAtlas_Flag     = 0x08,   //!< This task is atlas.
 
-        kWasOutput_Flag = 0x08,   //!< Flag for topological sorting
-        kTempMark_Flag  = 0x10,   //!< Flag for topological sorting
+        kWasOutput_Flag = 0x10,   //!< Flag for topological sorting
+        kTempMark_Flag  = 0x20,   //!< Flag for topological sorting
     };
 
     void setFlag(uint32_t flag) {
@@ -200,17 +200,17 @@ protected:
 
     void setIndex(uint32_t index) {
         SkASSERT(!this->isSetFlag(kWasOutput_Flag));
-        SkASSERT(index < (1 << 27));
-        fFlags |= index << 5;
+        SkASSERT(index < (1 << 26));
+        fFlags |= index << 6;
     }
 
     uint32_t getIndex() const {
         SkASSERT(this->isSetFlag(kWasOutput_Flag));
-        return fFlags >> 5;
+        return fFlags >> 6;
     }
 
 private:
-    // for TopoSortTraits, fTextureResolveTask, closeThoseWhoDependOnMe, addDependency
+    // for TopoSortTraits, fTextureResolveTask, addDependency
     friend class GrDrawingManager;
     friend class GrMockRenderTask;
 
@@ -222,7 +222,6 @@ private:
     void addDependent(GrRenderTask* dependent);
     SkDEBUGCODE(bool isDependent(const GrRenderTask* dependent) const;)
     SkDEBUGCODE(void validate() const;)
-    void closeThoseWhoDependOnMe(const GrCaps&);
 
     static uint32_t CreateUniqueID();
 

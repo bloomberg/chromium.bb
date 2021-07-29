@@ -206,6 +206,9 @@ SharedContextState::SharedContextState(
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         this, "SharedContextState", base::ThreadTaskRunnerHandle::Get());
+
+    // Create |gr_cache_controller_| only if we have task runner.
+    gr_cache_controller_.emplace(this);
   }
   // Initialize the scratch buffer to some small initial size.
   scratch_deserialization_buffer_.resize(
@@ -621,10 +624,8 @@ void SharedContextState::RemoveContextLostObserver(ContextLostObserver* obs) {
 
 void SharedContextState::PurgeMemory(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  if (!gr_context_) {
-    DCHECK(!transfer_cache_);
+  if (!gr_context_)
     return;
-  }
 
   // Ensure the context is current before doing any GPU cleanup.
   if (!MakeCurrent(nullptr))
@@ -770,7 +771,7 @@ void SharedContextState::RestoreTextureUnitBindings(unsigned unit) const {
 }
 
 void SharedContextState::RestoreVertexAttribArray(unsigned index) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void SharedContextState::RestoreAllExternalTextureBindingsIfNeeded() {
@@ -858,6 +859,11 @@ bool SharedContextState::CheckResetStatus(bool need_gl) {
     return true;
   }
   return false;
+}
+
+void SharedContextState::ScheduleGrContextCleanup() {
+  if (gr_cache_controller_)
+    gr_cache_controller_->ScheduleGrContextCleanup();
 }
 
 }  // namespace gpu

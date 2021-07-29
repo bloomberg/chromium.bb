@@ -6,8 +6,7 @@
 
 #include <memory>
 
-#include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/app_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "components/full_restore/features.h"
 #include "components/full_restore/full_restore_info.h"
 #include "components/full_restore/full_restore_utils.h"
 #include "ui/aura/client/aura_constants.h"
@@ -34,8 +34,7 @@ namespace {
 // request (Shift+F4/F4).
 class BrowserWindowStateDelegate : public ash::WindowStateDelegate {
  public:
-  explicit BrowserWindowStateDelegate(Browser* browser)
-      : browser_(browser) {
+  explicit BrowserWindowStateDelegate(Browser* browser) : browser_(browser) {
     DCHECK(browser_);
   }
   ~BrowserWindowStateDelegate() override {}
@@ -63,8 +62,7 @@ class BrowserWindowStateDelegate : public ash::WindowStateDelegate {
 
 BrowserFrameAsh::BrowserFrameAsh(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
-    : views::NativeWidgetAura(browser_frame),
-      browser_view_(browser_view) {
+    : views::NativeWidgetAura(browser_frame), browser_view_(browser_view) {
   GetNativeWindow()->SetName("BrowserFrameAsh");
   Browser* browser = browser_view->browser();
 
@@ -87,7 +85,8 @@ void BrowserFrameAsh::OnWidgetInitDone() {
   // For legacy reasons v1 apps (like Secure Shell) are allowed to consume keys
   // like brightness, volume, etc. Otherwise these keys are handled by the
   // Ash window manager.
-  window_state->SetCanConsumeSystemKeys(browser->deprecated_is_app());
+  window_state->SetCanConsumeSystemKeys(browser->is_type_app() ||
+                                        browser->is_type_app_popup());
 
   full_restore::FullRestoreInfo::GetInstance()->OnWidgetInitialized(
       GetWidget());
@@ -127,7 +126,7 @@ void BrowserFrameAsh::GetWindowPlacement(
     // Widget/NativeWidgetAura the window is a normal window, so get the restore
     // bounds directly from the ash window state.
     bool used_window_state_restore_bounds = false;
-    if (ash::features::IsFullRestoreEnabled()) {
+    if (full_restore::features::IsFullRestoreEnabled()) {
       auto* window_state = ash::WindowState::Get(window);
       if (window_state->IsSnapped() && window_state->HasRestoreBounds()) {
         // Additionally, if the window is closed, and not from logging out we
@@ -176,14 +175,25 @@ views::Widget::InitParams BrowserFrameAsh::GetWidgetParams() {
   params.init_properties_container.SetProperty(
       full_restore::kRestoreWindowIdKey, restore_id);
 
+  params.init_properties_container.SetProperty(
+      full_restore::kAppTypeBrowser,
+      (browser->is_type_app() || browser->is_type_app_popup()) ? true : false);
+
+  params.init_properties_container.SetProperty(full_restore::kBrowserAppNameKey,
+                                               browser->app_name());
+
   // This is only needed for ash. For lacros, Exo tags the associated
   // ShellSurface as being of AppType::LACROS.
+  bool is_app = browser->is_type_app() || browser->is_type_app_popup();
   params.init_properties_container.SetProperty(
-      aura::client::kAppType,
-      static_cast<int>(browser->deprecated_is_app() ? ash::AppType::CHROME_APP
-                                                    : ash::AppType::BROWSER));
+      aura::client::kAppType, static_cast<int>(is_app ? ash::AppType::CHROME_APP
+                                                      : ash::AppType::BROWSER));
 
   full_restore::ModifyWidgetParams(restore_id, &params);
+  // Override session restore bounds with Full Restore bounds if they exist.
+  if (!params.bounds.IsEmpty())
+    browser->set_override_bounds(params.bounds);
+
   return params;
 }
 

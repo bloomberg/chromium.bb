@@ -9,7 +9,6 @@
 
 #include <memory>
 #include <queue>
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -62,7 +61,6 @@ class GpuChildThread : public ChildThreadImpl,
   bool in_process_gpu() const;
 
   // ChildThreadImpl:
-  bool Send(IPC::Message* msg) override;
   void BindServiceInterface(mojo::GenericPendingReceiver receiver) override;
 
   // viz::VizMainImpl::Delegate:

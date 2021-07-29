@@ -26,18 +26,6 @@ source_set("impl") {
     "with_destruction_callback.cc",
     "with_destruction_callback.h",
   ]
-
-  if (use_mdns_responder) {
-    sources += [
-      "internal_services.cc",
-      "internal_services.h",
-      "mdns_responder_service.cc",
-      "mdns_responder_service.h",
-      "mdns_service_listener_factory.cc",
-      "mdns_service_publisher_factory.cc",
-    ]
-  }
-
   public_deps = [
     "../msgs",
     "../public",
@@ -48,6 +36,18 @@ source_set("impl") {
     "../../util",
     "quic",
   ]
+
+  if (use_mdns_responder) {
+    sources += [
+      "internal_services.cc",
+      "internal_services.h",
+      "mdns_responder_service.cc",
+      "mdns_responder_service.h",
+      "mdns_service_listener_factory.cc",
+      "mdns_service_publisher_factory.cc",
+    ]
+    deps += [ "discovery/mdns:mdns" ]
+  }
 }
 
 if (use_chromium_quic) {

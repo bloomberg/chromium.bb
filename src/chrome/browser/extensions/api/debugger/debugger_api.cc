@@ -21,7 +21,6 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/scoped_observation.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
@@ -305,8 +304,8 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
   protocol_request.SetInteger("id", request_id);
   protocol_request.SetString("method", method);
   if (command_params) {
-    protocol_request.Set(
-        "params", command_params->additional_properties.CreateDeepCopy());
+    protocol_request.SetKey("params",
+                            command_params->additional_properties.Clone());
   }
 
   std::string json;

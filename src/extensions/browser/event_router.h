@@ -37,18 +37,17 @@
 #include "url/gurl.h"
 
 class GURL;
-struct ServiceWorkerIdentifier;
 
 namespace content {
 class BrowserContext;
 class RenderProcessHost;
-}
+}  // namespace content
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 class FileSystemProviderProvidedFileSystemTest;
-}
-}  // namespace chromeos
+}  // namespace file_system_provider
+}  // namespace ash
 
 namespace extensions {
 class Extension;
@@ -56,6 +55,7 @@ class ExtensionPrefs;
 
 struct Event;
 struct EventListenerInfo;
+struct ServiceWorkerIdentifier;
 
 // TODO(lazyboy): Document how extension events work, including how listeners
 // are registered and how listeners are tracked in renderer and browser process.
@@ -154,6 +154,26 @@ class EventRouter : public KeyedService,
                                    int64_t service_worker_version_id,
                                    int32_t worker_thread_id) override;
 
+  void AddLazyListenerForMainThread(const std::string& extension_id,
+                                    const std::string& name) override;
+
+  void AddLazyListenerForServiceWorker(const std::string& extension_id,
+                                       const GURL& worker_scope_url,
+                                       const std::string& name) override;
+
+  void AddFilteredListenerForMainThread(const std::string& extension_id,
+                                        const std::string& name,
+                                        base::Value filter,
+                                        bool add_lazy_listener) override;
+
+  void AddFilteredListenerForServiceWorker(const std::string& extension_id,
+                                           const GURL& worker_scope_url,
+                                           const std::string& name,
+                                           int64_t service_worker_version_id,
+                                           int32_t worker_thread_id,
+                                           base::Value filter,
+                                           bool add_lazy_listener) override;
+
   void RemoveListenerForMainThread(mojom::EventListenerParamPtr param,
                                    const std::string& name) override;
 
@@ -162,6 +182,27 @@ class EventRouter : public KeyedService,
                                       const std::string& name,
                                       int64_t service_worker_version_id,
                                       int32_t worker_thread_id) override;
+
+  void RemoveLazyListenerForMainThread(const std::string& extension_id,
+                                       const std::string& name) override;
+
+  void RemoveLazyListenerForServiceWorker(const std::string& extension_id,
+                                          const GURL& worker_scope_url,
+                                          const std::string& name) override;
+
+  void RemoveFilteredListenerForMainThread(const std::string& extension_id,
+                                           const std::string& name,
+                                           base::Value filter,
+                                           bool remove_lazy_listener) override;
+
+  void RemoveFilteredListenerForServiceWorker(
+      const std::string& extension_id,
+      const GURL& worker_scope_url,
+      const std::string& name,
+      int64_t service_worker_version_id,
+      int32_t worker_thread_id,
+      base::Value filter,
+      bool remove_lazy_listener) override;
 
   // Removes an extension as an event listener for |event_name|.
   //
@@ -208,14 +249,6 @@ class EventRouter : public KeyedService,
                             const ExtensionId& extension_id);
   void RemoveLazyEventListener(const std::string& event_name,
                                const ExtensionId& extension_id);
-  // Similar to Add/RemoveLazyEventListener, but applies to extension service
-  // workers.
-  void AddLazyServiceWorkerEventListener(const std::string& event_name,
-                                         const ExtensionId& extension_id,
-                                         const GURL& service_worker_scope);
-  void RemoveLazyServiceWorkerEventListener(const std::string& event_name,
-                                            const ExtensionId& extension_id,
-                                            const GURL& service_worker_scope);
 
   // If |add_lazy_listener| is true also add the lazy version of this listener.
   void AddFilteredEventListener(
@@ -292,7 +325,7 @@ class EventRouter : public KeyedService,
  private:
   friend class EventRouterFilterTest;
   friend class EventRouterTest;
-  friend class chromeos::file_system_provider::
+  friend class ash::file_system_provider::
       FileSystemProviderProvidedFileSystemTest;
   friend class UpdateInstallGateTest;
   friend class DownloadExtensionTest;
@@ -564,6 +597,12 @@ struct EventListenerInfo {
   content::BrowserContext* const browser_context;
   const int worker_thread_id;
   const int64_t service_worker_version_id;
+};
+
+struct ServiceWorkerIdentifier {
+  GURL scope;
+  int64_t version_id;
+  int thread_id;
 };
 
 }  // namespace extensions

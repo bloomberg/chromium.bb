@@ -8,11 +8,12 @@
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
+#include "ash/public/cpp/holding_space/holding_space_progress.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/system/holding_space/holding_space_item_view_delegate.h"
 #include "ash/system/holding_space/holding_space_util.h"
+#include "ash/system/holding_space/holding_space_view_delegate.h"
 #include "base/bind.h"
 #include "ui/base/class_property.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -25,6 +26,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/vector_icons.h"
@@ -80,14 +82,46 @@ class CallbackPainter : public views::Painter {
   Callback callback_;
 };
 
+// MinimumSizableView ---------------------------------------------------------
+
+// A view which respects a minimum size restriction.
+class MinimumSizableView : public views::View {
+ public:
+  explicit MinimumSizableView(const gfx::Size& min_size)
+      : min_size_(min_size) {}
+
+  MinimumSizableView(const MinimumSizableView&) = delete;
+  MinimumSizableView& operator=(const MinimumSizableView&) = delete;
+  ~MinimumSizableView() override = default;
+
+ private:
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override {
+    gfx::Size preferred_size(views::View::CalculatePreferredSize());
+    preferred_size.SetToMax(min_size_);
+    return preferred_size;
+  }
+
+  int GetHeightForWidth(int width) const override {
+    return std::max(views::View::GetHeightForWidth(width), min_size_.height());
+  }
+
+  const gfx::Size min_size_;
+};
+
 }  // namespace
 
 // HoldingSpaceItemView --------------------------------------------------------
 
-HoldingSpaceItemView::HoldingSpaceItemView(
-    HoldingSpaceItemViewDelegate* delegate,
-    const HoldingSpaceItem* item)
+HoldingSpaceItemView::HoldingSpaceItemView(HoldingSpaceViewDelegate* delegate,
+                                           const HoldingSpaceItem* item)
     : delegate_(delegate), item_(item), item_id_(item->id()) {
+  // Subscribe to be notified of `item_` deletion. Note that it is safe to use a
+  // raw pointer here since `this` owns the callback.
+  item_deletion_subscription_ = item_->AddDeletionCallback(base::BindRepeating(
+      [](HoldingSpaceItemView* view) { view->item_ = nullptr; },
+      base::Unretained(this)));
+
   model_observer_.Observe(HoldingSpaceController::Get()->model());
 
   SetProperty(kIsHoldingSpaceItemViewProperty, true);
@@ -98,7 +132,7 @@ HoldingSpaceItemView::HoldingSpaceItemView(
   SetNotifyEnterExitOnChild(true);
 
   // Accessibility.
-  GetViewAccessibility().OverrideName(item->text());
+  GetViewAccessibility().OverrideName(item->GetText());
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kListItem);
 
   // Layer.
@@ -196,7 +230,7 @@ void HoldingSpaceItemView::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_ENTERED:
     case ui::ET_MOUSE_EXITED:
-      UpdatePin();
+      UpdatePrimaryAction();
       break;
     default:
       break;
@@ -238,24 +272,32 @@ void HoldingSpaceItemView::OnThemeChanged() {
   InvalidateLayer(focused_layer_owner_->layer());
   InvalidateLayer(selected_layer_owner_->layer());
 
-  if (!pin_)
+  if (!primary_action_container_)
     return;
 
-  // Pin.
+  // Cancel.
   const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kButtonIconColor);
+  primary_action_cancel_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(kCancelIcon, kHoldingSpaceIconSize, icon_color));
+
+  // Pin.
   const gfx::ImageSkia unpinned_icon = gfx::CreateVectorIcon(
       views::kUnpinIcon, kHoldingSpaceIconSize, icon_color);
   const gfx::ImageSkia pinned_icon =
       gfx::CreateVectorIcon(views::kPinIcon, kHoldingSpaceIconSize, icon_color);
-  pin_->SetImage(views::Button::STATE_NORMAL, unpinned_icon);
-  pin_->SetToggledImage(views::Button::STATE_NORMAL, &pinned_icon);
+  primary_action_pin_->SetImage(views::Button::STATE_NORMAL, unpinned_icon);
+  primary_action_pin_->SetToggledImage(views::Button::STATE_NORMAL,
+                                       &pinned_icon);
 }
 
 void HoldingSpaceItemView::OnHoldingSpaceItemUpdated(
     const HoldingSpaceItem* item) {
-  if (item_ == item)
-    GetViewAccessibility().OverrideName(item->text());
+  if (item_ == item) {
+    GetViewAccessibility().OverrideName(item->GetText());
+    UpdatePrimaryAction();
+  }
 }
 
 void HoldingSpaceItemView::StartDrag(const ui::LocatedEvent& event,
@@ -292,36 +334,64 @@ void HoldingSpaceItemView::SetSelected(bool selected) {
   OnSelectionUiChanged();
 }
 
-views::ImageView* HoldingSpaceItemView::AddCheckmark(views::View* parent) {
+views::Builder<views::ImageView>
+HoldingSpaceItemView::CreateCheckmarkBuilder() {
   DCHECK(!checkmark_);
-  checkmark_ = parent->AddChildView(std::make_unique<views::ImageView>());
-  checkmark_->SetID(kHoldingSpaceItemCheckmarkId);
-  checkmark_->SetVisible(selected());
-  return checkmark_;
+  auto checkmark = views::Builder<views::ImageView>();
+  checkmark.CopyAddressTo(&checkmark_)
+      .SetID(kHoldingSpaceItemCheckmarkId)
+      .SetVisible(selected());
+  return checkmark;
 }
 
-views::ToggleImageButton* HoldingSpaceItemView::AddPin(views::View* parent) {
-  DCHECK(!pin_);
+views::Builder<views::View> HoldingSpaceItemView::CreatePrimaryActionBuilder(
+    const gfx::Size& min_size) {
+  DCHECK(!primary_action_container_);
+  DCHECK(!primary_action_cancel_);
+  DCHECK(!primary_action_pin_);
 
-  pin_ = parent->AddChildView(std::make_unique<views::ToggleImageButton>());
-  pin_->SetID(kHoldingSpaceItemPinButtonId);
-  pin_->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
-  pin_->SetImageHorizontalAlignment(
-      views::ToggleImageButton::HorizontalAlignment::ALIGN_CENTER);
-  pin_->SetImageVerticalAlignment(
-      views::ToggleImageButton::VerticalAlignment::ALIGN_MIDDLE);
-  pin_->SetVisible(false);
+  using HorizontalAlignment = views::ImageButton::HorizontalAlignment;
+  using VerticalAlignment = views::ImageButton::VerticalAlignment;
 
-  pin_->SetCallback(base::BindRepeating(&HoldingSpaceItemView::OnPinPressed,
-                                        base::Unretained(this)));
+  gfx::Size preferred_size(kHoldingSpaceIconSize, kHoldingSpaceIconSize);
+  preferred_size.SetToMax(min_size);
 
-  return pin_;
+  auto primary_action = views::Builder<views::View>();
+  primary_action.CopyAddressTo(&primary_action_container_)
+      .SetID(kHoldingSpaceItemPrimaryActionContainerId)
+      .SetUseDefaultFillLayout(true)
+      .SetVisible(false)
+      .AddChild(
+          views::Builder<views::ImageButton>()
+              .CopyAddressTo(&primary_action_cancel_)
+              .SetID(kHoldingSpaceItemCancelButtonId)
+              .SetCallback(base::BindRepeating(
+                  &HoldingSpaceItemView::OnPrimaryActionPressed,
+                  base::Unretained(this)))
+              .SetFocusBehavior(views::View::FocusBehavior::NEVER)
+              .SetImageHorizontalAlignment(HorizontalAlignment::ALIGN_CENTER)
+              .SetImageVerticalAlignment(VerticalAlignment::ALIGN_MIDDLE)
+              .SetPreferredSize(preferred_size)
+              .SetVisible(false))
+      .AddChild(
+          views::Builder<views::ToggleImageButton>()
+              .CopyAddressTo(&primary_action_pin_)
+              .SetID(kHoldingSpaceItemPinButtonId)
+              .SetCallback(base::BindRepeating(
+                  &HoldingSpaceItemView::OnPrimaryActionPressed,
+                  base::Unretained(this)))
+              .SetFocusBehavior(views::View::FocusBehavior::NEVER)
+              .SetImageHorizontalAlignment(HorizontalAlignment::ALIGN_CENTER)
+              .SetImageVerticalAlignment(VerticalAlignment::ALIGN_MIDDLE)
+              .SetPreferredSize(preferred_size)
+              .SetVisible(false));
+  return primary_action;
 }
 
 void HoldingSpaceItemView::OnSelectionUiChanged() {
   const bool multiselect =
       delegate_ && delegate_->selection_ui() ==
-                       HoldingSpaceItemViewDelegate::SelectionUi::kMultiSelect;
+                       HoldingSpaceViewDelegate::SelectionUi::kMultiSelect;
 
   checkmark_->SetVisible(selected() && multiselect);
 }
@@ -358,7 +428,22 @@ void HoldingSpaceItemView::OnPaintSelect(gfx::Canvas* canvas, gfx::Size size) {
   canvas->DrawRoundRect(gfx::Rect(size), kHoldingSpaceCornerRadius, flags);
 }
 
-void HoldingSpaceItemView::OnPinPressed() {
+void HoldingSpaceItemView::OnPrimaryActionPressed() {
+  // If the associated `item()` has been deleted then `this` is in the process
+  // of being destroyed and no action needs to be taken.
+  if (!item())
+    return;
+
+  DCHECK_NE(primary_action_cancel_->GetVisible(),
+            primary_action_pin_->GetVisible());
+
+  // Cancel.
+  if (primary_action_cancel_->GetVisible()) {
+    HoldingSpaceController::Get()->client()->CancelItems({item()});
+    return;
+  }
+
+  // Pin.
   const bool is_item_pinned =
       HoldingSpaceController::Get()->model()->ContainsItem(
           HoldingSpaceItem::Type::kPinnedFile, item()->file_path());
@@ -371,23 +456,34 @@ void HoldingSpaceItemView::OnPinPressed() {
     HoldingSpaceController::Get()->client()->PinItems({item()});
 
   if (weak_ptr)
-    UpdatePin();
+    UpdatePrimaryAction();
 }
 
-void HoldingSpaceItemView::UpdatePin() {
+void HoldingSpaceItemView::UpdatePrimaryAction() {
+  // If the associated `item()` has been deleted then `this` is in the process
+  // of being destroyed and no action needs to be taken.
+  if (!item())
+    return;
+
   if (!IsMouseHovered()) {
-    pin_->SetVisible(false);
-    OnPinVisibilityChanged(false);
+    primary_action_container_->SetVisible(false);
+    OnPrimaryActionVisibilityChanged(false);
     return;
   }
 
+  // Cancel.
+  const bool is_item_in_progress = !item()->progress().IsComplete();
+  primary_action_cancel_->SetVisible(is_item_in_progress);
+
+  // Pin.
   const bool is_item_pinned =
       HoldingSpaceController::Get()->model()->ContainsItem(
           HoldingSpaceItem::Type::kPinnedFile, item()->file_path());
+  primary_action_pin_->SetToggled(!is_item_pinned);
+  primary_action_pin_->SetVisible(!is_item_in_progress);
 
-  pin_->SetToggled(!is_item_pinned);
-  pin_->SetVisible(true);
-  OnPinVisibilityChanged(true);
+  primary_action_container_->SetVisible(true);
+  OnPrimaryActionVisibilityChanged(true);
 }
 
 BEGIN_METADATA(HoldingSpaceItemView, views::View)

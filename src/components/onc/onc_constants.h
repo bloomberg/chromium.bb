@@ -84,6 +84,7 @@ ONC_EXPORT extern const char kRestrictedConnectivity[];
 ONC_EXPORT extern const char kConnectable[];
 ONC_EXPORT extern const char kErrorState[];
 ONC_EXPORT extern const char kTether[];
+ONC_EXPORT extern const char kTrafficCounterResetTime[];
 ONC_EXPORT extern const char kType[];
 ONC_EXPORT extern const char kVPN[];
 ONC_EXPORT extern const char kWiFi[];
@@ -258,6 +259,7 @@ ONC_EXPORT extern const char kEAP[];
 }  // namespace wimax_deprecated
 
 namespace client_cert {
+ONC_EXPORT extern const char kClientCertProvisioningProfileId[];
 ONC_EXPORT extern const char kClientCertPattern[];
 ONC_EXPORT extern const char kClientCertPKCS11Id[];
 ONC_EXPORT extern const char kClientCertRef[];
@@ -273,6 +275,7 @@ ONC_EXPORT extern const char kLocality[];
 ONC_EXPORT extern const char kOrganization[];
 ONC_EXPORT extern const char kOrganizationalUnit[];
 ONC_EXPORT extern const char kPattern[];
+ONC_EXPORT extern const char kProvisioningProfileId[];
 ONC_EXPORT extern const char kPKCS11Id[];
 ONC_EXPORT extern const char kRef[];
 ONC_EXPORT extern const char kSubject[];
@@ -351,6 +354,7 @@ ONC_EXPORT extern const char kURI[];
 }  // namespace eap_subject_alternative_name_match
 
 namespace vpn {
+ONC_EXPORT extern const char kArcVpn[];
 ONC_EXPORT extern const char kAutoConnect[];
 ONC_EXPORT extern const char kHost[];
 ONC_EXPORT extern const char kIPsec[];
@@ -359,10 +363,10 @@ ONC_EXPORT extern const char kOpenVPN[];
 ONC_EXPORT extern const char kPassword[];
 ONC_EXPORT extern const char kSaveCredentials[];
 ONC_EXPORT extern const char kThirdPartyVpn[];
-ONC_EXPORT extern const char kArcVpn[];
 ONC_EXPORT extern const char kTypeL2TP_IPsec[];
 ONC_EXPORT extern const char kType[];
 ONC_EXPORT extern const char kUsername[];
+ONC_EXPORT extern const char kWireGuard[];
 }  // namespace vpn
 
 namespace ipsec {
@@ -426,6 +430,17 @@ ONC_EXPORT extern const char kVerb[];
 ONC_EXPORT extern const char kVerifyHash[];
 ONC_EXPORT extern const char kVerifyX509[];
 }  // namespace openvpn
+
+namespace wireguard {
+ONC_EXPORT extern const char kAddress[];
+ONC_EXPORT extern const char kAllowedIPs[];
+ONC_EXPORT extern const char kEndpoint[];
+ONC_EXPORT extern const char kPeers[];
+ONC_EXPORT extern const char kPersistentKeepalive[];
+ONC_EXPORT extern const char kPresharedKey[];
+ONC_EXPORT extern const char kPrivateKey[];
+ONC_EXPORT extern const char kPublicKey[];
+}  // namespace wireguard
 
 namespace openvpn_compression_algorithm {
 ONC_EXPORT extern const char kFramingOnly[];

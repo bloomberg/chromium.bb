@@ -19,7 +19,9 @@
 #include "common/ityp_bitset.h"
 #include "dawn_native/BindGroupLayout.h"
 #include "dawn_native/Buffer.h"
+#include "dawn_native/ChainUtils_autogen.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/ExternalTexture.h"
 #include "dawn_native/Sampler.h"
 #include "dawn_native/Texture.h"
 
@@ -33,7 +35,7 @@ namespace dawn_native {
                                          const BindGroupEntry& entry,
                                          const BindingInfo& bindingInfo) {
             if (entry.buffer == nullptr || entry.sampler != nullptr ||
-                entry.textureView != nullptr) {
+                entry.textureView != nullptr || entry.nextInChain != nullptr) {
                 return DAWN_VALIDATION_ERROR("Expected buffer binding");
             }
             DAWN_TRY(device->ValidateObject(entry.buffer));
@@ -42,15 +44,23 @@ namespace dawn_native {
 
             wgpu::BufferUsage requiredUsage;
             uint64_t maxBindingSize;
+            uint64_t requiredBindingAlignment;
             switch (bindingInfo.buffer.type) {
                 case wgpu::BufferBindingType::Uniform:
                     requiredUsage = wgpu::BufferUsage::Uniform;
                     maxBindingSize = kMaxUniformBufferBindingSize;
+                    requiredBindingAlignment = kMinUniformBufferOffsetAlignment;
                     break;
                 case wgpu::BufferBindingType::Storage:
                 case wgpu::BufferBindingType::ReadOnlyStorage:
                     requiredUsage = wgpu::BufferUsage::Storage;
-                    maxBindingSize = std::numeric_limits<uint64_t>::max();
+                    maxBindingSize = kMaxStorageBufferBindingSize;
+                    requiredBindingAlignment = kMinStorageBufferOffsetAlignment;
+                    break;
+                case kInternalStorageBufferBinding:
+                    requiredUsage = kInternalStorageBuffer;
+                    maxBindingSize = kMaxStorageBufferBindingSize;
+                    requiredBindingAlignment = kMinStorageBufferOffsetAlignment;
                     break;
                 case wgpu::BufferBindingType::Undefined:
                     UNREACHABLE();
@@ -79,9 +89,9 @@ namespace dawn_native {
                 return DAWN_VALIDATION_ERROR("Buffer binding doesn't fit in the buffer");
             }
 
-            if (!IsAligned(entry.offset, 256)) {
+            if (!IsAligned(entry.offset, requiredBindingAlignment)) {
                 return DAWN_VALIDATION_ERROR(
-                    "Buffer offset for bind group needs to be 256-byte aligned");
+                    "Buffer offset for bind group needs to satisfy the minimum alignment");
             }
 
             if (!(entry.buffer->GetUsage() & requiredUsage)) {
@@ -111,7 +121,7 @@ namespace dawn_native {
                                           const BindGroupEntry& entry,
                                           const BindingInfo& bindingInfo) {
             if (entry.textureView == nullptr || entry.sampler != nullptr ||
-                entry.buffer != nullptr) {
+                entry.buffer != nullptr || entry.nextInChain != nullptr) {
                 return DAWN_VALIDATION_ERROR("Expected texture binding");
             }
             DAWN_TRY(device->ValidateObject(entry.textureView));
@@ -126,10 +136,10 @@ namespace dawn_native {
             TextureBase* texture = view->GetTexture();
             switch (bindingInfo.bindingType) {
                 case BindingInfoType::Texture: {
-                    ComponentTypeBit supportedTypes =
-                        texture->GetFormat().GetAspectInfo(aspect).supportedComponentTypes;
-                    ComponentTypeBit requiredType =
-                        SampleTypeToComponentTypeBit(bindingInfo.texture.sampleType);
+                    SampleTypeBit supportedTypes =
+                        texture->GetFormat().GetAspectInfo(aspect).supportedSampleTypes;
+                    SampleTypeBit requiredType =
+                        SampleTypeToSampleTypeBit(bindingInfo.texture.sampleType);
 
                     if (!(texture->GetUsage() & wgpu::TextureUsage::Sampled)) {
                         return DAWN_VALIDATION_ERROR("Texture binding usage mismatch");
@@ -149,11 +159,10 @@ namespace dawn_native {
                     break;
                 }
                 case BindingInfoType::StorageTexture: {
-                    ASSERT(!texture->IsMultisampledTexture());
-
                     if (!(texture->GetUsage() & wgpu::TextureUsage::Storage)) {
                         return DAWN_VALIDATION_ERROR("Storage Texture binding usage mismatch");
                     }
+                    ASSERT(!texture->IsMultisampledTexture());
 
                     if (texture->GetFormat().format != bindingInfo.storageTexture.format) {
                         return DAWN_VALIDATION_ERROR("Storage texture format mismatch");
@@ -176,7 +185,7 @@ namespace dawn_native {
                                           const BindGroupEntry& entry,
                                           const BindingInfo& bindingInfo) {
             if (entry.sampler == nullptr || entry.textureView != nullptr ||
-                entry.buffer != nullptr) {
+                entry.buffer != nullptr || entry.nextInChain != nullptr) {
                 return DAWN_VALIDATION_ERROR("Expected sampler binding");
             }
             DAWN_TRY(device->ValidateObject(entry.sampler));
@@ -184,21 +193,50 @@ namespace dawn_native {
             ASSERT(bindingInfo.bindingType == BindingInfoType::Sampler);
 
             switch (bindingInfo.sampler.type) {
-                case wgpu::SamplerBindingType::Filtering:
                 case wgpu::SamplerBindingType::NonFiltering:
-                    if (entry.sampler->HasCompareFunction()) {
-                        return DAWN_VALIDATION_ERROR("Did not expect comparison sampler");
+                    if (entry.sampler->IsFiltering()) {
+                        return DAWN_VALIDATION_ERROR(
+                            "Filtering sampler is incompatible with non-filtering sampler "
+                            "binding.");
+                    }
+                    DAWN_FALLTHROUGH;
+                case wgpu::SamplerBindingType::Filtering:
+                    if (entry.sampler->IsComparison()) {
+                        return DAWN_VALIDATION_ERROR(
+                            "Comparison sampler is incompatible with non-comparison sampler "
+                            "binding.");
                     }
                     break;
                 case wgpu::SamplerBindingType::Comparison:
-                    if (!entry.sampler->HasCompareFunction()) {
-                        return DAWN_VALIDATION_ERROR("Expected comparison sampler");
+                    if (!entry.sampler->IsComparison()) {
+                        return DAWN_VALIDATION_ERROR(
+                            "Non-comparison sampler is imcompatible with comparison sampler "
+                            "binding.");
                     }
                     break;
                 default:
                     UNREACHABLE();
                     break;
             }
+
+            return {};
+        }
+
+        MaybeError ValidateExternalTextureBinding(const DeviceBase* device,
+                                                  const BindGroupEntry& entry,
+                                                  const BindingInfo& bindingInfo) {
+            const ExternalTextureBindingEntry* externalTextureBindingEntry = nullptr;
+            FindInChain(entry.nextInChain, &externalTextureBindingEntry);
+
+            if (entry.sampler != nullptr || entry.textureView != nullptr ||
+                entry.buffer != nullptr || externalTextureBindingEntry == nullptr) {
+                return DAWN_VALIDATION_ERROR("Expected external texture binding");
+            }
+
+            DAWN_TRY(ValidateSingleSType(externalTextureBindingEntry->nextInChain,
+                                         wgpu::SType::ExternalTextureBindingEntry));
+
+            DAWN_TRY(device->ValidateObject(externalTextureBindingEntry->externalTexture));
 
             return {};
         }
@@ -249,6 +287,9 @@ namespace dawn_native {
                     break;
                 case BindingInfoType::Sampler:
                     DAWN_TRY(ValidateSamplerBinding(device, entry, bindingInfo));
+                    break;
+                case BindingInfoType::ExternalTexture:
+                    DAWN_TRY(ValidateExternalTextureBinding(device, entry, bindingInfo));
                     break;
             }
         }
@@ -307,6 +348,14 @@ namespace dawn_native {
             if (entry.sampler != nullptr) {
                 ASSERT(mBindingData.bindings[bindingIndex] == nullptr);
                 mBindingData.bindings[bindingIndex] = entry.sampler;
+                continue;
+            }
+
+            const ExternalTextureBindingEntry* externalTextureBindingEntry = nullptr;
+            FindInChain(entry.nextInChain, &externalTextureBindingEntry);
+            if (externalTextureBindingEntry != nullptr) {
+                ASSERT(mBindingData.bindings[bindingIndex] == nullptr);
+                mBindingData.bindings[bindingIndex] = externalTextureBindingEntry->externalTexture;
                 continue;
             }
         }
@@ -386,6 +435,14 @@ namespace dawn_native {
                mLayout->GetBindingInfo(bindingIndex).bindingType ==
                    BindingInfoType::StorageTexture);
         return static_cast<TextureViewBase*>(mBindingData.bindings[bindingIndex].Get());
+    }
+
+    ExternalTextureBase* BindGroupBase::GetBindingAsExternalTexture(BindingIndex bindingIndex) {
+        ASSERT(!IsError());
+        ASSERT(bindingIndex < mLayout->GetBindingCount());
+        ASSERT(mLayout->GetBindingInfo(bindingIndex).bindingType ==
+               BindingInfoType::ExternalTexture);
+        return static_cast<ExternalTextureBase*>(mBindingData.bindings[bindingIndex].Get());
     }
 
 }  // namespace dawn_native

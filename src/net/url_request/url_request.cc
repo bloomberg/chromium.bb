@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -26,6 +25,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
+#include "net/cookies/same_party_context.h"
 #include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
@@ -549,8 +549,6 @@ URLRequest::URLRequest(const GURL& url,
       net_log_(NetLogWithSource::Make(context->net_log(),
                                       NetLogSourceType::URL_REQUEST)),
       url_chain_(1, url),
-      same_party_cookie_context_type_(
-          CookieOptions::SamePartyCookieContextType::kCrossParty),
       force_ignore_site_for_cookies_(false),
       force_ignore_top_frame_party_for_cookies_(false),
       method_("GET"),
@@ -619,13 +617,13 @@ void URLRequest::StartJob(std::unique_ptr<URLRequestJob> job) {
   DCHECK(!is_pending_);
   DCHECK(!job_);
 
-  set_same_party_cookie_context_type(
+  set_same_party_context(
       context()->cookie_store()
           ? cookie_util::ComputeSamePartyContext(
                 SchemefulSite(url()), isolation_info(),
                 context()->cookie_store()->cookie_access_delegate(),
                 force_ignore_top_frame_party_for_cookies())
-          : CookieOptions::SamePartyCookieContextType::kCrossParty);
+          : SamePartyContext());
   privacy_mode_ = DeterminePrivacyMode();
 
   net_log_.BeginEvent(NetLogEventType::URL_REQUEST_START_JOB, [&] {
@@ -1026,17 +1024,19 @@ void URLRequest::NotifySSLCertificateError(int net_error,
   delegate_->OnSSLCertificateError(this, net_error, ssl_info, fatal);
 }
 
-bool URLRequest::CanGetCookies() const {
-  DCHECK_EQ(PrivacyMode::PRIVACY_MODE_DISABLED, privacy_mode_);
+void URLRequest::AnnotateAndMoveUserBlockedCookies(
+    CookieAccessResultList& maybe_included_cookies,
+    CookieAccessResultList& excluded_cookies) const {
+  DCHECK_EQ(privacy_mode_, PrivacyMode::PRIVACY_MODE_DISABLED);
   bool can_get_cookies = g_default_can_use_cookies;
   if (network_delegate()) {
-    can_get_cookies =
-        network_delegate()->CanGetCookies(*this, /*allowed_from_caller=*/true);
+    can_get_cookies = network_delegate()->AnnotateAndMoveUserBlockedCookies(
+        *this, maybe_included_cookies, excluded_cookies,
+        /*allowed_from_caller=*/true);
   }
 
   if (!can_get_cookies)
     net_log_.AddEvent(NetLogEventType::COOKIE_GET_BLOCKED_BY_NETWORK_DELEGATE);
-  return can_get_cookies;
 }
 
 bool URLRequest::CanSetCookie(const net::CanonicalCookie& cookie,
@@ -1071,7 +1071,8 @@ PrivacyMode URLRequest::DeterminePrivacyMode() const {
   bool enable_privacy_mode = !g_default_can_use_cookies;
   if (network_delegate()) {
     enable_privacy_mode = network_delegate()->ForcePrivacyMode(
-        url(), site_for_cookies_, isolation_info_.top_frame_origin());
+        url(), site_for_cookies_, isolation_info_.top_frame_origin(),
+        same_party_context().context_type());
   }
   return enable_privacy_mode ? PRIVACY_MODE_ENABLED : PRIVACY_MODE_DISABLED;
 }

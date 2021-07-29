@@ -44,7 +44,8 @@ class LiveCaptionController : public KeyedService,
                               public speech::SodaInstaller::Observer,
                               public ui::NativeThemeObserver {
  public:
-  explicit LiveCaptionController(PrefService* profile_prefs);
+  explicit LiveCaptionController(PrefService* profile_prefs,
+                                 PrefService* global_prefs);
   ~LiveCaptionController() override;
   LiveCaptionController(const LiveCaptionController&) = delete;
   LiveCaptionController& operator=(const LiveCaptionController&) = delete;
@@ -58,7 +59,7 @@ class LiveCaptionController : public KeyedService,
   // this returns false.
   bool DispatchTranscription(
       LiveCaptionSpeechRecognitionHost* live_caption_speech_recognition_host,
-      const media::mojom::SpeechRecognitionResultPtr& result);
+      const media::SpeechRecognitionResult& result);
 
   void OnLanguageIdentificationEvent(
       const media::mojom::LanguageIdentificationEventPtr& event);
@@ -111,6 +112,7 @@ class LiveCaptionController : public KeyedService,
   void UpdateAccessibilityCaptionHistograms();
 
   PrefService* profile_prefs_;
+  PrefService* global_prefs_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::unique_ptr<CaptionBubbleController> caption_bubble_controller_;
   absl::optional<ui::CaptionStyle> caption_style_;

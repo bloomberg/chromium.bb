@@ -18,6 +18,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/enterprise_util.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -30,7 +31,6 @@
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/scoped_thread_priority.h"
 #include "base/values.h"
@@ -245,6 +245,13 @@ PolicyLoaderWin::PolicyLoaderWin(
 }
 
 PolicyLoaderWin::~PolicyLoaderWin() {
+  // Mitigate the issues caused by loading DLLs or lazily resolving symbols on a
+  // background thread (http://crbug/973868) which can hold the process wide
+  // LoaderLock and cause contention on Foreground threads. This issue is solved
+  // on Windows version after Win7. This code can be removed when Win7 is no
+  // longer supported.
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
+
   if (!user_policy_watcher_failed_) {
     ::UnregisterGPNotification(user_policy_changed_event_.handle());
     user_policy_watcher_.StopWatching();

@@ -15,11 +15,11 @@
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/bitrate.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
@@ -131,7 +131,8 @@ class ExternalVideoEncoder::VEAClientImpl final
 
     requested_bit_rate_ = start_bit_rate;
     const media::VideoEncodeAccelerator::Config config(
-        media::PIXEL_FORMAT_I420, frame_size, codec_profile, start_bit_rate);
+        media::PIXEL_FORMAT_I420, frame_size, codec_profile,
+        media::Bitrate::ConstantBitrate(start_bit_rate));
     encoder_active_ = video_encode_accelerator_->Initialize(config, this);
     next_frame_id_ = first_frame_id;
     codec_profile_ = codec_profile;
@@ -152,7 +153,8 @@ class ExternalVideoEncoder::VEAClientImpl final
     requested_bit_rate_ = bit_rate;
     if (encoder_active_) {
       video_encode_accelerator_->RequestEncodingParametersChange(
-          bit_rate, static_cast<uint32_t>(max_frame_rate_ + 0.5));
+          Bitrate::ConstantBitrate(bit_rate),
+          static_cast<uint32_t>(max_frame_rate_ + 0.5));
     }
   }
 

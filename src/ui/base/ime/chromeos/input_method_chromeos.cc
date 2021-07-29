@@ -42,8 +42,7 @@ ui::IMEEngineHandlerInterface* GetEngine() {
 InputMethodChromeOS::InputMethodChromeOS(
     internal::InputMethodDelegate* delegate)
     : InputMethodBase(delegate),
-      typing_session_manager_(
-          TypingSessionManager(base::DefaultClock::GetInstance())) {
+      typing_session_manager_(base::DefaultClock::GetInstance()) {
   ResetContext();
 }
 
@@ -72,7 +71,6 @@ InputMethodChromeOS::PendingSetCompositionRange::~PendingSetCompositionRange() =
 
 ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
     ui::KeyEvent* event) {
-  DCHECK(event->IsKeyEvent());
   DCHECK(!(event->flags() & ui::EF_IS_SYNTHESIZED));
 
   // For OS_CHROMEOS build of Chrome running on Linux, the IME keyboard cannot
@@ -135,7 +133,7 @@ ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
       if (ExecuteCharacterComposer(*event)) {
         // Treating as PostIME event if character composer handles key event and
         // generates some IME event,
-        return ProcessKeyEventPostIME(event, false,
+        return ProcessKeyEventPostIME(event,
                                       /* handled */ true,
                                       /* stopped_propagation */ true);
       }
@@ -168,7 +166,7 @@ void InputMethodChromeOS::ProcessKeyEventDone(ui::KeyEvent* event,
     }
   }
   if (event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED) {
-    ignore_result(ProcessKeyEventPostIME(event, false, is_handled,
+    ignore_result(ProcessKeyEventPostIME(event, is_handled,
                                          /* stopped_propagation */ false));
   }
   handling_key_event_ = false;
@@ -238,6 +236,7 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
     chromeos::Bounds bounds;
     bounds.caret = caret_rect;
     bounds.autocorrect = client->GetAutocorrectCharacterBounds();
+    client->GetCompositionCharacterBounds(0, &bounds.composition_text);
     assistive_window->SetBounds(bounds);
   }
 
@@ -430,6 +429,13 @@ bool InputMethodChromeOS::SetAutocorrectRange(const gfx::Range& range) {
   }
 }
 
+absl::optional<GrammarFragment> InputMethodChromeOS::GetGrammarFragment(
+    const gfx::Range& range) {
+  if (IsTextInputTypeNone())
+    return absl::nullopt;
+  return GetTextInputClient()->GetGrammarFragment(range);
+}
+
 bool InputMethodChromeOS::ClearGrammarFragments(const gfx::Range& range) {
   if (IsTextInputTypeNone())
     return false;
@@ -470,8 +476,7 @@ void InputMethodChromeOS::ResetContext(bool reset_engine) {
   const bool was_composing = composing_text_;
 
   pending_composition_ = absl::nullopt;
-  result_text_.clear();
-  result_text_cursor_ = 0;
+  pending_commit_ = absl::nullopt;
   composing_text_ = false;
   composition_changed_ = false;
 
@@ -506,7 +511,6 @@ void InputMethodChromeOS::UpdateContextFocusState() {
 
 ui::EventDispatchDetails InputMethodChromeOS::ProcessKeyEventPostIME(
     ui::KeyEvent* event,
-    bool skip_process_filtered,
     bool handled,
     bool stopped_propagation) {
   TextInputClient* client = GetTextInputClient();
@@ -516,7 +520,7 @@ ui::EventDispatchDetails InputMethodChromeOS::ProcessKeyEventPostIME(
     return DispatchKeyEventPostIME(event);
   }
 
-  if (event->type() == ET_KEY_PRESSED && handled && !skip_process_filtered) {
+  if (event->type() == ET_KEY_PRESSED && handled) {
     ui::EventDispatchDetails dispatch_details =
         ProcessFilteredKeyPressEvent(event);
     if (event->stopped_propagation()) {
@@ -600,26 +604,29 @@ void InputMethodChromeOS::MaybeProcessPendingInputMethodResult(
   TextInputClient* client = GetTextInputClient();
   DCHECK(client);
 
-  if (result_text_.length()) {
+  if (pending_commit_) {
     if (handled && NeedInsertChar()) {
-      for (std::u16string::const_iterator i = result_text_.begin();
-           i != result_text_.end(); ++i) {
+      for (const auto& ch : pending_commit_->text) {
         KeyEvent ch_event(ET_KEY_PRESSED, VKEY_UNKNOWN, EF_NONE);
-        ch_event.set_character(*i);
+        ch_event.set_character(ch);
         client->InsertChar(ch_event);
       }
+    } else if (pending_commit_->text.empty()) {
+      client->InsertText(
+          u"", TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+      composing_text_ = false;
     } else {
-      // Split |result_text_| into two separate commits, one for the substring
-      // before |result_text_cursor_| and one for the substring after.
+      // Split the commit into two separate commits, one for the substring
+      // before the cursor and one for the substring after.
       const std::u16string before_cursor =
-          result_text_.substr(0, result_text_cursor_);
+          pending_commit_->text.substr(0, pending_commit_->cursor);
       if (!before_cursor.empty()) {
         client->InsertText(
             before_cursor,
             TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
       }
       const std::u16string after_cursor =
-          result_text_.substr(result_text_cursor_);
+          pending_commit_->text.substr(pending_commit_->cursor);
       if (!after_cursor.empty()) {
         client->InsertText(
             after_cursor,
@@ -627,7 +634,7 @@ void InputMethodChromeOS::MaybeProcessPendingInputMethodResult(
       }
       composing_text_ = false;
     }
-    typing_session_manager_.CommitCharacters(result_text_.length());
+    typing_session_manager_.CommitCharacters(pending_commit_->text.length());
   }
 
   // TODO(https://crbug.com/952757): Refactor this code to be clearer and less
@@ -641,7 +648,7 @@ void InputMethodChromeOS::MaybeProcessPendingInputMethodResult(
     if (pending_composition_) {
       composing_text_ = true;
       client->SetCompositionText(*pending_composition_);
-    } else if (result_text_.empty() && !pending_composition_range_) {
+    } else if (!pending_commit_ && !pending_composition_range_) {
       client->ClearCompositionText();
     }
 
@@ -656,20 +663,19 @@ void InputMethodChromeOS::MaybeProcessPendingInputMethodResult(
 
   // We should not clear composition text here, as it may belong to the next
   // composition session.
-  result_text_.clear();
-  result_text_cursor_ = 0;
+  pending_commit_ = absl::nullopt;
   composition_changed_ = false;
 }
 
 bool InputMethodChromeOS::NeedInsertChar() const {
   return GetTextInputClient() &&
-         (IsTextInputTypeNone() ||
-          (!composing_text_ && result_text_.length() == 1 &&
-           result_text_cursor_ == 1));
+         (IsTextInputTypeNone() || (!composing_text_ && pending_commit_ &&
+                                    pending_commit_->text.length() == 1 &&
+                                    pending_commit_->cursor == 1));
 }
 
 bool InputMethodChromeOS::HasInputMethodResult() const {
-  return result_text_.length() || composition_changed_;
+  return pending_commit_ || composition_changed_;
 }
 
 void InputMethodChromeOS::CommitText(
@@ -688,10 +694,13 @@ void InputMethodChromeOS::CommitText(
 
   // Append the text to the buffer, because commit signal might be fired
   // multiple times when processing a key event.
-  result_text_.insert(result_text_cursor_, text);
+  if (!pending_commit_) {
+    pending_commit_ = PendingCommit();
+  }
+  pending_commit_->text.insert(pending_commit_->cursor, text);
   if (cursor_behavior ==
       TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText) {
-    result_text_cursor_ += text.length();
+    pending_commit_->cursor += text.length();
   }
 
   // If we are not handling key event, do not bother sending text result if the
@@ -702,8 +711,7 @@ void InputMethodChromeOS::CommitText(
       typing_session_manager_.CommitCharacters(text.length());
     }
     SendFakeProcessKeyEvent(false);
-    result_text_.clear();
-    result_text_cursor_ = 0;
+    pending_commit_ = absl::nullopt;
   }
 }
 
@@ -768,6 +776,26 @@ void InputMethodChromeOS::HidePreeditText() {
     }
     composition_changed_ = false;
   }
+}
+
+bool InputMethodChromeOS::CanComposeInline() const {
+  TextInputClient* client = GetTextInputClient();
+  return client ? client->CanComposeInline() : true;
+}
+
+bool InputMethodChromeOS::GetClientShouldDoLearning() const {
+  TextInputClient* client = GetTextInputClient();
+  return client && client->ShouldDoLearning();
+}
+
+int InputMethodChromeOS::GetTextInputFlags() const {
+  TextInputClient* client = GetTextInputClient();
+  return client ? client->GetTextInputFlags() : 0;
+}
+
+TextInputMode InputMethodChromeOS::GetTextInputMode() const {
+  TextInputClient* client = GetTextInputClient();
+  return client ? client->GetTextInputMode() : TEXT_INPUT_MODE_DEFAULT;
 }
 
 void InputMethodChromeOS::SendKeyEvent(KeyEvent* event) {

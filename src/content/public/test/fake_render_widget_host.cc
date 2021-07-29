@@ -52,6 +52,11 @@ void FakeRenderWidgetHost::UpdateTooltipUnderCursor(
     const std::u16string& tooltip_text,
     base::i18n::TextDirection text_direction_hint) {}
 
+void FakeRenderWidgetHost::UpdateTooltipFromKeyboard(
+    const std::u16string& tooltip_text,
+    base::i18n::TextDirection text_direction_hint,
+    const gfx::Rect& bounds) {}
+
 void FakeRenderWidgetHost::TextInputStateChanged(
     ui::mojom::TextInputStatePtr state) {}
 
@@ -112,8 +117,6 @@ void FakeRenderWidgetHost::AutoscrollStart(const gfx::PointF& position) {}
 void FakeRenderWidgetHost::AutoscrollFling(const gfx::Vector2dF& position) {}
 
 void FakeRenderWidgetHost::AutoscrollEnd() {}
-
-void FakeRenderWidgetHost::DidFirstVisuallyNonEmptyPaint() {}
 
 void FakeRenderWidgetHost::StartDragging(
     blink::mojom::DragDataPtr drag_data,

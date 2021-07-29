@@ -137,10 +137,20 @@ bool OzonePlatform::IsNativePixmapConfigSupported(
   return false;
 }
 
+bool OzonePlatform::ShouldUseCustomFrame() {
+  return GetPlatformProperties().custom_frame_pref_default;
+}
+
 const OzonePlatform::PlatformProperties&
 OzonePlatform::GetPlatformProperties() {
   static const base::NoDestructor<OzonePlatform::PlatformProperties> properties;
   return *properties;
+}
+
+const OzonePlatform::PlatformRuntimeProperties&
+OzonePlatform::GetPlatformRuntimeProperties() {
+  static const OzonePlatform::PlatformRuntimeProperties properties;
+  return properties;
 }
 
 const OzonePlatform::InitializedHostProperties&

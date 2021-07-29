@@ -15,6 +15,7 @@
 #include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/cookies/same_party_context.h"
 #include "net/url_request/referrer_policy.h"
 #include "net/url_request/url_request.h"
 #include "services/network/cookie_manager.h"
@@ -184,29 +185,47 @@ void NetworkServiceNetworkDelegate::OnPACScriptError(
   proxy_error_client_->OnPACScriptError(line_number, base::UTF16ToUTF8(error));
 }
 
-bool NetworkServiceNetworkDelegate::OnCanGetCookies(
+bool NetworkServiceNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
     const net::URLRequest& request,
+    net::CookieAccessResultList& maybe_included_cookies,
+    net::CookieAccessResultList& excluded_cookies,
     bool allowed_from_caller) {
-  bool allowed =
-      allowed_from_caller &&
-      network_context_->cookie_manager()
-          ->cookie_settings()
-          .IsCookieAccessAllowed(request.url(),
-                                 request.site_for_cookies().RepresentativeUrl(),
-                                 request.isolation_info().top_frame_origin());
-
-  if (!allowed)
+  if (!allowed_from_caller) {
+    ExcludeAllCookies(net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+                      maybe_included_cookies, excluded_cookies);
     return false;
+  }
 
+  if (!network_context_->cookie_manager()
+           ->cookie_settings()
+           .AnnotateAndMoveUserBlockedCookies(
+               request.url(), request.site_for_cookies().RepresentativeUrl(),
+               request.isolation_info().top_frame_origin().has_value()
+                   ? &request.isolation_info().top_frame_origin().value()
+                   : nullptr,
+               maybe_included_cookies, excluded_cookies)) {
+    // CookieSettings has already moved and annotated the cookies.
+    return false;
+  }
+
+  bool allowed = true;
   URLLoader* url_loader = URLLoader::ForRequest(request);
-  if (url_loader)
-    return url_loader->AllowCookies(request.url(), request.site_for_cookies());
+  if (url_loader) {
+    allowed =
+        url_loader->AllowCookies(request.url(), request.site_for_cookies());
 #if !defined(OS_IOS)
-  WebSocket* web_socket = WebSocket::ForRequest(request);
-  if (web_socket)
-    return web_socket->AllowCookies(request.url());
+  } else {
+    WebSocket* web_socket = WebSocket::ForRequest(request);
+    if (web_socket) {
+      allowed = web_socket->AllowCookies(request.url());
+    }
 #endif  // !defined(OS_IOS)
-  return true;
+  }
+  if (!allowed)
+    ExcludeAllCookies(net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+                      maybe_included_cookies, excluded_cookies);
+
+  return allowed;
 }
 
 bool NetworkServiceNetworkDelegate::OnCanSetCookie(
@@ -216,11 +235,9 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
     bool allowed_from_caller) {
   bool allowed =
       allowed_from_caller &&
-      network_context_->cookie_manager()
-          ->cookie_settings()
-          .IsCookieAccessAllowed(request.url(),
-                                 request.site_for_cookies().RepresentativeUrl(),
-                                 request.isolation_info().top_frame_origin());
+      network_context_->cookie_manager()->cookie_settings().IsCookieAccessible(
+          cookie, request.url(), request.site_for_cookies().RepresentativeUrl(),
+          request.isolation_info().top_frame_origin());
   if (!allowed)
     return false;
   URLLoader* url_loader = URLLoader::ForRequest(request);
@@ -237,11 +254,12 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
 bool NetworkServiceNetworkDelegate::OnForcePrivacyMode(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin) const {
-  return !network_context_->cookie_manager()
-              ->cookie_settings()
-              .IsCookieAccessAllowed(url, site_for_cookies.RepresentativeUrl(),
-                                     top_frame_origin);
+    const absl::optional<url::Origin>& top_frame_origin,
+    net::SamePartyContext::Type same_party_context_type) const {
+  return network_context_->cookie_manager()
+      ->cookie_settings()
+      .IsPrivacyModeEnabled(url, site_for_cookies.RepresentativeUrl(),
+                            top_frame_origin, same_party_context_type);
 }
 
 bool NetworkServiceNetworkDelegate::
@@ -272,7 +290,7 @@ bool NetworkServiceNetworkDelegate::OnCanQueueReportingReport(
     const url::Origin& origin) const {
   return network_context_->cookie_manager()
       ->cookie_settings()
-      .IsCookieAccessAllowed(origin.GetURL(), origin.GetURL());
+      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL());
 }
 
 void NetworkServiceNetworkDelegate::OnCanSendReportingReports(
@@ -304,7 +322,7 @@ bool NetworkServiceNetworkDelegate::OnCanSetReportingClient(
     const GURL& endpoint) const {
   return network_context_->cookie_manager()
       ->cookie_settings()
-      .IsCookieAccessAllowed(origin.GetURL(), origin.GetURL());
+      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL());
 }
 
 bool NetworkServiceNetworkDelegate::OnCanUseReportingClient(
@@ -312,7 +330,7 @@ bool NetworkServiceNetworkDelegate::OnCanUseReportingClient(
     const GURL& endpoint) const {
   return network_context_->cookie_manager()
       ->cookie_settings()
-      .IsCookieAccessAllowed(origin.GetURL(), origin.GetURL());
+      .IsFullCookieAccessAllowed(origin.GetURL(), origin.GetURL());
 }
 
 int NetworkServiceNetworkDelegate::HandleClearSiteDataHeader(

@@ -4,11 +4,25 @@
 
 import("../../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../../scripts/build/ninja/devtools_module.gni")
+import("../../../../scripts/build/ninja/generate_css.gni")
 import("../../visibility.gni")
+
+generate_css("css_files") {
+  sources = [
+    "frameDetailsReportView.css",
+    "permissionsPolicySection.css",
+    "stackTraceLinkButton.css",
+    "stackTraceRow.css",
+    "trustTokensView.css",
+    "trustTokensViewDeleteButton.css",
+  ]
+}
 
 devtools_module("components") {
   sources = [
     "FrameDetailsView.ts",
+    "OriginTrialTreeView.ts",
+    "PermissionsPolicySection.ts",
     "StackTrace.ts",
     "TrustTokensView.ts",
   ]
@@ -21,10 +35,13 @@ devtools_module("components") {
     "../../../core/root:bundle",
     "../../../core/sdk:bundle",
     "../../../models/bindings:bundle",
-    "../../../panels/network:bundle",
+    "../../../panels/network/forward:bundle",
+    "../../../ui/components/adorners:bundle",
     "../../../ui/components/data_grid:bundle",
     "../../../ui/components/expandable_list:bundle",
+    "../../../ui/components/icon_button:bundle",
     "../../../ui/components/report_view:bundle",
+    "../../../ui/components/tree_outline:bundle",
     "../../../ui/legacy:bundle",
     "../../../ui/legacy/components/utils:bundle",
   ]
@@ -33,12 +50,16 @@ devtools_module("components") {
 devtools_entrypoint("bundle") {
   entrypoint = "components.ts"
 
-  deps = [ ":components" ]
+  deps = [
+    ":components",
+    ":css_files",
+  ]
 
   visibility = [
     ":*",
     "../:*",
     "../../../../test/unittests/front_end/panels/application/components/*",
+    "../../../ui/components/docs/*",
   ]
 
   visibility += devtools_panels_visibility

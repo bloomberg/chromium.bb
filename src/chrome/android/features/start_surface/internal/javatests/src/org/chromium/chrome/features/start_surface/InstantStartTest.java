@@ -30,8 +30,8 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
-import static org.chromium.chrome.test.util.ViewUtils.waitForView;
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
+import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -110,7 +110,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
-import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -121,6 +120,7 @@ import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.ui.test.util.ViewUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -154,7 +154,7 @@ public class InstantStartTest {
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(1).build();
 
     @Rule
     public ErrorCollector collector = new ErrorCollector();
@@ -244,7 +244,7 @@ public class InstantStartTest {
             ChromeFeatureList.START_SURFACE_ANDROID + "<Study",
             ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study",
             ChromeFeatureList.TAB_GROUPS_ANDROID,
-            ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+            ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single/enable_launch_polish/true"})
@@ -493,6 +493,52 @@ public class InstantStartTest {
                                                         .getCurrentTabModelFilter()));
         // TODO(crbug.com/1065314): fix thumbnail changing in post-native rendering and make sure
         //  post-native GTS looks the same.
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study",
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study",
+            ChromeFeatureList.THEME_REFACTOR_ANDROID})
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+            "force-fieldtrials=Study/Group",
+            IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
+    @DisableIf.Build(message = "Flaky. See https://crbug.com/1091311",
+            sdk_is_greater_than = Build.VERSION_CODES.O)
+    public void renderTabGroups_ThemeRefactor() throws IOException {
+        // clang-format on
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(1);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(2);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(3);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(4);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(5);
+        StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(6);
+        TabAttributeCache.setRootIdForTesting(0, 0);
+        TabAttributeCache.setRootIdForTesting(1, 0);
+        TabAttributeCache.setRootIdForTesting(2, 0);
+        TabAttributeCache.setRootIdForTesting(3, 0);
+        TabAttributeCache.setRootIdForTesting(4, 0);
+        TabAttributeCache.setRootIdForTesting(5, 5);
+        TabAttributeCache.setRootIdForTesting(6, 5);
+
+        // StartSurfaceTestUtils.createTabStateFile() has to be after setRootIdForTesting() to get
+        // root IDs.
+        StartSurfaceTestUtils.createTabStateFile(new int[] {0, 1, 2, 3, 4, 5, 6});
+
+        // Must be after StartSurfaceTestUtils.createTabStateFile() to read these files.
+        StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForOverviewVisible(cta);
+
+        RecyclerView recyclerView = cta.findViewById(R.id.tab_list_view);
+        CriteriaHelper.pollUiThread(() -> allCardsHaveThumbnail(recyclerView));
+        mRenderTestRule.render(
+                cta.findViewById(R.id.tab_list_view), "tabSwitcher_tabGroups_theme_enforcement");
     }
 
     @Test
@@ -1287,7 +1333,8 @@ public class InstantStartTest {
     }
 
     private void startAndWaitNativeInitialization() {
-        Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
+        Assert.assertTrue(NativeLibraryLoadedStatus.getProviderForTesting() == null ||
+            !NativeLibraryLoadedStatus.getProviderForTesting().areMainDexNativeMethodsReady());
 
         CommandLine.getInstance().removeSwitch(ChromeSwitches.DISABLE_NATIVE_INITIALIZATION);
         TestThreadUtils.runOnUiThreadBlocking(

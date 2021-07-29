@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_edit_table_view_controller.h"
 
+#include "base/cxx17_backports.h"
 #include "base/mac/foundation_util.h"
-#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -109,14 +109,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
           [model itemAtIndexPath:path]);
       autofill::ServerFieldType serverFieldType =
           AutofillTypeFromAutofillUIType(item.autofillUIType);
-      if (item.autofillUIType == AutofillUITypeProfileHomeAddressCountry) {
-        _autofillProfile.SetInfo(
+
+      // Since the country field is a text field, we should use SetInfo() to
+      // make sure they get converted to country codes.
+      // Use SetInfo for fullname to propogate the change to the name_first,
+      // name_middle and name_last subcomponents.
+      if (item.autofillUIType == AutofillUITypeProfileHomeAddressCountry ||
+          item.autofillUIType == AutofillUITypeProfileFullName) {
+        _autofillProfile.SetInfoWithVerificationStatus(
             autofill::AutofillType(serverFieldType),
             base::SysNSStringToUTF16(item.textFieldValue),
-            GetApplicationContext()->GetApplicationLocale());
+            GetApplicationContext()->GetApplicationLocale(),
+            autofill::structured_address::VerificationStatus::kUserVerified);
       } else {
-        _autofillProfile.SetRawInfo(
-            serverFieldType, base::SysNSStringToUTF16(item.textFieldValue));
+        _autofillProfile.SetRawInfoWithVerificationStatus(
+            serverFieldType, base::SysNSStringToUTF16(item.textFieldValue),
+            autofill::structured_address::VerificationStatus::kUserVerified);
       }
     }
 

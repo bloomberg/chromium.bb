@@ -92,6 +92,8 @@ AxisEdge MainAxisStaticPositionEdge(const ComputedStyle& style,
                              ? style.ResolvedIsColumnReverseFlexDirection()
                              : style.ResolvedIsRowReverseFlexDirection();
 
+  DCHECK_NE(content_position, ContentPosition::kLeft);
+  DCHECK_NE(content_position, ContentPosition::kRight);
   if (content_position == ContentPosition::kFlexEnd)
     return is_reverse_flex ? AxisEdge::kStart : AxisEdge::kEnd;
 
@@ -99,6 +101,11 @@ AxisEdge MainAxisStaticPositionEdge(const ComputedStyle& style,
       justify.Distribution() == ContentDistributionType::kSpaceAround ||
       justify.Distribution() == ContentDistributionType::kSpaceEvenly)
     return AxisEdge::kCenter;
+
+  if (content_position == ContentPosition::kStart)
+    return AxisEdge::kStart;
+  if (content_position == ContentPosition::kEnd)
+    return AxisEdge::kEnd;
 
   return is_reverse_flex ? AxisEdge::kEnd : AxisEdge::kStart;
 }
@@ -301,9 +308,9 @@ NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForIntrinsicBlockSize(
 
   if (WillChildCrossSizeBeContainerCrossSize(flex_item)) {
     if (is_column_)
-      space_builder.SetStretchInlineSizeIfAuto(true);
+      space_builder.SetInlineAutoBehavior(NGAutoBehavior::kStretchExplicit);
     else
-      space_builder.SetStretchBlockSizeIfAuto(true);
+      space_builder.SetBlockAutoBehavior(NGAutoBehavior::kStretchExplicit);
   }
 
   // For determining the intrinsic block-size we make %-block-sizes resolve
@@ -311,7 +318,7 @@ NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForIntrinsicBlockSize(
   LogicalSize child_percentage_size = child_percentage_size_;
   if (is_column_) {
     child_percentage_size.block_size = kIndefiniteSize;
-    space_builder.SetIsFixedBlockSizeIndefinite(true);
+    space_builder.SetIsInitialBlockSizeIndefinite(true);
   }
 
   space_builder.SetAvailableSize(ChildAvailableSize());
@@ -540,15 +547,14 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           MinMaxSizesFunc);
     }
 
-    absl::optional<LayoutUnit> calculated_intrinsic_block_size;
+    scoped_refptr<const NGLayoutResult> layout_result;
     auto IntrinsicBlockSizeFunc = [&]() -> LayoutUnit {
-      if (!calculated_intrinsic_block_size) {
+      if (!layout_result) {
         NGConstraintSpace child_space = BuildSpaceForIntrinsicBlockSize(child);
-        scoped_refptr<const NGLayoutResult> layout_result =
-            child.Layout(child_space, /* break_token */ nullptr);
-        calculated_intrinsic_block_size = layout_result->IntrinsicBlockSize();
+        layout_result = child.Layout(child_space, /* break_token */ nullptr);
+        DCHECK(layout_result);
       }
-      return *calculated_intrinsic_block_size;
+      return layout_result->IntrinsicBlockSize();
     };
 
     auto ComputeTransferredMainSize = [&]() -> LayoutUnit {
@@ -824,6 +830,11 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
                       physical_child_margins, scrollbars,
                       min_max_sizes.has_value())
         .ng_input_node_ = child;
+    // Save the layout result so that we can maybe reuse it later.
+    if (layout_result) {
+      DCHECK(!MainAxisIsInlineAxis(child));
+      algorithm_.all_items_.back().layout_result_ = layout_result;
+    }
   }
 }
 
@@ -977,7 +988,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
                                     flex_item.main_axis_border_padding_;
         space_builder.SetIsFixedBlockSize(true);
         if (WillChildCrossSizeBeContainerCrossSize(flex_item.ng_input_node_)) {
-          space_builder.SetStretchInlineSizeIfAuto(true);
+          space_builder.SetInlineAutoBehavior(NGAutoBehavior::kStretchExplicit);
         } else if (fixed_aspect_ratio_cross_size != kIndefiniteSize) {
           space_builder.SetIsFixedInlineSize(true);
           available_size.inline_size = fixed_aspect_ratio_cross_size;
@@ -988,7 +999,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
         // rely on the indefinite sizes of any flex items in the same line.
         if (!IsColumnContainerMainSizeDefinite() &&
             !IsItemMainSizeDefinite(flex_item.ng_input_node_)) {
-          space_builder.SetIsFixedBlockSizeIndefinite(true);
+          space_builder.SetIsInitialBlockSizeIndefinite(true);
         }
       } else {
         available_size.inline_size = flex_item.flexed_content_size_ +
@@ -996,21 +1007,23 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
         available_size.block_size = ChildAvailableSize().block_size;
         space_builder.SetIsFixedInlineSize(true);
         if (WillChildCrossSizeBeContainerCrossSize(flex_item.ng_input_node_)) {
-          space_builder.SetStretchBlockSizeIfAuto(true);
+          space_builder.SetBlockAutoBehavior(NGAutoBehavior::kStretchExplicit);
         } else if (fixed_aspect_ratio_cross_size != kIndefiniteSize) {
           space_builder.SetIsFixedBlockSize(true);
           available_size.block_size = fixed_aspect_ratio_cross_size;
-        } else if (DoesItemStretch(flex_item.ng_input_node_)) {
-          // If we are in a row flexbox, and we don't have a fixed block-size
-          // (yet), use the "measure" cache slot. This will be the first
-          // layout, and we will use the "layout" cache slot if this gets
-          // stretched later.
-          //
-          // Setting the "measure" cache slot on the space writes the result
-          // into both the "measure", and "layout" cache slots. If a subsequent
-          // "layout" occurs, it'll just get written into the "layout" slot.
-          space_builder.SetCacheSlot(NGCacheSlot::kMeasure);
         }
+      }
+      if (DoesItemStretch(flex_item.ng_input_node_)) {
+        // For stretched items, the goal of this layout is determine the
+        // post-flexed, pre-stretched cross-axis size. Stretched items will
+        // later get a final layout with a potentially different cross size so
+        // use the "measure" slot for this layout. We will use the "layout"
+        // cache slot for the item's final layout.
+        //
+        // Setting the "measure" cache slot on the space writes the result
+        // into both the "measure" and "layout" cache slots. So the stretch
+        // layout will reuse this "measure" result if it can.
+        space_builder.SetCacheSlot(NGCacheSlot::kMeasure);
       }
 
       space_builder.SetAvailableSize(available_size);
@@ -1027,16 +1040,44 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
       }
 
       NGConstraintSpace child_space = space_builder.ToConstraintSpace();
-      flex_item.layout_result_ =
-          flex_item.ng_input_node_.Layout(child_space, nullptr /*break token*/);
-
-      // TODO(layout-dev): Handle abortions caused by block fragmentation.
-      DCHECK_EQ(flex_item.layout_result_->Status(), NGLayoutResult::kSuccess);
-
-      flex_item.cross_axis_size_ =
-          is_horizontal_flow_
-              ? flex_item.layout_result_->PhysicalFragment().Size().height
-              : flex_item.layout_result_->PhysicalFragment().Size().width;
+      // We need to get the item's cross axis size given its new main size. If
+      // the new main size is the item's inline size, then we have to do a
+      // layout to get its new block size. But if the new main size is the
+      // item's block size, we can skip layout in some cases and just calculate
+      // the inline size from the constraint space.
+      // Even when we only need inline size, we have to lay out the item if:
+      //  * this is the item's last chance to layout (i.e. doesn't stretch), OR
+      //  * the item has not yet been laid out. (ComputeLineItemsPosition
+      //    relies on the fragment's baseline, which comes from the post-layout
+      //    fragment)
+      if (DoesItemStretch(flex_item.ng_input_node_) &&
+          flex_item.layout_result_) {
+        DCHECK(!MainAxisIsInlineAxis(flex_item.ng_input_node_));
+        NGBoxStrut border =
+            ComputeBorders(child_space, flex_item.ng_input_node_);
+        NGBoxStrut padding = ComputePadding(child_space, child_style);
+        if (flex_item.ng_input_node_.IsReplaced()) {
+          LogicalSize logical_border_box_size = ComputeReplacedSize(
+              flex_item.ng_input_node_, child_space, border + padding);
+          flex_item.cross_axis_size_ = logical_border_box_size.inline_size;
+        } else {
+          flex_item.cross_axis_size_ = ComputeInlineSizeForFragment(
+              child_space, flex_item.ng_input_node_, border + padding);
+        }
+      } else {
+        DCHECK((child_space.CacheSlot() == NGCacheSlot::kLayout) ||
+               !flex_item.layout_result_)
+            << "If we already have a 'measure' result from "
+               "ConstructAndAppendFlexItems, we don't want to evict it.";
+        flex_item.layout_result_ = flex_item.ng_input_node_.Layout(
+            child_space, nullptr /*break token*/);
+        // TODO(layout-dev): Handle abortions caused by block fragmentation.
+        DCHECK_EQ(flex_item.layout_result_->Status(), NGLayoutResult::kSuccess);
+        flex_item.cross_axis_size_ =
+            is_horizontal_flow_
+                ? flex_item.layout_result_->PhysicalFragment().Size().height
+                : flex_item.layout_result_->PhysicalFragment().Size().width;
+      }
     }
     // cross_axis_offset is updated in each iteration of the loop, for passing
     // in to the next iteration.
@@ -1047,7 +1088,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
   LayoutUnit intrinsic_block_size = BorderScrollbarPadding().BlockSum();
 
   if (algorithm_.FlexLines().IsEmpty() && Node().HasLineIfEmpty()) {
-    intrinsic_block_size += Node().GetLayoutBox()->LogicalHeightForEmptyLine();
+    intrinsic_block_size += Node().EmptyLineBlockSize();
   } else {
     intrinsic_block_size += algorithm_.IntrinsicContentBlockSize();
   }
@@ -1092,7 +1133,7 @@ void NGFlexLayoutAlgorithm::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
     available_size.Transpose();
     if (!IsColumnContainerMainSizeDefinite() &&
         !IsItemMainSizeDefinite(flex_item.ng_input_node_)) {
-      space_builder.SetIsFixedBlockSizeIndefinite(true);
+      space_builder.SetIsInitialBlockSizeIndefinite(true);
     }
   }
 
@@ -1339,9 +1380,9 @@ MinMaxSizesResult NGFlexLayoutAlgorithm::ComputeMinMaxSizes(
     builder.SetReplacedPercentageResolutionBlockSize(
         child_percentage_size_.block_size);
     if (is_column_)
-      builder.SetIsFixedBlockSizeIndefinite(true);
+      builder.SetIsInitialBlockSizeIndefinite(true);
     else if (WillChildCrossSizeBeContainerCrossSize(child))
-      builder.SetStretchBlockSizeIfAuto(true);
+      builder.SetBlockAutoBehavior(NGAutoBehavior::kStretchExplicit);
     const auto space = builder.ToConstraintSpace();
 
     MinMaxSizesResult child_result =

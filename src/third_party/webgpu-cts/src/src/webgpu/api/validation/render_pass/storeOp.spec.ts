@@ -22,7 +22,7 @@ import { ValidationTest } from '../validation_test.js';
 export const g = makeTestGroup(ValidationTest);
 
 g.test('store_op_and_read_only')
-  .params([
+  .paramsSimple([
     { readonly: true, _valid: true },
     // Using depthReadOnly=true and depthStoreOp='clear' should cause a validation error.
     { readonly: true, depthStoreOp: 'clear', _valid: false },

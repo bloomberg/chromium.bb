@@ -16,23 +16,30 @@
 #define SRC_PROGRAM_BUILDER_H_
 
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 #include "src/ast/alias.h"
 #include "src/ast/array.h"
 #include "src/ast/array_accessor_expression.h"
 #include "src/ast/assignment_statement.h"
+#include "src/ast/atomic.h"
 #include "src/ast/binary_expression.h"
+#include "src/ast/bitcast_expression.h"
 #include "src/ast/bool.h"
 #include "src/ast/bool_literal.h"
 #include "src/ast/call_expression.h"
+#include "src/ast/call_statement.h"
 #include "src/ast/case_statement.h"
 #include "src/ast/depth_texture.h"
 #include "src/ast/external_texture.h"
 #include "src/ast/f32.h"
 #include "src/ast/float_literal.h"
+#include "src/ast/for_loop_statement.h"
 #include "src/ast/i32.h"
 #include "src/ast/if_statement.h"
+#include "src/ast/interpolate_decoration.h"
+#include "src/ast/invariant_decoration.h"
 #include "src/ast/loop_statement.h"
 #include "src/ast/matrix.h"
 #include "src/ast/member_accessor_expression.h"
@@ -78,19 +85,52 @@
 #include "src/sem/vector_type.h"
 #include "src/sem/void_type.h"
 
-namespace tint {
+#ifdef INCLUDE_TINT_TINT_H_
+#error "internal tint header being #included from tint.h"
+#endif
 
 // Forward declarations
+namespace tint {
 namespace ast {
 class VariableDeclStatement;
 }  // namespace ast
+}  // namespace tint
 
+namespace tint {
 class CloneContext;
 
 /// ProgramBuilder is a mutable builder for a Program.
 /// To construct a Program, populate the builder and then `std::move` it to a
 /// Program.
 class ProgramBuilder {
+  /// VarOptionals is a helper for accepting a number of optional, extra
+  /// arguments for Var() and Global().
+  struct VarOptionals {
+    template <typename... ARGS>
+    explicit VarOptionals(ARGS&&... args) {
+      Apply(std::forward<ARGS>(args)...);
+    }
+    ~VarOptionals();
+
+    ast::StorageClass storage = ast::StorageClass::kNone;
+    ast::Access access = ast::Access::kUndefined;
+    ast::Expression* constructor = nullptr;
+    ast::DecorationList decorations = {};
+
+   private:
+    void Set(ast::StorageClass sc) { storage = sc; }
+    void Set(ast::Access ac) { access = ac; }
+    void Set(ast::Expression* c) { constructor = c; }
+    void Set(const ast::DecorationList& l) { decorations = l; }
+
+    template <typename FIRST, typename... ARGS>
+    void Apply(FIRST&& first, ARGS&&... args) {
+      Set(std::forward<FIRST>(first));
+      Apply(std::forward<ARGS>(args)...);
+    }
+    void Apply() {}
+  };
+
  public:
   /// ASTNodeAllocator is an alias to BlockAllocator<ast::Node>
   using ASTNodeAllocator = BlockAllocator<ast::Node>;
@@ -402,7 +442,6 @@ class ProgramBuilder {
     /// @param n vector width in elements
     /// @return the tint AST type for a `n`-element vector of `type`.
     ast::Vector* vec(ast::Type* type, uint32_t n) const {
-      type = MaybeCreateTypename(type);
       return builder->create<ast::Vector>(type, n);
     }
 
@@ -411,7 +450,6 @@ class ProgramBuilder {
     /// @param n vector width in elements
     /// @return the tint AST type for a `n`-element vector of `type`.
     ast::Vector* vec(const Source& source, ast::Type* type, uint32_t n) const {
-      type = MaybeCreateTypename(type);
       return builder->create<ast::Vector>(source, type, n);
     }
 
@@ -457,7 +495,6 @@ class ProgramBuilder {
     /// @param rows number of rows for the matrix
     /// @return the tint AST type for a matrix of `type`
     ast::Matrix* mat(ast::Type* type, uint32_t columns, uint32_t rows) const {
-      type = MaybeCreateTypename(type);
       return builder->create<ast::Matrix>(type, rows, columns);
     }
 
@@ -578,7 +615,6 @@ class ProgramBuilder {
     ast::Array* array(ast::Type* subtype,
                       uint32_t n = 0,
                       ast::DecorationList decos = {}) const {
-      subtype = MaybeCreateTypename(subtype);
       return builder->create<ast::Array>(subtype, n, decos);
     }
 
@@ -591,7 +627,6 @@ class ProgramBuilder {
                       ast::Type* subtype,
                       uint32_t n = 0,
                       ast::DecorationList decos = {}) const {
-      subtype = MaybeCreateTypename(subtype);
       return builder->create<ast::Array>(source, subtype, n, decos);
     }
 
@@ -600,7 +635,6 @@ class ProgramBuilder {
     /// @param stride the array stride. 0 represents implicit stride
     /// @return the tint AST type for a array of size `n` of type `T`
     ast::Array* array(ast::Type* subtype, uint32_t n, uint32_t stride) const {
-      subtype = MaybeCreateTypename(subtype);
       ast::DecorationList decos;
       if (stride) {
         decos.emplace_back(builder->create<ast::StrideDecoration>(stride));
@@ -617,7 +651,6 @@ class ProgramBuilder {
                       ast::Type* subtype,
                       uint32_t n,
                       uint32_t stride) const {
-      subtype = MaybeCreateTypename(subtype);
       ast::DecorationList decos;
       if (stride) {
         decos.emplace_back(builder->create<ast::StrideDecoration>(stride));
@@ -663,7 +696,6 @@ class ProgramBuilder {
     /// @returns the alias pointer
     template <typename NAME>
     ast::Alias* alias(NAME&& name, ast::Type* type) const {
-      type = MaybeCreateTypename(type);
       auto sym = builder->Sym(std::forward<NAME>(name));
       return builder->create<ast::Alias>(sym, type);
     }
@@ -677,59 +709,58 @@ class ProgramBuilder {
     ast::Alias* alias(const Source& source,
                       NAME&& name,
                       ast::Type* type) const {
-      type = MaybeCreateTypename(type);
       auto sym = builder->Sym(std::forward<NAME>(name));
       return builder->create<ast::Alias>(source, sym, type);
     }
 
-    /// Creates an access control qualifier type
-    /// @param access the access control
-    /// @param type the inner type
-    /// @returns the access control qualifier type
-    ast::AccessControl* access(ast::AccessControl::Access access,
-                               const ast::Type* type) const {
-      type = MaybeCreateTypename(type);
-      return type ? builder->create<ast::AccessControl>(access, type) : nullptr;
-    }
-
-    /// Creates an access control qualifier type
-    /// @param source the Source of the node
-    /// @param access the access control
-    /// @param type the inner type
-    /// @returns the access control qualifier type
-    ast::AccessControl* access(const Source& source,
-                               ast::AccessControl::Access access,
-                               const ast::Type* type) const {
-      type = MaybeCreateTypename(type);
-      return type ? builder->create<ast::AccessControl>(source, access, type)
-                  : nullptr;
-    }
-
     /// @param type the type of the pointer
     /// @param storage_class the storage class of the pointer
+    /// @param access the optional access control of the pointer
     /// @return the pointer to `type` with the given ast::StorageClass
     ast::Pointer* pointer(ast::Type* type,
-                          ast::StorageClass storage_class) const {
-      type = MaybeCreateTypename(type);
-      return builder->create<ast::Pointer>(type, storage_class);
+                          ast::StorageClass storage_class,
+                          ast::Access access = ast::Access::kUndefined) const {
+      return builder->create<ast::Pointer>(type, storage_class, access);
     }
 
     /// @param source the Source of the node
     /// @param type the type of the pointer
     /// @param storage_class the storage class of the pointer
+    /// @param access the optional access control of the pointer
     /// @return the pointer to `type` with the given ast::StorageClass
     ast::Pointer* pointer(const Source& source,
                           ast::Type* type,
-                          ast::StorageClass storage_class) const {
-      type = MaybeCreateTypename(type);
-      return builder->create<ast::Pointer>(source, type, storage_class);
+                          ast::StorageClass storage_class,
+                          ast::Access access = ast::Access::kUndefined) const {
+      return builder->create<ast::Pointer>(source, type, storage_class, access);
     }
 
     /// @param storage_class the storage class of the pointer
+    /// @param access the optional access control of the pointer
     /// @return the pointer to type `T` with the given ast::StorageClass.
     template <typename T>
-    ast::Pointer* pointer(ast::StorageClass storage_class) const {
-      return pointer(Of<T>(), storage_class);
+    ast::Pointer* pointer(ast::StorageClass storage_class,
+                          ast::Access access = ast::Access::kUndefined) const {
+      return pointer(Of<T>(), storage_class, access);
+    }
+
+    /// @param source the Source of the node
+    /// @param type the type of the atomic
+    /// @return the atomic to `type`
+    ast::Atomic* atomic(const Source& source, ast::Type* type) const {
+      return builder->create<ast::Atomic>(source, type);
+    }
+
+    /// @param type the type of the atomic
+    /// @return the atomic to `type`
+    ast::Atomic* atomic(ast::Type* type) const {
+      return builder->create<ast::Atomic>(type);
+    }
+
+    /// @return the atomic to type `T`
+    template <typename T>
+    ast::Atomic* atomic() const {
+      return atomic(Of<T>());
     }
 
     /// @param kind the kind of sampler
@@ -797,23 +828,28 @@ class ProgramBuilder {
 
     /// @param dims the dimensionality of the texture
     /// @param format the image format of the texture
+    /// @param access the access control of the texture
     /// @returns the storage texture
     ast::StorageTexture* storage_texture(ast::TextureDimension dims,
-                                         ast::ImageFormat format) const {
+                                         ast::ImageFormat format,
+                                         ast::Access access) const {
       auto* subtype = ast::StorageTexture::SubtypeFor(format, *builder);
-      return builder->create<ast::StorageTexture>(dims, format, subtype);
+      return builder->create<ast::StorageTexture>(dims, format, subtype,
+                                                  access);
     }
 
     /// @param source the Source of the node
     /// @param dims the dimensionality of the texture
     /// @param format the image format of the texture
+    /// @param access the access control of the texture
     /// @returns the storage texture
     ast::StorageTexture* storage_texture(const Source& source,
                                          ast::TextureDimension dims,
-                                         ast::ImageFormat format) const {
+                                         ast::ImageFormat format,
+                                         ast::Access access) const {
       auto* subtype = ast::StorageTexture::SubtypeFor(format, *builder);
-      return builder->create<ast::StorageTexture>(source, dims, format,
-                                                  subtype);
+      return builder->create<ast::StorageTexture>(source, dims, format, subtype,
+                                                  access);
     }
 
     /// @returns the external texture
@@ -828,17 +864,15 @@ class ProgramBuilder {
     }
 
     /// [DEPRECATED]: TODO(crbug.com/tint/745): Migrate to const AST pointers.
-    /// If ty is a ast::Struct or ast::Alias, the returned type is an
-    /// ast::TypeName of the given type's name, otherwise  type is returned.
+    /// Constructs a TypeName for the type declaration.
     /// @param type the type
     /// @return either type or a pointer to a new ast::TypeName
-    ast::Type* MaybeCreateTypename(ast::Type* type) const;
+    ast::TypeName* Of(ast::TypeDecl* type) const;
 
-    /// If ty is a ast::Struct or ast::Alias, the returned type is an
-    /// ast::TypeName of the given type's name, otherwise  type is returned.
+    /// Constructs a TypeName for the type declaration.
     /// @param type the type
     /// @return either type or a pointer to a new ast::TypeName
-    const ast::Type* MaybeCreateTypename(const ast::Type* type) const;
+    const ast::TypeName* Of(const ast::TypeDecl* type) const;
 
     /// The ProgramBuilder
     ProgramBuilder* const builder;
@@ -1053,21 +1087,64 @@ class ProgramBuilder {
   /// values `args`.
   template <typename... ARGS>
   ast::TypeConstructorExpression* Construct(ast::Type* type, ARGS&&... args) {
-    type = ty.MaybeCreateTypename(type);
     return create<ast::TypeConstructorExpression>(
         type, ExprList(std::forward<ARGS>(args)...));
   }
 
-  /// Creates a constructor expression that constructs an object of
-  /// `type` filled with `elem_value`. For example,
-  /// ConstructValueFilledWith(ty.mat3x4<float>(), 5) returns a
-  /// TypeConstructorExpression for a Mat3x4 filled with 5.0f values.
+  /// @param source the source information
   /// @param type the type to construct
-  /// @param elem_value the initial or element value (for vec and mat) to
-  /// construct with
-  /// @return the constructor expression
-  ast::ConstructorExpression* ConstructValueFilledWith(const ast::Type* type,
-                                                       int elem_value = 0);
+  /// @param args the arguments for the constructor
+  /// @return an `ast::TypeConstructorExpression` of `type` constructed with the
+  /// values `args`.
+  template <typename... ARGS>
+  ast::TypeConstructorExpression* Construct(const Source& source,
+                                            ast::Type* type,
+                                            ARGS&&... args) {
+    return create<ast::TypeConstructorExpression>(
+        source, type, ExprList(std::forward<ARGS>(args)...));
+  }
+
+  /// @param expr the expression for the bitcast
+  /// @return an `ast::BitcastExpression` of type `ty`, with the values of
+  /// `expr` converted to `ast::Expression`s using `Expr()`
+  template <typename T, typename EXPR>
+  ast::BitcastExpression* Bitcast(EXPR&& expr) {
+    return Bitcast(ty.Of<T>(), std::forward<EXPR>(expr));
+  }
+
+  /// @param type the type to cast to
+  /// @param expr the expression for the bitcast
+  /// @return an `ast::BitcastExpression` of `type` constructed with the values
+  /// `expr`.
+  template <typename EXPR>
+  ast::BitcastExpression* Bitcast(ast::Type* type, EXPR&& expr) {
+    return create<ast::BitcastExpression>(type, Expr(std::forward<EXPR>(expr)));
+  }
+
+  /// @param source the source information
+  /// @param type the type to cast to
+  /// @param expr the expression for the bitcast
+  /// @return an `ast::BitcastExpression` of `type` constructed with the values
+  /// `expr`.
+  template <typename EXPR>
+  ast::BitcastExpression* Bitcast(const Source& source,
+                                  ast::Type* type,
+                                  EXPR&& expr) {
+    return create<ast::BitcastExpression>(source, type,
+                                          Expr(std::forward<EXPR>(expr)));
+  }
+
+  /// @param args the arguments for the vector constructor
+  /// @param type the vector type
+  /// @param size the vector size
+  /// @return an `ast::TypeConstructorExpression` of a `size`-element vector of
+  /// type `type`, constructed with the values `args`.
+  template <typename... ARGS>
+  ast::TypeConstructorExpression* vec(ast::Type* type,
+                                      uint32_t size,
+                                      ARGS&&... args) {
+    return Construct(ty.vec(type, size), std::forward<ARGS>(args)...);
+  }
 
   /// @param args the arguments for the vector constructor
   /// @return an `ast::TypeConstructorExpression` of a 2-element vector of type
@@ -1187,38 +1264,47 @@ class ProgramBuilder {
 
   /// @param name the variable name
   /// @param type the variable type
-  /// @param storage the variable storage class
-  /// @param constructor constructor expression
-  /// @param decorations variable decorations
-  /// @returns a `ast::Variable` with the given name, storage and type
-  template <typename NAME>
+  /// @param optional the optional variable settings.
+  /// Can be any of the following, in any order:
+  ///   * ast::StorageClass   - specifies the variable storage class
+  ///   * ast::Access         - specifies the variable's access control
+  ///   * ast::Expression*    - specifies the variable's initializer expression
+  ///   * ast::DecorationList - specifies the variable's decorations
+  /// Note that repeated arguments of the same type will use the last argument's
+  /// value.
+  /// @returns a `ast::Variable` with the given name, type and additional
+  /// options
+  template <typename NAME, typename... OPTIONAL>
   ast::Variable* Var(NAME&& name,
                      const ast::Type* type,
-                     ast::StorageClass storage = ast::StorageClass::kNone,
-                     ast::Expression* constructor = nullptr,
-                     ast::DecorationList decorations = {}) {
-    type = ty.MaybeCreateTypename(type);
-    return create<ast::Variable>(Sym(std::forward<NAME>(name)), storage, type,
-                                 false, constructor, decorations);
+                     OPTIONAL&&... optional) {
+    VarOptionals opts(std::forward<OPTIONAL>(optional)...);
+    return create<ast::Variable>(Sym(std::forward<NAME>(name)), opts.storage,
+                                 opts.access, type, false, opts.constructor,
+                                 std::move(opts.decorations));
   }
 
   /// @param source the variable source
   /// @param name the variable name
   /// @param type the variable type
-  /// @param storage the variable storage class
-  /// @param constructor constructor expression
-  /// @param decorations variable decorations
+  /// @param optional the optional variable settings.
+  /// Can be any of the following, in any order:
+  ///   * ast::StorageClass   - specifies the variable storage class
+  ///   * ast::Access         - specifies the variable's access control
+  ///   * ast::Expression*    - specifies the variable's initializer expression
+  ///   * ast::DecorationList - specifies the variable's decorations
+  /// Note that repeated arguments of the same type will use the last argument's
+  /// value.
   /// @returns a `ast::Variable` with the given name, storage and type
-  template <typename NAME>
+  template <typename NAME, typename... OPTIONAL>
   ast::Variable* Var(const Source& source,
                      NAME&& name,
                      const ast::Type* type,
-                     ast::StorageClass storage = ast::StorageClass::kNone,
-                     ast::Expression* constructor = nullptr,
-                     ast::DecorationList decorations = {}) {
-    type = ty.MaybeCreateTypename(type);
-    return create<ast::Variable>(source, Sym(std::forward<NAME>(name)), storage,
-                                 type, false, constructor, decorations);
+                     OPTIONAL&&... optional) {
+    VarOptionals opts(std::forward<OPTIONAL>(optional)...);
+    return create<ast::Variable>(source, Sym(std::forward<NAME>(name)),
+                                 opts.storage, opts.access, type, false,
+                                 opts.constructor, std::move(opts.decorations));
   }
 
   /// @param name the variable name
@@ -1231,10 +1317,9 @@ class ProgramBuilder {
                        ast::Type* type,
                        ast::Expression* constructor,
                        ast::DecorationList decorations = {}) {
-    type = ty.MaybeCreateTypename(type);
-    return create<ast::Variable>(Sym(std::forward<NAME>(name)),
-                                 ast::StorageClass::kNone, type, true,
-                                 constructor, decorations);
+    return create<ast::Variable>(
+        Sym(std::forward<NAME>(name)), ast::StorageClass::kNone,
+        ast::Access::kUndefined, type, true, constructor, decorations);
   }
 
   /// @param source the variable source
@@ -1249,10 +1334,9 @@ class ProgramBuilder {
                        ast::Type* type,
                        ast::Expression* constructor,
                        ast::DecorationList decorations = {}) {
-    type = ty.MaybeCreateTypename(type);
-    return create<ast::Variable>(source, Sym(std::forward<NAME>(name)),
-                                 ast::StorageClass::kNone, type, true,
-                                 constructor, decorations);
+    return create<ast::Variable>(
+        source, Sym(std::forward<NAME>(name)), ast::StorageClass::kNone,
+        ast::Access::kUndefined, type, true, constructor, decorations);
   }
 
   /// @param name the parameter name
@@ -1263,10 +1347,9 @@ class ProgramBuilder {
   ast::Variable* Param(NAME&& name,
                        ast::Type* type,
                        ast::DecorationList decorations = {}) {
-    type = ty.MaybeCreateTypename(type);
-    return create<ast::Variable>(Sym(std::forward<NAME>(name)),
-                                 ast::StorageClass::kNone, type, true, nullptr,
-                                 decorations);
+    return create<ast::Variable>(
+        Sym(std::forward<NAME>(name)), ast::StorageClass::kNone,
+        ast::Access::kUndefined, type, true, nullptr, decorations);
   }
 
   /// @param source the parameter source
@@ -1279,27 +1362,29 @@ class ProgramBuilder {
                        NAME&& name,
                        ast::Type* type,
                        ast::DecorationList decorations = {}) {
-    type = ty.MaybeCreateTypename(type);
-    return create<ast::Variable>(source, Sym(std::forward<NAME>(name)),
-                                 ast::StorageClass::kNone, type, true, nullptr,
-                                 decorations);
+    return create<ast::Variable>(
+        source, Sym(std::forward<NAME>(name)), ast::StorageClass::kNone,
+        ast::Access::kUndefined, type, true, nullptr, decorations);
   }
 
   /// @param name the variable name
   /// @param type the variable type
-  /// @param storage the variable storage class
-  /// @param constructor constructor expression
-  /// @param decorations variable decorations
+  /// @param optional the optional variable settings.
+  /// Can be any of the following, in any order:
+  ///   * ast::StorageClass   - specifies the variable storage class
+  ///   * ast::Access         - specifies the variable's access control
+  ///   * ast::Expression*    - specifies the variable's initializer expression
+  ///   * ast::DecorationList - specifies the variable's decorations
+  /// Note that repeated arguments of the same type will use the last argument's
+  /// value.
   /// @returns a new `ast::Variable`, which is automatically registered as a
   /// global variable with the ast::Module.
-  template <typename NAME>
+  template <typename NAME, typename... OPTIONAL>
   ast::Variable* Global(NAME&& name,
                         const ast::Type* type,
-                        ast::StorageClass storage,
-                        ast::Expression* constructor = nullptr,
-                        ast::DecorationList decorations = {}) {
-    auto* var =
-        Var(std::forward<NAME>(name), type, storage, constructor, decorations);
+                        OPTIONAL&&... optional) {
+    auto* var = Var(std::forward<NAME>(name), type,
+                    std::forward<OPTIONAL>(optional)...);
     AST().AddGlobalVariable(var);
     return var;
   }
@@ -1307,20 +1392,23 @@ class ProgramBuilder {
   /// @param source the variable source
   /// @param name the variable name
   /// @param type the variable type
-  /// @param storage the variable storage class
-  /// @param constructor constructor expression
-  /// @param decorations variable decorations
+  /// @param optional the optional variable settings.
+  /// Can be any of the following, in any order:
+  ///   * ast::StorageClass   - specifies the variable storage class
+  ///   * ast::Access         - specifies the variable's access control
+  ///   * ast::Expression*    - specifies the variable's initializer expression
+  ///   * ast::DecorationList - specifies the variable's decorations
+  /// Note that repeated arguments of the same type will use the last argument's
+  /// value.
   /// @returns a new `ast::Variable`, which is automatically registered as a
   /// global variable with the ast::Module.
-  template <typename NAME>
+  template <typename NAME, typename... OPTIONAL>
   ast::Variable* Global(const Source& source,
                         NAME&& name,
                         ast::Type* type,
-                        ast::StorageClass storage,
-                        ast::Expression* constructor = nullptr,
-                        ast::DecorationList decorations = {}) {
-    auto* var = Var(source, std::forward<NAME>(name), type, storage,
-                    constructor, decorations);
+                        OPTIONAL&&... optional) {
+    auto* var = Var(source, std::forward<NAME>(name), type,
+                    std::forward<OPTIONAL>(optional)...);
     AST().AddGlobalVariable(var);
     return var;
   }
@@ -1397,14 +1485,35 @@ class ProgramBuilder {
                                           Expr(std::forward<EXPR>(expr)));
   }
 
+  /// @param source the source information
   /// @param func the function name
   /// @param args the function call arguments
   /// @returns a `ast::CallExpression` to the function `func`, with the
   /// arguments of `args` converted to `ast::Expression`s using `Expr()`.
   template <typename NAME, typename... ARGS>
+  ast::CallExpression* Call(const Source& source, NAME&& func, ARGS&&... args) {
+    return create<ast::CallExpression>(source, Expr(func),
+                                       ExprList(std::forward<ARGS>(args)...));
+  }
+
+  /// @param func the function name
+  /// @param args the function call arguments
+  /// @returns a `ast::CallExpression` to the function `func`, with the
+  /// arguments of `args` converted to `ast::Expression`s using `Expr()`.
+  template <typename NAME,
+            typename... ARGS,
+            traits::EnableIfIsNotType<traits::Decay<NAME>, Source>* = nullptr>
   ast::CallExpression* Call(NAME&& func, ARGS&&... args) {
     return create<ast::CallExpression>(Expr(func),
                                        ExprList(std::forward<ARGS>(args)...));
+  }
+
+  /// @param expr the expression to ignore
+  /// @returns a `ast::CallStatement` that calls the `ignore` intrinsic which is
+  /// passed the single `expr` argument
+  template <typename EXPR>
+  ast::CallStatement* Ignore(EXPR&& expr) {
+    return create<ast::CallStatement>(Call("ignore", Expr(expr)));
   }
 
   /// @param lhs the left hand argument to the addition operation
@@ -1413,6 +1522,26 @@ class ProgramBuilder {
   template <typename LHS, typename RHS>
   ast::BinaryExpression* Add(LHS&& lhs, RHS&& rhs) {
     return create<ast::BinaryExpression>(ast::BinaryOp::kAdd,
+                                         Expr(std::forward<LHS>(lhs)),
+                                         Expr(std::forward<RHS>(rhs)));
+  }
+
+  /// @param lhs the left hand argument to the and operation
+  /// @param rhs the right hand argument to the and operation
+  /// @returns a `ast::BinaryExpression` bitwise anding `lhs` and `rhs`
+  template <typename LHS, typename RHS>
+  ast::BinaryExpression* And(LHS&& lhs, RHS&& rhs) {
+    return create<ast::BinaryExpression>(ast::BinaryOp::kAnd,
+                                         Expr(std::forward<LHS>(lhs)),
+                                         Expr(std::forward<RHS>(rhs)));
+  }
+
+  /// @param lhs the left hand argument to the or operation
+  /// @param rhs the right hand argument to the or operation
+  /// @returns a `ast::BinaryExpression` bitwise or-ing `lhs` and `rhs`
+  template <typename LHS, typename RHS>
+  ast::BinaryExpression* Or(LHS&& lhs, RHS&& rhs) {
+    return create<ast::BinaryExpression>(ast::BinaryOp::kOr,
                                          Expr(std::forward<LHS>(lhs)),
                                          Expr(std::forward<RHS>(rhs)));
   }
@@ -1456,6 +1585,38 @@ class ProgramBuilder {
     return create<ast::BinaryExpression>(ast::BinaryOp::kDivide,
                                          Expr(std::forward<LHS>(lhs)),
                                          Expr(std::forward<RHS>(rhs)));
+  }
+
+  /// @param lhs the left hand argument to the bit shift right operation
+  /// @param rhs the right hand argument to the bit shift right operation
+  /// @returns a `ast::BinaryExpression` bit shifting right `lhs` by `rhs`
+  template <typename LHS, typename RHS>
+  ast::BinaryExpression* Shr(LHS&& lhs, RHS&& rhs) {
+    return create<ast::BinaryExpression>(ast::BinaryOp::kShiftRight,
+                                         Expr(std::forward<LHS>(lhs)),
+                                         Expr(std::forward<RHS>(rhs)));
+  }
+
+  /// @param lhs the left hand argument to the bit shift left operation
+  /// @param rhs the right hand argument to the bit shift left operation
+  /// @returns a `ast::BinaryExpression` bit shifting left `lhs` by `rhs`
+  template <typename LHS, typename RHS>
+  ast::BinaryExpression* Shl(LHS&& lhs, RHS&& rhs) {
+    return create<ast::BinaryExpression>(ast::BinaryOp::kShiftLeft,
+                                         Expr(std::forward<LHS>(lhs)),
+                                         Expr(std::forward<RHS>(rhs)));
+  }
+
+  /// @param source the source information
+  /// @param arr the array argument for the array accessor expression
+  /// @param idx the index argument for the array accessor expression
+  /// @returns a `ast::ArrayAccessorExpression` that indexes `arr` with `idx`
+  template <typename ARR, typename IDX>
+  ast::ArrayAccessorExpression* IndexAccessor(const Source& source,
+                                              ARR&& arr,
+                                              IDX&& idx) {
+    return create<ast::ArrayAccessorExpression>(
+        source, Expr(std::forward<ARR>(arr)), Expr(std::forward<IDX>(idx)));
   }
 
   /// @param arr the array argument for the array accessor expression
@@ -1533,7 +1694,6 @@ class ProgramBuilder {
                       ast::StatementList body,
                       ast::DecorationList decorations = {},
                       ast::DecorationList return_type_decorations = {}) {
-    type = ty.MaybeCreateTypename(type);
     auto* func =
         create<ast::Function>(source, Sym(std::forward<NAME>(name)), params,
                               type, create<ast::BlockStatement>(body),
@@ -1558,7 +1718,6 @@ class ProgramBuilder {
                       ast::StatementList body,
                       ast::DecorationList decorations = {},
                       ast::DecorationList return_type_decorations = {}) {
-    type = ty.MaybeCreateTypename(type);
     auto* func = create<ast::Function>(Sym(std::forward<NAME>(name)), params,
                                        type, create<ast::BlockStatement>(body),
                                        decorations, return_type_decorations);
@@ -1594,7 +1753,30 @@ class ProgramBuilder {
     return create<ast::ReturnStatement>(Expr(std::forward<EXPR>(val)));
   }
 
-  /// Creates a ast::Struct registering it with the AST().ConstructedTypes().
+  /// Creates a ast::Alias registering it with the AST().TypeDecls().
+  /// @param source the source information
+  /// @param name the alias name
+  /// @param type the alias target type
+  /// @returns the alias type
+  template <typename NAME>
+  ast::Alias* Alias(const Source& source, NAME&& name, ast::Type* type) {
+    auto* out = ty.alias(source, std::forward<NAME>(name), type);
+    AST().AddTypeDecl(out);
+    return out;
+  }
+
+  /// Creates a ast::Alias registering it with the AST().TypeDecls().
+  /// @param name the alias name
+  /// @param type the alias target type
+  /// @returns the alias type
+  template <typename NAME>
+  ast::Alias* Alias(NAME&& name, ast::Type* type) {
+    auto* out = ty.alias(std::forward<NAME>(name), type);
+    AST().AddTypeDecl(out);
+    return out;
+  }
+
+  /// Creates a ast::Struct registering it with the AST().TypeDecls().
   /// @param source the source information
   /// @param name the struct name
   /// @param members the struct members
@@ -1608,11 +1790,11 @@ class ProgramBuilder {
     auto sym = Sym(std::forward<NAME>(name));
     auto* type = create<ast::Struct>(source, sym, std::move(members),
                                      std::move(decorations));
-    AST().AddConstructedType(type);
+    AST().AddTypeDecl(type);
     return type;
   }
 
-  /// Creates a ast::Struct registering it with the AST().ConstructedTypes().
+  /// Creates a ast::Struct registering it with the AST().TypeDecls().
   /// @param name the struct name
   /// @param members the struct members
   /// @param decorations the optional struct decorations
@@ -1624,7 +1806,7 @@ class ProgramBuilder {
     auto sym = Sym(std::forward<NAME>(name));
     auto* type =
         create<ast::Struct>(sym, std::move(members), std::move(decorations));
-    AST().AddConstructedType(type);
+    AST().AddTypeDecl(type);
     return type;
   }
 
@@ -1639,7 +1821,6 @@ class ProgramBuilder {
                             NAME&& name,
                             ast::Type* type,
                             ast::DecorationList decorations = {}) {
-    type = ty.MaybeCreateTypename(type);
     return create<ast::StructMember>(source, Sym(std::forward<NAME>(name)),
                                      type, std::move(decorations));
   }
@@ -1653,7 +1834,6 @@ class ProgramBuilder {
   ast::StructMember* Member(NAME&& name,
                             ast::Type* type,
                             ast::DecorationList decorations = {}) {
-    type = ty.MaybeCreateTypename(type);
     return create<ast::StructMember>(source_, Sym(std::forward<NAME>(name)),
                                      type, std::move(decorations));
   }
@@ -1665,7 +1845,6 @@ class ProgramBuilder {
   /// @returns the struct member pointer
   template <typename NAME>
   ast::StructMember* Member(uint32_t offset, NAME&& name, ast::Type* type) {
-    type = ty.MaybeCreateTypename(type);
     return create<ast::StructMember>(
         source_, Sym(std::forward<NAME>(name)), type,
         ast::DecorationList{
@@ -1743,6 +1922,40 @@ class ProgramBuilder {
     return create<ast::LoopStatement>(body, continuing);
   }
 
+  /// Creates a ast::ForLoopStatement with input body and optional initializer,
+  /// condition and continuing.
+  /// @param source the source information
+  /// @param init the optional loop initializer
+  /// @param cond the optional loop condition
+  /// @param cont the optional loop continuing
+  /// @param body the loop body
+  /// @returns the for loop statement pointer
+  template <typename COND>
+  ast::ForLoopStatement* For(const Source& source,
+                             ast::Statement* init,
+                             COND&& cond,
+                             ast::Statement* cont,
+                             ast::BlockStatement* body) {
+    return create<ast::ForLoopStatement>(
+        source, init, Expr(std::forward<COND>(cond)), cont, body);
+  }
+
+  /// Creates a ast::ForLoopStatement with input body and optional initializer,
+  /// condition and continuing.
+  /// @param init the optional loop initializer
+  /// @param cond the optional loop condition
+  /// @param cont the optional loop continuing
+  /// @param body the loop body
+  /// @returns the for loop statement pointer
+  template <typename COND>
+  ast::ForLoopStatement* For(ast::Statement* init,
+                             COND&& cond,
+                             ast::Statement* cont,
+                             ast::BlockStatement* body) {
+    return create<ast::ForLoopStatement>(init, Expr(std::forward<COND>(cond)),
+                                         cont, body);
+  }
+
   /// Creates a ast::VariableDeclStatement for the input variable
   /// @param source the source information
   /// @param var the variable to wrap in a decl statement
@@ -1808,6 +2021,39 @@ class ProgramBuilder {
   /// @returns the builtin decoration pointer
   ast::BuiltinDecoration* Builtin(ast::Builtin builtin) {
     return create<ast::BuiltinDecoration>(source_, builtin);
+  }
+
+  /// Creates an ast::InterpolateDecoration
+  /// @param source the source information
+  /// @param type the interpolation type
+  /// @param sampling the interpolation sampling
+  /// @returns the interpolate decoration pointer
+  ast::InterpolateDecoration* Interpolate(const Source& source,
+                                          ast::InterpolationType type,
+                                          ast::InterpolationSampling sampling) {
+    return create<ast::InterpolateDecoration>(source, type, sampling);
+  }
+
+  /// Creates an ast::InterpolateDecoration
+  /// @param type the interpolation type
+  /// @param sampling the interpolation sampling
+  /// @returns the interpolate decoration pointer
+  ast::InterpolateDecoration* Interpolate(ast::InterpolationType type,
+                                          ast::InterpolationSampling sampling) {
+    return create<ast::InterpolateDecoration>(source_, type, sampling);
+  }
+
+  /// Creates an ast::InvariantDecoration
+  /// @param source the source information
+  /// @returns the invariant decoration pointer
+  ast::InvariantDecoration* Invariant(const Source& source) {
+    return create<ast::InvariantDecoration>(source);
+  }
+
+  /// Creates an ast::InvariantDecoration
+  /// @returns the invariant decoration pointer
+  ast::InvariantDecoration* Invariant() {
+    return create<ast::InvariantDecoration>(source_);
   }
 
   /// Creates an ast::LocationDecoration
@@ -1885,6 +2131,22 @@ class ProgramBuilder {
   }
 
   /// Creates an ast::WorkgroupDecoration
+  /// @param source the source information
+  /// @param x the x dimension expression
+  /// @param y the y dimension expression
+  /// @param z the z dimension expression
+  /// @returns the workgroup decoration pointer
+  template <typename EXPR_X, typename EXPR_Y, typename EXPR_Z>
+  ast::WorkgroupDecoration* WorkgroupSize(const Source& source,
+                                          EXPR_X&& x,
+                                          EXPR_Y&& y,
+                                          EXPR_Z&& z) {
+    return create<ast::WorkgroupDecoration>(
+        source, Expr(std::forward<EXPR_X>(x)), Expr(std::forward<EXPR_Y>(y)),
+        Expr(std::forward<EXPR_Z>(z)));
+  }
+
+  /// Creates an ast::WorkgroupDecoration
   /// @param x the x dimension expression
   /// @param y the y dimension expression
   /// @param z the z dimension expression
@@ -1910,6 +2172,40 @@ class ProgramBuilder {
     source_ = Source(loc);
   }
 
+  /// Marks that the given transform has been applied to this program.
+  /// @param transform the transform that has been applied
+  void SetTransformApplied(const CastableBase* transform) {
+    transforms_applied_.emplace(&transform->TypeInfo());
+  }
+
+  /// Marks that the given transform `T` has been applied to this program.
+  template <typename T>
+  void SetTransformApplied() {
+    transforms_applied_.emplace(&TypeInfo::Of<T>());
+  }
+
+  /// Marks that the transforms with the given TypeInfos have been applied to
+  /// this program.
+  /// @param transforms the set of transform TypeInfos that has been applied
+  void SetTransformApplied(
+      const std::unordered_set<const TypeInfo*>& transforms) {
+    for (auto* transform : transforms) {
+      transforms_applied_.emplace(transform);
+    }
+  }
+
+  /// @returns true if the transform of type `T` was applied.
+  template <typename T>
+  bool HasTransformApplied() {
+    return transforms_applied_.count(&TypeInfo::Of<T>());
+  }
+
+  /// @return the TypeInfo pointers of all transforms that have been applied to
+  /// this program.
+  std::unordered_set<const TypeInfo*> TransformsApplied() const {
+    return transforms_applied_;
+  }
+
   /// Helper for returning the resolved semantic type of the expression `expr`.
   /// @note As the Resolver is run when the Program is built, this will only be
   /// useful for the Resolver itself and tests that use their own Resolver.
@@ -1929,10 +2225,19 @@ class ProgramBuilder {
   /// Helper for returning the resolved semantic type of the AST type `type`.
   /// @note As the Resolver is run when the Program is built, this will only be
   /// useful for the Resolver itself and tests that use their own Resolver.
-  /// @param expr the AST type
+  /// @param type the AST type
   /// @return the resolved semantic type for the type, or nullptr if the type
   /// has no resolved type.
-  const sem::Type* TypeOf(const ast::Type* expr) const;
+  const sem::Type* TypeOf(const ast::Type* type) const;
+
+  /// Helper for returning the resolved semantic type of the AST type
+  /// declaration `type_decl`.
+  /// @note As the Resolver is run when the Program is built, this will only be
+  /// useful for the Resolver itself and tests that use their own Resolver.
+  /// @param type_decl the AST type declaration
+  /// @return the resolved semantic type for the type declaration, or nullptr if
+  /// the type declaration has no resolved type.
+  const sem::Type* TypeOf(const ast::TypeDecl* type_decl) const;
 
   /// Wraps the ast::Literal in a statement. This is used by tests that
   /// construct a partial AST and require the Resolver to reach these
@@ -1987,6 +2292,7 @@ class ProgramBuilder {
   sem::Info sem_;
   SymbolTable symbols_{id_};
   diag::List diagnostics_;
+  std::unordered_set<const TypeInfo*> transforms_applied_;
 
   /// The source to use when creating AST nodes without providing a Source as
   /// the first argument.

@@ -15,11 +15,11 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/prefs/testing_pref_store.h"
@@ -429,12 +429,11 @@ class MockHashStoreContents : public HashStoreContents {
 };
 
 std::string MockHashStoreContents::GetStoredMac(const std::string& path) const {
-  const base::Value* out_value;
-  if (dictionary_.GetWithoutPathExpansion(path, &out_value)) {
-    const base::Value* value_as_string;
-    EXPECT_TRUE(out_value->GetAsString(&value_as_string));
+  const base::Value* out_value = dictionary_.FindKey(path);
+  if (out_value) {
+    EXPECT_TRUE(out_value->is_string());
 
-    return value_as_string->GetString();
+    return out_value->GetString();
   }
 
   return std::string();
@@ -443,16 +442,16 @@ std::string MockHashStoreContents::GetStoredMac(const std::string& path) const {
 std::string MockHashStoreContents::GetStoredSplitMac(
     const std::string& path,
     const std::string& split_path) const {
-  const base::Value* out_value;
-  if (dictionary_.GetWithoutPathExpansion(path, &out_value)) {
+  const base::Value* out_value = dictionary_.FindKey(path);
+  if (out_value) {
     const base::DictionaryValue* value_as_dict;
     EXPECT_TRUE(out_value->GetAsDictionary(&value_as_dict));
 
-    if (value_as_dict->GetWithoutPathExpansion(split_path, &out_value)) {
-      const base::Value* value_as_string;
-      EXPECT_TRUE(out_value->GetAsString(&value_as_string));
+    out_value = dictionary_.FindKey(split_path);
+    if (out_value) {
+      EXPECT_TRUE(out_value->is_string());
 
-      return value_as_string->GetString();
+      return out_value->GetString();
     }
   }
 
@@ -1221,11 +1220,11 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
 
 TEST_P(PrefHashFilterTest, CallFilterSerializeDataCallbacks) {
   base::DictionaryValue root_dict;
-  auto dict_value = std::make_unique<base::DictionaryValue>();
-  dict_value->SetBoolean("a", true);
+  base::DictionaryValue dict_value;
+  dict_value.SetBoolean("a", true);
   root_dict.SetInteger(kAtomicPref, 1);
   root_dict.SetInteger(kAtomicPref2, 2);
-  root_dict.Set(kSplitPref, std::move(dict_value));
+  root_dict.SetKey(kSplitPref, std::move(dict_value));
 
   // Skip updating kAtomicPref2.
   pref_hash_filter_->FilterUpdate(kAtomicPref);
@@ -1295,12 +1294,12 @@ TEST_P(PrefHashFilterTest, CallFilterSerializeDataCallbacksWithFailure) {
 TEST_P(PrefHashFilterTest, ExternalValidationValueChanged) {
   pref_store_contents_->SetInteger(kAtomicPref, 1234);
 
-  auto dict_value = std::make_unique<base::DictionaryValue>();
-  dict_value->SetString("a", "foo");
-  dict_value->SetInteger("b", 1234);
-  dict_value->SetInteger("c", 56);
-  dict_value->SetBoolean("d", false);
-  pref_store_contents_->Set(kSplitPref, std::move(dict_value));
+  base::DictionaryValue dict_value;
+  dict_value.SetString("a", "foo");
+  dict_value.SetInteger("b", 1234);
+  dict_value.SetInteger("c", 56);
+  dict_value.SetBoolean("d", false);
+  pref_store_contents_->SetKey(kSplitPref, std::move(dict_value));
 
   mock_external_validation_pref_hash_store_->SetCheckResult(
       kAtomicPref, ValueState::CHANGED);

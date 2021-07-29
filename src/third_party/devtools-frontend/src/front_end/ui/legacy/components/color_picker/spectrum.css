@@ -1,3 +1,9 @@
+/*
+ * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 /* https://github.com/bgrins/spectrum */
 
 :host {
@@ -410,8 +416,7 @@
   margin: 6px;
   cursor: pointer;
   position: relative;
-  border: 1px solid rgb(0 0 0 / 10%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  border: 1px solid var(--color-details-hairline);
   background-position: -1px !important; /* stylelint-disable-line declaration-no-important */
   z-index: 14;
 }
@@ -497,6 +502,7 @@
 
 .palette-panel {
   width: 100%;
+  height: 100%;
   position: absolute;
   top: 100%;
   display: flex;
@@ -509,7 +515,7 @@
 }
 
 .palette-panel-showing > .palette-panel {
-  transform: translateY(-100%);
+  transform: translateY(min(-192px, -100% + 124px));
   transition-delay: 0s;
   visibility: visible;
 }

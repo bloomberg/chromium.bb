@@ -110,6 +110,26 @@ class ReceivedFile {
     delete this.deleteOriginalFile;
     delete this.renameOriginalFile;
   }
+
+  /**
+   * @override
+   * @param {!Array<string>} accept
+   * @return {!Promise<!mediaApp.AbstractFile>}
+   */
+  async getExportFile(accept) {
+    /** @type {!RequestSaveFileMessage} */
+    const msg = {
+      suggestedName: this.name,
+      mimeType: this.mimeType,
+      startInToken: this.token,
+      accept,
+    };
+    const response =
+        /** @type {!RequestSaveFileResponse} */ (
+            await parentMessagePipe.sendMessage(
+                Message.REQUEST_SAVE_FILE, msg));
+    return new ReceivedFile(response.pickedFileContext);
+  }
 }
 
 /**
@@ -220,11 +240,12 @@ const DELEGATE = {
   /**
    * @param {string} suggestedName
    * @param {string} mimeType
+   * @param {!Array<string>} accept
    * @return {!Promise<!mediaApp.AbstractFile>}
    */
-  async requestSaveFile(suggestedName, mimeType) {
+  async requestSaveFile(suggestedName, mimeType, accept) {
     /** @type {!RequestSaveFileMessage} */
-    const msg = {suggestedName, mimeType};
+    const msg = {suggestedName, mimeType, startInToken: 0, accept};
     const response =
         /** @type {!RequestSaveFileResponse} */ (
             await parentMessagePipe.sendMessage(

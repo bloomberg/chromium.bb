@@ -6,6 +6,7 @@
 #include "chrome/browser/ui/webui/settings/settings_clear_browsing_data_handler.h"
 
 #include "base/values.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -81,11 +82,12 @@ class ClearBrowsingDataHandlerBrowserTest
 IN_PROC_BROWSER_TEST_F(ClearBrowsingDataHandlerBrowserTest, GetInstalledApps) {
   GURL url(https_server()->GetURL("/title1.html"));
   InstallAndLaunchApp(url);
-  base::ListValue args;
-  args.AppendString(kWebUiFunctionName);
-  args.AppendInteger(1U);
+  base::Value args(base::Value::Type::LIST);
+  args.Append(kWebUiFunctionName);
+  args.Append(1);
 
-  web_ui()->HandleReceivedMessage(kGetInstalledApps, &args);
+  web_ui()->HandleReceivedMessage(kGetInstalledApps,
+                                  &base::Value::AsListValue(args));
   const content::TestWebUI::CallData& call_data = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIResponse", call_data.function_name());
   EXPECT_EQ(kWebUiFunctionName, call_data.arg1()->GetString());

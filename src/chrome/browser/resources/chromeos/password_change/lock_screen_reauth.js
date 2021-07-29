@@ -7,7 +7,6 @@
  * the lock screen.
  */
 
-
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -126,6 +125,29 @@ Polymer({
     this.isConfirmPassword_ = false;
     this.isManualInput_ = false;
     this.isPasswordChanged_ = false;
+  },
+
+  /**
+   * Set the orientation which will be used in styling webui.
+   * @param {!Object} is_horizontal whether the orientation is horizontal or
+   *  vertical.
+   */
+  setOrientation(is_horizontal) {
+    document.documentElement.setAttribute('new-layout', '');
+    if (is_horizontal) {
+      document.documentElement.setAttribute('orientation', 'horizontal');
+    } else {
+      document.documentElement.setAttribute('orientation', 'vertical');
+    }
+  },
+
+  /**
+   * Set the width which will be used in styling webui.
+   * @param {!Object} width the width of the dialog.
+   */
+  setWidth(width) {
+    document.documentElement.style.setProperty(
+      '--lock-screen-reauth-dialog-width', width + 'px');
   },
 
   /**

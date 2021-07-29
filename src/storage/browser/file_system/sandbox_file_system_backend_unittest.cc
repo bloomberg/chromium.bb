@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -23,9 +23,11 @@
 #include "storage/browser/file_system/file_system_features.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/file_system/sandbox_file_system_backend_delegate.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/test_file_system_options.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -92,9 +94,9 @@ class SandboxFileSystemBackendTest
   void SetUpNewDelegate(const FileSystemOptions& options) {
     incognito_env_override_ = leveldb_chrome::NewMemEnv("FileSystem");
     delegate_ = std::make_unique<SandboxFileSystemBackendDelegate>(
-        nullptr /* quota_manager_proxy */,
-        base::ThreadTaskRunnerHandle::Get().get(), data_dir_.GetPath(),
-        nullptr /* special_storage_policy */, options,
+        /*quota_manager_proxy=*/nullptr, base::ThreadTaskRunnerHandle::Get(),
+        data_dir_.GetPath(),
+        /*special_storage_policy=*/nullptr, options,
         options.is_in_memory() ? incognito_env_override_.get() : nullptr);
   }
 
@@ -121,8 +123,9 @@ class SandboxFileSystemBackendTest
                    base::FilePath* root_path) {
     base::File::Error error = base::File::FILE_OK;
     backend_->ResolveURL(
-        FileSystemURL::CreateForTest(url::Origin::Create(GURL(origin_url)),
-                                     type, base::FilePath()),
+        FileSystemURL::CreateForTest(
+            blink::StorageKey::CreateFromStringForTesting(origin_url), type,
+            base::FilePath()),
         mode, base::BindOnce(&DidOpenFileSystem, &error));
     base::RunLoop().RunUntilIdle();
     if (error != base::File::FILE_OK)

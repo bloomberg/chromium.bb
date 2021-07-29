@@ -147,7 +147,7 @@ void ChromeOmniboxNavigationObserver::Observe(
   // listening.
   content::NavigationController* controller =
       content::Source<content::NavigationController>(source).ptr();
-  content::WebContents* web_contents = controller->GetWebContents();
+  content::WebContents* web_contents = controller->DeprecatedGetWebContents();
   if (!infobars::ContentInfoBarManager::FromWebContents(web_contents))
     return;
 
@@ -198,8 +198,11 @@ void ChromeOmniboxNavigationObserver::Observe(
 
 void ChromeOmniboxNavigationObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
   if ((load_state_ != LOAD_COMMITTED) && navigation_handle->IsErrorPage() &&
-      navigation_handle->IsInMainFrame() &&
+      navigation_handle->IsInPrimaryMainFrame() &&
       !navigation_handle->IsSameDocument())
     delete this;
 }
@@ -311,8 +314,7 @@ void ChromeOmniboxNavigationObserver::CreateLoader(
           destination: WEBSITE
         }
         policy {
-          cookies_allowed: YES
-          cookies_store: "user"
+          cookies_allowed: NO
           setting: "This feature cannot be disabled in settings."
           policy_exception_justification:
             "By disabling DefaultSearchProviderEnabled, one can disable "
@@ -323,7 +325,12 @@ void ChromeOmniboxNavigationObserver::CreateLoader(
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = destination_url;
   request->method = "HEAD";
-  request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
+  // Perform a credential-less fetch. This prevents bearer tokens, like cookies
+  // or password hashes from HTTP auth from being leaked to attackers, and
+  // reduces the chance of sending TLS client certs in the clear.
+  // See https://crbug.com/693991 for discussion.
+  request->credentials_mode =
+      network::mojom::CredentialsMode::kOmitBug_775438_Workaround;
   loader_ =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
   loader_->SetAllowHttpErrorResults(true);

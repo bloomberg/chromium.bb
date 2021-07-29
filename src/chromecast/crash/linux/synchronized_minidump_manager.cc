@@ -85,8 +85,8 @@ bool SetRatelimitPeriodStart(base::Value* metadata, base::Time period_start) {
   base::DictionaryValue* ratelimit_params = GetRatelimitParams(metadata);
   RCHECK(ratelimit_params, false);
 
-  ratelimit_params->SetDouble(kLockfileRatelimitPeriodStartKey,
-                              period_start.ToDoubleT());
+  ratelimit_params->SetDoubleKey(kLockfileRatelimitPeriodStartKey,
+                                 period_start.ToDoubleT());
   return true;
 }
 
@@ -126,7 +126,7 @@ bool ValidateMetadata(base::Value* metadata) {
   base::DictionaryValue* ratelimit_params = GetRatelimitParams(metadata);
 
   return ratelimit_params &&
-         ratelimit_params->size() == kLockfileNumRatelimitParams &&
+         ratelimit_params->DictSize() == kLockfileNumRatelimitParams &&
          !GetRatelimitPeriodStart(metadata).is_null() &&
          GetRatelimitPeriodDumps(metadata) >= 0;
 }
@@ -334,7 +334,7 @@ bool SynchronizedMinidumpManager::InitializeFiles() {
       std::make_unique<base::DictionaryValue>();
 
   auto ratelimit_fields = std::make_unique<base::DictionaryValue>();
-  ratelimit_fields->SetDouble(kLockfileRatelimitPeriodStartKey, 0.0);
+  ratelimit_fields->SetDoubleKey(kLockfileRatelimitPeriodStartKey, 0.0);
   ratelimit_fields->SetInteger(kLockfileRatelimitPeriodDumpsKey, 0);
   metadata->Set(kLockfileRatelimitKey, std::move(ratelimit_fields));
 
@@ -359,7 +359,10 @@ bool SynchronizedMinidumpManager::AddEntryToLockFile(
 }
 
 bool SynchronizedMinidumpManager::RemoveEntryFromLockFile(int index) {
-  return dumps_->Remove(static_cast<uint64_t>(index), nullptr);
+  base::Value::ListView dumps_view = dumps_->GetList();
+  if (index < 0 || static_cast<size_t>(index) >= dumps_view.size())
+    return false;
+  return dumps_->EraseListIter(dumps_view.begin() + index);
 }
 
 void SynchronizedMinidumpManager::ReleaseLockFile() {
@@ -389,7 +392,7 @@ std::vector<std::unique_ptr<DumpInfo>> SynchronizedMinidumpManager::GetDumps() {
 
 bool SynchronizedMinidumpManager::SetCurrentDumps(
     const std::vector<std::unique_ptr<DumpInfo>>& dumps) {
-  dumps_->Clear();
+  dumps_->ClearList();
 
   for (auto& dump : dumps)
     dumps_->Append(dump->GetAsValue());

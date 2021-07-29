@@ -326,19 +326,20 @@ namespace dawn_native { namespace d3d12 {
 
     ResultOrError<Ref<RenderPipeline>> RenderPipeline::Create(
         Device* device,
-        const RenderPipelineDescriptor2* descriptor) {
+        const RenderPipelineDescriptor* descriptor) {
         Ref<RenderPipeline> pipeline = AcquireRef(new RenderPipeline(device, descriptor));
         DAWN_TRY(pipeline->Initialize(descriptor));
         return pipeline;
     }
 
-    MaybeError RenderPipeline::Initialize(const RenderPipelineDescriptor2* descriptor) {
+    MaybeError RenderPipeline::Initialize(const RenderPipelineDescriptor* descriptor) {
         Device* device = ToBackend(GetDevice());
         uint32_t compileFlags = 0;
-#if defined(_DEBUG)
-        // Enable better shader debugging with the graphics debugging tools.
-        compileFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
+
+        if (device->IsToggleEnabled(Toggle::EmitHLSLDebugSymbols)) {
+            compileFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+        }
+
         // SPRIV-cross does matrix multiplication expecting row major matrices
         compileFlags |= D3DCOMPILE_PACK_MATRIX_ROW_MAJOR;
 

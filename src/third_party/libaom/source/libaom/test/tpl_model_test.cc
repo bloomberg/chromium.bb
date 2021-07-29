@@ -14,6 +14,7 @@
 
 #include "av1/encoder/cost.h"
 #include "av1/encoder/tpl_model.h"
+#include "av1/encoder/encoder.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 namespace {
@@ -31,6 +32,12 @@ double laplace_prob(double q_step, double b, double zero_bin_ratio,
     double p = z0 / 2 * (1 - z) * pow(z, abs_qcoeff - 1);
     return p;
   }
+}
+TEST(TplModelTest, ExponentialEntropyBoundaryTest1) {
+  double b = 0;
+  double q_step = 1;
+  double entropy = av1_exponential_entropy(q_step, b);
+  EXPECT_NEAR(entropy, 0, 0.00001);
 }
 
 TEST(TplModelTest, TransformCoeffEntropyTest1) {
@@ -138,6 +145,88 @@ TEST(TplModelTest, GetOverlapAreaNoOverlap) {
   int overlap_area =
       av1_get_overlap_area(row_a, col_a, row_b, col_b, width, height);
   EXPECT_EQ(overlap_area, 0);
+}
+
+TEST(TPLModelTest, EstimateFrameRateTest) {
+  /*
+   * Transform size: 16x16
+   * Frame count: 16
+   * Transform block count: 20
+   */
+  const int txfm_size = 256;  // 16x16
+  const int frame_count = 16;
+  unsigned char q_index_list[16];
+  TplTxfmStats stats_list[16];
+
+  for (int i = 0; i < frame_count; i++) {
+    q_index_list[i] = 1;
+    stats_list[i].txfm_block_count = 8;
+
+    for (int j = 0; j < txfm_size; j++) {
+      stats_list[i].abs_coeff_sum[j] = 0;
+    }
+  }
+
+  double result =
+      av1_estimate_gop_bitrate(q_index_list, frame_count, stats_list);
+  EXPECT_NEAR(result, 0, 0.1);
+}
+
+TEST(TPLModelTest, TxfmStatsInitTest) {
+  TplTxfmStats tpl_txfm_stats;
+  av1_init_tpl_txfm_stats(&tpl_txfm_stats);
+  EXPECT_EQ(tpl_txfm_stats.coeff_num, 256);
+  EXPECT_EQ(tpl_txfm_stats.txfm_block_count, 0);
+  for (int i = 0; i < tpl_txfm_stats.coeff_num; ++i) {
+    EXPECT_DOUBLE_EQ(tpl_txfm_stats.abs_coeff_sum[i], 0);
+  }
+}
+
+TEST(TPLModelTest, TxfmStatsAccumulateTest) {
+  TplTxfmStats sub_stats;
+  av1_init_tpl_txfm_stats(&sub_stats);
+  sub_stats.txfm_block_count = 17;
+  for (int i = 0; i < sub_stats.coeff_num; ++i) {
+    sub_stats.abs_coeff_sum[i] = i;
+  }
+
+  TplTxfmStats accumulated_stats;
+  av1_init_tpl_txfm_stats(&accumulated_stats);
+  accumulated_stats.txfm_block_count = 13;
+  for (int i = 0; i < accumulated_stats.coeff_num; ++i) {
+    accumulated_stats.abs_coeff_sum[i] = 5 * i;
+  }
+
+  av1_accumulate_tpl_txfm_stats(&sub_stats, &accumulated_stats);
+  EXPECT_DOUBLE_EQ(accumulated_stats.txfm_block_count, 30);
+  for (int i = 0; i < accumulated_stats.coeff_num; ++i) {
+    EXPECT_DOUBLE_EQ(accumulated_stats.abs_coeff_sum[i], 6 * i);
+  }
+}
+
+TEST(TPLModelTest, TxfmStatsRecordTest) {
+  TplTxfmStats stats1;
+  TplTxfmStats stats2;
+  av1_init_tpl_txfm_stats(&stats1);
+  av1_init_tpl_txfm_stats(&stats2);
+
+  tran_low_t coeff[256];
+  for (int i = 0; i < 256; ++i) {
+    coeff[i] = i;
+  }
+  av1_record_tpl_txfm_block(&stats1, coeff);
+  EXPECT_EQ(stats1.txfm_block_count, 1);
+
+  // we record the same transform block twice for testing purpose
+  av1_record_tpl_txfm_block(&stats2, coeff);
+  av1_record_tpl_txfm_block(&stats2, coeff);
+  EXPECT_EQ(stats2.txfm_block_count, 2);
+
+  EXPECT_EQ(stats1.coeff_num, 256);
+  EXPECT_EQ(stats2.coeff_num, 256);
+  for (int i = 0; i < 256; ++i) {
+    EXPECT_DOUBLE_EQ(stats2.abs_coeff_sum[i], 2 * stats1.abs_coeff_sum[i]);
+  }
 }
 
 }  // namespace

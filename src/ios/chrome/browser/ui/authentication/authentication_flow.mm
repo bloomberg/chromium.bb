@@ -11,12 +11,13 @@
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #include "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow_performer.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
-#include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -47,7 +48,7 @@ enum AuthenticationState {
 
 NSError* IdentityMissingError() {
   ios::SigninErrorProvider* provider =
-      ios::GetChromeBrowserProvider()->GetSigninErrorProvider();
+      ios::GetChromeBrowserProvider().GetSigninErrorProvider();
   return [NSError
       errorWithDomain:provider->GetSigninErrorDomain()
                  code:provider->GetCode(ios::SigninError::MISSING_IDENTITY)
@@ -333,9 +334,10 @@ NSError* IdentityMissingError() {
 }
 
 - (void)checkSigninSteps {
-  _browserStateIdentity = AuthenticationServiceFactory::GetForBrowserState(
-                              _browser->GetBrowserState())
-                              ->GetAuthenticatedIdentity();
+  _browserStateIdentity =
+      AuthenticationServiceFactory::GetForBrowserState(
+          _browser->GetBrowserState())
+          ->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   if (_browserStateIdentity)
     _shouldSignOut = YES;
 
@@ -344,12 +346,14 @@ NSError* IdentityMissingError() {
 }
 
 - (void)signInIdentity:(ChromeIdentity*)identity {
-  if (ios::GetChromeBrowserProvider()
-          ->GetChromeIdentityService()
-          ->IsValidIdentity(identity)) {
+  ChromeBrowserState* browserState = _browser->GetBrowserState();
+  ChromeAccountManagerService* accountManagerService =
+      ChromeAccountManagerServiceFactory::GetForBrowserState(browserState);
+
+  if (accountManagerService->IsValidIdentity(identity)) {
     [_performer signInIdentity:identity
               withHostedDomain:_identityToSignInHostedDomain
-                toBrowserState:_browser->GetBrowserState()];
+                toBrowserState:browserState];
     _didSignIn = YES;
     [self continueSignin];
   } else {

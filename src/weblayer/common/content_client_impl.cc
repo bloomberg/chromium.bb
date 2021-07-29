@@ -14,7 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
-#include "components/embedder_support/android/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #endif
 
 namespace weblayer {
@@ -35,7 +35,7 @@ std::u16string ContentClientImpl::GetLocalizedString(
 
 base::StringPiece ContentClientImpl::GetDataResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) {
+    ui::ResourceScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
@@ -68,8 +68,8 @@ blink::OriginTrialPolicy* ContentClientImpl::GetOriginTrialPolicy() {
 
 void ContentClientImpl::AddAdditionalSchemes(Schemes* schemes) {
 #if defined(OS_ANDROID)
-  schemes->standard_schemes.push_back(embedder_support::kAndroidAppScheme);
-  schemes->referrer_schemes.push_back(embedder_support::kAndroidAppScheme);
+  schemes->standard_schemes.push_back(content::kAndroidAppScheme);
+  schemes->referrer_schemes.push_back(content::kAndroidAppScheme);
 #endif
 }
 

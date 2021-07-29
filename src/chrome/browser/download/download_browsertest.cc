@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -26,7 +27,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -99,10 +99,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/reputation/core/safety_tip_test_utils.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/content/browser/safe_browsing_service_interface.h"
+#include "components/safe_browsing/content/common/proto/download_file_types.pb.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
-#include "components/safe_browsing/core/proto/download_file_types.pb.h"
-#include "components/safe_browsing/core/safe_browsing_service_interface.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/services/quarantine/test_support.h"
@@ -611,7 +611,6 @@ class DownloadTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     // Slower builders (linux-chromeos-rel, debug, and maybe others) are flaky
     // due to slower loading interacting with deferred commits.
     command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
@@ -2811,12 +2810,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTestSplitCacheEnabled,
   // Simulate saving the PDF from the UI.
   pdf::PDFWebContentsHelper* pdf_helper =
       pdf::PDFWebContentsHelper::FromWebContents(inner_web_contents);
-  blink::mojom::ReferrerPtr referrer = blink::mojom::Referrer::New();
-  referrer->url = subframe_url;
-  referrer->policy =
-      network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin;
   static_cast<pdf::mojom::PdfService*>(pdf_helper)
-      ->SaveUrlAs(subframe_url, std::move(referrer));
+      ->SaveUrlAs(subframe_url,
+                  network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin);
 
   request_waiter.Run();
 
@@ -3315,56 +3311,64 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadErrorsFile) {
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
         download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
-           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
+           0,
            download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }},
       {// Direct download with injected "Disk full" error in Initialize().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
         download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
-           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
+           0,
            download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }},
       {// Navigated download with injected "Disk full" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
         download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
-           content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_WRITE,
+           0,
            download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }},
       {// Direct download with injected "Disk full" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
         download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
-           content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_WRITE,
+           0,
            download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }},
       {// Navigated download with injected "Failed" error in Initialize().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
         download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
-           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
+           0,
            download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Direct download with injected "Failed" error in Initialize().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
         download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
-           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
+           0,
            download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Navigated download with injected "Failed" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
         download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
-           content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_WRITE,
+           0,
            download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Direct download with injected "Failed" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
         download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
-           content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_WRITE,
+           0,
            download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Navigated download with injected "Name too long" error in
@@ -3372,35 +3376,40 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadErrorsFile) {
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
         download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG, true, false},
        {
-           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
+           0,
            download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
        }},
       {// Direct download with injected "Name too long" error in Initialize().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
         download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG, true, false},
        {
-           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
+           0,
            download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG,
        }},
       {// Navigated download with injected "Name too long" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
         download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
-           content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_WRITE,
+           0,
            download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Direct download with injected "Name too long" error in Write().
        {"a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_DIRECT,
         download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, true, false},
        {
-           content::TestFileErrorInjector::FILE_OPERATION_WRITE, 0,
+           content::TestFileErrorInjector::FILE_OPERATION_WRITE,
+           0,
            download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
        }},
       {// Direct download with injected "Disk full" error in 2nd Write().
-       {"06bESSE21Evolution.ppt", "06bESSE21Evolution.ppt", DOWNLOAD_DIRECT,
+       {"large_image.png", "large_image.png", DOWNLOAD_DIRECT,
         download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE, true, false},
        {
-           content::TestFileErrorInjector::FILE_OPERATION_WRITE, 1,
+           content::TestFileErrorInjector::FILE_OPERATION_WRITE,
+           1,
            download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
        }}};
 
@@ -5129,7 +5138,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithFakeSafeBrowsing,
   ASSERT_EQ(1u, downloads.size());
   DownloadItem* download = downloads[0];
   DownloadItemModel model(download);
-  DownloadCommands(&model).ExecuteCommand(DownloadCommands::KEEP);
+  DownloadCommands(model.GetWeakPtr()).ExecuteCommand(DownloadCommands::KEEP);
 
   safe_browsing::ClientSafeBrowsingReportRequest actual_report;
   actual_report.ParseFromString(
@@ -5167,7 +5176,8 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_EQ(1u, downloads.size());
   DownloadItem* download = downloads[0];
   DownloadItemModel model(download);
-  DownloadCommands(&model).ExecuteCommand(DownloadCommands::DISCARD);
+  DownloadCommands(model.GetWeakPtr())
+      .ExecuteCommand(DownloadCommands::DISCARD);
 
   EXPECT_TRUE(test_safe_browsing_factory_->fake_safe_browsing_service()
                   ->serilized_download_report()

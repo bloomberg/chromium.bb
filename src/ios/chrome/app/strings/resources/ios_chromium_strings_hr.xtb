@@ -6,10 +6,12 @@
 <translation id="1257458525759135959">Da bi se slike spremale, dodirnite Postavke kako biste dopustili Chromiumu da dodaje vašim fotografijama</translation>
 <translation id="1289216811211435351">Prelazak na Chromium</translation>
 <translation id="1361748954329991663">Chromium je zastario. Ako u <ph name="BEGIN_LINK" />trgovini aplikacija<ph name="END_LINK" /> nema dostupnih ažuriranja, postoji mogućnost da vaš uređaj više ne podržava nove verzije Chromiuma.</translation>
+<translation id="1370204544543370355">Da biste iskoristili sve prednosti koje vam pruža Chromium, prijavite se u Chromium Google računom</translation>
 <translation id="1431818719585918472">Dopustite Chromiumu da zaključa vaše anonimne kartice.</translation>
 <translation id="1472013873724362412">Vaš račun ne funkcionira na Chromiumu. Obratite se administratoru domene ili se prijavite običnim Google računom.</translation>
 <translation id="1507010443238049608">Pomozite poboljšati Chromiumove značajke i izvedbu</translation>
 <translation id="1531155317299575425">Prikazuje obavijesti za prijavu u Chromium.</translation>
+<translation id="1584569488888892906">Chromium je jednostavniji, sigurniji i brži nego ikad</translation>
 <translation id="1617663976202781617">Podaci sinkronizacije Chromiuma</translation>
 <translation id="1736662517232558588">Podaci Chromiuma izbrisani su</translation>
 <translation id="1838412507805038478">Chromium je potvrdio da je <ph name="ISSUER" /> izdao certifikat web-lokacije.</translation>
@@ -17,7 +19,6 @@
 <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="2006345422933397527">Chromium nije uspio provjeriti ima li ažuriranja. Provjerite internetsku vezu.</translation>
 <translation id="2054703085270098503">Ostanite sigurni uz Chromium</translation>
-<translation id="2075400798887076382">Karticama koje ste otvorili na računalu možete pristupiti i ovdje. Samo otvorite Chromium na računalu, otvorite izbornik i odaberite "Prijava na Chromium…"</translation>
 <translation id="2168108852149185974">Neki programski dodaci uzrokuju rušenje Chromiuma. Deinstalirajte:</translation>
 <translation id="2178608107313874732">Chromium trenutačno ne može upotrebljavati vaš fotoaparat</translation>
 <translation id="2195025571279539885">Želite li da Chromium sljedeći put ponudi prijevod stranica s te web-lokacije za <ph name="LANGUAGE_NAME" />?</translation>
@@ -42,10 +43,8 @@
 <translation id="4585809515399340748">Sad možete koristiti Chromium svaki put kad dodirnete veze u porukama, dokumentima i drugim aplikacijama.</translation>
 <translation id="4681781466797808448">Uključite Chromiumov skener</translation>
 <translation id="4736424910885271643">Vašim računom upravlja <ph name="HOSTED_DOMAIN" />, pa će se vaši podaci iz Chromiuma izbrisati s ovog uređaja</translation>
-<translation id="4787850887676698916">Ovdje će se prikazati kartice koje ste otvorili u Chromiumu na svojim ostalim uređajima.</translation>
 <translation id="4806326830773390517">Pomozite poboljšati Chromium slanjem statistike upotrebe i izvješća o padu programa Googleu</translation>
 <translation id="4828317641996116749">Chromium nije uspio provjeriti sve zaporke. Pokušajte ponovo kasnije.</translation>
-<translation id="4852878756222711218">Da biste iskoristili sve prednosti koje vam pruža Chromium, prijavite se Google računom</translation>
 <translation id="4985291216379576555">Chromium ne može provjeriti ima li ažuriranja jer ste offline</translation>
 <translation id="4999538639245140991">Budući da se odjavljujete s računa kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />, vaši podaci iz Chromiuma izbrisat će se s ovog uređaja, no ostat će na vašem Google računu.</translation>
 <translation id="5171868502429358653">Prijava na Chromium</translation>
@@ -55,6 +54,7 @@
 <translation id="5521125884468363740">Da biste vidjeli svoje kartice bez obzira na to gdje koristite Chromium, prijavite se i uključite sinkronizaciju</translation>
 <translation id="5573014823074921752">Savjet za Chromium. Za više opcija za kartice dodirnite i držite gumb Prikaži kartice na alatnoj traci pri dnu ili vrhu zaslona.</translation>
 <translation id="5700709190537129682">Chromium ne može provjeriti vaše zaporke</translation>
+<translation id="5715349567881822785">Budite produktivniji uz Chromium</translation>
 <translation id="5742135483959137648">Otvaranje veza pomoću Chromiuma</translation>
 <translation id="5777187867430702742">Chromiumova stranica</translation>
 <translation id="5862307444128926510">Dobro došli u Chromium</translation>
@@ -69,6 +69,7 @@
 <translation id="632825460376924298">Dopusti prijavu u Chromium</translation>
 <translation id="6337530241089703714">Odaberite želite li podatke iz Chromiuma izbrisati s ovog uređaja ili ih zadržati</translation>
 <translation id="6424492062988593837">Chromium je postao još bolji! Dostupna je nova verzija.</translation>
+<translation id="6752854822223394465">Vaša organizacija postavlja Chromium...</translation>
 <translation id="6820823224820483452">Chromium nije uspio provjeriti sve zaporke. Pokušajte ponovo sutra.</translation>
 <translation id="6827294685447036764">Ako dopustite Chromiumu da sazna vašu lokaciju, Chromium će je poslati svim web-lokacijama koje dopustite. Web-lokacije mogu tražiti dopuštenje za vašu lokaciju kad vam žele prikazati lokalne informacije, primjerice trgovine u blizini ili vijesti.</translation>
 <translation id="7018284295775193585">Chromium se ne može ažurirati</translation>

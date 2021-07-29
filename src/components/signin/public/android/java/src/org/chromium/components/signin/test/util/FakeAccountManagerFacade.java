@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import com.google.common.base.Optional;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.signin.AccessTokenData;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -70,29 +71,14 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     }
 
     @Override
-    public boolean isCachePopulated() {
-        return true;
-    }
-
-    @Override
-    public Optional<List<Account>> getGoogleAccounts() {
+    public Promise<List<Account>> getAccounts() {
         List<Account> accounts = new ArrayList<>();
         synchronized (mLock) {
             for (AccountHolder accountHolder : mAccountHolders) {
                 accounts.add(accountHolder.getAccount());
             }
         }
-        return Optional.of(accounts);
-    }
-
-    @Override
-    public List<Account> tryGetGoogleAccounts() {
-        return getGoogleAccounts().get();
-    }
-
-    @Override
-    public void tryGetGoogleAccounts(Callback<List<Account>> callback) {
-        callback.onResult(tryGetGoogleAccounts());
+        return Promise.fulfilled(accounts);
     }
 
     @Override
@@ -126,7 +112,8 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     public void checkChildAccountStatus(Account account, ChildAccountStatusListener listener) {}
 
     @Override
-    public Optional<Boolean> isAccountSubjectToMinorModeRestrictions(Account account) {
+    public Optional<Boolean> canOfferExtendedSyncPromos(Account account) {
+        assert account != null;
         return Optional.absent();
     }
 
@@ -139,12 +126,7 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
 
     @Override
     public String getAccountGaiaId(String accountEmail) {
-        return "gaia-id-" + accountEmail.replace("@", "_at_");
-    }
-
-    @Override
-    public boolean isGooglePlayServicesAvailable() {
-        return true;
+        return toGaiaId(accountEmail);
     }
 
     /**
@@ -179,6 +161,13 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     public void addProfileData(ProfileDataSource.ProfileData profileData) {
         assert mFakeProfileDataSource != null : "ProfileDataSource was disabled!";
         mFakeProfileDataSource.addProfileData(profileData);
+    }
+
+    /**
+     * Converts an email to a fake gaia Id.
+     */
+    public static String toGaiaId(String email) {
+        return "gaia-id-" + email.replace("@", "_at_");
     }
 
     @GuardedBy("mLock")

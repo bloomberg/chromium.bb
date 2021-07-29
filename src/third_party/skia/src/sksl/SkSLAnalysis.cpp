@@ -17,11 +17,9 @@
 #include "src/sksl/ir/SkSLProgram.h"
 
 // ProgramElements
-#include "src/sksl/ir/SkSLEnum.h"
 #include "src/sksl/ir/SkSLExtension.h"
 #include "src/sksl/ir/SkSLFunctionDefinition.h"
 #include "src/sksl/ir/SkSLInterfaceBlock.h"
-#include "src/sksl/ir/SkSLSection.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
 
 // Statements
@@ -66,7 +64,7 @@ namespace {
 
 static bool is_sample_call_to_fp(const FunctionCall& fc, const Variable& fp) {
     const FunctionDeclaration& f = fc.function();
-    return f.isBuiltin() && f.name() == "sample" && fc.arguments().size() >= 1 &&
+    return f.intrinsicKind() == k_sample_IntrinsicKind && fc.arguments().size() >= 1 &&
            fc.arguments()[0]->is<VariableReference>() &&
            fc.arguments()[0]->as<VariableReference>().variable() == &fp;
 }
@@ -83,11 +81,14 @@ public:
         return fUsage;
     }
 
+    int elidedSampleCoordCount() const { return fElidedSampleCoordCount; }
+
 protected:
     const Context& fContext;
     const Variable& fFP;
     const bool fWritesToSampleCoords;
     SampleUsage fUsage;
+    int fElidedSampleCoordCount = 0;
 
     bool visitExpression(const Expression& e) override {
         // Looking for sample(fp, ...)
@@ -107,6 +108,7 @@ protected:
                                             ->modifiers()
                                             .fLayout.fBuiltin == SK_MAIN_COORDS_BUILTIN) {
                             fUsage.merge(SampleUsage::PassThrough());
+                            ++fElidedSampleCoordCount;
                         } else {
                             fUsage.merge(SampleUsage::Explicit());
                         }
@@ -143,6 +145,30 @@ public:
     }
 
     int fBuiltin;
+
+    using INHERITED = ProgramVisitor;
+};
+
+// Visitor that searches for calls to sample() from a function other than main()
+class SampleOutsideMainVisitor : public ProgramVisitor {
+public:
+    SampleOutsideMainVisitor() {}
+
+    bool visitExpression(const Expression& e) override {
+        if (e.is<FunctionCall>()) {
+            const FunctionDeclaration& f = e.as<FunctionCall>().function();
+            if (f.intrinsicKind() == k_sample_IntrinsicKind) {
+                return true;
+            }
+        }
+        return INHERITED::visitExpression(e);
+    }
+
+    bool visitProgramElement(const ProgramElement& p) override {
+        return p.is<FunctionDefinition>() &&
+               !p.as<FunctionDefinition>().declaration().isMain() &&
+               INHERITED::visitProgramElement(p);
+    }
 
     using INHERITED = ProgramVisitor;
 };
@@ -565,9 +591,14 @@ public:
 
 SampleUsage Analysis::GetSampleUsage(const Program& program,
                                      const Variable& fp,
-                                     bool writesToSampleCoords) {
+                                     bool writesToSampleCoords,
+                                     int* elidedSampleCoordCount) {
     MergeSampleUsageVisitor visitor(*program.fContext, fp, writesToSampleCoords);
-    return visitor.visit(program);
+    SampleUsage result = visitor.visit(program);
+    if (elidedSampleCoordCount) {
+        *elidedSampleCoordCount += visitor.elidedSampleCoordCount();
+    }
+    return result;
 }
 
 bool Analysis::ReferencesBuiltin(const Program& program, int builtin) {
@@ -581,6 +612,11 @@ bool Analysis::ReferencesSampleCoords(const Program& program) {
 
 bool Analysis::ReferencesFragCoords(const Program& program) {
     return Analysis::ReferencesBuiltin(program, SK_FRAGCOORD_BUILTIN);
+}
+
+bool Analysis::CallsSampleOutsideMain(const Program& program) {
+    SampleOutsideMainVisitor visitor;
+    return visitor.visit(program);
 }
 
 int Analysis::NodeCountUpToLimit(const FunctionDefinition& function, int limit) {
@@ -1051,6 +1087,9 @@ public:
             case Expression::Kind::kFunctionCall:
                 return true;
 
+            case Expression::Kind::kPoison:
+                return true;
+
             // These should never appear in final IR
             case Expression::Kind::kExternalFunctionReference:
             case Expression::Kind::kFunctionReference:
@@ -1144,6 +1183,7 @@ template <typename T> bool TProgramVisitor<T>::visitExpression(typename T::Expre
         case Expression::Kind::kFloatLiteral:
         case Expression::Kind::kFunctionReference:
         case Expression::Kind::kIntLiteral:
+        case Expression::Kind::kPoison:
         case Expression::Kind::kSetting:
         case Expression::Kind::kTypeReference:
         case Expression::Kind::kVariableReference:
@@ -1284,12 +1324,10 @@ template <typename T> bool TProgramVisitor<T>::visitStatement(typename T::Statem
 
 template <typename T> bool TProgramVisitor<T>::visitProgramElement(typename T::ProgramElement& pe) {
     switch (pe.kind()) {
-        case ProgramElement::Kind::kEnum:
         case ProgramElement::Kind::kExtension:
         case ProgramElement::Kind::kFunctionPrototype:
         case ProgramElement::Kind::kInterfaceBlock:
         case ProgramElement::Kind::kModifiers:
-        case ProgramElement::Kind::kSection:
         case ProgramElement::Kind::kStructDefinition:
             // Leaf program elements just return false by default
             return false;

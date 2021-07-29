@@ -18,7 +18,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time_override.h"
 #include "base/trace_event/category_registry.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -35,9 +37,6 @@ class TraceProcessorStorage;
 
 namespace base {
 class RefCountedString;
-
-template <typename T>
-class NoDestructor;
 
 namespace tracing {
 class PerfettoPlatform;
@@ -346,7 +345,10 @@ class BASE_EXPORT TraceLog :
                         TraceEventHandle handle);
 
   int process_id() const { return process_id_; }
-  const std::string& process_name() const { return process_name_; }
+  std::string process_name() const {
+    AutoLock lock(lock_);
+    return process_name_;
+  }
 
   uint64_t MangleEventId(uint64_t id);
 
@@ -378,7 +380,10 @@ class BASE_EXPORT TraceLog :
     process_name_ = process_name;
   }
 
-  bool IsProcessNameEmpty() const { return process_name_.empty(); }
+  bool IsProcessNameEmpty() const {
+    AutoLock lock(lock_);
+    return process_name_.empty();
+  }
 
   // Processes can have labels in addition to their names. Use labels, for
   // instance, to list out the web page titles that a process is handling.
@@ -459,7 +464,7 @@ class BASE_EXPORT TraceLog :
   class OptionalAutoLock;
   struct RegisteredAsyncObserver;
 
-  TraceLog();
+  explicit TraceLog(int generation);
   ~TraceLog() override;
   void AddMetadataEventsWhileLocked() EXCLUSIVE_LOCKS_REQUIRED(lock_);
   template <typename T>
@@ -610,9 +615,11 @@ class BASE_EXPORT TraceLog :
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   std::unique_ptr<::base::tracing::PerfettoPlatform> perfetto_platform_;
   std::unique_ptr<perfetto::TracingSession> tracing_session_;
+#if !defined(OS_NACL)
   std::unique_ptr<perfetto::trace_processor::TraceProcessorStorage>
       trace_processor_;
   std::unique_ptr<JsonStringOutputWriter> json_output_writer_;
+#endif  // !defined(OS_NACL)
 #endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
   FilterFactoryForTesting filter_factory_for_testing_ = nullptr;

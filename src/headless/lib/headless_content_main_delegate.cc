@@ -93,9 +93,7 @@ void InitializeResourceBundle(const base::CommandLine& command_line) {
 
 #ifdef HEADLESS_USE_EMBEDDED_RESOURCES
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromBuffer(
-      base::StringPiece(
-          reinterpret_cast<const char*>(kHeadlessResourcePak.contents),
-          kHeadlessResourcePak.length),
+      {kHeadlessResourcePak.contents, kHeadlessResourcePak.length},
       ui::SCALE_FACTOR_NONE);
 
 #else
@@ -328,8 +326,8 @@ void HeadlessContentMainDelegate::InitCrashReporter(
   if (command_line.HasSwitch(::switches::kDisableBreakpad))
     return;
 #if defined(OS_FUCHSIA)
-  // TODO(fuchsia): Implement this when crash reporting/Breakpad are available
-  // in Fuchsia. (crbug.com/753619)
+  // TODO(crbug.com/1226159): Implement this when crash reporting/Breakpad are
+  // available in Fuchsia.
   NOTIMPLEMENTED();
 #else
   const std::string process_type =

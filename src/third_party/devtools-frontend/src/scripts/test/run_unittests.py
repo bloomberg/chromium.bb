@@ -89,8 +89,23 @@ def run_unit_tests_on_ninja_build_target(target,
     errors_found = run_tests(chrome_binary, target, no_text_coverage,
                              no_html_coverage, coverage, expanded_reporting,
                              cwd)
+
+    if coverage and not no_html_coverage:
+        print('')
+        print(
+            '  You can see the coverage results by opening \033[1mkarma-coverage/index.html\033[0m in a browser'
+        )
+        print('')
+
     if errors_found:
         print('ERRORS DETECTED')
+
+        if not expanded_reporting:
+            print('')
+            print(
+                '  Run with \033[1m--expanded-reporting\033[0m to get better information about why the tests failed.'
+            )
+            print('')
         sys.exit(1)
 
 

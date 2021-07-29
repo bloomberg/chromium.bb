@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {addEntries, ENTRIES, RootPath, sendTestMessage, TestEntryInfo} from '../test_util.js';
+import {testcase} from '../testcase.js';
+
+import {navigateWithDirectoryTree, openNewWindow, remoteCall, setupAndWaitUntilReady} from './background.js';
+import {COMPLEX_DOCUMENTS_PROVIDER_ENTRY_SET, COMPLEX_DRIVE_ENTRY_SET, RECENT_ENTRY_SET} from './test_data.js';
 
 /**
  * Tests that check the context menu displays the right options (enabled and
@@ -396,8 +400,7 @@ testcase.checkContextMenusForInputElements = async () => {
       'fakeEvent', appId, ['#search-box cr-input', 'focus']));
 
   // Input a text.
-  await remoteCall.callRemoteTestUtil(
-      'inputText', appId, ['#search-box cr-input', 'test.pdf']);
+  await remoteCall.inputText(appId, '#search-box cr-input', 'test.pdf');
 
   // Notify the element of the input.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
@@ -443,8 +446,7 @@ testcase.checkContextMenuForRenameInput = async () => {
   await remoteCall.waitForElement(appId, textInput);
 
   // Type new file name.
-  await remoteCall.callRemoteTestUtil(
-      'inputText', appId, [textInput, 'NEW NAME']);
+  await remoteCall.inputText(appId, textInput, 'NEW NAME');
 
   // Right click to show the context menu.
   await remoteCall.waitAndRightClick(appId, textInput);

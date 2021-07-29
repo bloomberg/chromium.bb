@@ -622,6 +622,24 @@ void ff_rtp_parse_set_crypto(RTPDemuxContext *s, const char *suite,
         s->srtp_enabled = 1;
 }
 
+static int rtp_set_prft(RTPDemuxContext *s, AVPacket *pkt, uint32_t timestamp) {
+    int64_t rtcp_time, delta_timestamp, delta_time;
+
+    AVProducerReferenceTime *prft =
+        (AVProducerReferenceTime *) av_packet_new_side_data(
+            pkt, AV_PKT_DATA_PRFT, sizeof(AVProducerReferenceTime));
+    if (!prft)
+        return AVERROR(ENOMEM);
+
+    rtcp_time = ff_parse_ntp_time(s->last_rtcp_ntp_time) - NTP_OFFSET_US;
+    delta_timestamp = (int64_t)timestamp - (int64_t)s->last_rtcp_timestamp;
+    delta_time = av_rescale_q(delta_timestamp, s->st->time_base, AV_TIME_BASE_Q);
+
+    prft->wallclock = rtcp_time + delta_time;
+    prft->flags = 24;
+    return 0;
+}
+
 /**
  * This was the second switch in rtp_parse packet.
  * Normalizes time, if required, sets stream_index, etc.
@@ -632,6 +650,12 @@ static void finalize_packet(RTPDemuxContext *s, AVPacket *pkt, uint32_t timestam
         return; /* Timestamp already set by depacketizer */
     if (timestamp == RTP_NOTS_VALUE)
         return;
+
+    if (s->last_rtcp_ntp_time != AV_NOPTS_VALUE) {
+        if (rtp_set_prft(s, pkt, timestamp) < 0) {
+            av_log(s->ic, AV_LOG_WARNING, "rtpdec: failed to set prft");
+        }
+    }
 
     if (s->last_rtcp_ntp_time != AV_NOPTS_VALUE && s->ic->nb_streams > 1) {
         int64_t addend;
@@ -964,7 +988,7 @@ int ff_parse_fmtp(AVFormatContext *s,
 int ff_rtp_finalize_packet(AVPacket *pkt, AVIOContext **dyn_buf, int stream_idx)
 {
     int ret;
-    av_init_packet(pkt);
+    av_packet_unref(pkt);
 
     pkt->size         = avio_close_dyn_buf(*dyn_buf, &pkt->data);
     pkt->stream_index = stream_idx;

@@ -25,7 +25,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "cef/libcef/features/features.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/account_manager_facade_factory.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/bad_message.h"
@@ -75,22 +75,22 @@
 #include "printing/backend/print_backend_utils.h"
 #include "printing/backend/printing_restrictions.h"
 #include "printing/buildflags/buildflags.h"
+#include "printing/mojom/print.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "components/account_manager_core/account_manager_facade.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
+#include "chrome/browser/ash/crosapi/local_printer_ash.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
-#include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/account_manager_util.h"
-#include "chromeos/crosapi/mojom/local_printer.mojom.h"
+#include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "chromeos/lacros/lacros_chrome_service_impl.h"
 #endif
 
@@ -109,25 +109,25 @@ namespace {
 // crbug.com/372240.
 constexpr size_t kMaxCloudPrintPdfDataSizeInBytes = 80 * 1024 * 1024 / 2;
 
-PrinterType GetPrinterTypeForUserAction(UserActionBuckets user_action) {
+mojom::PrinterType GetPrinterTypeForUserAction(UserActionBuckets user_action) {
   switch (user_action) {
     case UserActionBuckets::kPrintWithPrivet:
-      return PrinterType::kPrivet;
+      return mojom::PrinterType::kPrivet;
     case UserActionBuckets::kPrintWithExtension:
-      return PrinterType::kExtension;
+      return mojom::PrinterType::kExtension;
     // On Chrome OS, printing to Google Drive needs to open the local file
     // picker so |kPrintToGoogleDriveCros| action should be handled by the
     // PDFPrinterHandler.
     case UserActionBuckets::kPrintToGoogleDriveCros:
     case UserActionBuckets::kPrintToPdf:
-      return PrinterType::kPdf;
+      return mojom::PrinterType::kPdf;
     case UserActionBuckets::kPrintToPrinter:
     case UserActionBuckets::kFallbackToAdvancedSettingsDialog:
     case UserActionBuckets::kOpenInMacPreview:
-      return PrinterType::kLocal;
+      return mojom::PrinterType::kLocal;
     default:
       NOTREACHED();
-      return PrinterType::kLocal;
+      return mojom::PrinterType::kLocal;
   }
 }
 
@@ -197,11 +197,11 @@ const char kPdfPrinterDisabled[] = "pdfPrinterDisabled";
 const char kDestinationsManaged[] = "destinationsManaged";
 // Name of a dictionary field holding the cloud print URL.
 const char kCloudPrintURL[] = "cloudPrintURL";
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // Name of a dictionary field indicating whether the user's Drive directory is
 // mounted.
 const char kIsDriveMounted[] = "isDriveMounted";
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // Get the print job settings dictionary from |json_str|.
 // Returns |base::Value()| on failure.
@@ -226,7 +226,7 @@ UserActionBuckets DetermineUserAction(const base::Value& settings) {
     return UserActionBuckets::kOpenInMacPreview;
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   if (settings.FindBoolKey(kSettingPrintToGoogleDrive).value_or(false)) {
     return UserActionBuckets::kPrintToGoogleDriveCros;
   }
@@ -239,16 +239,16 @@ UserActionBuckets DetermineUserAction(const base::Value& settings) {
   if (settings.FindKey(kSettingCloudPrintId))
     return UserActionBuckets::kPrintWithCloudPrint;
 
-  PrinterType type = static_cast<PrinterType>(
+  mojom::PrinterType type = static_cast<mojom::PrinterType>(
       settings.FindIntKey(kSettingPrinterType).value());
   switch (type) {
-    case PrinterType::kPrivet:
+    case mojom::PrinterType::kPrivet:
       return UserActionBuckets::kPrintWithPrivet;
-    case PrinterType::kExtension:
+    case mojom::PrinterType::kExtension:
       return UserActionBuckets::kPrintWithExtension;
-    case PrinterType::kPdf:
+    case mojom::PrinterType::kPdf:
       return UserActionBuckets::kPrintToPdf;
-    case PrinterType::kLocal:
+    case mojom::PrinterType::kLocal:
       break;
     default:
       NOTREACHED();
@@ -260,7 +260,7 @@ UserActionBuckets DetermineUserAction(const base::Value& settings) {
   return UserActionBuckets::kPrintToPrinter;
 }
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
 base::Value PoliciesToValue(crosapi::mojom::PoliciesPtr ptr) {
   base::Value policies(base::Value::Type::DICTIONARY);
 
@@ -356,29 +356,31 @@ base::Value GetPolicies(const PrefService& prefs) {
   if (!paper_size_policy.DictEmpty())
     policies.SetKey(kMediaSize, std::move(paper_size_policy));
 
-#if defined(OS_CHROMEOS)
-  if (prefs.HasPrefPath(prefs::kPrintingMaxSheetsAllowed)) {
-    base::Value sheets_policy(base::Value::Type::DICTIONARY);
-    sheets_policy.SetIntKey(kValue,
-                            prefs.GetInteger(prefs::kPrintingMaxSheetsAllowed));
-    policies.SetKey(kSheets, std::move(sheets_policy));
-  }
-#endif  // defined(OS_CHROMEOS)
-
   return policies;
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
 PrintPreviewHandler::PrintPreviewHandler() {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  local_printer_ = std::make_unique<crosapi::LocalPrinterAsh>();
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
   chromeos::LacrosChromeServiceImpl* service =
       chromeos::LacrosChromeServiceImpl::Get();
   if (service->IsAvailable<crosapi::mojom::LocalPrinter>()) {
     local_printer_ = service->GetRemote<crosapi::mojom::LocalPrinter>().get();
+    local_printer_version_ =
+        service->GetInterfaceVersion(crosapi::mojom::LocalPrinter::Uuid_);
   } else {
     LOG(ERROR) << "Local printer not available";
+  }
+
+  if (service->IsAvailable<crosapi::mojom::DriveIntegrationService>()) {
+    drive_integration_service_ =
+        service->GetRemote<crosapi::mojom::DriveIntegrationService>().get();
+  } else {
+    LOG(ERROR) << "Drive integration service not available";
   }
 #endif
   ReportUserActionHistogram(UserActionBuckets::kPreviewStarted);
@@ -462,32 +464,58 @@ PrefService* PrintPreviewHandler::GetPrefs() {
 }
 
 void PrintPreviewHandler::ReadPrinterTypeDenyListFromPrefs() {
+#if defined(OS_CHROMEOS)
+  if (!local_printer_)
+    return;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (local_printer_version_ <
+      int{crosapi::mojom::LocalPrinter::MethodMinVersions::
+              kGetPrinterTypeDenyListMinVersion}) {
+    return;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  local_printer_->GetPrinterTypeDenyList(
+      base::BindOnce(&PrintPreviewHandler::OnPrinterTypeDenyListReady,
+                     weak_factory_.GetWeakPtr()));
+  return;
+#else
   PrefService* prefs = GetPrefs();
   if (!prefs->HasPrefPath(prefs::kPrinterTypeDenyList))
     return;
 
-  const base::Value* deny_list_types = prefs->Get(prefs::kPrinterTypeDenyList);
-  if (!deny_list_types || !deny_list_types->is_list())
+  const base::Value* deny_list_from_prefs =
+      prefs->Get(prefs::kPrinterTypeDenyList);
+  if (!deny_list_from_prefs)
     return;
 
-  for (const base::Value& deny_list_type : deny_list_types->GetList()) {
-    if (!deny_list_type.is_string())
+  std::vector<mojom::PrinterType> deny_list;
+  deny_list.reserve(deny_list_from_prefs->GetList().size());
+  for (const base::Value& deny_list_value : deny_list_from_prefs->GetList()) {
+    const std::string& deny_list_str = deny_list_value.GetString();
+    mojom::PrinterType printer_type;
+    if (deny_list_str == "privet")
+      printer_type = mojom::PrinterType::kPrivet;
+    else if (deny_list_str == "extension")
+      printer_type = mojom::PrinterType::kExtension;
+    else if (deny_list_str == "pdf")
+      printer_type = mojom::PrinterType::kPdf;
+    else if (deny_list_str == "local")
+      printer_type = mojom::PrinterType::kLocal;
+    else if (deny_list_str == "cloud")
+      printer_type = mojom::PrinterType::kCloud;
+    else
       continue;
 
-    // The expected printer type strings are enumerated in
-    // components/policy/resources/policy_templates.json
-    const std::string& deny_list_str = deny_list_type.GetString();
-    if (deny_list_str == "privet")
-      printer_type_deny_list_.insert(PrinterType::kPrivet);
-    else if (deny_list_str == "extension")
-      printer_type_deny_list_.insert(PrinterType::kExtension);
-    else if (deny_list_str == "pdf")
-      printer_type_deny_list_.insert(PrinterType::kPdf);
-    else if (deny_list_str == "local")
-      printer_type_deny_list_.insert(PrinterType::kLocal);
-    else if (deny_list_str == "cloud")
-      printer_type_deny_list_.insert(PrinterType::kCloud);
+    deny_list.push_back(printer_type);
   }
+  OnPrinterTypeDenyListReady(deny_list);
+#endif  // defined(OS_CHROMEOS)
+}
+
+void PrintPreviewHandler::OnPrinterTypeDenyListReady(
+    const std::vector<mojom::PrinterType>& deny_list_types) {
+  printer_type_deny_list_ = deny_list_types;
 }
 
 PrintPreviewUI* PrintPreviewHandler::print_preview_ui() {
@@ -533,7 +561,7 @@ void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* args) {
   CHECK(!callback_id.empty());
   int type;
   CHECK(args->GetInteger(1, &type));
-  PrinterType printer_type = static_cast<PrinterType>(type);
+  mojom::PrinterType printer_type = static_cast<mojom::PrinterType>(type);
 
   // Immediately resolve the callback without fetching printers if the printer
   // type is on the deny list.
@@ -570,7 +598,7 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
     RejectJavascriptCallback(base::Value(callback_id), base::Value());
     return;
   }
-  PrinterType printer_type = static_cast<PrinterType>(type);
+  mojom::PrinterType printer_type = static_cast<mojom::PrinterType>(type);
 
   // Reject the callback if the printer type is on the deny list.
   if (base::Contains(printer_type_deny_list_, printer_type)) {
@@ -606,9 +634,9 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   CHECK(settings.is_dict());
   int request_id = settings.FindIntKey(kPreviewRequestID).value();
   CHECK_GT(request_id, -1);
-  PrinterType printer_type = static_cast<PrinterType>(
+  mojom::PrinterType printer_type = static_cast<mojom::PrinterType>(
       settings.FindIntKey(kSettingPrinterType).value());
-  CHECK(printer_type != PrinterType::kCloud || IsCloudPrintEnabled());
+  CHECK(printer_type != mojom::PrinterType::kCloud || IsCloudPrintEnabled());
 
   CHECK(!base::Contains(preview_callbacks_, request_id));
   preview_callbacks_[request_id] = callback_id;
@@ -842,11 +870,11 @@ void PrintPreviewHandler::HandleGetInitialSettings(
 
   AllowJavascript();
 
-  PrinterHandler* handler = GetPrinterHandler(PrinterType::kLocal);
+  PrinterHandler* handler = GetPrinterHandler(mojom::PrinterType::kLocal);
   base::OnceCallback<void(base::Value, const std::string&)> cb =
       base::BindOnce(&PrintPreviewHandler::SendInitialSettings,
                      weak_factory_.GetWeakPtr(), callback_id);
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
   if (!local_printer_) {
     LOG(ERROR) << "Local printer not available";
     handler->GetDefaultPrinter(base::BindOnce(std::move(cb), base::Value()));
@@ -878,8 +906,6 @@ void PrintPreviewHandler::SendInitialSettings(
                               print_preview_ui()->source_is_modifiable());
   initial_settings.SetBoolKey(kSettingPreviewIsFromArc,
                               print_preview_ui()->source_is_arc());
-  initial_settings.SetBoolKey(kSettingPreviewIsPdf,
-                              print_preview_ui()->source_is_pdf());
   initial_settings.SetStringKey(kSettingPrinterName, default_printer);
   initial_settings.SetBoolKey(kDocumentHasSelection,
                               print_preview_ui()->source_has_selection());
@@ -906,7 +932,7 @@ void PrintPreviewHandler::SendInitialSettings(
 
   initial_settings.SetBoolKey(
       kPdfPrinterDisabled,
-      base::Contains(printer_type_deny_list_, PrinterType::kPdf));
+      base::Contains(printer_type_deny_list_, mojom::PrinterType::kPdf));
 
   const bool destinations_managed =
       !printer_type_deny_list_.empty() &&
@@ -934,10 +960,26 @@ void PrintPreviewHandler::SendInitialSettings(
           Profile::FromWebUI(web_ui()));
   initial_settings.SetBoolKey(kIsDriveMounted,
                               drive_service && drive_service->IsMounted());
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (drive_integration_service_) {
+    drive_integration_service_->GetMountPointPath(base::BindOnce(
+        &PrintPreviewHandler::OnDrivePathReady, weak_factory_.GetWeakPtr(),
+        std::move(initial_settings), callback_id));
+    return;
+  }
+#endif
 
   ResolveJavascriptCallback(base::Value(callback_id), initial_settings);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void PrintPreviewHandler::OnDrivePathReady(base::Value initial_settings,
+                                           const std::string& callback_id,
+                                           const base::FilePath& drive_path) {
+  initial_settings.SetBoolKey(kIsDriveMounted, !drive_path.empty());
+  ResolveJavascriptCallback(base::Value(callback_id), initial_settings);
+}
+#endif
 
 void PrintPreviewHandler::ClosePreviewDialog() {
   print_preview_ui()->OnClosePrintPreviewDialog();
@@ -1100,16 +1142,17 @@ void PrintPreviewHandler::ClearInitiatorDetails() {
 }
 
 PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
-    PrinterType printer_type) {
-  if (printer_type == PrinterType::kExtension) {
+    mojom::PrinterType printer_type) {
+  if (printer_type == mojom::PrinterType::kExtension) {
     if (!extension_printer_handler_) {
       extension_printer_handler_ = PrinterHandler::CreateForExtensionPrinters(
           Profile::FromWebUI(web_ui()));
     }
     return extension_printer_handler_.get();
   }
-#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY) && !BUILDFLAG(ENABLE_CEF)
-  if (printer_type == PrinterType::kPrivet &&
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
+  if (printer_type == mojom::PrinterType::kPrivet &&
+      !cef::IsAlloyRuntimeEnabled() &&
       GetPrefs()->GetBoolean(prefs::kForceEnablePrivetPrinting)) {
     if (!privet_printer_handler_) {
       privet_printer_handler_ =
@@ -1121,7 +1164,7 @@ PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
   if (printer_type == PrinterType::kPrivet)
     return nullptr;
 #endif
-  if (printer_type == PrinterType::kPdf) {
+  if (printer_type == mojom::PrinterType::kPdf) {
     if (!pdf_printer_handler_) {
       pdf_printer_handler_ = PrinterHandler::CreateForPdfPrinter(
           Profile::FromWebUI(web_ui()), preview_web_contents(),
@@ -1129,7 +1172,7 @@ PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
     }
     return pdf_printer_handler_.get();
   }
-  if (printer_type == PrinterType::kLocal) {
+  if (printer_type == mojom::PrinterType::kLocal) {
     if (!local_printer_handler_) {
       local_printer_handler_ = PrinterHandler::CreateForLocalPrinters(
           preview_web_contents(), Profile::FromWebUI(web_ui()));
@@ -1141,19 +1184,21 @@ PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
 }
 
 PdfPrinterHandler* PrintPreviewHandler::GetPdfPrinterHandler() {
-  return static_cast<PdfPrinterHandler*>(GetPrinterHandler(PrinterType::kPdf));
+  return static_cast<PdfPrinterHandler*>(
+      GetPrinterHandler(mojom::PrinterType::kPdf));
 }
 
-void PrintPreviewHandler::OnAddedPrinters(PrinterType printer_type,
+void PrintPreviewHandler::OnAddedPrinters(mojom::PrinterType printer_type,
                                           const base::ListValue& printers) {
-  DCHECK(printer_type == PrinterType::kExtension ||
-         printer_type == PrinterType::kPrivet ||
-         printer_type == PrinterType::kLocal);
-  DCHECK(!printers.empty());
+  DCHECK(printer_type == mojom::PrinterType::kExtension ||
+         printer_type == mojom::PrinterType::kPrivet ||
+         printer_type == mojom::PrinterType::kLocal);
+  DCHECK(!printers.GetList().empty());
   FireWebUIListener("printers-added",
                     base::Value(static_cast<int>(printer_type)), printers);
 
-  if (printer_type == PrinterType::kLocal && !has_logged_printers_count_) {
+  if (printer_type == mojom::PrinterType::kLocal &&
+      !has_logged_printers_count_) {
     ReportNumberOfPrinters(printers.GetSize());
     has_logged_printers_count_ = true;
   }
@@ -1182,7 +1227,7 @@ void PrintPreviewHandler::OnPrintResult(const std::string& callback_id,
 }
 
 bool PrintPreviewHandler::IsCloudPrintEnabled() {
-  return !base::Contains(printer_type_deny_list_, PrinterType::kCloud) &&
+  return !base::Contains(printer_type_deny_list_, mojom::PrinterType::kCloud) &&
          GetPrefs()->GetBoolean(prefs::kCloudPrintSubmitEnabled);
 }
 
@@ -1213,11 +1258,7 @@ void PrintPreviewHandler::SendManipulateSettingsForTest(
 }
 
 void PrintPreviewHandler::HandleManagePrinters(const base::ListValue* args) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      Profile::FromWebUI(web_ui()),
-      chromeos::settings::mojom::kPrintingDetailsSubpagePath);
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
   if (!local_printer_) {
     LOG(ERROR) << "Local printer not available";
     return;

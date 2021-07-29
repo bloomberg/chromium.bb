@@ -95,11 +95,13 @@ class SecondaryAccountConsentLoggerTest : public testing::Test {
   }
 
   CoreAccountInfo SetPrimaryAccount() {
-    return identity_test_env_.SetUnconsentedPrimaryAccount(kAccountEmail);
+    return identity_test_env_.SetPrimaryAccount(kAccountEmail,
+                                                signin::ConsentLevel::kSignin);
   }
 
   void IssueRefreshTokenForPrimaryAccount() {
-    identity_test_env_.MakeUnconsentedPrimaryAccountAvailable(kAccountEmail);
+    identity_test_env_.MakePrimaryAccountAvailable(
+        kAccountEmail, signin::ConsentLevel::kSignin);
   }
 
   void SendResponse(int net_error, int response_code) {

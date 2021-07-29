@@ -17,10 +17,14 @@ class FakePageScheduler final : public PageScheduler {
       : is_audio_playing_(is_audio_playing),
         is_throttling_exempt_(is_throttling_exempt),
         agent_group_scheduler_(WebAgentGroupScheduler::CreateForTesting()) {}
+  FakePageScheduler(const FakePageScheduler&) = delete;
+  FakePageScheduler& operator=(const FakePageScheduler&) = delete;
 
   class Builder {
    public:
     Builder() = default;
+    Builder(const Builder&) = delete;
+    Builder& operator=(const Builder&) = delete;
 
     Builder& SetIsAudioPlaying(bool is_audio_playing) {
       is_audio_playing_ = is_audio_playing;
@@ -40,8 +44,6 @@ class FakePageScheduler final : public PageScheduler {
    private:
     bool is_audio_playing_ = false;
     bool is_throttling_exempt_ = false;
-
-    DISALLOW_COPY_AND_ASSIGN(Builder);
   };
 
   bool IsAudioPlaying() const override { return is_audio_playing_; }
@@ -55,7 +57,6 @@ class FakePageScheduler final : public PageScheduler {
   void SetPageVisible(bool is_page_visible) override {}
   void SetPageFrozen(bool is_page_frozen) override {}
   void SetPageBackForwardCached(bool) override {}
-  void OnFocusChanged(bool focused) override {}
   void SetKeepActive(bool keep_active) override {}
   bool IsMainFrameLocal() const override { return true; }
   void SetIsMainFrameLocal(bool is_local) override {}
@@ -72,7 +73,6 @@ class FakePageScheduler final : public PageScheduler {
   bool VirtualTimeAllowedToAdvance() const override { return false; }
   void SetVirtualTimePolicy(VirtualTimePolicy policy) override {}
   void SetInitialVirtualTime(base::Time time) override {}
-  void SetInitialVirtualTimeOffset(base::TimeDelta offset) override {}
   void GrantVirtualTimeBudget(base::TimeDelta budget,
                               base::OnceClosure callback) override {}
   void SetMaxVirtualTimeTaskStarvationCount(int count) override {}
@@ -97,8 +97,6 @@ class FakePageScheduler final : public PageScheduler {
   bool is_audio_playing_;
   bool is_throttling_exempt_;
   std::unique_ptr<WebAgentGroupScheduler> agent_group_scheduler_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakePageScheduler);
 };
 
 }  // namespace scheduler

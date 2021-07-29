@@ -26,14 +26,23 @@ public class FeedPlaceholderCoordinator {
     public FeedPlaceholderCoordinator(
             Activity activity, ViewGroup parentView, boolean isBackgroundDark) {
         mParentView = parentView;
-        mContext = new ContextThemeWrapper(
-                activity, (isBackgroundDark ? R.style.Dark : R.style.Light));
+        mContext = new ContextThemeWrapper(activity,
+                (isBackgroundDark ? R.style.ThemeOverlay_Feed_Dark
+                                  : R.style.ThemeOverlay_Feed_Light));
     }
 
     public void setUpPlaceholderView() {
         mFeedPlaceholderView = (FeedPlaceholderLayout) LayoutInflater.from(mContext).inflate(
                 R.layout.feed_placeholder_layout, null, false);
         mParentView.addView(mFeedPlaceholderView);
+    }
+
+    public void destroy() {
+        if (mFeedPlaceholderView != null) {
+            assert mParentView != null;
+            mParentView.removeView(mFeedPlaceholderView);
+            mFeedPlaceholderView = null;
+        }
     }
 
     void onOverviewShownAtLaunch(long activityCreationTimeMs) {

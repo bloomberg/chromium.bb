@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
 
@@ -23,6 +22,8 @@ class PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
                     BudgetPoolController* budget_pool_controller,
                     TraceableVariableController* tracing_controller,
                     base::TimeTicks now);
+  CPUTimeBudgetPool(const CPUTimeBudgetPool&) = delete;
+  CPUTimeBudgetPool& operator=(const CPUTimeBudgetPool&) = delete;
 
   ~CPUTimeBudgetPool() override;
 
@@ -38,21 +39,6 @@ class PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
   void SetMaxThrottlingDelay(
       base::TimeTicks now,
       absl::optional<base::TimeDelta> max_throttling_delay);
-
-  // Set minimal budget level required to run a task. If budget pool was
-  // exhausted, it needs to accumulate at least |min_budget_to_run| time units
-  // to unblock and run tasks again. When unblocked, it still can run tasks
-  // when budget is positive but less than this level until being blocked
-  // until being blocked when budget reaches zero.
-  // This is needed for integration with WakeUpBudgetPool to prevent a situation
-  // when wake-up happened but time budget pool allows only one task to run at
-  // the moment.
-  // It is recommended to use the same value for this and WakeUpBudgetPool's
-  // wake-up window length.
-  // NOTE: This does not have an immediate effect and does not call
-  // BudgetPoolController::UnblockQueue.
-  void SetMinBudgetLevelToRun(base::TimeTicks now,
-                              base::TimeDelta min_budget_level_to_run);
 
   // Throttle task queues from this time budget pool if tasks are running
   // for more than |cpu_percentage| per cent of wall time.
@@ -111,8 +97,6 @@ class PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
   // after desired run time + max throttling duration, but a guarantee
   // that at least one task will be run every max_throttling_delay.
   absl::optional<base::TimeDelta> max_throttling_delay_;
-  // See CPUTimeBudgetPool::SetMinBudgetLevelToRun.
-  base::TimeDelta min_budget_level_to_run_;
 
   TraceableCounter<base::TimeDelta, TracingCategoryName::kInfo>
       current_budget_level_;
@@ -120,8 +104,6 @@ class PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
   double cpu_percentage_;
 
   base::RepeatingCallback<void(base::TimeDelta)> reporting_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(CPUTimeBudgetPool);
 };
 
 }  // namespace scheduler

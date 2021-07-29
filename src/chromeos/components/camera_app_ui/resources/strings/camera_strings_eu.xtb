@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">Inprimatu</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> deskonektatuta dago.</translation>
 <translation id="1473110567575736769">Hiru segundoko tenporizadorea</translation>
+<translation id="1478594628797167447">Eskanerra</translation>
+<translation id="1545749641540134597">Eskaneatu QR kodea</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1627744224761163218">4 × 4</translation>
 <translation id="1664224225747386870">Ez da grabatu ezer</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">Bertikala</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> aktibo dago</translation>
 <translation id="2144806332417375165">Pertsonalizatu bideoaren parametroak</translation>
+<translation id="2175927920773552910">QR kodea</translation>
+<translation id="2268107369530950373">Aldatu eskaneatzeko modura</translation>
 <translation id="229579744168541441">Esportatu diskora</translation>
 <translation id="2320741269052147773">Mugitu ezkerrera</translation>
 <translation id="2501278716633472235">Egin atzera</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">Mikrofonoa</translation>
 <translation id="3240426699337459095">Esteka kopiatu da</translation>
 <translation id="3259149966178251584">Kameraren bereizmena</translation>
+<translation id="3448774564454087943">Ez da gorde bideoa, laburregia zelako</translation>
 <translation id="3517926952904427380">Ezin da atera erretratu-argazkia</translation>
 <translation id="3569311554794739032">Ziur zaude <ph name="FILE" /> kendu nahi duzula?</translation>
 <translation id="3733597664308256288">Kamera kontrolatzeko aukera gehiago daude. Haiek atzitzeko, sakatu bilaketa-tekla + eskuinera egiteko gezi-tekla.</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">Argazkia</translation>
 <translation id="4649291346448517080">Ezin da gorde fitxategia</translation>
 <translation id="4890010094662541459">3 × 3</translation>
+<translation id="491895758387112773">Bideo anitzeko grabaketa</translation>
 <translation id="5057360777601936059">Kamera ez dago erabilgarri une honetan.
         Egiaztatu kamera ongi konektatuta dagoela.</translation>
 <translation id="5152121255775685072">Joan galeriara</translation>
+<translation id="5268823927180092501">Gaitu dokumentu modua kamera guztietan</translation>
 <translation id="5422455049771430511">Etxe berria dute zure argazki eta bideoek</translation>
 <translation id="5671277269877808209">Karratua</translation>
+<translation id="5753488212459587150">Gaitu adituen modua</translation>
 <translation id="5775960006311140197">Adituen modua</translation>
 <translation id="5869546221129391014">Sareta</translation>
 <translation id="5975083100439434680">Txikitu</translation>

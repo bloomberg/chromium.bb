@@ -4,6 +4,7 @@
 <translation id="1096883626080133124">Soyez plus efficace grâce à Google Chrome, un navigateur simple, sécurisé et encore plus rapide</translation>
 <translation id="1282031177488366470">Contribuer à l'amélioration des fonctionnalités et des performances de Chrome</translation>
 <translation id="1314663809820920746">Vos favoris, votre historique, vos mots de passe et autres paramètres resteront accessibles sur cet appareil, mais les modifications ne seront pas synchronisées avec votre compte Google.</translation>
+<translation id="139135165841384604">Gagnez en efficacité avec Chrome</translation>
 <translation id="1479202195792305274">Chrome peut vérifier vos mots de passe lorsque vous vous connectez avec votre compte Google.</translation>
 <translation id="1493827051843127077">Définissez Chrome par défaut pour synchroniser vos onglets, mots de passe et infos de paiement sur tous vos appareils</translation>
 <translation id="1504372625950710826">Chrome n'est pas parvenu à rechercher les mises à jour. Vérifiez votre connexion Internet.</translation>
@@ -14,6 +15,7 @@
 <translation id="2009224836393115614">Chrome n'est pas parvenu à vérifier vos mots de passe. Vérifiez votre connexion Internet.</translation>
 <translation id="2147651015520127414">Chrome a confirmé que le certificat de ce site Web a bien été émis par <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Données de la synchronisation Chrome</translation>
+<translation id="2313070403598893276">Google Chrome est simple, sécurisé et ultra rapide</translation>
 <translation id="2342919707875585281">Chrome partage votre position avec les sites que vous autorisez.</translation>
 <translation id="2347208864470321755">Lorsque cette fonctionnalité est activée dans Chrome, un message s'affiche pour vous proposer que les pages de ce site rédigées dans d'autres langues soient traduites à l'aide de Google Traduction. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="2415682770504543561">Définir Chrome comme votre navigateur par défaut</translation>
@@ -32,9 +34,9 @@
 <translation id="3196546062792660320">Chrome vous permet de gagner du temps en connectant vos comptes au Web. Vous pouvez ajouter ou supprimer des comptes dans la section "Paramètres".</translation>
 <translation id="3282568296779691940">Connectez-vous à Chrome</translation>
 <translation id="3345341804167540816">Utilisez Chrome où que vous soyez</translation>
-<translation id="3455456143708465450">Pour tirer pleinement parti de Chrome, connectez-vous avec votre compte Google</translation>
 <translation id="3522659714780527202">Pour retrouver vos onglets Chrome quel que soit l'appareil utilisé, activez la synchronisation</translation>
 <translation id="3533694711092285624">Aucun mot de passe enregistré. Chrome ne peut vérifier vos mots de passe que si vous les enregistrez.</translation>
+<translation id="3634910711516114487">Pour profiter pleinement de Chrome, connectez-vous avec votre compte Google</translation>
 <translation id="3706101708757577809">Chaque fois que vous appuierez sur des liens dans des messages, des documents et d'autres applications, vous pourrez désormais voir le contenu correspondant dans Chrome.</translation>
 <translation id="3720541637541300822">Verrouiller les onglets de navigation privée lorsque vous fermez Chrome</translation>
 <translation id="384394811301901750">Google Chrome ne peut pas utiliser votre appareil photo pour le moment</translation>
@@ -64,7 +66,7 @@
 <translation id="6063091872902370735">Autoriser la connexion à Chrome</translation>
 <translation id="6181930887571472871">Passer à Chrome</translation>
 <translation id="6238746320622508509">Chrome peut verrouiller vos onglets de navigation privée.</translation>
-<translation id="6573431926118603307">Les onglets que vous avez ouverts dans Chrome sur vos autres appareils s'affichent ici.</translation>
+<translation id="6427126399757991875">Votre organisation configure Chrome…</translation>
 <translation id="6600954340915313787">Copiée dans Chrome</translation>
 <translation id="6634107063912726160">Lorsque vous vous déconnectez, Chrome cesse de synchroniser vos données avec votre compte Google. Les données déjà synchronisées ne sont pas effacées.</translation>
 <translation id="6648150602980899529">Vous vous connectez avec un compte géré par <ph name="DOMAIN" />, ce qui permettra à son administrateur de contrôler vos données Chrome. Celles-ci seront définitivement associées à ce compte. Si vous vous déconnectez de Chrome, vos données seront supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
@@ -78,7 +80,6 @@
 <translation id="7172660552945675509">Conseil : <ph name="BEGIN_LINK" />Placez Chrome dans le dock.<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome utilise Face ID pour autoriser l'accès à vos mots de passe.</translation>
 <translation id="7261678641327190792">Chrome ne parvient pas à vérifier vos mots de passe</translation>
-<translation id="7265369419224458312">Accédez ici aux onglets ouverts sur votre ordinateur. Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de sélectionner "Se connecter à Chrome".</translation>
 <translation id="7272930098487145294">Pour enregistrer une image, appuyez sur "Paramètres" afin que Chrome puisse l'ajouter à vos photos</translation>
 <translation id="7275945473750112644">Votre compte étant géré par <ph name="HOSTED_DOMAIN" />, vos données Chrome seront effacées de cet appareil</translation>
 <translation id="7400722733683201933">À propos de Google Chrome</translation>

@@ -45,14 +45,15 @@ void av_bsf_free(AVBSFContext **pctx)
         return;
     ctx = *pctx;
 
-    if (ctx->filter->close)
-        ctx->filter->close(ctx);
+    if (ctx->internal) {
+        if (ctx->filter->close)
+            ctx->filter->close(ctx);
+        av_packet_free(&ctx->internal->buffer_pkt);
+        av_freep(&ctx->internal);
+    }
     if (ctx->filter->priv_class && ctx->priv_data)
         av_opt_free(ctx->priv_data);
 
-    if (ctx->internal)
-        av_packet_free(&ctx->internal->buffer_pkt);
-    av_freep(&ctx->internal);
     av_freep(&ctx->priv_data);
 
     avcodec_parameters_free(&ctx->par_in);
@@ -79,9 +80,6 @@ static const AVClass bsf_class = {
     .item_name        = bsf_to_name,
     .version          = LIBAVUTIL_VERSION_INT,
     .child_next       = bsf_child_next,
-#if FF_API_CHILD_CLASS_NEXT
-    .child_class_next = ff_bsf_child_class_next,
-#endif
     .child_class_iterate = ff_bsf_child_class_iterate,
     .category         = AV_CLASS_CATEGORY_BITSTREAM_FILTER,
 };
@@ -110,20 +108,6 @@ int av_bsf_alloc(const AVBitStreamFilter *filter, AVBSFContext **pctx)
         ret = AVERROR(ENOMEM);
         goto fail;
     }
-
-    bsfi = av_mallocz(sizeof(*bsfi));
-    if (!bsfi) {
-        ret = AVERROR(ENOMEM);
-        goto fail;
-    }
-    ctx->internal = bsfi;
-
-    bsfi->buffer_pkt = av_packet_alloc();
-    if (!bsfi->buffer_pkt) {
-        ret = AVERROR(ENOMEM);
-        goto fail;
-    }
-
     /* allocate priv data and init private options */
     if (filter->priv_data_size) {
         ctx->priv_data = av_mallocz(filter->priv_data_size);
@@ -135,6 +119,20 @@ int av_bsf_alloc(const AVBitStreamFilter *filter, AVBSFContext **pctx)
             *(const AVClass **)ctx->priv_data = filter->priv_class;
             av_opt_set_defaults(ctx->priv_data);
         }
+    }
+    /* Allocate AVBSFInternal; must happen after priv_data has been allocated
+     * so that a filter->close needing priv_data is never called without. */
+    bsfi = av_mallocz(sizeof(*bsfi));
+    if (!bsfi) {
+        ret = AVERROR(ENOMEM);
+        goto fail;
+    }
+    ctx->internal = bsfi;
+
+    bsfi->buffer_pkt = av_packet_alloc();
+    if (!bsfi->buffer_pkt) {
+        ret = AVERROR(ENOMEM);
+        goto fail;
     }
 
     *pctx = ctx;
@@ -159,9 +157,9 @@ int av_bsf_init(AVBSFContext *ctx)
                    "bitstream filter '%s'. Supported codecs are: ",
                    desc ? desc->name : "unknown", ctx->par_in->codec_id, ctx->filter->name);
             for (i = 0; ctx->filter->codec_ids[i] != AV_CODEC_ID_NONE; i++) {
-                desc = avcodec_descriptor_get(ctx->filter->codec_ids[i]);
+                enum AVCodecID codec_id = ctx->filter->codec_ids[i];
                 av_log(ctx, AV_LOG_ERROR, "%s (%d) ",
-                       desc ? desc->name : "unknown", ctx->filter->codec_ids[i]);
+                       avcodec_get_name(codec_id), codec_id);
             }
             av_log(ctx, AV_LOG_ERROR, "\n");
             return AVERROR(EINVAL);

@@ -26,6 +26,11 @@ public class ContentFeatureList {
     }
 
     // Alphabetical:
+    public static final String ACCESSIBILITY_PAGE_ZOOM = "AccessibilityPageZoom";
+
+    public static final String ACCESSIBILITY_PAGE_ZOOM_UPDATED_UI =
+            "AccessibilityPageZoomUpdatedUI";
+
     public static final String BACKGROUND_MEDIA_RENDERER_HAS_MODERATE_BINDING =
             "BackgroundMediaRendererHasModerateBinding";
 
@@ -33,6 +38,8 @@ public class ContentFeatureList {
 
     public static final String EXPERIMENTAL_ACCESSIBILITY_LABELS =
             "ExperimentalAccessibilityLabels";
+
+    public static final String ON_DEMAND_ACCESSIBILITY_EVENTS = "OnDemandAccessibilityEvents";
 
     public static final String PROCESS_SHARING_WITH_STRICT_SITE_INSTANCES =
             "ProcessSharingWithStrictSiteInstances";

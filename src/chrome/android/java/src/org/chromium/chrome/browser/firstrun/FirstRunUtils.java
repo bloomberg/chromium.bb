@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 
 /** Provides first run related utility functions. */
 public class FirstRunUtils {
@@ -67,7 +68,7 @@ public class FirstRunUtils {
      * Sets the EULA/Terms of Services state as "ACCEPTED".
      * @param allowCrashUpload True if the user allows to upload crash dumps and collect stats.
      */
-    public static void acceptTermsOfService(boolean allowCrashUpload) {
+    static void acceptTermsOfService(boolean allowCrashUpload) {
         UmaSessionStats.changeMetricsReportingConsent(allowCrashUpload);
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, true);
@@ -93,7 +94,10 @@ public class FirstRunUtils {
 
     @VisibleForTesting
     static boolean hasGoogleAccounts() {
-        return !AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts().isEmpty();
+        return !AccountUtils
+                        .getAccountsIfFulfilledOrEmpty(
+                                AccountManagerFacadeProvider.getInstance().getAccounts())
+                        .isEmpty();
     }
 
     @SuppressLint("InlinedApi")
@@ -114,6 +118,7 @@ public class FirstRunUtils {
     /**
      * Sets the preference that signals when the user has accepted the EULA.
      */
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     public static void setEulaAccepted() {
         FirstRunUtilsJni.get().setEulaAccepted();
     }
@@ -133,7 +138,7 @@ public class FirstRunUtils {
      *
      * @return The number of ms delay before exiting FRE with policy.
      */
-    public static int getSkipTosExitDelayMs() {
+    static int getSkipTosExitDelayMs() {
         if (sDisableDelayOnExitFreForTest) return 0;
 
         int durationMs = DEFAULT_SKIP_TOS_EXIT_DELAY_MS;

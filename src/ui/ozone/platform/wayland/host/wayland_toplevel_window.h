@@ -58,13 +58,18 @@ class WaylandToplevelWindow : public WaylandWindow,
   void SetUseNativeFrame(bool use_native_frame) override;
   bool ShouldUseNativeFrame() const override;
   bool ShouldUpdateWindowShape() const override;
+  bool CanSetDecorationInsets() const override;
+  void SetDecorationInsets(gfx::Insets insets_px) override;
+  void SetOpaqueRegion(std::vector<gfx::Rect> region_px) override;
+  void SetInputRegion(gfx::Rect region_px) override;
+  void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
 
   // WaylandWindow overrides:
   absl::optional<std::vector<gfx::Rect>> GetWindowShape() const override;
 
  private:
   // WaylandWindow overrides:
-  void UpdateBufferScale(bool update_bounds) override;
+  void UpdateWindowScale(bool update_bounds) override;
   void HandleToplevelConfigure(int32_t width,
                                int32_t height,
                                bool is_maximized,
@@ -74,6 +79,7 @@ class WaylandToplevelWindow : public WaylandWindow,
   void UpdateVisualSize(const gfx::Size& size_px) override;
   bool OnInitialize(PlatformWindowInitProperties properties) override;
   bool IsActive() const override;
+  bool IsSurfaceConfigured() override;
 
   // zaura_surface listeners
   static void LockFrame(void* data, zaura_surface* surface);
@@ -95,6 +101,9 @@ class WaylandToplevelWindow : public WaylandWindow,
   void ShowSnapPreview(WaylandWindowSnapDirection snap) override;
   void CommitSnap(WaylandWindowSnapDirection snap) override;
   void SetCanGoBack(bool value) override;
+  void SetPip() override;
+  bool SupportsPointerLock() override;
+  void LockPointer(bool enabled) override;
 
   void TriggerStateChanges();
   void SetWindowState(PlatformWindowState state);

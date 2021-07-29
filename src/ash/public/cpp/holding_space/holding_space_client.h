@@ -25,11 +25,20 @@ class ASH_PUBLIC_EXPORT HoldingSpaceClient {
  public:
   using SuccessCallback = base::OnceCallback<void(bool)>;
 
+  // Adds a diagnostics log item backed by the provided `file_path`.
+  virtual void AddDiagnosticsLog(const base::FilePath& file_path) = 0;
+
   // Adds a screenshot item backed by the provided `file_path`.
   virtual void AddScreenshot(const base::FilePath& file_path) = 0;
 
   // Adds a screen recording item backed by the provided `file_path`.
   virtual void AddScreenRecording(const base::FilePath& file_path) = 0;
+
+  // Attempts to cancel the specified in-progress holding space `items`. In the
+  // case of in-progress holding space downloads, this would attempt to cancel
+  // the underlying download which would subsequently result in item removal.
+  virtual void CancelItems(
+      const std::vector<const HoldingSpaceItem*>& items) = 0;
 
   // Attempts to copy the contents of the image file backing the specified
   // holding space `item` to the clipboard. If the backing file is not suspected
@@ -55,16 +64,28 @@ class ASH_PUBLIC_EXPORT HoldingSpaceClient {
   // Success is returned via the supplied `callback`.
   virtual void OpenMyFiles(SuccessCallback callback) = 0;
 
-  // Attempts to show the specified holding space `item` in its folder.
-  // Success is returned via the supplied `callback`.
-  virtual void ShowItemInFolder(const HoldingSpaceItem& item,
-                                SuccessCallback callback) = 0;
+  // Attempts to pause progress of the specified in-progress holding space
+  // `items`. In the case of in-progress holding space downloads, this would
+  // attempt to pause the underlying download.
+  virtual void PauseItems(
+      const std::vector<const HoldingSpaceItem*>& items) = 0;
 
   // Pins the specified `file_paths`.
   virtual void PinFiles(const std::vector<base::FilePath>& file_paths) = 0;
 
   // Pins the specified holding space `items`.
   virtual void PinItems(const std::vector<const HoldingSpaceItem*>& items) = 0;
+
+  // Attempts to resume progress of the specified in-progress holding space
+  // `items`. In the case of in-progress holding space downloads, this would
+  // attempt to resume the underlying download.
+  virtual void ResumeItems(
+      const std::vector<const HoldingSpaceItem*>& items) = 0;
+
+  // Attempts to show the specified holding space `item` in its folder.
+  // Success is returned via the supplied `callback`.
+  virtual void ShowItemInFolder(const HoldingSpaceItem& item,
+                                SuccessCallback callback) = 0;
 
   // Unpins the specified holding space `items`.
   virtual void UnpinItems(

@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
@@ -27,6 +28,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/painter.h"
 #include "ui/views/view_targeter_delegate.h"
@@ -34,6 +36,26 @@
 namespace ash {
 
 namespace {
+
+// The max folder name length.
+constexpr int kMaxFolderNameChars = 28;
+
+// The folder header dimensions:
+constexpr int kMinFolderHeaderWidth = 24;
+constexpr int kMaxFolderHeaderWidth = 200;
+constexpr int kFolderHeaderHeight = 32;
+
+// The min width of folder name - ensures the folder name is easily tappable.
+constexpr int kFolderHeaderMinTapWidth = 32;
+
+// The border radius for folder name.
+constexpr int kFolderNameBorderRadius = 4;
+
+// The border thickness for folder name.
+constexpr int kFolderNameBorderThickness = 2;
+
+// The inner padding for folder name.
+constexpr int kFolderNamePadding = 8;
 
 SkColor GetFolderBackgroundColor(bool is_active) {
   if (!is_active)
@@ -49,9 +71,8 @@ SkColor GetFolderBackgroundColor(bool is_active) {
 class FolderHeaderView::FolderNameView : public views::Textfield,
                                          public views::ViewTargeterDelegate {
  public:
-  FolderNameView(FolderHeaderView* folder_header_view,
-                 FolderHeaderViewDelegate* delegate)
-      : folder_header_view_(folder_header_view), delegate_(delegate) {
+  explicit FolderNameView(FolderHeaderView* folder_header_view)
+      : folder_header_view_(folder_header_view) {
     DCHECK(folder_header_view_);
     // Make folder name font size 14px.
     SetFontList(
@@ -66,8 +87,7 @@ class FolderHeaderView::FolderNameView : public views::Textfield,
   ~FolderNameView() override = default;
 
   gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(delegate_->GetAppListConfig().folder_header_max_width(),
-                     delegate_->GetAppListConfig().folder_header_height());
+    return gfx::Size(kMaxFolderHeaderWidth, kFolderHeaderHeight);
   }
 
   void OnThemeChanged() override {
@@ -75,8 +95,7 @@ class FolderHeaderView::FolderNameView : public views::Textfield,
 
     const bool is_active = has_mouse_already_entered_ || HasFocus();
     SetBackground(views::CreateRoundedRectBackground(
-        GetFolderBackgroundColor(is_active),
-        delegate_->GetAppListConfig().folder_name_border_radius()));
+        GetFolderBackgroundColor(is_active), kFolderNameBorderRadius));
 
     AppListColorProvider* color_provider = AppListColorProvider::Get();
     const SkColor text_color =
@@ -92,14 +111,11 @@ class FolderHeaderView::FolderNameView : public views::Textfield,
   }
 
   void SetNameViewBorderAndBackground(bool is_active) {
-    int horizontal_padding =
-        delegate_->GetAppListConfig().folder_name_padding();
     SetBorder(views::CreatePaddedBorder(
         views::CreateRoundedRectBorder(
-            delegate_->GetAppListConfig().folder_name_border_thickness(),
-            delegate_->GetAppListConfig().folder_name_border_radius(),
+            kFolderNameBorderThickness, kFolderNameBorderRadius,
             AppListColorProvider::Get()->GetFolderNameBorderColor(is_active)),
-        gfx::Insets(0, horizontal_padding)));
+        gfx::Insets(0, kFolderNamePadding)));
     UpdateBackgroundColor(is_active);
   }
 
@@ -201,8 +217,7 @@ class FolderHeaderView::FolderNameView : public views::Textfield,
     // Ensure that the tap target for this view is always at least the view's
     // minimum width.
     int min_width =
-        std::max(delegate_->GetAppListConfig().folder_header_min_tap_width(),
-                 textfield_bounds.width());
+        std::max(kFolderHeaderMinTapWidth, textfield_bounds.width());
     int horizontal_padding = -((min_width - textfield_bounds.width()) / 2);
     textfield_bounds.Inset(gfx::Insets(0, horizontal_padding));
 
@@ -217,9 +232,6 @@ class FolderHeaderView::FolderNameView : public views::Textfield,
 
   // The parent FolderHeaderView, owns this.
   FolderHeaderView* const folder_header_view_;
-
-  // The parent FolderHeaderView's delegate.
-  FolderHeaderViewDelegate* const delegate_;
 
   // Name of the folder when FolderNameView is focused, used to track folder
   // rename metric.
@@ -242,16 +254,15 @@ class FolderHeaderView::FolderNameView : public views::Textfield,
 
 FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
     : folder_item_(nullptr),
-      folder_name_view_(new FolderNameView(this, delegate)),
       folder_name_placeholder_text_(
           ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
               IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER)),
       delegate_(delegate),
       folder_name_visible_(true),
       is_tablet_mode_(false) {
+  folder_name_view_ = AddChildView(std::make_unique<FolderNameView>(this));
   folder_name_view_->SetPlaceholderText(folder_name_placeholder_text_);
   folder_name_view_->set_controller(this);
-  AddChildView(folder_name_view_);
 
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -334,7 +345,7 @@ bool FolderHeaderView::IsFolderNameEnabledForTest() const {
 }
 
 gfx::Size FolderHeaderView::CalculatePreferredSize() const {
-  return gfx::Size(delegate_->GetAppListConfig().folder_header_max_width(),
+  return gfx::Size(kMaxFolderHeaderWidth,
                    folder_name_view_->GetPreferredSize().height());
 }
 
@@ -350,18 +361,17 @@ views::Textfield* FolderHeaderView::GetFolderNameViewForTest() const {
   return folder_name_view_;
 }
 
-int FolderHeaderView::GetMaxFolderNameWidth() const {
-  return delegate_->GetAppListConfig().folder_header_max_width();
+int FolderHeaderView::GetMaxFolderNameCharLengthForTest() const {
+  return kMaxFolderNameChars;
 }
 
 std::u16string FolderHeaderView::GetElidedFolderName(
     const std::u16string& folder_name) const {
   // Enforce the maximum folder name length.
-  std::u16string name = folder_name.substr(
-      0, delegate_->GetAppListConfig().max_folder_name_chars());
+  std::u16string name = folder_name.substr(0, kMaxFolderNameChars);
 
   // Get maximum text width for fitting into |folder_name_view_|.
-  int text_width = std::min(GetMaxFolderNameWidth(), width()) -
+  int text_width = std::min(kMaxFolderHeaderWidth, width()) -
                    folder_name_view_->GetCaretBounds().width() -
                    folder_name_view_->GetInsets().width();
   std::u16string elided_name = gfx::ElideText(
@@ -383,10 +393,8 @@ void FolderHeaderView::Layout() {
       gfx::Canvas::GetStringWidth(text, folder_name_view_->GetFontList()) +
       folder_name_view_->GetCaretBounds().width() +
       folder_name_view_->GetInsets().width();
-  text_width = std::min(
-      text_width, delegate_->GetAppListConfig().folder_header_max_width());
-  text_width = std::max(
-      text_width, delegate_->GetAppListConfig().folder_header_min_width());
+  text_width = std::min(text_width, kMaxFolderHeaderWidth);
+  text_width = std::max(text_width, kMinFolderHeaderWidth);
   text_bounds.set_x(std::max(0, rect.x() + (rect.width() - text_width) / 2));
   text_bounds.set_width(std::min(rect.width(), text_width));
 
@@ -403,8 +411,7 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
 
   folder_item_->RemoveObserver(this);
   // Enforce the maximum folder name length in UI.
-  if (new_contents.length() >
-      delegate_->GetAppListConfig().max_folder_name_chars()) {
+  if (new_contents.length() > kMaxFolderNameChars) {
     folder_name_view_->SetText(previous_folder_name_.value());
     sender->SetSelectedRange(gfx::Range(previous_cursor_position_.value(),
                                         previous_cursor_position_.value()));

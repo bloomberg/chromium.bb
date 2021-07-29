@@ -5,6 +5,7 @@
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as IconButton from '../../components/icon_button/icon_button.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
+import markdownImageStyles from './markdownImage.css.js';
 
 import type {ImageData} from './MarkdownImagesMap.js';
 import {getMarkdownImage} from './MarkdownImagesMap.js';
@@ -20,7 +21,7 @@ export interface MarkdownImageData {
  * This makes sure that all icons/images are accounted for in markdown.
  */
 export class MarkdownImage extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-markdown-image`;
+  static readonly litTagName = LitHtml.literal`devtools-markdown-image`;
 
   private readonly shadow = this.attachShadow({mode: 'open'});
   private imageData?: ImageData;
@@ -28,6 +29,10 @@ export class MarkdownImage extends HTMLElement {
 
   constructor() {
     super();
+  }
+
+  connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [markdownImageStyles];
   }
 
   set data(data: MarkdownImageData) {
@@ -55,11 +60,6 @@ export class MarkdownImage extends HTMLElement {
     }
     const {src, width = '100%', height = '100%'} = this.imageData;
     return LitHtml.html`
-      <style>
-        .markdown-image {
-          display: block;
-        }
-      </style>
       <img class="markdown-image" src=${src} alt=${this.imageTitle} width=${width} height=${height}/>
     `;
   }

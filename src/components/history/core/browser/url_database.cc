@@ -48,7 +48,7 @@ URLDatabase::~URLDatabase() = default;
 
 // Convenience to fill a URLRow. Must be in sync with the fields in
 // kURLRowFields.
-void URLDatabase::FillURLRow(const sql::Statement& s, URLRow* i) {
+void URLDatabase::FillURLRow(sql::Statement& s, URLRow* i) {
   DCHECK(i);
   i->set_id(s.ColumnInt64(0));
   i->set_url(GURL(s.ColumnString(1)));
@@ -706,11 +706,6 @@ bool URLDatabase::DeleteKeywordSearchTermForURL(URLID url_id) {
       SQL_FROM_HERE, "DELETE FROM keyword_search_terms WHERE url_id=?"));
   statement.BindInt64(0, url_id);
   return statement.Run();
-}
-
-bool URLDatabase::GetVisitsForUrl2(URLID url_id, VisitVector* visits) {
-  NOTREACHED();
-  return false;
 }
 
 bool URLDatabase::DropStarredIDFromURLs() {

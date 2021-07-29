@@ -13,6 +13,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 

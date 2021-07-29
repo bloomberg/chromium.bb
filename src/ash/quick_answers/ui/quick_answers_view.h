@@ -35,6 +35,7 @@ class ASH_EXPORT QuickAnswersView : public views::Button {
  public:
   QuickAnswersView(const gfx::Rect& anchor_view_bounds,
                    const std::string& title,
+                   bool is_internal,
                    QuickAnswersUiController* controller);
   ~QuickAnswersView() override;
 
@@ -65,8 +66,11 @@ class ASH_EXPORT QuickAnswersView : public views::Button {
  private:
   void InitLayout();
   void InitWidget();
+  void AddContentView();
   void AddDogfoodButton();
+  void AddSettingsButton();
   void AddAssistantIcon();
+  void AddGoogleIcon();
   void ResetContentView();
   void SetBackgroundState(bool highlight);
   void UpdateBounds();
@@ -85,12 +89,15 @@ class ASH_EXPORT QuickAnswersView : public views::Button {
   QuickAnswersUiController* const controller_;
   bool has_second_row_answer_ = false;
   std::string title_;
+  bool is_internal_ = false;
 
+  views::View* base_view_ = nullptr;
   views::View* main_view_ = nullptr;
   views::View* content_view_ = nullptr;
   views::Label* first_answer_label_ = nullptr;
   views::LabelButton* retry_label_ = nullptr;
   views::ImageButton* dogfood_button_ = nullptr;
+  views::ImageButton* settings_button_ = nullptr;
 
   std::unique_ptr<QuickAnswersPreTargetHandler> quick_answers_view_handler_;
   std::unique_ptr<QuickAnswersFocusSearch> focus_search_;

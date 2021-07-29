@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/serial/serial.h"
 #include "third_party/blink/renderer/modules/serial/serial_port_underlying_sink.h"
 #include "third_party/blink/renderer/modules/serial/serial_port_underlying_source.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 
 namespace blink {
@@ -183,6 +184,12 @@ SerialPortInfo* SerialPort::getInfo() {
 ScriptPromise SerialPort::open(ScriptState* script_state,
                                const SerialOptions* options,
                                ExceptionState& exception_state) {
+  if (!GetExecutionContext()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "Script context has shut down.");
+    return ScriptPromise();
+  }
+
   if (open_resolver_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,

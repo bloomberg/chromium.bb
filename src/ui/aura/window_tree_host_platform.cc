@@ -57,7 +57,7 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(
     std::unique_ptr<Window> window)
     : WindowTreeHost(std::move(window)) {
   bounds_in_pixels_ = properties.bounds;
-  CreateCompositor(viz::FrameSinkId(), false, false,
+  CreateCompositor(false, false,
                    properties.enable_compositing_based_throttling);
   CreateAndSetPlatformWindow(std::move(properties));
 }
@@ -203,6 +203,11 @@ void WindowTreeHostPlatform::OnCursorVisibilityChangedNative(bool show) {
   NOTIMPLEMENTED();
 }
 
+void WindowTreeHostPlatform::LockMouse(Window* window) {
+  window->SetCapture();
+  WindowTreeHost::LockMouse(window);
+}
+
 void WindowTreeHostPlatform::OnBoundsChanged(const BoundsChange& change) {
   // It's possible this function may be called recursively. Only notify
   // observers on initial entry. This way observers can safely assume that
@@ -256,6 +261,7 @@ void WindowTreeHostPlatform::OnCloseRequest() {
 void WindowTreeHostPlatform::OnClosed() {}
 
 void WindowTreeHostPlatform::OnWindowStateChanged(
+    ui::PlatformWindowState old_state,
     ui::PlatformWindowState new_state) {}
 
 void WindowTreeHostPlatform::OnLostCapture() {

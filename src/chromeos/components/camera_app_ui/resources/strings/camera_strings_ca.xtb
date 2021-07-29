@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">Imprimeix</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> no està endollada.</translation>
 <translation id="1473110567575736769">Temporitzador de 3 segons</translation>
+<translation id="1478594628797167447">Escàners</translation>
+<translation id="1545749641540134597">Escaneja el codi QR</translation>
 <translation id="1620510694547887537">Càmera</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">No s'ha gravat res</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> activa</translation>
 <translation id="2144806332417375165">Personalitza els paràmetres de vídeo</translation>
+<translation id="2175927920773552910">Codi QR</translation>
+<translation id="2268107369530950373">Canvia al mode d'escaneig</translation>
 <translation id="229579744168541441">Exporta al disc</translation>
 <translation id="2320741269052147773">Desplaça cap a l'esquerra</translation>
 <translation id="2501278716633472235">Torna</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">Micròfon</translation>
 <translation id="3240426699337459095">S'ha copiat l'enllaç.</translation>
 <translation id="3259149966178251584">Resolució de la càmera</translation>
+<translation id="3448774564454087943">El vídeo no s'ha desat perquè és massa curt</translation>
 <translation id="3517926952904427380">No es pot fer una foto vertical</translation>
 <translation id="3569311554794739032">Confirmes que vols suprimir <ph name="FILE" />?</translation>
 <translation id="3733597664308256288">Controls de càmera addicionals disponibles. Cerca+fletxa a la dreta per accedir-hi.</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">Foto</translation>
 <translation id="4649291346448517080">No es pot desar el fitxer</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">Grava vídeos de diversos canals</translation>
 <translation id="5057360777601936059">La càmera no està disponible en aquest moment.
         Comprova que estigui ben connectada.</translation>
 <translation id="5152121255775685072">Ves a la galeria</translation>
+<translation id="5268823927180092501">Activa el mode de document en totes les càmeres</translation>
 <translation id="5422455049771430511">Les teves fotos i els teus vídeos han canviat de lloc</translation>
 <translation id="5671277269877808209">Quadrat</translation>
+<translation id="5753488212459587150">Activa el mode expert</translation>
 <translation id="5775960006311140197">Mode expert</translation>
 <translation id="5869546221129391014">Quadrícula</translation>
 <translation id="5975083100439434680">Redueix</translation>

@@ -21,7 +21,7 @@
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/background_download_service_factory.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model_download_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
@@ -47,6 +47,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 
@@ -739,7 +740,8 @@ void PredictionManager::OnStoreInitialized() {
       !prediction_model_download_manager_) {
     prediction_model_download_manager_ =
         std::make_unique<PredictionModelDownloadManager>(
-            DownloadServiceFactory::GetForKey(profile_->GetProfileKey()),
+            BackgroundDownloadServiceFactory::GetForKey(
+                profile_->GetProfileKey()),
             base::ThreadPool::CreateSequencedTaskRunner(
                 {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
     prediction_model_download_manager_->AddObserver(this);

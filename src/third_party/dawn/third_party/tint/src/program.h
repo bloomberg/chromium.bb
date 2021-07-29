@@ -16,6 +16,7 @@
 #define SRC_PROGRAM_H_
 
 #include <string>
+#include <unordered_set>
 
 #include "src/ast/function.h"
 #include "src/program_id.h"
@@ -125,6 +126,25 @@ class Program {
   /// information
   bool IsValid() const;
 
+  /// @return the TypeInfo pointers of all transforms that have been applied to
+  /// this program.
+  std::unordered_set<const TypeInfo*> TransformsApplied() const {
+    return transforms_applied_;
+  }
+
+  /// @param transform the TypeInfo of the transform
+  /// @returns true if the transform with the given TypeInfo was applied to the
+  /// Program
+  bool HasTransformApplied(const TypeInfo* transform) const {
+    return transforms_applied_.count(transform);
+  }
+
+  /// @returns true if the transform of type `T` was applied.
+  template <typename T>
+  bool HasTransformApplied() const {
+    return HasTransformApplied(&TypeInfo::Of<T>());
+  }
+
   /// Helper for returning the resolved semantic type of the expression `expr`.
   /// @param expr the AST expression
   /// @return the resolved semantic type for the expression, or nullptr if the
@@ -132,10 +152,17 @@ class Program {
   sem::Type* TypeOf(const ast::Expression* expr) const;
 
   /// Helper for returning the resolved semantic type of the AST type `type`.
-  /// @param expr the AST type
+  /// @param type the AST type
   /// @return the resolved semantic type for the type, or nullptr if the type
   /// has no resolved type.
-  const sem::Type* TypeOf(const ast::Type* expr) const;
+  const sem::Type* TypeOf(const ast::Type* type) const;
+
+  /// Helper for returning the resolved semantic type of the AST type
+  /// declaration `type_decl`.
+  /// @param type_decl the AST type declaration
+  /// @return the resolved semantic type for the type declaration, or nullptr if
+  /// the type declaration has no resolved type.
+  const sem::Type* TypeOf(const ast::TypeDecl* type_decl) const;
 
   /// @param demangle whether to automatically demangle the symbols in the
   /// returned string
@@ -173,6 +200,7 @@ class Program {
   sem::Info sem_;
   SymbolTable symbols_{id_};
   diag::List diagnostics_;
+  std::unordered_set<const TypeInfo*> transforms_applied_;
   bool is_valid_ = false;  // Not valid until it is built
   bool moved_ = false;
 };

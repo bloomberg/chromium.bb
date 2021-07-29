@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
-#include "third_party/blink/renderer/core/css/css_font_family_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
+#include "third_party/blink/renderer/core/css/css_pending_system_font_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_property_value.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
@@ -23,7 +23,6 @@
 #include "third_party/blink/renderer/core/css/properties/shorthands.h"
 #include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/layout_theme_font_provider.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -868,6 +867,46 @@ const CSSValue* Columns::CSSValueFromComputedStyleInternal(
       columnsShorthand(), style, layout_object, allow_visited_style);
 }
 
+bool Container::ParseShorthand(
+    bool important,
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&,
+    HeapVector<CSSPropertyValue, 256>& properties) const {
+  const CSSValue* type = css_parsing_utils::ConsumeContainerType(range);
+  if (!type)
+    return false;
+
+  const CSSValue* name = CSSIdentifierValue::Create(CSSValueID::kNone);
+  if (css_parsing_utils::ConsumeSlashIncludingWhitespace(range)) {
+    if (!(name = css_parsing_utils::ConsumeContainerName(range, context)))
+      return false;
+  }
+
+  if (!range.AtEnd())
+    return false;
+
+  css_parsing_utils::AddProperty(
+      CSSPropertyID::kContainerType, CSSPropertyID::kContainer, *type,
+      important, css_parsing_utils::IsImplicitProperty::kNotImplicit,
+      properties);
+
+  css_parsing_utils::AddProperty(
+      CSSPropertyID::kContainerName, CSSPropertyID::kContainer, *name,
+      important, css_parsing_utils::IsImplicitProperty::kNotImplicit,
+      properties);
+
+  return true;
+}
+
+const CSSValue* Container::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValuesForContainerShorthand(style, layout_object,
+                                                         allow_visited_style);
+}
+
 bool Flex::ParseShorthand(bool important,
                           CSSParserTokenRange& range,
                           const CSSParserContext& context,
@@ -979,69 +1018,14 @@ bool ConsumeSystemFont(bool important,
                        CSSParserTokenRange& range,
                        HeapVector<CSSPropertyValue, 256>& properties) {
   CSSValueID system_font_id = range.ConsumeIncludingWhitespace().Id();
-  DCHECK_GE(system_font_id, CSSValueID::kCaption);
-  DCHECK_LE(system_font_id, CSSValueID::kStatusBar);
+  DCHECK(CSSParserFastPaths::IsValidSystemFont(system_font_id));
   if (!range.AtEnd())
     return false;
 
-  FontSelectionValue font_slope = NormalSlopeValue();
-  FontSelectionValue font_weight = NormalWeightValue();
-  float font_size = 0;
-  AtomicString font_family;
-  LayoutThemeFontProvider::SystemFont(system_font_id, font_slope, font_weight,
-                                      font_size, font_family);
-
-  css_parsing_utils::AddProperty(
-      CSSPropertyID::kFontStyle, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(font_slope == ItalicSlopeValue()
-                                      ? CSSValueID::kItalic
-                                      : CSSValueID::kNormal),
-      important, css_parsing_utils::IsImplicitProperty::kNotImplicit,
+  css_parsing_utils::AddExpandedPropertyForValue(
+      CSSPropertyID::kFont,
+      *cssvalue::CSSPendingSystemFontValue::Create(system_font_id), important,
       properties);
-  css_parsing_utils::AddProperty(
-      CSSPropertyID::kFontWeight, CSSPropertyID::kFont,
-      *CSSNumericLiteralValue::Create(font_weight,
-                                      CSSPrimitiveValue::UnitType::kNumber),
-      important, css_parsing_utils::IsImplicitProperty::kNotImplicit,
-      properties);
-  css_parsing_utils::AddProperty(
-      CSSPropertyID::kFontSize, CSSPropertyID::kFont,
-      *CSSNumericLiteralValue::Create(font_size,
-                                      CSSPrimitiveValue::UnitType::kPixels),
-      important, css_parsing_utils::IsImplicitProperty::kNotImplicit,
-      properties);
-
-  CSSValueList* font_family_list = CSSValueList::CreateCommaSeparated();
-  font_family_list->Append(*CSSFontFamilyValue::Create(font_family));
-  css_parsing_utils::AddProperty(
-      CSSPropertyID::kFontFamily, CSSPropertyID::kFont, *font_family_list,
-      important, css_parsing_utils::IsImplicitProperty::kNotImplicit,
-      properties);
-
-  css_parsing_utils::AddProperty(
-      CSSPropertyID::kFontStretch, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
-      css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
-  css_parsing_utils::AddProperty(
-      CSSPropertyID::kFontVariantCaps, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
-      css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
-  css_parsing_utils::AddProperty(
-      CSSPropertyID::kFontVariantLigatures, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
-      css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
-  css_parsing_utils::AddProperty(
-      CSSPropertyID::kFontVariantNumeric, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
-      css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
-  css_parsing_utils::AddProperty(
-      CSSPropertyID::kFontVariantEastAsian, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
-      css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
-  css_parsing_utils::AddProperty(
-      CSSPropertyID::kLineHeight, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
-      css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
   return true;
 }
 
@@ -1186,8 +1170,7 @@ bool Font::ParseShorthand(bool important,
                           const CSSParserLocalContext&,
                           HeapVector<CSSPropertyValue, 256>& properties) const {
   const CSSParserToken& token = range.Peek();
-  if (token.Id() >= CSSValueID::kCaption &&
-      token.Id() <= CSSValueID::kStatusBar)
+  if (CSSParserFastPaths::IsValidSystemFont(token.Id()))
     return ConsumeSystemFont(important, range, properties);
   return ConsumeFont(important, range, context, properties);
 }

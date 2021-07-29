@@ -10,6 +10,7 @@
 <translation id="1125124144982679672">Cine folosește Chrome?</translation>
 <translation id="1142745911746664600">Chrome nu se poate actualiza</translation>
 <translation id="1154147086299354128">&amp;Deschide în Chrome</translation>
+<translation id="1182414570724401860">Chrome recomandă să nu descarci sau deschizi acest fișier</translation>
 <translation id="1278833599417554002">Relansează pentru a actualiza &amp;Chrome</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> îți solicită să citești și să accepți Termenii și condițiile următoare înainte de a folosi acest dispozitiv. Aceste condiții nu extind, nu modifică și nu limitează Condițiile Google Chrome OS.</translation>
 <translation id="1302523850133262269">Așteaptă până când Chrome instalează cele mai recente actualizări de sistem.</translation>
@@ -34,7 +35,7 @@
 <translation id="174539241580958092">Google Chrome nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1786003790898721085">Asigură-te că te-ai conectat la Chrome pe <ph name="TARGET_DEVICE_NAME" /> și încearcă din nou să trimiți.</translation>
-<translation id="1807517590912578995">Creezi un profil Chrome separat?</translation>
+<translation id="1810203443153428607">Instalarea sistemului de operare Chrome va înlocui toate datele de pe dispozitiv.</translation>
 <translation id="1812689907177901597">Dacă dezactivezi, te poți conecta la site-uri Google ca Gmail fără a te conecta la Chrome</translation>
 <translation id="1860536484129686729">Chrome are nevoie de permisiune ca să acceseze camera foto pentru acest site</translation>
 <translation id="1873233029667955273">Google Chrome nu este browserul prestabilit</translation>
@@ -55,6 +56,16 @@
 <translation id="2348335408836342058">Chrome are nevoie de permisiune ca să acceseze camera foto și microfonul pentru acest site</translation>
 <translation id="234869673307233423">Chrome nu îți poate verifica parolele. Încearcă din nou mai târziu.</translation>
 <translation id="235650106824528204">Toate datele Chrome generate în timpul folosirii acestui profil (precum marcajele create, istoricul, parolele și alte setări) pot fi eliminate de administratorul profilului de serviciu. <ph name="LEARN_MORE" /></translation>
+<translation id="2409866122341731384">Șterge datele de pe hard disk și instalează sistemul de operare Chrome</translation>
+<translation id="2417565246123344595"><ph name="BEGIN_PARAGRAPH1" />Suntem gata să instalăm sistemul de operare Chrome! Dacă alegi să continui:
+          <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />fișierele, datele și sistemul de operare actual vor fi șterse;
+          <ph name="LIST_ITEM" />se va instala sistemul de operare Chrome;
+          <ph name="LIST_ITEM" />dispozitivul se va închide după finalizarea instalării.
+          <ph name="END_LIST" />
+          <ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />Un ultim memento: instalarea va șterge toate datele de pe hard disk. Asigură-te că ai făcut backup datelor pe care vrei să le păstrezi.<ph name="END_PARAGRAPH2" />
+          <ph name="BEGIN_PARAGRAPH3" />Odată ce începe instalarea, nu o poți anula.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="2429317896000329049">Google Chrome nu a putut sincroniza datele, deoarece sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
 <translation id="2467438592969358367">Google Chrome vrea să îți exporte parolele. Pentru a permite asta, introdu parola pentru Windows.</translation>
 <translation id="2485422356828889247">Dezinstalează</translation>
@@ -62,7 +73,6 @@
 <translation id="2574930892358684005"><ph name="EXISTING_USER" /> s-a conectat deja la acest profil Chrome. Ca să separi navigarea, poți crea propriul profil în Chrome.</translation>
 <translation id="2580411288591421699">Nu se poate instala aceeași versiune Google Chrome care rulează în prezent. Închide Google Chrome și încearcă din nou.</translation>
 <translation id="2586406160782125153">Astfel, se vor șterge datele de navigare de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chrome ca <ph name="USER_EMAIL" />.</translation>
-<translation id="2588634262982826227">Sistemul de operare Chrome poate restabili oricând aplicațiile și paginile după repornire, fără să întrebe de fiecare dată.</translation>
 <translation id="2622559029861875898">Chrome nu poate căuta actualizări. Verifică-ți conexiunea la internet.</translation>
 <translation id="2644798301485385923">Sistemul de operare Chrome</translation>
 <translation id="2652691236519827073">Deschide linkul într-o &amp;filă Chrome nouă</translation>
@@ -126,6 +136,7 @@
 <translation id="4251615635259297716">Vă conectați datele Chrome cu acest cont?</translation>
 <translation id="4281844954008187215">Condiții de furnizare a serviciilor</translation>
 <translation id="4293420128516039005">Conectează-te pentru a sincroniza și a personaliza Chrome pe toate dispozitivele</translation>
+<translation id="429583012151745428">Instalarea este în curs. Nu închide dispozitivul. Procesul ar trebui să dureze cel mult 20 de minute. Dispozitivul se va închide automat după instalare.</translation>
 <translation id="4325083532956419387">Versiunea sistemului de operare Chrome</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Sistemul de operare Chrome</translation>
@@ -166,6 +177,10 @@
 <translation id="5394833366792865639">Arată o filă Chrome</translation>
 <translation id="5430073640787465221">Fișierul dvs. de preferințe este fie deteriorat, fie nevalid. Google Chrome nu poate recupera setările dvs.</translation>
 <translation id="5434383153637353914">În această pagină poți să gestionezi conturile Google la care te-ai conectat. Conturile vor fi disponibile în browserul Chrome și în aplicații din Magazinul Play, precum și în servicii cum ar fi Gmail, Drive și YouTube. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
+<translation id="5449497480926255862"><ph name="BEGIN_PARAGRAPH1" />Înainte de a începe, asigură-te că ai un backup actualizat al datelor. Instalarea sistemului de operare Chrome va înlocui toate datele de pe hard disk.<ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />Google nu răspunde pentru pierderea datelor și nu garantează că sistemul de operare Chrome va funcționa cu modele care nu sunt certificate. Accesează [TBD] pentru a afla mai multe despre modelele certificate.<ph name="END_PARAGRAPH2" />
+          <ph name="BEGIN_PARAGRAPH3" />Află mai multe despre instalarea sistemului de operare Chrome și ștergerea datelor: [TBD URL]<ph name="END_PARAGRAPH3" />
+          <ph name="BEGIN_PARAGRAPH4" />Dacă ești gata să continui, dă clic pe Instalează sistemul de operare Chrome și te vom îndruma în procesul de instalare prin câțiva pași simpli. Vei avea încă o șansă de a confirma înainte să aducem modificări computerului.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="5486618155264784386">Instalează sistemul de operare Chrome</translation>
 <translation id="556024056938947818">Google Chrome încearcă să afișeze parolele.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -201,11 +216,11 @@
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome se actualizează (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6568793831116033768">Sistemul de operare Chrome</translation>
+<translation id="664235759707825982">Ești gata să instalezi sistemul de operare Chrome</translation>
 <translation id="6676384891291319759">Accesează internetul</translation>
 <translation id="6679975945624592337">Permite Google Chrome să ruleze în fundal</translation>
 <translation id="6739177684496155661">Continui cu un profil Chrome nou?</translation>
 <translation id="6750954913813541382">Pentru a corecta erorile de scriere, Chrome trimite la Google textul pe care îl introduci în browser</translation>
-<translation id="6755885556185485672">Sistemul de operare Chrome nu s-a închis corect.</translation>
 <translation id="677276454032249905">Ieși din Chrome oricum?</translation>
 <translation id="683440813066116847">Regula de intrare pentru Google Chrome Canary pentru a permite traficul mDNS.</translation>
 <translation id="6885412569789873916">Aplicații Chrome Beta</translation>
@@ -220,9 +235,9 @@
 <translation id="7155997830309522122">Dacă da, modifică parola salvată în Chrome, astfel încât să corespundă cu noua parolă.</translation>
 <translation id="7161904924553537242">Bun venit la Google Chrome</translation>
 <translation id="7242029209006116544">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. Aveți opțiunea de a crea un profil nou, pentru a păstra separat datele Chrome existente. <ph name="LEARN_MORE" /></translation>
+<translation id="7275165473619697274">Se instalează sistemul de operare Chrome</translation>
 <translation id="7295052994004373688">Limba este folosită pentru a afișa IU Google Chrome</translation>
 <translation id="7296210096911315575">Informații importante cu privire la folosire și siguranță</translation>
-<translation id="7303916856901595720">Muți contul într-un nou profil Chrome?</translation>
 <translation id="7308322188646931570">Pentru a descărca fișiere, Chrome necesită acces la stocare</translation>
 <translation id="7339898014177206373">Fereastră nouă</translation>
 <translation id="7398801000654795464">Ați fost conectat(ă) la Chrome ca <ph name="USER_EMAIL_ADDRESS" />. Utilizați același cont pentru a vă conecta din nou.</translation>
@@ -249,7 +264,6 @@
 <translation id="7890208801193284374">Dacă permiteți accesul la un computer, familia și prietenii pot să navigheze separat și să configureze Chrome cum doresc.</translation>
 <translation id="7896673875602241923">Un alt utilizator s-a conectat anterior la Chrome pe acest computer ca <ph name="ACCOUNT_EMAIL_LAST" />. Creează un nou utilizator Chrome pentru a-ți păstra separat informațiile.</translation>
 <translation id="7930071585467473040">Google Chrome încearcă să copieze parolele.</translation>
-<translation id="7951988079884443914">Chrome recomandă să nu descarci sau deschizi acest fișier.</translation>
 <translation id="7962410387636238736">Acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Windows XP și Windows Vista nu mai sunt acceptate</translation>
 <translation id="79947657522496226">Sistemul de operare Chrome este posibil datorită unui <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> suplimentar, la fel cum este și <ph name="BEGIN_LINK_LINUX_OSS" />mediul de dezvoltare Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="8008534537613507642">Reinstalați Chrome</translation>

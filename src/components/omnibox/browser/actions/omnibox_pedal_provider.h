@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_ACTIONS_OMNIBOX_PEDAL_PROVIDER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_ACTIONS_OMNIBOX_PEDAL_PROVIDER_H_
 
-#include <memory>
 #include <unordered_map>
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/values.h"
 #include "components/omnibox/browser/actions/omnibox_pedal.h"
@@ -56,10 +56,19 @@ class OmniboxPedalProvider {
   size_t EstimateMemoryUsage() const;
 
  protected:
+  // Befriending this test base class prevents duplication of a long exhaustive
+  // unit test (specifically the TestLiteralConceptExpressions method).
+  friend class OmniboxPedalImplementationsTest;
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalImplementationsTest,
                            ProviderFiltersPedalUpdateChrome);
+  FRIEND_TEST_ALL_PREFIXES(
+      OmniboxPedalImplementationsWithoutTranslationConsoleTest,
+      ProviderFiltersPedalUpdateChrome);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalImplementationsTest,
                            UnorderedSynonymExpressionsAreConceptMatches);
+  FRIEND_TEST_ALL_PREFIXES(
+      OmniboxPedalImplementationsWithoutTranslationConsoleTest,
+      UnorderedSynonymExpressionsAreConceptMatches);
 
   // Generate a token sequence for text using internal dictionary & delimiters.
   // Outputs empty sequence if any delimited part of text is not in dictionary.
@@ -67,9 +76,22 @@ class OmniboxPedalProvider {
   void Tokenize(OmniboxPedal::TokenSequence& out_tokens,
                 const std::u16string& text) const;
 
+  // An open variant of Tokenize that expands the token dictionary as needed.
+  void TokenizeAndExpandDictionary(OmniboxPedal::TokenSequence& out_tokens,
+                                   const std::u16string& token_sequence_string);
+
   void LoadPedalConcepts();
-  OmniboxPedal::SynonymGroup LoadSynonymGroup(
+
+  // Load a synonym group from a JSON sourced Value.
+  OmniboxPedal::SynonymGroup LoadSynonymGroupValue(
       const base::Value& group_value) const;
+
+  // Load a synonym group from a localization sourced string with comma
+  // separated synonyms.
+  OmniboxPedal::SynonymGroup LoadSynonymGroupString(
+      bool required,
+      bool match_once,
+      std::u16string synonyms_csv);
 
   AutocompleteProviderClient& client_;
 
@@ -79,7 +101,7 @@ class OmniboxPedalProvider {
   // vector and index by id separately.  The lookup is needed rarely but
   // iterating over the whole collection happens very frequently, so we should
   // really optimize for iteration (vector), not lookup (map).
-  std::unordered_map<OmniboxPedalId, std::unique_ptr<OmniboxPedal>> pedals_;
+  std::unordered_map<OmniboxPedalId, scoped_refptr<OmniboxPedal>> pedals_;
 
   // Common words that may be used when typing to trigger Pedals.  All instances
   // of these words are removed from match text when looking for triggers.

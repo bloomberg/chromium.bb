@@ -10,10 +10,10 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
@@ -54,9 +54,29 @@ class WebAppMover;
 // Subsystem construction should have no side effects and start no tasks.
 // Tests can replace any of the subsystems before Start() is called.
 // Similarly, in destruction, subsystems should not refer to each other.
-class WebAppProvider : public WebAppProviderBase {
+class WebAppProvider : public KeyedService {
  public:
+  // Deprecated: Use GetForWebApps or GetForSystemWebApps instead.
   static WebAppProvider* Get(Profile* profile);
+
+  // On Chrome OS: if Lacros Web App (WebAppsCrosapi) is enabled, returns
+  // WebAppProvider in Lacros and nullptr in Ash. Otherwise does the reverse
+  // (nullptr in Lacros, WebAppProvider in Ash). On other platforms, always
+  // returns a WebAppProvider.
+  static WebAppProvider* GetForWebApps(Profile* profile);
+
+  // On Chrome OS: returns the WebAppProvider that hosts System Web Apps in Ash;
+  // In Lacros, returns nullptr (unless EnableSystemWebAppInLacrosForTesting).
+  // On other platforms, always returns a WebAppProvider.
+  static WebAppProvider* GetForSystemWebApps(Profile* profile);
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Enables System Web Apps WebAppProvider so we can test SWA features in
+  // Lacros, even we don't have actual SWAs in Lacros. After calling this,
+  // GetForSystemWebApps will return a valid WebAppProvider in Lacros.
+  static void EnableSystemWebAppsInLacrosForTesting();
+#endif
+
   static WebAppProvider* GetForWebContents(content::WebContents* web_contents);
 
   using OsIntegrationManagerFactory =
@@ -72,19 +92,34 @@ class WebAppProvider : public WebAppProviderBase {
   // Start the Web App system. This will run subsystem startup tasks.
   void Start();
 
-  // WebAppProviderBase:
-  AppRegistrar& registrar() override;
-  AppRegistryController& registry_controller() override;
-  InstallManager& install_manager() override;
-  InstallFinalizer& install_finalizer() override;
-  ManifestUpdateManager& manifest_update_manager() override;
-  ExternallyManagedAppManager& externally_managed_app_manager() override;
-  WebAppPolicyManager& policy_manager() override;
-  WebAppUiManager& ui_manager() override;
-  WebAppAudioFocusIdMap& audio_focus_id_map() override;
-  AppIconManager& icon_manager() override;
-  SystemWebAppManager& system_web_app_manager() override;
-  OsIntegrationManager& os_integration_manager() override;
+  // The app registry model.
+  WebAppRegistrar& registrar();
+  // The app registry controller.
+  AppRegistryController& registry_controller();
+  // UIs can use InstallManager for user-initiated Web Apps install.
+  InstallManager& install_manager();
+  // Implements persistence for Web Apps install.
+  InstallFinalizer& install_finalizer();
+  // Keeps app metadata up to date with site manifests.
+  ManifestUpdateManager& manifest_update_manager();
+  // Clients can use ExternallyManagedAppManager to install, uninstall, and
+  // update Web Apps.
+  ExternallyManagedAppManager& externally_managed_app_manager();
+  // Clients can use WebAppPolicyManager to request updates of policy installed
+  // Web Apps.
+  WebAppPolicyManager& policy_manager();
+
+  WebAppUiManager& ui_manager();
+
+  WebAppAudioFocusIdMap& audio_focus_id_map();
+
+  // Implements fetching of app icons.
+  AppIconManager& icon_manager();
+
+  SystemWebAppManager& system_web_app_manager();
+
+  // Manage all OS hooks that need to be deployed during Web Apps install
+  OsIntegrationManager& os_integration_manager();
 
   // KeyedService:
   void Shutdown() override;
@@ -124,7 +159,7 @@ class WebAppProvider : public WebAppProviderBase {
   std::unique_ptr<WebAppMover> web_app_mover_;
 
   // Generalized subsystems:
-  std::unique_ptr<AppRegistrar> registrar_;
+  std::unique_ptr<WebAppRegistrar> registrar_;
   std::unique_ptr<AppRegistryController> registry_controller_;
   std::unique_ptr<PreinstalledWebAppManager> preinstalled_web_app_manager_;
   std::unique_ptr<AppIconManager> icon_manager_;
@@ -149,7 +184,6 @@ class WebAppProvider : public WebAppProviderBase {
   bool skip_awaiting_extension_system_ = false;
 
   base::WeakPtrFactory<WebAppProvider> weak_ptr_factory_{this};
-
 };
 
 }  // namespace web_app

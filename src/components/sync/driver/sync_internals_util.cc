@@ -514,8 +514,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     server_url->Set(service->GetSyncServiceUrlForDebugging().spec());
 
   // Identity.
-  if (is_status_valid && !full_status.sync_id.empty())
-    sync_client_id->Set(full_status.sync_id);
+  if (is_status_valid && !full_status.cache_guid.empty())
+    sync_client_id->Set(full_status.cache_guid);
   if (is_status_valid && !full_status.invalidator_client_id.empty())
     invalidator_id->Set(full_status.invalidator_client_id);
   if (!is_local_sync_enabled_state) {
@@ -642,7 +642,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   // We don't need to check is_status_valid here.
   // full_status.sync_protocol_error is exported directly from the
-  // ProfileSyncService, even if the backend doesn't exist.
+  // SyncServiceImpl, even if the backend doesn't exist.
   const bool actionable_error_detected =
       full_status.sync_protocol_error.error_type != UNKNOWN_ERROR &&
       full_status.sync_protocol_error.error_type != SYNC_SUCCESS;

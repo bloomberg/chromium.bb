@@ -999,6 +999,126 @@ TEST_F(VkLayerTest, RenderPassCreateAttachmentsMisc) {
     }
 }
 
+TEST_F(VkLayerTest, InvalidRenderPassCreateRenderPassShaderResolveQCOM) {
+    TEST_DESCRIPTION("Ensure RenderPass create meets the requirements for QCOM_render_pass_shader_resolve");
+
+    // Check for VK_KHR_get_physical_device_properties2
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    bool rp2Supported = CheckCreateRenderPass2Support(this, m_device_extension_names);
+    bool rpShaderResolveSupport = DeviceExtensionSupported(gpu(), nullptr, VK_QCOM_RENDER_PASS_SHADER_RESOLVE_EXTENSION_NAME);
+    if (rpShaderResolveSupport) {
+        m_device_extension_names.push_back(VK_QCOM_RENDER_PASS_SHADER_RESOLVE_EXTENSION_NAME);
+    } else {
+        printf("%s test requires QCOM_render_pass_shader_resolve, not available.  Skipping.\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    const VkFormat ds_format = FindSupportedDepthStencilFormat(gpu());
+    if (ds_format == VK_FORMAT_UNDEFINED) {
+        printf("%s No Depth + Stencil format found rest of tests skipped.\n", kSkipPrefix);
+        return;
+    }
+
+    std::vector<VkAttachmentDescription> attachments = {
+        // input attachments
+        {0, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_4_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL},
+        // color attachments
+        {0, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_4_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+        {0, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_4_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+        // depth attachment
+        {0, ds_format, VK_SAMPLE_COUNT_4_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL},
+        // resolve attachment
+        {0, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+    };
+
+    std::vector<VkAttachmentReference> input = {
+        {0, VK_IMAGE_LAYOUT_GENERAL},
+    };
+    std::vector<VkAttachmentReference> color = {
+        {1, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+        {2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+    };
+    VkAttachmentReference depth = {3, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+
+    std::vector<VkAttachmentReference> resolve = {
+        {4, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+        {VK_ATTACHMENT_UNUSED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+    };
+
+    VkSubpassDescription subpass = {0,
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    (uint32_t)input.size(),
+                                    input.data(),
+                                    (uint32_t)color.size(),
+                                    color.data(),
+                                    nullptr,
+                                    &depth,
+                                    0,
+                                    nullptr};
+
+    std::vector<VkSubpassDependency> dependency = {
+        {0, 1, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_ACCESS_MEMORY_WRITE_BIT,
+         VK_ACCESS_MEMORY_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT},
+    };
+
+    VkRenderPassCreateInfo rpci = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+                                   nullptr,
+                                   0,
+                                   (uint32_t)attachments.size(),
+                                   attachments.data(),
+                                   1,
+                                   &subpass,
+                                   0,
+                                   nullptr};
+
+    // Create a resolve subpass where the pResolveattachments are not VK_ATTACHMENT_UNUSED
+    VkSubpassDescription test_subpass = subpass;
+    test_subpass.pResolveAttachments = resolve.data();
+    test_subpass.flags = VK_SUBPASS_DESCRIPTION_SHADER_RESOLVE_BIT_QCOM;
+    VkRenderPassCreateInfo test_rpci = rpci;
+    test_rpci.pSubpasses = &test_subpass;
+
+    TestRenderPassCreate(m_errorMonitor, m_device->device(), &test_rpci, rp2Supported, "VUID-VkSubpassDescription-flags-03341",
+                         "VUID-VkRenderPassCreateInfo2-flags-04907");
+
+    // Create a resolve subpass which is not the last subpass in the subpass dependency chain.
+    {
+        VkSubpassDescription subpasses[2] = {subpass, subpass};
+        subpasses[0].pResolveAttachments = nullptr;
+        subpasses[0].flags = VK_SUBPASS_DESCRIPTION_SHADER_RESOLVE_BIT_QCOM;
+        subpasses[1].pResolveAttachments = nullptr;
+        subpasses[1].flags = 0;
+
+        VkRenderPassCreateInfo test2_rpci = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+                                             nullptr,
+                                             0,
+                                             (uint32_t)attachments.size(),
+                                             attachments.data(),
+                                             2,
+                                             subpasses,
+                                             (uint32_t)dependency.size(),
+                                             dependency.data()};
+
+        TestRenderPassCreate(m_errorMonitor, m_device->device(), &test2_rpci, rp2Supported, "VUID-VkSubpassDescription-flags-03343",
+                             "VUID-VkRenderPassCreateInfo2-flags-04909");
+    }
+}
+
 TEST_F(VkLayerTest, RenderPassCreateAttachmentReferenceInvalidLayout) {
     TEST_DESCRIPTION("Attachment reference uses PREINITIALIZED or UNDEFINED layouts");
 
@@ -3736,15 +3856,15 @@ TEST_F(VkLayerTest, WriteDescriptorSetConsecutiveUpdates) {
         vk::UpdateDescriptorSets(m_device->device(), 1, &descriptor_write, 0, NULL);
 
         // Create PSO that uses the uniform buffers
-        char const *fsSource =
-            "#version 450\n"
-            "\n"
-            "layout(location=0) out vec4 x;\n"
-            "layout(set=0) layout(binding=0) uniform foo { int x; int y; } bar;\n"
-            "layout(set=0) layout(binding=1) uniform blah { int x; } duh;\n"
-            "void main(){\n"
-            "   x = vec4(duh.x, bar.y, bar.x, 1);\n"
-            "}\n";
+        char const *fsSource = R"glsl(
+            #version 450
+            layout(location=0) out vec4 x;
+            layout(set=0) layout(binding=0) uniform foo { int x; int y; } bar;
+            layout(set=0) layout(binding=1) uniform blah { int x; } duh;
+            void main(){
+               x = vec4(duh.x, bar.y, bar.x, 1);
+            }
+        )glsl";
         VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
 
         pipe.InitInfo();
@@ -3919,14 +4039,14 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetBufferDestroyed) {
         buffer.init(*m_device, buffCI);
 
         // Create PSO to be used for draw-time errors below
-        char const *fsSource =
-            "#version 450\n"
-            "\n"
-            "layout(location=0) out vec4 x;\n"
-            "layout(set=0) layout(binding=0) uniform foo { int x; int y; } bar;\n"
-            "void main(){\n"
-            "   x = vec4(bar.y);\n"
-            "}\n";
+        char const *fsSource = R"glsl(
+            #version 450
+            layout(location=0) out vec4 x;
+            layout(set=0) layout(binding=0) uniform foo { int x; int y; } bar;
+            void main(){
+               x = vec4(bar.y);
+            }
+        )glsl";
         VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
         pipe.InitInfo();
         pipe.shader_stages_ = {pipe.vs_->GetStageCreateInfo(), fs.GetStageCreateInfo()};
@@ -3992,14 +4112,14 @@ TEST_F(VkLayerTest, InvalidDrawDescriptorSetBufferDestroyed) {
         buffer.init(*m_device, buffCI);
 
         // Create PSO to be used for draw-time errors below
-        char const *fsSource =
-            "#version 450\n"
-            "\n"
-            "layout(location=0) out vec4 x;\n"
-            "layout(set=0) layout(binding=0) uniform foo { int x; int y; } bar;\n"
-            "void main(){\n"
-            "   x = vec4(bar.y);\n"
-            "}\n";
+        char const *fsSource = R"glsl(
+            #version 450
+            layout(location=0) out vec4 x;
+            layout(set=0) layout(binding=0) uniform foo { int x; int y; } bar;
+            void main(){
+               x = vec4(bar.y);
+            }
+        )glsl";
         VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
         pipe.InitInfo();
         pipe.shader_stages_ = {pipe.vs_->GetStageCreateInfo(), fs.GetStageCreateInfo()};
@@ -4172,14 +4292,14 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetImageSamplerDestroyed) {
     vk::UpdateDescriptorSets(m_device->device(), 1, &descriptor_write, 0, NULL);
 
     // Create PSO to be used for draw-time errors below
-    char const *fsSource =
-        "#version 450\n"
-        "\n"
-        "layout(set=0, binding=0) uniform sampler2D s;\n"
-        "layout(location=0) out vec4 x;\n"
-        "void main(){\n"
-        "   x = texture(s, vec2(1));\n"
-        "}\n";
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(set=0, binding=0) uniform sampler2D s;
+        layout(location=0) out vec4 x;
+        void main(){
+           x = texture(s, vec2(1));
+        }
+    )glsl";
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
     VkPipelineObj pipe(m_device);
@@ -4417,16 +4537,16 @@ TEST_F(VkLayerTest, InvalidDescriptorSetSamplerDestroyed) {
     vk::DestroySampler(m_device->device(), sampler1, NULL);
 
     // Create PSO to be used for draw-time errors below
-    char const *fsSource =
-        "#version 450\n"
-        "\n"
-        "layout(set=0, binding=0) uniform sampler2D s;\n"
-        "layout(set=0, binding=1) uniform sampler2D s1;\n"
-        "layout(location=0) out vec4 x;\n"
-        "void main(){\n"
-        "   x = texture(s, vec2(1));\n"
-        "   x = texture(s1, vec2(1));\n"
-        "}\n";
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(set=0, binding=0) uniform sampler2D s;
+        layout(set=0, binding=1) uniform sampler2D s1;
+        layout(location=0) out vec4 x;
+        void main(){
+           x = texture(s, vec2(1));
+           x = texture(s1, vec2(1));
+        }
+    )glsl";
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
     VkPipelineObj pipe(m_device);
@@ -5662,7 +5782,10 @@ TEST_F(VkLayerTest, DSBufferLimitErrors) {
         bci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         VkBuffer buffer;
         VkResult err = vk::CreateBuffer(m_device->device(), &bci, NULL, &buffer);
-        ASSERT_VK_SUCCESS(err);
+        if (VK_SUCCESS != err) {
+            printf("%s Failed to allocate buffer in DSBufferLimitErrors; skipped.\n", kSkipPrefix);
+            continue;
+        }
 
         // Have to bind memory to buffer before descriptor update
         VkMemoryRequirements mem_reqs;
@@ -6365,6 +6488,13 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
     }
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    VkPhysicalDeviceFeatures device_features = {};
+    ASSERT_NO_FATAL_FAILURE(GetPhysicalDeviceFeatures(&device_features));
+
+    if (!(device_features.multiViewport)) {
+        printf("%s multiViewport is not supported. Skipping test\n", kSkipPrefix);
+        return;
+    }
 
     bool rp2Supported = CheckCreateRenderPass2Support(this, m_device_extension_names);
     if (!rp2Supported) {
@@ -6376,8 +6506,8 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
         }
     }
 
-    ASSERT_NO_FATAL_FAILURE(InitState());
-
+    ASSERT_NO_FATAL_FAILURE(InitState(&device_features, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
+    m_errorMonitor->ExpectSuccess();
     OneOffDescriptorSet descriptor_set(m_device, {
                                                      {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr},
                                                  });
@@ -6434,8 +6564,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
     subpass2.colorAttachmentCount = 1;
     subpass2.pColorAttachments = &color_att2;
 
-    VkRenderPassCreateInfo2 rpci2 = {};
-    rpci2.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    VkRenderPassCreateInfo2 rpci2 = LvlInitStruct<VkRenderPassCreateInfo2>();
     rpci2.attachmentCount = 1;
     rpci2.pAttachments = &attach2;
     rpci2.subpassCount = 1;
@@ -6469,7 +6598,9 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
 
     // Create image view
     VkImageObj image(m_device);
-    image.Init(32, 32, 1, VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
+    auto ici2d = image.ImageCreateInfo2D(128, 128, 1, 2, VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                                         VK_IMAGE_TILING_OPTIMAL, 0);
+    image.Init(ici2d);
     ASSERT_TRUE(image.initialized());
 
     VkImageView iv;
@@ -6480,7 +6611,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
     ivci.format = VK_FORMAT_B8G8R8A8_UNORM;
     ivci.components = {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
                        VK_COMPONENT_SWIZZLE_IDENTITY};
-    ivci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+    ivci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 2};
     vk::CreateImageView(m_device->device(), &ivci, NULL, &iv);
 
     // Create framebuffers for rp[0] and rp2[0]
@@ -6569,6 +6700,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
 
     // Bind rp[1]'s pipeline to command buffer
     vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe_1.handle());
+    m_errorMonitor->VerifyNotFound();
 
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDraw-renderPass-02684");
     // Render triangle (error on Multiview usage should trigger on draw)
@@ -7160,14 +7292,14 @@ TEST_F(VkLayerTest, InvalidPushDescriptorImageLayout) {
     const VkDescriptorSetLayoutObj ds_layout(m_device, {dsl_binding}, VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR);
     auto pipeline_layout = VkPipelineLayoutObj(m_device, {&ds_layout});
 
-    char const *fsSource =
-        "#version 450\n"
-        "\n"
-        "layout(set=0, binding=0) uniform sampler2D tex;\n"
-        "layout(location=0) out vec4 color;\n"
-        "void main(){\n"
-        "   color = textureLod(tex, vec2(0.5, 0.5), 0.0);\n"
-        "}\n";
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(set=0, binding=0) uniform sampler2D tex;
+        layout(location=0) out vec4 color;
+        void main(){
+           color = textureLod(tex, vec2(0.5, 0.5), 0.0);
+        }
+    )glsl";
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
     VkPipelineObj pipe(m_device);
@@ -7572,16 +7704,16 @@ TEST_F(VkLayerTest, DescriptorIndexingUpdateAfterBind) {
     vk::CreatePipelineLayout(m_device->device(), &pipeline_layout_ci, NULL, &pipeline_layout);
 
     // Create a dummy pipeline, since VL inspects which bindings are actually used at draw time
-    char const *fsSource =
-        "#version 450\n"
-        "\n"
-        "layout(location=0) out vec4 color;\n"
-        "layout(set=0, binding=0) uniform foo0 { float x0; } bar0;\n"
-        "layout(set=0, binding=1) buffer  foo1 { float x1; } bar1;\n"
-        "layout(set=0, binding=2) buffer  foo2 { float x2; } bar2;\n"
-        "void main(){\n"
-        "   color = vec4(bar0.x0 + bar1.x1 + bar2.x2);\n"
-        "}\n";
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(location=0) out vec4 color;
+        layout(set=0, binding=0) uniform foo0 { float x0; } bar0;
+        layout(set=0, binding=1) buffer  foo1 { float x1; } bar1;
+        layout(set=0, binding=2) buffer  foo2 { float x2; } bar2;
+        void main(){
+           color = vec4(bar0.x0 + bar1.x1 + bar2.x2);
+        }
+    )glsl";
 
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
@@ -8423,14 +8555,14 @@ TEST_F(VkLayerTest, NullDescriptorsEnabled) {
     sampler_descriptor_set.WriteDescriptorImageInfo(0, VK_NULL_HANDLE, sampler, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     sampler_descriptor_set.UpdateDescriptorSets();
     const VkPipelineLayoutObj pipeline_layout(m_device, {&sampler_descriptor_set.layout_});
-    char const *fsSource =
-        "#version 450\n"
-        "\n"
-        "layout(set=0, binding=0) uniform sampler2D tex;\n"
-        "layout(location=0) out vec4 x;\n"
-        "void main(){\n"
-        "   x = texture(tex, vec2(1));\n"
-        "}\n";
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(set=0, binding=0) uniform sampler2D tex;
+        layout(location=0) out vec4 x;
+        void main(){
+           x = texture(tex, vec2(1));
+        }
+    )glsl";
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
     VkPipelineObj pipe(m_device);
@@ -8660,12 +8792,13 @@ TEST_F(VkLayerTest, SubpassInputNotBoundDescriptorSet) {
 
     // input index is wrong, it doesn't exist in supbass input attachments and the set and binding is undefined
     // It causes desired failures.
-    char const *fsSource_fail =
-        "#version 450\n"
-        "layout(input_attachment_index=1, set=0, binding=1) uniform subpassInput x;\n"
-        "void main() {\n"
-        "   vec4 color = subpassLoad(x);\n"
-        "}\n";
+    char const *fsSource_fail = R"glsl(
+        #version 450
+        layout(input_attachment_index=1, set=0, binding=1) uniform subpassInput x;
+        void main() {
+           vec4 color = subpassLoad(x);
+        }
+    )glsl";
 
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs_fail(m_device, fsSource_fail, VK_SHADER_STAGE_FRAGMENT_BIT, this);
@@ -8803,20 +8936,21 @@ TEST_F(VkLayerTest, ImageSubresourceOverlapBetweenAttachmentsAndDescriptorSets) 
     VkSamplerCreateInfo sampler_info = SafeSaneSamplerCreateInfo();
     vk::CreateSampler(m_device->device(), &sampler_info, NULL, &sampler);
 
-    char const *fsSource =
-        "#version 450\n"
-        "layout(input_attachment_index=0, set=0, binding=0) uniform subpassInput ia0;\n"
-        "layout(set=0, binding=1) uniform sampler2D ci1;\n"
-        "layout(set=0, binding=2) uniform sampler2D ci2;\n"
-        "layout(set=0, binding=3) uniform sampler2D ci3;\n"
-        "layout(set=0, binding=4) uniform sampler2D ci4;\n"
-        "void main() {\n"
-        "   vec4 color = subpassLoad(ia0);\n"
-        "   color = texture(ci1, vec2(0));\n"
-        "   color = texture(ci2, vec2(0));\n"
-        "   color = texture(ci3, vec2(0));\n"
-        "   color = texture(ci4, vec2(0));\n"
-        "}\n";
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(input_attachment_index=0, set=0, binding=0) uniform subpassInput ia0;
+        layout(set=0, binding=1) uniform sampler2D ci1;
+        layout(set=0, binding=2) uniform sampler2D ci2;
+        layout(set=0, binding=3) uniform sampler2D ci3;
+        layout(set=0, binding=4) uniform sampler2D ci4;
+        void main() {
+           vec4 color = subpassLoad(ia0);
+           color = texture(ci1, vec2(0));
+           color = texture(ci2, vec2(0));
+           color = texture(ci3, vec2(0));
+           color = texture(ci4, vec2(0));
+        }
+    )glsl";
 
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
 

@@ -22,4 +22,4 @@ test implementations.
 New test helpers can be added at any time to either of those files, or to new `.ts` files anywhere
 near the `.spec.ts` file where they're used.
 
-Documentation on existing helpers can be found in the [helper index](../helper_index.md).
+Documentation on existing helpers can be found in the [helper index](../helper_index.txt).

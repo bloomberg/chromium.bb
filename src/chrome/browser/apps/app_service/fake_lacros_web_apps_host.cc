@@ -94,4 +94,28 @@ void FakeLacrosWebAppsHost::Uninstall(
   NOTIMPLEMENTED();
 }
 
+void FakeLacrosWebAppsHost::PauseApp(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
+void FakeLacrosWebAppsHost::UnpauseApp(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
+void FakeLacrosWebAppsHost::GetMenuModel(const std::string& app_id,
+                                         GetMenuModelCallback callback) {
+  NOTIMPLEMENTED();
+}
+
+void FakeLacrosWebAppsHost::LoadIcon(const std::string& app_id,
+                                     apps::mojom::IconKeyPtr icon_key,
+                                     apps::mojom::IconType icon_type,
+                                     int32_t size_hint_in_dip,
+                                     LoadIconCallback callback) {
+  NOTIMPLEMENTED();
+}
+
+void FakeLacrosWebAppsHost::OpenNativeSettings(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
 }  // namespace apps

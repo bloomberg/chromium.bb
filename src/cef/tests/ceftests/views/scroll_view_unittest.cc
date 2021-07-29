@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "include/base/cef_bind.h"
+#include "include/base/cef_callback.h"
 #include "include/cef_pack_strings.h"
 #include "include/views/cef_panel.h"
 #include "include/views/cef_panel_delegate.h"
@@ -132,9 +132,10 @@ void RunScrollViewLayout(bool with_delegate, CefRefPtr<CefWindow> window) {
 }
 
 void ScrollViewLayout(CefRefPtr<CefWaitableEvent> event, bool with_delegate) {
-  TestWindowDelegate::Config config;
-  config.on_window_created = base::Bind(RunScrollViewLayout, with_delegate);
-  TestWindowDelegate::RunTest(event, config);
+  auto config = std::make_unique<TestWindowDelegate::Config>();
+  config->on_window_created =
+      base::BindOnce(RunScrollViewLayout, with_delegate);
+  TestWindowDelegate::RunTest(event, std::move(config));
 }
 
 void ScrollViewLayoutWithDelegateImpl(CefRefPtr<CefWaitableEvent> event) {

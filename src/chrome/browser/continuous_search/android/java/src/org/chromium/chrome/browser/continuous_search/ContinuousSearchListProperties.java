@@ -21,38 +21,56 @@ import java.lang.annotation.RetentionPolicy;
  * Contains model properties for a single search list item in Continuous Search Navigation.
  */
 class ContinuousSearchListProperties {
-    @IntDef({ListItemType.GROUP_LABEL, ListItemType.SEARCH_RESULT, ListItemType.AD})
+    @IntDef({ListItemType.DEPRECATED_PROVIDER, ListItemType.SEARCH_RESULT, ListItemType.AD})
     @Retention(RetentionPolicy.SOURCE)
 
     public @interface ListItemType {
-        int GROUP_LABEL = 0;
+        int DEPRECATED_PROVIDER = 0;
         int SEARCH_RESULT = 1;
         int AD = 2;
     }
 
-    public static final WritableObjectPropertyKey<String> LABEL = new WritableObjectPropertyKey<>();
-    public static final WritableObjectPropertyKey<GURL> URL = new WritableObjectPropertyKey<>();
-    public static final WritableBooleanPropertyKey IS_SELECTED = new WritableBooleanPropertyKey();
-    public static final WritableIntPropertyKey BORDER_COLOR = new WritableIntPropertyKey();
-    public static final WritableObjectPropertyKey<OnClickListener> CLICK_LISTENER =
-            new WritableObjectPropertyKey<>();
-    public static final WritableIntPropertyKey BACKGROUND_COLOR = new WritableIntPropertyKey();
-    public static final WritableIntPropertyKey TITLE_TEXT_STYLE = new WritableIntPropertyKey();
-    public static final WritableIntPropertyKey DESCRIPTION_TEXT_STYLE =
-            new WritableIntPropertyKey();
-    public static final WritableIntPropertyKey FOREGROUND_COLOR = new WritableIntPropertyKey();
-    public static final WritableObjectPropertyKey<OnClickListener> DISMISS_CLICK_CALLBACK =
-            new WritableObjectPropertyKey();
-
     /**
      * Properties used for individual items shown in the RecyclerView.
      */
-    public static final PropertyKey[] ITEM_KEYS = {LABEL, URL, IS_SELECTED, BORDER_COLOR,
-            CLICK_LISTENER, BACKGROUND_COLOR, TITLE_TEXT_STYLE, DESCRIPTION_TEXT_STYLE};
+    static class ListItemProperties {
+        public static final WritableObjectPropertyKey<String> LABEL =
+                new WritableObjectPropertyKey<>();
+        public static final WritableObjectPropertyKey<GURL> URL = new WritableObjectPropertyKey<>();
+        public static final WritableBooleanPropertyKey IS_SELECTED =
+                new WritableBooleanPropertyKey();
+        public static final WritableIntPropertyKey BORDER_COLOR = new WritableIntPropertyKey();
+        public static final WritableObjectPropertyKey<OnClickListener> CLICK_LISTENER =
+                new WritableObjectPropertyKey<>();
+        public static final WritableIntPropertyKey BACKGROUND_COLOR = new WritableIntPropertyKey();
+        public static final WritableIntPropertyKey PRIMARY_TEXT_STYLE =
+                new WritableIntPropertyKey();
+        public static final WritableIntPropertyKey SECONDARY_TEXT_STYLE =
+                new WritableIntPropertyKey();
+
+        static final PropertyKey[] ALL_KEYS = {LABEL, URL, IS_SELECTED, BORDER_COLOR,
+                CLICK_LISTENER, BACKGROUND_COLOR, PRIMARY_TEXT_STYLE, SECONDARY_TEXT_STYLE};
+    }
+
+    public static final WritableIntPropertyKey BACKGROUND_COLOR = new WritableIntPropertyKey();
+    public static final WritableIntPropertyKey FOREGROUND_COLOR = new WritableIntPropertyKey();
+    public static final WritableObjectPropertyKey<OnClickListener> DISMISS_CLICK_CALLBACK =
+            new WritableObjectPropertyKey();
+    public static final WritableIntPropertyKey SELECTED_ITEM_POSITION =
+            new WritableIntPropertyKey();
+    // Provider properties
+    static final WritableObjectPropertyKey<String> PROVIDER_LABEL =
+            new WritableObjectPropertyKey<>();
+    static final WritableIntPropertyKey PROVIDER_ICON_RESOURCE = new WritableIntPropertyKey();
+    static final WritableObjectPropertyKey<OnClickListener> PROVIDER_CLICK_LISTENER =
+            new WritableObjectPropertyKey<>();
+    static final WritableIntPropertyKey PROVIDER_TEXT_STYLE = new WritableIntPropertyKey();
+
     /**
      * Properties used for the root view. The root view currently contains the RecyclerView
      * and the dismiss button.
      */
-    public static final PropertyKey[] ROOT_VIEW_KEYS = {
-            BACKGROUND_COLOR, FOREGROUND_COLOR, DISMISS_CLICK_CALLBACK};
+    public static final PropertyKey[] ALL_KEYS = {BACKGROUND_COLOR, FOREGROUND_COLOR,
+            DISMISS_CLICK_CALLBACK, SELECTED_ITEM_POSITION, PROVIDER_LABEL, PROVIDER_ICON_RESOURCE,
+            PROVIDER_CLICK_LISTENER, PROVIDER_TEXT_STYLE};
 }

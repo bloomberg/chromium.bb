@@ -42,6 +42,7 @@
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
 
 namespace storage {
@@ -178,7 +179,6 @@ class CopyOrMoveOperationTestHelper {
 
   ~CopyOrMoveOperationTestHelper() {
     file_system_context_ = nullptr;
-    quota_manager_proxy_->SimulateQuotaManagerDestroyed();
     quota_manager_ = nullptr;
     quota_manager_proxy_ = nullptr;
     task_environment_.RunUntilIdle();
@@ -205,7 +205,8 @@ class CopyOrMoveOperationTestHelper {
     FileSystemBackend* backend =
         file_system_context_->GetFileSystemBackend(src_type_);
     backend->ResolveURL(
-        FileSystemURL::CreateForTest(origin_, src_type_, base::FilePath()),
+        FileSystemURL::CreateForTest(blink::StorageKey(url::Origin(origin_)),
+                                     src_type_, base::FilePath()),
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT, base::BindOnce(&ExpectOk));
     backend = file_system_context_->GetFileSystemBackend(dest_type_);
     if (dest_type_ == kFileSystemTypeTest) {
@@ -219,15 +220,18 @@ class CopyOrMoveOperationTestHelper {
             std::move(factory));
     }
     backend->ResolveURL(
-        FileSystemURL::CreateForTest(origin_, dest_type_, base::FilePath()),
+        FileSystemURL::CreateForTest(blink::StorageKey(url::Origin(origin_)),
+                                     dest_type_, base::FilePath()),
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT, base::BindOnce(&ExpectOk));
     task_environment_.RunUntilIdle();
 
     // Grant relatively big quota initially.
-    quota_manager_->SetQuota(
-        origin_, FileSystemTypeToQuotaStorageType(src_type_), 1024 * 1024);
-    quota_manager_->SetQuota(
-        origin_, FileSystemTypeToQuotaStorageType(dest_type_), 1024 * 1024);
+    quota_manager_->SetQuota(blink::StorageKey(origin_),
+                             FileSystemTypeToQuotaStorageType(src_type_),
+                             1024 * 1024);
+    quota_manager_->SetQuota(blink::StorageKey(origin_),
+                             FileSystemTypeToQuotaStorageType(dest_type_),
+                             1024 * 1024);
   }
 
   int64_t GetSourceUsage() {

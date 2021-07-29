@@ -14,7 +14,7 @@
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fxge/fx_font.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 #include "xfa/fgas/font/cfgas_fontmgr.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
 
@@ -76,7 +76,7 @@ RetainPtr<CFGAS_GEFont> CFGAS_PDFFontMgr::FindFont(const ByteString& strPsName,
 RetainPtr<CFGAS_GEFont> CFGAS_PDFFontMgr::GetFont(WideStringView wsFontFamily,
                                                   uint32_t dwFontStyles,
                                                   bool bStrictMatch) {
-  uint32_t dwHashCode = FX_HashCode_GetW(wsFontFamily, false);
+  uint32_t dwHashCode = FX_HashCode_GetW(wsFontFamily);
   ByteString strKey = ByteString::Format("%u%u", dwHashCode, dwFontStyles);
   auto it = m_FontMap.find(strKey);
   if (it != m_FontMap.end())

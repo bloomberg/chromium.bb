@@ -78,7 +78,7 @@ class GcmApiTest : public ExtensionApiTest {
 
 void GcmApiTest::SetUpCommandLine(base::CommandLine* command_line) {
   // We now always create the GCMProfileService instance in
-  // ProfileSyncServiceFactory that is called when a profile is being
+  // SyncServiceFactory that is called when a profile is being
   // initialized. In order to prevent it from being created, we add the switch
   // to disable the sync logic.
   command_line->AppendSwitch(switches::kDisableSync);
@@ -267,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, Incognito) {
   incognito_catcher.RestrictToBrowserContext(
       profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true));
 
-  ASSERT_TRUE(RunExtensionTest({.name = "gcm/functions/incognito"},
+  ASSERT_TRUE(RunExtensionTest("gcm/functions/incognito", {},
                                {.allow_in_incognito = true}));
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

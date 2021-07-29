@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/login_manager/dbus-constants.h"
 
 namespace cryptohome {
@@ -250,6 +251,12 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   // Notifies session_manager that Chrome has hidden the lock screen.
   virtual void NotifyLockScreenDismissed() = 0;
 
+  // Tells session_manager to restart ash-chrome to carry out browser data
+  // migration.
+  virtual void RequestBrowserDataMigration(
+      const cryptohome::AccountIdentifier& cryptohome_id,
+      VoidDBusMethodCallback callback) = 0;
+
   // Map that is used to describe the set of active user sessions where |key|
   // is cryptohome id and |value| is user_id_hash.
   using ActiveSessionsMap = std::map<std::string, std::string>;
@@ -394,7 +401,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   // manager.
   virtual void SetFeatureFlagsForUser(
       const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::vector<std::string>& feature_flags) = 0;
+      const std::vector<std::string>& feature_flags,
+      const std::map<std::string, std::string>& origin_list_flags) = 0;
 
   using StateKeysCallback =
       base::OnceCallback<void(const std::vector<std::string>& state_keys)>;

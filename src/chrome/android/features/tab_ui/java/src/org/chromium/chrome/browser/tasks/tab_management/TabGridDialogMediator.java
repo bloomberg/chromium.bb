@@ -199,33 +199,35 @@ public class TabGridDialogMediator implements SnackbarManager.SnackbarController
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 boolean isIncognito = newModel.isIncognito();
-                int dialogBackgroundResource = isIncognito
-                        ? R.drawable.tab_grid_dialog_background_incognito
-                        : R.drawable.tab_grid_dialog_background;
+                int dialogBackgroundColor =
+                        TabUiThemeProvider.getTabGridDialogBackgroundColor(context, isIncognito);
                 ColorStateList tintList = isIncognito
                         ? AppCompatResources.getColorStateList(
                                 mContext, R.color.default_icon_color_light_tint_list)
                         : AppCompatResources.getColorStateList(
                                 mContext, R.color.default_icon_color_tint_list);
-                int ungroupBarBackgroundColorId = isIncognito
-                        ? R.color.tab_grid_dialog_background_color_incognito
-                        : R.color.tab_grid_dialog_background_color;
-                int ungroupBarHoveredBackgroundColorId = isIncognito
-                        ? R.color.tab_grid_card_selected_color_incognito
-                        : R.color.tab_grid_card_selected_color;
-                int ungroupBarTextAppearance = isIncognito
-                        ? R.style.TextAppearance_TextMediumThick_Blue_Light
-                        : R.style.TextAppearance_TextMediumThick_Blue;
+                int ungroupBarBackgroundColor =
+                        TabUiThemeProvider.getTabGridDialogUngroupBarBackgroundColor(
+                                context, isIncognito);
+                int ungroupBarHoveredBackgroundColor =
+                        TabUiThemeProvider.getTabGridDialogUngroupBarHoveredBackgroundColor(
+                                context, isIncognito);
+                int ungroupBarTextColor = TabUiThemeProvider.getTabGridDialogUngroupBarTextColor(
+                        context, isIncognito);
+                int ungroupBarHoveredTextColor =
+                        TabUiThemeProvider.getTabGridDialogUngroupBarHoveredTextColor(
+                                context, isIncognito);
 
-                mModel.set(TabGridPanelProperties.DIALOG_BACKGROUND_RESOURCE_ID,
-                        dialogBackgroundResource);
+                mModel.set(TabGridPanelProperties.DIALOG_BACKGROUND_COLOR, dialogBackgroundColor);
                 mModel.set(TabGridPanelProperties.TINT, tintList);
-                mModel.set(TabGridPanelProperties.DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID,
-                        ungroupBarBackgroundColorId);
-                mModel.set(TabGridPanelProperties.DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID,
-                        ungroupBarHoveredBackgroundColorId);
-                mModel.set(TabGridPanelProperties.DIALOG_UNGROUP_BAR_TEXT_APPEARANCE,
-                        ungroupBarTextAppearance);
+                mModel.set(TabGridPanelProperties.DIALOG_UNGROUP_BAR_BACKGROUND_COLOR,
+                        ungroupBarBackgroundColor);
+                mModel.set(TabGridPanelProperties.DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR,
+                        ungroupBarHoveredBackgroundColor);
+                mModel.set(
+                        TabGridPanelProperties.DIALOG_UNGROUP_BAR_TEXT_COLOR, ungroupBarTextColor);
+                mModel.set(TabGridPanelProperties.DIALOG_UNGROUP_BAR_HOVERED_TEXT_COLOR,
+                        ungroupBarHoveredTextColor);
             }
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);

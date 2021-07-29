@@ -92,8 +92,8 @@ static void JNI_TranslateBridge_TranslateToLanguage(
     // If the requested target language isn't supported, show the infobar but
     // don't start translating. If the infobar is already visible, this will
     // leave it in its current state.
-    manager->InitiateManualTranslation(/*auto_translate=*/false,
-                                       /*triggered_from_menu=*/false);
+    manager->ShowTranslateUI(/*auto_translate=*/false,
+                             /*triggered_from_menu=*/false);
   } else {
     // We don't check for source_language_code support because TranslatePage
     // handles that case already.
@@ -483,6 +483,18 @@ static void JNI_TranslateBridge_SetExplicitLanguageAskPromptShown(
   std::unique_ptr<translate::TranslatePrefs> translate_prefs =
       ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
   translate_prefs->SetExplicitLanguageAskPromptShown(shown);
+}
+
+static jboolean JNI_TranslateBridge_GetAppLanguagePromptShown(JNIEnv* env) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
+  return translate_prefs->GetAppLanguagePromptShown();
+}
+
+static void JNI_TranslateBridge_SetAppLanguagePromptShown(JNIEnv* env) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
+  translate_prefs->SetAppLanguagePromptShown();
 }
 
 static void JNI_TranslateBridge_SetIgnoreMissingKeyForTesting(  // IN-TEST

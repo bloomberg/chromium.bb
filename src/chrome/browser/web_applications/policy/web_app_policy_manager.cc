@@ -23,6 +23,7 @@
 #include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -30,8 +31,8 @@
 #include "content/public/browser/browser_thread.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -97,7 +98,7 @@ WebAppPolicyManager::~WebAppPolicyManager() = default;
 
 void WebAppPolicyManager::SetSubsystems(
     ExternallyManagedAppManager* externally_managed_app_manager,
-    AppRegistrar* app_registrar,
+    WebAppRegistrar* app_registrar,
     AppRegistryController* app_registry_controller,
     SystemWebAppManager* web_app_manager,
     OsIntegrationManager* os_integration_manager) {
@@ -192,6 +193,10 @@ const std::set<SystemAppType>& WebAppPolicyManager::GetDisabledSystemWebApps()
 
 const std::set<AppId>& WebAppPolicyManager::GetDisabledWebAppsIds() const {
   return disabled_web_apps_;
+}
+
+bool WebAppPolicyManager::IsWebAppInDisabledList(const AppId& app_id) const {
+  return base::Contains(GetDisabledWebAppsIds(), app_id);
 }
 
 bool WebAppPolicyManager::IsDisabledAppsModeHidden() const {
@@ -383,14 +388,13 @@ WebAppPolicyManager::WebAppSetting::WebAppSetting() {
 bool WebAppPolicyManager::WebAppSetting::Parse(
     const base::DictionaryValue* dict,
     bool for_default_settings) {
-  std::string run_on_os_login_str;
-  if (dict->GetStringWithoutPathExpansion(kRunOnOsLogin,
-                                          &run_on_os_login_str)) {
-    if (run_on_os_login_str == kAllowed) {
+  const std::string* run_on_os_login_str = dict->FindStringKey(kRunOnOsLogin);
+  if (run_on_os_login_str) {
+    if (*run_on_os_login_str == kAllowed) {
       run_on_os_login_policy = RunOnOsLoginPolicy::kAllowed;
-    } else if (run_on_os_login_str == kBlocked) {
+    } else if (*run_on_os_login_str == kBlocked) {
       run_on_os_login_policy = RunOnOsLoginPolicy::kBlocked;
-    } else if (!for_default_settings && run_on_os_login_str == kRunWindowed) {
+    } else if (!for_default_settings && *run_on_os_login_str == kRunWindowed) {
       run_on_os_login_policy = RunOnOsLoginPolicy::kRunWindowed;
     } else {
       SYSLOG(WARNING) << "Malformed web app run on os login preference.";
@@ -457,14 +461,14 @@ void WebAppPolicyManager::PopulateDisabledWebAppsIdsLists() {
       case policy::SystemFeature::kScanning:
         disabled_system_apps_.insert(SystemAppType::SCANNING);
         break;
+      case policy::SystemFeature::kExplore:
+        disabled_system_apps_.insert(SystemAppType::HELP);
+        break;
       case policy::SystemFeature::kCanvas:
         disabled_web_apps_.insert(web_app::kCanvasAppId);
         break;
       case policy::SystemFeature::kGoogleNews:
         disabled_web_apps_.insert(web_app::kGoogleNewsAppId);
-        break;
-      case policy::SystemFeature::kExplore:
-        disabled_web_apps_.insert(web_app::kHelpAppId);
         break;
     }
   }

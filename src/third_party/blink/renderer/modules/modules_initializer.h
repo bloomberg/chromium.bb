@@ -48,10 +48,11 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
   void CloneSessionStorage(
       Page* clone_from_page,
       const SessionStorageNamespaceId& clone_to_namespace) override;
+  void EvictSessionStorageCachedData(Page*) override;
 
   void DidChangeManifest(LocalFrame&) override;
   void NotifyOrientationChanged(LocalFrame&) override;
-  void DidUpdateScreens(LocalFrame&, const ScreenInfos&) override;
+  void DidUpdateScreens(LocalFrame&, const display::ScreenInfos&) override;
 };
 
 }  // namespace blink

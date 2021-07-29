@@ -31,6 +31,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_ids_provider.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -69,11 +70,18 @@ struct CardUnmaskOptions {
     return *this;
   }
 
+  CardUnmaskOptions& with_virtual_card(bool b) {
+    virtual_card = b;
+    return *this;
+  }
+
   // If true, use FIDO authentication instead of CVC authentication.
   bool use_fido = false;
   // If not using FIDO authentication, the CVC value the user entered, to be
   // sent to Google Payments.
   std::string cvc = "123";
+  // If true, mock that the unmasking is for a virtual card.
+  bool virtual_card = false;
   // The reason for unmasking this card.
   AutofillClient::UnmaskCardReason reason = AutofillClient::UNMASK_FOR_AUTOFILL;
 };
@@ -109,7 +117,8 @@ class PaymentsClientTest : public testing::Test {
         test_shared_loader_factory_, identity_test_env_.identity_manager(),
         &test_personal_data_);
     test_personal_data_.SetAccountInfoForPayments(
-        identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com"));
+        identity_test_env_.MakePrimaryAccountAvailable(
+            "example@gmail.com", signin::ConsentLevel::kSync));
   }
 
   void TearDown() override { client_.reset(); }
@@ -203,6 +212,10 @@ class PaymentsClientTest : public testing::Test {
           base::Value(base::Value::Type::DICTIONARY);
     } else {
       request_details.user_response.cvc = base::ASCIIToUTF16(options.cvc);
+    }
+    if (options.virtual_card) {
+      request_details.last_committed_url_origin =
+          GURL("https://www.example.com");
     }
     client_->UnmaskCard(request_details,
                         base::BindOnce(&PaymentsClientTest::OnDidGetRealPan,
@@ -334,6 +347,8 @@ class PaymentsClientTest : public testing::Test {
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
   base::test::TaskEnvironment task_environment_;
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   TestPersonalDataManager test_personal_data_;
@@ -463,6 +478,19 @@ TEST_F(PaymentsClientTest, UnmaskSuccessAccountFromSyncTest) {
   EXPECT_EQ("1234", unmask_response_details_->real_pan);
 }
 
+TEST_F(PaymentsClientTest, UnmaskSuccessWithVirtualCardInformation) {
+  StartUnmasking(CardUnmaskOptions().with_virtual_card(true));
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{ \"pan\": \"4111111111111111\", \"dcvv\": \"999\",  "
+                 "\"expiration\": { \"month\":12, \"year\":2099 } }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_EQ("4111111111111111", unmask_response_details_->real_pan);
+  EXPECT_EQ("999", unmask_response_details_->dcvv);
+  EXPECT_EQ("12", unmask_response_details_->expiration_month);
+  EXPECT_EQ("2099", unmask_response_details_->expiration_year);
+}
+
 TEST_F(PaymentsClientTest, UnmaskIncludesChromeUserContext) {
   scoped_feature_list_.InitAndDisableFeature(
       features::kAutofillEnableAccountWalletStorage);
@@ -488,6 +516,15 @@ TEST_F(PaymentsClientTest,
   // ChromeUserContext was set.
   EXPECT_TRUE(GetUploadData().find("chrome_user_context") != std::string::npos);
   EXPECT_TRUE(GetUploadData().find("full_sync_enabled") != std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, UnmaskIncludesMerchantDomain) {
+  StartUnmasking(CardUnmaskOptions().with_virtual_card(true));
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK, "{}");
+
+  // last_committed_url_origin was set.
+  EXPECT_TRUE(GetUploadData().find("merchant_domain") != std::string::npos);
 }
 
 TEST_F(PaymentsClientTest, UnmaskLogsCvcLengthForAutofill) {
@@ -685,16 +722,12 @@ TEST_F(PaymentsClientTest, GetDetailsIncludesUnknownUploadCardSourceInRequest) {
 
 TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTest) {
   // Register a trial and variation id, so that there is data in variations
-  // headers. Also, the variations header provider may have been registered to
-  // observe some other field trial list, so reset it.
-  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
+  // headers.
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartGettingUploadDetails();
 
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
-
-  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
 }
 
 TEST_F(PaymentsClientTest, GetDetailsIncludeBillableServiceNumber) {
@@ -778,32 +811,24 @@ TEST_F(PaymentsClientTest, GetUploadAccountFromSyncTest) {
 
 TEST_F(PaymentsClientTest, UploadCardVariationsTest) {
   // Register a trial and variation id, so that there is data in variations
-  // headers. Also, the variations header provider may have been registered to
-  // observe some other field trial list, so reset it.
-  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
+  // headers.
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUploading(/*include_cvc=*/true);
   IssueOAuthToken();
 
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
-
-  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
 }
 
 TEST_F(PaymentsClientTest, UnmaskCardVariationsTest) {
   // Register a trial and variation id, so that there is data in variations
-  // headers. Also, the variations header provider may have been registered to
-  // observe some other field trial list, so reset it.
-  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
+  // headers.
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
 
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
-
-  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
 }
 
 TEST_F(PaymentsClientTest, UploadSuccessWithoutServerId) {
@@ -1008,6 +1033,24 @@ TEST_F(PaymentsClientTest, OtherError) {
   EXPECT_EQ("", unmask_response_details_->real_pan);
 }
 
+TEST_F(PaymentsClientTest, VcnRetrievalTryAgainFailure) {
+  StartUnmasking(CardUnmaskOptions());
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{ \"error\": { \"code\": \"ANYTHING_ELSE\", "
+                 "\"api_error_reason\": \"virtual_card_temporary_error\" } }");
+  EXPECT_EQ(AutofillClient::VCN_RETRIEVAL_TRY_AGAIN_FAILURE, result_);
+}
+
+TEST_F(PaymentsClientTest, VcnRetrievalPermanentFailure) {
+  StartUnmasking(CardUnmaskOptions());
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{ \"error\": { \"code\": \"ANYTHING_ELSE\", "
+                 "\"api_error_reason\": \"virtual_card_permanent_error\"} }");
+  EXPECT_EQ(AutofillClient::VCN_RETRIEVAL_PERMANENT_FAILURE, result_);
+}
+
 // Tests for the local card migration flow. Desktop only.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST_F(PaymentsClientTest, GetDetailsFollowedByMigrationSuccess) {
@@ -1029,17 +1072,13 @@ TEST_F(PaymentsClientTest, GetDetailsFollowedByMigrationSuccess) {
 
 TEST_F(PaymentsClientTest, MigrateCardsVariationsTest) {
   // Register a trial and variation id, so that there is data in variations
-  // headers. Also, the variations header provider may have been registered to
-  // observe some other field trial list, so reset it.
-  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
+  // headers.
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartMigrating(/*has_cardholder_name=*/true);
   IssueOAuthToken();
 
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
-
-  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
 }
 
 TEST_F(PaymentsClientTest, MigrationRequestIncludesUniqueId) {

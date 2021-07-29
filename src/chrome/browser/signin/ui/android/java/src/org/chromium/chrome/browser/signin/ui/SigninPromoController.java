@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin.ui;
 
+import android.accounts.Account;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.View;
@@ -22,9 +23,14 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.ui.SyncConsentActivityLauncher.AccessPoint;
 import org.chromium.components.browser_ui.widget.impression.ImpressionTracker;
 import org.chromium.components.browser_ui.widget.impression.OneShotImpressionListener;
+import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -51,8 +57,6 @@ public class SigninPromoController {
 
     private @Nullable DisplayableProfileData mProfileData;
     private @Nullable ImpressionTracker mImpressionTracker;
-    private final OneShotImpressionListener mImpressionFilter =
-            new OneShotImpressionListener(this::recordSigninPromoImpression);
     private final @AccessPoint int mAccessPoint;
     private final @Nullable String mImpressionCountName;
     private final String mImpressionUserActionName;
@@ -100,9 +104,47 @@ public class SigninPromoController {
     }
 
     /**
+     * Determines whether sync promo can be shown for NTP.
+     */
+    public static boolean shouldHideSyncPromoForNTP(@AccessPoint int accessPoint) {
+        assert accessPoint
+                == SigninAccessPoint.NTP_CONTENT_SUGGESTIONS : "Unexpected value for access point: "
+                        + accessPoint;
+
+        final @Nullable Account visibleAccount = getVisibleAccount();
+        final AccountManagerFacade accountManagerFacade =
+                AccountManagerFacadeProvider.getInstance();
+        if (visibleAccount == null) {
+            return false;
+        }
+        final boolean canNotOfferPromoForMinorAccount =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.MINOR_MODE_SUPPORT)
+                && !accountManagerFacade.canOfferExtendedSyncPromos(visibleAccount).or(false);
+        return canNotOfferPromoForMinorAccount
+                || ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.FORCE_DISABLE_EXTENDED_SYNC_PROMOS);
+    }
+
+    // Find the visible account for sync promos
+    private static @Nullable Account getVisibleAccount() {
+        final IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
+                Profile.getLastUsedRegularProfile());
+        @Nullable
+        Account visibleAccount = CoreAccountInfo.getAndroidAccountFrom(
+                identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN));
+        final AccountManagerFacade accountManagerFacade =
+                AccountManagerFacadeProvider.getInstance();
+        if (visibleAccount == null) {
+            visibleAccount =
+                    AccountUtils.getDefaultAccountIfFulfilled(accountManagerFacade.getAccounts());
+        }
+        return visibleAccount;
+    }
+
+    /**
      * Creates a new SigninPromoController.
      * @param accessPoint Specifies the AccessPoint from which the promo is to be shown.
-     * @param syncConsentActivityLauncher Launcher of {@link SigninActivity}.
+     * @param syncConsentActivityLauncher Launcher of {@link SyncConsentActivity}.
      */
     public SigninPromoController(
             @AccessPoint int accessPoint, SyncConsentActivityLauncher syncConsentActivityLauncher) {
@@ -205,6 +247,30 @@ public class SigninPromoController {
     }
 
     /**
+     * Sets up the sync promo view.
+     *
+     * @param profileDataCache The {@link ProfileDataCache} that stores profile data.
+     * @param view The {@link PersonalizedSigninPromoView} that should be set up.
+     * @param listener The {@link SigninPromoController.OnDismissListener} to be set to the view.
+     */
+    public void setUpSyncPromoView(ProfileDataCache profileDataCache,
+            PersonalizedSigninPromoView view, SigninPromoController.OnDismissListener listener) {
+        final IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
+                Profile.getLastUsedRegularProfile());
+        assert identityManager.getPrimaryAccountInfo(ConsentLevel.SYNC)
+                == null : "Sync is already enabled!";
+
+        final @Nullable Account visibleAccount = getVisibleAccount();
+        // Set up the sync promo
+        if (visibleAccount == null) {
+            setupPromoView(view, /* profileData= */ null, listener);
+            return;
+        }
+        setupPromoView(
+                view, profileDataCache.getProfileDataOrDefault(visibleAccount.name), listener);
+    }
+
+    /**
      * Called when the signin promo is destroyed.
      */
     public void onPromoDestroyed() {
@@ -226,23 +292,23 @@ public class SigninPromoController {
      *         onDismissListener marks that the promo is not dismissible and as a result the close
      *         button is hidden.
      */
-    public void setupPromoView(PersonalizedSigninPromoView view,
+    private void setupPromoView(PersonalizedSigninPromoView view,
             final @Nullable DisplayableProfileData profileData,
             final @Nullable OnDismissListener onDismissListener) {
-        detach();
+        if (mImpressionTracker != null) {
+            mImpressionTracker.setListener(null);
+            mImpressionTracker = null;
+        }
+        mImpressionTracker = new ImpressionTracker(view);
+        mImpressionTracker.setListener(
+                new OneShotImpressionListener(this::recordSigninPromoImpression));
+
         mProfileData = profileData;
         mWasDisplayed = true;
-
-        assert mImpressionTracker
-                == null : "detach() should be called before setting up a new view";
-        mImpressionTracker = new ImpressionTracker(view);
-        mImpressionTracker.setListener(mImpressionFilter);
-
-        final Context context = view.getContext();
         if (mProfileData == null) {
-            setupColdState(context, view);
+            setupColdState(view);
         } else {
-            setupHotState(context, view);
+            setupHotState(view);
         }
 
         if (onDismissListener != null) {
@@ -269,12 +335,8 @@ public class SigninPromoController {
         }
     }
 
-    /** @return the resource used for the text displayed as promo description. */
-    public @StringRes int getDescriptionStringId() {
-        return mProfileData == null ? mDescriptionStringIdNoAccount : mDescriptionStringId;
-    }
-
-    private void setupColdState(final Context context, PersonalizedSigninPromoView view) {
+    private void setupColdState(PersonalizedSigninPromoView view) {
+        final Context context = view.getContext();
         view.getImage().setImageResource(R.drawable.chrome_sync_logo);
         setImageSize(context, view, R.dimen.signin_promo_cold_state_image_size);
 
@@ -286,31 +348,36 @@ public class SigninPromoController {
         view.getSecondaryButton().setVisibility(View.GONE);
     }
 
-    private void setupHotState(final Context context, PersonalizedSigninPromoView view) {
+    private void setupHotState(PersonalizedSigninPromoView view) {
+        final Context context = view.getContext();
         Drawable accountImage = mProfileData.getImage();
         view.getImage().setImageDrawable(accountImage);
         setImageSize(context, view, R.dimen.signin_promo_account_image_size);
 
         view.getDescription().setText(mDescriptionStringId);
 
-        String continueAsButtonText = context.getString(
-                R.string.signin_promo_continue_as, mProfileData.getGivenNameOrFullNameOrEmail());
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY_PROMOS)) {
-            IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
-                    Profile.getLastUsedRegularProfile());
-            boolean hasPrimaryAccount =
-                    identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN) != null;
-            view.getPrimaryButton().setText(hasPrimaryAccount
-                            ? context.getString(R.string.sync_promo_turn_on_sync)
-                            : continueAsButtonText);
-        } else {
-            view.getPrimaryButton().setText(R.string.sync_promo_turn_on_sync);
-        }
         view.getPrimaryButton().setOnClickListener(v -> signinWithDefaultAccount(context));
+        final boolean hasPrimaryAccount =
+                IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .getPrimaryAccountInfo(ConsentLevel.SIGNIN)
+                != null;
+        if (hasPrimaryAccount) {
+            view.getPrimaryButton().setText(R.string.sync_promo_turn_on_sync);
+            view.getSecondaryButton().setVisibility(View.GONE);
+        } else {
+            final String primaryButtonText =
+                    ChromeFeatureList.isEnabled(
+                            ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY_PROMOS)
+                    ? context.getString(R.string.signin_promo_continue_as,
+                            mProfileData.getGivenNameOrFullNameOrEmail())
+                    : context.getString(R.string.sync_promo_turn_on_sync);
+            view.getPrimaryButton().setText(primaryButtonText);
 
-        view.getSecondaryButton().setText(R.string.signin_promo_choose_another_account);
-        view.getSecondaryButton().setOnClickListener(v -> signinWithNotDefaultAccount(context));
-        view.getSecondaryButton().setVisibility(View.VISIBLE);
+            view.getSecondaryButton().setText(R.string.signin_promo_choose_another_account);
+            view.getSecondaryButton().setOnClickListener(v -> signinWithNotDefaultAccount(context));
+            view.getSecondaryButton().setVisibility(View.VISIBLE);
+        }
     }
 
     private int getNumImpressions() {

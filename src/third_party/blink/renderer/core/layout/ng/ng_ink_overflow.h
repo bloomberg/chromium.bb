@@ -7,6 +7,7 @@
 
 #include "base/dcheck_is_on.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 
@@ -120,6 +121,21 @@ class CORE_EXPORT NGInkOverflow {
       const ComputedStyle& style,
       const PhysicalSize& size);
 
+  // Returns ink-overflow with emphasis mark overflow in logical direction.
+  // |size| is a size of text item, e.g. |NGFragmentItem::Size()|.
+  // Note: |style| should have emphasis mark and |ink_overflow| should be in
+  // logical direction.
+  static LayoutRect ComputeEmphasisMarkOverflow(const ComputedStyle& style,
+                                                const PhysicalSize& size,
+                                                const LayoutRect& ink_overflow);
+
+  // Returns ink-overflow with text decoration overflow in logical direction.
+  // Note: |style| should have applied text decorations and |ink_overflow|
+  // should be in logical direction.
+  static LayoutRect ComputeTextDecorationOverflow(
+      const ComputedStyle& style,
+      const LayoutRect& ink_overflow);
+
 #if DCHECK_IS_ON()
   struct ReadUnsetAsNoneScope {
     STACK_ALLOCATED();
@@ -133,11 +149,6 @@ class CORE_EXPORT NGInkOverflow {
 #endif
 
  private:
-  static LayoutRect ComputeTextDecorationOverflow(
-      const NGTextFragmentPaintInfo& text_info,
-      const ComputedStyle& style,
-      const LayoutRect& ink_overflow);
-
   PhysicalRect FromOutsets(const PhysicalSize& size) const;
 
   void CheckType(Type type) const;

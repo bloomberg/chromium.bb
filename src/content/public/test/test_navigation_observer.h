@@ -12,6 +12,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "content/public/browser/navigation_type.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -43,17 +44,17 @@ class TestNavigationObserver {
                                       MessageLoopRunner::QuitMode::IMMEDIATE,
                                   bool ignore_uncommitted_navigations = true);
   // Create and register a new TestNavigationObserver that will wait for
-  // |target_url| to complete loading or for a finished navigation to
-  // |target_url|.
-  explicit TestNavigationObserver(const GURL& target_url,
+  // a navigation with |target_error|.
+  explicit TestNavigationObserver(WebContents* web_contents,
+                                  net::Error target_error,
                                   MessageLoopRunner::QuitMode quit_mode =
                                       MessageLoopRunner::QuitMode::IMMEDIATE,
                                   bool ignore_uncommitted_navigations = true);
 
   // Create and register a new TestNavigationObserver that will wait for
-  // a navigation with |target_error|.
-  explicit TestNavigationObserver(WebContents* web_contents,
-                                  net::Error target_error,
+  // |target_url| to complete loading or for a finished navigation to
+  // |target_url|.
+  explicit TestNavigationObserver(const GURL& target_url,
                                   MessageLoopRunner::QuitMode quit_mode =
                                       MessageLoopRunner::QuitMode::IMMEDIATE,
                                   bool ignore_uncommitted_navigations = true);

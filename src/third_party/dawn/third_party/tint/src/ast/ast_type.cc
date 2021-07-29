@@ -14,7 +14,6 @@
 
 #include "src/ast/type.h"
 
-#include "src/ast/access_control.h"
 #include "src/ast/alias.h"
 #include "src/ast/bool.h"
 #include "src/ast/f32.h"
@@ -41,11 +40,7 @@ Type::~Type() = default;
 Type* Type::UnwrapAll() {
   auto* type = this;
   while (true) {
-    if (auto* alias = type->As<Alias>()) {
-      type = alias->type();
-    } else if (auto* access = type->As<AccessControl>()) {
-      type = access->type();
-    } else if (auto* ptr = type->As<Pointer>()) {
+    if (auto* ptr = type->As<Pointer>()) {
       type = ptr->type();
     } else {
       break;

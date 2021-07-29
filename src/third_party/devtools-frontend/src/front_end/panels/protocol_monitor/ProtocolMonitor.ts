@@ -86,7 +86,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/protocol_monitor/ProtocolMonito
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 const timestampRenderer = (value: DataGrid.DataGridUtils.CellValue): LitHtml.TemplateResult => {
-  return LitHtml.html`${i18nString(UIStrings.sMs, {PH1: value})}`;
+  return LitHtml.html`${i18nString(UIStrings.sMs, {PH1: String(value)})}`;
 };
 
 export interface Message {
@@ -125,6 +125,8 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
     this._startTime = 0;
     this._dataGridRowForId = new Map();
     const topToolbar = new UI.Toolbar.Toolbar('protocol-monitor-toolbar', this.contentElement);
+    this.registerRequiredCSS('panels/protocol_monitor/protocolMonitor.css');
+    this.contentElement.classList.add('protocol-monitor');
     const recordButton = new UI.Toolbar.ToolbarToggle(
         i18nString(UIStrings.record), 'largeicon-start-recording', 'largeicon-stop-recording');
     recordButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
@@ -340,12 +342,12 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
     }
   }
 
-  _targetToString(target: SDK.SDKModel.Target|null): string {
+  _targetToString(target: SDK.Target.Target|null): string {
     if (!target) {
       return '';
     }
     return target.decorateLabel(
-        `${target.name()} ${target === SDK.SDKModel.TargetManager.instance().mainTarget() ? '' : target.id()}`);
+        `${target.name()} ${target === SDK.TargetManager.TargetManager.instance().mainTarget() ? '' : target.id()}`);
   }
 
   // eslint-disable
@@ -386,7 +388,7 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
       return;
     }
 
-    const sdkTarget = target as SDK.SDKModel.Target | null;
+    const sdkTarget = target as SDK.Target.Target | null;
     const newRow: DataGrid.DataGridUtils.Row = {
       cells: [
         {columnId: 'method', value: message.method},
@@ -420,8 +422,11 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
     if (this.isRecording) {
       this.messages.push({...message, type: 'send'});
     }
-    const sdkTarget = target as SDK.SDKModel.Target | null;
+    const sdkTarget = target as SDK.Target.Target | null;
     const newRow: DataGrid.DataGridUtils.Row = {
+      styles: {
+        '--override-data-grid-row-background-color': 'var(--override-data-grid-sent-message-row-background-color)',
+      },
       cells: [
         {columnId: 'method', value: message.method},
         {

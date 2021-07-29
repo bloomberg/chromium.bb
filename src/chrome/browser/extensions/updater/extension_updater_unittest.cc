@@ -83,6 +83,7 @@
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -377,7 +378,7 @@ class MockService : public TestExtensionService {
       ExtensionDownloaderDelegate* delegate) {
     identity_test_env_ = std::make_unique<signin::IdentityTestEnvironment>();
     account_info_ = identity_test_env_->MakePrimaryAccountAvailable(
-        "bobloblaw@lawblog.example.com");
+        "bobloblaw@lawblog.example.com", signin::ConsentLevel::kSync);
 
     std::unique_ptr<ExtensionDownloader> downloader(
         CreateExtensionDownloader(delegate));

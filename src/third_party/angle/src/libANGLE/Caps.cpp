@@ -173,7 +173,6 @@ static bool GetFormatSupportBase(const TextureCapsMap &textureCaps,
     for (size_t i = 0; i < requiredFormatsSize; i++)
     {
         const TextureCaps &cap = textureCaps.get(requiredFormats[i]);
-
         if (requiresTexturing && !cap.texturable)
         {
             return false;
@@ -639,16 +638,31 @@ static bool DetermineSRGBR8TextureSupport(const TextureCapsMap &textureCaps)
     return GetFormatSupport(textureCaps, requiredFilterFormats, true, true, false, false, false);
 }
 
+// Check for GL_EXT_texture_sRGB_RG8 support
+static bool DetermineSRGBRG8TextureSupport(const TextureCapsMap &textureCaps)
+{
+    constexpr GLenum requiredFilterFormats[] = {GL_SRG8_EXT};
+
+    return GetFormatSupport(textureCaps, requiredFilterFormats, true, true, false, false, false);
+}
+
 // Check for GL_ANGLE_depth_texture support
 static bool DetermineDepthTextureANGLESupport(const TextureCapsMap &textureCaps)
 {
     constexpr GLenum requiredFormats[] = {
         GL_DEPTH_COMPONENT16,
+#if !defined(ANGLE_PLATFORM_IOS) && \
+    (!defined(ANGLE_PLATFORM_MACCATALYST) || !defined(ANGLE_CPU_ARM64))
+        // anglebug.com/6082
+        // TODO(dino): Temporarily Removing the need for GL_DEPTH_COMPONENT32_OES
+        // because it is not supported on iOS.
+        // TODO(dino): I think this needs to be a runtime check when running an iOS app on Mac.
         GL_DEPTH_COMPONENT32_OES,
+#endif
         GL_DEPTH24_STENCIL8_OES,
     };
 
-    return GetFormatSupport(textureCaps, requiredFormats, true, true, true, false, false);
+    return GetFormatSupport(textureCaps, requiredFormats, true, false, true, false, false);
 }
 
 // Check for GL_OES_depth_texture support
@@ -656,10 +670,17 @@ static bool DetermineDepthTextureOESSupport(const TextureCapsMap &textureCaps)
 {
     constexpr GLenum requiredFormats[] = {
         GL_DEPTH_COMPONENT16,
+#if !defined(ANGLE_PLATFORM_IOS) && \
+    (!defined(ANGLE_PLATFORM_MACCATALYST) || !defined(ANGLE_CPU_ARM64))
+        // anglebug.com/6082
+        // TODO(dino): Temporarily Removing the need for GL_DEPTH_COMPONENT32_OES
+        // because it is not supported on iOS.
+        // TODO(dino): I think this needs to be a runtime check when running an iOS app on Mac.
         GL_DEPTH_COMPONENT32_OES,
+#endif
     };
 
-    return GetFormatSupport(textureCaps, requiredFormats, true, true, true, true, false);
+    return GetFormatSupport(textureCaps, requiredFormats, true, false, true, true, false);
 }
 
 // Check for GL_OES_depth24
@@ -859,6 +880,7 @@ void Extensions::setTextureExtensionSupport(const TextureCapsMap &textureCaps)
     compressedEACRG11SignedTextureOES   = DetermineEACRG11SignedTextureSupport(textureCaps);
     sRGB                                = DetermineSRGBTextureSupport(textureCaps);
     sRGBR8EXT                           = DetermineSRGBR8TextureSupport(textureCaps);
+    sRGBRG8EXT                          = DetermineSRGBRG8TextureSupport(textureCaps);
     depthTextureANGLE                   = DetermineDepthTextureANGLESupport(textureCaps);
     depthTextureOES                     = DetermineDepthTextureOESSupport(textureCaps);
     depth24OES                          = DetermineDepth24OESSupport(textureCaps);
@@ -946,6 +968,7 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_EXT_pvrtc_sRGB"] = enableableExtension(&Extensions::compressedTexturePVRTCsRGB);
         map["GL_EXT_sRGB"] = enableableExtension(&Extensions::sRGB);
         map["GL_EXT_texture_sRGB_R8"] = enableableExtension(&Extensions::sRGBR8EXT);
+        map["GL_EXT_texture_sRGB_RG8"] = enableableExtension(&Extensions::sRGBRG8EXT);
         map["GL_ANGLE_depth_texture"] = esOnlyExtension(&Extensions::depthTextureANGLE);
         map["GL_OES_depth_texture"] = esOnlyExtension(&Extensions::depthTextureOES);
         map["GL_OES_depth_texture_cube_map"] = enableableExtension(&Extensions::depthTextureCubeMapOES);
@@ -1030,7 +1053,8 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_ANGLE_robust_resource_initialization"] = esOnlyExtension(&Extensions::robustResourceInitialization);
         map["GL_ANGLE_program_cache_control"] = esOnlyExtension(&Extensions::programCacheControl);
         map["GL_ANGLE_texture_rectangle"] = enableableDisablableExtension(&Extensions::textureRectangle);
-        map["GL_EXT_geometry_shader"] = enableableExtension(&Extensions::geometryShader);
+        map["GL_EXT_geometry_shader"] = enableableExtension(&Extensions::geometryShaderEXT);
+        map["GL_OES_geometry_shader"] = enableableExtension(&Extensions::geometryShaderOES);
         map["GL_ANGLE_explicit_context_gles1"] = enableableExtension(&Extensions::explicitContextGles1);
         map["GL_ANGLE_explicit_context"] = enableableExtension(&Extensions::explicitContext);
         map["GL_KHR_parallel_shader_compile"] = enableableExtension(&Extensions::parallelShaderCompile);
@@ -1073,6 +1097,8 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_EXT_clip_cull_distance"] = enableableExtension(&Extensions::clipCullDistanceEXT);
         map["GL_ANGLE_get_serialized_context_string"] = esOnlyExtension(&Extensions::getSerializedContextStringANGLE);
         map["GL_EXT_primitive_bounding_box"] = esOnlyExtension(&Extensions::primitiveBoundingBoxEXT);
+        map["GL_ANGLE_relaxed_vertex_attribute_type"] = esOnlyExtension(&Extensions::relaxedVertexAttributeTypeANGLE);
+        map["GL_ANGLE_yuv_internal_format"] = enableableExtension(&Extensions::yuvInternalFormatANGLE);
         // GLES1 extensions
         map["GL_OES_point_size_array"] = enableableExtension(&Extensions::pointSizeArrayOES);
         map["GL_OES_texture_cube_map"] = enableableExtension(&Extensions::textureCubeMapOES);
@@ -1339,7 +1365,7 @@ Caps GenerateMinimumCaps(const Version &clientVersion, const Extensions &extensi
         caps.maxRectangleTextureSize = 64;
     }
 
-    if (extensions.geometryShader)
+    if (extensions.geometryShaderAny())
     {
         // Table 20.40 (GL_EXT_geometry_shader)
         caps.maxFramebufferLayers = 256;

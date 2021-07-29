@@ -204,7 +204,7 @@ TEST_F(BackGestureEventHandlerTestCantGoBack, GoBackInOverviewMode) {
   WindowState::Get(top_window())->Unminimize();
   ASSERT_FALSE(WindowState::Get(top_window())->IsMinimized());
   auto* shell = Shell::Get();
-  shell->overview_controller()->StartOverview();
+  EnterOverview();
   ASSERT_TRUE(shell->overview_controller()->InOverviewSession());
   GenerateBackSequence();
   // Should trigger go back instead of minimize the window since it is in
@@ -213,9 +213,9 @@ TEST_F(BackGestureEventHandlerTestCantGoBack, GoBackInOverviewMode) {
 
   // Swipe back at overview mode without opened window should still trigger
   // going back.
-  shell->overview_controller()->EndOverview();
+  ExitOverview();
   ResetTopWindow();
-  shell->overview_controller()->StartOverview();
+  EnterOverview();
   GenerateBackSequence();
   EXPECT_EQ(2, target_back_release.accelerator_count());
   EXPECT_TRUE(shell->app_list_controller()->IsHomeScreenVisible());
@@ -299,6 +299,21 @@ TEST_F(BackGestureEventHandlerTest, CancelOnScreenRotation) {
   EXPECT_EQ(0, target_back_release.accelerator_count());
 }
 
+// Tests that there is no crash when destroying the window during drag the
+// back gesture affordance from the left edge.
+TEST_F(BackGestureEventHandlerTest, DestroyWindowDuringDrag) {
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
+
+  gfx::Point start(0, 100);
+  gfx::Point update_and_end(200, 100);
+  SendTouchEvent(start, ui::ET_TOUCH_PRESSED);
+  SendTouchEvent(update_and_end, ui::ET_TOUCH_MOVED);
+  ResetTopWindow();
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+}
+
 // Tests back gesture while in split view mode.
 TEST_F(BackGestureEventHandlerTest, DragFromSplitViewDivider) {
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
@@ -376,7 +391,7 @@ TEST_F(BackGestureEventHandlerTest, BackInSplitViewMode) {
 
   // Start overview first and then snap window in splitview to make sure
   // window activation order remains the same.
-  Shell::Get()->overview_controller()->StartOverview();
+  EnterOverview();
   auto* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   split_view_controller->SnapWindow(left_window.get(),

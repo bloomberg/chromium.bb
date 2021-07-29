@@ -314,8 +314,8 @@ APIBinding::APIBinding(const std::string& api_name,
       std::string full_name =
           base::StringPrintf("%s.%s", api_name_.c_str(), name.c_str());
       const base::ListValue* filters = nullptr;
-      bool supports_filters =
-          event_dict->GetList("filters", &filters) && !filters->empty();
+      bool supports_filters = event_dict->GetList("filters", &filters) &&
+                              !filters->GetList().empty();
 
       std::vector<std::string> rule_actions;
       std::vector<std::string> rule_conditions;
@@ -716,7 +716,7 @@ void APIBinding::HandleCall(const std::string& name,
     int request_id = 0;
     v8::Local<v8::Promise> promise;
     std::tie(request_id, promise) = request_handler_->StartPromiseBasedRequest(
-        context, name, std::move(parse_result.arguments_list));
+        context, name, std::move(parse_result.arguments_list), custom_callback);
     arguments->Return(promise);
   } else {
     request_handler_->StartRequest(context, name,

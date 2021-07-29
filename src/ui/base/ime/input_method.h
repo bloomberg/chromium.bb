@@ -133,28 +133,15 @@ class InputMethod {
   // ui::TEXT_INPUT_TYPE_NONE if there is no focused client.
   virtual TextInputType GetTextInputType() const = 0;
 
-  // Gets the text input mode of the focused text input client. Returns
-  // ui::TEXT_INPUT_TYPE_DEFAULT if there is no focused client.
-  virtual TextInputMode GetTextInputMode() const = 0;
-
-  // Gets the text input flags of the focused text input client. Returns
-  // 0 if there is no focused client.
-  virtual int GetTextInputFlags() const = 0;
-
-  // Checks if the focused text input client supports inline composition.
-  virtual bool CanComposeInline() const = 0;
-
   // Returns true if we know for sure that a candidate window (or IME suggest,
   // etc.) is open.  Returns false if no popup window is open or the detection
   // of IME popups is not supported.
   virtual bool IsCandidatePopupOpen() const = 0;
 
-  // Check whether text entered into the focused text input client should be
-  // used to improve typing suggestions for the user.
-  virtual bool GetClientShouldDoLearning() = 0;
-
   // Displays an on screen keyboard if enabled.
   virtual void ShowVirtualKeyboardIfEnabled() = 0;
+
+  virtual void SetVirtualKeyboardVisibilityIfEnabled(bool should_show) = 0;
 
   // Management of the observer list.
   virtual void AddObserver(InputMethodObserver* observer) = 0;

@@ -4,26 +4,28 @@
 
 import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {createCrostiniForTest} from '../../background/js/mock_crostini.m.js';
-import {MockProgressCenter} from '../../background/js/mock_progress_center.m.js';
-import {metrics} from '../../common/js/metrics.m.js';
-import {installMockChrome} from '../../common/js/mock_chrome.m.js';
-import {MockFileEntry, MockFileSystem} from '../../common/js/mock_entry.m.js';
-import {ProgressItemState} from '../../common/js/progress_center_common.m.js';
-import {reportPromise} from '../../common/js/test_error_reporting.m.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-import {ProgressCenter} from '../../externs/background/progress_center.m.js';
-import {EntryLocation} from '../../externs/entry_location.m.js';
-import {VolumeManager} from '../../externs/volume_manager.m.js';
-import {FilesPasswordDialog} from '../elements/files_password_dialog.m.js';
+import {createCrostiniForTest} from '../../background/js/mock_crostini.js';
+import {MockProgressCenter} from '../../background/js/mock_progress_center.js';
+import {metrics} from '../../common/js/metrics.js';
+import {installMockChrome} from '../../common/js/mock_chrome.js';
+import {MockFileEntry, MockFileSystem} from '../../common/js/mock_entry.js';
+import {ProgressItemState} from '../../common/js/progress_center_common.js';
+import {reportPromise} from '../../common/js/test_error_reporting.js';
+import {util} from '../../common/js/util.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {ProgressCenter} from '../../externs/background/progress_center.js';
+import {EntryLocation} from '../../externs/entry_location.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
+import {FilesPasswordDialog} from '../elements/files_password_dialog.js';
 
-import {DirectoryModel} from './directory_model.m.js';
-import {FileTasks} from './file_tasks.m.js';
-import {FileTransferController} from './file_transfer_controller.m.js';
-import {MetadataModel} from './metadata/metadata_model.m.js';
-import {NamingController} from './naming_controller.m.js';
-import {TaskHistory} from './task_history.m.js';
-import {FileManagerUI} from './ui/file_manager_ui.m.js';
+import {constants} from './constants.js';
+import {DirectoryModel} from './directory_model.js';
+import {FileTasks} from './file_tasks.js';
+import {FileTransferController} from './file_transfer_controller.js';
+import {MetadataModel} from './metadata/metadata_model.js';
+import {NamingController} from './naming_controller.js';
+import {TaskHistory} from './task_history.js';
+import {FileManagerUI} from './ui/file_manager_ui.js';
 
 /**
  * Utility function that appends value under a given name in the store.
@@ -81,10 +83,10 @@ let mockChrome;
  * @type {!TaskHistory}
  */
 const mockTaskHistory = /** @type {!TaskHistory} */ ({
-  getLastExecutedTime: function(id) {
+  getLastExecutedTime: function(descriptor) {
     return 0;
   },
-  recordTaskExecuted: function(id) {},
+  recordTaskExecuted: function(descriptor) {},
 });
 
 /**
@@ -128,7 +130,11 @@ export function setUp() {
   window.loadTimeData.getBoolean = key => false;
 
   const mockTask = /** @type {!chrome.fileManagerPrivate.FileTask} */ ({
-    taskId: 'handler-extension-id|app|any',
+    descriptor: {
+      appId: 'handler-extension-id',
+      taskType: 'app',
+      actionId: 'any',
+    },
     isDefault: false,
     isGenericFileHandler: true,
   });
@@ -156,16 +162,14 @@ export function setUp() {
       getFileTasks: function(entries, callback) {
         setTimeout(callback.bind(null, [mockTask]), 0);
       },
-      executeTask: function(taskId, entries, onViewFiles) {
+      executeTask: function(descriptor, entries, onViewFiles) {
         onViewFiles('failed');
       },
       sharePathsWithCrostini: function(vmName, entries, persist, callback) {
         callback();
       },
     },
-    runtime: {
-      id: 'test-extension-id',
-    },
+    runtime: {},
   };
 
   installMockChrome(mockChrome);
@@ -383,13 +387,21 @@ export function testOpenTaskPicker(callback) {
             null,
             [
               {
-                taskId: 'handler-extension-id1|app|any',
+                descriptor: {
+                  appId: 'handler-extension-id1',
+                  taskType: 'app',
+                  actionId: 'any',
+                },
                 isDefault: false,
                 isGenericFileHandler: false,
                 title: 'app 1',
               },
               {
-                taskId: 'handler-extension-id2|app|any',
+                descriptor: {
+                  appId: 'handler-extension-id2',
+                  taskType: 'app',
+                  actionId: 'any',
+                },
                 isDefault: false,
                 isGenericFileHandler: false,
                 title: 'app 2',
@@ -411,8 +423,16 @@ export function testOpenTaskPicker(callback) {
  * task execution order should execute.
  */
 export function testOpenWithMostRecentlyExecuted(callback) {
-  const latestTaskId = 'handler-extension-most-recently-executed|app|any';
-  const oldTaskId = 'handler-extension-executed-before|app|any';
+  const latestTaskDescriptor = {
+    appId: 'handler-extension-most-recently-executed',
+    taskType: 'app',
+    actionId: 'any',
+  };
+  const oldTaskDescriptor = {
+    appId: 'handler-extension-executed-before',
+    taskType: 'app',
+    actionId: 'any',
+  };
 
   window.chrome.fileManagerPrivate.getFileTasks = (entries, callback) => {
     setTimeout(
@@ -421,19 +441,23 @@ export function testOpenWithMostRecentlyExecuted(callback) {
             // File tasks is sorted by last executed time, latest first.
             [
               {
-                taskId: latestTaskId,
+                descriptor: latestTaskDescriptor,
                 isDefault: false,
                 isGenericFileHandler: false,
                 title: 'app 1',
               },
               {
-                taskId: oldTaskId,
+                descriptor: oldTaskDescriptor,
                 isDefault: false,
                 isGenericFileHandler: false,
                 title: 'app 2',
               },
               {
-                taskId: 'handler-extension-never-executed|app|any',
+                descriptor: {
+                  appId: 'handler-extension-never-executed',
+                  taskType: 'app',
+                  actionId: 'any',
+                },
                 isDefault: false,
                 isGenericFileHandler: false,
                 title: 'app 3',
@@ -443,22 +467,22 @@ export function testOpenWithMostRecentlyExecuted(callback) {
   };
 
   const taskHistory = /** @type {!TaskHistory} */ ({
-    getLastExecutedTime: function(id) {
-      if (id == oldTaskId) {
+    getLastExecutedTime: function(descriptor) {
+      if (util.descriptorEqual(descriptor, oldTaskDescriptor)) {
         return 10000;
       }
-      if (id == latestTaskId) {
+      if (util.descriptorEqual(descriptor, latestTaskDescriptor)) {
         return 20000;
       }
       return 0;
     },
-    recordTaskExecuted: function(id) {},
+    recordTaskExecuted: function(descriptor) {},
   });
 
   let executedTask = null;
   window.chrome.fileManagerPrivate.executeTask =
-      (taskId, entries, onViewFiles) => {
-        executedTask = taskId;
+      (descriptor, entries, onViewFiles) => {
+        executedTask = descriptor;
         onViewFiles('success');
       };
 
@@ -483,7 +507,7 @@ export function testOpenWithMostRecentlyExecuted(callback) {
             fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
-          assertEquals(latestTaskId, executedTask);
+          assertTrue(util.descriptorEqual(latestTaskDescriptor, executedTask));
           resolve();
         });
   });
@@ -495,7 +519,11 @@ export function testOpenWithMostRecentlyExecuted(callback) {
  * Tests opening a .zip file.
  */
 export function testOpenZipWithZipArchiver(callback) {
-  const zipArchiverTaskId = 'dmboannefpncccogfdikhmhpmdnddgoe|app|open';
+  const zipArchiverDescriptor = {
+    appId: 'dmboannefpncccogfdikhmhpmdnddgoe',
+    taskType: 'app',
+    actionId: 'open',
+  };
 
   window.chrome.fileManagerPrivate.getFileTasks = (entries, callback) => {
     setTimeout(
@@ -503,7 +531,7 @@ export function testOpenZipWithZipArchiver(callback) {
             null,
             [
               {
-                taskId: zipArchiverTaskId,
+                descriptor: zipArchiverDescriptor,
                 isDefault: false,
                 isGenericFileHandler: false,
                 title: 'Zip Archiver',
@@ -514,16 +542,16 @@ export function testOpenZipWithZipArchiver(callback) {
 
   // None of the tasks has ever been executed.
   const taskHistory = /** @type {!TaskHistory} */ ({
-    getLastExecutedTime: function(id) {
+    getLastExecutedTime: function(descriptor) {
       return 0;
     },
-    recordTaskExecuted: function(id) {},
+    recordTaskExecuted: function(descriptor) {},
   });
 
   let executedTask = null;
   window.chrome.fileManagerPrivate.executeTask =
-      (taskId, entries, onViewFiles) => {
-        executedTask = taskId;
+      (descriptor, entries, onViewFiles) => {
+        executedTask = descriptor;
         onViewFiles('success');
       };
 
@@ -548,7 +576,7 @@ export function testOpenZipWithZipArchiver(callback) {
             fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
-          assertEquals(zipArchiverTaskId, executedTask);
+          assertTrue(util.descriptorEqual(zipArchiverDescriptor, executedTask));
           resolve();
         });
   });
@@ -564,7 +592,11 @@ function setUpInstallLinuxPackage() {
     });
   };
   const fileTask = {
-    taskId: 'test-extension-id|app|install-linux-package',
+    descriptor: {
+      appId: constants.FILES_APP_EXTENSION_ID,
+      taskType: 'app',
+      actionId: 'install-linux-package'
+    },
     isDefault: false,
     isGenericFileHandler: false,
     title: '__MSG_INSTALL_LINUX_PACKAGE__',
@@ -617,7 +649,11 @@ export function testToOpenTiniFileOpensImportCrostiniImageDialog(callback) {
             null,
             [
               {
-                taskId: 'test-extension-id|app|import-crostini-image',
+                descriptor: {
+                  appId: constants.FILES_APP_EXTENSION_ID,
+                  taskType: 'app',
+                  actionId: 'import-crostini-image'
+                },
                 isDefault: false,
                 isGenericFileHandler: false,
               },
@@ -716,7 +752,11 @@ export async function testShareWith(done) {
       fileManager.progressCenter);
 
   const mockTask = /** @type {!chrome.fileManagerPrivate.FileTask} */ ({
-    taskId: 'com.acme/com.acme.android.PhotosApp|arc|send_multiple',
+    descriptor: {
+      appId: 'com.acme/com.acme.android.PhotosApp',
+      taskType: 'arc',
+      actionId: 'send_multiple'
+    },
     isDefault: false,
     verb: chrome.fileManagerPrivate.Verb.SHARE_WITH,
     isGenericFileHandler: true,

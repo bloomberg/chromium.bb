@@ -18,7 +18,8 @@
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/scoped_set_insertion.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
+#include "third_party/base/numerics/ranges.h"
 
 namespace {
 
@@ -125,30 +126,27 @@ bool CPDF_Function::Init(const CPDF_Object* pObj,
   return true;
 }
 
-bool CPDF_Function::Call(const float* inputs,
-                         uint32_t ninputs,
-                         float* results,
-                         int* nresults) const {
-  if (m_nInputs != ninputs)
-    return false;
+Optional<uint32_t> CPDF_Function::Call(pdfium::span<const float> inputs,
+                                       pdfium::span<float> results) const {
+  if (m_nInputs != inputs.size())
+    return pdfium::nullopt;
 
-  *nresults = m_nOutputs;
   std::vector<float> clamped_inputs(m_nInputs);
   for (uint32_t i = 0; i < m_nInputs; i++) {
     clamped_inputs[i] =
         pdfium::clamp(inputs[i], m_Domains[i * 2], m_Domains[i * 2 + 1]);
   }
-  if (!v_Call(clamped_inputs.data(), results))
-    return false;
+  if (!v_Call(clamped_inputs, results))
+    return pdfium::nullopt;
 
   if (m_Ranges.empty())
-    return true;
+    return m_nOutputs;
 
   for (uint32_t i = 0; i < m_nOutputs; i++) {
     results[i] =
         pdfium::clamp(results[i], m_Ranges[i * 2], m_Ranges[i * 2 + 1]);
   }
-  return true;
+  return m_nOutputs;
 }
 
 // See PDF Reference 1.7, page 170.
@@ -161,6 +159,7 @@ float CPDF_Function::Interpolate(float x,
   return ymin + (divisor ? (x - xmin) * (ymax - ymin) / divisor : 0);
 }
 
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
 const CPDF_SampledFunc* CPDF_Function::ToSampledFunc() const {
   return m_Type == Type::kType0Sampled
              ? static_cast<const CPDF_SampledFunc*>(this)
@@ -178,3 +177,4 @@ const CPDF_StitchFunc* CPDF_Function::ToStitchFunc() const {
              ? static_cast<const CPDF_StitchFunc*>(this)
              : nullptr;
 }
+#endif  // defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)

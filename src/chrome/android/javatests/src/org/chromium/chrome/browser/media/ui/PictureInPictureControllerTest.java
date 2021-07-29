@@ -91,18 +91,17 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
-    @FlakyTest(message = "see crbug.com/1038151")
+    @FlakyTest(message = "https://crbug.com/1211930/#c10")
     public void testEnterPip() throws Throwable {
         enterFullscreen();
-        triggerAutoPiP();
-
-        CriteriaHelper.pollUiThread(mActivity::isInPictureInPictureMode);
+        triggerAutoPiPAndWait();
     }
 
     /** Tests that PiP is left when we navigate the main page. */
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @FlakyTest(message = "https://crbug.com/1211930/#c10")
     public void testExitPipOnNavigation() throws Throwable {
         testExitOn(() -> JavaScriptUtils.executeJavaScript(getWebContents(),
                 "window.location.href = 'https://www.example.com/';"));
@@ -166,7 +165,7 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
-    @DisabledTest(message = "crbug.com/1034412")
+    @FlakyTest(message = "https://crbug.com/1211930/#c10")
     public void testNoExitOnIframeNavigation() throws Throwable {
         // Add a TabObserver so we know when the iFrame navigation has occurred before we check that
         // we are still in PiP.
@@ -174,14 +173,16 @@ public class PictureInPictureControllerTest {
         mActivity.getActivityTab().addObserver(navigationObserver);
 
         enterFullscreen();
-        triggerAutoPiP();
-        CriteriaHelper.pollUiThread(mActivity::isInPictureInPictureMode);
+        triggerAutoPiPAndWait();
 
         JavaScriptUtils.executeJavaScript(getWebContents(),
                 "document.getElementById('iframe').src = 'https://www.example.com/'");
 
         CriteriaHelper.pollUiThread(navigationObserver::didNavigationOccur);
 
+        // Wait for isInPictureInPictureMode rather than getLast...ForTesting, since the latter
+        // isn't synchronous with navigation occurring.  It has to wait for some back-and-forth with
+        // the framework.
         Assert.assertTrue(
                 TestThreadUtils.runOnUiThreadBlocking(mActivity::isInPictureInPictureMode));
     }
@@ -193,26 +194,26 @@ public class PictureInPictureControllerTest {
     @DisabledTest(message = "crbug.com/1038151")
     public void testReenterPip() throws Throwable {
         enterFullscreen();
-        triggerAutoPiP();
-        CriteriaHelper.pollUiThread(mActivity::isInPictureInPictureMode);
+        triggerAutoPiPAndWait();
 
+        // This waits for Stage.CREATED, but we never get one.  We go right to Stage.RESUMED .
         mActivityTestRule.startMainActivityFromLauncher();
-        CriteriaHelper.pollUiThread(() -> !mActivity.isInPictureInPictureMode());
+        CriteriaHelper.pollUiThread(() -> !mActivity.getLastPictureInPictureModeForTesting());
 
         enterFullscreen(false);
-        triggerAutoPiP();
-        CriteriaHelper.pollUiThread(mActivity::isInPictureInPictureMode);
+        triggerAutoPiPAndWait();
     }
 
     private WebContents getWebContents() {
         return mActivity.getCurrentWebContents();
     }
 
-    private void triggerAutoPiP() throws Throwable{
+    private void triggerAutoPiPAndWait() throws Throwable {
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> InstrumentationRegistry.getInstrumentation().callActivityOnUserLeaving(
                                 mActivity));
+        CriteriaHelper.pollUiThread(mActivity::getLastPictureInPictureModeForTesting);
     }
 
     private void enterFullscreen() throws Throwable {
@@ -234,22 +235,12 @@ public class PictureInPictureControllerTest {
     }
 
     private void testExitOn(Runnable runnable) throws Throwable {
-        // Before entering fullscreen, get the (nonzero) size of the video element.
-        final int inline_width = DOMUtils.getNodeBounds(getWebContents(), VIDEO_ID).width();
         enterFullscreen();
-        triggerAutoPiP();
-        CriteriaHelper.pollUiThread(mActivity::isInPictureInPictureMode);
-
-        // Wait for layout to finish.  We assume this means that the video element is now smaller
-        // than its initial size.  If we don't wait, and if the runnable beats layout, then the
-        // result is hard to predict.  Since we primarily care about exiting pixture-in-picture from
-        // steady-state, make sure we're in steady-state.
-        CriteriaHelper.pollInstrumentationThread(
-                () -> DOMUtils.getNodeBounds(getWebContents(), VIDEO_ID).width() < inline_width);
+        triggerAutoPiPAndWait();
 
         runnable.run();
 
-        CriteriaHelper.pollUiThread(() -> !mActivity.isInPictureInPictureMode());
+        CriteriaHelper.pollUiThread(() -> !mActivity.getLastPictureInPictureModeForTesting());
     }
 
     /** A TabObserver that tracks whether a navigation has occurred. */

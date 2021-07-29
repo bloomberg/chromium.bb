@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/wallpaper_types.h"
+#include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/files/file_util.h"
@@ -17,10 +17,10 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
@@ -35,6 +35,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 using base::Value;

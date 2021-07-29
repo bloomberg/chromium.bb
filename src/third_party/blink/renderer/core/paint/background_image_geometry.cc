@@ -62,7 +62,7 @@ PhysicalOffset AccumulatedScrollOffsetForFixedBackground(
        block && !skip_info.AncestorSkipped();
        block = block->ContainingBlock(&skip_info)) {
     if (block->IsScrollContainer())
-      result += PhysicalOffsetToBeNoop(block->ScrolledContentOffset());
+      result += block->ScrolledContentOffset();
     if (block == container)
       break;
   }
@@ -355,7 +355,7 @@ PhysicalRect FixedAttachmentPositioningArea(
       return rect;
     // The LayoutView is the only object that can paint a fixed background into
     // its scrolling contents layer, so it gets a special adjustment here.
-    rect.offset = PhysicalOffsetToBeNoop(layout_view->ScrolledContentOffset());
+    rect.offset = layout_view->ScrolledContentOffset();
   }
 
   rect.Move(AccumulatedScrollOffsetForFixedBackground(obj, container));
@@ -692,8 +692,7 @@ void BackgroundImageGeometry::CalculateFillTileSize(
                                            ? snapped_positioning_area_size
                                            : unsnapped_positioning_area_size;
   PhysicalSize image_intrinsic_size = PhysicalSize::FromFloatSizeFloor(
-      image->ImageSize(positioning_box_->GetDocument(),
-                       positioning_box_->StyleRef().EffectiveZoom(),
+      image->ImageSize(positioning_box_->StyleRef().EffectiveZoom(),
                        FloatSize(positioning_area_size),
                        LayoutObject::ShouldRespectImageOrientation(box_)));
   switch (type) {
@@ -977,6 +976,16 @@ PhysicalOffset BackgroundImageGeometry::OffsetInBackground(
   if (ShouldUseFixedAttachment(fill_layer))
     return PhysicalOffset();
   return element_positioning_area_offset_;
+}
+
+PhysicalOffset BackgroundImageGeometry::ComputeDestPhase() const {
+  // Given the size that the whole image should draw at, and the input phase
+  // requested by the content, and the space between repeated tiles, compute a
+  // phase that is no more than one size + space in magnitude.
+  const PhysicalSize step_per_tile = tile_size_ + repeat_spacing_;
+  const PhysicalOffset phase = {IntMod(-phase_.left, step_per_tile.width),
+                                IntMod(-phase_.top, step_per_tile.height)};
+  return snapped_dest_rect_.offset + phase;
 }
 
 }  // namespace blink

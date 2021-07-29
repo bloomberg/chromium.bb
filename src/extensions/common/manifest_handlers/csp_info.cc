@@ -119,6 +119,24 @@ const std::string& CSPInfo::GetExtensionPagesCSP(const Extension* extension) {
 }
 
 // static
+const std::string* CSPInfo::GetDefaultCSPToAppend(
+    const Extension& extension,
+    const std::string& relative_path) {
+  if (!extension.is_extension() || extension.manifest_version() < 3)
+    return nullptr;
+
+  // TODO(karandeepb): Extend this to Sandboxed pages as well in the future to
+  // ensure an extension can't use its Service worker to modify the sandboxed
+  // page CSP and get around the corresponding CSP restrictions.
+  if (SandboxedPageInfo::IsSandboxedPage(&extension, relative_path))
+    return nullptr;
+
+  // We only enforce a default CSP currently for MV3 extension pages.
+  static const base::NoDestructor<std::string> default_csp(kDefaultSecureCSP);
+  return default_csp.get();
+}
+
+// static
 const std::string* CSPInfo::GetIsolatedWorldCSP(const Extension& extension) {
   if (extension.manifest_version() >= 3) {
     // The isolated world will use its own CSP which blocks remotely hosted

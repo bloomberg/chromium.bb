@@ -9,7 +9,7 @@
 #include <ostream>
 
 #include "base/check_op.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
@@ -213,13 +213,12 @@ bool ReplaceTemplateExpressionsInternal(
 namespace ui {
 
 void TemplateReplacementsFromDictionaryValue(
-    const base::DictionaryValue& dictionary,
+    const base::Value& dictionary,
     TemplateReplacements* replacements) {
-  for (base::DictionaryValue::Iterator it(dictionary); !it.IsAtEnd();
-       it.Advance()) {
-    std::string str_value;
-    if (it.value().GetAsString(&str_value))
-      (*replacements)[it.key()] = str_value;
+  for (auto pair : dictionary.DictItems()) {
+    const std::string* value = pair.second.GetIfString();
+    if (value)
+      (*replacements)[pair.first] = pair.second.GetString();
   }
 }
 
@@ -265,7 +264,6 @@ bool ReplaceTemplateExpressionsInJS(base::StringPiece source,
     remaining =
         remaining.substr(current_template.start + current_template.length);
   }
-  return true;
 }
 
 std::string ReplaceTemplateExpressions(base::StringPiece source,

@@ -28,7 +28,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/graphics/rw_buffer.h"
@@ -59,6 +59,8 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   static std::unique_ptr<DeferredImageDecoder> CreateForTesting(
       std::unique_ptr<ImageDecoder>);
 
+  DeferredImageDecoder(const DeferredImageDecoder&) = delete;
+  DeferredImageDecoder& operator=(const DeferredImageDecoder&) = delete;
   ~DeferredImageDecoder();
 
   String FilenameExtension() const;
@@ -66,6 +68,8 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   sk_sp<PaintImageGenerator> CreateGenerator();
 
   scoped_refptr<SharedBuffer> Data();
+  bool HasData() const;
+  size_t DataSize() const;
   void SetData(scoped_refptr<SharedBuffer> data, bool all_data_received);
 
   bool IsSizeAvailable();
@@ -136,8 +140,6 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   // the index of the first unreceived/incomplete frame in |frame_data_|.
   size_t received_frame_count_ = 0;
   scoped_refptr<ImageFrameGenerator> frame_generator_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeferredImageDecoder);
 };
 
 }  // namespace blink

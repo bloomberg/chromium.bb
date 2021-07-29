@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "base/containers/contains.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/shelf/app_service/app_service_app_window_shelf_controller.h"
@@ -27,16 +28,13 @@
 
 namespace {
 
-bool IsV1WindowedApp(Browser* browser) {
-  if (!browser->deprecated_is_app())
-    return false;
-  // Crostini terminal windows do not have an app id and are handled by
-  // CrostiniAppWindowShelfController. All other app windows should have a non
-  // empty app id.
-  return !web_app::GetAppIdFromApplicationName(browser->app_name()).empty();
+// Checks if a given browser is running a windowed app. It will return true for
+// web apps, hosted apps, and packaged V1 apps.
+bool IsAppBrowser(const Browser* browser) {
+  return (browser->is_type_app() || browser->is_type_app_popup()) &&
+         !web_app::GetAppIdFromApplicationName(browser->app_name()).empty();
 }
 
-#if DCHECK_IS_ON()
 Browser* GetBrowserWithTabStripModel(TabStripModel* tab_strip_model) {
   for (auto* browser : *BrowserList::GetInstance()) {
     if (browser->tab_strip_model() == tab_strip_model)
@@ -44,7 +42,6 @@ Browser* GetBrowserWithTabStripModel(TabStripModel* tab_strip_model) {
   }
   return nullptr;
 }
-#endif  // DCHECK_IS_ON()
 
 }  // namespace
 
@@ -62,26 +59,20 @@ class BrowserStatusMonitor::LocalWebContentsObserver
   // content::WebContentsObserver
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
-    if (!navigation_handle->IsInMainFrame() ||
-        !navigation_handle->HasCommitted())
-      return;
-
-    monitor_->UpdateAppItemState(web_contents(), false /*remove*/);
-    monitor_->UpdateBrowserItemState();
-
-    // Navigating may change the ShelfID associated with the WebContents.
-    Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-    if (browser &&
-        browser->tab_strip_model()->GetActiveWebContents() == web_contents()) {
-      monitor_->SetShelfIDForBrowserWindowContents(browser, web_contents());
+    // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+    // frames. This caller was converted automatically to the primary main frame
+    // to preserve its semantics. Follow up to confirm correctness.
+    if (navigation_handle->IsInPrimaryMainFrame() &&
+        navigation_handle->HasCommitted()) {
+      monitor_->OnTabNavigationFinished(web_contents());
     }
   }
 
   void WebContentsDestroyed() override {
-    // We can only come here when there was a non standard termination like
-    // an app got un-installed while running, etc.
-    monitor_->WebContentsDestroyed(web_contents());
-    // |this| is gone now.
+    // TODO(crbug.com/1219835): Remove the method when confident this is
+    // unreachable. This should be unreachable because the observer is removed
+    // when the tab is removed.
+    base::debug::DumpWithoutCrashing();
   }
 
  private:
@@ -128,6 +119,54 @@ void BrowserStatusMonitor::Initialize() {
   browser_tab_strip_tracker_.Init();
 }
 
+void BrowserStatusMonitor::ActiveUserChanged(const std::string& user_email) {
+  // When the active profile changes, all windowed and tabbed apps owned by the
+  // newly selected profile are added to the shelf, and the ones owned by other
+  // profiles are removed.
+  for (Browser* browser : *BrowserList::GetInstance()) {
+    bool owned = multi_user_util::IsProfileFromActiveUser(browser->profile());
+    TabStripModel* tab_strip_model = browser->tab_strip_model();
+
+    if (browser->is_type_app() || browser->is_type_app_popup()) {
+      // Add windowed apps owned by the current profile, and remove the one
+      // owned by other profiles.
+      bool app_in_shelf = IsAppBrowserInShelf(browser);
+      content::WebContents* active_web_contents =
+          tab_strip_model->GetActiveWebContents();
+
+      if (owned && !app_in_shelf) {
+        // Adding an app to the shelf consists of two actions: add the browser
+        // (shelf item) and add the content (shelf item status).
+        AddAppBrowserToShelf(browser);
+        if (active_web_contents) {
+          shelf_controller_->UpdateAppState(active_web_contents,
+                                            false /*remove*/);
+        }
+      } else if (!owned && app_in_shelf) {
+        // Removing an app from the shelf requires to remove the content and
+        // the shelf item (reverse order of addition).
+        if (active_web_contents) {
+          shelf_controller_->UpdateAppState(active_web_contents,
+                                            true /*remove*/);
+        }
+        RemoveAppBrowserFromShelf(browser);
+      }
+
+    } else if (browser->is_type_normal()) {
+      // Add tabbed apps owned by the current profile, and remove the ones owned
+      // by other profiles.
+      for (int i = 0; i < tab_strip_model->count(); ++i) {
+        shelf_controller_->UpdateAppState(tab_strip_model->GetWebContentsAt(i),
+                                          !owned /*remove*/);
+      }
+    }
+  }
+
+  // Update the browser state since some of the additions/removals above might
+  // have had an impact on the browser item state.
+  UpdateBrowserItemState();
+}
+
 void BrowserStatusMonitor::UpdateAppItemState(content::WebContents* contents,
                                               bool remove) {
   DCHECK(contents);
@@ -154,11 +193,9 @@ void BrowserStatusMonitor::OnBrowserAdded(Browser* browser) {
   DCHECK(insert_result.second);
 #endif
 
-  if (IsV1WindowedApp(browser)) {
-    // Note: A V1 application will set the tab strip observer when the app gets
-    // added to the shelf. This makes sure that in the multi user case we will
-    // only set the observer while the app item exists in the shelf.
-    AddV1AppToShelf(browser);
+  if (IsAppBrowser(browser) &&
+      multi_user_util::IsProfileFromActiveUser(browser->profile())) {
+    AddAppBrowserToShelf(browser);
   }
 }
 
@@ -169,8 +206,10 @@ void BrowserStatusMonitor::OnBrowserRemoved(Browser* browser) {
   DCHECK_EQ(num_removed, 1U);
 #endif
 
-  if (IsV1WindowedApp(browser))
-    RemoveV1AppFromShelf(browser);
+  if (IsAppBrowser(browser) &&
+      multi_user_util::IsProfileFromActiveUser(browser->profile())) {
+    RemoveAppBrowserFromShelf(browser);
+  }
 
   UpdateBrowserItemState();
   if (app_service_instance_helper_)
@@ -183,22 +222,57 @@ void BrowserStatusMonitor::OnTabStripModelChanged(
     const TabStripSelectionChange& selection) {
   // OnBrowserAdded() must be invoked before OnTabStripModelChanged(). See
   // comment in constructor.
+  Browser* browser = GetBrowserWithTabStripModel(tab_strip_model);
 #if DCHECK_IS_ON()
-  {
-    Browser* browser = GetBrowserWithTabStripModel(tab_strip_model);
-    DCHECK(base::Contains(known_browsers_, browser));
-  }
+  DCHECK(base::Contains(known_browsers_, browser));
 #endif
 
   if (change.type() == TabStripModelChange::kInserted) {
-    for (const auto& contents : change.GetInsert()->contents)
-      OnTabInserted(tab_strip_model, contents.contents);
+    for (const auto& contents : change.GetInsert()->contents) {
+      if (base::Contains(webcontents_to_observer_map_, contents.contents)) {
+#if DCHECK_IS_ON()
+        {
+          // The tab must be in the set of tabs in transit.
+          size_t num_removed = tabs_in_transit_.erase(contents.contents);
+          DCHECK_EQ(num_removed, 1);
+        }
+#endif
+        OnTabMoved(tab_strip_model, contents.contents);
+      } else {
+#if DCHECK_IS_ON()
+        DCHECK(!base::Contains(tabs_in_transit_, contents.contents));
+#endif
+        OnTabInserted(tab_strip_model, contents.contents);
+      }
+    }
     UpdateBrowserItemState();
   } else if (change.type() == TabStripModelChange::kRemoved) {
     auto* remove = change.GetRemove();
     for (const auto& contents : remove->contents) {
-      if (contents.will_be_deleted)
-        OnTabClosing(contents.contents);
+      switch (contents.remove_reason) {
+        case TabStripModelChange::RemoveReason::kDeleted:
+        case TabStripModelChange::RemoveReason::kCached:
+#if DCHECK_IS_ON()
+          DCHECK(!base::Contains(tabs_in_transit_, contents.contents));
+#endif
+          OnTabClosing(contents.contents);
+          break;
+        case TabStripModelChange::RemoveReason::kInsertedIntoOtherTabStrip:
+          // The tab will be reinserted immediately into another browser, so
+          // this event is ignored.
+          if (browser->is_type_devtools()) {
+            // TODO(crbug.com/1221967): when a dev tools window is docked, and
+            // its WebContents is removed, it will not be reinserted into
+            // another tab strip, so it should be treated as closed.
+            OnTabClosing(contents.contents);
+          } else {
+#if DCHECK_IS_ON()
+            // The tab must not be already in the set of tabs in transit.
+            DCHECK(tabs_in_transit_.insert(contents.contents).second);
+#endif
+          }
+          break;
+      }
     }
   } else if (change.type() == TabStripModelChange::kReplaced) {
     auto* replace = change.GetReplace();
@@ -213,46 +287,41 @@ void BrowserStatusMonitor::OnTabStripModelChanged(
     OnActiveTabChanged(selection.old_contents, selection.new_contents);
 }
 
-void BrowserStatusMonitor::WebContentsDestroyed(
-    content::WebContents* contents) {
-  UpdateAppItemState(contents, true /*remove*/);
-  RemoveWebContentsObserver(contents);
-}
-
-void BrowserStatusMonitor::AddV1AppToShelf(Browser* browser) {
-  DCHECK(IsV1WindowedApp(browser));
+void BrowserStatusMonitor::AddAppBrowserToShelf(Browser* browser) {
+  DCHECK(IsAppBrowser(browser));
   DCHECK(initialized_);
 
   std::string app_id =
       web_app::GetAppIdFromApplicationName(browser->app_name());
   DCHECK(!app_id.empty());
-  if (!IsV1AppInShelfWithAppId(app_id)) {
+  if (!IsAppBrowserInShelfWithAppId(app_id)) {
     if (auto* chrome_controller = ChromeShelfController::instance()) {
       chrome_controller->GetShelfSpinnerController()->CloseSpinner(app_id);
     }
-    shelf_controller_->SetV1AppStatus(app_id, ash::STATUS_RUNNING);
+    shelf_controller_->SetAppStatus(app_id, ash::STATUS_RUNNING);
   }
   browser_to_app_id_map_[browser] = app_id;
 }
 
-void BrowserStatusMonitor::RemoveV1AppFromShelf(Browser* browser) {
-  DCHECK(IsV1WindowedApp(browser));
+void BrowserStatusMonitor::RemoveAppBrowserFromShelf(Browser* browser) {
+  DCHECK(IsAppBrowser(browser));
   DCHECK(initialized_);
 
   auto iter = browser_to_app_id_map_.find(browser);
   if (iter != browser_to_app_id_map_.end()) {
     std::string app_id = iter->second;
     browser_to_app_id_map_.erase(iter);
-    if (!IsV1AppInShelfWithAppId(app_id))
-      shelf_controller_->SetV1AppStatus(app_id, ash::STATUS_CLOSED);
+    if (!IsAppBrowserInShelfWithAppId(app_id))
+      shelf_controller_->SetAppStatus(app_id, ash::STATUS_CLOSED);
   }
 }
 
-bool BrowserStatusMonitor::IsV1AppInShelf(Browser* browser) {
+bool BrowserStatusMonitor::IsAppBrowserInShelf(Browser* browser) {
   return browser_to_app_id_map_.find(browser) != browser_to_app_id_map_.end();
 }
 
-bool BrowserStatusMonitor::IsV1AppInShelfWithAppId(const std::string& app_id) {
+bool BrowserStatusMonitor::IsAppBrowserInShelfWithAppId(
+    const std::string& app_id) {
   for (const auto& iter : browser_to_app_id_map_) {
     if (iter.second == app_id)
       return true;
@@ -299,9 +368,9 @@ void BrowserStatusMonitor::OnTabReplaced(TabStripModel* tab_strip_model,
   UpdateAppItemState(new_contents, false /*remove*/);
   UpdateBrowserItemState();
 
-  if (browser && IsV1AppInShelf(browser) &&
+  if (browser && IsAppBrowserInShelf(browser) &&
       multi_user_util::IsProfileFromActiveUser(browser->profile())) {
-    shelf_controller_->SetV1AppStatus(
+    shelf_controller_->SetAppStatus(
         web_app::GetAppIdFromApplicationName(browser->app_name()),
         ash::STATUS_RUNNING);
   }
@@ -337,6 +406,25 @@ void BrowserStatusMonitor::OnTabClosing(content::WebContents* contents) {
   RemoveWebContentsObserver(contents);
   if (app_service_instance_helper_)
     app_service_instance_helper_->OnTabClosing(contents);
+}
+
+void BrowserStatusMonitor::OnTabMoved(TabStripModel* tab_strip_model,
+                                      content::WebContents* contents) {
+  // TODO(crbug.com/1203992): split this into inserted and moved cases.
+  OnTabInserted(tab_strip_model, contents);
+}
+
+void BrowserStatusMonitor::OnTabNavigationFinished(
+    content::WebContents* contents) {
+  UpdateAppItemState(contents, false /*remove*/);
+  UpdateBrowserItemState();
+
+  // Navigating may change the ShelfID associated with the WebContents.
+  Browser* browser = chrome::FindBrowserWithWebContents(contents);
+  if (browser &&
+      browser->tab_strip_model()->GetActiveWebContents() == contents) {
+    SetShelfIDForBrowserWindowContents(browser, contents);
+  }
 }
 
 void BrowserStatusMonitor::AddWebContentsObserver(

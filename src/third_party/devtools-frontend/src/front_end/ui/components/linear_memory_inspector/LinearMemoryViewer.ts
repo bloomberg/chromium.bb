@@ -5,6 +5,7 @@ import * as LitHtml from '../../lit-html/lit-html.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 
 import {toHexString} from './LinearMemoryInspectorUtils.js';
+import linearMemoryViewerStyles from './linearMemoryViewer.css.js';
 
 const {render, html} = LitHtml;
 
@@ -33,7 +34,7 @@ export class ResizeEvent extends Event {
   }
 }
 export class LinearMemoryViewer extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-linear-memory-inspector-viewer`;
+  static readonly litTagName = LitHtml.literal`devtools-linear-memory-inspector-viewer`;
 
   private static readonly BYTE_GROUP_MARGIN = 8;
   private static readonly BYTE_GROUP_SIZE = 4;
@@ -71,6 +72,7 @@ export class LinearMemoryViewer extends HTMLElement {
 
   connectedCallback(): void {
     ComponentHelpers.SetCSSProperty.set(this, '--byte-group-margin', `${LinearMemoryViewer.BYTE_GROUP_MARGIN}px`);
+    this.shadow.adoptedStyleSheets = [linearMemoryViewerStyles];
   }
 
   disconnectedCallback(): void {
@@ -162,69 +164,6 @@ export class LinearMemoryViewer extends HTMLElement {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html`
-      <style>
-        :host {
-          flex: auto;
-          display: flex;
-          min-height: 20px;
-        }
-
-        .view {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          box-sizing: border-box;
-          background: var(--color-background);
-          outline: none;
-        }
-
-        .row {
-          display: flex;
-          height: 20px;
-          align-items: center;
-        }
-
-        .cell {
-          text-align: center;
-          border: 1px solid transparent;
-          border-radius: 2px;
-        }
-
-        .cell.selected {
-          border-color: var(--color-syntax-3);
-          color: var(--color-syntax-3);
-          background-color: var(--legacy-item-selection-bg-color);
-        }
-
-        .byte-cell {
-          min-width: 21px;
-          color: var(--color-text-primary);
-        }
-
-        .byte-group-margin {
-          margin-left: var(--byte-group-margin);
-        }
-
-        .text-cell {
-          min-width: 14px;
-          color: var(--color-syntax-3);
-        }
-
-        .address {
-          color: var(--color-text-disabled);
-        }
-
-        .address.selected {
-          font-weight: bold;
-          color: var(--color-text-primary);
-        }
-
-        .divider {
-          width: 1px;
-          height: inherit;
-          background-color: var(--color-details-hairline);
-          margin: 0 4px;
-        }
-      </style>
       <div class="view" tabindex="0" @keydown=${this.onKeyDown}>
           ${this.renderView()}
       </div>

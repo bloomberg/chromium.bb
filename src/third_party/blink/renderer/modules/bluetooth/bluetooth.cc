@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_device.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_error.h"
@@ -55,25 +56,6 @@ const char kDeviceNameTooLong[] =
 const char kInactiveDocumentError[] = "Document not active";
 const char kHandleGestureForPermissionRequest[] =
     "Must be handling a user gesture to show a permission request.";
-
-namespace {
-
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-// TODO(crbug.com/1181288): Remove the old IDL union version.
-V8BluetoothServiceUUID* ToV8BluetoothServiceUUID(
-    const StringOrUnsignedLong& uuid) {
-  if (uuid.IsString()) {
-    return MakeGarbageCollected<V8BluetoothServiceUUID>(uuid.GetAsString());
-  } else if (uuid.IsUnsignedLong()) {
-    return MakeGarbageCollected<V8BluetoothServiceUUID>(
-        uuid.GetAsUnsignedLong());
-  }
-  NOTREACHED();
-  return nullptr;
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
-}  // namespace
 
 // Remind developers when they are using Web Bluetooth on unsupported platforms.
 // TODO(https://crbug.com/570344): Remove this method when all platforms are
@@ -108,14 +90,9 @@ static void CanonicalizeFilter(
       return;
     }
     canonicalized_filter->services.emplace();
-    for (const StringOrUnsignedLong& service : filter->services()) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-      const String& validated_service = BluetoothUUID::getService(
-          ToV8BluetoothServiceUUID(service), exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    for (const V8UnionStringOrUnsignedLong* service : filter->services()) {
       const String& validated_service =
           BluetoothUUID::getService(service, exception_state);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
       if (exception_state.HadException())
         return;
       canonicalized_filter->services->push_back(validated_service);
@@ -153,8 +130,14 @@ static void CanonicalizeFilter(
     }
     canonicalized_filter->manufacturer_data.emplace();
     for (const auto& manufacturer_data : filter->manufacturerData()) {
-      DOMArrayPiece mask_buffer = manufacturer_data->mask();
-      DOMArrayPiece data_prefix_buffer = manufacturer_data->dataPrefix();
+      DOMArrayPiece mask_buffer = manufacturer_data->hasMask()
+                                      ? DOMArrayPiece(manufacturer_data->mask())
+                                      : DOMArrayPiece();
+      DOMArrayPiece data_prefix_buffer =
+          manufacturer_data->hasDataPrefix()
+              ? DOMArrayPiece(manufacturer_data->dataPrefix())
+              : DOMArrayPiece();
+
       if (manufacturer_data->hasMask()) {
         if (mask_buffer.IsDetached()) {
           exception_state.ThrowDOMException(
@@ -254,15 +237,10 @@ static void ConvertRequestDeviceOptions(
   }
 
   if (options->hasOptionalServices()) {
-    for (const StringOrUnsignedLong& optional_service :
+    for (const V8UnionStringOrUnsignedLong* optional_service :
          options->optionalServices()) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-      const String& validated_optional_service = BluetoothUUID::getService(
-          ToV8BluetoothServiceUUID(optional_service), exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
       const String& validated_optional_service =
           BluetoothUUID::getService(optional_service, exception_state);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
       if (exception_state.HadException())
         return;
       result->optional_services.push_back(validated_optional_service);

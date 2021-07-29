@@ -32,14 +32,14 @@ class IndexBufferValidationTest : public ValidationTest {
                 return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
         descriptor.primitive.topology = primitiveTopology;
         descriptor.primitive.stripIndexFormat = format;
         descriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
 
-        return device.CreateRenderPipeline2(&descriptor);
+        return device.CreateRenderPipeline(&descriptor);
     }
 };
 
@@ -221,6 +221,42 @@ TEST_F(IndexBufferValidationTest, InvalidUsage) {
     {
         wgpu::RenderBundleEncoder encoder = device.CreateRenderBundleEncoder(&renderBundleDesc);
         encoder.SetIndexBuffer(copyBuffer, wgpu::IndexFormat::Uint32);
+        ASSERT_DEVICE_ERROR(encoder.Finish());
+    }
+}
+
+// Check the alignment constraint on the index buffer offset.
+TEST_F(IndexBufferValidationTest, OffsetAlignment) {
+    wgpu::Buffer indexBuffer =
+        utils::CreateBufferFromData<uint32_t>(device, wgpu::BufferUsage::Index, {0, 1, 2});
+
+    DummyRenderPass renderPass(device);
+    // Control cases: index buffer offset is a multiple of the index format size
+    {
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32, 0);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32, 4);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint16, 0);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint16, 2);
+        pass.EndPass();
+        encoder.Finish();
+    }
+
+    // Error case: index buffer offset isn't a multiple of 4 for IndexFormat::Uint32
+    {
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32, 2);
+        pass.EndPass();
+        ASSERT_DEVICE_ERROR(encoder.Finish());
+    }
+    // Error case: index buffer offset isn't a multiple of 2 for IndexFormat::Uint16
+    {
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint16, 1);
+        pass.EndPass();
         ASSERT_DEVICE_ERROR(encoder.Finish());
     }
 }

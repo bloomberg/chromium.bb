@@ -16,6 +16,7 @@
 #include "quic/core/http/http_encoder.h"
 #include "quic/core/http/spdy_utils.h"
 #include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_simple_buffer_allocator.h"
 #include "quic/core/quic_types.h"
 #include "quic/core/quic_utils.h"
 #include "quic/platform/api/quic_expect_bug.h"
@@ -311,11 +312,10 @@ TEST_P(QuicSimpleServerStreamTest, TestFraming) {
       .WillRepeatedly(
           Invoke(&session_, &MockQuicSimpleServerSession::ConsumeData));
   stream_->OnStreamHeaderList(false, kFakeFrameLen, header_list_);
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
-  std::string header = std::string(buffer.get(), header_length);
-  std::string data = UsesHttp3() ? header + body_ : body_;
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body_.length(), SimpleBufferAllocator::Get());
+  std::string data =
+      UsesHttp3() ? absl::StrCat(header.AsStringView(), body_) : body_;
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));
   EXPECT_EQ("11", StreamHeadersValue("content-length"));
@@ -330,11 +330,10 @@ TEST_P(QuicSimpleServerStreamTest, TestFramingOnePacket) {
           Invoke(&session_, &MockQuicSimpleServerSession::ConsumeData));
 
   stream_->OnStreamHeaderList(false, kFakeFrameLen, header_list_);
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
-  std::string header = std::string(buffer.get(), header_length);
-  std::string data = UsesHttp3() ? header + body_ : body_;
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body_.length(), SimpleBufferAllocator::Get());
+  std::string data =
+      UsesHttp3() ? absl::StrCat(header.AsStringView(), body_) : body_;
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));
   EXPECT_EQ("11", StreamHeadersValue("content-length"));
@@ -377,20 +376,20 @@ TEST_P(QuicSimpleServerStreamTest, TestFramingExtraData) {
   EXPECT_CALL(session_, WritevData(_, kErrorLength, _, FIN, _, _));
 
   stream_->OnStreamHeaderList(false, kFakeFrameLen, header_list_);
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
-  std::string header = std::string(buffer.get(), header_length);
-  std::string data = UsesHttp3() ? header + body_ : body_;
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body_.length(), SimpleBufferAllocator::Get());
+  std::string data =
+      UsesHttp3() ? absl::StrCat(header.AsStringView(), body_) : body_;
 
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));
   // Content length is still 11.  This will register as an error and we won't
   // accept the bytes.
-  header_length =
-      HttpEncoder::SerializeDataFrameHeader(large_body.length(), &buffer);
-  header = std::string(buffer.get(), header_length);
-  std::string data2 = UsesHttp3() ? header + large_body : large_body;
+  header = HttpEncoder::SerializeDataFrameHeader(large_body.length(),
+                                                 SimpleBufferAllocator::Get());
+  std::string data2 = UsesHttp3()
+                          ? absl::StrCat(header.AsStringView(), large_body)
+                          : large_body;
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/true, data.size(), data2));
   EXPECT_EQ("11", StreamHeadersValue("content-length"));
@@ -409,9 +408,8 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus) {
   response_headers_[":status"] = "200 OK";
   response_headers_["content-length"] = "5";
   std::string body = "Yummm";
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(body.length(), &buffer);
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body.length(), SimpleBufferAllocator::Get());
 
   memory_cache_backend_.AddResponse("www.google.com", "/bar",
                                     std::move(response_headers_), body);
@@ -421,7 +419,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus) {
   InSequence s;
   EXPECT_CALL(*stream_, WriteHeadersMock(false));
   if (UsesHttp3()) {
-    EXPECT_CALL(session_, WritevData(_, header_length, _, NO_FIN, _, _));
+    EXPECT_CALL(session_, WritevData(_, header.size(), _, NO_FIN, _, _));
   }
   EXPECT_CALL(session_, WritevData(_, kErrorLength, _, FIN, _, _));
 
@@ -442,9 +440,8 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus2) {
   response_headers_["content-length"] = "5";
   std::string body = "Yummm";
 
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(body.length(), &buffer);
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body.length(), SimpleBufferAllocator::Get());
 
   memory_cache_backend_.AddResponse("www.google.com", "/bar",
                                     std::move(response_headers_), body);
@@ -454,7 +451,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus2) {
   InSequence s;
   EXPECT_CALL(*stream_, WriteHeadersMock(false));
   if (UsesHttp3()) {
-    EXPECT_CALL(session_, WritevData(_, header_length, _, NO_FIN, _, _));
+    EXPECT_CALL(session_, WritevData(_, header.size(), _, NO_FIN, _, _));
   }
   EXPECT_CALL(session_, WritevData(_, kErrorLength, _, FIN, _, _));
 
@@ -507,9 +504,8 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithValidHeaders) {
   response_headers_["content-length"] = "5";
   std::string body = "Yummm";
 
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(body.length(), &buffer);
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body.length(), SimpleBufferAllocator::Get());
 
   memory_cache_backend_.AddResponse("www.google.com", "/bar",
                                     std::move(response_headers_), body);
@@ -518,7 +514,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithValidHeaders) {
   InSequence s;
   EXPECT_CALL(*stream_, WriteHeadersMock(false));
   if (UsesHttp3()) {
-    EXPECT_CALL(session_, WritevData(_, header_length, _, NO_FIN, _, _));
+    EXPECT_CALL(session_, WritevData(_, header.size(), _, NO_FIN, _, _));
   }
   EXPECT_CALL(session_, WritevData(_, body.length(), _, FIN, _, _));
 
@@ -538,9 +534,8 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithEarlyHints) {
   (*request_headers)[":authority"] = host;
   (*request_headers)[":method"] = "GET";
 
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(body.length(), &buffer);
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body.length(), SimpleBufferAllocator::Get());
   std::vector<spdy::Http2HeaderBlock> early_hints;
   // Add two Early Hints.
   const size_t kNumEarlyHintsResponses = 2;
@@ -562,7 +557,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithEarlyHints) {
   }
   EXPECT_CALL(*stream_, WriteHeadersMock(false));
   if (UsesHttp3()) {
-    EXPECT_CALL(session_, WritevData(_, header_length, _, NO_FIN, _, _));
+    EXPECT_CALL(session_, WritevData(_, header.size(), _, NO_FIN, _, _));
   }
   EXPECT_CALL(session_, WritevData(_, body.length(), _, FIN, _, _));
 
@@ -608,9 +603,8 @@ TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
   response_headers_[":status"] = "200";
   response_headers_["content-length"] = "5";
   const std::string kBody = "Hello";
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(kBody.length(), &buffer);
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body_.length(), SimpleBufferAllocator::Get());
   memory_cache_backend_.AddResponse(kHost, kPath, std::move(response_headers_),
                                     kBody);
 
@@ -620,7 +614,7 @@ TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
   EXPECT_CALL(*server_initiated_stream, WriteHeadersMock(false));
 
   if (UsesHttp3()) {
-    EXPECT_CALL(session_, WritevData(kServerInitiatedStreamId, header_length, _,
+    EXPECT_CALL(session_, WritevData(kServerInitiatedStreamId, header.size(), _,
                                      NO_FIN, _, _));
   }
   EXPECT_CALL(session_,
@@ -728,27 +722,27 @@ TEST_P(QuicSimpleServerStreamTest,
 
 TEST_P(QuicSimpleServerStreamTest, InvalidHeadersWithFin) {
   char arr[] = {
-      0x3a, 0x68, 0x6f, 0x73,  // :hos
-      0x74, 0x00, 0x00, 0x00,  // t...
-      0x00, 0x00, 0x00, 0x00,  // ....
-      0x07, 0x3a, 0x6d, 0x65,  // .:me
-      0x74, 0x68, 0x6f, 0x64,  // thod
-      0x00, 0x00, 0x00, 0x03,  // ....
-      0x47, 0x45, 0x54, 0x00,  // GET.
-      0x00, 0x00, 0x05, 0x3a,  // ...:
-      0x70, 0x61, 0x74, 0x68,  // path
-      0x00, 0x00, 0x00, 0x04,  // ....
-      0x2f, 0x66, 0x6f, 0x6f,  // /foo
-      0x00, 0x00, 0x00, 0x07,  // ....
-      0x3a, 0x73, 0x63, 0x68,  // :sch
-      0x65, 0x6d, 0x65, 0x00,  // eme.
-      0x00, 0x00, 0x00, 0x00,  // ....
-      0x00, 0x00, 0x08, 0x3a,  // ...:
-      0x76, 0x65, 0x72, 0x73,  // vers
-      0x96, 0x6f, 0x6e, 0x00,  // <i(69)>on.
-      0x00, 0x00, 0x08, 0x48,  // ...H
-      0x54, 0x54, 0x50, 0x2f,  // TTP/
-      0x31, 0x2e, 0x31,        // 1.1
+      0x3a,   0x68, 0x6f, 0x73,  // :hos
+      0x74,   0x00, 0x00, 0x00,  // t...
+      0x00,   0x00, 0x00, 0x00,  // ....
+      0x07,   0x3a, 0x6d, 0x65,  // .:me
+      0x74,   0x68, 0x6f, 0x64,  // thod
+      0x00,   0x00, 0x00, 0x03,  // ....
+      0x47,   0x45, 0x54, 0x00,  // GET.
+      0x00,   0x00, 0x05, 0x3a,  // ...:
+      0x70,   0x61, 0x74, 0x68,  // path
+      0x00,   0x00, 0x00, 0x04,  // ....
+      0x2f,   0x66, 0x6f, 0x6f,  // /foo
+      0x00,   0x00, 0x00, 0x07,  // ....
+      0x3a,   0x73, 0x63, 0x68,  // :sch
+      0x65,   0x6d, 0x65, 0x00,  // eme.
+      0x00,   0x00, 0x00, 0x00,  // ....
+      0x00,   0x00, 0x08, 0x3a,  // ...:
+      0x76,   0x65, 0x72, 0x73,  // vers
+      '\x96', 0x6f, 0x6e, 0x00,  // <i(69)>on.
+      0x00,   0x00, 0x08, 0x48,  // ...H
+      0x54,   0x54, 0x50, 0x2f,  // TTP/
+      0x31,   0x2e, 0x31,        // 1.1
   };
   absl::string_view data(arr, ABSL_ARRAYSIZE(arr));
   QuicStreamFrame frame(stream_->id(), true, 0, data);
@@ -767,11 +761,10 @@ TEST_P(QuicSimpleServerStreamTest, ConnectSendsResponseBeforeFinReceived) {
   header_list.OnHeaderBlockEnd(128, 128);
   EXPECT_CALL(*stream_, WriteHeadersMock(/*fin=*/false));
   stream_->OnStreamHeaderList(/*fin=*/false, kFakeFrameLen, header_list);
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
-  std::string header = std::string(buffer.get(), header_length);
-  std::string data = UsesHttp3() ? header + body_ : body_;
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body_.length(), SimpleBufferAllocator::Get());
+  std::string data =
+      UsesHttp3() ? absl::StrCat(header.AsStringView(), body_) : body_;
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));
   EXPECT_EQ("CONNECT-SILLY", StreamHeadersValue(":method"));
@@ -793,11 +786,10 @@ TEST_P(QuicSimpleServerStreamTest, ConnectWithInvalidHeader) {
   header_list.OnHeaderBlockEnd(128, 128);
   EXPECT_CALL(*stream_, WriteHeadersMock(/*fin=*/false));
   stream_->OnStreamHeaderList(/*fin=*/false, kFakeFrameLen, header_list);
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
-  std::string header = std::string(buffer.get(), header_length);
-  std::string data = UsesHttp3() ? header + body_ : body_;
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body_.length(), SimpleBufferAllocator::Get());
+  std::string data =
+      UsesHttp3() ? absl::StrCat(header.AsStringView(), body_) : body_;
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));
   EXPECT_EQ("CONNECT-SILLY", StreamHeadersValue(":method"));

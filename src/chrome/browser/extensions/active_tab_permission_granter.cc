@@ -162,7 +162,7 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
 
   const PermissionsData* permissions_data = extension->permissions_data();
 
-  // TODO(devlin): This should be GetLastCommittedURL().
+  // TODO(crbug.com/698985): This should be GetLastCommittedURL().
   GURL url = web_contents()->GetVisibleURL();
 
   // If the extension requested the host permission to |url| but had it
@@ -234,15 +234,18 @@ void ActiveTabPermissionGranter::RevokeForTesting() {
 void ActiveTabPermissionGranter::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   // Important: sub-frames don't get granted!
-  if (!navigation_handle->IsInMainFrame() ||
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       !navigation_handle->HasCommitted() ||
       navigation_handle->IsSameDocument()) {
     return;
   }
 
   // Only clear the granted permissions for cross-origin navigations.
-  // TODO(devlin): We likely shouldn't be using the visible entry. Instead,
-  // we should use WebContents::GetLastCommittedURL().
+  // TODO(crbug.com/698985),  TODO(devlin): We likely shouldn't be using the
+  // visible entry. Instead, we should use WebContents::GetLastCommittedURL().
   content::NavigationEntry* navigation_entry =
       web_contents()->GetController().GetVisibleEntry();
   if (navigation_entry &&

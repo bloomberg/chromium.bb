@@ -80,13 +80,13 @@ void Module::SetAddressRanges(const vector<Range>& ranges) {
   address_ranges_ = ranges;
 }
 
-void Module::AddFunction(Function* function) {
+bool Module::AddFunction(Function* function) {
   // FUNC lines must not hold an empty name, so catch the problem early if
   // callers try to add one.
   assert(!function->name.empty());
 
   if (!AddressIsInModule(function->address)) {
-    return;
+    return false;
   }
 
   // FUNCs are better than PUBLICs as they come with sizes, so remove an extern
@@ -120,14 +120,9 @@ void Module::AddFunction(Function* function) {
   if (!ret.second && (*ret.first != function)) {
     // Free the duplicate that was not inserted because this Module
     // now owns it.
-    delete function;
+    return false;
   }
-}
-
-void Module::AddFunctions(vector<Function*>::iterator begin,
-                          vector<Function*>::iterator end) {
-  for (vector<Function*>::iterator it = begin; it != end; ++it)
-    AddFunction(*it);
+  return true;
 }
 
 void Module::AddStackFrameEntry(StackFrameEntry* stack_frame_entry) {

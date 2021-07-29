@@ -21,20 +21,19 @@ extern "C" {
 // TODO(any): rename this struct to something else. There is already another
 // struct called inter_modes_info, which makes this terribly confusing.
 typedef struct {
-  int64_t rd;
   int drl_cost;
-
-  int rate_mv;
-  int_mv mv;
-
   int_mv full_search_mv;
   int full_mv_rate;
+  int full_mv_bestsme;
+  int skip;
 } inter_mode_info;
 
+struct HandleInterModeArgs;
 void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
                               BLOCK_SIZE bsize, int ref_idx, int *rate_mv,
                               int search_range, inter_mode_info *mode_info,
-                              int_mv *best_mv);
+                              int_mv *best_mv,
+                              struct HandleInterModeArgs *const args);
 
 int av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                             BLOCK_SIZE bsize, int_mv *cur_mv,

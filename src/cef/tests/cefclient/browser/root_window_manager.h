@@ -6,9 +6,9 @@
 #define CEF_TESTS_CEFCLIENT_BROWSER_ROOT_WINDOW_MANAGER_H_
 #pragma once
 
+#include <memory>
 #include <set>
 
-#include "include/base/cef_scoped_ptr.h"
 #include "include/cef_command_line.h"
 #include "include/cef_request_context_handler.h"
 #include "tests/cefclient/browser/image_cache.h"
@@ -27,7 +27,8 @@ class RootWindowManager : public RootWindow::Delegate {
 
   // Create a new top-level native window. This method can be called from
   // anywhere.
-  scoped_refptr<RootWindow> CreateRootWindow(const RootWindowConfig& config);
+  scoped_refptr<RootWindow> CreateRootWindow(
+      std::unique_ptr<RootWindowConfig> config);
 
   // Create a new native popup window.
   // If |with_controls| is true the window will show controls.
@@ -50,7 +51,7 @@ class RootWindowManager : public RootWindow::Delegate {
       CefRefPtr<CefExtension> extension,
       const CefRect& source_bounds,
       CefRefPtr<CefWindow> parent_window,
-      const base::Closure& close_callback,
+      base::OnceClosure close_callback,
       bool with_controls,
       bool with_osr);
 
@@ -62,12 +63,12 @@ class RootWindowManager : public RootWindow::Delegate {
   // called on the main thread.
   scoped_refptr<RootWindow> GetWindowForBrowser(int browser_id) const;
 
-  // Returns the currently active/foreground RootWindow. May return NULL. Must
-  // be called on the main thread.
+  // Returns the currently active/foreground RootWindow. May return nullptr.
+  // Must be called on the main thread.
   scoped_refptr<RootWindow> GetActiveRootWindow() const;
 
-  // Returns the currently active/foreground browser. May return NULL. Safe to
-  // call from any thread.
+  // Returns the currently active/foreground browser. May return nullptr. Safe
+  // to call from any thread.
   CefRefPtr<CefBrowser> GetActiveBrowser() const;
 
   // Close all existing windows. If |force| is true onunload handlers will not
@@ -83,8 +84,8 @@ class RootWindowManager : public RootWindow::Delegate {
   }
 
  private:
-  // Allow deletion via scoped_ptr only.
-  friend struct base::DefaultDeleter<RootWindowManager>;
+  // Allow deletion via std::unique_ptr only.
+  friend std::default_delete<RootWindowManager>;
 
   ~RootWindowManager();
 
@@ -93,19 +94,19 @@ class RootWindowManager : public RootWindow::Delegate {
 
   // RootWindow::Delegate methods.
   CefRefPtr<CefRequestContext> GetRequestContext(
-      RootWindow* root_window) OVERRIDE;
-  scoped_refptr<ImageCache> GetImageCache() OVERRIDE;
-  void OnTest(RootWindow* root_window, int test_id) OVERRIDE;
-  void OnExit(RootWindow* root_window) OVERRIDE;
-  void OnRootWindowDestroyed(RootWindow* root_window) OVERRIDE;
-  void OnRootWindowActivated(RootWindow* root_window) OVERRIDE;
+      RootWindow* root_window) override;
+  scoped_refptr<ImageCache> GetImageCache() override;
+  void OnTest(RootWindow* root_window, int test_id) override;
+  void OnExit(RootWindow* root_window) override;
+  void OnRootWindowDestroyed(RootWindow* root_window) override;
+  void OnRootWindowActivated(RootWindow* root_window) override;
   void OnBrowserCreated(RootWindow* root_window,
-                        CefRefPtr<CefBrowser> browser) OVERRIDE;
+                        CefRefPtr<CefBrowser> browser) override;
   void CreateExtensionWindow(CefRefPtr<CefExtension> extension,
                              const CefRect& source_bounds,
                              CefRefPtr<CefWindow> parent_window,
-                             const base::Closure& close_callback,
-                             bool with_osr) OVERRIDE;
+                             base::OnceClosure close_callback,
+                             bool with_osr) override;
 
   void CleanupOnUIThread();
 
@@ -127,7 +128,7 @@ class RootWindowManager : public RootWindow::Delegate {
   CefRefPtr<CefBrowser> active_browser_;
 
   // Singleton window used as the temporary parent for popup browsers.
-  scoped_ptr<TempWindow> temp_window_;
+  std::unique_ptr<TempWindow> temp_window_;
 
   CefRefPtr<CefRequestContext> shared_request_context_;
 

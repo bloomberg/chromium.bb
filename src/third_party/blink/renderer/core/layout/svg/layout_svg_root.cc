@@ -23,8 +23,10 @@
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
@@ -210,7 +212,7 @@ void LayoutSVGRoot::UpdateLayout() {
   // StyleDidChange because descendants have not yet run StyleDidChange, so we
   // don't know their compositing reasons yet. A layout is scheduled when
   // |HasCompositingDescendants()| changes to ensure this is run.
-  if (Layer() && RuntimeEnabledFeatures::CompositeSVGEnabled())
+  if (Layer())
     Layer()->UpdateSelfPaintingLayer();
 
   // The local-to-border-box transform is a function with the following as
@@ -464,8 +466,8 @@ PositionWithAffinity LayoutSVGRoot::PositionForPoint(
 
   LayoutObject* layout_object = closest_descendant;
   AffineTransform transform = layout_object->LocalToSVGParentTransform();
-  transform.Translate(To<LayoutSVGText>(layout_object)->Location().X(),
-                      To<LayoutSVGText>(layout_object)->Location().Y());
+  transform.Translate(To<LayoutBox>(layout_object)->Location().X(),
+                      To<LayoutBox>(layout_object)->Location().Y());
   while (layout_object) {
     layout_object = layout_object->Parent();
     if (layout_object->IsSVGRoot())
@@ -588,8 +590,8 @@ PaintLayerType LayoutSVGRoot::LayerTypeRequired() const {
   auto layer_type_required = LayoutReplaced::LayerTypeRequired();
   if (layer_type_required == kNoPaintLayer) {
     // Force a paint layer so,
-    // 1) In CompositeSVG mode, a GraphicsLayer can be created if there are
-    // directly-composited descendants.
+    // 1) A GraphicsLayer can be created if there are directly-composited
+    // descendants.
     // 2) The parent layer will know if there are non-isolated descendants with
     // blend mode.
     layer_type_required = kForcedPaintLayer;
@@ -599,8 +601,7 @@ PaintLayerType LayoutSVGRoot::LayerTypeRequired() const {
 
 CompositingReasons LayoutSVGRoot::AdditionalCompositingReasons() const {
   NOT_DESTROYED();
-  return RuntimeEnabledFeatures::CompositeSVGEnabled() &&
-                 !RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+  return !RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
                  HasDescendantWithCompositingReason()
              ? CompositingReason::kSVGRoot
              : CompositingReason::kNone;

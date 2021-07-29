@@ -10,10 +10,10 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/unsafe_shared_memory_region.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -210,8 +210,8 @@ void ExpectFrameColor(media::VideoFrame* yv12_frame,
 }
 
 // Fill each plane to its reported extents and verify accessors report non
-// zero values.  Additionally, for the first plane verify the rows and
-// row_bytes values are correct.
+// zero values.  Additionally, for the first plane verify the rows, row_bytes,
+// and columns values are correct.
 void ExpectFrameExtents(VideoPixelFormat format, const char* expected_hash) {
   const unsigned char kFillByte = 0x80;
   const int kWidth = 61;
@@ -230,6 +230,7 @@ void ExpectFrameExtents(VideoPixelFormat format, const char* expected_hash) {
     EXPECT_TRUE(frame->stride(plane));
     EXPECT_TRUE(frame->rows(plane));
     EXPECT_TRUE(frame->row_bytes(plane));
+    EXPECT_TRUE(frame->columns(plane));
 
     memset(frame->data(plane), kFillByte,
            frame->stride(plane) * frame->rows(plane));
@@ -459,7 +460,9 @@ TEST(VideoFrame, WrapExternalGpuMemoryBuffer) {
       gpu::MailboxHolder(gpu::Mailbox::Generate(), gpu::SyncToken(), 10)};
   auto frame = VideoFrame::WrapExternalGpuMemoryBuffer(
       visible_rect, coded_size, std::move(gmb), mailbox_holders,
-      base::DoNothing::Once<const gpu::SyncToken&>(), timestamp);
+      base::DoNothing::Once<const gpu::SyncToken&,
+                            std::unique_ptr<gfx::GpuMemoryBuffer>>(),
+      timestamp);
 
   EXPECT_EQ(frame->layout().format(), PIXEL_FORMAT_NV12);
   EXPECT_EQ(frame->layout().coded_size(), coded_size);

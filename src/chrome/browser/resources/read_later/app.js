@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
@@ -153,6 +154,11 @@ export class ReadLaterAppElement extends PolymerElement {
     return this.unreadItems_.length === 0 && this.readItems_.length === 0;
   }
 
+  /** @private */
+  onAddButtonClick_() {
+    this.apiProxy_.addCurrentTab();
+  }
+
   /**
    * @param {!Event} e
    * @private
@@ -195,6 +201,22 @@ export class ReadLaterAppElement extends PolymerElement {
   onCloseClick_(e) {
     e.stopPropagation();
     this.apiProxy_.closeUI();
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowAddButton_() {
+    return loadTimeData.getBoolean('addButtonEnabled');
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowHr_() {
+    return this.unreadItems_.length > 0 && this.readItems_.length > 0;
   }
 }
 

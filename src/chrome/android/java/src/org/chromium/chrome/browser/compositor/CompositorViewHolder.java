@@ -66,6 +66,7 @@ import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.widget.InsetObserverView;
+import org.chromium.components.browser_ui.widget.TouchEventObserver;
 import org.chromium.components.content_capture.OnscreenContentProvider;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.ImeAdapter;
@@ -117,25 +118,6 @@ public class CompositorViewHolder extends FrameLayout
          */
         void initializeCompositorContent(LayoutManagerImpl layoutManager, View urlBar,
                 ViewGroup contentContainer, ControlContainer controlContainer);
-    }
-
-    /**
-     * Observer interface for any object that needs to process touch events.
-     */
-    public interface TouchEventObserver {
-        /**
-         * Determine if touch events should be forwarded to the observing object.
-         * Should return {@link true} if the object decided to consume the events.
-         * @param e {@link MotionEvent} object to process.
-         * @return {@code true} if the observer will process touch events going forward.
-         */
-        boolean shouldInterceptTouchEvent(MotionEvent e);
-
-        /**
-         * Handle touch events.
-         * @param e {@link MotionEvent} object to process.
-         */
-        void handleTouchEvent(MotionEvent e);
     }
 
     private ObserverList<TouchEventObserver> mTouchEventObservers = new ObserverList<>();
@@ -686,6 +668,7 @@ public class CompositorViewHolder extends FrameLayout
         } else if (eventAction == MotionEvent.ACTION_CANCEL
                 || eventAction == MotionEvent.ACTION_UP) {
             mInGesture = false;
+            updateViewportSize();
         }
     }
 
@@ -971,6 +954,12 @@ public class CompositorViewHolder extends FrameLayout
         setSize(mTabVisible.getWebContents(), mTabVisible.getContentView(), viewportSize.x,
                 viewportSize.y);
         onViewportChanged();
+    }
+
+    @Override
+    public void onAndroidVisibilityChanged(int visibility) {
+        // TODO(crbug/1223069): Remove this workaround for default method desugaring in D8 causing
+        // AbstractMethodErrors in some cases once fixed upstream.
     }
 
     /**
@@ -1399,6 +1388,7 @@ public class CompositorViewHolder extends FrameLayout
             }
 
             // CompositorView always has index of 0.
+            // TODO(crbug.com/1216949): Look into enforcing the z-order of the views.
             addView(mView, 1);
 
             setFocusable(false);

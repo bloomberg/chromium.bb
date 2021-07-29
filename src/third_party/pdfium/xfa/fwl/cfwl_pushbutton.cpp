@@ -48,7 +48,7 @@ void CFWL_PushButton::DrawWidget(CFGAS_GEGraphics* pGraphics,
     return;
 
   if (HasBorder())
-    DrawBorder(pGraphics, CFWL_Part::Border, matrix);
+    DrawBorder(pGraphics, CFWL_ThemePart::Part::kBorder, matrix);
 
   DrawBkground(pGraphics, matrix);
 }
@@ -56,7 +56,7 @@ void CFWL_PushButton::DrawWidget(CFGAS_GEGraphics* pGraphics,
 void CFWL_PushButton::DrawBkground(CFGAS_GEGraphics* pGraphics,
                                    const CFX_Matrix& matrix) {
   CFWL_ThemeBackground param(this, pGraphics);
-  param.m_iPart = CFWL_Part::Background;
+  param.m_iPart = CFWL_ThemePart::Part::kBackground;
   param.m_dwStates = GetPartStates();
   param.m_matrix = matrix;
   param.m_PartRect = m_ClientRect;
@@ -84,10 +84,10 @@ void CFWL_PushButton::OnProcessMessage(CFWL_Message* pMessage) {
 
   switch (pMessage->GetType()) {
     case CFWL_Message::Type::kSetFocus:
-      OnFocusChanged(pMessage, true);
+      OnFocusGained();
       break;
     case CFWL_Message::Type::kKillFocus:
-      OnFocusChanged(pMessage, false);
+      OnFocusLost();
       break;
     case CFWL_Message::Type::kMouse: {
       CFWL_MessageMouse* pMsg = static_cast<CFWL_MessageMouse*>(pMessage);
@@ -128,12 +128,13 @@ void CFWL_PushButton::OnDrawWidget(CFGAS_GEGraphics* pGraphics,
   DrawWidget(pGraphics, matrix);
 }
 
-void CFWL_PushButton::OnFocusChanged(CFWL_Message* pMsg, bool bSet) {
-  if (bSet)
-    m_Properties.m_dwStates |= FWL_WGTSTATE_Focused;
-  else
-    m_Properties.m_dwStates &= ~FWL_WGTSTATE_Focused;
+void CFWL_PushButton::OnFocusGained() {
+  m_Properties.m_dwStates |= FWL_WGTSTATE_Focused;
+  RepaintRect(m_ClientRect);
+}
 
+void CFWL_PushButton::OnFocusLost() {
+  m_Properties.m_dwStates &= ~FWL_WGTSTATE_Focused;
   RepaintRect(m_ClientRect);
 }
 

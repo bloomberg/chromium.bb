@@ -18,6 +18,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
@@ -28,7 +29,6 @@
 #include "base/one_shot_event.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -155,6 +155,7 @@
 #include "net/cookies/cookie_util.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -162,6 +163,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -204,7 +206,7 @@ const char updates_from_webstore3[] = "bmfoocgfinpmkmlbjhcbofejhkhlbchk";
 const char permissions_blocklist[] = "noffkehfcaggllbcojjbopcmlhcnhcdn";
 const char cast_stable[] = "boadgeojelhgndaghljhdicfkmllpafd";
 const char cast_beta[] = "dliochdbjfkdbacpmhlcpmleaejidimm";
-const char gallery_app[] = "nlkncpkkdoccmpiclbokaimcnedabhhm";
+const char video_player_app[] = "jcgeabjmjgoblfofpppfkcoakmfobdko";
 const char kPrefBlocklist[] = "blacklist";
 
 struct BubbleErrorsTestData {
@@ -394,7 +396,7 @@ class MockProviderVisitor : public ExternalProviderInterface::VisitorInterface {
       EXPECT_EQ(crx_location_, location);
 
       // Remove it so we won't count it ever again.
-      prefs_->Remove(info.extension_id, nullptr);
+      prefs_->RemoveKey(info.extension_id);
     }
     return true;
   }
@@ -428,7 +430,7 @@ class MockProviderVisitor : public ExternalProviderInterface::VisitorInterface {
       EXPECT_EQ(parsed_install_parameter, info.install_parameter);
 
       // Remove it so we won't count it again.
-      prefs_->Remove(info.extension_id, nullptr);
+      prefs_->RemoveKey(info.extension_id);
     }
     return true;
   }
@@ -675,7 +677,7 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
     base::DictionaryValue* pref = nullptr;
     ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
     EXPECT_TRUE(pref) << msg;
-    pref->Set(pref_path, std::move(value));
+    pref->SetPath(pref_path, base::Value::FromUniquePtrValue(std::move(value)));
   }
 
   void SetPrefInteg(const std::string& extension_id,
@@ -713,7 +715,7 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
     base::DictionaryValue* pref = nullptr;
     ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
     EXPECT_TRUE(pref) << msg;
-    pref->Remove(pref_path, nullptr);
+    pref->RemovePath(pref_path);
   }
 
   void SetPrefStringSet(const std::string& extension_id,
@@ -4525,7 +4527,8 @@ TEST_F(ExtensionServiceTest, ExternalExtensionRemainsDisabledIfIgnored) {
     std::vector<ExternalInstallError*> errors =
         external_install_manager->GetErrorsForTesting();
     ASSERT_EQ(1u, errors.size());
-    errors[0]->OnInstallPromptDone(ExtensionInstallPrompt::Result::ABORTED);
+    errors[0]->OnInstallPromptDone(ExtensionInstallPrompt::DoneCallbackPayload(
+        ExtensionInstallPrompt::Result::ABORTED));
     base::RunLoop().RunUntilIdle();
     // Note: Calling OnInstallPromptDone() can result in the removal of the
     // error by the manager (which owns the object), so the contents |errors|
@@ -5133,8 +5136,10 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   base::FilePath idb_path;
   {
     base::RunLoop run_loop;
+    // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
+    // function directly.
     idb_control_test->GetFilePathForTesting(
-        url::Origin::Create(ext_url),
+        blink::StorageKey(url::Origin::Create(ext_url)),
         base::BindLambdaForTesting([&](const base::FilePath& path) {
           idb_path = path;
           EXPECT_TRUE(base::CreateDirectory(idb_path));
@@ -5308,8 +5313,10 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   base::FilePath idb_path;
   {
     base::RunLoop run_loop;
+    // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
+    // function directly.
     idb_control_test->GetFilePathForTesting(
-        url::Origin::Create(origin1),
+        blink::StorageKey(url::Origin::Create(origin1)),
         base::BindLambdaForTesting([&](const base::FilePath& path) {
           idb_path = path;
           EXPECT_TRUE(base::CreateDirectory(idb_path));
@@ -6567,7 +6574,8 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalLocalFile) {
   EXPECT_TRUE(pending->IsIdPending(kGoodId));
 }
 
-TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
+// TODO(crbug.com/1227104): This test fails when run by TSan buildbots.
+TEST_F(ExtensionServiceTest, DISABLED_ConcurrentExternalLocalFile) {
   base::Version kVersion123("1.2.3");
   base::Version kVersion124("1.2.4");
   base::Version kVersion125("1.2.5");
@@ -7024,15 +7032,17 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallErrors) {
 
   // Accept the first extension, this will remove the error associated with
   // this extension. Also verify the other errors still exist.
-  GetError(extension_ids[0])->OnInstallPromptDone(
-      ExtensionInstallPrompt::Result::ACCEPTED);
+  GetError(extension_ids[0])
+      ->OnInstallPromptDone(ExtensionInstallPrompt::DoneCallbackPayload(
+          ExtensionInstallPrompt::Result::ACCEPTED));
   EXPECT_FALSE(GetError(extension_ids[0]));
   ASSERT_TRUE(GetError(extension_ids[1]));
   EXPECT_TRUE(GetError(extension_ids[2]));
 
   // Abort the second extension.
-  GetError(extension_ids[1])->OnInstallPromptDone(
-      ExtensionInstallPrompt::Result::USER_CANCELED);
+  GetError(extension_ids[1])
+      ->OnInstallPromptDone(ExtensionInstallPrompt::DoneCallbackPayload(
+          ExtensionInstallPrompt::Result::USER_CANCELED));
   EXPECT_FALSE(GetError(extension_ids[0]));
   EXPECT_FALSE(GetError(extension_ids[1]));
   ASSERT_TRUE(GetError(extension_ids[2]));
@@ -7067,7 +7077,8 @@ TEST_F(ExtensionServiceTest, InstallPromptAborted) {
   // Abort the extension install prompt. This should cause the
   // ExternalInstallError to be deleted asynchronously.
   GetError(good_crx)->OnInstallPromptDone(
-      ExtensionInstallPrompt::Result::ABORTED);
+      ExtensionInstallPrompt::DoneCallbackPayload(
+          ExtensionInstallPrompt::Result::ABORTED));
   EXPECT_TRUE(GetError(good_crx));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetError(good_crx));
@@ -7137,7 +7148,8 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallBubbleErrors) {
     const std::string& extension_id = data[i].id;
     EXPECT_TRUE(GetError(extension_id));
     GetError(extension_id)
-        ->OnInstallPromptDone(ExtensionInstallPrompt::Result::USER_CANCELED);
+        ->OnInstallPromptDone(ExtensionInstallPrompt::DoneCallbackPayload(
+            ExtensionInstallPrompt::Result::USER_CANCELED));
     EXPECT_FALSE(GetError(extension_id));
   }
   EXPECT_FALSE(service()
@@ -7347,7 +7359,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallClickToRemove) {
   // Click the negative response.
   service_->external_install_manager()
       ->GetErrorsForTesting()[0]
-      ->OnInstallPromptDone(ExtensionInstallPrompt::Result::USER_CANCELED);
+      ->OnInstallPromptDone(ExtensionInstallPrompt::DoneCallbackPayload(
+          ExtensionInstallPrompt::Result::USER_CANCELED));
   // The Extension should be uninstalled.
   EXPECT_FALSE(registry()->GetExtensionById(updates_from_webstore,
                                             ExtensionRegistry::EVERYTHING));
@@ -7385,7 +7398,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallClickToKeep) {
   // Accept the extension.
   service_->external_install_manager()
       ->GetErrorsForTesting()[0]
-      ->OnInstallPromptDone(ExtensionInstallPrompt::Result::ACCEPTED);
+      ->OnInstallPromptDone(ExtensionInstallPrompt::DoneCallbackPayload(
+          ExtensionInstallPrompt::Result::ACCEPTED));
 
   // It should be enabled again.
   EXPECT_TRUE(registry()->enabled_extensions().GetByID(updates_from_webstore));
@@ -7684,19 +7698,20 @@ TEST_F(ExtensionServiceTest, UninstallDisabledMigratedExtension) {
 TEST_F(ExtensionServiceTest, UninstallMigratedComponentExtensions) {
   InitializeEmptyExtensionServiceWithTestingPrefs();
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-  ASSERT_TRUE(prefs->ShouldInstallObsoleteComponentExtension(gallery_app));
+  ASSERT_TRUE(prefs->ShouldInstallObsoleteComponentExtension(video_player_app));
 
-  scoped_refptr<const Extension> gallery_extension =
-      ExtensionBuilder("gallery")
-          .SetID(gallery_app)
+  scoped_refptr<const Extension> video_player_extension =
+      ExtensionBuilder("video player")
+          .SetID(video_player_app)
           .SetLocation(ManifestLocation::kInternal)
           .Build();
-  service()->AddComponentExtension(gallery_extension.get());
-  ASSERT_TRUE(registry()->enabled_extensions().Contains(gallery_app));
+  service()->AddComponentExtension(video_player_extension.get());
+  ASSERT_TRUE(registry()->enabled_extensions().Contains(video_player_app));
 
   service()->UninstallMigratedExtensionsForTest();
-  EXPECT_FALSE(registry()->GetInstalledExtension(gallery_app));
-  EXPECT_FALSE(prefs->ShouldInstallObsoleteComponentExtension(gallery_app));
+  EXPECT_FALSE(registry()->GetInstalledExtension(video_player_app));
+  EXPECT_FALSE(
+      prefs->ShouldInstallObsoleteComponentExtension(video_player_app));
 }
 
 // Tests that component extensions that are not marked as obsolete will not be
@@ -7729,19 +7744,19 @@ TEST_F(ExtensionServiceTest, UninstallMigratedExtensionsMultipleCalls) {
           .SetID(cast_stable)
           .SetLocation(ManifestLocation::kInternal)
           .Build();
-  scoped_refptr<const Extension> gallery_extension =
-      ExtensionBuilder("gallery")
-          .SetID(gallery_app)
+  scoped_refptr<const Extension> video_player_extension =
+      ExtensionBuilder("video player")
+          .SetID(video_player_app)
           .SetLocation(ManifestLocation::kInternal)
           .Build();
   service()->AddExtension(cast_extension.get());
-  service()->AddComponentExtension(gallery_extension.get());
+  service()->AddComponentExtension(video_player_extension.get());
 
   service()->UninstallMigratedExtensionsForTest();
   service()->UninstallMigratedExtensionsForTest();
   service()->UninstallMigratedExtensionsForTest();
   EXPECT_FALSE(registry()->GetInstalledExtension(cast_stable));
-  EXPECT_FALSE(registry()->GetInstalledExtension(gallery_app));
+  EXPECT_FALSE(registry()->GetInstalledExtension(video_player_app));
 }
 
 // Tests the case of a user installing a non-policy extension (e.g. through the

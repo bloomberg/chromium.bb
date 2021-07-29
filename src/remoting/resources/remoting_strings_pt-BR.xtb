@@ -24,6 +24,7 @@ Para conceder essa permissão, clique em "<ph name="BUTTON_NAME" />" abaixo para
 Se a opção "<ph name="SERVICE_SCRIPT_NAME" />" já estiver marcada, desmarque-a e marque-a novamente.</translation>
 <translation id="225614027745146050">Bem-vindo</translation>
 <translation id="2320166752086256636">Ocultar teclado</translation>
+<translation id="2329392777730037872">Falha ao abrir <ph name="URL" /> no cliente.</translation>
 <translation id="2333212046079545895">Copyright 2021 Google LLC. Todos os direitos reservados.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2366718077645204424">Não é possível acessar o host. Isso se deve, provavelmente, à configuração da rede que você está usando.</translation>
@@ -67,6 +68,7 @@ Se a opção "<ph name="SERVICE_SCRIPT_NAME" />" já estiver marcada, desmarque-
 <translation id="4176825807642096119">Código de acesso</translation>
 <translation id="4227991223508142681">Utilitário de provisionamento de host</translation>
 <translation id="4240294130679914010">Desinstalador do host do Chromoting</translation>
+<translation id="4257751272692708833">Encaminhador de URLs da <ph name="PRODUCT_NAME" /></translation>
 <translation id="4277736576214464567">Código de acesso inválido. Tente novamente.</translation>
 <translation id="4281844954008187215">Termos de Serviço</translation>
 <translation id="4405930547258349619">Biblioteca principal</translation>
@@ -87,6 +89,7 @@ Se a opção "<ph name="SERVICE_SCRIPT_NAME" />" já estiver marcada, desmarque-
 <translation id="4867841927763172006">Enviar PrtScn</translation>
 <translation id="4974476491460646149">Conexão fechada para <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Primeiro, é necessário configurar seu computador para acesso remoto.</translation>
+<translation id="4987330545941822761">A Área de trabalho remota do Google Chrome não conseguiu determinar em qual navegador abrir URLs localmente. Selecione uma opção na lista abaixo.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (off-line)</translation>
 <translation id="507204348399810022">Você quer mesmo desativar conexões remotas para <ph name="HOSTNAME" />?</translation>
 <translation id="5170982930780719864">ID de host inválido.</translation>
@@ -121,6 +124,7 @@ Se a opção "<ph name="SERVICE_SCRIPT_NAME" />" já estiver marcada, desmarque-
 <translation id="6612717000975622067">Enviar Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Compartilhar</translation>
 <translation id="677755392401385740">Host iniciado para o usuário <ph name="HOST_USERNAME" />.</translation>
+<translation id="6902524959760471898">Aplicativo para ajudar a abrir um URL no cliente da <ph name="PRODUCT_NAME" /></translation>
 <translation id="6939719207673461467">Mostrar/ocultar teclado</translation>
 <translation id="6963936880795878952">As conexões com o computador remoto estão temporariamente bloqueadas porque alguém estava tentando se conectar a ele com um PIN inválido. Tente novamente mais tarde.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -133,6 +137,7 @@ Se a opção "<ph name="SERVICE_SCRIPT_NAME" />" já estiver marcada, desmarque-
 <translation id="7144878232160441200">Tentar novamente</translation>
 <translation id="7312846573060934304">O host está off-line.</translation>
 <translation id="7319983568955948908">Parar compartilhamento</translation>
+<translation id="7359298090707901886">Não é possível usar o navegador escolhido para abrir URLs na máquina local.</translation>
 <translation id="7401733114166276557">Área de trabalho remota do Google Chrome</translation>
 <translation id="7434397035092923453">Acesso negado para o cliente <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Cliente conectado: <ph name="CLIENT_USERNAME" />.</translation>

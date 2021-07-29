@@ -38,8 +38,8 @@
 #include "services/network/test/test_url_loader_factory.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/account_manager/account_manager.h"
 #include "ash/components/account_manager/account_manager_factory.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/signin/internal/identity_manager/test_profile_oauth2_token_service_delegate_chromeos.h"
 #endif
 
@@ -191,7 +191,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
   IdentityManager::RegisterProfilePrefs(test_pref_service->registry());
   IdentityManager::RegisterLocalStatePrefs(test_pref_service->registry());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  ash::AccountManager::RegisterPrefs(test_pref_service->registry());
+  account_manager::AccountManager::RegisterPrefs(test_pref_service->registry());
 
   owned_identity_manager_ = BuildIdentityManagerForTests(
       test_signin_client, test_pref_service, base::FilePath(),
@@ -225,10 +225,11 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
     account_manager->InitializeInEphemeralMode(
         signin_client->GetURLLoaderFactory());
   } else {
-    ash::AccountManager::DelayNetworkCallRunner immediate_callback_runner =
-        base::BindRepeating([](base::OnceClosure closure) -> void {
-          std::move(closure).Run();
-        });
+    account_manager::AccountManager::DelayNetworkCallRunner
+        immediate_callback_runner =
+            base::BindRepeating([](base::OnceClosure closure) -> void {
+              std::move(closure).Run();
+            });
     account_manager->Initialize(user_data_dir,
                                 signin_client->GetURLLoaderFactory(),
                                 immediate_callback_runner, base::DoNothing());
@@ -375,15 +376,9 @@ void IdentityTestEnvironment::WaitForRefreshTokensLoaded() {
 }
 
 CoreAccountInfo IdentityTestEnvironment::SetPrimaryAccount(
-    const std::string& email) {
-  return signin::SetPrimaryAccount(identity_manager(), email,
-                                   signin::ConsentLevel::kSync);
-}
-
-CoreAccountInfo IdentityTestEnvironment::SetUnconsentedPrimaryAccount(
-    const std::string& email) {
-  return signin::SetPrimaryAccount(identity_manager(), email,
-                                   signin::ConsentLevel::kSignin);
+    const std::string& email,
+    ConsentLevel consent_level) {
+  return signin::SetPrimaryAccount(identity_manager(), email, consent_level);
 }
 
 void IdentityTestEnvironment::SetRefreshTokenForPrimaryAccount() {
@@ -399,40 +394,10 @@ void IdentityTestEnvironment::RemoveRefreshTokenForPrimaryAccount() {
 }
 
 AccountInfo IdentityTestEnvironment::MakePrimaryAccountAvailable(
-    const std::string& email) {
+    const std::string& email,
+    ConsentLevel consent_level) {
   return signin::MakePrimaryAccountAvailable(identity_manager(), email,
-                                             signin::ConsentLevel::kSync);
-}
-
-AccountInfo IdentityTestEnvironment::MakeUnconsentedPrimaryAccountAvailable(
-    const std::string& email) {
-  DCHECK(!identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Chrome OS sets the unconsented primary account during login and does not
-  // allow signout.
-  AccountInfo account_info = MakeAccountAvailable(email);
-  identity_manager()->GetPrimaryAccountMutator()->SetPrimaryAccount(
-      account_info.account_id, signin::ConsentLevel::kSignin);
-#elif defined(OS_IOS)
-  // iOS only support the primary account.
-  AccountInfo account_info = MakePrimaryAccountAvailable(email);
-#else
-  // Android and Desktop platforms.
-  AccountInfo account_info =
-      MakeAccountAvailableWithCookies(email, GetTestGaiaIdForEmail(email));
-  base::RunLoop().RunUntilIdle();
-  // Tests that don't use the |SigninManager| needs the unconsented primary
-  // account to be set manually.
-  if (!identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin)) {
-    identity_manager()->GetPrimaryAccountMutator()->SetPrimaryAccount(
-        account_info.account_id, signin::ConsentLevel::kSignin);
-  }
-#endif
-  DCHECK(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
-  DCHECK_EQ(
-      email,
-      identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin).email);
-  return account_info;
+                                             consent_level);
 }
 
 void IdentityTestEnvironment::RevokeSyncConsent() {

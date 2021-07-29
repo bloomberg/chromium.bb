@@ -197,6 +197,12 @@ message TracingServiceState {
 
     // Unix uid of the remote process.
     optional int32 uid = 3;
+
+    // The version of the client library used by the producer.
+    // This is a human readable string with and its format varies depending on
+    // the build system and the repo (standalone vs AOSP).
+    // This is intended for human debugging only.
+    optional string sdk_version = 4;
   }
 
   // Describes a data source registered by a producer. Data sources are listed
@@ -220,6 +226,12 @@ message TracingServiceState {
 
   // Number of tracing sessions in the started state. Always <= num_sessions.
   optional int32 num_sessions_started = 4;
+
+  // The version of traced (the same returned by `traced --version`).
+  // This is a human readable string with and its format varies depending on
+  // the build system and the repo (standalone vs AOSP).
+  // This is intended for human debugging only.
+  optional string tracing_service_version = 5;
 }
 
 // End of protos/perfetto/common/tracing_service_state.proto
@@ -821,7 +833,13 @@ message PerfEvents {
     oneof event {
       Counter counter = 4;
       Tracepoint tracepoint = 3;
+      RawEvent raw_event = 5;
     }
+
+    // Optional arbitrary name for the event, to identify it in the parsed
+    // trace. Does *not* affect the profiling itself. If unset, the trace
+    // parser will choose a suitable name.
+    optional string name = 10;
   }
 
   enum Counter {
@@ -846,6 +864,16 @@ message PerfEvents {
     // For full syntax, see kernel documentation on "Event filtering":
     // https://www.kernel.org/doc/Documentation/trace/events.txt
     optional string filter = 2;
+  }
+
+  // Syscall-level description of the event, propagated to the perf_event_attr
+  // struct. Primarily for local use-cases, since the event availability and
+  // encoding is hardware-specific.
+  message RawEvent {
+    optional uint32 type = 1;
+    optional uint64 config = 2;
+    optional uint64 config1 = 3;
+    optional uint64 config2 = 4;
   }
 }
 
@@ -927,6 +955,14 @@ message PerfEventConfig {
   // If unset, the cached state will not be cleared.
   optional uint32 unwind_state_clear_period_ms = 10;
 
+  // If set, only profile target if it was installed by a package with one of
+  // these names. Special values:
+  // * "@system": installed on the system partition
+  // * "@product": installed on the product partition
+  // * "@null": sideloaded
+  // Supported on Android 12+.
+  repeated string target_installed_by = 18;
+
   //
   // Deprecated (superseded by options above):
   //
@@ -940,14 +976,6 @@ message PerfEventConfig {
   optional bool kernel_frames = 12;
   repeated int32 target_pid = 4;
   repeated string target_cmdline = 5;
-
-  // Only profile target if it was installed by one of the packages given.
-  // Special values are:
-  // * @system: installed on the system partition
-  // * @product: installed on the product partition
-  // * @null: sideloaded
-  // Supported on Android 12+.
-  repeated string target_installed_by = 18;
   repeated int32 exclude_pid = 6;
   repeated string exclude_cmdline = 7;
   optional uint32 additional_cmdline_count = 11;

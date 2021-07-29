@@ -61,9 +61,6 @@ COMMIT_FOOTER_ENTRY_RE = re.compile(r'([^:]+):\s*(.*)')
 COMMIT_POSITION_FOOTER_KEY = 'Cr-Commit-Position'
 COMMIT_ORIGINAL_POSITION_FOOTER_KEY = 'Cr-Original-Commit-Position'
 
-# Regular expression to parse gclient's revinfo entries.
-REVINFO_RE = re.compile(r'^([^:]+):\s+([^@]+)@(.+)$')
-
 # Copied from scripts/recipes/chromium.py.
 GOT_REVISION_MAPPINGS = {
     CHROMIUM_SRC_URL: {
@@ -77,6 +74,11 @@ GOT_REVISION_MAPPINGS = {
     }
 }
 
+# List of bot update experiments
+EXP_NO_SYNC = 'no_sync'  # Don't fetch/sync if current revision is recent enough
+
+# Don't sync if the checkout is less than 6 hours old.
+NO_SYNC_MAX_DELAY_S = 6 * 60 * 60
 
 GCLIENT_TEMPLATE = """solutions = %(solutions)s
 
@@ -381,24 +383,15 @@ def git_config_if_not_set(key, value):
 
 
 def gclient_sync(
-    with_branch_heads, with_tags, revisions, break_repo_locks,
-    disable_syntax_validation, patch_refs, gerrit_reset,
+    with_branch_heads, with_tags, revisions,
+    patch_refs, gerrit_reset,
     gerrit_rebase_patch_ref):
-  # We just need to allocate a filename.
-  fd, gclient_output_file = tempfile.mkstemp(suffix='.json')
-  os.close(fd)
-
   args = ['sync', '--verbose', '--reset', '--force',
-          '--ignore_locks', '--output-json', gclient_output_file,
           '--nohooks', '--noprehooks', '--delete_unversioned_trees']
   if with_branch_heads:
     args += ['--with_branch_heads']
   if with_tags:
     args += ['--with_tags']
-  if break_repo_locks:
-    args += ['--break_repo_locks']
-  if disable_syntax_validation:
-    args += ['--disable-syntax-validation']
   for name, revision in sorted(revisions.items()):
     if revision.upper() == 'HEAD':
       revision = 'refs/remotes/origin/master'
@@ -421,15 +414,6 @@ def gclient_sync(
       raise PatchFailed(e.message, e.code, e.output)
     # Throw a GclientSyncFailed exception so we can catch this independently.
     raise GclientSyncFailed(e.message, e.code, e.output)
-  else:
-    with open(gclient_output_file) as f:
-      return json.load(f)
-  finally:
-    os.remove(gclient_output_file)
-
-
-def gclient_revinfo():
-  return call_gclient('revinfo', '-a') or ''
 
 
 def normalize_git_url(url):
@@ -456,64 +440,25 @@ def normalize_git_url(url):
   return 'https://%s%s' % (p.netloc, upath)
 
 
-# TODO(hinoka): Remove this once all downstream recipes stop using this format.
-def create_manifest_old():
-  manifest = {}
-  output = gclient_revinfo()
-  for line in output.strip().splitlines():
-    match = REVINFO_RE.match(line.strip())
-    if match:
-      manifest[match.group(1)] = {
-        'repository': match.group(2),
-        'revision': match.group(3),
-      }
-    else:
-      print("WARNING: Couldn't match revinfo line:\n%s" % line)
-  return manifest
-
-
-# TODO(hinoka): Include patch revision.
-def create_manifest(gclient_output, patch_root):
-  """Return the JSONPB equivalent of the source manifest proto.
-
-  The source manifest proto is defined here:
-  https://chromium.googlesource.com/infra/luci/recipes-py/+/master/recipe_engine/source_manifest.proto
-
-  This is based off of:
-  * The gclient_output (from calling gclient.py --output-json) which contains
-    the directory -> repo:revision mapping.
-  * Gerrit Patch info which contains info about patched revisions.
-
-  We normalize the URLs using the normalize_git_url function.
-  """
-  manifest = {
-      'version': 0,  # Currently the only valid version is 0.
-  }
-  dirs = {}
-  if patch_root:
-    patch_root = patch_root.strip('/')  # Normalize directory names.
-  for directory, info in gclient_output.get('solutions', {}).items():
-    directory = directory.strip('/')  # Normalize the directory name.
-    # The format of the url is "https://repo.url/blah.git@abcdefabcdef" or
-    # just "https://repo.url/blah.git"
-    url = info.get('url') or ''
-    repo, _, url_revision = url.partition('@')
-    repo = normalize_git_url(repo)
-    # There are two places to get the revision from, we do it in this order:
-    # 1. In the "revision" field
-    # 2. At the end of the URL, after @
-    revision = info.get('revision') or url_revision
-    if repo and revision:
-      dirs[directory] = {
-        'git_checkout': {
-          'repo_url': repo,
-          'revision': revision,
+def create_manifest():
+  fd, fname = tempfile.mkstemp()
+  os.close(fd)
+  try:
+    revinfo = call_gclient(
+        'revinfo', '-a', '--ignore-dep-type', 'cipd', '--output-json', fname)
+    with open(fname) as f:
+      return {
+        path: {
+          'repository': info['url'],
+          'revision': info['rev'],
         }
+        for path, info in json.load(f).items()
+        if info['rev'] is not None
       }
-
-  manifest['directories'] = dirs
-  return manifest
-
+  except ValueError, SubprocessFailed:
+    return {}
+  finally:
+    os.remove(fname)
 
 def get_commit_message_footer_map(message):
   """Returns: (dict) A dictionary of commit message footer entries.
@@ -672,31 +617,49 @@ def _set_git_config(fn):
 
 
 def git_checkouts(solutions, revisions, refs, no_fetch_tags, git_cache_dir,
-                  cleanup_dir, enforce_fetch):
+                  cleanup_dir, enforce_fetch, experiments):
   build_dir = os.getcwd()
-  first_solution = True
+  synced = []
   for sln in solutions:
     sln_dir = path.join(build_dir, sln['name'])
-    _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
-                  cleanup_dir, enforce_fetch)
-    if first_solution:
-      git_ref = git('log', '--format=%H', '--max-count=1',
-                    cwd=path.join(build_dir, sln['name'])
-                ).strip()
-    first_solution = False
-  return git_ref
+    did_sync = _git_checkout(
+        sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
+        cleanup_dir, enforce_fetch, experiments)
+    if did_sync:
+      synced.append(sln['name'])
+  return synced
+
+
+def _git_checkout_needs_sync(sln_url, sln_dir, refs):
+  if not path.exists(sln_dir):
+    return True
+  for ref in refs:
+    try:
+      remote_ref = ref_to_remote_ref(ref)
+      commit_time = git('show', '-s', '--format=%ct', remote_ref, cwd=sln_dir)
+      commit_time = int(commit_time)
+    except SubprocessError:
+      return True
+    if time.time() - commit_time >= NO_SYNC_MAX_DELAY_S:
+      return True
+  return False
 
 
 def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
-                  cleanup_dir, enforce_fetch):
+                  cleanup_dir, enforce_fetch, experiments):
   name = sln['name']
   url = sln['url']
 
   branch, revision = get_target_branch_and_revision(name, url, revisions)
   pin = revision if COMMIT_HASH_RE.match(revision) else None
 
-  populate_cmd = (['cache', 'populate', '--ignore_locks', '-v',
-                   '--cache-dir', git_cache_dir, url, '--reset-fetch-config'])
+  if (EXP_NO_SYNC in experiments
+      and not _git_checkout_needs_sync(url, sln_dir, refs)):
+    git('checkout', '--force', pin or branch, '--', cwd=sln_dir)
+    return False
+
+  populate_cmd = (['cache', 'populate', '-v', '--cache-dir', git_cache_dir, url,
+                   '--reset-fetch-config'])
   if no_fetch_tags:
     populate_cmd.extend(['--no-fetch-tags'])
   if pin:
@@ -773,7 +736,7 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
       # happens to have the exact same name.
       git('checkout', '--force', pin or branch, '--', cwd=sln_dir)
       git('clean', '-dff', cwd=sln_dir)
-      return
+      return True
     except SubprocessFailed as e:
       # Exited abnormally, there's probably something wrong.
       print('Something failed: %s.' % str(e))
@@ -783,6 +746,8 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
         remove(sln_dir, cleanup_dir)
       else:
         raise
+
+  return True
 
 def _git_disable_gc(cwd):
   git('config', 'gc.auto', '0', cwd=cwd)
@@ -821,28 +786,22 @@ def get_commit_position(git_path, revision='HEAD'):
   return None
 
 
-def parse_got_revision(gclient_output, got_revision_mapping):
+def parse_got_revision(manifest, got_revision_mapping):
   """Translate git gclient revision mapping to build properties."""
   properties = {}
-  solutions_output = {
+  manifest = {
       # Make sure path always ends with a single slash.
-      '%s/' % path.rstrip('/') : solution_output for path, solution_output
-      in gclient_output['solutions'].items()
+      '%s/' % path.rstrip('/'): info
+      for path, info in manifest.items()
   }
   for property_name, dir_name in got_revision_mapping.items():
     # Make sure dir_name always ends with a single slash.
     dir_name = '%s/' % dir_name.rstrip('/')
-    if dir_name not in solutions_output:
+    if dir_name not in manifest:
       continue
-    solution_output = solutions_output[dir_name]
-    if solution_output.get('scm') is None:
-      # This is an ignored DEPS, so the output got_revision should be 'None'.
-      revision = commit_position = None
-    else:
-      # Since we are using .DEPS.git, everything had better be git.
-      assert solution_output.get('scm') == 'git'
-      revision = git('rev-parse', 'HEAD', cwd=dir_name).strip()
-      commit_position = get_commit_position(dir_name)
+    info = manifest[dir_name]
+    revision = git('rev-parse', 'HEAD', cwd=dir_name).strip()
+    commit_position = get_commit_position(dir_name)
 
     properties[property_name] = revision
     if commit_position:
@@ -851,10 +810,9 @@ def parse_got_revision(gclient_output, got_revision_mapping):
   return properties
 
 
-def emit_json(out_file, did_run, gclient_output=None, **kwargs):
+def emit_json(out_file, did_run, **kwargs):
   """Write run information into a JSON file."""
   output = {}
-  output.update(gclient_output if gclient_output else {})
   output.update({'did_run': did_run})
   output.update(kwargs)
   with open(out_file, 'wb') as f:
@@ -865,22 +823,20 @@ def emit_json(out_file, did_run, gclient_output=None, **kwargs):
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     target_cpu, patch_root, patch_refs, gerrit_rebase_patch_ref,
                     no_fetch_tags, refs, git_cache_dir, cleanup_dir,
-                    gerrit_reset, disable_syntax_validation, enforce_fetch):
+                    gerrit_reset, enforce_fetch, experiments):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
   print('Fetching Git checkout')
 
-  git_checkouts(solutions, revisions, refs, no_fetch_tags, git_cache_dir,
-                cleanup_dir, enforce_fetch)
+  synced_solutions = git_checkouts(
+      solutions, revisions, refs, no_fetch_tags, git_cache_dir, cleanup_dir,
+      enforce_fetch, experiments)
 
   # Ensure our build/ directory is set up with the correct .gclient file.
   gclient_configure(solutions, target_os, target_os_only, target_cpu,
                     git_cache_dir)
 
-  # Windows sometimes has trouble deleting files. This can make git commands
-  # that rely on locks fail.
-  break_repo_locks = True if sys.platform.startswith('win') else False
   # We want to pass all non-solution revisions into the gclient sync call.
   solution_dirs = {sln['name'] for sln in solutions}
   gc_revisions = {
@@ -895,12 +851,10 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # Let gclient do the DEPS syncing.
   # The branch-head refspec is a special case because it's possible Chrome
   # src, which contains the branch-head refspecs, is DEPSed in.
-  gclient_output = gclient_sync(
+  gclient_sync(
       BRANCH_HEADS_REFSPEC in refs,
       TAGS_REFSPEC in refs,
       gc_revisions,
-      break_repo_locks,
-      disable_syntax_validation,
       patch_refs,
       gerrit_reset,
       gerrit_rebase_patch_ref)
@@ -916,7 +870,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   gclient_configure(solutions, target_os, target_os_only, target_cpu,
                     git_cache_dir)
 
-  return gclient_output
+  return synced_solutions
 
 
 def parse_revisions(revisions, root):
@@ -961,6 +915,8 @@ def parse_revisions(revisions, root):
 def parse_args():
   parse = optparse.OptionParser()
 
+  parse.add_option('--experiments',
+                   help='Comma separated list of experiments to enable')
   parse.add_option('--root', dest='patch_root',
                    help='DEPRECATED: Use --patch_root.')
   parse.add_option('--patch_root', help='Directory to patch on top of.')
@@ -1013,9 +969,6 @@ def parse_args():
   parse.add_option('--cleanup-dir',
                    help='Path to a cleanup directory that can be used for '
                         'deferred file cleanup.')
-  parse.add_option(
-      '--disable-syntax-validation', action='store_true',
-      help='Disable validation of .gclient and DEPS syntax.')
 
   options, args = parse.parse_args()
 
@@ -1111,6 +1064,10 @@ def checkout(options, git_slns, specs, revisions, step_text):
     pass
 
   should_delete_dirty_file = False
+  synced_solutions = []
+  experiments = []
+  if options.experiments:
+    experiments = options.experiments.split(',')
 
   try:
     # Outer try is for catching patch failures and exiting gracefully.
@@ -1143,13 +1100,14 @@ def checkout(options, git_slns, specs, revisions, step_text):
           git_cache_dir=options.git_cache_dir,
           cleanup_dir=options.cleanup_dir,
           gerrit_reset=not options.gerrit_no_reset,
-          disable_syntax_validation=options.disable_syntax_validation)
-      gclient_output = ensure_checkout(**checkout_parameters)
+
+          experiments=experiments)
+      synced_solutions = ensure_checkout(**checkout_parameters)
       should_delete_dirty_file = True
     except GclientSyncFailed:
       print('We failed gclient sync, lets delete the checkout and retry.')
       ensure_no_checkout(dir_names, options.cleanup_dir)
-      gclient_output = ensure_checkout(**checkout_parameters)
+      synced_solutions = ensure_checkout(**checkout_parameters)
       should_delete_dirty_file = True
   except PatchFailed as e:
     # Tell recipes information such as root, got_revision, etc.
@@ -1161,7 +1119,8 @@ def checkout(options, git_slns, specs, revisions, step_text):
               patch_failure=True,
               failed_patch_body=e.output,
               step_text='%s PATCH FAILED' % step_text,
-              fixed_revisions=revisions)
+              fixed_revisions=revisions,
+              synced_solutions=synced_solutions)
     should_delete_dirty_file = True
     raise
   finally:
@@ -1183,7 +1142,8 @@ def checkout(options, git_slns, specs, revisions, step_text):
   if not revision_mapping:
     revision_mapping['got_revision'] = first_sln
 
-  got_revisions = parse_got_revision(gclient_output, revision_mapping)
+  manifest = create_manifest()
+  got_revisions = parse_got_revision(manifest, revision_mapping)
 
   if not got_revisions:
     # TODO(hinoka): We should probably bail out here, but in the interest
@@ -1200,9 +1160,8 @@ def checkout(options, git_slns, specs, revisions, step_text):
             step_text=step_text,
             fixed_revisions=revisions,
             properties=got_revisions,
-            manifest=create_manifest_old(),
-            source_manifest=create_manifest(
-                gclient_output, options.patch_root))
+            manifest=manifest,
+            synced_solutions=synced_solutions)
 
 
 def print_debug_info():

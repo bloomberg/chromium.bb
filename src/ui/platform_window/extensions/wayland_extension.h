@@ -44,6 +44,14 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) WaylandExtension {
   // by minimizing the window upon a system wide back gesture.
   virtual void SetCanGoBack(bool value) = 0;
 
+  // Requests the underneath platform to set the window to picture-in-picture
+  // (PIP).
+  virtual void SetPip() = 0;
+
+  // Whether or not the underlying platform supports native pointer locking.
+  virtual bool SupportsPointerLock() = 0;
+  virtual void LockPointer(bool enabled) = 0;
+
  protected:
   virtual ~WaylandExtension();
 

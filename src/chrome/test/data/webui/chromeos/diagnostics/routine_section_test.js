@@ -226,6 +226,36 @@ export function routineSectionTestSuite() {
     return flushTasks();
   }
 
+  /**
+   * @param {boolean} isActive
+   * @return {!Promise}
+   */
+  function setIsActive(isActive) {
+    routineSectionElement.isActive = isActive;
+    return flushTasks();
+  }
+
+  /**
+   * @param {boolean} hideRoutineStatus
+   * @return {!Promise}
+   */
+  function setHideRoutineStatus(hideRoutineStatus) {
+    routineSectionElement.hideRoutineStatus = hideRoutineStatus;
+    return flushTasks();
+  }
+
+  /**
+   * Returns the learn more button.
+   * @return {!CrButtonElement}
+   */
+  function getLearnMoreButton() {
+    const learnMoreButton =
+        /** @type {!CrButtonElement} */ (
+            routineSectionElement.$$('#learnMoreButton'));
+    assertTrue(!!learnMoreButton);
+    return learnMoreButton;
+  }
+
   test('ElementRenders', () => {
     return initializeRoutineSection([]).then(() => {
       // Verify the element rendered.
@@ -421,7 +451,8 @@ export function routineSectionTestSuite() {
           assertFalse(getStatusBadge().hidden);
           assertEquals(getStatusBadge().badgeType, BadgeType.RUNNING);
           dx_utils.assertTextContains(
-              getStatusBadge().value, loadTimeData.getString('testRunning'));
+              getStatusBadge().value,
+              loadTimeData.getString('routineRemainingMinFinal'));
 
           // Text is visible describing which test is being run.
           assertFalse(getStatusTextElement().hidden);
@@ -439,7 +470,7 @@ export function routineSectionTestSuite() {
           // Badge is visible with success.
           assertFalse(getStatusBadge().hidden);
           assertEquals(getStatusBadge().badgeType, BadgeType.SUCCESS);
-          assertEquals(getStatusBadge().value, 'SUCCESS');
+          assertEquals(getStatusBadge().value, 'PASSED');
 
           // Text is visible saying test succeeded.
           assertFalse(getStatusTextElement().hidden);
@@ -474,7 +505,8 @@ export function routineSectionTestSuite() {
           assertFalse(getStatusBadge().hidden);
           assertEquals(getStatusBadge().badgeType, BadgeType.RUNNING);
           dx_utils.assertTextContains(
-              getStatusBadge().value, loadTimeData.getString('testRunning'));
+              getStatusBadge().value,
+              loadTimeData.getString('routineRemainingMinFinal'));
 
           // Text is visible describing which test is being run.
           assertFalse(getStatusTextElement().hidden);
@@ -495,7 +527,8 @@ export function routineSectionTestSuite() {
           assertFalse(getStatusBadge().hidden);
           assertEquals(getStatusBadge().badgeType, BadgeType.RUNNING);
           dx_utils.assertTextContains(
-              getStatusBadge().value, loadTimeData.getString('testRunning'));
+              getStatusBadge().value,
+              loadTimeData.getString('routineRemainingMinFinal'));
 
           // Text is visible describing which test is being run.
           assertFalse(getStatusTextElement().hidden);
@@ -774,7 +807,8 @@ export function routineSectionTestSuite() {
           assertTrue(isVisible(getStatusBadge()));
           assertEquals(getStatusBadge().badgeType, BadgeType.RUNNING);
           dx_utils.assertTextContains(
-              getStatusBadge().value, loadTimeData.getString('testRunning'));
+              getStatusBadge().value,
+              loadTimeData.getStringF('routineRemainingMin', '2'));
 
           return triggerStatusUpdate();
         })
@@ -814,7 +848,8 @@ export function routineSectionTestSuite() {
           assertTrue(isVisible(getStatusBadge()));
           assertEquals(getStatusBadge().badgeType, BadgeType.RUNNING);
           dx_utils.assertTextContains(
-              getStatusBadge().value, loadTimeData.getString('testRunning'));
+              getStatusBadge().value,
+              loadTimeData.getStringF('routineRemainingMin', '20'));
 
           return triggerStatusUpdate();
         })
@@ -848,6 +883,53 @@ export function routineSectionTestSuite() {
               getStatusTextElement(),
               loadTimeData.getString('routineRemainingMinFinalLarge'));
           resetMockTime();
+        });
+  });
+
+  test('PageChangeStopsRunningTest', () => {
+    /** @type {!Array<!RoutineType>} */
+    const routines = [RoutineType.kMemory];
+
+    routineController.setFakeStandardRoutineResult(
+        RoutineType.kMemory, StandardRoutineResult.kTestPassed);
+    return initializeRoutineSection(routines)
+        .then(() => clickRunTestsButton())
+        .then(() => {
+          // Badge is visible with test running.
+          assertFalse(getStatusBadge().hidden);
+          assertEquals(getStatusBadge().badgeType, BadgeType.RUNNING);
+          dx_utils.assertTextContains(
+              getStatusBadge().value,
+              loadTimeData.getString('routineRemainingMinFinal'));
+
+          // Text is visible describing which test is being run.
+          assertFalse(getStatusTextElement().hidden);
+          dx_utils.assertElementContainsText(
+              getStatusTextElement(),
+              loadTimeData.getString('memoryRoutineText').toLowerCase());
+
+          // Simulate a navigation page change event.
+          return setIsActive(false);
+        })
+        .then(() => flushTasks())
+        .then(() => {
+          // Result list is no longer visible.
+          assertFalse(isVisible(getResultList()));
+          // Memory routine should be cancelled.
+          assertEquals(
+              ExecutionProgress.kCancelled, getEntries()[0].item.progress);
+        });
+  });
+
+  test('RoutineStatusAndActionsHidden', () => {
+    return initializeRoutineSection([])
+        .then(() => setHideRoutineStatus(true))
+        .then(() => {
+          assertFalse(isVisible(getLearnMoreButton()));
+          assertFalse(isVisible(/** @type {!HTMLElement} */ (
+              routineSectionElement.$$('.routine-status-container'))));
+          assertFalse(isVisible(/** @type {!HTMLElement} */ (
+              routineSectionElement.$$('.button-container'))));
         });
   });
 }

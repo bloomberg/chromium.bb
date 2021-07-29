@@ -12,7 +12,7 @@
 #include "base/check.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/test/bind.h"
@@ -207,8 +207,8 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
     account_id_ = AccountId::FromUserEmailGaiaId("test@example.com", "ID");
 
     disk_manager_ = std::make_unique<chromeos::disks::MockDiskMountManager>();
-    identity_test_env_.MakeUnconsentedPrimaryAccountAvailable(
-        "test@example.com");
+    identity_test_env_.MakePrimaryAccountAvailable(
+        "test@example.com", signin::ConsentLevel::kSignin);
     host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(
         identity_test_env_.identity_manager(), account_id_);
     auto timer = std::make_unique<base::MockOneShotTimer>();
@@ -349,8 +349,9 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
 
 TEST_F(DriveFsHostTest, Basic) {
   MockDriveFsHostObserver observer;
-  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
-  observer_scoper.Add(host_.get());
+  base::ScopedObservation<DriveFsHost, DriveFsHostObserver> observation_scoper(
+      &observer);
+  observation_scoper.Observe(host_.get());
 
   EXPECT_FALSE(host_->IsMounted());
 
@@ -485,8 +486,9 @@ ACTION_P(CloneStruct, output) {
 TEST_F(DriveFsHostTest, OnSyncingStatusUpdate_ForwardToObservers) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
   MockDriveFsHostObserver observer;
-  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
-  observer_scoper.Add(host_.get());
+  base::ScopedObservation<DriveFsHost, DriveFsHostObserver> observation_scoper(
+      &observer);
+  observation_scoper.Observe(host_.get());
   auto status = mojom::SyncingStatus::New();
   status->item_events.emplace_back(base::in_place, 12, 34, "filename.txt",
                                    mojom::ItemEvent::State::kInProgress, 123,
@@ -510,8 +512,9 @@ ACTION_P(CloneVectorOfStructs, output) {
 TEST_F(DriveFsHostTest, OnFilesChanged_ForwardToObservers) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
   MockDriveFsHostObserver observer;
-  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
-  observer_scoper.Add(host_.get());
+  base::ScopedObservation<DriveFsHost, DriveFsHostObserver> observation_scoper(
+      &observer);
+  observation_scoper.Observe(host_.get());
   std::vector<mojom::FileChangePtr> changes;
   changes.emplace_back(base::in_place, base::FilePath("/create"),
                        mojom::FileChange::Type::kCreate);
@@ -532,8 +535,9 @@ TEST_F(DriveFsHostTest, OnFilesChanged_ForwardToObservers) {
 TEST_F(DriveFsHostTest, OnError_ForwardToObservers) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
   MockDriveFsHostObserver observer;
-  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
-  observer_scoper.Add(host_.get());
+  base::ScopedObservation<DriveFsHost, DriveFsHostObserver> observation_scoper(
+      &observer);
+  observation_scoper.Observe(host_.get());
   auto error = mojom::DriveError::New(
       mojom::DriveError::Type::kCantUploadStorageFull, base::FilePath("/foo"));
   mojom::DriveErrorPtr observed_error;
@@ -548,8 +552,9 @@ TEST_F(DriveFsHostTest, OnError_ForwardToObservers) {
 TEST_F(DriveFsHostTest, OnError_IgnoreUnknownErrorTypes) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
   MockDriveFsHostObserver observer;
-  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
-  observer_scoper.Add(host_.get());
+  base::ScopedObservation<DriveFsHost, DriveFsHostObserver> observation_scoper(
+      &observer);
+  observation_scoper.Observe(host_.get());
   EXPECT_CALL(observer, OnError(_)).Times(0);
   delegate_->OnError(mojom::DriveError::New(
       static_cast<mojom::DriveError::Type>(

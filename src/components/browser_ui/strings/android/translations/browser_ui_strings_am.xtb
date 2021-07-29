@@ -5,7 +5,6 @@
 <translation id="1044891598689252897">ጣቢያዎች እንደተለመደው ሆነው ይሠራሉ</translation>
 <translation id="1100504063505580045">የአሁኑ አዶ</translation>
 <translation id="1124090076051167250">ይህ በጣቢያዎች ወይም በመነሻ ገጽዎ ላይ ባሉ መተግበሪያዎች የተከማቹ <ph name="DATASIZE" /> ውሂብ እና ኩኩዎችን ያጸዳል።</translation>
-<translation id="1124772482545689468">ተጠቃሚ</translation>
 <translation id="1178581264944972037">ለአፍታ አቁም</translation>
 <translation id="1181037720776840403">አስወግድ</translation>
 <translation id="1195941046451948919">ለዚህ ድር ጣቢያ ሁሉንም ፈቃዶች ዳግም ማቀናበር እንደሚፈልጉ እርግጠኛ ነዎት?</translation>
@@ -58,6 +57,7 @@
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />፣ <ph name="PERMISSION_2" />፣ እና <ph name="NUM_MORE" /> ተጨማሪ ተፈቅደዋል}one{<ph name="PERMISSION_1" />፣ <ph name="PERMISSION_2" /> እና <ph name="NUM_MORE" /> ተጨማሪ ተፈቅደዋል}other{<ph name="PERMISSION_1" />፣ <ph name="PERMISSION_2" /> እና <ph name="NUM_MORE" /> ተጨማሪ ተፈቅደዋል}}</translation>
 <translation id="2434158240863470628">ማውረድ ተጠናቅቋል <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2482878487686419369">ማስታወቂያዎች</translation>
+<translation id="2485422356828889247">አራግፍ</translation>
 <translation id="2490684707762498678">በ<ph name="APP_NAME" /> የሚተዳደር ነው</translation>
 <translation id="2498359688066513246">እገዛ እና ግብረመልስ</translation>
 <translation id="2501278716633472235">ወደ ኋላ ተመለስ</translation>
@@ -77,6 +77,7 @@
 <translation id="2903493209154104877">አድራሻዎች</translation>
 <translation id="2910701580606108292">ጣቢያዎች ጥበቃ የሚደረግለትን ይዘትን እንዲያጫውቱ ከመፍቀድ በፊት ጠይቅ</translation>
 <translation id="2913331724188855103">ጣቢያዎች የኩኪ ውሂብ እንዲያስቀምጡ እና እንዲያነቡ ይፍቀዱ (የሚመከር)</translation>
+<translation id="2932883381142163287">የአላግባብ መጠቀምን ሪፖርት ያድርጉ</translation>
 <translation id="2968755619301702150">የእውቅና ማረጋገጫ መመልከቻ</translation>
 <translation id="300526633675317032">ይህ ሁሉንም <ph name="SIZE_IN_KB" /> የድር ጣቢያ ማከማቻ ያጸዳል።</translation>
 <translation id="3008272652534848354">ፈቃዶችን ዳግም ያቀናብሩ</translation>
@@ -89,11 +90,9 @@
 <translation id="3227137524299004712">ማይክሮፎን</translation>
 <translation id="3277252321222022663">ጣቢያዎች ዳሳሾችን እንዲደርሱ ይፍቀዱላቸው (የሚመከር)</translation>
 <translation id="3295602654194328831">መረጃ ደብቅ</translation>
-<translation id="3317660236277031814">የጫኑት የድር መተግበሪያ አዶውን ቀይሮታል።</translation>
 <translation id="3328801116991980348">የጣቢያ መረጃ</translation>
 <translation id="3333961966071413176">ሁሉም እውቂያዎች</translation>
 <translation id="3386292677130313581">ጣቢያዎች አካባቢዎን እንዲያውቁ ከመፍቀድዎ በፊት ይጠይቅ (የሚመከር)</translation>
-<translation id="345699454248713913">የጫኑት የድር መተግበሪያ ስሙን ቀይሯል።</translation>
 <translation id="3538390592868664640">ጣቢያዎች የዙሪያዎ የ3ል ካርታ እንዳይፈጥሩ ወይም የካሜራ ቦታን እንዳይከታተሉ ያግዷቸው</translation>
 <translation id="3551268116566418498">ከማንነት የማያሳውቅ ሁነታ ይውጣ?</translation>
 <translation id="3586500876634962664">የካሜራ እና ማይክሮፎን ጥቅም</translation>
@@ -101,6 +100,7 @@
 <translation id="3594780231884063836">ቪዲዮ ላይ ድምጸ-ከል አድርግ</translation>
 <translation id="3596414637720633074">ማንነትን በማያሳውቅ ሁነታ ሦስተኛ ወገን ኩኪዎች ያግዱ</translation>
 <translation id="3600792891314830896">ድምጽን በሚያጫውቱ ጣቢያዎች ላይ ድምጸ-ከል አድርግ</translation>
+<translation id="365089839707261811">የስም ዝማኔዎችን ይገምግሙ</translation>
 <translation id="3744111561329211289">የዳራ ስምረት</translation>
 <translation id="3763247130972274048">10 ሴ ለመዝለል ቪዲዮ ወደ ግራ ወይም ቀኝ ላይ ሁለቴ መታ ያድርጉ</translation>
 <translation id="381841723434055211">ስልክ ቁጥሮች</translation>
@@ -118,11 +118,11 @@
 <translation id="4200726100658658164">የአካባቢ ቅንብሮችን ክፈት</translation>
 <translation id="4226663524361240545">ማሳወቂያዎች መሣሪያውን እንዲነዝር ሊያደርጉት ይችላሉ</translation>
 <translation id="4259722352634471385">ዳሰሳ ታግዷል፦ <ph name="URL" /></translation>
-<translation id="4277239631747669329">የጫኑት የድር መተግበሪያ ስሙን እና አዶውን ቀይሮታል።</translation>
 <translation id="4278390842282768270">ተፈቅዷል</translation>
 <translation id="429312253194641664">አንድ ጣቢያ ሚዲያን በማጫወት ላይ ነው</translation>
 <translation id="42981349822642051">ዘርጋ</translation>
 <translation id="4336434711095810371">ሁሉንም ውሂብ አጽዳ</translation>
+<translation id="4339203724549370495">መተግበሪያን አራግፍ</translation>
 <translation id="4402755511846832236">እርስዎ ይህን መሣሪያ በንቃት ሲጠቀሙ ጣቢያዎች እንዳያውቁ ያግዱ</translation>
 <translation id="4434045419905280838">ብቅ-ባዮች እና አቅጣጫ ማዞሮች</translation>
 <translation id="445467742685312942">ጣቢያዎች የተጠበቀ ይዘትን እንዲያጫውት ይፍቀዱ</translation>
@@ -134,13 +134,14 @@
 <translation id="4645575059429386691">በእርስዎ ወላጅ የሚቀናበር</translation>
 <translation id="4670064810192446073">ምናባዊ እውነታ</translation>
 <translation id="4708011789095599544">እርግጠኛ ነዎት ለዚህ ድር ጣቢያ ኩኪዎችን እና ሌላ የጣቢያ ውሂብን ማጽዳት ይፈልጋሉ?</translation>
-<translation id="473775607612524610">አዘምን</translation>
 <translation id="4751476147751820511">የእንቅስቃሴ ወይም የብርሃን ዳሳሾች</translation>
+<translation id="4800839971935185386">የግምገማ ስም እና የአዶ ዝማኔዎች</translation>
 <translation id="4836046166855586901">እርስዎ ይህን መሣሪያ መቼ በንቃት እየተጠቀሙ እንደሆነ አንድ ጣቢያ ማወቅ ሲፈልግ ይጠይቁ</translation>
 <translation id="4883854917563148705">የሚተዳደሩ ቅንብሮች ዳግም ሊጀመሩ አይችሉም</translation>
 <translation id="4887024562049524730">ጣቢያዎች የእርስዎን የምናባዊ እውነታ መሣሪያ እና ውሂብ እንዲጠቀሙ ፈቃድ ከማግኘታቸው በፊት ይጠይቁ (የሚመከር)</translation>
 <translation id="4962975101802056554">ሁሉንም የመሣሪያ ፈቃዶች ይሻሩ</translation>
 <translation id="497421865427891073">ወደ ፊት ሂድ</translation>
+<translation id="4976702386844183910">ለመጨረሻ ጊዜ የተጎበኘው በ<ph name="DATE" /></translation>
 <translation id="4994033804516042629">ምንም ዕውቂያዎች አልተገኙም</translation>
 <translation id="4996978546172906250">ያጋሩ በ</translation>
 <translation id="5039804452771397117">ፍቀድ</translation>
@@ -151,6 +152,7 @@
 <translation id="5123685120097942451">ማንነት የማያሳውቅ ትር</translation>
 <translation id="5186036860380548585">አማራጮች ከማያ ገጹ አናት አጠገብ ይገኛሉ</translation>
 <translation id="5197729504361054390">የመረጧቸው እውቂያዎች ለ<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ይጋራሉ።</translation>
+<translation id="5216942107514965959">መጨረሻ የተጎበኘው ዛሬ</translation>
 <translation id="528192093759286357">ከሙሉ ማያ ገጽ ለመውጣት ከላይ ይጎትቱ እና የተመለስ አዝራሩን ይንኩ።</translation>
 <translation id="5300589172476337783">አሳይ</translation>
 <translation id="5301954838959518834">እሺ፣ ገባኝ</translation>
@@ -159,7 +161,6 @@
 <translation id="5335288049665977812">ጣቢያዎች ጃቫስክሪፕትን እንዲያሄዱ ፍቀድላቸው (የሚመከር)</translation>
 <translation id="534295439873310000">የNFC መሣሪያዎች</translation>
 <translation id="5354152178998424783">ይህ በጣቢያዎች የተከማቹ <ph name="DATASIZE" /> ውሂብ እና ኩኪዎችን ያጸዳል።</translation>
-<translation id="536508626067510330">በእርስዎ መነሻ ገጽ ላይ አዶ ይዘምን?</translation>
 <translation id="5391532827096253100">ወደዚህ ጣቢያ ያልዎት ግንኙነት ደህንነቱ የተጠበቀ አይደለም። የጣቢያ መረጃ</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 ተጨማሪ)}one{(+ # ተጨማሪ)}other{(+ # ተጨማሪ)}}</translation>
 <translation id="5403592356182871684">ስሞች</translation>
@@ -182,7 +183,7 @@
 <translation id="5804241973901381774">ፍቃዶች</translation>
 <translation id="5860033963881614850">አጥፋ</translation>
 <translation id="5876056640971328065">ቪዲዮ ባለበት አቁም</translation>
-<translation id="5904826301761575486">በመነሻ ገጽዎ ላይ ስም እና አዶ ይዘምን?</translation>
+<translation id="5887687176710214216">ለመጨረሻ ጊዜ የተጎበኘው ትላንትና</translation>
 <translation id="5916664084637901428">በርቷል</translation>
 <translation id="5922853908706496913">ማያ ገጽዎን በማጋራት ላይ</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
@@ -199,7 +200,7 @@
 <translation id="6196640612572343990">የሦስተኛ ወገን ኩኪዎችን አግድ</translation>
 <translation id="6206551242102657620">ግንኙነት ደህንነቱ የተጠበቀ ነው። የጣቢያ መረጃ</translation>
 <translation id="6216432067784365534">የ<ph name="NAME_OF_LIST_ITEM" /> አማራጮች</translation>
-<translation id="6260852843601447737">ይዝጉ እና አላግባብ መጠቀምን ሪፖርት ያድርጉ</translation>
+<translation id="6231752747840485235">«<ph name="APP_NAME" />» ይራገፍ?</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> እና <ph name="PERMISSION_2" /> ታግደዋል</translation>
 <translation id="6270391203985052864">ጣቢያዎች ማሳወቂያዎችን ለመላክ መጠየቅ ይችላሉ</translation>
 <translation id="6295158916970320988">ሁሉም ጣቢያዎች</translation>
@@ -212,6 +213,7 @@
 <translation id="6527303717912515753">አጋራ</translation>
 <translation id="6545864417968258051">የብሉቱዝ ቅኝት</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />፣ <ph name="PERMISSION_2" />፣ እና <ph name="NUM_MORE" /> ተጨማሪ ታግደዋል}one{<ph name="PERMISSION_1" />፣ <ph name="PERMISSION_2" />፣ እና <ph name="NUM_MORE" /> ተጨማሪ ታግደዋል}other{<ph name="PERMISSION_1" />፣ <ph name="PERMISSION_2" /> እና <ph name="NUM_MORE" /> ተጨማሪ ታግደዋል}}</translation>
+<translation id="6554732001434021288">ለመጨረሻ ጊዜ የተጎበኘው ከ<ph name="NUM_DAYS" /> ቀናት በፊት ነው</translation>
 <translation id="6561560012278703671">ይበልጥ ጸጥ ያለ መልዕክት አላላክ ይጠቀሙ (ማሳወቂያ ጥያቄዎች እርስዎን እንዳያቋርጡ ያግዳል)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ጊባ</translation>
 <translation id="6612358246767739896">ጥበቃ የሚደረግለት ይዘት</translation>
@@ -253,6 +255,7 @@
 <translation id="7589445247086920869">አሁን ላለው የፍለጋ ፕሮግራም አግድ</translation>
 <translation id="7649070708921625228">እገዛ</translation>
 <translation id="7658239707568436148">ይቅር</translation>
+<translation id="7734541938181328224">የአዶ ዝማኔዎችን ይገምግሙ</translation>
 <translation id="7781829728241885113">ትናንት</translation>
 <translation id="7791543448312431591">ያክሉ</translation>
 <translation id="780301667611848630">አይ፣ አመሰግናለሁ</translation>
@@ -294,9 +297,9 @@
 <translation id="8487700953926739672">ከመስመር ውጪ ይገኛል</translation>
 <translation id="851751545965956758">ጣቢያዎች ከመሣሪያዎች ጋር እንዳይገናኙ አግድ</translation>
 <translation id="8525306231823319788">ሙሉ ማያ ገጽ</translation>
+<translation id="857074314439694500">ይህ የድር መተግበሪያ ሌላ መተግበሪያ ነው ብለው እንዲያስቡት ለማታለል እየሞከረ ከሆነ ያራግፉት።</translation>
 <translation id="857943718398505171">ተፈቅዷል (የሚመከር)</translation>
 <translation id="8609465669617005112">ወደላይ አውጣ</translation>
-<translation id="861748745608658996">በመነሻ ገጽዎ ላይ ስም ይዘምን?</translation>
 <translation id="8676374126336081632">ግቤቱን አጽዳ</translation>
 <translation id="868929229000858085">እውቂያዎችዎን ይፈልጉ</translation>
 <translation id="8702612070107455751">ማንኛውም የመስመር ውጭ ውሂብ ይጸዳል።</translation>

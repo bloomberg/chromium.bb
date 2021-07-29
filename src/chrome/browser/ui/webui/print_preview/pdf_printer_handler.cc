@@ -58,12 +58,13 @@
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #endif
 
 #if BUILDFLAG(ENABLE_CEF)
-#include "cef/libcef/browser/alloy/alloy_browser_host_impl.h"
+#include "cef/libcef/browser/alloy/alloy_dialog_util.h"
 #endif
 
 namespace printing {
@@ -411,9 +412,30 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
 
   sticky_settings_->SaveInPrefs(profile_->GetPrefs());
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto* service = chromeos::LacrosService::Get();
+  if (service &&
+      service->IsAvailable<crosapi::mojom::DriveIntegrationService>()) {
+    service->GetRemote<crosapi::mojom::DriveIntegrationService>()
+        ->GetMountPointPath(
+            base::BindOnce(&PdfPrinterHandler::OnSaveLocationReady,
+                           weak_ptr_factory_.GetWeakPtr(), initiator,
+                           std::move(default_filename), prompt_user));
+    return;
+  }
+#endif
+
+  OnSaveLocationReady(initiator, default_filename, prompt_user,
+                      GetSaveLocation());
+}
+
+void PdfPrinterHandler::OnSaveLocationReady(
+    content::WebContents* initiator,
+    const base::FilePath& default_filename,
+    bool prompt_user,
+    const base::FilePath& path) {
   // Handle the no prompting case. Like the dialog prompt, this function
   // returns and eventually FileSelected() gets called.
-  base::FilePath path = GetSaveLocation();
   if (!prompt_user) {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
@@ -505,21 +527,17 @@ void PdfPrinterHandler::OnDirectorySelected(const base::FilePath& filename,
 void PdfPrinterHandler::ShowCefSaveAsDialog(content::WebContents* initiator,
                                             const base::FilePath& filename,
                                             const base::FilePath& directory) {
-  CefRefPtr<AlloyBrowserHostImpl> cef_browser =
-      AlloyBrowserHostImpl::GetBrowserForContents(initiator);
-  if (!cef_browser)
-    return;
-
   base::FilePath path = directory.Append(filename);
 
-  CefFileDialogRunner::FileChooserParams params;
+  blink::mojom::FileChooserParams params;
   params.mode = blink::mojom::FileChooserParams::Mode::kSave;
   params.default_file_name = path;
-  params.accept_types.push_back(CefString(path.Extension()));
+  params.accept_types.push_back(
+      alloy::FilePathTypeToString16(path.Extension()));
 
-  cef_browser->RunFileChooser(
-      params, base::BindOnce(&PdfPrinterHandler::SaveAsDialogDismissed,
-                             weak_ptr_factory_.GetWeakPtr()));
+  alloy::RunFileChooser(initiator, params,
+      base::BindOnce(&PdfPrinterHandler::SaveAsDialogDismissed,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PdfPrinterHandler::SaveAsDialogDismissed(

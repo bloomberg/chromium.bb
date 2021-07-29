@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -63,7 +63,7 @@ extern const size_t kTheRcHeaderSize;''', output)
         '''\
 #include "the_resource_map_header.h"
 #include <stddef.h>
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "the_rc_header.h"
 const webui::ResourcePath kTheRcHeader[] = {
   {"IDC_KLONKMENU", IDC_KLONKMENU},
@@ -79,7 +79,7 @@ const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
         '''\
 #include "the_resource_map_header.h"
 #include <stddef.h>
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "the_rc_header.h"
 const webui::ResourcePath kTheRcHeader[] = {
   {"grit/testdata/klonk.rc", IDC_KLONKMENU},
@@ -170,7 +170,7 @@ extern const size_t kTheRcHeaderSize;''', output)
         '''\
 #include "the_resource_map_header.h"
 #include <stddef.h>
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "the_rc_header.h"
 const webui::ResourcePath kTheRcHeader[] = {
   {"IDR_KLONKMENU", IDR_KLONKMENU},
@@ -185,7 +185,7 @@ const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
         '''\
 #include "the_resource_map_header.h"
 #include <stddef.h>
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "the_rc_header.h"
 const webui::ResourcePath kTheRcHeader[] = {
   {"IDR_KLONKMENU", IDR_KLONKMENU},
@@ -246,7 +246,7 @@ extern const size_t kTheRcHeaderSize;''', output)
         '''\
 #include "the_resource_map_header.h"
 #include <stddef.h>
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "the_rc_header.h"
 const webui::ResourcePath kTheRcHeader[] = {
   {"IDC_KLONKMENU", IDC_KLONKMENU},
@@ -263,7 +263,7 @@ const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
         '''\
 #include "the_resource_map_header.h"
 #include <stddef.h>
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "the_rc_header.h"
 const webui::ResourcePath kTheRcHeader[] = {
   {"grit/testdata/klonk.rc", IDC_KLONKMENU},
@@ -316,7 +316,7 @@ extern const size_t kTheRcHeaderSize;''', output)
         '''\
 #include "the_rc_map_header.h"
 #include <stddef.h>
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "the_rc_header.h"
 const webui::ResourcePath kTheRcHeader[] = {
   {"IDS_PRODUCT_NAME", IDS_PRODUCT_NAME},

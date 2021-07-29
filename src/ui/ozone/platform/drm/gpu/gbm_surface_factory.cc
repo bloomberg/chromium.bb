@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -329,8 +330,8 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
       /* .format = */ vk_format,
       /* .extent = */
       {
-          /* .width = */ size.width(),
-          /* .height = */ size.height(),
+          /* .width = */ static_cast<uint32_t>(size.width()),
+          /* .height = */ static_cast<uint32_t>(size.height()),
           /* .depth = */ 1,
       },
       /* .strideInBytes = */ buffer->GetPlaneStride(0),

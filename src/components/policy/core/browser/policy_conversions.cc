@@ -22,12 +22,14 @@ const webui::LocalizedString kPolicySources[POLICY_SOURCE_COUNT] = {
     {"commandLine", IDS_POLICY_SOURCE_COMMAND_LINE},
     {"cloud", IDS_POLICY_SOURCE_CLOUD},
     {"sourceActiveDirectory", IDS_POLICY_SOURCE_ACTIVE_DIRECTORY},
-    {"sourceDeviceLocalAccountOverride",
+    {"sourceDeviceLocalAccountOverrideDeprecated",
      IDS_POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE},
     {"platform", IDS_POLICY_SOURCE_PLATFORM},
     {"priorityCloud", IDS_POLICY_SOURCE_CLOUD},
     {"merged", IDS_POLICY_SOURCE_MERGED},
     {"cloud_from_ash", IDS_POLICY_SOURCE_CLOUD_FROM_ASH},
+    {"restrictedManagedGuestSessionOverride",
+     IDS_POLICY_SOURCE_RESTRICTED_MANAGED_GUEST_SESSION_OVERRIDE},
 };
 
 PolicyConversions::PolicyConversions(

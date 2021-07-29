@@ -252,7 +252,16 @@ export class InfiniteList extends PolymerElement {
    * @private
    */
   getDomItem_(index) {
-    return this.instances_[index].children[0];
+    const instance = this.instances_[index];
+    if (instance === undefined) {
+      // TODO(crbug.com/1225247): Remove this after we root cause the issue.
+      console.error(`Unexpected call to non-existing instance index: ${
+          index}. Instance count: ${this.instances_.length}. Item count: ${
+          this.items.length}`);
+      return undefined;
+    }
+
+    return instance.children[0];
   }
 
   /**
@@ -302,8 +311,8 @@ export class InfiniteList extends PolymerElement {
     // keep adding items.
 
     if (initialDomItemCount !== desiredDomItemCount) {
-      performance.mark(`infinite_list_view_updated:${
-          performance.now() - startTime}:benchmark_value`);
+      performance.mark(`tab_search:infinite_list_view_updated:${
+          performance.now() - startTime}:metric_value`);
 
       return true;
     }
@@ -327,6 +336,9 @@ export class InfiniteList extends PolymerElement {
     const selectedItemIndex = this.$.selector.selected;
     if (selectedItemIndex !== undefined) {
       const selectedItem = this.getSelectableDomItem_(selectedItemIndex);
+      if (selectedItem === undefined) {
+        return false;
+      }
       const deepActiveElement = getDeepActiveElement();
 
       return selectedItem === deepActiveElement ||
@@ -610,7 +622,9 @@ export class InfiniteList extends PolymerElement {
 
     const selector = /** @type {!IronSelectorElement} */ (this.$.selector);
     if (index !== selector.selected) {
-      assert(index < this.selectableIndexToItemIndex_.size());
+      assert(
+          index < this.selectableIndexToItemIndex_.size(),
+          'Selection index is out of range.');
       this.ensureSelectableDomItemAvailable_(index);
       selector.selected = index;
     }

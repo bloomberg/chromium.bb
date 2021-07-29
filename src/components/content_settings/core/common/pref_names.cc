@@ -51,12 +51,12 @@ const char kManagedDefaultFileSystemReadGuardSetting[] =
     "profile.managed_default_content_settings.file_system_read_guard";
 const char kManagedDefaultFileSystemWriteGuardSetting[] =
     "profile.managed_default_content_settings.file_system_write_guard";
-const char kManagedDefaultLegacyCookieAccessSetting[] =
-    "profile.managed_default_content_settings.legacy_cookie_access";
 const char kManagedDefaultSerialGuardSetting[] =
     "profile.managed_default_content_settings.serial_guard";
 const char kManagedDefaultInsecurePrivateNetworkSetting[] =
     "profile.managed_default_content_settings.insecure_private_network";
+const char kManagedDefaultJavaScriptJitSetting[] =
+    "profile.managed_default_content_settings.javascript_jit";
 
 // Preferences that are exclusively used to store managed
 // content settings patterns.
@@ -116,6 +116,10 @@ const char kManagedSerialBlockedForUrls[] =
     "profile.managed_serial_blocked_for_urls";
 const char kManagedInsecurePrivateNetworkAllowedForUrls[] =
     "profile.managed_insecure_private_network_allowed_for_urls";
+const char kManagedJavaScriptJitAllowedForSites[] =
+    "profile.managed_javascript_jit_allowed_for_sites";
+const char kManagedJavaScriptJitBlockedForSites[] =
+    "profile.managed_javascript_jit_blocked_for_sites";
 
 // Boolean indicating whether the quiet UI is enabled for notification
 // permission requests.

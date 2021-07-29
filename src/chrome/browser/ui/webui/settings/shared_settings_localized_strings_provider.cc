@@ -257,7 +257,12 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE},
       {"manageSyncedDataTitle",
        IDS_SETTINGS_NEW_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT},
-  };
+      {"enterPassphraseLabel", IDS_SYNC_ENTER_PASSPHRASE_BODY},
+      {"enterPassphraseLabelWithDate",
+       IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE},
+      {"existingPassphraseLabelWithDate",
+       IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM_WITH_DATE},
+      {"existingPassphraseLabel", IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM}};
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
   std::string sync_dashboard_url =
@@ -290,6 +295,7 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
 #else
           base::ASCIIToUTF16(chrome::kSyncEncryptionHelpURL)));
 #endif
+  html_source->AddString("syncErrorsHelpUrl", chrome::kSyncErrorsHelpURL);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -364,5 +370,35 @@ void AddNearbyShareData(content::WebUIDataSource* html_source) {
       network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+void AddSecureDnsStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"secureDns", IDS_SETTINGS_SECURE_DNS},
+      {"secureDnsDescription", IDS_SETTINGS_SECURE_DNS_DESCRIPTION},
+      {"secureDnsDisabledForManagedEnvironment",
+       IDS_SETTINGS_SECURE_DNS_DISABLED_FOR_MANAGED_ENVIRONMENT},
+      {"secureDnsDisabledForParentalControl",
+       IDS_SETTINGS_SECURE_DNS_DISABLED_FOR_PARENTAL_CONTROL},
+      {"secureDnsAutomaticModeDescription",
+       IDS_SETTINGS_AUTOMATIC_MODE_DESCRIPTION},
+      {"secureDnsAutomaticModeDescriptionSecondary",
+       IDS_SETTINGS_AUTOMATIC_MODE_DESCRIPTION_SECONDARY},
+      {"secureDnsSecureModeA11yLabel",
+       IDS_SETTINGS_SECURE_MODE_DESCRIPTION_ACCESSIBILITY_LABEL},
+      {"secureDnsDropdownA11yLabel",
+       IDS_SETTINGS_SECURE_DNS_DROPDOWN_ACCESSIBILITY_LABEL},
+      {"secureDnsSecureDropdownModeDescription",
+       IDS_SETTINGS_SECURE_DROPDOWN_MODE_DESCRIPTION},
+      {"secureDnsSecureDropdownModePrivacyPolicy",
+       IDS_SETTINGS_SECURE_DROPDOWN_MODE_PRIVACY_POLICY},
+      {"secureDnsCustomPlaceholder",
+       IDS_SETTINGS_SECURE_DNS_CUSTOM_PLACEHOLDER},
+      {"secureDnsCustomFormatError",
+       IDS_SETTINGS_SECURE_DNS_CUSTOM_FORMAT_ERROR},
+      {"secureDnsCustomConnectionError",
+       IDS_SETTINGS_SECURE_DNS_CUSTOM_CONNECTION_ERROR},
+  };
+  html_source->AddLocalizedStrings(kLocalizedStrings);
+}
 
 }  // namespace settings

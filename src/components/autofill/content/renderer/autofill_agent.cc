@@ -88,7 +88,6 @@ namespace autofill {
 
 using form_util::ExtractMask;
 using form_util::FindFormAndFieldForFormControlElement;
-using form_util::UnownedFormElementsAndFieldSetsToFormData;
 using mojom::SubmissionSource;
 using ShowAll = PasswordAutofillAgent::ShowAll;
 using GenerationShowing = PasswordAutofillAgent::GenerationShowing;
@@ -212,7 +211,6 @@ void AutofillAgent::DidChangeScrollOffsetImpl(
 }
 
 void AutofillAgent::FocusedElementChanged(const WebElement& element) {
-  was_focused_before_now_ = false;
   HidePopup();
 
   if (element.IsNull()) {
@@ -405,10 +403,21 @@ void AutofillAgent::TriggerRefillIfNeeded(const FormData& form) {
 
 // mojom::AutofillAgent:
 void AutofillAgent::FillForm(int32_t id, const FormData& form) {
+  // If |element_| is null or not focused, a Autofill was triggered from another
+  // frame. In this case, set |element_| to some form field as if Autofill had
+  // been triggered from that field. This is necessary because currently
+  // AutofillAgent's relies on |elemet_| in many places.
+  if (id == kCrossFrameFill && !form.fields.empty() &&
+      (element_.IsNull() || !element_.Focused())) {
+    WebDocument document = render_frame()->GetWebFrame()->GetDocument();
+    element_ = form_util::FindFormControlElementByUniqueRendererId(
+        document, form.fields.front().unique_renderer_id);
+  }
+
   if (element_.IsNull())
     return;
 
-  if (id != autofill_query_id_ && id != kNoQueryId)
+  if (id != autofill_query_id_ && id != kNoQueryId && id != kCrossFrameFill)
     return;
 
   was_last_action_fill_ = true;
@@ -433,10 +442,21 @@ void AutofillAgent::FillForm(int32_t id, const FormData& form) {
 }
 
 void AutofillAgent::PreviewForm(int32_t id, const FormData& form) {
+  // If |element_| is null or not focused, a Autofill was triggered from another
+  // frame. In this case, set |element_| to some form field as if Autofill had
+  // been triggered from that field. This is necessary because currently
+  // AutofillAgent's relies on |elemet_| in many places.
+  if (id == kCrossFrameFill && !form.fields.empty() &&
+      (element_.IsNull() || !element_.Focused())) {
+    WebDocument document = render_frame()->GetWebFrame()->GetDocument();
+    element_ = form_util::FindFormControlElementByUniqueRendererId(
+        document, form.fields.front().unique_renderer_id);
+  }
+
   if (element_.IsNull())
     return;
 
-  if (id != autofill_query_id_)
+  if (id != autofill_query_id_ && id != kCrossFrameFill)
     return;
 
   ClearPreviewedForm();
@@ -617,15 +637,15 @@ bool AutofillAgent::CollectFormlessElements(FormData* output) const {
       form_util::GetUnownedAutofillableFormFieldElements(document.All(),
                                                          &fieldsets);
 
-  if (control_elements.size() > kMaxParseableFields)
-    return false;
+  std::vector<WebElement> iframe_elements =
+      form_util::GetUnownedIframeElements(document);
 
   const ExtractMask extract_mask = static_cast<ExtractMask>(
       form_util::EXTRACT_VALUE | form_util::EXTRACT_OPTIONS);
 
-  return UnownedFormElementsAndFieldSetsToFormData(
-      fieldsets, control_elements, nullptr, document, field_data_manager_.get(),
-      extract_mask, output, nullptr);
+  return form_util::UnownedFormElementsAndFieldSetsToFormData(
+      fieldsets, control_elements, iframe_elements, nullptr, document,
+      field_data_manager_.get(), extract_mask, output, nullptr);
 }
 
 void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
@@ -790,7 +810,7 @@ void AutofillAgent::QueryAutofillSuggestions(
     // If we didn't find the cached form, at least let autocomplete have a shot
     // at providing suggestions.
     WebFormControlElementToFormField(
-        element, nullptr,
+        form.unique_renderer_id, element, nullptr,
         static_cast<ExtractMask>(form_util::EXTRACT_VALUE |
                                  form_util::EXTRACT_BOUNDS |
                                  GetExtractDatalistMask()),
@@ -835,6 +855,14 @@ void AutofillAgent::DoPreviewFieldWithValue(const std::u16string& value,
   form_util::PreviewSuggestion(node->SuggestedValue().Utf16(),
                                node->Value().Utf16(), node);
   previewed_elements_.push_back(*node);
+}
+
+void AutofillAgent::TriggerReparse() {
+  if (!reparse_timer_.IsRunning()) {
+    reparse_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(100),
+                         base::BindRepeating(&AutofillAgent::ProcessForms,
+                                             weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void AutofillAgent::ProcessForms() {
@@ -896,10 +924,13 @@ void AutofillAgent::DidReceiveLeftMouseDownOrGestureTapInNode(
   DCHECK(!node.IsNull());
   focused_node_was_last_clicked_ = node.Focused();
 
-  if (IsTouchToFillEnabled() || IsKeyboardAccessoryEnabled() ||
-      !focus_requires_scroll_) {
+#if defined(ANDROID)
+  HandleFocusChangeComplete();
+#else
+  if (!focus_requires_scroll_) {
     HandleFocusChangeComplete();
   }
+#endif
 }
 
 void AutofillAgent::SelectControlDidChange(
@@ -951,29 +982,33 @@ void AutofillAgent::SelectWasUpdated(
   FormFieldData field;
   if (FindFormAndFieldForFormControlElement(element, field_data_manager_.get(),
                                             &form, &field) &&
-      !field.option_values.empty()) {
+      !field.options.empty()) {
     GetAutofillDriver()->SelectFieldOptionsDidChange(form);
   }
 }
 
 void AutofillAgent::FormControlElementClicked(
-    const WebFormControlElement& element,
-    bool was_focused) {
-  last_clicked_form_control_element_for_testing_ = element;
-  last_clicked_form_control_element_was_focused_for_testing_ = was_focused;
+    const WebFormControlElement& element) {
+  last_clicked_form_control_element_for_testing_ =
+      FieldRendererId(element.UniqueRendererFormControlId());
   was_last_action_fill_ = false;
 
   const WebInputElement* input_element = ToWebInputElement(&element);
   if (!input_element && !form_util::IsTextAreaElement(element))
     return;
 
-  if (IsTouchToFillEnabled())
-    password_autofill_agent_->TryToShowTouchToFill(element);
+#if defined(ANDROID)
+  password_autofill_agent_->TryToShowTouchToFill(element);
+#endif
 
   ShowSuggestionsOptions options;
   options.autofill_on_empty_values = true;
-  // Show full suggestions when clicking on an already-focused form field.
-  options.show_full_suggestion_list = element.IsAutofilled() || was_focused;
+  // Even if the user has not edited an input element, it may still contain a
+  // value: A default value filled by the website. In that case, we don't want
+  // to elide suggestions that don't have a common prefix with the default
+  // value.
+  options.show_full_suggestion_list =
+      element.IsAutofilled() || !element.UserHasEditedTheField();
 
   ShowSuggestions(element, options);
 
@@ -991,11 +1026,9 @@ void AutofillAgent::HandleFocusChangeComplete() {
       !focused_element.IsNull() && focused_element.IsFormControlElement() &&
       (form_util::IsTextInput(blink::ToWebInputElement(&focused_element)) ||
        focused_element.HasHTMLTagName("textarea"))) {
-    FormControlElementClicked(focused_element.ToConst<WebFormControlElement>(),
-                              was_focused_before_now_);
+    FormControlElementClicked(focused_element.ToConst<WebFormControlElement>());
   }
 
-  was_focused_before_now_ = true;
   focused_node_was_last_clicked_ = false;
 
   SendPotentiallySubmittedFormToBrowser();
@@ -1159,7 +1192,7 @@ void AutofillAgent::SendPotentiallySubmittedFormToBrowser() {
 
 void AutofillAgent::ResetLastInteractedElements() {
   last_interacted_form_.Reset();
-  last_clicked_form_control_element_for_testing_.Reset();
+  last_clicked_form_control_element_for_testing_ = {};
   formless_elements_user_edited_.clear();
   provisionally_saved_form_.reset();
 }

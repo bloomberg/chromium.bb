@@ -8,9 +8,10 @@
 
 #include <cstring>
 
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "ui/events/devices/device_util_linux.h"
 
@@ -38,17 +39,24 @@ constexpr struct {
     {0x045e, 0x082f},  // Microsoft Bluetooth Mouse
     {0x045e, 0x0b05},  // Xbox One Elite Series 2 gamepad
     {0x046d, 0x4069},  // Logitech MX Master 2S (Unifying)
+    {0x046d, 0xb00d},  // Logitech T630 Ultrathin
     {0x046d, 0xb011},  // Logitech M558
     {0x046d, 0xb016},  // Logitech M535
     {0x046d, 0xb019},  // Logitech MX Master 2S (Bluetooth)
+    {0x046d, 0xb503},  // Logitech Spotlight Presentation Remote (Bluetooth)
     {0x046d, 0xc093},  // Logitech M500s
+    {0x046d, 0xc53e},  // Logitech Spotlight Presentation Remote (USB dongle)
     {0x056e, 0x0134},  // Elecom Enelo IR LED Mouse 350
     {0x056e, 0x0141},  // Elecom EPRIM Blue LED 5 button mouse 228
     {0x056e, 0x0159},  // Elecom Blue LED Mouse 203
     {0x05e0, 0x1200},  // Zebra LS2208 barcode scanner
     {0x0c45, 0x7403},  // RDing FootSwitch1F1
+    {0x1038, 0x1369},  // SteelSeries Sensei RAW Frost Blue
+    {0x1038, 0x1830},  // SteelSeries Rival 3 Wireless (USB dongle)
     {0x1050, 0x0010},  // Yubico.com Yubikey
     {0x1050, 0x0407},  // Yubico.com Yubikey 4 OTP+U2F+CCID
+    {0x1b1c, 0x1b94},  // Corsair Katar Pro Wireless (USB dongle)
+    {0x1bae, 0x1b1c},  // Corsair Katar Pro Wireless (Bluetooth)
     {0x1bcf, 0x08a0},  // Kensington Pro Fit Full-size
     {0x256c, 0x006d},  // Huion HS64
     {0x28bd, 0x0914},  // XP-Pen Star G640
@@ -599,6 +607,7 @@ ui::InputDeviceType EventDeviceInfo::GetInputDeviceTypeFromId(input_id id) {
       {0x18d1, 0x5044},  // Google, Moonball PID (kakadu)
       {0x18d1, 0x504c},  // Google, Zed PID (coachz)
       {0x18d1, 0x5050},  // Google, Don PID (katsu)
+      {0x18d1, 0x5052},  // Google, Star PID (homestar)
       {0x1fd2, 0x8103},  // LG, Internal TouchScreen PID
   };
 

@@ -74,17 +74,14 @@ class TestableInputMethodChromeOS : public InputMethodChromeOS {
   // Overridden from InputMethodChromeOS:
   ui::EventDispatchDetails ProcessKeyEventPostIME(
       ui::KeyEvent* key_event,
-      bool skip_process_filtered,
       bool handled,
       bool stopped_propagation) override {
     ui::EventDispatchDetails details =
-        InputMethodChromeOS::ProcessKeyEventPostIME(
-            key_event, skip_process_filtered, handled, stopped_propagation);
-    if (!skip_process_filtered) {
-      process_key_event_post_ime_args_.event = *key_event;
-      process_key_event_post_ime_args_.handled = handled;
-      ++process_key_event_post_ime_call_count_;
-    }
+        InputMethodChromeOS::ProcessKeyEventPostIME(key_event, handled,
+                                                    stopped_propagation);
+    process_key_event_post_ime_args_.event = *key_event;
+    process_key_event_post_ime_args_.handled = handled;
+    ++process_key_event_post_ime_call_count_;
     return details;
   }
   void CommitText(
@@ -414,13 +411,6 @@ TEST_F(InputMethodChromeOSTest, OnTextInputTypeChangedChangesInputType) {
   EXPECT_EQ(ime.GetTextInputType(), TEXT_INPUT_TYPE_PASSWORD);
 
   ime.SetFocusedTextInputClient(nullptr);
-}
-
-TEST_F(InputMethodChromeOSTest, CanComposeInline) {
-  EXPECT_TRUE(ime_->CanComposeInline());
-  can_compose_inline_ = false;
-  ime_->OnTextInputTypeChanged(this);
-  EXPECT_FALSE(ime_->CanComposeInline());
 }
 
 TEST_F(InputMethodChromeOSTest, GetTextInputClient) {
@@ -1162,7 +1152,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, DeadKeyPressTest) {
                       0,
                       DomKey::DeadKeyFromCombiningCharacter('^'),
                       EventTimeForNow());
-  ime_->ProcessKeyEventPostIME(&eventA, false, true, true);
+  ime_->ProcessKeyEventPostIME(&eventA, true, true);
 
   const ui::KeyEvent& key_event = dispatched_key_event_;
 
@@ -1274,6 +1264,26 @@ TEST_F(InputMethodChromeOSKeyEventTest,
   EXPECT_EQ(fake_text_input_client.selection(), gfx::Range(3, 3));
 }
 
+TEST_F(InputMethodChromeOSKeyEventTest, CommitTextEmptyRunsAfterKeyEvent) {
+  FakeTextInputClient fake_text_input_client(TEXT_INPUT_TYPE_TEXT);
+  InputMethodChromeOS ime(this);
+  ime.SetFocusedTextInputClient(&fake_text_input_client);
+  ui::CompositionText composition;
+  composition.text = u"hello";
+  ime.UpdateCompositionText(composition, /*cursor_pos=*/5, /*visible=*/true);
+
+  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  ime.DispatchKeyEvent(&event);
+  ime.CommitText(
+      u"", TextInputClient::InsertTextCursorBehavior::kMoveCursorBeforeText);
+  std::move(mock_ime_engine_handler_->last_passed_callback())
+      .Run(/*handled=*/true);
+
+  EXPECT_EQ(fake_text_input_client.text(), u"");
+  EXPECT_FALSE(fake_text_input_client.HasCompositionText());
+  EXPECT_EQ(fake_text_input_client.selection(), gfx::Range(0, 0));
+}
+
 TEST_F(InputMethodChromeOSTest, CommitTextReplacesSelection) {
   FakeTextInputClient fake_text_input_client(TEXT_INPUT_TYPE_TEXT);
   fake_text_input_client.SetTextAndSelection(u"hello", gfx::Range(0, 5));
@@ -1337,6 +1347,18 @@ TEST_F(InputMethodChromeOSTest, AddsAndClearsGrammarFragments) {
   EXPECT_EQ(get_grammar_fragments(), fragments);
   ime_->ClearGrammarFragments(gfx::Range(0, 10));
   EXPECT_EQ(get_grammar_fragments().size(), 0u);
+}
+
+TEST_F(InputMethodChromeOSTest, GetsGrammarFragments) {
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  GrammarFragment fragment(gfx::Range(0, 5), "fake");
+  ime_->AddGrammarFragments({fragment});
+
+  EXPECT_EQ(ime_->GetGrammarFragment(gfx::Range(3, 3)), fragment);
+  EXPECT_EQ(ime_->GetGrammarFragment(gfx::Range(2, 4)), fragment);
+
+  EXPECT_EQ(ime_->GetGrammarFragment(gfx::Range(7, 7)), absl::nullopt);
+  EXPECT_EQ(ime_->GetGrammarFragment(gfx::Range(4, 7)), absl::nullopt);
 }
 
 }  // namespace ui

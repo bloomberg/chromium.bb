@@ -210,16 +210,6 @@ static av_cold int svc_encode_init(AVCodecContext *avctx)
             break;
         }
 
-#if FF_API_CODER_TYPE && FF_API_OPENH264_CABAC
-FF_DISABLE_DEPRECATION_WARNINGS
-    if (s->coder < 0 && avctx->coder_type == FF_CODER_TYPE_AC)
-        s->coder = 1;
-
-    if (s->coder < 0)
-        s->coder = s->cabac;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
-
     if (s->profile == FF_PROFILE_UNKNOWN && s->coder >= 0)
         s->profile = s->coder == 0 ? FF_PROFILE_H264_CONSTRAINED_BASELINE :
 #if OPENH264_VER_AT_LEAST(1, 8)
@@ -438,7 +428,7 @@ static const AVCodecDefault svc_enc_defaults[] = {
     { NULL },
 };
 
-AVCodec ff_libopenh264_encoder = {
+const AVCodec ff_libopenh264_encoder = {
     .name           = "libopenh264",
     .long_name      = NULL_IF_CONFIG_SMALL("OpenH264 H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -447,8 +437,9 @@ AVCodec ff_libopenh264_encoder = {
     .init           = svc_encode_init,
     .encode2        = svc_encode_frame,
     .close          = svc_encode_close,
-    .capabilities   = AV_CODEC_CAP_AUTO_THREADS,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
+    .capabilities   = AV_CODEC_CAP_OTHER_THREADS,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP |
+                      FF_CODEC_CAP_AUTO_THREADS,
     .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P,
                                                     AV_PIX_FMT_NONE },
     .defaults       = svc_enc_defaults,

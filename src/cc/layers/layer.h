@@ -16,7 +16,6 @@
 #include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/observer_list.h"
 #include "cc/base/region.h"
 #include "cc/benchmarks/micro_benchmark.h"
 #include "cc/cc_export.h"
@@ -53,7 +52,7 @@ class PictureLayer;
 
 // For tracing and debugging. The info will be attached to this layer's tracing
 // output.
-struct LayerDebugInfo {
+struct CC_EXPORT LayerDebugInfo {
   LayerDebugInfo();
   LayerDebugInfo(const LayerDebugInfo&);
   ~LayerDebugInfo();

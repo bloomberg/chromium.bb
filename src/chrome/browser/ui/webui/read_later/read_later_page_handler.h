@@ -45,7 +45,9 @@ class ReadLaterPageHandler : public read_later::mojom::PageHandler,
   void GetReadLaterEntries(GetReadLaterEntriesCallback callback) override;
   void OpenURL(const GURL& url, bool mark_as_read) override;
   void UpdateReadStatus(const GURL& url, bool read) override;
+  void AddCurrentTab() override;
   void RemoveEntry(const GURL& url) override;
+  void ShowContextMenuForURL(const GURL& url, int32_t x, int32_t y) override;
   void ShowUI() override;
   void CloseUI() override;
 
@@ -80,6 +82,7 @@ class ReadLaterPageHandler : public read_later::mojom::PageHandler,
   // ReadLaterPageHandler is owned by |read_later_ui_| and so we expect
   // |read_later_ui_| to remain valid for the lifetime of |this|.
   ReadLaterUI* const read_later_ui_;
+  content::WebUI* const web_ui_;
   content::WebContents* web_contents_;
 
   base::Clock* clock_;

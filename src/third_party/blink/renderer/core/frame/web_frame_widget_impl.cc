@@ -45,6 +45,7 @@
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/ukm_manager.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/touch_event.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -1508,6 +1509,10 @@ void WebFrameWidgetImpl::ApplyVisualPropertiesSizing(
               widget_base_->VisibleViewportSizeInDIPs()),
           visual_properties.browser_controls_params);
     }
+
+    LocalRootImpl()->GetFrame()->UpdateWindowControlsOverlay(
+        visual_properties.window_controls_overlay_rect);
+
   } else {
     // Widgets in a WebView's frame tree without a local main frame
     // set the size of the WebView to be the |visible_viewport_size|, in order
@@ -1606,10 +1611,11 @@ const WebVector<gfx::Rect>& WebFrameWidgetImpl::WindowSegments() const {
   return window_segments_;
 }
 
-void WebFrameWidgetImpl::StartDeferringCommits(base::TimeDelta timeout) {
+bool WebFrameWidgetImpl::StartDeferringCommits(base::TimeDelta timeout,
+                                               cc::PaintHoldingReason reason) {
   if (!View()->does_composite())
-    return;
-  widget_base_->LayerTreeHost()->StartDeferringCommits(timeout);
+    return false;
+  return widget_base_->LayerTreeHost()->StartDeferringCommits(timeout, reason);
 }
 
 void WebFrameWidgetImpl::StopDeferringCommits(
@@ -1651,8 +1657,8 @@ void WebFrameWidgetImpl::SetDeviceColorSpaceForTesting(
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   widget_base_->LayerTreeHost()->RequestNewLocalSurfaceId();
 
-  blink::ScreenInfos screen_infos = widget_base_->screen_infos();
-  for (blink::ScreenInfo& screen_info : screen_infos.screen_infos)
+  display::ScreenInfos screen_infos = widget_base_->screen_infos();
+  for (display::ScreenInfo& screen_info : screen_infos.screen_infos)
     screen_info.display_color_spaces = gfx::DisplayColorSpaces(color_space);
   widget_base_->UpdateScreenInfo(screen_infos);
 }
@@ -1910,7 +1916,7 @@ void WebFrameWidgetImpl::ResetMeaningfulLayoutStateForMainFrame() {
 
 void WebFrameWidgetImpl::InitializeCompositing(
     scheduler::WebAgentGroupScheduler& agent_group_scheduler,
-    const ScreenInfos& screen_infos,
+    const display::ScreenInfos& screen_infos,
     const cc::LayerTreeSettings* settings) {
   DCHECK(View()->does_composite());
   DCHECK(!non_composited_client_);  // Assure only one initialize is called.
@@ -2081,9 +2087,13 @@ void WebFrameWidgetImpl::RecordManipulationTypeCounts(
 void WebFrameWidgetImpl::RecordDispatchRafAlignedInputTime(
     base::TimeTicks raf_aligned_input_start_time) {
   if (LocalRootImpl()) {
-    LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
-        LocalFrameUkmAggregator::kHandleInputEvents,
-        raf_aligned_input_start_time, base::TimeTicks::Now());
+    LocalRootImpl()
+        ->GetFrame()
+        ->View()
+        ->EnsureUkmAggregator()
+        .RecordTimerSample(LocalFrameUkmAggregator::kHandleInputEvents,
+                           raf_aligned_input_start_time,
+                           base::TimeTicks::Now());
   }
 }
 
@@ -2171,9 +2181,13 @@ void WebFrameWidgetImpl::BeginUpdateLayers() {
 void WebFrameWidgetImpl::EndUpdateLayers() {
   if (LocalRootImpl()) {
     DCHECK(update_layers_start_time_);
-    LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
-        LocalFrameUkmAggregator::kUpdateLayers,
-        update_layers_start_time_.value(), base::TimeTicks::Now());
+    LocalRootImpl()
+        ->GetFrame()
+        ->View()
+        ->EnsureUkmAggregator()
+        .RecordTimerSample(LocalFrameUkmAggregator::kUpdateLayers,
+                           update_layers_start_time_.value(),
+                           base::TimeTicks::Now());
     probe::LayerTreeDidChange(LocalRootImpl()->GetFrame());
   }
   update_layers_start_time_.reset();
@@ -2200,28 +2214,30 @@ void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
                                trackers);
 }
 
-bool WebFrameWidgetImpl::WillHandleGestureEvent(const WebGestureEvent& event) {
+void WebFrameWidgetImpl::WillHandleGestureEvent(const WebGestureEvent& event,
+                                                bool* suppress) {
   possible_drag_event_info_.source = ui::mojom::blink::DragEventSource::kTouch;
   possible_drag_event_info_.location =
       gfx::ToFlooredPoint(event.PositionInScreen());
 
-  bool move_cursor = false;
+  bool handle_as_cursor_control = false;
   switch (event.GetType()) {
     case WebInputEvent::Type::kGestureScrollBegin: {
       if (event.data.scroll_begin.cursor_control) {
         swipe_to_move_cursor_activated_ = true;
-        move_cursor = true;
+        handle_as_cursor_control = true;
       }
       break;
     }
     case WebInputEvent::Type::kGestureScrollUpdate: {
       if (swipe_to_move_cursor_activated_)
-        move_cursor = true;
+        handle_as_cursor_control = true;
       break;
     }
     case WebInputEvent::Type::kGestureScrollEnd: {
       if (swipe_to_move_cursor_activated_) {
         swipe_to_move_cursor_activated_ = false;
+        handle_as_cursor_control = true;
       }
       break;
     }
@@ -2230,16 +2246,15 @@ bool WebFrameWidgetImpl::WillHandleGestureEvent(const WebGestureEvent& event) {
   }
   // TODO(crbug.com/1140106): Place cursor for scroll begin other than just move
   // cursor.
-  if (move_cursor) {
+  if (handle_as_cursor_control) {
     WebLocalFrame* focused_frame = FocusedWebLocalFrameInWidget();
     if (focused_frame) {
       gfx::Point base(event.PositionInWidget().x(),
                       event.PositionInWidget().y());
       focused_frame->MoveCaretSelection(base);
     }
-    return true;
+    *suppress = true;
   }
-  return false;
 }
 
 void WebFrameWidgetImpl::WillHandleMouseEvent(const WebMouseEvent& event) {
@@ -2561,12 +2576,13 @@ float WebFrameWidgetImpl::PageScaleInMainFrame() {
 void WebFrameWidgetImpl::UpdateSurfaceAndScreenInfo(
     const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Rect& compositor_viewport_pixel_rect,
-    const ScreenInfos& new_screen_infos) {
+    const display::ScreenInfos& new_screen_infos) {
   widget_base_->UpdateSurfaceAndScreenInfo(
       new_local_surface_id, compositor_viewport_pixel_rect, new_screen_infos);
 }
 
-void WebFrameWidgetImpl::UpdateScreenInfo(const ScreenInfos& new_screen_infos) {
+void WebFrameWidgetImpl::UpdateScreenInfo(
+    const display::ScreenInfos& new_screen_infos) {
   widget_base_->UpdateScreenInfo(new_screen_infos);
 }
 
@@ -2582,21 +2598,21 @@ void WebFrameWidgetImpl::UpdateCompositorViewportRect(
   widget_base_->UpdateCompositorViewportRect(compositor_viewport_pixel_rect);
 }
 
-const ScreenInfo& WebFrameWidgetImpl::GetScreenInfo() {
+const display::ScreenInfo& WebFrameWidgetImpl::GetScreenInfo() {
   return widget_base_->GetScreenInfo();
 }
 
-const ScreenInfos& WebFrameWidgetImpl::GetScreenInfos() {
+const display::ScreenInfos& WebFrameWidgetImpl::GetScreenInfos() {
   return widget_base_->screen_infos();
 }
 
-const ScreenInfo& WebFrameWidgetImpl::GetOriginalScreenInfo() {
+const display::ScreenInfo& WebFrameWidgetImpl::GetOriginalScreenInfo() {
   if (device_emulator_)
     return device_emulator_->GetOriginalScreenInfo();
   return widget_base_->GetScreenInfo();
 }
 
-const ScreenInfos& WebFrameWidgetImpl::GetOriginalScreenInfos() {
+const display::ScreenInfos& WebFrameWidgetImpl::GetOriginalScreenInfos() {
   if (device_emulator_)
     return device_emulator_->original_screen_infos();
   return widget_base_->screen_infos();
@@ -2666,7 +2682,7 @@ void WebFrameWidgetImpl::DidMeaningfulLayout(WebMeaningfulLayout layout_type) {
     NotifySwapAndPresentationTime(
         base::NullCallback(),
         WTF::Bind(&WebFrameWidgetImpl::PresentationCallbackForMeaningfulLayout,
-                  WrapPersistent(this)));
+                  WrapWeakPersistent(this)));
   }
 
   ForEachLocalFrameControlledByWidget(
@@ -2681,7 +2697,10 @@ void WebFrameWidgetImpl::DidMeaningfulLayout(WebMeaningfulLayout layout_type) {
 void WebFrameWidgetImpl::PresentationCallbackForMeaningfulLayout(
     blink::WebSwapResult,
     base::TimeTicks) {
-  GetAssociatedFrameWidgetHost()->DidFirstVisuallyNonEmptyPaint();
+  // |local_root_| may be null if the widget has shut down between when this
+  // callback was requested and when it was resolved by the compositor.
+  if (local_root_)
+    local_root_->ViewImpl()->DidFirstVisuallyNonEmptyPaint();
 }
 
 void WebFrameWidgetImpl::RequestAnimationAfterDelay(
@@ -2775,6 +2794,8 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
         presentation_time_callback_(std::move(presentation_time_callback)),
         task_runner_(std::move(task_runner)),
         widget_(widget) {}
+  ReportTimeSwapPromise(const ReportTimeSwapPromise&) = delete;
+  ReportTimeSwapPromise& operator=(const ReportTimeSwapPromise&) = delete;
   ~ReportTimeSwapPromise() override = default;
 
   void DidActivate() override {}
@@ -2887,8 +2908,6 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   CrossThreadWeakPersistent<WebFrameWidgetImpl> widget_;
   uint32_t frame_token_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(ReportTimeSwapPromise);
 };
 
 void WebFrameWidgetImpl::NotifyPresentationTimeInBlink(
@@ -3084,6 +3103,12 @@ bool WebFrameWidgetImpl::HasFocus() {
 void WebFrameWidgetImpl::UpdateTooltipUnderCursor(const String& tooltip_text,
                                                   TextDirection dir) {
   widget_base_->UpdateTooltipUnderCursor(tooltip_text, dir);
+}
+
+void WebFrameWidgetImpl::UpdateTooltipFromKeyboard(const String& tooltip_text,
+                                                   TextDirection dir,
+                                                   const gfx::Rect& bounds) {
+  widget_base_->UpdateTooltipFromKeyboard(tooltip_text, dir, bounds);
 }
 
 void WebFrameWidgetImpl::DidOverscroll(
@@ -3687,7 +3712,7 @@ void WebFrameWidgetImpl::SetScreenMetricsEmulationParameters(
 }
 
 void WebFrameWidgetImpl::SetScreenInfoAndSize(
-    const ScreenInfos& screen_infos,
+    const display::ScreenInfos& screen_infos,
     const gfx::Size& widget_size_in_dips,
     const gfx::Size& visible_viewport_size_in_dips) {
   // Emulation happens on regular main frames which don't use auto-resize mode.
@@ -3792,8 +3817,8 @@ void WebFrameWidgetImpl::OrientationChanged() {
 }
 
 void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
-    const ScreenInfo& previous_original_screen_info) {
-  ScreenInfo screen_info = widget_base_->GetScreenInfo();
+    const display::ScreenInfo& previous_original_screen_info) {
+  display::ScreenInfo screen_info = widget_base_->GetScreenInfo();
   if (Platform::Current()->IsUseZoomForDSFEnabled()) {
     View()->SetZoomFactorForDeviceScaleFactor(screen_info.device_scale_factor);
   } else {
@@ -3814,7 +3839,7 @@ void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
   // When the device scale changes, the size and position of the popup would
   // need to be adjusted, which we can't do. Just close the popup, which is
   // also consistent with page zoom and resize behavior.
-  ScreenInfo original_screen_info = GetOriginalScreenInfo();
+  display::ScreenInfo original_screen_info = GetOriginalScreenInfo();
   if (previous_original_screen_info.device_scale_factor !=
       original_screen_info.device_scale_factor) {
     View()->CancelPagePopup();
@@ -3839,7 +3864,8 @@ void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
     // Propagate changes down to child local root RenderWidgets and
     // BrowserPlugins in other frame trees/processes.
     ForEachRemoteFrameControlledByWidget(WTF::BindRepeating(
-        [](const ScreenInfo& original_screen_info, RemoteFrame* remote_frame) {
+        [](const display::ScreenInfo& original_screen_info,
+           RemoteFrame* remote_frame) {
           remote_frame->DidChangeScreenInfo(original_screen_info);
         },
         original_screen_info));
@@ -3854,7 +3880,7 @@ gfx::Rect WebFrameWidgetImpl::ViewportVisibleRect() {
   }
 }
 
-absl::optional<blink::mojom::ScreenOrientation>
+absl::optional<display::mojom::blink::ScreenOrientation>
 WebFrameWidgetImpl::ScreenOrientationOverride() {
   return View()->ScreenOrientationOverride();
 }
@@ -4000,7 +4026,7 @@ void WebFrameWidgetImpl::SetDeviceScaleFactorForTesting(float factor) {
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   widget_base_->LayerTreeHost()->RequestNewLocalSurfaceId();
 
-  ScreenInfos screen_infos = widget_base_->screen_infos();
+  display::ScreenInfos screen_infos = widget_base_->screen_infos();
   screen_infos.mutable_current().device_scale_factor = factor;
   gfx::Size size_with_dsf = gfx::ScaleToCeiledSize(size_in_dips, factor);
   widget_base_->UpdateCompositorViewportAndScreenInfo(gfx::Rect(size_with_dsf),

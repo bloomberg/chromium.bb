@@ -7,10 +7,10 @@ CHANGES BETWEEN 2.10.4 and 2.11.0
     to  enable   it  besides  the   `T1_CONFIG_OPTION_OLD_ENGINE`  and
     `CFF_CONFIG_OPTION_OLD_ENGINE` options.
 
-  - A  new rendering  module has  been added  to create  16-bit Signed
+  - A  new rendering  module has  been  added to  create 8-bit  Signed
     Distance Field (SDF)  bitmaps for both outline  and bitmap glyphs.
     The new  rendering mode is called  `FT_RENDER_MODE_SDF`, the pixel
-    mode is `FT_PIXEL_MODE_GRAY16`, and  the corresponding raster flag
+    mode is  `FT_PIXEL_MODE_GRAY8`, and the corresponding  raster flag
     is `FT_RASTER_FLAG_SDF`.
 
     This work was Anuj Verma's GSoC 2020 project.
@@ -72,8 +72,44 @@ CHANGES BETWEEN 2.10.4 and 2.11.0
 
     This work was Priyesh Kumar's GSoC 2020 project.
 
-  - `ttdebug` didn't show changed point coordinates (bug introduced in
-    version 2.10.3).
+  - The experimental 'warp' mode (AF_CONFIG_OPTION_USE_WARPER) for the
+    auto-hinter has been removed.
+
+  - The smooth rasterizer performance has been improved by >10%.
+
+  - PCF bitmap fonts compressed with LZW (these are usually files with
+    the extension `.pcf.Z`) are now handled correctly.
+
+  - Improved Meson build support for the library.
+
+  - Meson support to build the FreeType demo programs.
+
+  - A new demo program `ftsdf` is available to display Signed Distance
+    Fields of glyphs.
+
+  - The `ftlint` demo program has been  extended to do more testing of
+    its input.  In particular, it  can display horizontal and vertical
+    acutances  for quality  assessment,  together  with computing  MD5
+    checksums of rendered glyphs.
+
+    [The acutance measures  how sharply the pixel  coverage changes at
+     glyph edges.  For monochrome bitmaps,  it is always 2.0 in either
+     X or  Y direction.  For  anti-aliased bitmaps, it depends  on the
+     hinting and the shape of a glyph and might approach or even reach
+     value 2.0  for glyphs like 'I',  'L', '+', '-', or  '=', while it
+     might be lower for glyphs like 'O', 'S', or 'W'.]
+
+  - The `ttdebug`  demo program didn't show  changed point coordinates
+    (bug introduced in version 2.10.3).
+
+  - It is now possible to adjust the axis increment for variable fonts
+    in the `ftmulti` demo program.
+
+  - It is now possible to change  the hinting engine in the `ftstring`
+    demo program.
+
+  - The graphical demo programs work  better now in native color depth
+    on win32 and x11.
 
 
 ======================================================================

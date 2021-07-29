@@ -20,28 +20,24 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/app_icon_manager.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
-#include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -52,7 +48,6 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/test_extension_registry_observer.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -157,8 +152,7 @@ constexpr SkColor kAnotherInstallableIconTopLeftColor =
     SkColorSetRGB(0x5C, 0x5C, 0x5C);
 
 ManifestUpdateManager& GetManifestUpdateManager(Browser* browser) {
-  return WebAppProviderBase::GetProviderBase(browser->profile())
-      ->manifest_update_manager();
+  return WebAppProvider::Get(browser->profile())->manifest_update_manager();
 }
 
 class UpdateCheckResultAwaiter {
@@ -354,8 +348,8 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
     return std::move(awaiter).AwaitNextResult();
   }
 
-  WebAppProviderBase& GetProvider() {
-    return *WebAppProviderBase::GetProviderBase(browser()->profile());
+  WebAppProvider& GetProvider() {
+    return *WebAppProvider::Get(browser()->profile());
   }
 
  protected:
@@ -440,14 +434,23 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   GetManifestUpdateManager(browser()).hang_update_checks_for_testing();
 
   GURL url = GetAppURL();
-  UpdateCheckResultAwaiter awaiter(browser(), url);
   ui_test_utils::NavigateToURL(browser(), url);
+
+  base::RunLoop run_loop;
+  UpdateCheckResultAwaiter awaiter(browser(), url);
   GetProvider().install_finalizer().UninstallWebApp(
-      app_id, webapps::WebappUninstallSource::kAppMenu, base::DoNothing());
+      app_id, webapps::WebappUninstallSource::kAppMenu,
+      base::BindLambdaForTesting([&](bool uninstalled) {
+        EXPECT_TRUE(uninstalled);
+        run_loop.Quit();
+      }));
+
   EXPECT_EQ(std::move(awaiter).AwaitNextResult(),
-            ManifestUpdateResult::kAppUninstalled);
-  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
-                                      ManifestUpdateResult::kAppUninstalled, 1);
+            ManifestUpdateResult::kAppUninstalling);
+
+  run_loop.Run();
+  histogram_tester_.ExpectBucketCount(
+      kUpdateHistogramName, ManifestUpdateResult::kAppUninstalling, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
@@ -540,6 +543,39 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                                       ManifestUpdateResult::kAppUpdated, 1);
   EXPECT_EQ(GetProvider().registrar().GetAppShortName(app_id),
             "Different app name");
+}
+
+class ManifestUpdateManagerAppIdentityBrowserTest
+    : public ManifestUpdateManagerBrowserTest {
+  base::test::ScopedFeatureList scoped_feature_list_{
+      features::kPwaUpdateDialogForNameAndIcon};
+};
+
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerAppIdentityBrowserTest,
+                       VerifyAppIdentityUpdatesWithDlgForUserInstalledApps) {
+  chrome::SetAutoAcceptAppIdentityUpdateForTesting(true);
+
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "$1",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      "icons": $2
+    }
+  )";
+  OverrideManifest(kManifestTemplate, {"Test app name", kInstallableIconList});
+  AppId app_id = InstallWebApp();
+
+  OverrideManifest(kManifestTemplate,
+                   {"Different app name", kAnotherInstallableIconList});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppUpdated);
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+  EXPECT_EQ(GetProvider().registrar().GetAppShortName(app_id),
+            "Different app name");
+  CheckShortcutInfoUpdated(app_id, kAnotherInstallableIconTopLeftColor);
 }
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
@@ -1358,14 +1394,8 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
 
 class ManifestUpdateManagerCaptureLinksBrowserTest
     : public ManifestUpdateManagerBrowserTest {
- public:
-  ManifestUpdateManagerCaptureLinksBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kWebAppEnableLinkCapturing);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_{
+      blink::features::kWebAppEnableLinkCapturing};
 };
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerCaptureLinksBrowserTest,
@@ -1547,14 +1577,8 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerWebAppsBrowserTest,
 // available in unit tests at ManifestUpdateTaskTest.
 class ManifestUpdateManagerBrowserTestWithFileHandling
     : public ManifestUpdateManagerBrowserTest {
- public:
-  ManifestUpdateManagerBrowserTestWithFileHandling() {
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kFileHandlingAPI);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_{
+      blink::features::kFileHandlingAPI};
 };
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
@@ -2013,14 +2037,8 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
 
 class ManifestUpdateManagerBrowserTestWithShortcutsMenu
     : public ManifestUpdateManagerBrowserTest {
- public:
-  ManifestUpdateManagerBrowserTestWithShortcutsMenu() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kDesktopPWAsAppIconShortcutsMenu);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_{
+      features::kDesktopPWAsAppIconShortcutsMenu};
 };
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithShortcutsMenu,
@@ -2368,14 +2386,8 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithShortcutsMenu,
 
 class ManifestUpdateManagerIconUpdatingBrowserTest
     : public ManifestUpdateManagerBrowserTest {
- public:
-  ManifestUpdateManagerIconUpdatingBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kWebAppManifestIconUpdating);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_{
+      features::kWebAppManifestIconUpdating};
 };
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerIconUpdatingBrowserTest,
@@ -2512,11 +2524,6 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerIconUpdatingBrowserTest,
 class ManifestUpdateManagerBrowserTest_UrlHandlers
     : public ManifestUpdateManagerBrowserTest {
  public:
-  ManifestUpdateManagerBrowserTest_UrlHandlers() {
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kWebAppEnableUrlHandlers);
-  }
-
 #if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
   void SetUpUrlHandlerManager() {
@@ -2546,8 +2553,8 @@ class ManifestUpdateManagerBrowserTest_UrlHandlers
   }
 #endif
 
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_{
+      blink::features::kWebAppEnableUrlHandlers};
 };
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest_UrlHandlers,
@@ -2722,14 +2729,8 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest_UrlHandlers,
 
 class ManifestUpdateManagerBrowserTestWithProtocolHandling
     : public ManifestUpdateManagerBrowserTest {
- public:
-  ManifestUpdateManagerBrowserTestWithProtocolHandling() {
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kWebAppEnableProtocolHandlers);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_{
+      blink::features::kWebAppEnableProtocolHandlers};
 };
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithProtocolHandling,
@@ -2895,4 +2896,255 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithProtocolHandling,
   EXPECT_TRUE(web_app->protocol_handlers().empty());
 }
 
+class ManifestUpdateManagerBrowserTestWithWebAppNoteTaking
+    : public ManifestUpdateManagerBrowserTest {
+  base::test::ScopedFeatureList scoped_feature_list_{
+      blink::features::kWebAppNoteTaking};
+};
+
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithWebAppNoteTaking,
+                       CheckFindsAddedNewNoteUrl) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "minimal-ui",
+      "icons": $1
+    }
+  )";
+
+  constexpr char kNewNoteUrlManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "minimal-ui",
+      "note_taking": {
+        "new_note_url": "/new"
+      },
+      "icons": $1
+    }
+  )";
+
+  OverrideManifest(kManifestTemplate, {kInstallableIconList});
+  AppId app_id = InstallWebApp();
+  const WebApp* web_app =
+      GetProvider().registrar().AsWebAppRegistrar()->GetAppById(app_id);
+  EXPECT_TRUE(web_app->note_taking_new_note_url().is_empty());
+
+  OverrideManifest(kNewNoteUrlManifestTemplate, {kInstallableIconList});
+  EXPECT_EQ(ManifestUpdateResult::kAppUpdated,
+            GetResultAfterPageLoad(GetAppURL(), &app_id));
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+  EXPECT_EQ(http_server_.GetURL("/new"),
+            web_app->note_taking_new_note_url().spec());
+}
+
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithWebAppNoteTaking,
+                       CheckIgnoresUnchangedNewNoteUrl) {
+  constexpr char kNewNoteUrlManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "minimal-ui",
+      "note_taking": {
+        "new_note_url": "/new"
+      },
+      "icons": $1
+    }
+  )";
+
+  OverrideManifest(kNewNoteUrlManifestTemplate, {kInstallableIconList});
+  AppId app_id = InstallWebApp();
+  const WebApp* web_app =
+      GetProvider().registrar().AsWebAppRegistrar()->GetAppById(app_id);
+  EXPECT_EQ(http_server_.GetURL("/new"),
+            web_app->note_taking_new_note_url().spec());
+
+  OverrideManifest(kNewNoteUrlManifestTemplate, {kInstallableIconList});
+  EXPECT_EQ(ManifestUpdateResult::kAppUpToDate,
+            GetResultAfterPageLoad(GetAppURL(), &app_id));
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpToDate, 1);
+  EXPECT_EQ(http_server_.GetURL("/new"),
+            web_app->note_taking_new_note_url().spec());
+}
+
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithWebAppNoteTaking,
+                       CheckFindsChangedNewNoteUrl) {
+  constexpr char kNewNoteUrlManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "minimal-ui",
+      "note_taking": {
+        "new_note_url": "$1"
+      },
+      "icons": $2
+    }
+  )";
+
+  OverrideManifest(kNewNoteUrlManifestTemplate,
+                   {"old-relative-url", kInstallableIconList});
+  AppId app_id = InstallWebApp();
+  const WebApp* web_app =
+      GetProvider().registrar().AsWebAppRegistrar()->GetAppById(app_id);
+  // URL parsed relative to manifest URL, which is in /banners/.
+  EXPECT_EQ(http_server_.GetURL("/banners/old-relative-url"),
+            web_app->note_taking_new_note_url().spec());
+
+  OverrideManifest(kNewNoteUrlManifestTemplate,
+                   {"/newer", kInstallableIconList});
+  EXPECT_EQ(ManifestUpdateResult::kAppUpdated,
+            GetResultAfterPageLoad(GetAppURL(), &app_id));
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+  EXPECT_EQ(http_server_.GetURL("/newer"),
+            web_app->note_taking_new_note_url().spec());
+}
+
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithWebAppNoteTaking,
+                       CheckFindsDeletedNewNoteUrl) {
+  constexpr char kNewNoteUrlManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "minimal-ui",
+      "note_taking": {
+        "new_note_url": "/new"
+      },
+      "icons": $1
+    }
+  )";
+
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "minimal-ui",
+      "icons": $1
+    }
+  )";
+
+  OverrideManifest(kNewNoteUrlManifestTemplate, {kInstallableIconList});
+  AppId app_id = InstallWebApp();
+  const WebApp* web_app =
+      GetProvider().registrar().AsWebAppRegistrar()->GetAppById(app_id);
+  EXPECT_FALSE(web_app->note_taking_new_note_url().is_empty());
+
+  OverrideManifest(kManifestTemplate, {kInstallableIconList});
+  EXPECT_EQ(ManifestUpdateResult::kAppUpdated,
+            GetResultAfterPageLoad(GetAppURL(), &app_id));
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+  EXPECT_TRUE(web_app->note_taking_new_note_url().is_empty());
+}
+
+class ManifestUpdateManagerBrowserTest_ManifestId
+    : public ManifestUpdateManagerBrowserTest {
+ public:
+  ManifestUpdateManagerBrowserTest_ManifestId() {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kWebAppEnableManifestId);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest_ManifestId,
+                       AllowStartUrlUpdate) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": "$1",
+      "scope": "/",
+      "display": "minimal-ui",
+      "id": "test",
+      "icons": $2
+    }
+  )";
+  OverrideManifest(kManifestTemplate, {"/startA", kInstallableIconList});
+  AppId app_id = InstallWebApp();
+  EXPECT_EQ(GetProvider().registrar().GetAppStartUrl(app_id).path(), "/startA");
+
+  OverrideManifest(kManifestTemplate, {"/startB", kInstallableIconList});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppUpdated);
+  EXPECT_EQ(GetProvider().registrar().GetAppStartUrl(app_id).path(), "/startB");
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest_ManifestId,
+                       CheckIgnoresIdChange) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "id": "$1",
+      "start_url": "start",
+      "scope": "/",
+      "display": "standalone",
+      "icons": $2
+    }
+  )";
+  OverrideManifest(kManifestTemplate, {"test", kInstallableIconList});
+  AppId app_id = InstallWebApp();
+
+  OverrideManifest(kManifestTemplate, {"testb", kInstallableIconList});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppIdMismatch);
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppIdMismatch, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest_ManifestId,
+                       ChecksSettingIdMatchDefault) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": "/start",
+      "scope": "/",
+      "display": "standalone",
+      "icons": $1
+    }
+  )";
+  OverrideManifest(kManifestTemplate, {kInstallableIconList});
+  AppId app_id = InstallWebApp();
+
+  // manifest_id should default to start_url when it's not provided in manifest.
+  EXPECT_EQ(GetProvider()
+                .registrar()
+                .AsWebAppRegistrar()
+                ->GetAppById(app_id)
+                ->manifest_id()
+                .value(),
+            "start");
+
+  constexpr char kManifestTemplate2[] = R"(
+    {
+      "name": "Test app name",
+      "id": "$1",
+      "start_url": "/start",
+      "scope": "/",
+      "display": "standalone",
+      "icons": $2
+    }
+  )";
+
+  // Setting manifest id to match default value won't trigger update as the
+  // parsed manifest is the same.
+  OverrideManifest(kManifestTemplate2, {"start", kInstallableIconList});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppUpToDate);
+
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpToDate, 1);
+}
 }  // namespace web_app

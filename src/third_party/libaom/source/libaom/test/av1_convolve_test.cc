@@ -1172,8 +1172,8 @@ std::vector<CompoundParam> GetCompoundParams() {
   result.push_back(CompoundParam(false, 0, 0));
   for (int k = 0; k < 2; ++k) {
     for (int l = 0; l < 4; ++l) {
-      result.push_back(CompoundParam(true, quant_dist_lookup_table[k][l][0],
-                                     quant_dist_lookup_table[k][l][1]));
+      result.push_back(CompoundParam(true, quant_dist_lookup_table[l][k],
+                                     quant_dist_lookup_table[l][1 - k]));
     }
   }
   return result;

@@ -15,6 +15,7 @@
 #include "dawn_native/d3d12/BindGroupD3D12.h"
 
 #include "common/BitSetIterator.h"
+#include "dawn_native/ExternalTexture.h"
 #include "dawn_native/d3d12/BindGroupLayoutD3D12.h"
 #include "dawn_native/d3d12/BufferD3D12.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
@@ -68,8 +69,6 @@ namespace dawn_native { namespace d3d12 {
                     switch (bindingInfo.buffer.type) {
                         case wgpu::BufferBindingType::Uniform: {
                             D3D12_CONSTANT_BUFFER_VIEW_DESC desc;
-                            // TODO(enga@google.com): investigate if this needs to be a constraint
-                            // at the API level
                             desc.SizeInBytes = Align(binding.size, 256);
                             desc.BufferLocation =
                                 ToBackend(binding.buffer)->GetVA() + binding.offset;
@@ -79,7 +78,8 @@ namespace dawn_native { namespace d3d12 {
                                                                  bindingOffsets[bindingIndex]));
                             break;
                         }
-                        case wgpu::BufferBindingType::Storage: {
+                        case wgpu::BufferBindingType::Storage:
+                        case kInternalStorageBufferBinding: {
                             // Since SPIRV-Cross outputs HLSL shaders with RWByteAddressBuffer,
                             // we must use D3D12_BUFFER_UAV_FLAG_RAW when making the
                             // UNORDERED_ACCESS_VIEW_DESC. Using D3D12_BUFFER_UAV_FLAG_RAW requires
@@ -182,6 +182,26 @@ namespace dawn_native { namespace d3d12 {
                             UNREACHABLE();
                     }
 
+                    break;
+                }
+
+                case BindingInfoType::ExternalTexture: {
+                    const std::array<Ref<TextureViewBase>, kMaxPlanesPerFormat>& views =
+                        GetBindingAsExternalTexture(bindingIndex)->GetTextureViews();
+
+                    // Only single-plane formats are supported right now, so assert only one view
+                    // exists.
+                    ASSERT(views[1].Get() == nullptr);
+                    ASSERT(views[2].Get() == nullptr);
+
+                    auto& srv = ToBackend(views[0])->GetSRVDescriptor();
+
+                    ID3D12Resource* resource =
+                        ToBackend(views[0]->GetTexture())->GetD3D12Resource();
+
+                    d3d12Device->CreateShaderResourceView(
+                        resource, &srv,
+                        viewAllocation.OffsetFrom(viewSizeIncrement, bindingOffsets[bindingIndex]));
                     break;
                 }
 

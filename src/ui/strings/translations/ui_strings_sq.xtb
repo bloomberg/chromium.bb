@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Po kontrollon lidhjen e internetit</translation>
 <translation id="2388990488038464401">Do ta telefonosh këtë numër nga telefoni yt?</translation>
+<translation id="2435457462613246316">Shfaq fjalëkalimin</translation>
 <translation id="24452542372838207">Zgjero njoftimin</translation>
 <translation id="2445449901874883781">Përdor dendësi të lartë</translation>
 <translation id="2482878487686419369">Njoftimet</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 vit më parë}other{# vite më parë}}</translation>
 <translation id="2878511608894704031">Fshi të gjitha</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{në 1 ditë}other{në # ditë}}</translation>
+<translation id="2922712708897119705">Kolona "<ph name="COLUMN_NAME" />" është renditur në rend zbritës.</translation>
 <translation id="2931838996092594335">kliko</translation>
 <translation id="2981684127883932071">Po shfaq sugjerimet</translation>
 <translation id="3036649622769666520">Hap skedarët</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Menyja</translation>
 <translation id="3909791450649380159">Pri&amp;te</translation>
 <translation id="3990502903496589789">Cepi i djathtë</translation>
+<translation id="3994749195054421561">Kolona "<ph name="COLUMN_NAME" />" është renditur në rend ngjitës</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 njoftim i palexuar}other{# njoftime të palexuara}}</translation>
 <translation id="4202807286478387388">kërce</translation>
 <translation id="4250229828105606438">Pamje e ekranit</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Hiqe nga kujtesa e fragmenteve.</translation>
 <translation id="4316910396681052118">TË GJITHA APLIKACIONET</translation>
 <translation id="4491109536499578614">Imazh</translation>
+<translation id="4565377596337484307">Fshih fjalëkalimin</translation>
 <translation id="4588090240171750605">Lëvize djathtas</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, vlerësimi me yje <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, rekomandim për aplikacione</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Faqja <ph name="SELECTED_PAGE" /> nga <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Pastro testin e kutisë së kërkimit</translation>
 <translation id="6040143037577758943">Mbyll</translation>
+<translation id="6117103120090651229">Butoni i qendrës</translation>
 <translation id="6119846243427417423">aktivizo</translation>
 <translation id="6129953537138746214">Hapësirë</translation>
 <translation id="6134259848159370930">Kërko në pajisjen tënde, aplikacione, cilësime dhe ueb.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Zgjero te të gjitha aplikacionet</translation>
 <translation id="6165508094623778733">Mëso më shumë</translation>
 <translation id="6166852626429024716">Kërko në pajisjen tënde, aplikacione, cilësime, ueb...</translation>
+<translation id="6237461503717005873">Është zgjedhur <ph name="ROW_NAME" />.</translation>
 <translation id="6264365405983206840">Zgjidh të &amp;gjitha</translation>
 <translation id="6351032674660237738">SUGJERIMET E APLIKACIONEVE</translation>
 <translation id="6364916375976753737">Lëvize majtas</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minutë e mbetur}other{# minuta të mbetura}}</translation>
 <translation id="7430878839542012341">Të fshihet ky kërkim nga historiku yt?</translation>
+<translation id="7437971918971306061">Kolona "<ph name="COLUMN_NAME" />" nuk është renditur.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7620655452534002301">U hoq.</translation>

@@ -83,7 +83,7 @@ def _MinifyJS(input_js):
 
   with tempfile.NamedTemporaryFile() as _:
     args = [
-        'python',
+        sys.executable,
         rjsmin_path
     ]
     p = subprocess.Popen(args,
@@ -94,7 +94,7 @@ def _MinifyJS(input_js):
     errorcode = p.wait()
     if errorcode != 0:
       sys.stderr.write('rJSmin exited with error code %d' % errorcode)
-      sys.stderr.write(res[1])
+      sys.stderr.write(res[1].decode('utf-8'))
       raise Exception('Failed to minify, omgah')
     return res[0].decode('utf-8')
 
@@ -208,13 +208,13 @@ def _MinifyCSS(css_text):
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
-    res = p.communicate(input=css_text)
+    res = p.communicate(input=css_text.encode('utf-8'))
     errorcode = p.wait()
     if errorcode != 0:
       sys.stderr.write('rCSSmin exited with error code %d' % errorcode)
       sys.stderr.write(res[1])
       raise Exception('Failed to generate css for %s.' % css_text)
-    return res[0]
+    return res[0].decode('utf-8')
 
 
 def GenerateStandaloneHTMLAsString(*args, **kwargs):

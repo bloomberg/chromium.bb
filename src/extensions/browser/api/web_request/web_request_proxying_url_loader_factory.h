@@ -54,9 +54,9 @@ class WebRequestProxyingURLLoaderFactory
     InProgressRequest(
         WebRequestProxyingURLLoaderFactory* factory,
         uint64_t request_id,
+        int32_t network_service_request_id,
         int32_t view_routing_id,
         int32_t frame_routing_id,
-        int32_t network_service_request_id,
         uint32_t options,
         ukm::SourceIdObj ukm_source_id,
         const network::ResourceRequest& request,
@@ -150,7 +150,10 @@ class WebRequestProxyingURLLoaderFactory
     void ContinueToStartRequest(State state_on_error, int error_code);
     void ContinueToStartRequestWithOk();
     void ContinueToHandleOverrideHeaders(int error_code);
-    void ContinueToResponseStarted(int error_code);
+    void OverwriteHeadersAndContinueToResponseStarted(int error_code);
+    void AssignParsedHeadersAndContinueToResponseStarted(
+        network::mojom::ParsedHeadersPtr parsed_headers);
+    void ContinueToResponseStarted();
     void ContinueAuthRequest(const net::AuthChallengeInfo& auth_info,
                              WebRequestAPI::AuthRequestCallback callback,
                              int error_code);

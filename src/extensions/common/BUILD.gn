@@ -39,12 +39,13 @@ if (enable_extensions) {
     disable_variants = true
 
     sources = [
-      "mojom/action_type.mojom",
       "mojom/activation_sequence.mojom",
       "mojom/api_permission_id.mojom",
       "mojom/app_window.mojom",
       "mojom/channel.mojom",
+      "mojom/code_injection.mojom",
       "mojom/css_origin.mojom",
+      "mojom/event_dispatcher.mojom",
       "mojom/event_router.mojom",
       "mojom/feature_session_type.mojom",
       "mojom/frame.mojom",
@@ -141,6 +142,18 @@ if (enable_extensions) {
         traits_sources =
             [ "//extensions/common/mojom/activation_sequence_mojom_traits.cc" ]
       },
+      {
+        types = [
+          {
+            mojom = "extensions.mojom.EventFilteringInfo"
+            cpp = "::extensions::EventFilteringInfo"
+          },
+        ]
+        traits_headers =
+            [ "//extensions/common/mojom/event_dispatcher_mojom_traits.h" ]
+        traits_sources =
+            [ "//extensions/common/mojom/event_dispatcher_mojom_traits.cc" ]
+      },
     ]
     overridden_deps = [ "//content/public/common:interfaces" ]
 
@@ -224,7 +237,6 @@ if (enable_extensions) {
       "extension_l10n_util.h",
       "extension_message_generator.cc",
       "extension_message_generator.h",
-      "extension_messages.cc",
       "extension_messages.h",
       "extension_paths.cc",
       "extension_paths.h",
@@ -293,6 +305,8 @@ if (enable_extensions) {
       "manifest_handlers/content_capabilities_handler.h",
       "manifest_handlers/content_scripts_handler.cc",
       "manifest_handlers/content_scripts_handler.h",
+      "manifest_handlers/cross_origin_isolation_info.cc",
+      "manifest_handlers/cross_origin_isolation_info.h",
       "manifest_handlers/csp_info.cc",
       "manifest_handlers/csp_info.h",
       "manifest_handlers/default_locale_handler.cc",
@@ -390,6 +404,8 @@ if (enable_extensions) {
       "user_script.h",
       "utils/base_string.cc",
       "utils/base_string.h",
+      "utils/content_script_utils.cc",
+      "utils/content_script_utils.h",
       "value_builder.cc",
       "value_builder.h",
       "value_counter.cc",

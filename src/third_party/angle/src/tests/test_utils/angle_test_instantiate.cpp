@@ -81,7 +81,8 @@ bool IsSystemEGLConfigSupported(const PlatformParameters &param, OSWindow *osWin
 #if defined(ANGLE_USE_UTIL_LOADER)
     std::unique_ptr<angle::Library> eglLibrary;
 
-    eglLibrary.reset(OpenSharedLibraryWithExtension(GetNativeEGLLibraryNameWithExtension()));
+    eglLibrary.reset(OpenSharedLibraryWithExtension(GetNativeEGLLibraryNameWithExtension(),
+                                                    SearchType::SystemDir));
 
     EGLWindow *eglWindow = EGLWindow::New(param.majorVersion, param.minorVersion);
     ConfigParameters configParams;
@@ -329,6 +330,11 @@ bool IsPixel2()
 bool IsPixel2XL()
 {
     return IsAndroidDevice("Pixel 2 XL");
+}
+
+bool IsPixel4()
+{
+    return IsAndroidDevice("Pixel 4");
 }
 
 bool IsNVIDIAShield()

@@ -30,14 +30,12 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using chromeos::CrosSettings;
-using chromeos::DBusThreadManager;
-using chromeos::OwnerSettingsServiceAsh;
-using chromeos::OwnerSettingsServiceAshFactory;
-using chromeos::UpdateEngineClient;
-using chromeos::WizardController;
-
 namespace {
+
+using ::chromeos::DBusThreadManager;
+using ::chromeos::OwnerSettingsServiceAsh;
+using ::chromeos::OwnerSettingsServiceAshFactory;
+using ::chromeos::UpdateEngineClient;
 
 // Network status in the context of device update.
 enum NetworkStatus {
@@ -72,8 +70,10 @@ bool IsAutoUpdateDisabled() {
     return update_disabled;
   const base::Value* update_disabled_value =
       settings->GetPref(chromeos::kUpdateDisabled);
-  if (update_disabled_value)
-    CHECK(update_disabled_value->GetAsBoolean(&update_disabled));
+  if (update_disabled_value) {
+    CHECK(update_disabled_value->is_bool());
+    update_disabled = update_disabled_value->GetBool();
+  }
   return update_disabled;
 }
 
@@ -173,7 +173,7 @@ void VersionUpdaterCros::CheckForUpdate(StatusCallback callback,
   check_for_update_when_idle_ = false;
 
   // Make sure that libcros is loaded and OOBE is complete.
-  if (!WizardController::default_controller() ||
+  if (!ash::WizardController::default_controller() ||
       chromeos::StartupUtils::IsDeviceRegistered()) {
     update_engine_client->RequestUpdateCheck(base::BindOnce(
         &VersionUpdaterCros::OnUpdateCheck, weak_ptr_factory_.GetWeakPtr()));

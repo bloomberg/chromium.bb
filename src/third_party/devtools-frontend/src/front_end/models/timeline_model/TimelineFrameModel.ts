@@ -54,7 +54,7 @@ export class TimelineFrameModel {
   _currentTaskTimeByCategory!: {
     [x: string]: number,
   };
-  _target!: SDK.SDKModel.Target|null;
+  _target!: SDK.Target.Target|null;
   _framePendingCommit?: PendingFrame|null;
   _lastBeginFrame?: number|null;
   _lastDroppedFrame?: number|null;
@@ -69,10 +69,11 @@ export class TimelineFrameModel {
     this.reset();
   }
 
-  frames(startTime?: number, endTime?: number): TimelineFrame[] {
-    if (!startTime && !endTime) {
-      return this._frames;
-    }
+  getFrames(): TimelineFrame[] {
+    return this._frames;
+  }
+
+  getFramesWithinWindow(startTime: number, endTime: number): TimelineFrame[] {
     const firstFrame =
         Platform.ArrayUtilities.lowerBound(this._frames, startTime || 0, (time, frame) => time - frame.endTime);
     const lastFrame =
@@ -248,7 +249,7 @@ export class TimelineFrameModel {
     this._framePendingActivation = null;
   }
 
-  addTraceEvents(target: SDK.SDKModel.Target|null, events: SDK.TracingModel.Event[], threadData: {
+  addTraceEvents(target: SDK.Target.Target|null, events: SDK.TracingModel.Event[], threadData: {
     thread: SDK.TracingModel.Thread,
     time: number,
   }[]): void {
@@ -368,11 +369,11 @@ export class TimelineFrameModel {
 }
 
 export class TracingFrameLayerTree {
-  _target: SDK.SDKModel.Target;
+  _target: SDK.Target.Target;
   _snapshot: SDK.TracingModel.ObjectSnapshot;
   _paints!: LayerPaintEvent[]|undefined;
 
-  constructor(target: SDK.SDKModel.Target, snapshot: SDK.TracingModel.ObjectSnapshot) {
+  constructor(target: SDK.Target.Target, snapshot: SDK.TracingModel.ObjectSnapshot) {
     this._target = target;
     this._snapshot = snapshot;
   }
@@ -471,9 +472,9 @@ export class TimelineFrame {
 
 export class LayerPaintEvent {
   _event: SDK.TracingModel.Event;
-  _target: SDK.SDKModel.Target|null;
+  _target: SDK.Target.Target|null;
 
-  constructor(event: SDK.TracingModel.Event, target: SDK.SDKModel.Target|null) {
+  constructor(event: SDK.TracingModel.Event, target: SDK.Target.Target|null) {
     this._event = event;
     this._target = target;
   }

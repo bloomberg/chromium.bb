@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_CODE_CACHE_GENERATED_CODE_CACHE_H_
 #define CONTENT_BROWSER_CODE_CACHE_GENERATED_CODE_CACHE_H_
 
+#include <map>
 #include <queue>
 
 #include "base/containers/queue.h"
-#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -106,7 +106,7 @@ class CONTENT_EXPORT GeneratedCodeCache {
   void SetLastUsedTimeForTest(const GURL& resource_url,
                               const GURL& origin_lock,
                               base::Time time,
-                              base::RepeatingCallback<void(void)> callback);
+                              base::OnceClosure callback);
 
   const base::FilePath& path() const { return path_; }
 
@@ -177,10 +177,9 @@ class CONTENT_EXPORT GeneratedCodeCache {
 
   void DoPendingGetBackend(PendingOperation* op);
 
-  void OpenCompleteForSetLastUsedForTest(
-      base::Time time,
-      base::RepeatingCallback<void(void)> callback,
-      disk_cache::EntryResult result);
+  void OpenCompleteForSetLastUsedForTest(base::Time time,
+                                         base::OnceClosure callback,
+                                         disk_cache::EntryResult result);
 
   void CollectStatistics(GeneratedCodeCache::CacheEntryStatus status);
 

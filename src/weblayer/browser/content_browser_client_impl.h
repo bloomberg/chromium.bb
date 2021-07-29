@@ -15,19 +15,24 @@
 #include "build/chromeos_buildflags.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 class PrefService;
 
-namespace storage {
+namespace blink {
 class StorageKey;
-}  // namespace storage
+}  // namespace blink
 
 namespace weblayer {
 
 class FeatureListCreator;
 class SafeBrowsingService;
 struct MainParams;
+
+#if BUILDFLAG(ENABLE_ARCORE)
+class XrIntegrationClientImpl;
+#endif  // BUILDFLAG(ENABLE_ARCORE)
 
 class ContentBrowserClientImpl : public content::ContentBrowserClient {
  public:
@@ -53,27 +58,28 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
                          const GURL& site_for_cookies,
                          const absl::optional<url::Origin>& top_frame_origin,
                          const std::string& name,
-                         const storage::StorageKey& storage_key,
+                         const blink::StorageKey& storage_key,
                          content::BrowserContext* context,
                          int render_process_id,
                          int render_frame_id) override;
   void AllowWorkerFileSystem(
       const GURL& url,
       content::BrowserContext* browser_context,
-      const std::vector<content::GlobalFrameRoutingId>& render_frames,
+      const std::vector<content::GlobalRenderFrameHostId>& render_frames,
       base::OnceCallback<void(bool)> callback) override;
-  bool AllowWorkerIndexedDB(
-      const GURL& url,
-      content::BrowserContext* browser_context,
-      const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
+  bool AllowWorkerIndexedDB(const GURL& url,
+                            content::BrowserContext* browser_context,
+                            const std::vector<content::GlobalRenderFrameHostId>&
+                                render_frames) override;
   bool AllowWorkerCacheStorage(
       const GURL& url,
       content::BrowserContext* browser_context,
-      const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
-  bool AllowWorkerWebLocks(
-      const GURL& url,
-      content::BrowserContext* browser_context,
-      const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
+      const std::vector<content::GlobalRenderFrameHostId>& render_frames)
+      override;
+  bool AllowWorkerWebLocks(const GURL& url,
+                           content::BrowserContext* browser_context,
+                           const std::vector<content::GlobalRenderFrameHostId>&
+                               render_frames) override;
   content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) override;
   bool CanShutdownGpuProcessNowOnIOThread() override;
@@ -201,9 +207,13 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       LoginAuthRequiredCallback auth_required_callback) override;
   std::unique_ptr<content::TtsEnvironmentAndroid> CreateTtsEnvironmentAndroid()
       override;
+  bool ShouldObserveContainerViewLocationForDialogOverlays() override;
 #endif  // OS_ANDROID
   content::SpeechRecognitionManagerDelegate*
   CreateSpeechRecognitionManagerDelegate() override;
+#if BUILDFLAG(ENABLE_ARCORE)
+  content::XrIntegrationClient* GetXrIntegrationClient() override;
+#endif  // BUILDFLAG(ENABLE_ARCORE)
   ukm::UkmService* GetUkmService() override;
   bool HasErrorPage(int http_status_code) override;
   bool IsClipboardPasteAllowed(
@@ -227,6 +237,10 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   std::unique_ptr<PrefService> local_state_;
 
   std::unique_ptr<FeatureListCreator> feature_list_creator_;
+
+#if BUILDFLAG(ENABLE_ARCORE)
+  std::unique_ptr<XrIntegrationClientImpl> xr_integration_client_;
+#endif  // BUILDFLAG(ENABLE_ARCORE)
 };
 
 }  // namespace weblayer

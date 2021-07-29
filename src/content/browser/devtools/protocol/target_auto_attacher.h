@@ -18,68 +18,64 @@ class RenderFrameHostImpl;
 
 namespace protocol {
 
-class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
+class TargetAutoAttacher {
  public:
   class Delegate {
    public:
-    virtual void AutoAttach(DevToolsAgentHost* host,
+    virtual bool AutoAttach(DevToolsAgentHost* host,
                             bool waiting_for_debugger) = 0;
     virtual void AutoDetach(DevToolsAgentHost* host) = 0;
+    virtual void SetAttachedTargetsOfType(
+        const base::flat_set<scoped_refptr<DevToolsAgentHost>>& hosts,
+        const std::string& type) = 0;
 
    protected:
+    Delegate() = default;
     virtual ~Delegate() = default;
   };
 
-  TargetAutoAttacher(Delegate* delegate,
-                     DevToolsRendererChannel* renderer_channel);
-  ~TargetAutoAttacher() override;
+  static std::unique_ptr<TargetAutoAttacher> CreateForBrowser();
+  static std::unique_ptr<TargetAutoAttacher> CreateForServiceWorker(
+      DevToolsRendererChannel* channel);
+  static std::unique_ptr<TargetAutoAttacher> CreateForWorker(
+      DevToolsRendererChannel* channel);
+  static std::unique_ptr<TargetAutoAttacher> CreateForFrame(
+      DevToolsRendererChannel* channel);
 
-  void SetRenderFrameHost(RenderFrameHostImpl* host);
+  virtual ~TargetAutoAttacher();
+
+  void SetDelegate(Delegate* delegate);
+  virtual void SetRenderFrameHost(RenderFrameHostImpl* host);
   void SetAutoAttach(bool auto_attach,
                      bool wait_for_debugger_on_start,
                      base::OnceClosure callback);
 
-  void UpdatePortals();
-  void UpdateServiceWorkers();
-  void AgentHostClosed(DevToolsAgentHost* host);
-
-  bool ShouldThrottleFramesNavigation() const;
-  void AttachToAgentHost(DevToolsAgentHost* host);
   DevToolsAgentHost* AutoAttachToFrame(NavigationRequest* navigation_request);
   void ChildWorkerCreated(DevToolsAgentHostImpl* agent_host,
                           bool waiting_for_debugger);
-  void DidFinishNavigation(NavigationRequest* navigation_handle);
+  virtual void UpdatePortals();
+  virtual void DidFinishNavigation(NavigationRequest* navigation_handle);
+  bool auto_attach() const { return auto_attach_; }
+  bool wait_for_debugger_on_start() const {
+    return wait_for_debugger_on_start_;
+  }
 
- private:
+ protected:
   using Hosts = base::flat_set<scoped_refptr<DevToolsAgentHost>>;
 
-  void ReattachServiceWorkers(bool waiting_for_debugger);
-  void ReattachTargetsOfType(const Hosts& new_hosts,
-                             const std::string& type,
-                             bool waiting_for_debugger);
+  TargetAutoAttacher();
 
-  // ServiceWorkerDevToolsManager::Observer implementation.
-  void WorkerCreated(ServiceWorkerDevToolsAgentHost* host,
-                     bool* should_pause_on_start) override;
-  void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) override;
+  Delegate* delegate() { return delegate_; }
 
-  void AttachToAgentHost(DevToolsAgentHost* host,
-                         bool wait_for_debugger_on_start);
   DevToolsAgentHost* AutoAttachToFrame(NavigationRequest* navigation_request,
                                        bool wait_for_debugger_on_start);
+  virtual void UpdateAutoAttach(base::OnceClosure callback);
 
-  void UpdateFrames();
-  bool is_browser_mode() const { return !renderer_channel_; }
+ private:
+  Delegate* delegate_ = nullptr;
 
-  Delegate* delegate_;
-  DevToolsRendererChannel* renderer_channel_;
-  RenderFrameHostImpl* render_frame_host_;
-
-  bool auto_attach_;
-  bool wait_for_debugger_on_start_;
-  bool auto_attaching_service_workers_ = false;
-
-  Hosts auto_attached_hosts_;
+  bool auto_attach_ = false;
+  bool wait_for_debugger_on_start_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TargetAutoAttacher);
 };

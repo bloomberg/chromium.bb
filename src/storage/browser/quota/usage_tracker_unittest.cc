@@ -15,13 +15,16 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/services/storage/public/mojom/quota_client.mojom.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/usage_tracker.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
-using blink::mojom::QuotaStatusCode;
-using blink::mojom::StorageType;
+using ::blink::StorageKey;
+using ::blink::mojom::QuotaStatusCode;
+using ::blink::mojom::StorageType;
 
 namespace storage {
 
@@ -38,49 +41,49 @@ void DidGetGlobalUsage(bool* done,
   *unlimited_usage_out = unlimited_usage;
 }
 
-class UsageTrackerTestQuotaClient : public QuotaClient {
+class UsageTrackerTestQuotaClient : public mojom::QuotaClient {
  public:
   UsageTrackerTestQuotaClient() = default;
 
-  void OnQuotaManagerDestroyed() override {}
-
-  void GetOriginUsage(const url::Origin& origin,
-                      StorageType type,
-                      GetOriginUsageCallback callback) override {
+  void GetStorageKeyUsage(const StorageKey& storage_key,
+                          StorageType type,
+                          GetStorageKeyUsageCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
-    int64_t usage = GetUsage(origin);
+    int64_t usage = GetUsage(storage_key);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), usage));
   }
 
-  void GetOriginsForType(StorageType type,
-                         GetOriginsForTypeCallback callback) override {
+  void GetStorageKeysForType(StorageType type,
+                             GetStorageKeysForTypeCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
-    std::vector<url::Origin> origins;
-    for (const auto& origin_usage_pair : origin_usage_map_)
-      origins.push_back(origin_usage_pair.first);
+    std::vector<StorageKey> storage_keys;
+    for (const auto& storage_key_usage_pair : storage_key_usage_map_)
+      storage_keys.push_back(storage_key_usage_pair.first);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), std::move(origins)));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), std::move(storage_keys)));
   }
 
-  void GetOriginsForHost(StorageType type,
-                         const std::string& host,
-                         GetOriginsForHostCallback callback) override {
+  void GetStorageKeysForHost(StorageType type,
+                             const std::string& host,
+                             GetStorageKeysForHostCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
-    std::vector<url::Origin> origins;
-    for (const auto& origin_usage_pair : origin_usage_map_) {
-      if (origin_usage_pair.first.host() == host)
-        origins.push_back(origin_usage_pair.first);
+    std::vector<StorageKey> storage_keys;
+    for (const auto& storage_key_usage_pair : storage_key_usage_map_) {
+      if (storage_key_usage_pair.first.origin().host() == host)
+        storage_keys.push_back(storage_key_usage_pair.first);
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), std::move(origins)));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), std::move(storage_keys)));
   }
 
-  void DeleteOriginData(const url::Origin& origin,
-                        StorageType type,
-                        DeleteOriginDataCallback callback) override {
+  void DeleteStorageKeyData(const StorageKey& storage_key,
+                            StorageType type,
+                            DeleteStorageKeyDataCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
-    origin_usage_map_.erase(origin);
+    storage_key_usage_map_.erase(storage_key);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), QuotaStatusCode::kOk));
   }
@@ -90,25 +93,23 @@ class UsageTrackerTestQuotaClient : public QuotaClient {
     std::move(callback).Run();
   }
 
-  int64_t GetUsage(const url::Origin& origin) {
-    auto it = origin_usage_map_.find(origin);
-    if (it == origin_usage_map_.end())
+  int64_t GetUsage(const StorageKey& storage_key) {
+    auto it = storage_key_usage_map_.find(storage_key);
+    if (it == storage_key_usage_map_.end())
       return 0;
     return it->second;
   }
 
-  void SetUsage(const url::Origin& origin, int64_t usage) {
-    origin_usage_map_[origin] = usage;
+  void SetUsage(const StorageKey& storage_key, int64_t usage) {
+    storage_key_usage_map_[storage_key] = usage;
   }
 
-  int64_t UpdateUsage(const url::Origin& origin, int64_t delta) {
-    return origin_usage_map_[origin] += delta;
+  int64_t UpdateUsage(const StorageKey& storage_key, int64_t delta) {
+    return storage_key_usage_map_[storage_key] += delta;
   }
 
  private:
-  ~UsageTrackerTestQuotaClient() override = default;
-
-  std::map<url::Origin, int64_t> origin_usage_map_;
+  std::map<StorageKey, int64_t> storage_key_usage_map_;
 
   DISALLOW_COPY_AND_ASSIGN(UsageTrackerTestQuotaClient);
 };
@@ -119,7 +120,7 @@ class UsageTrackerTest : public testing::Test {
  public:
   UsageTrackerTest()
       : storage_policy_(base::MakeRefCounted<MockSpecialStoragePolicy>()),
-        quota_client_(base::MakeRefCounted<UsageTrackerTestQuotaClient>()),
+        quota_client_(std::make_unique<UsageTrackerTestQuotaClient>()),
         usage_tracker_(GetQuotaClientMap(),
                        StorageType::kTemporary,
                        storage_policy_.get()) {}
@@ -142,16 +143,16 @@ class UsageTrackerTest : public testing::Test {
     *done = true;
   }
 
-  void UpdateUsage(const url::Origin& origin, int64_t delta) {
-    quota_client_->UpdateUsage(origin, delta);
-    usage_tracker_.UpdateUsageCache(QuotaClientType::kFileSystem, origin,
+  void UpdateUsage(const StorageKey& storage_key, int64_t delta) {
+    quota_client_->UpdateUsage(storage_key, delta);
+    usage_tracker_.UpdateUsageCache(QuotaClientType::kFileSystem, storage_key,
                                     delta);
     base::RunLoop().RunUntilIdle();
   }
 
-  void UpdateUsageWithoutNotification(const url::Origin& origin,
+  void UpdateUsageWithoutNotification(const StorageKey& storage_key,
                                       int64_t delta) {
-    quota_client_->UpdateUsage(origin, delta);
+    quota_client_->UpdateUsage(storage_key, delta);
   }
 
   void GetGlobalUsage(int64_t* usage, int64_t* unlimited_usage) {
@@ -177,30 +178,30 @@ class UsageTrackerTest : public testing::Test {
     return std::make_pair(usage, std::move(usage_breakdown));
   }
 
-  void GrantUnlimitedStoragePolicy(const url::Origin& origin) {
-    if (!storage_policy_->IsStorageUnlimited(origin.GetURL())) {
-      storage_policy_->AddUnlimited(origin.GetURL());
-      storage_policy_->NotifyGranted(origin,
+  void GrantUnlimitedStoragePolicy(const StorageKey& storage_key) {
+    if (!storage_policy_->IsStorageUnlimited(storage_key.origin().GetURL())) {
+      storage_policy_->AddUnlimited(storage_key.origin().GetURL());
+      storage_policy_->NotifyGranted(storage_key.origin(),
                                      SpecialStoragePolicy::STORAGE_UNLIMITED);
     }
   }
 
-  void RevokeUnlimitedStoragePolicy(const url::Origin& origin) {
-    if (storage_policy_->IsStorageUnlimited(origin.GetURL())) {
-      storage_policy_->RemoveUnlimited(origin.GetURL());
-      storage_policy_->NotifyRevoked(origin,
+  void RevokeUnlimitedStoragePolicy(const StorageKey& storage_key) {
+    if (storage_policy_->IsStorageUnlimited(storage_key.origin().GetURL())) {
+      storage_policy_->RemoveUnlimited(storage_key.origin().GetURL());
+      storage_policy_->NotifyRevoked(storage_key.origin(),
                                      SpecialStoragePolicy::STORAGE_UNLIMITED);
     }
   }
 
-  void SetUsageCacheEnabled(const url::Origin& origin, bool enabled) {
-    usage_tracker_.SetUsageCacheEnabled(QuotaClientType::kFileSystem, origin,
-                                        enabled);
+  void SetUsageCacheEnabled(const StorageKey& storage_key, bool enabled) {
+    usage_tracker_.SetUsageCacheEnabled(QuotaClientType::kFileSystem,
+                                        storage_key, enabled);
   }
 
  private:
-  base::flat_map<QuotaClient*, QuotaClientType> GetQuotaClientMap() {
-    base::flat_map<QuotaClient*, QuotaClientType> client_map;
+  base::flat_map<mojom::QuotaClient*, QuotaClientType> GetQuotaClientMap() {
+    base::flat_map<mojom::QuotaClient*, QuotaClientType> client_map;
     client_map.insert(
         std::make_pair(quota_client_.get(), QuotaClientType::kFileSystem));
     return client_map;
@@ -209,7 +210,7 @@ class UsageTrackerTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
-  scoped_refptr<UsageTrackerTestQuotaClient> quota_client_;
+  std::unique_ptr<UsageTrackerTestQuotaClient> quota_client_;
   UsageTracker usage_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(UsageTrackerTest);
@@ -224,11 +225,11 @@ TEST_F(UsageTrackerTest, GrantAndRevokeUnlimitedStorage) {
   EXPECT_EQ(0, usage);
   EXPECT_EQ(0, unlimited_usage);
 
-  // TODO(crbug.com/889590): Use helper for url::Origin creation from string.
-  const url::Origin origin = url::Origin::Create(GURL("http://example.com"));
-  const std::string& host = origin.host();
+  const StorageKey storage_key =
+      StorageKey::CreateFromStringForTesting("http://example.com");
+  const std::string& host = storage_key.origin().host();
 
-  UpdateUsage(origin, 100);
+  UpdateUsage(storage_key, 100);
   GetGlobalUsage(&usage, &unlimited_usage);
   EXPECT_EQ(100, usage);
   EXPECT_EQ(0, unlimited_usage);
@@ -238,7 +239,7 @@ TEST_F(UsageTrackerTest, GrantAndRevokeUnlimitedStorage) {
   EXPECT_EQ(100, host_usage_breakdown.first);
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 
-  GrantUnlimitedStoragePolicy(origin);
+  GrantUnlimitedStoragePolicy(storage_key);
   GetGlobalUsage(&usage, &unlimited_usage);
   EXPECT_EQ(100, usage);
   EXPECT_EQ(100, unlimited_usage);
@@ -246,7 +247,7 @@ TEST_F(UsageTrackerTest, GrantAndRevokeUnlimitedStorage) {
   EXPECT_EQ(100, host_usage_breakdown.first);
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 
-  RevokeUnlimitedStoragePolicy(origin);
+  RevokeUnlimitedStoragePolicy(storage_key);
   GetGlobalUsage(&usage, &unlimited_usage);
   EXPECT_EQ(100, usage);
   EXPECT_EQ(0, unlimited_usage);
@@ -261,10 +262,11 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   blink::mojom::UsageBreakdownPtr host_usage_breakdown_expected =
       blink::mojom::UsageBreakdown::New();
 
-  const url::Origin origin = url::Origin::Create(GURL("http://example.com"));
-  const std::string& host = origin.host();
+  const StorageKey storage_key =
+      StorageKey::CreateFromStringForTesting("http://example.com");
+  const std::string& host = storage_key.origin().host();
 
-  UpdateUsage(origin, 100);
+  UpdateUsage(storage_key, 100);
   GetGlobalUsage(&usage, &unlimited_usage);
   EXPECT_EQ(100, usage);
   EXPECT_EQ(0, unlimited_usage);
@@ -274,7 +276,7 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   EXPECT_EQ(100, host_usage_breakdown.first);
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 
-  UpdateUsageWithoutNotification(origin, 100);
+  UpdateUsageWithoutNotification(storage_key, 100);
   GetGlobalUsage(&usage, &unlimited_usage);
   EXPECT_EQ(100, usage);
   EXPECT_EQ(0, unlimited_usage);
@@ -282,10 +284,10 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   EXPECT_EQ(100, host_usage_breakdown.first);
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 
-  GrantUnlimitedStoragePolicy(origin);
-  UpdateUsageWithoutNotification(origin, 100);
-  SetUsageCacheEnabled(origin, false);
-  UpdateUsageWithoutNotification(origin, 100);
+  GrantUnlimitedStoragePolicy(storage_key);
+  UpdateUsageWithoutNotification(storage_key, 100);
+  SetUsageCacheEnabled(storage_key, false);
+  UpdateUsageWithoutNotification(storage_key, 100);
 
   GetGlobalUsage(&usage, &unlimited_usage);
   EXPECT_EQ(400, usage);
@@ -295,7 +297,7 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   EXPECT_EQ(400, host_usage_breakdown.first);
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 
-  RevokeUnlimitedStoragePolicy(origin);
+  RevokeUnlimitedStoragePolicy(storage_key);
   GetGlobalUsage(&usage, &unlimited_usage);
   EXPECT_EQ(400, usage);
   EXPECT_EQ(0, unlimited_usage);
@@ -303,8 +305,8 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   EXPECT_EQ(400, host_usage_breakdown.first);
   EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown.second);
 
-  SetUsageCacheEnabled(origin, true);
-  UpdateUsage(origin, 100);
+  SetUsageCacheEnabled(storage_key, true);
+  UpdateUsage(storage_key, 100);
 
   GetGlobalUsage(&usage, &unlimited_usage);
   EXPECT_EQ(500, usage);
@@ -316,11 +318,14 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
 }
 
 TEST_F(UsageTrackerTest, GlobalUsageUnlimitedUncached) {
-  const url::Origin kNormal = url::Origin::Create(GURL("http://normal"));
-  const url::Origin kUnlimited = url::Origin::Create(GURL("http://unlimited"));
-  const url::Origin kNonCached = url::Origin::Create(GURL("http://non_cached"));
-  const url::Origin kNonCachedUnlimited =
-      url::Origin::Create(GURL("http://non_cached-unlimited"));
+  const StorageKey kNormal =
+      StorageKey::CreateFromStringForTesting("http://normal");
+  const StorageKey kUnlimited =
+      StorageKey::CreateFromStringForTesting("http://unlimited");
+  const StorageKey kNonCached =
+      StorageKey::CreateFromStringForTesting("http://non_cached");
+  const StorageKey kNonCachedUnlimited =
+      StorageKey::CreateFromStringForTesting("http://non_cached-unlimited");
 
   GrantUnlimitedStoragePolicy(kUnlimited);
   GrantUnlimitedStoragePolicy(kNonCachedUnlimited);
@@ -348,94 +353,98 @@ TEST_F(UsageTrackerTest, GlobalUsageUnlimitedUncached) {
   EXPECT_EQ(2 + 32, unlimited_usage);
 }
 
-TEST_F(UsageTrackerTest, GlobalUsageMultipleOriginsPerHostCachedInit) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("http://example.com"));
-  const url::Origin kOrigin2 =
-      url::Origin::Create(GURL("http://example.com:8080"));
-  ASSERT_EQ(kOrigin1.host(), kOrigin2.host())
-      << "The test assumes that the two origins have the same host";
+TEST_F(UsageTrackerTest, GlobalUsageMultipleStorageKeysPerHostCachedInit) {
+  const StorageKey kStorageKey1 =
+      StorageKey::CreateFromStringForTesting("http://example.com");
+  const StorageKey kStorageKey2 =
+      StorageKey::CreateFromStringForTesting("http://example.com:8080");
+  ASSERT_EQ(kStorageKey1.origin().host(), kStorageKey2.origin().host())
+      << "The test assumes that the two storage keys have the same host";
 
-  UpdateUsageWithoutNotification(kOrigin1, 100);
-  UpdateUsageWithoutNotification(kOrigin2, 200);
-
-  int64_t total_usage = 0;
-  int64_t unlimited_usage = 0;
-  // GetGlobalUsage() takes different code paths on the first call and on
-  // subsequent calls. This test covers the code path used by the first call.
-  // Therefore, we introduce the origins before the first call.
-  GetGlobalUsage(&total_usage, &unlimited_usage);
-  EXPECT_EQ(100 + 200, total_usage);
-  EXPECT_EQ(0, unlimited_usage);
-}
-
-TEST_F(UsageTrackerTest, GlobalUsageMultipleOriginsPerHostCachedUpdate) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("http://example.com"));
-  const url::Origin kOrigin2 =
-      url::Origin::Create(GURL("http://example.com:8080"));
-  ASSERT_EQ(kOrigin1.host(), kOrigin2.host())
-      << "The test assumes that the two origins have the same host";
-
-  int64_t total_usage = 0;
-  int64_t unlimited_usage = 0;
-  // GetGlobalUsage() takes different code paths on the first call and on
-  // subsequent calls. This test covers the code path used by subsequent calls.
-  // Therefore, we introduce the origins after the first call.
-  GetGlobalUsage(&total_usage, &unlimited_usage);
-  EXPECT_EQ(0, total_usage);
-  EXPECT_EQ(0, unlimited_usage);
-
-  UpdateUsage(kOrigin1, 100);
-  UpdateUsage(kOrigin2, 200);
-
-  GetGlobalUsage(&total_usage, &unlimited_usage);
-  EXPECT_EQ(100 + 200, total_usage);
-  EXPECT_EQ(0, unlimited_usage);
-}
-
-TEST_F(UsageTrackerTest, GlobalUsageMultipleOriginsPerHostUncachedInit) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("http://example.com"));
-  const url::Origin kOrigin2 =
-      url::Origin::Create(GURL("http://example.com:8080"));
-  ASSERT_EQ(kOrigin1.host(), kOrigin2.host())
-      << "The test assumes that the two origins have the same host";
-
-  SetUsageCacheEnabled(kOrigin1, false);
-  SetUsageCacheEnabled(kOrigin2, false);
-
-  UpdateUsageWithoutNotification(kOrigin1, 100);
-  UpdateUsageWithoutNotification(kOrigin2, 200);
+  UpdateUsageWithoutNotification(kStorageKey1, 100);
+  UpdateUsageWithoutNotification(kStorageKey2, 200);
 
   int64_t total_usage = 0;
   int64_t unlimited_usage = 0;
   // GetGlobalUsage() takes different code paths on the first call and on
   // subsequent calls. This test covers the code path used by the first call.
-  // Therefore, we introduce the origins before the first call.
+  // Therefore, we introduce the storage_keys before the first call.
   GetGlobalUsage(&total_usage, &unlimited_usage);
   EXPECT_EQ(100 + 200, total_usage);
   EXPECT_EQ(0, unlimited_usage);
 }
 
-TEST_F(UsageTrackerTest, GlobalUsageMultipleOriginsPerHostUncachedUpdate) {
-  const url::Origin kOrigin1 = url::Origin::Create(GURL("http://example.com"));
-  const url::Origin kOrigin2 =
-      url::Origin::Create(GURL("http://example.com:8080"));
-  ASSERT_EQ(kOrigin1.host(), kOrigin2.host())
-      << "The test assumes that the two origins have the same host";
+TEST_F(UsageTrackerTest, GlobalUsageMultipleStorageKeysPerHostCachedUpdate) {
+  const StorageKey kStorageKey1 =
+      StorageKey::CreateFromStringForTesting("http://example.com");
+  const StorageKey kStorageKey2 =
+      StorageKey::CreateFromStringForTesting("http://example.com:8080");
+  ASSERT_EQ(kStorageKey1.origin().host(), kStorageKey2.origin().host())
+      << "The test assumes that the two storage keys have the same host";
 
   int64_t total_usage = 0;
   int64_t unlimited_usage = 0;
   // GetGlobalUsage() takes different code paths on the first call and on
   // subsequent calls. This test covers the code path used by subsequent calls.
-  // Therefore, we introduce the origins after the first call.
+  // Therefore, we introduce the storage keys after the first call.
   GetGlobalUsage(&total_usage, &unlimited_usage);
   EXPECT_EQ(0, total_usage);
   EXPECT_EQ(0, unlimited_usage);
 
-  SetUsageCacheEnabled(kOrigin1, false);
-  SetUsageCacheEnabled(kOrigin2, false);
+  UpdateUsage(kStorageKey1, 100);
+  UpdateUsage(kStorageKey2, 200);
 
-  UpdateUsageWithoutNotification(kOrigin1, 100);
-  UpdateUsageWithoutNotification(kOrigin2, 200);
+  GetGlobalUsage(&total_usage, &unlimited_usage);
+  EXPECT_EQ(100 + 200, total_usage);
+  EXPECT_EQ(0, unlimited_usage);
+}
+
+TEST_F(UsageTrackerTest, GlobalUsageMultipleStorageKeysPerHostUncachedInit) {
+  const StorageKey kStorageKey1 =
+      StorageKey::CreateFromStringForTesting("http://example.com");
+  const StorageKey kStorageKey2 =
+      StorageKey::CreateFromStringForTesting("http://example.com:8080");
+  ASSERT_EQ(kStorageKey1.origin().host(), kStorageKey2.origin().host())
+      << "The test assumes that the two storage keys have the same host";
+
+  SetUsageCacheEnabled(kStorageKey1, false);
+  SetUsageCacheEnabled(kStorageKey2, false);
+
+  UpdateUsageWithoutNotification(kStorageKey1, 100);
+  UpdateUsageWithoutNotification(kStorageKey2, 200);
+
+  int64_t total_usage = 0;
+  int64_t unlimited_usage = 0;
+  // GetGlobalUsage() takes different code paths on the first call and on
+  // subsequent calls. This test covers the code path used by the first call.
+  // Therefore, we introduce the storage keys before the first call.
+  GetGlobalUsage(&total_usage, &unlimited_usage);
+  EXPECT_EQ(100 + 200, total_usage);
+  EXPECT_EQ(0, unlimited_usage);
+}
+
+TEST_F(UsageTrackerTest, GlobalUsageMultipleStorageKeysPerHostUncachedUpdate) {
+  const StorageKey kStorageKey1 =
+      StorageKey::CreateFromStringForTesting("http://example.com");
+  const StorageKey kStorageKey2 =
+      StorageKey::CreateFromStringForTesting("http://example.com:8080");
+  ASSERT_EQ(kStorageKey1.origin().host(), kStorageKey2.origin().host())
+      << "The test assumes that the two storage keys have the same host";
+
+  int64_t total_usage = 0;
+  int64_t unlimited_usage = 0;
+  // GetGlobalUsage() takes different code paths on the first call and on
+  // subsequent calls. This test covers the code path used by subsequent calls.
+  // Therefore, we introduce the storage keys after the first call.
+  GetGlobalUsage(&total_usage, &unlimited_usage);
+  EXPECT_EQ(0, total_usage);
+  EXPECT_EQ(0, unlimited_usage);
+
+  SetUsageCacheEnabled(kStorageKey1, false);
+  SetUsageCacheEnabled(kStorageKey2, false);
+
+  UpdateUsageWithoutNotification(kStorageKey1, 100);
+  UpdateUsageWithoutNotification(kStorageKey2, 200);
 
   GetGlobalUsage(&total_usage, &unlimited_usage);
   EXPECT_EQ(100 + 200, total_usage);

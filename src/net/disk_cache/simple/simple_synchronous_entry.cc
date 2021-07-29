@@ -540,16 +540,12 @@ void SimpleSynchronousEntry::ReadData(const ReadRequest& in_entry_op,
       if (in_entry_op.request_verify_crc &&
           in_entry_op.offset + bytes_read ==
               entry_stat->data_size(in_entry_op.index)) {
-        out_result->crc_performed_verify = true;
         int checksum_result =
             CheckEOFRecord(file.get(), in_entry_op.index, *entry_stat,
                            out_result->updated_crc32);
         if (checksum_result < 0) {
-          out_result->crc_verify_ok = false;
           out_result->result = checksum_result;
           return;
-        } else {
-          out_result->crc_verify_ok = true;
         }
       }
     }
@@ -875,8 +871,7 @@ void SimpleSynchronousEntry::WriteSparseData(const SparseRequest& in_entry_op,
 }
 
 void SimpleSynchronousEntry::GetAvailableRange(const SparseRequest& in_entry_op,
-                                               int64_t* out_start,
-                                               int* out_result) {
+                                               RangeResult* out_result) {
   DCHECK(initialized_);
   int64_t offset = in_entry_op.sparse_offset;
   int len = in_entry_op.buf_len;
@@ -907,8 +902,8 @@ void SimpleSynchronousEntry::GetAvailableRange(const SparseRequest& in_entry_op,
   }
 
   int64_t len_from_start = len - (start - offset);
-  *out_start = start;
-  *out_result = static_cast<int>(std::min(avail_so_far, len_from_start));
+  *out_result = RangeResult(
+      start, static_cast<int>(std::min(avail_so_far, len_from_start)));
 }
 
 int SimpleSynchronousEntry::CheckEOFRecord(base::File* file,
@@ -1496,8 +1491,6 @@ int SimpleSynchronousEntry::ReadAndValidateStream0AndMaybe1(
     size_t offset = file_size - length;
     if (!prefetch_data.PrefetchFromFile(&file, offset, length))
       return net::ERR_FAILED;
-    SIMPLE_CACHE_UMA(COUNTS_100000, "EntryTrailerPrefetchSize", cache_type_,
-                     trailer_prefetch_size);
   } else {
     // Do no prefetching.
     RecordOpenPrefetchMode(cache_type_, prefetch_mode);
@@ -1546,13 +1539,6 @@ int SimpleSynchronousEntry::ReadAndValidateStream0AndMaybe1(
   // know exactly how much to read next time.
   computed_trailer_prefetch_size_ =
       prefetch_data.GetDesiredTrailerPrefetchSize();
-
-  // If we performed a trailer prefetch, record how accurate the prefetch was
-  // compared to the ideal value.
-  if (prefetch_mode == OPEN_PREFETCH_TRAILER) {
-    SIMPLE_CACHE_UMA(COUNTS_100000, "EntryTrailerPrefetchDelta", cache_type_,
-                     (trailer_prefetch_size - computed_trailer_prefetch_size_));
-  }
 
   // If prefetch buffer is available, and we have sha256(key) (so we don't need
   // to look at the header), extract out stream 1 info as well.

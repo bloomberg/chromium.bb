@@ -117,19 +117,11 @@ cr.define('settings', function() {
             r.OS_PEOPLE, mojom.MANAGE_OTHER_PEOPLE_SUBPAGE_PATH,
             Subpage.kManageOtherPeople);
       }
-      r.KERBEROS_ACCOUNTS = createSubpage(
-          r.OS_PEOPLE, mojom.KERBEROS_ACCOUNTS_SUBPAGE_PATH,
-          Subpage.kKerberosAccounts);
     }
 
-    const isKerberosEnabled = loadTimeData.valueExists('isKerberosEnabled') &&
-        loadTimeData.getBoolean('isKerberosEnabled');
-    const isKerberosSettingsSectionEnabled =
-        loadTimeData.valueExists('isKerberosSettingsSectionEnabled') &&
-        loadTimeData.getBoolean('isKerberosSettingsSectionEnabled');
-
     // Kerberos section.
-    if (isKerberosEnabled && isKerberosSettingsSectionEnabled) {
+    if (loadTimeData.valueExists('isKerberosEnabled') &&
+        loadTimeData.getBoolean('isKerberosEnabled')) {
       r.KERBEROS = createSection(
           r.BASIC, mojom.KERBEROS_SECTION_PATH, Section.kKerberos);
       r.KERBEROS_ACCOUNTS_V2 = createSubpage(
@@ -172,6 +164,8 @@ cr.define('settings', function() {
       r.AMBIENT_MODE_PHOTOS = createSubpage(
           r.AMBIENT_MODE, 'ambientMode/photos',
           Subpage.kAmbientModeGooglePhotosAlbum);
+      r.DARK_MODE = createSubpage(
+          r.PERSONALIZATION, mojom.DARK_MODE_SUBPAGE_PATH, Subpage.kDarkMode);
     }
 
     // Search and Assistant section.
@@ -185,6 +179,9 @@ cr.define('settings', function() {
 
     // Apps section.
     r.APPS = createSection(r.BASIC, mojom.APPS_SECTION_PATH, Section.kApps);
+    r.APP_NOTIFICATIONS = createSubpage(
+        r.APPS, mojom.APP_NOTIFICATIONS_SUBPAGE_PATH,
+        Subpage.kAppNotifications);
     r.APP_MANAGEMENT = createSubpage(
         r.APPS, mojom.APP_MANAGEMENT_SUBPAGE_PATH, Subpage.kAppManagement);
     r.APP_MANAGEMENT_DETAIL = createSubpage(
@@ -203,11 +200,6 @@ cr.define('settings', function() {
       r.APP_MANAGEMENT_PLUGIN_VM_SHARED_USB_DEVICES = createSubpage(
           r.APP_MANAGEMENT, mojom.PLUGIN_VM_USB_PREFERENCES_SUBPAGE_PATH,
           Subpage.kPluginVmUsbPreferences);
-    }
-    if (loadTimeData.valueExists('showStartup') &&
-        loadTimeData.getBoolean('showStartup')) {
-      r.ON_STARTUP = createSubpage(
-          r.APPS, mojom.ON_STARTUP_SUBPAGE_PATH, Subpage.kOnStartup);
     }
 
     // Crostini section.

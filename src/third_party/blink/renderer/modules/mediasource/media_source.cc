@@ -544,11 +544,11 @@ bool MediaSource::IsTypeSupportedInternal(ExecutionContext* context,
   // HTMLMediaElement knows it cannot play.
   String codecs = content_type.Parameter("codecs");
   MIMETypeRegistry::SupportsType get_supports_type_result;
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC) && BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
-  // Here, we special-case for HEVC on ChromeOS, which is only supported if
-  // encrypted. isTypeSupported(fully qualified type with hevc codec) should say
-  // false on such platform (except if kEnableClearHevcForTesting cmdline switch
-  // is used, enabling GetSupportsType success), but addSourceBuffer(same) and
+#if BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
+  // Here, we special-case when encrypted HEVC is supported.
+  // isTypeSupported(fully qualified type with hevc codec) should say false on
+  // such platform (except if kEnableClearHevcForTesting cmdline switch is used,
+  // enabling GetSupportsType success), but addSourceBuffer(same) and
   // changeType(same) shouldn't fail just due to having HEVC codec. We use
   // |enforce_codec_specificity| to understand if we are servicing iTS (if true)
   // versus aSB (if false). If servicing aSB or cT, we'll remove any detected
@@ -584,14 +584,13 @@ bool MediaSource::IsTypeSupportedInternal(ExecutionContext* context,
     get_supports_type_result = HTMLMediaElement::GetSupportsType(
         ContentType(String::FromUTF8(filtered_type.c_str())));
   } else {
-    // Even on ChromeOS with HEVC support, don't filter out HEVC codec when
+    // Even on platforms with HEVC support, don't filter out HEVC codec when
     // servicing isTypeSupported().
     get_supports_type_result = HTMLMediaElement::GetSupportsType(content_type);
   }
 #else
   get_supports_type_result = HTMLMediaElement::GetSupportsType(content_type);
-#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC) &&
-        // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
 
   if (get_supports_type_result == MIMETypeRegistry::kIsNotSupported) {
     DVLOG(1) << __func__ << "(" << type << ", "
@@ -744,11 +743,14 @@ void MediaSource::CompleteAttachingToMediaElement(
   SetReadyState(ReadyState::kOpen);
 }
 
-double MediaSource::duration() const {
-  if (IsClosed())
-    return std::numeric_limits<float>::quiet_NaN();
-
+double MediaSource::GetDuration_Locked(
+    MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */) const {
   AssertAttachmentsMutexHeldIfCrossThreadForDebugging();
+
+  if (IsClosed()) {
+    return std::numeric_limits<float>::quiet_NaN();
+  }
+
   return web_media_source_->Duration();
 }
 
@@ -825,7 +827,8 @@ WebTimeRanges MediaSource::SeekableInternal(
   // http://w3c.github.io/media-source/#htmlmediaelement-extensions
   WebTimeRanges ranges;
 
-  double source_duration = duration();
+  double source_duration = GetDuration_Locked(pass_key);
+
   // If duration equals NaN: Return an empty TimeRanges object.
   if (std::isnan(source_duration))
     return ranges;
@@ -947,15 +950,38 @@ void MediaSource::setDuration(double duration,
   }
 }
 
+double MediaSource::duration() {
+  double duration_result = std::numeric_limits<float>::quiet_NaN();
+  if (IsClosed())
+    return duration_result;
+
+  // Note, here we must be open or ended, therefore we must have an attachment.
+  if (!RunUnlessElementGoneOrClosingUs(WTF::Bind(
+          [](MediaSource* self, double* result,
+             MediaSourceAttachmentSupplement::ExclusiveKey pass_key) {
+            *result = self->GetDuration_Locked(pass_key);
+          },
+          WrapPersistent(this), WTF::Unretained(&duration_result)))) {
+    // TODO(https://crbug.com/878133): Determine in specification what the
+    // specific, app-visible, result should be in this case. It seems reasonable
+    // to behave is if we are in "closed" readyState and report NaN to the app
+    // here.
+    DCHECK_EQ(duration_result, std::numeric_limits<float>::quiet_NaN());
+  }
+
+  return duration_result;
+}
+
 void MediaSource::DurationChangeAlgorithm(
     double new_duration,
     ExceptionState* exception_state,
-    MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */) {
+    MediaSourceAttachmentSupplement::ExclusiveKey pass_key) {
   AssertAttachmentsMutexHeldIfCrossThreadForDebugging();
 
   // http://w3c.github.io/media-source/#duration-change-algorithm
   // 1. If the current value of duration is equal to new duration, then return.
-  if (new_duration == duration())
+  double old_duration = GetDuration_Locked(pass_key);
+  if (new_duration == old_duration)
     return;
 
   // 2. If new duration is less than the highest starting presentation
@@ -988,11 +1014,11 @@ void MediaSource::DurationChangeAlgorithm(
     // See also deprecated remove(new duration, old duration) behavior below.
   }
 
-  // 3. Set old duration to the current value of duration.
-  double old_duration = duration();
   DCHECK_LE(highest_buffered_presentation_timestamp,
             std::isnan(old_duration) ? 0 : old_duration);
 
+  // 3. Set old duration to the current value of duration.
+  // Done for step 1 above, already.
   // 4. Update duration to new duration.
   web_media_source_->SetDuration(new_duration);
 
@@ -1205,7 +1231,7 @@ MediaSource::AttachmentAndTracer() const {
 
 void MediaSource::EndOfStreamAlgorithm(
     const WebMediaSource::EndOfStreamStatus eos_status,
-    MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */) {
+    MediaSourceAttachmentSupplement::ExclusiveKey pass_key) {
   AssertAttachmentsMutexHeldIfCrossThreadForDebugging();
 
   // https://www.w3.org/TR/media-source/#end-of-stream-algorithm
@@ -1235,7 +1261,7 @@ void MediaSource::EndOfStreamAlgorithm(
     // TODO(wolenetz): Consider refactoring the MarkEndOfStream implementation
     // to just mark end of stream, and move the duration reduction logic to here
     // so we can just run DurationChangeAlgorithm(...) here.
-    double new_duration = duration();
+    double new_duration = GetDuration_Locked(pass_key);
     scoped_refptr<MediaSourceAttachmentSupplement> attachment;
     MediaSourceTracer* tracer;
     std::tie(attachment, tracer) = AttachmentAndTracer();

@@ -12,9 +12,9 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_manager.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_manager_impl.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
+#include "chrome/browser/platform_keys/platform_keys.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -200,12 +200,12 @@ attestation::AttestationKeyType GetVaKeyType(CertScope scope) {
   }
 }
 
-platform_keys::TokenId GetPlatformKeysTokenId(CertScope scope) {
+chromeos::platform_keys::TokenId GetPlatformKeysTokenId(CertScope scope) {
   switch (scope) {
     case CertScope::kUser:
-      return platform_keys::TokenId::kUser;
+      return chromeos::platform_keys::TokenId::kUser;
     case CertScope::kDevice:
-      return platform_keys::TokenId::kSystem;
+      return chromeos::platform_keys::TokenId::kSystem;
   }
 }
 
@@ -232,7 +232,8 @@ scoped_refptr<net::X509Certificate> CreateSingleCertificateFromBytes(
     size_t length) {
   net::CertificateList cert_list =
       net::X509Certificate::CreateCertificateListFromBytes(
-          data, length, net::X509Certificate::FORMAT_AUTO);
+          base::as_bytes(base::make_span(data, length)),
+          net::X509Certificate::FORMAT_AUTO);
 
   if (cert_list.size() != 1) {
     return {};

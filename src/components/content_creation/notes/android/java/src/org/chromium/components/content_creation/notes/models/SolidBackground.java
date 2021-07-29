@@ -21,12 +21,15 @@ public final class SolidBackground implements Background {
     }
 
     @Override
-    public void apply(View view) {
+    public void apply(View view, float cornerRadius) {
         if (view == null) {
             return;
         }
 
-        GradientDrawable drawable = (GradientDrawable) view.getBackground();
+        GradientDrawable drawable = new GradientDrawable();
         drawable.setColor(this.color);
+        drawable.setCornerRadius(cornerRadius);
+
+        view.setBackground(drawable);
     }
 }

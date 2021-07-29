@@ -21,6 +21,8 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
+#include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
@@ -47,9 +49,11 @@
 #include "components/autofill/core/browser/autofill_browser_util.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/autofill_suggestion_generator.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/browser_autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/data_model/autofill_data_model.h"
@@ -80,7 +84,6 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_tick_clock.h"
-#include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -92,8 +95,10 @@
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 #if defined(OS_IOS)
@@ -119,22 +124,6 @@ const size_t kWaitTimeForDynamicFormsMs = 200;
 // The time limit, in ms, between a fill and when a refill can happen.
 const int kLimitBeforeRefillMs = 1000;
 
-// Returns the credit card field |value| trimmed from whitespace and with stop
-// characters removed.
-std::u16string SanitizeCreditCardFieldValue(const std::u16string& value) {
-  std::u16string sanitized;
-  // We remove whitespace as well as some invisible unicode characters.
-  base::TrimWhitespace(value, base::TRIM_ALL, &sanitized);
-  base::TrimString(sanitized,
-                   std::u16string({base::i18n::kRightToLeftMark,
-                                   base::i18n::kLeftToRightMark}),
-                   &sanitized);
-  // Some sites have ____-____-____-____ in their credit card number fields, for
-  // example.
-  base::RemoveChars(sanitized, u"-_", &sanitized);
-  return sanitized;
-}
-
 // Returns whether the |field| is predicted as being any kind of name.
 bool IsNameType(const AutofillField& field) {
   return field.Type().group() == FieldTypeGroup::kName ||
@@ -149,8 +138,7 @@ bool IsNameType(const AutofillField& field) {
 // multiple possible types.
 void SelectRightNameType(AutofillField* field, bool is_credit_card) {
   DCHECK(field);
-  // Currently, there can be up to four possible types for a field.
-  DCHECK_GE(4U, field->possible_types().size());
+  // There should be at least two possible field types.
   DCHECK_LE(2U, field->possible_types().size());
 
   ServerFieldTypeSet types_to_keep;
@@ -408,6 +396,7 @@ BrowserAutofillManager::FillingContext::FillingContext(
     : filled_field_id(field.global_id()),
       filled_field_signature(field.GetFieldSignature()),
       filled_field_unique_name(field.unique_name()),
+      filled_origin(field.origin),
       original_fill_time(AutofillTickClock::NowTicks()) {
   DCHECK(absl::holds_alternative<const CreditCard*>(profile_or_credit_card) ||
          !optional_cvc);
@@ -451,8 +440,10 @@ BrowserAutofillManager::BrowserAutofillManager(
       app_locale_(app_locale),
       personal_data_(personal_data),
       field_filler_(app_locale, client->GetAddressNormalizer()),
-      autocomplete_history_manager_(
-          autocomplete_history_manager->GetWeakPtr()) {
+      autocomplete_history_manager_(autocomplete_history_manager->GetWeakPtr()),
+      suggestion_generator_(
+          std::make_unique<AutofillSuggestionGenerator>(client,
+                                                        personal_data_)) {
   address_form_event_logger_ = std::make_unique<AddressFormEventLogger>(
       driver->IsInMainFrame(), form_interactions_ukm_logger(), client);
   credit_card_form_event_logger_ = std::make_unique<CreditCardFormEventLogger>(
@@ -611,8 +602,8 @@ void BrowserAutofillManager::RefetchCardsAndUpdatePopup(
   DCHECK_EQ(FieldTypeGroup::kCreditCard, type.group());
 
   bool should_display_gpay_logo;
-  auto cards =
-      GetCreditCardSuggestions(field_data, type, &should_display_gpay_logo);
+  auto cards = GetCreditCardSuggestions(FormStructure(form), field_data, type,
+                                        &should_display_gpay_logo);
 
   DCHECK(!cards.empty());
 
@@ -1157,7 +1148,26 @@ void BrowserAutofillManager::FillProfileForm(
     const FormData& form,
     const FormFieldData& field) {
   FillOrPreviewProfileForm(AutofillDriver::FORM_DATA_ACTION_FILL,
-                           /*query_id=*/-1, form, field, profile);
+                           /*query_id=*/kNoQueryId, form, field, profile);
+}
+
+void BrowserAutofillManager::FillVirtualCardInformation(
+    const std::string& guid,
+    int query_id,
+    const FormData& form,
+    const FormFieldData& field) {
+  if (!IsValidFormData(form) || !IsValidFormFieldData(field) ||
+      !RefreshDataModels() || !driver()->RendererIsAvailable()) {
+    return;
+  }
+
+  const CreditCard* credit_card = personal_data_->GetCreditCardByGUID(guid);
+  if (credit_card) {
+    CreditCard copy = *credit_card;
+    copy.set_record_type(CreditCard::VIRTUAL_CARD);
+    FillOrPreviewCreditCardForm(AutofillDriver::FORM_DATA_ACTION_FILL, query_id,
+                                form, field, &copy);
+  }
 }
 
 void BrowserAutofillManager::OnFocusNoLongerOnForm(bool had_interacted_form) {
@@ -1446,10 +1456,10 @@ void BrowserAutofillManager::PropagateAutofillPredictions(
   client()->PropagateAutofillPredictions(rfh, forms);
 }
 
-void BrowserAutofillManager::OnCreditCardFetched(bool did_succeed,
+void BrowserAutofillManager::OnCreditCardFetched(CreditCardFetchResult result,
                                                  const CreditCard* credit_card,
                                                  const std::u16string& cvc) {
-  if (!did_succeed) {
+  if (result != CreditCardFetchResult::kSuccess) {
     driver()->RendererShouldClearPreviewedForm();
     return;
   }
@@ -1473,8 +1483,11 @@ void BrowserAutofillManager::OnCreditCardFetched(bool did_succeed,
 
   // If synced down card is a virtual card, let the client know so that it can
   // show the UI to help user to manually fill the form, if needed.
-  if (credit_card->record_type() == CreditCard::VIRTUAL_CARD)
-    client()->OnVirtualCardFetched(credit_card, cvc);
+  if (credit_card->record_type() == CreditCard::VIRTUAL_CARD) {
+    // TODO(crbug.com/1196021): Pass in real card image.
+    client()->OnVirtualCardDataAvailable(credit_card, cvc,
+                                         /*card_image=*/gfx::Image());
+  }
 
   FillCreditCardForm(credit_card_query_id_, credit_card_form_,
                      credit_card_field_, *credit_card, cvc);
@@ -1699,7 +1712,10 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
   // Count the number of times the value of a specific type was filled into the
   // form.
   base::flat_map<ServerFieldType, size_t> type_filling_count;
+  // See SendFormDataToRenderer().
+  base::flat_map<FieldGlobalId, ServerFieldType> field_type_map;
   type_filling_count.reserve(form_structure->field_count());
+  field_type_map.reserve(form_structure->field_count());
 
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     std::string field_number = base::StringPrintf("Field %zu", i);
@@ -1823,6 +1839,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
                        should_notify, optional_cvc ? *optional_cvc : kEmptyCvc,
                        data_util::DetermineGroups(*form_structure),
                        &failure_to_fill);
+    field_type_map[result.fields[i].global_id()] = field_type;
 
     bool has_value_after = !result.fields[i].value.empty();
     bool is_autofilled_after = result.fields[i].is_autofilled;
@@ -1853,7 +1870,8 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
                          << LogMessage::kSendFillingData << Br{}
                          << std::move(buffer);
   }
-  driver()->SendFormDataToRenderer(query_id, action, result);
+  driver()->SendFormDataToRenderer(query_id, action, result, field.origin,
+                                   field_type_map);
 }
 
 std::unique_ptr<FormStructure> BrowserAutofillManager::ValidateSubmittedForm(
@@ -1944,29 +1962,28 @@ std::vector<Suggestion> BrowserAutofillManager::GetProfileSuggestions(
 }
 
 std::vector<Suggestion> BrowserAutofillManager::GetCreditCardSuggestions(
+    const FormStructure& form_structure,
     const FormFieldData& field,
     const AutofillType& type,
     bool* should_display_gpay_logo) const {
   credit_card_form_event_logger_->OnDidPollSuggestions(field, sync_state_);
 
-  // The field value is sanitized before attempting to match it to the user's
-  // data.
-  std::vector<Suggestion> suggestions =
-      personal_data_->GetCreditCardSuggestions(
-          type, SanitizeCreditCardFieldValue(field.value),
-          client()->AreServerCardsSupported());
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableOffersInDownstream) &&
-      offer_manager_) {
-    offer_manager_->UpdateSuggestionsWithOffers(client()->GetLastCommittedURL(),
-                                                suggestions);
-  }
   *should_display_gpay_logo =
       credit_card_access_manager_->ShouldDisplayGPayLogo();
 
-  for (size_t i = 0; i < suggestions.size(); i++) {
-    suggestions[i].frontend_id =
-        MakeFrontendID(suggestions[i].backend_id, std::string());
+  std::vector<Suggestion> suggestions;
+  if (!IsInAutofillSuggestionsDisabledExperiment()) {
+    suggestions = suggestion_generator_->GetSuggestionsForCreditCards(
+        form_structure, field, type, app_locale_);
+  }
+
+  // TODO(crbug.com/1196021): Once the profile suggestion creation is moved to
+  // AutofillSuggestionGenerator, move this part as well.
+  for (Suggestion& suggestion : suggestions) {
+    if (suggestion.frontend_id == 0) {
+      suggestion.frontend_id =
+          MakeFrontendID(suggestion.backend_id, std::string());
+    }
   }
 
   credit_card_form_event_logger_->set_suggestions(suggestions);
@@ -2205,7 +2222,7 @@ void BrowserAutofillManager::DisambiguateUploadTypes(FormStructure* form) {
     int name_type_count = 0;
 
     bool undisambiuatable_types = false;
-    for (const auto& type : upload_types) {
+    for (auto type : upload_types) {
       switch (AutofillType(type).group()) {
         case FieldTypeGroup::kCreditCard:
           ++credit_card_type_count;
@@ -2476,7 +2493,8 @@ void BrowserAutofillManager::TriggerRefill(const FormData& form) {
           field->global_id() == filling_context->filled_field_id) ||
          (!base::FeatureList::IsEnabled(
               features::kAutofillRefillWithRendererIds) &&
-          field->unique_name() == filling_context->filled_field_unique_name))) {
+          field->unique_name() == filling_context->filled_field_unique_name)) &&
+        field->origin == filling_context->filled_origin) {
       autofill_field = field.get();
       break;
     }
@@ -2494,7 +2512,8 @@ void BrowserAutofillManager::TriggerRefill(const FormData& form) {
 
     for (const std::unique_ptr<AutofillField>& field : *form_structure) {
       if (field->GetFieldSignature() ==
-          filling_context->filled_field_signature) {
+              filling_context->filled_field_signature &&
+          field->origin == filling_context->filled_origin) {
         if (autofill_field == nullptr || is_better(*field, *autofill_field)) {
           autofill_field = field.get();
         }
@@ -2596,9 +2615,9 @@ void BrowserAutofillManager::GetAvailableSuggestions(
   context->is_autofill_available = true;
 
   if (context->is_filling_credit_card) {
-    *suggestions =
-        GetCreditCardSuggestions(field, context->focused_field->Type(),
-                                 &context->should_display_gpay_logo);
+    *suggestions = GetCreditCardSuggestions(*context->form_structure, field,
+                                            context->focused_field->Type(),
+                                            &context->should_display_gpay_logo);
   } else {
     *suggestions = GetProfileSuggestions(*context->form_structure, field,
                                          *context->focused_field);
@@ -2700,18 +2719,12 @@ bool BrowserAutofillManager::ShouldShowVirtualCardOption(
   if (GetVirtualCardCandidates(personal_data_).empty())
     return false;
 
-  // If card number field or expiration date field is not detected, return
-  // false.
-  if (!form_structure->IsCompleteCreditCardForm())
+  // If not all of card number field, expiration date field and CVC field are
+  // detected, return false.
+  if (!IsCompleteCreditCardFormIncludingCvcField(*form_structure))
     return false;
 
-  // If CVC field is detected, then all requirements are met, otherwise return
-  // false.
-  for (auto& field : *form_structure) {
-    if (field->Type().GetStorableType() == CREDIT_CARD_VERIFICATION_CODE)
-      return true;
-  }
-  return false;
+  return true;
 }
 #endif
 

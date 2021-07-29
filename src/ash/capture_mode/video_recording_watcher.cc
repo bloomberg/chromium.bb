@@ -26,6 +26,7 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -87,20 +88,27 @@ gfx::PointF GetEventLocationInWindow(aura::Window* window,
 gfx::RectF GetCursorOverlayBounds(
     const aura::Window* recorded_window,
     const gfx::PointF& location_in_recorded_window,
-    const gfx::PointF& cursor_hotspot,
+    const gfx::Point& cursor_hotspot,
+    float cursor_image_scale_factor,
     const SkBitmap& cursor_bitmap) {
   DCHECK(recorded_window);
+  DCHECK_GT(cursor_image_scale_factor, 0);
 
-  // Even when recording a non-root window, we use the bounds of the root
-  // window, since it corresponds to the bounds of the source frame sink we are
-  // recording.
-  const auto window_size = recorded_window->GetRootWindow()->bounds().size();
+  // The video size, and the resolution constraints will be matching the size of
+  // the recorded window (whether a root or a non-root window). Hence, the
+  // bounds of the cursor overlay should be relative to that size.
+  const auto window_size = recorded_window->bounds().size();
   if (window_size.IsEmpty())
     return gfx::RectF();
 
+  const gfx::PointF cursor_hotspot_dip =
+      gfx::ConvertPointToDips(cursor_hotspot, cursor_image_scale_factor);
+  const gfx::SizeF cursor_size_dip = gfx::ConvertSizeToDips(
+      gfx::SizeF(cursor_bitmap.width(), cursor_bitmap.height()),
+      cursor_image_scale_factor);
   gfx::RectF cursor_relative_bounds(
-      location_in_recorded_window - cursor_hotspot.OffsetFromOrigin(),
-      gfx::SizeF(cursor_bitmap.width(), cursor_bitmap.height()));
+      location_in_recorded_window - cursor_hotspot_dip.OffsetFromOrigin(),
+      cursor_size_dip);
   cursor_relative_bounds.Scale(1.f / window_size.width(),
                                1.f / window_size.height());
   return cursor_relative_bounds;
@@ -195,7 +203,6 @@ VideoRecordingWatcher::VideoRecordingWatcher(
   if (recording_source_ == CaptureModeSource::kRegion)
     partial_region_bounds_ = controller_->user_capture_region();
 
-  display::Screen::GetScreen()->AddObserver(this);
   window_being_recorded_->AddObserver(this);
   TabletModeController::Get()->AddObserver(this);
 
@@ -225,7 +232,6 @@ VideoRecordingWatcher::~VideoRecordingWatcher() {
         ->cursor_window_controller()
         ->RemoveObserver(this);
   }
-  display::Screen::GetScreen()->RemoveObserver(this);
   window_being_recorded_->RemoveObserver(this);
 }
 
@@ -641,10 +647,11 @@ void VideoRecordingWatcher::UpdateCursorOverlayNow(
   const gfx::NativeCursor cursor = GetCurrentCursor();
   DCHECK_NE(cursor.type(), ui::mojom::CursorType::kNull);
 
+  const float cursor_image_scale_factor = cursor.image_scale_factor();
   const SkBitmap cursor_image = ui::GetCursorBitmap(cursor);
   const gfx::RectF cursor_overlay_bounds = GetCursorOverlayBounds(
-      window_being_recorded_, location,
-      gfx::PointF(ui::GetCursorHotspot(cursor)), cursor_image);
+      window_being_recorded_, location, ui::GetCursorHotspot(cursor),
+      cursor_image_scale_factor, cursor_image);
 
   if (cursor != last_cursor_) {
     if (cursor_image.drawsNothing()) {

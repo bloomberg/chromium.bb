@@ -72,6 +72,9 @@ struct App {
   // operations will be restricted.
   OptionalBool resize_locked;
 
+  // Whether the app's display mode is in the browser or otherwise.
+  WindowMode window_mode;
+
   // When adding new fields, also update the Merge method and other helpers in
   // components/services/app_service/public/cpp/app_update.*
 };
@@ -102,6 +105,7 @@ enum AppType {
   kRemote,                // Remote app.
   kBorealis,              // Borealis app, see go/borealis-app.
   kSystemWeb,             // System web app.
+  kStandaloneBrowserExtension,  // Extension based apps hosted in Lacros.
 };
 
 // Whether an app is ready to launch, i.e. installed.
@@ -122,6 +126,10 @@ enum Readiness {
 };
 
 // How the app was installed.
+// This should be kept in sync with histogram.xml, and InstallSource in
+// enums.xml.
+// Note the enumeration is used in UMA histogram so entries should not be
+// re-ordered or removed. New entries should be added at the bottom.
 enum InstallSource {
   kUnknown = 0,
   kSystem,     // Installed with the system and is considered a part of the OS.
@@ -335,15 +343,30 @@ struct IntentFilter {
   string? activity_label;
 };
 
-// Action and resource handling request. This includes the scheme and URL at
-// the moment, and will be extended to handle files in the future. This should
+// Metadata for a single file shared through an intent.
+struct IntentFile {
+  // The URL of the file to share. Normally has the filesystem: scheme, but
+  // could be externalfile: or a different scheme, depending on the source.
+  url.mojom.Url url;
+
+  // The following optional fields can be provided to supply additional metadata
+  // information in cases where fetching the metadata through the file would be
+  // difficult or expensive.
+
+  string? mime_type;  // File MIME type.
+  string? file_name;  // Human readable file name, including extension. Should
+                      // not contain path separators.
+  uint64 file_size;   // File size in bytes.
+};
+
+// Action and resource handling request. This should
 // be kept in sync with ConvertIntentToValue and ConvertValueToIntent in
 // components/services/app_service/public/cpp/intent_util.*
 struct Intent {
   string? action; // Intent action. e.g. view, send.
   url.mojom.Url? url; // The URL of the intent. e.g. https://www.google.com/.
   string? mime_type; // MIME type. e.g. text/plain, image/*.
-  array<url.mojom.Url>? file_urls; // The URLs of the files to share.
+  array<IntentFile>? files; // The files to share.
   string? activity_name; // The activity for the app to launch.
 
   // The Drive share URL, this is only filled if the intent contains a file
@@ -450,4 +473,15 @@ struct WindowInfo {
   int32 state = 0;
   int64 display_id = -1;
   Rect? bounds;
+};
+
+// The window mode that each app will open in.
+enum WindowMode {
+  kUnknown = 0,
+  // Opens in a standalone window
+  kWindow,
+  // Opens in the default web browser
+  kBrowser,
+  // Opens in a tabbed app window
+  kTabbedWindow,
 };

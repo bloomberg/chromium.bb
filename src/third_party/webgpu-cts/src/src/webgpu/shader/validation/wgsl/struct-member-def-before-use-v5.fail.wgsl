@@ -9,7 +9,7 @@ struct foo {
   a : f32;
 };
 
-[[stage(vertex)]]
+[[stage(fragment)]]
 fn main() {
   var f : foo;
   f.a = 2.0;

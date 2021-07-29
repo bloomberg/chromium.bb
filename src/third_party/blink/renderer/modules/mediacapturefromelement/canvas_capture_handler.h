@@ -18,6 +18,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/video_frame_pool.h"
 #include "media/capture/video_capturer_source.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
@@ -35,6 +36,7 @@ class MediaStreamComponent;
 class StaticBitmapImage;
 class WebGraphicsContext3DProvider;
 class WebGraphicsContext3DProviderWrapper;
+class WebGraphicsContext3DVideoFramePool;
 
 // CanvasCaptureHandler acts as the link between Blink side HTMLCanvasElement
 // and Chrome side VideoCapturerSource. It is responsible for handling
@@ -130,9 +132,10 @@ class MODULES_EXPORT CanvasCaptureHandler {
   class CanvasCaptureHandlerDelegate;
 
   media::VideoCaptureFormat capture_format_;
-  bool can_discard_alpha_ = true;
+  bool can_discard_alpha_ = false;
   bool ask_for_new_frame_;
   media::VideoFramePool frame_pool_;
+  std::unique_ptr<WebGraphicsContext3DVideoFramePool> accelerated_frame_pool_;
   absl::optional<base::TimeTicks> first_frame_ticks_;
   scoped_refptr<media::VideoFrame> last_frame_;
 

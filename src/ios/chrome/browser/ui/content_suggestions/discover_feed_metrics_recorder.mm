@@ -9,7 +9,7 @@
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
-#import "components/feed/core/v2/common_enums.h"
+#import "components/feed/core/v2/public/common_enums.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -53,6 +53,12 @@ namespace {
 // Histogram name for the infinite feed trigger.
 const char kDiscoverFeedInfiniteFeedTriggered[] =
     "ContentSuggestions.Feed.LoadStreamStatus.LoadMore";
+
+// User action names for the device orientation having changed.
+const char kDiscoverFeedHistogramDeviceOrientationChangedToPortrait[] =
+    "ContentSuggestions.Feed.DeviceOrientationChanged.Portrait";
+const char kDiscoverFeedHistogramDeviceOrientationChangedToLandscape[] =
+    "ContentSuggestions.Feed.DeviceOrientationChanged.Landscape";
 
 // Histogram name for the Discover feed user actions.
 const char kDiscoverFeedUserActionHistogram[] =
@@ -206,6 +212,17 @@ const int kMinutesBetweenSessions = 5;
                             FeedLoadStreamStatus::kLoadedFromNetwork);
   base::RecordAction(
       base::UserMetricsAction(kDiscoverFeedUserActionInfiniteFeedTriggered));
+}
+
+- (void)recordDeviceOrientationChanged:(UIDeviceOrientation)orientation {
+  if (orientation == UIDeviceOrientationPortrait) {
+    base::RecordAction(base::UserMetricsAction(
+        kDiscoverFeedHistogramDeviceOrientationChangedToPortrait));
+  } else if (orientation == UIDeviceOrientationLandscapeLeft ||
+             orientation == UIDeviceOrientationLandscapeRight) {
+    base::RecordAction(base::UserMetricsAction(
+        kDiscoverFeedHistogramDeviceOrientationChangedToLandscape));
+  }
 }
 
 - (void)recordHeaderMenuLearnMoreTapped {

@@ -85,7 +85,7 @@ OsrWindowWin::OsrWindowWin(Delegate* delegate,
                            const OsrRendererSettings& settings)
     : delegate_(delegate),
       settings_(settings),
-      hwnd_(NULL),
+      hwnd_(nullptr),
       device_scale_factor_(0),
       hidden_(false),
       last_mouse_pos_(),
@@ -127,7 +127,7 @@ void OsrWindowWin::CreateBrowser(HWND parent_hwnd,
     CreateBrowserHelper* helper =
         new CreateBrowserHelper(parent_hwnd, rect, handler, startup_url,
                                 settings, extra_info, request_context, this);
-    CefPostTask(TID_UI, base::Bind(CreateBrowserWithHelper, helper));
+    CefPostTask(TID_UI, base::BindOnce(CreateBrowserWithHelper, helper));
     return;
   }
 
@@ -158,8 +158,8 @@ void OsrWindowWin::ShowPopup(HWND parent_hwnd,
                              size_t height) {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute this method on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&OsrWindowWin::ShowPopup, this, parent_hwnd,
-                                   x, y, width, height));
+    CefPostTask(TID_UI, base::BindOnce(&OsrWindowWin::ShowPopup, this,
+                                       parent_hwnd, x, y, width, height));
     return;
   }
 
@@ -184,7 +184,7 @@ void OsrWindowWin::ShowPopup(HWND parent_hwnd,
 void OsrWindowWin::Show() {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute this method on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&OsrWindowWin::Show, this));
+    CefPostTask(TID_UI, base::BindOnce(&OsrWindowWin::Show, this));
     return;
   }
 
@@ -208,7 +208,7 @@ void OsrWindowWin::Show() {
 void OsrWindowWin::Hide() {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute this method on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&OsrWindowWin::Hide, this));
+    CefPostTask(TID_UI, base::BindOnce(&OsrWindowWin::Hide, this));
     return;
   }
 
@@ -228,14 +228,14 @@ void OsrWindowWin::Hide() {
 void OsrWindowWin::SetBounds(int x, int y, size_t width, size_t height) {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute this method on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&OsrWindowWin::SetBounds, this, x, y, width,
-                                   height));
+    CefPostTask(TID_UI, base::BindOnce(&OsrWindowWin::SetBounds, this, x, y,
+                                       width, height));
     return;
   }
 
   if (hwnd_) {
     // Set the browser window bounds.
-    ::SetWindowPos(hwnd_, NULL, x, y, static_cast<int>(width),
+    ::SetWindowPos(hwnd_, nullptr, x, y, static_cast<int>(width),
                    static_cast<int>(height), SWP_NOZORDER);
   }
 }
@@ -243,7 +243,7 @@ void OsrWindowWin::SetBounds(int x, int y, size_t width, size_t height) {
 void OsrWindowWin::SetFocus() {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute this method on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&OsrWindowWin::SetFocus, this));
+    CefPostTask(TID_UI, base::BindOnce(&OsrWindowWin::SetFocus, this));
     return;
   }
 
@@ -256,8 +256,8 @@ void OsrWindowWin::SetFocus() {
 void OsrWindowWin::SetDeviceScaleFactor(float device_scale_factor) {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute this method on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&OsrWindowWin::SetDeviceScaleFactor, this,
-                                   device_scale_factor));
+    CefPostTask(TID_UI, base::BindOnce(&OsrWindowWin::SetDeviceScaleFactor,
+                                       this, device_scale_factor));
     return;
   }
 
@@ -277,7 +277,7 @@ void OsrWindowWin::Create(HWND parent_hwnd, const RECT& rect) {
   DCHECK(parent_hwnd);
   DCHECK(!::IsRectEmpty(&rect));
 
-  HINSTANCE hInst = ::GetModuleHandle(NULL);
+  HINSTANCE hInst = ::GetModuleHandle(nullptr);
 
   const cef_color_t background_color = MainContext::Get()->GetBackgroundColor();
   const HBRUSH background_brush = CreateSolidBrush(
@@ -327,7 +327,7 @@ void OsrWindowWin::Create(HWND parent_hwnd, const RECT& rect) {
 
 void OsrWindowWin::Destroy() {
   CEF_REQUIRE_UI_THREAD();
-  DCHECK(hwnd_ != NULL);
+  DCHECK(hwnd_ != nullptr);
 
 #if defined(CEF_USE_ATL)
   // Revoke/delete the drag&drop handler.
@@ -340,14 +340,14 @@ void OsrWindowWin::Destroy() {
   // Destroy the native window.
   ::DestroyWindow(hwnd_);
   ime_handler_.reset();
-  hwnd_ = NULL;
+  hwnd_ = nullptr;
 }
 
 void OsrWindowWin::NotifyNativeWindowCreated(HWND hwnd) {
   if (!CURRENTLY_ON_MAIN_THREAD()) {
     // Execute this method on the main thread.
     MAIN_POST_CLOSURE(
-        base::Bind(&OsrWindowWin::NotifyNativeWindowCreated, this, hwnd));
+        base::BindOnce(&OsrWindowWin::NotifyNativeWindowCreated, this, hwnd));
     return;
   }
 
@@ -371,10 +371,10 @@ void OsrWindowWin::RegisterOsrClass(HINSTANCE hInstance,
   wcex.cbClsExtra = 0;
   wcex.cbWndExtra = 0;
   wcex.hInstance = hInstance;
-  wcex.hIcon = NULL;
-  wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+  wcex.hIcon = nullptr;
+  wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
   wcex.hbrBackground = background_brush;
-  wcex.lpszMenuName = NULL;
+  wcex.lpszMenuName = nullptr;
   wcex.lpszClassName = kWndClass;
   wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -552,8 +552,8 @@ LRESULT CALLBACK OsrWindowWin::OsrWndProc(HWND hWnd,
 
     case WM_NCDESTROY:
       // Clear the reference to |self|.
-      SetUserDataPtr(hWnd, NULL);
-      self->hwnd_ = NULL;
+      SetUserDataPtr(hWnd, nullptr);
+      self->hwnd_ = nullptr;
       break;
   }
 
@@ -801,10 +801,12 @@ void OsrWindowWin::OnKeyEvent(UINT message, WPARAM wParam, LPARAM lParam) {
     // https://docs.microsoft.com/en-gb/windows/win32/api/winuser/nf-winuser-vkkeyscanexw
     // ... high-order byte contains the shift state,
     // which can be a combination of the following flag bits.
+    // 1 Either SHIFT key is pressed.
     // 2 Either CTRL key is pressed.
     // 4 Either ALT key is pressed.
     SHORT scan_res = ::VkKeyScanExW(wParam, current_layout);
-    if (((scan_res >> 8) & 0xFF) == (2 | 4)) {  // ctrl-alt pressed
+    constexpr auto ctrlAlt = (2 | 4);
+    if (((scan_res >> 8) & ctrlAlt) == ctrlAlt) {  // ctrl-alt pressed
       event.modifiers &= ~(EVENTFLAG_CONTROL_DOWN | EVENTFLAG_ALT_DOWN);
       event.modifiers |= EVENTFLAG_ALTGR_DOWN;
     }
@@ -921,7 +923,7 @@ void OsrWindowWin::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
   if (hwnd_) {
     // Show the browser window. Called asynchronously so that the browser has
     // time to create associated internal objects.
-    CefPostTask(TID_UI, base::Bind(&OsrWindowWin::Show, this));
+    CefPostTask(TID_UI, base::BindOnce(&OsrWindowWin::Show, this));
   }
 }
 

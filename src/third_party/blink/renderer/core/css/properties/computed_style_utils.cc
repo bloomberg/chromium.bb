@@ -1290,7 +1290,7 @@ void AddValuesForNamedGridLinesAtIndex(OrderedNamedLinesCollector& collector,
 CSSValue* ComputedStyleUtils::ValueForGridTrackSizeList(
     GridTrackSizingDirection direction,
     const ComputedStyle& style) {
-  const Vector<GridTrackSize>& auto_track_sizes =
+  const Vector<GridTrackSize, 1>& auto_track_sizes =
       direction == kForColumns ? style.GridAutoColumns().LegacyTrackList()
                                : style.GridAutoRows().LegacyTrackList();
 
@@ -1304,7 +1304,7 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackSizeList(
 template <typename T, typename F>
 void PopulateGridTrackList(CSSValueList* list,
                            OrderedNamedLinesCollector& collector,
-                           const Vector<T>& tracks,
+                           const Vector<T, 1>& tracks,
                            F getTrackSize,
                            int start,
                            int end,
@@ -1324,7 +1324,7 @@ void PopulateGridTrackList(CSSValueList* list,
 template <typename T, typename F>
 void PopulateGridTrackList(CSSValueList* list,
                            OrderedNamedLinesCollector& collector,
-                           const Vector<T>& tracks,
+                           const Vector<T, 1>& tracks,
                            F getTrackSize,
                            int offset = 0) {
   PopulateGridTrackList<T>(list, collector, tracks, getTrackSize, 0,
@@ -1336,10 +1336,10 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
     const LayoutObject* layout_object,
     const ComputedStyle& style) {
   bool is_row_axis = direction == kForColumns;
-  const Vector<GridTrackSize>& track_sizes =
+  const Vector<GridTrackSize, 1>& track_sizes =
       is_row_axis ? style.GridTemplateColumns().LegacyTrackList()
                   : style.GridTemplateRows().LegacyTrackList();
-  const Vector<GridTrackSize>& auto_repeat_track_sizes =
+  const Vector<GridTrackSize, 1>& auto_repeat_track_sizes =
       is_row_axis ? style.GridAutoRepeatColumns() : style.GridAutoRepeatRows();
 
   bool is_layout_grid =
@@ -2681,6 +2681,38 @@ CSSValue* ComputedStyleUtils::ValuesForFontVariantProperty(
       NOTREACHED();
       return nullptr;
   }
+}
+
+CSSValueList* ComputedStyleUtils::ValuesForContainerShorthand(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) {
+  CHECK_EQ(containerShorthand().length(), 2u);
+  CHECK_EQ(containerShorthand().properties()[0],
+           &GetCSSPropertyContainerType());
+  CHECK_EQ(containerShorthand().properties()[1],
+           &GetCSSPropertyContainerName());
+
+  CSSValueList* list = CSSValueList::CreateSlashSeparated();
+
+  const CSSValue* type =
+      GetCSSPropertyContainerType().CSSValueFromComputedStyle(
+          style, layout_object, allow_visited_style);
+  const CSSValue* name =
+      GetCSSPropertyContainerName().CSSValueFromComputedStyle(
+          style, layout_object, allow_visited_style);
+
+  DCHECK(type);
+  DCHECK(name);
+
+  list->Append(*type);
+
+  if (!(IsA<CSSIdentifierValue>(name) &&
+        To<CSSIdentifierValue>(*name).GetValueID() == CSSValueID::kNone)) {
+    list->Append(*name);
+  }
+
+  return list;
 }
 
 // Returns up to two values for 'scroll-customization' property. The values

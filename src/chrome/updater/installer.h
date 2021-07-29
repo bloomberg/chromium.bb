@@ -15,6 +15,7 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/updater/persisted_data.h"
+#include "chrome/updater/updater_scope.h"
 #include "components/update_client/update_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -37,6 +38,7 @@ namespace updater {
 class Installer final : public update_client::CrxInstaller {
  public:
   Installer(const std::string& app_id,
+            const std::string& target_channel,
             scoped_refptr<PersistedData> persisted_data);
   Installer(const Installer&) = delete;
   Installer& operator=(const Installer&) = delete;
@@ -98,7 +100,10 @@ class Installer final : public update_client::CrxInstaller {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
+  UpdaterScope updater_scope_;
+
   const std::string app_id_;
+  const std::string target_channel_;
   scoped_refptr<PersistedData> persisted_data_;
 
   // These members are not updated when the installer succeeds.

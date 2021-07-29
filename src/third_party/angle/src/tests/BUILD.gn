@@ -59,6 +59,12 @@ if (is_mac) {
     "test_expectations/GPUTestConfig_mac.h",
   ]
 }
+if (is_ios) {
+  test_expectation_sources_ios = [
+    "test_expectations/GPUTestConfig_ios.mm",
+    "test_expectations/GPUTestConfig_ios.h",
+  ]
+}
 
 angle_static_library("angle_test_expectations") {
   public_deps = [
@@ -71,10 +77,8 @@ angle_static_library("angle_test_expectations") {
     frameworks = [ "Cocoa.framework" ]
   }
   if (is_ios) {
-    sources += [
-      "test_expectations/GPUTestConfig_ios.h",
-      "test_expectations/GPUTestConfig_ios.mm",
-    ]
+    sources += test_expectation_sources_ios
+    frameworks = [ "Foundation.framework" ]
   }
 }
 
@@ -104,6 +108,9 @@ template("angle_common_test_utils") {
       "//third_party/googletest:gtest",
     ]
     sources = [
+      "$angle_root/third_party/renderdoc/src/renderdoc_app.h",
+      "test_utils/RenderDoc.cpp",
+      "test_utils/RenderDoc.h",
       "test_utils/angle_test_configs.cpp",
       "test_utils/angle_test_configs.h",
       "test_utils/angle_test_instantiate.cpp",
@@ -195,6 +202,7 @@ if (is_win || is_linux || is_chromeos || is_android || is_fuchsia || is_apple) {
 
     sources = angle_end2end_tests_sources + [ "angle_end2end_tests_main.cpp" ]
     libs = []
+    data = [ "angle_end2end_tests_expectations.txt" ]
 
     if (is_mac) {
       sources += angle_end2end_tests_mac_sources
@@ -222,7 +230,6 @@ if (is_win || is_linux || is_chromeos || is_android || is_fuchsia || is_apple) {
 
     deps = [
       ":angle_common_test_utils_shared",
-      ":angle_test_expectations",
       "$angle_root:angle_image_util",
     ]
 
@@ -275,7 +282,7 @@ if (is_win || is_linux || is_chromeos || is_android || is_fuchsia || is_apple) {
 
   angle_test("angle_white_box_tests") {
     include_dirs = [ "." ]
-    sources = angle_white_box_tests_sources + [ "angle_end2end_tests_main.cpp" ]
+    sources = angle_white_box_tests_sources + [ "angle_generic_tests_main.cpp" ]
 
     if (is_win && angle_enable_d3d11) {
       sources += angle_white_box_tests_win_sources
@@ -333,6 +340,7 @@ template("angle_perftests_common") {
       "test_utils/runner/TestSuite.h",
     ]
     public_deps = [
+      "$angle_root/src/tests:angle_test_expectations",
       "$angle_root/third_party/rapidjson:rapidjson",
       "${invoker.test_utils}",
     ]
@@ -379,9 +387,20 @@ if (is_win || is_linux || is_chromeos || is_android || is_apple) {
 if (build_angle_perftests) {
   import("angle_perftests.gni")
 
+  config("angle_trace_perftests_config") {
+    if (build_angle_trace_perf_tests) {
+      defines = [ "ANGLE_TRACE_PERF_TESTS" ]
+    }
+  }
+
   angle_source_set("angle_trace_perftests") {
     testonly = true
+
     if (build_angle_trace_perf_tests) {
+      # http://anglebug.com/6009: Traces with long shaders are hitting string literal
+      # limit in MSVC, so only compile them when using clang
+      assert(is_clang, "build_angle_trace_perf_tests requires is_clang")
+
       if (is_ios) {
         # shared libraries are hidden inside ios_framework_bundle, but we include headers from them
         check_includes = false
@@ -393,6 +412,7 @@ if (build_angle_perftests) {
         "$angle_root/util:angle_png_utils",
         "restricted_traces:angle_restricted_traces",
       ]
+      public_configs = [ ":angle_trace_perftests_config" ]
       suppressed_configs +=
           [ "$angle_root:constructor_and_destructor_warnings" ]
     }
@@ -469,6 +489,7 @@ if (build_angle_gles1_conform_tests) {
       # Remove when crbug.com/428099 is resolved.
       cflags += [
         "-Wno-implicit-function-declaration",
+        "-Wno-implicit-int-float-conversion",
         "-Wno-int-to-pointer-cast",
         "-Wno-self-assign",
         "-Wno-sign-compare",
@@ -648,7 +669,7 @@ if (build_angle_gles1_conform_tests) {
     include_dirs = [ "." ]
 
     sources = [
-      "angle_end2end_tests_main.cpp",
+      "angle_generic_tests_main.cpp",
       "gles1_conformance_tests/ConformanceTests.cpp",
       "test_utils/ANGLETest.cpp",
       "test_utils/ANGLETest.h",
@@ -725,7 +746,7 @@ if (build_angle_gles1_conform_tests) {
 
       sources = [
         "$gles1_conform_root/conform/covgl/shell.c",
-        "angle_end2end_tests_main.cpp",
+        "angle_generic_tests_main.cpp",
         "gles1_conformance_tests/CovglTests.cpp",
         "test_utils/ANGLETest.cpp",
         "test_utils/ANGLETest.h",
@@ -795,7 +816,7 @@ if (build_angle_gles1_conform_tests) {
     include_dirs = [ "$gles1_conform_root/conform" ]
 
     sources = [
-      "angle_end2end_tests_main.cpp",
+      "angle_generic_tests_main.cpp",
       "gles1_conformance_tests/PrimtestTests.cpp",
       "test_utils/ANGLETest.cpp",
       "test_utils/ANGLETest.h",
@@ -1250,6 +1271,13 @@ if (build_angle_deqp_tests && !is_fuchsia) {
         "deqp_support/tcuANGLEPlatform.cpp",
         "deqp_support/tcuANGLEPlatform.h",
       ]
+
+      if ((is_mac || is_ios) && !is_component_build) {
+        ldflags = [
+          "-install_name",
+          "@rpath/lib${shared_library_name}.dylib",
+        ]
+      }
     }
 
     if (!build_with_chromium) {
@@ -1263,7 +1291,6 @@ if (build_angle_deqp_tests && !is_fuchsia) {
     angle_test("angle_deqp_${_api}_tests") {
       deps = [
         ":${shared_library_name}",
-        ":angle_test_expectations",
         "$angle_root:angle_common",
         "$angle_root/util:angle_util",
       ]

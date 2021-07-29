@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "core/fxcrt/cfx_memorystream.h"
 #include "core/fxcrt/fx_codepage.h"
+#include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_fontmapper.h"
@@ -20,7 +21,8 @@
 #include "core/fxge/cfx_gemodule.h"
 #include "core/fxge/fx_font.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
+#include "third_party/base/cxx17_backports.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
 #include "xfa/fgas/font/fgas_fontutils.h"
 
@@ -365,31 +367,31 @@ std::vector<WideString> GetNames(const uint8_t* name_table) {
   if (!name_table)
     return results;
 
-  const uint8_t* lpTable = name_table;
+  const uint8_t* pTable = name_table;
   WideString wsFamily;
-  const uint8_t* sp = lpTable + 2;
-  const uint8_t* lpNameRecord = lpTable + 6;
+  const uint8_t* sp = pTable + 2;
+  const uint8_t* pNameRecord = pTable + 6;
   uint16_t nNameCount = GetUInt16(sp);
-  const uint8_t* lpStr = lpTable + GetUInt16(sp + 2);
+  const uint8_t* pStr = pTable + GetUInt16(sp + 2);
   for (uint16_t j = 0; j < nNameCount; j++) {
-    uint16_t nNameID = GetUInt16(lpNameRecord + j * 12 + 6);
+    uint16_t nNameID = GetUInt16(pNameRecord + j * 12 + 6);
     if (nNameID != 1)
       continue;
 
-    uint16_t nPlatformID = GetUInt16(lpNameRecord + j * 12 + 0);
-    uint16_t nNameLength = GetUInt16(lpNameRecord + j * 12 + 8);
-    uint16_t nNameOffset = GetUInt16(lpNameRecord + j * 12 + 10);
+    uint16_t nPlatformID = GetUInt16(pNameRecord + j * 12 + 0);
+    uint16_t nNameLength = GetUInt16(pNameRecord + j * 12 + 8);
+    uint16_t nNameOffset = GetUInt16(pNameRecord + j * 12 + 10);
     wsFamily.clear();
     if (nPlatformID != 1) {
       for (uint16_t k = 0; k < nNameLength / 2; k++) {
-        wchar_t wcTemp = GetUInt16(lpStr + nNameOffset + k * 2);
+        wchar_t wcTemp = GetUInt16(pStr + nNameOffset + k * 2);
         wsFamily += wcTemp;
       }
       results.push_back(wsFamily);
       continue;
     }
     for (uint16_t k = 0; k < nNameLength; k++) {
-      wchar_t wcTemp = GetUInt8(lpStr + nNameOffset + k);
+      wchar_t wcTemp = GetUInt8(pStr + nNameOffset + k);
       wsFamily += wcTemp;
     }
     results.push_back(wsFamily);
@@ -751,7 +753,7 @@ RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::GetFontByCodePage(
     const wchar_t* pszFontFamily) {
   ByteString bsHash = ByteString::Format("%d, %d", wCodePage, dwFontStyles);
   bsHash += FX_UTF8Encode(WideStringView(pszFontFamily));
-  uint32_t dwHash = FX_HashCode_GetA(bsHash.AsStringView(), false);
+  uint32_t dwHash = FX_HashCode_GetA(bsHash.AsStringView());
   auto* pFontVector = &m_Hash2Fonts[dwHash];
   if (!pFontVector->empty()) {
     for (auto iter = pFontVector->begin(); iter != pFontVector->end(); ++iter) {
@@ -814,7 +816,7 @@ RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::GetFontByUnicode(
     bsHash = ByteString::Format("%d, %d", wCodePage, dwFontStyles);
   }
   bsHash += FX_UTF8Encode(WideStringView(pszFontFamily));
-  uint32_t dwHash = FX_HashCode_GetA(bsHash.AsStringView(), false);
+  uint32_t dwHash = FX_HashCode_GetA(bsHash.AsStringView());
   std::vector<RetainPtr<CFGAS_GEFont>>& fonts = m_Hash2Fonts[dwHash];
   for (auto& pFont : fonts) {
     if (VerifyUnicode(pFont, wUnicode))
@@ -831,7 +833,7 @@ RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::LoadFont(const wchar_t* pszFontFamily,
 #if defined(OS_WIN)
   ByteString bsHash = ByteString::Format("%d, %d", wCodePage, dwFontStyles);
   bsHash += FX_UTF8Encode(WideStringView(pszFontFamily));
-  uint32_t dwHash = FX_HashCode_GetA(bsHash.AsStringView(), false);
+  uint32_t dwHash = FX_HashCode_GetA(bsHash.AsStringView());
   std::vector<RetainPtr<CFGAS_GEFont>>* pFontArray = &m_Hash2Fonts[dwHash];
   if (!pFontArray->empty())
     return (*pFontArray)[0];

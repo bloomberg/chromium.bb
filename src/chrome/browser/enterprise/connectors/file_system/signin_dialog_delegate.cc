@@ -9,24 +9,30 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/enterprise/connectors/file_system/box_api_call_endpoints.h"
+#include "chrome/browser/enterprise/connectors/file_system/signin_experience.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/storage_partition.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "google_apis/gaia/oauth2_api_call_flow.h"
+#include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/layout/fill_layout.h"
 #include "url/gurl.h"
 
+// TODO(https://crbug.com/1227477): move this class to chrome/browser/ui/views.
+
 namespace {
+
+// The OAuth token consumer name.
+const char kOAuthConsumerName[] = "file_system_signin_dialog";
 
 // The OAuth2 configuration of the Box App used for the file system integration
 // uses https://google.com/generate_204 as the redirect URI.
@@ -56,9 +62,11 @@ FileSystemSigninDialogDelegate::FileSystemSigninDialogDelegate(
       web_view_(std::make_unique<views::WebView>(browser_context)),
       callback_(std::move(callback)) {
   SetHasWindowSizeControls(true);
-  SetTitle(IDS_PROFILES_GAIA_SIGNIN_TITLE);
+  SetTitle(l10n_util::GetStringFUTF16(
+      IDS_FILE_SYSTEM_CONNECTOR_SIGNIN_DIALOG_TITLE, GetProviderName()));
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_use_custom_frame(false);
+
   SetCancelCallback(
       base::BindOnce(&FileSystemSigninDialogDelegate::OnCancellation,
                      weak_factory_.GetWeakPtr()));
@@ -76,30 +84,20 @@ FileSystemSigninDialogDelegate::FileSystemSigninDialogDelegate(
 
   std::string query = base::StringPrintf("client_id=%s&response_type=code",
                                          settings_.client_id.c_str());
+  std::string extra_params = GetProviderSpecificUrlParameters();
+  if (!extra_params.empty())
+    base::StringAppendF(&query, "&%s", extra_params.c_str());
+
   url::Replacements<char> replacements;
   replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
   GURL url = settings_.authorization_endpoint.ReplaceComponents(replacements);
   web_view_->LoadInitialURL(url);
 }
 
-FileSystemSigninDialogDelegate::~FileSystemSigninDialogDelegate() = default;
-
-// static
-void FileSystemSigninDialogDelegate::ShowDialog(
-    content::WebContents* web_contents,
-    const FileSystemSettings& settings,
-    AuthorizationCompletedCallback callback) {
-  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-  gfx::NativeView parent = web_contents->GetNativeView();
-
-  FileSystemSigninDialogDelegate* delegate = new FileSystemSigninDialogDelegate(
-      browser_context, settings, std::move(callback));
-  // Object will be deleted internally by widget via DeleteDelegate().
-  // TODO(https://crbug.com/1160012): use std::unique_ptr instead?
-
-  views::DialogDelegate::CreateDialogWidget(delegate, nullptr, parent);
-  delegate->GetWidget()->Show();
-  // This only returns when the dialog is closed.
+FileSystemSigninDialogDelegate::~FileSystemSigninDialogDelegate() {
+  if (callback_) {
+    OnCancellation();
+  }
 }
 
 web_modal::WebContentsModalDialogHost*
@@ -138,18 +136,12 @@ ui::ModalType FileSystemSigninDialogDelegate::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-void FileSystemSigninDialogDelegate::DeleteDelegate() {
-  delete this;
-}
-
 views::View* FileSystemSigninDialogDelegate::GetInitiallyFocusedView() {
   return static_cast<views::View*>(web_view_.get());
 }
 
 void FileSystemSigninDialogDelegate::OnCancellation() {
-  std::move(callback_).Run(
-      GoogleServiceAuthError{GoogleServiceAuthError::State::REQUEST_CANCELED},
-      std::string(), std::string());
+  ReturnCancellation(std::move(callback_));
 }
 
 void FileSystemSigninDialogDelegate::DidFinishNavigation(
@@ -178,7 +170,8 @@ void FileSystemSigninDialogDelegate::DidFinishNavigation(
   // No refresh_token, so need to get both tokens with authorization code.
   token_fetcher_ = std::make_unique<AccessTokenFetcher>(
       url_loader, settings_.service_provider, settings_.token_endpoint,
-      std::string(), auth_code, std::move(callback));
+      /*refresh_token=*/std::string(), auth_code, kOAuthConsumerName,
+      std::move(callback));
   token_fetcher_->Start(settings_.client_id, settings_.client_secret,
                         settings_.scopes);
 }
@@ -190,6 +183,29 @@ void FileSystemSigninDialogDelegate::OnGotOAuthTokens(
   token_fetcher_ = nullptr;
   std::move(callback_).Run(status, access_token, refresh_token);
   GetWidget()->Close();
+}
+
+std::string FileSystemSigninDialogDelegate::GetProviderSpecificUrlParameters() {
+  // If an email domain is specified, use it as a hint in the box authn URL.
+  // Make sure the domain has an @ prefix.
+  if (settings_.service_provider == kBoxProviderName) {
+    if (!settings_.email_domain.empty()) {
+      // If the domain does not already start with an @ sign, prepend the
+      // escaped version of it.
+      return base::StringPrintf(
+          "box_login=%s%s", settings_.email_domain[0] == '@' ? "" : "%40",
+          net::EscapeQueryParamValue(settings_.email_domain, true).c_str());
+    }
+  } else {
+    NOTREACHED() << "Unknown service provider: " << settings_.service_provider;
+  }
+
+  return std::string();
+}
+
+std::u16string FileSystemSigninDialogDelegate::GetProviderName() const {
+  DCHECK_EQ(settings_.service_provider, kBoxProviderName);
+  return l10n_util::GetStringUTF16(IDS_FILE_SYSTEM_CONNECTOR_BOX);
 }
 
 BEGIN_METADATA(FileSystemSigninDialogDelegate, views::DialogDelegateView)

@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 import {decorate} from 'chrome://resources/js/cr/ui.m.js';
-import {Tree, TreeItem} from 'chrome://resources/js/cr/ui/tree.m.js';
+import {Tree, TreeItem} from 'chrome://resources/js/cr/ui/tree.js';
 import {$} from 'chrome://resources/js/util.m.js';
 
-import {FrameInfo, ProcessInternalsHandler, ProcessInternalsHandlerRemote, WebContentsInfo} from './process_internals.mojom-webui.js';
+import {FrameInfo, FrameInfo_Type, ProcessInternalsHandler, ProcessInternalsHandlerRemote, WebContentsInfo} from './process_internals.mojom-webui.js';
 
 /**
  * Reference to the backend providing all the data.
@@ -92,9 +92,12 @@ function frameToTreeItem(frame) {
   // Compose the string which will appear in the entry for this frame.
   let itemLabel = `Frame[${frame.processId}:${frame.routingId}:${
     frame.agentSchedulingGroupId}]:`;
-  if (frame.isBfcached) {
+  if (frame.type == FrameInfo_Type.kBackForwardCache) {
     itemLabel += ` bfcached`;
+  } else if (frame.type == FrameInfo_Type.kPrerender) {
+    itemLabel += ` prerender`;
   }
+
   itemLabel += ` SI:${frame.siteInstance.id}`;
   if (frame.siteInstance.locked) {
     itemLabel += ', locked';
@@ -151,7 +154,7 @@ function webContentsToTreeItem(webContents) {
 
   const result = frameToTreeItem(webContents.rootFrame);
   const rootItem = result[0];
-  const count = result[1];
+  const activeCount = result[1];
   item.add(rootItem);
 
   // Add data for all root nodes retrieved from back-forward cache.
@@ -162,10 +165,29 @@ function webContentsToTreeItem(webContents) {
     cachedCount++;
   }
 
-  const totalCount = count + cachedCount;
-  itemLabel += `${totalCount} frame` + (totalCount > 1 ? 's, ' : ', ');
-  itemLabel += `(${count} active, ${cachedCount} bfcached root` +
-      (cachedCount > 1 ? 's' : ``) + `).`;
+  // Add data for all root nodes in prerendered pages.
+  let prerenderCount = 0;
+  for (const cachedRoot of webContents.prerenderRootFrames) {
+    const cachedResult = frameToTreeItem(cachedRoot);
+    item.add(cachedResult[0]);
+    prerenderCount++;
+  }
+
+  // Builds a string according to English pluralization rules:
+  // buildCountString(0, 'frame') => "0 frames"
+  // buildCountString(1, 'frame') => "1 frame"
+  // buildCountString(2, 'frame') => "2 frames"
+  const buildCountString = ((count, name) => {
+    return `${count} ${name}` + (count != 1 ? 's' : '');
+  });
+
+  itemLabel += buildCountString(activeCount, 'active frame');
+  if (cachedCount > 0) {
+    itemLabel += ', ' + buildCountString(cachedCount, 'bfcached root');
+  }
+  if (prerenderCount > 0) {
+    itemLabel += ', ' + buildCountString(prerenderCount, 'prerender root');
+  }
   item.label = itemLabel;
 
   return item;

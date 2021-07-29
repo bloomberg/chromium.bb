@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -28,6 +28,7 @@
 #include "ios/web/public/thread/web_thread.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -111,7 +112,7 @@ class OmahaServiceTest : public PlatformTest {
 
   std::string test_application_id() const {
     return ios::GetChromeBrowserProvider()
-        ->GetOmahaServiceProvider()
+        .GetOmahaServiceProvider()
         ->GetApplicationID();
   }
 
@@ -137,11 +138,11 @@ TEST_F(OmahaServiceTest, PingMessageTest) {
       " sessionid=\"sessionId\" hardware_class=\"[^\"]*\">"
       "<os platform=\"ios\" version=\"[0-9][0-9]*\\(\\.[0-9][0-9]*\\)*\""
       " arch=\"[^\"]*\"/>"
-      "<app version=\"[^\"]*\" nextversion=\"\" lang=\"[^\"]*\""
+      "<app version=\"[^\"]*\" nextversion=\"\" ap=\"[^\"]*\" lang=\"[^\"]*\""
       " brand=\"[A-Z][A-Z][A-Z][A-Z]\" client=\"\" appid=\"{[^}]*}\""
       " installage=\"0\">"
-      "<updatecheck tag=\"[^\"]*\"/>"
-      "<ping active=\"1\" ad=\"-2\" rd=\"-2\"/></app></request>";
+      "<updatecheck/>"
+      "<ping active=\"1\" ad=\"-1\" rd=\"-1\"/></app></request>";
 
   OmahaService service(false);
   service.StartInternal();
@@ -166,10 +167,10 @@ TEST_F(OmahaServiceTest, PingMessageTestWithUnknownInstallDate) {
       " sessionid=\"sessionId\" hardware_class=\"[^\"]*\">"
       "<os platform=\"ios\" version=\"[0-9][0-9]*\\(\\.[0-9][0-9]*\\)*\""
       " arch=\"[^\"]*\"/>"
-      "<app version=\"[^\"]*\" nextversion=\"\" lang=\"[^\"]*\""
+      "<app version=\"[^\"]*\" nextversion=\"\" ap=\"[^\"]*\" lang=\"[^\"]*\""
       " brand=\"[A-Z][A-Z][A-Z][A-Z]\" client=\"\" appid=\"{[^}]*}\">"
-      "<updatecheck tag=\"[^\"]*\"/>"
-      "<ping active=\"1\" ad=\"-2\" rd=\"-2\"/></app></request>";
+      "<updatecheck/>"
+      "<ping active=\"1\" ad=\"-1\" rd=\"-1\"/></app></request>";
 
   OmahaService service(false);
   service.StartInternal();
@@ -196,10 +197,11 @@ TEST_F(OmahaServiceTest, InstallEventMessageTest) {
       " sessionid=\"sessionId\" hardware_class=\"[^\"]*\">"
       "<os platform=\"ios\" version=\"[0-9][0-9]*(\\.[0-9][0-9]*)*\""
       " arch=\"[^\"]*\"/>"
-      "<app version=\"%s\" nextversion=\"[^\"]*\" lang=\"[^\"]*\""
+      "<app version=\"%s\" nextversion=\"[^\"]*\" ap=\"[^\"]*\" lang=\"[^\"]*\""
       " brand=\"[A-Z][A-Z][A-Z][A-Z]\" client=\"\" appid=\"{[^}]*}\""
       " installage=\"%d\">"
       "<event eventtype=\"%d\" eventresult=\"1\"/>"
+      "<ping active=\"1\" ad=\"-1\" rd=\"-1\"/>"
       "</app></request>";
 
   // First install.
@@ -545,9 +547,9 @@ TEST_F(OmahaServiceTest, ParseAndEchoLastServerDate) {
       " sessionid=\"sessionId\" hardware_class=\"[^\"]*\">"
       "<os platform=\"ios\" version=\"[0-9][0-9]*\\(\\.[0-9][0-9]*\\)*\""
       " arch=\"[^\"]*\"/>"
-      "<app version=\"[^\"]*\" nextversion=\"\" lang=\"[^\"]*\""
+      "<app version=\"[^\"]*\" nextversion=\"\" ap=\"[^\"]*\" lang=\"[^\"]*\""
       " brand=\"[A-Z][A-Z][A-Z][A-Z]\" client=\"\" appid=\"{[^}]*}\">"
-      "<updatecheck tag=\"[^\"]*\"/>"
+      "<updatecheck/>"
       "<ping active=\"1\" ad=\"4088\" rd=\"4088\"/></app></request>";
 
   std::string content = service.GetPingContent(
@@ -757,6 +759,7 @@ TEST_F(OmahaServiceTest, ActivePingAfterInstallEventTest) {
       test_application_id() +
       "\" status=\"ok\">"
       "<event status=\"ok\"/>"
+      "<ping status=\"ok\"/>"
       "</app></response>";
   auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(

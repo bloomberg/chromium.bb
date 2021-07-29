@@ -13,11 +13,11 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -34,6 +34,7 @@
 #include "components/variations/pref_names.h"
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/proto/variations_seed.pb.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "components/web_resource/resource_request_allowed_notifier_test_util.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/url_util.h"
@@ -42,6 +43,7 @@
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -329,6 +331,8 @@ class VariationsServiceTest : public ::testing::Test {
 
  private:
   base::test::TaskEnvironment task_environment_;
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
   std::unique_ptr<metrics::TestEnabledStateProvider> enabled_state_provider_;
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
 

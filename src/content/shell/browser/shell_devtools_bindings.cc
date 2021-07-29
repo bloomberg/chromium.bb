@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -24,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -39,6 +41,7 @@
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -71,16 +74,16 @@ base::DictionaryValue BuildObjectForResponse(const net::HttpResponseHeaders* rh,
   response.SetInteger("netError", net_error);
   response.SetString("netErrorName", net::ErrorToString(net_error));
 
-  auto headers = std::make_unique<base::DictionaryValue>();
+  base::DictionaryValue headers;
   size_t iterator = 0;
   std::string name;
   std::string value;
   // TODO(caseq): this probably needs to handle duplicate header names
   // correctly by folding them.
   while (rh && rh->EnumerateHeaderLines(&iterator, &name, &value))
-    headers->SetString(name, value);
+    headers.SetString(name, value);
 
-  response.Set("headers", std::move(headers));
+  response.SetKey("headers", std::move(headers));
   return response;
 }
 
@@ -201,7 +204,10 @@ void ShellDevToolsBindings::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
 #if !defined(OS_ANDROID)
   content::RenderFrameHost* frame = navigation_handle->GetRenderFrameHost();
-  if (navigation_handle->IsInMainFrame()) {
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (navigation_handle->IsInPrimaryMainFrame()) {
     frontend_host_ = DevToolsFrontendHost::Create(
         frame, base::BindRepeating(
                    &ShellDevToolsBindings::HandleMessageFromDevToolsFrontend,
@@ -258,35 +264,39 @@ void ShellDevToolsBindings::WebContentsDestroyed() {
 
 void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     base::Value message) {
-  std::string method;
-  base::ListValue* params = nullptr;
-  base::DictionaryValue* dict = nullptr;
-  if (!message.GetAsDictionary(&dict) || !dict->GetString("method", &method)) {
+  if (!message.is_dict())
     return;
-  }
-  int request_id = 0;
-  dict->GetInteger("id", &request_id);
-  dict->GetList("params", &params);
+  const std::string* method = message.FindStringKey("method");
+  if (!method)
+    return;
 
-  if (method == "dispatchProtocolMessage" && params && params->GetSize() == 1) {
-    std::string protocol_message;
-    if (!agent_host_ || !params->GetString(0, &protocol_message))
+  int request_id = message.FindIntKey("id").value_or(0);
+  base::Value* params_value = message.FindListKey("params");
+
+  // Since we've received message by value, we can take the list.
+  base::Value::ListStorage params;
+  if (params_value) {
+    params = std::move(*params_value).TakeList();
+  }
+
+  if (*method == "dispatchProtocolMessage" && params.size() == 1) {
+    const std::string* protocol_message = params[0].GetIfString();
+    if (!agent_host_ || !protocol_message)
       return;
     agent_host_->DispatchProtocolMessage(
-        this, base::as_bytes(base::make_span(protocol_message)));
-  } else if (method == "loadCompleted") {
+        this, base::as_bytes(base::make_span(*protocol_message)));
+  } else if (*method == "loadCompleted") {
     CallClientFunction("DevToolsAPI", "setUseSoftMenu", base::Value(true));
-  } else if (method == "loadNetworkResource" && params->GetSize() == 3) {
+  } else if (*method == "loadNetworkResource" && params.size() == 3) {
     // TODO(pfeldman): handle some of the embedder messages in content.
-    std::string url;
-    std::string headers;
-    int stream_id;
-    if (!params->GetString(0, &url) || !params->GetString(1, &headers) ||
-        !params->GetInteger(2, &stream_id)) {
+    const std::string* url = params[0].GetIfString();
+    const std::string* headers = params[1].GetIfString();
+    absl::optional<const int> stream_id = params[2].GetIfInt();
+    if (!url || !headers || !stream_id.has_value()) {
       return;
     }
 
-    GURL gurl(url);
+    GURL gurl(*url);
     if (!gurl.is_valid()) {
       base::DictionaryValue response;
       response.SetInteger("statusCode", 404);
@@ -326,7 +336,7 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     // TODO(caseq): this preserves behavior of URLFetcher-based implementation.
     // We really need to pass proper first party origin from the front-end.
     resource_request->site_for_cookies = net::SiteForCookies::FromUrl(gurl);
-    resource_request->headers.AddHeadersFromString(headers);
+    resource_request->headers.AddHeadersFromString(*headers);
 
     auto* partition =
         web_contents()->GetBrowserContext()->GetStoragePartitionForUrl(gurl);
@@ -335,39 +345,45 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     auto simple_url_loader = network::SimpleURLLoader::Create(
         std::move(resource_request), traffic_annotation);
     auto resource_loader = std::make_unique<NetworkResourceLoader>(
-        stream_id, request_id, this, std::move(simple_url_loader),
+        *stream_id, request_id, this, std::move(simple_url_loader),
         factory.get());
     loaders_.insert(std::move(resource_loader));
     return;
-  } else if (method == "getPreferences") {
+  } else if (*method == "getPreferences") {
     SendMessageAck(request_id, std::move(preferences_));
     return;
-  } else if (method == "setPreference") {
-    std::string name;
-    std::string value;
-    if (!params->GetString(0, &name) || !params->GetString(1, &value)) {
+  } else if (*method == "setPreference") {
+    if (params.size() < 2)
       return;
-    }
-    preferences_.SetKey(name, base::Value(value));
-  } else if (method == "removePreference") {
-    std::string name;
-    if (!params->GetString(0, &name))
+    const std::string* name = params[0].GetIfString();
+
+    // We're just setting params[1] as a value anyways, so just make sure it's
+    // the type we want, but don't worry about getting it.
+    if (!name || !params[1].is_string())
       return;
-    preferences_.RemoveKey(name);
-  } else if (method == "requestFileSystems") {
+
+    preferences_.SetKey(*name, std::move(params[1]));
+  } else if (*method == "removePreference") {
+    const std::string* name = params[0].GetIfString();
+    if (!name)
+      return;
+    preferences_.RemoveKey(*name);
+  } else if (*method == "requestFileSystems") {
     CallClientFunction("DevToolsAPI", "fileSystemsLoaded",
                        base::Value(base::Value::Type::LIST));
-  } else if (method == "reattach") {
+  } else if (*method == "reattach") {
     if (!agent_host_)
       return;
     agent_host_->DetachClient(this);
     agent_host_->AttachClient(this);
-  } else if (method == "registerExtensionsAPI") {
-    std::string origin;
-    std::string script;
-    if (!params->GetString(0, &origin) || !params->GetString(1, &script))
+  } else if (*method == "registerExtensionsAPI") {
+    if (params.size() < 2)
       return;
-    extensions_api_[origin + "/"] = script;
+    const std::string* origin = params[0].GetIfString();
+    const std::string* script = params[1].GetIfString();
+    if (!origin || !script)
+      return;
+    extensions_api_[*origin + "/"] = *script;
   } else {
     return;
   }

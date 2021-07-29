@@ -4,6 +4,7 @@
 
 #include "ash/public/cpp/window_properties.h"
 
+#include "ash/public/cpp/resize_shadow_type.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_backdrop.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
@@ -17,12 +18,17 @@ DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT, ash::WindowBackdrop*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT, bool*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT, float*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT, SkRegion*)
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
+                                       ash::ArcResizeLockType)
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT, ash::ResizeShadowType)
 
 namespace ash {
 
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kAppIDKey, nullptr)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kArcPackageNameKey, nullptr)
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kArcResizeLockKey, false)
+DEFINE_UI_CLASS_PROPERTY_KEY(ArcResizeLockType,
+                             kArcResizeLockTypeKey,
+                             ArcResizeLockType::RESIZABLE)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(WindowBackdrop, kWindowBackdropKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanAttachToAnotherWindowKey, true)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanConsumeSystemKeysKey, false)
@@ -58,5 +64,11 @@ DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*,
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowPositionManagedTypeKey, false)
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowPipTypeKey, false)
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
+                                   kWindowPipResizeHandleBoundsKey,
+                                   nullptr)
+DEFINE_UI_CLASS_PROPERTY_KEY(ResizeShadowType,
+                             kResizeShadowTypeKey,
+                             ResizeShadowType::kUnlock)
 
 }  // namespace ash

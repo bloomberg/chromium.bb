@@ -76,7 +76,7 @@ _Attrs = ('ARCHITECTURE', 'TARGET', 'PLATFORM')
 Attr = collections.namedtuple('Attr', _Attrs)(*_Attrs)
 SUPPORT_MATRIX = {
     Attr.ARCHITECTURE:
-        set(['ia32', 'x64', 'arm', 'arm64', 'arm-neon', 'mipsel', 'mips64el']),
+        set(['ia32', 'x64', 'arm', 'arm64', 'arm-neon']),
     Attr.TARGET:
         set(['Chromium', 'Chrome', 'ChromeOS']),
     Attr.PLATFORM:
@@ -365,7 +365,7 @@ class SourceSet(object):
     sources = sorted(n.replace('\\', '/') for n in self.sources)
 
     # Write out all C sources.
-    c_sources = filter(IsCFile, sources)
+    c_sources = list(filter(IsCFile, sources))
     if c_sources:
       stanza += indent(GN_C_SOURCES_BEGIN)
       for name in c_sources:
@@ -373,7 +373,7 @@ class SourceSet(object):
       stanza += indent(GN_SOURCE_END)
 
     # Write out all assembly sources.
-    gas_sources = filter(IsGasFile, sources)
+    gas_sources = list(filter(IsGasFile, sources))
     if gas_sources:
       stanza += indent(GN_GAS_SOURCES_BEGIN)
       for name in gas_sources:
@@ -381,7 +381,7 @@ class SourceSet(object):
       stanza += indent(GN_SOURCE_END)
 
     # Write out all assembly sources.
-    nasm_sources = filter(IsNasmFile, sources)
+    nasm_sources = list(filter(IsNasmFile, sources))
     if nasm_sources:
       stanza += indent(GN_NASM_SOURCES_BEGIN)
       for name in nasm_sources:
@@ -698,7 +698,7 @@ RENAME_CONTENT = """{0} File automatically generated. See crbug.com/495833.
 """
 
 
-def GetIncludedSources(file_path, source_dir, include_set):
+def GetIncludedSources(file_path, source_dir, include_set, scan_only=False):
   """Recurse over include tree, accumulating absolute paths to all included
   files (including the seed file) in include_set.
 
@@ -726,9 +726,12 @@ def GetIncludedSources(file_path, source_dir, include_set):
 
   # Already processed this file, bail out.
   if file_path in include_set:
-    return include_set
+    return
 
-  include_set.add(file_path)
+  if not scan_only:
+    include_set.add(file_path)
+  else:
+    print(f'WARNING: Not checking license for: {file_path}')
 
   for line in open(file_path):
     include_match = INCLUDE_REGEX.search(line)
@@ -760,11 +763,14 @@ def GetIncludedSources(file_path, source_dir, include_set):
 
     # At this point we've found the file. Check if its in our ignore list which
     # means that the list should be updated to no longer mention this file.
+    ignored = False
     if include_file_path in IGNORED_INCLUDE_FILES:
+      ignored = True
       print(f'Found {include_file_path} in IGNORED_INCLUDE_FILES. '
              'Consider updating the list to remove this file.')
 
-    GetIncludedSources(resolved_include_path, source_dir, include_set)
+    GetIncludedSources(resolved_include_path, source_dir, include_set,
+                       scan_only=ignored)
 
 
 def CheckLicensesForSources(sources, source_dir, print_licenses):
@@ -909,7 +915,7 @@ def WriteGitCommands(filename, all_renames, old_renames_to_delete):
     for renamed_file in all_renames:
       git_file.write("git add %s\n" % renamed_file)
     for unrenamed_file in old_renames_to_delete:
-      git_file.write("git rm %s\n" % unrenamed_file)
+      git_file.write("git rm %s -f\n" % unrenamed_file)
 
 def main():
   options, _ = ParseOptions()
@@ -967,8 +973,8 @@ def main():
   # Remove autorename_ files now that we've grabbed their underlying includes.
   # We generated autorename_ files above and should not consider them for
   # licensing or credits.
-  sources_to_check = filter(lambda s: not RENAME_REGEX.search(s),
-                            sources_to_check)
+  sources_to_check = list(filter(lambda s: not RENAME_REGEX.search(s),
+                            sources_to_check))
 
   if not CheckLicensesForStaticLinking(sources_to_check, source_dir,
                                        options.print_licenses):

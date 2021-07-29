@@ -30,6 +30,7 @@
 
 #include "avcodec.h"
 #include "blockdsp.h"
+#include "encode.h"
 #include "fdctdsp.h"
 #include "internal.h"
 #include "mpegvideo.h"
@@ -499,12 +500,6 @@ static av_cold int dnxhd_encode_init(AVCodecContext *avctx)
         !FF_ALLOCZ_TYPED_ARRAY(ctx->mb_bits,    ctx->m.mb_num)    ||
         !FF_ALLOCZ_TYPED_ARRAY(ctx->mb_qscale,  ctx->m.mb_num))
         return AVERROR(ENOMEM);
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-    avctx->coded_frame->key_frame = 1;
-    avctx->coded_frame->pict_type = AV_PICTURE_TYPE_I;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
 
     if (avctx->active_thread_type == FF_THREAD_SLICE) {
         if (avctx->thread_count > MAX_THREADS) {
@@ -1252,11 +1247,6 @@ static void dnxhd_load_picture(DNXHDEncContext *ctx, const AVFrame *frame)
         ctx->thread[i]->dct_uv_offset = ctx->m.uvlinesize*8;
     }
 
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-    ctx->m.avctx->coded_frame->interlaced_frame = frame->interlaced_frame;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     ctx->cur_field = frame->interlaced_frame && !frame->top_field_first;
 }
 
@@ -1268,7 +1258,7 @@ static int dnxhd_encode_picture(AVCodecContext *avctx, AVPacket *pkt,
     int offset, i, ret;
     uint8_t *buf;
 
-    if ((ret = ff_alloc_packet2(avctx, pkt, ctx->frame_size, 0)) < 0)
+    if ((ret = ff_get_encode_buffer(avctx, pkt, ctx->frame_size, 0)) < 0)
         return ret;
     buf = pkt->data;
 
@@ -1317,12 +1307,6 @@ encode_coding_unit:
         goto encode_coding_unit;
     }
 
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-    avctx->coded_frame->quality = ctx->qscale * FF_QP2LAMBDA;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
-
     ff_side_data_set_encoder_stats(pkt, ctx->qscale * FF_QP2LAMBDA, NULL, 0, AV_PICTURE_TYPE_I);
 
     pkt->flags |= AV_PKT_FLAG_KEY;
@@ -1366,16 +1350,17 @@ static const AVCodecDefault dnxhd_defaults[] = {
     { NULL },
 };
 
-AVCodec ff_dnxhd_encoder = {
+const AVCodec ff_dnxhd_encoder = {
     .name           = "dnxhd",
     .long_name      = NULL_IF_CONFIG_SMALL("VC3/DNxHD"),
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_DNXHD,
+    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS |
+                      AV_CODEC_CAP_SLICE_THREADS,
     .priv_data_size = sizeof(DNXHDEncContext),
     .init           = dnxhd_encode_init,
     .encode2        = dnxhd_encode_picture,
     .close          = dnxhd_encode_end,
-    .capabilities   = AV_CODEC_CAP_SLICE_THREADS | AV_CODEC_CAP_FRAME_THREADS,
     .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = (const enum AVPixelFormat[]) {
         AV_PIX_FMT_YUV422P,

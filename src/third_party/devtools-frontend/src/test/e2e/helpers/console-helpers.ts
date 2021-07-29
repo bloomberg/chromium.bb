@@ -4,7 +4,7 @@
 
 import type * as puppeteer from 'puppeteer';
 
-import {$, $$, assertNotNull, click, getBrowserAndPages, goToResource, pasteText, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
+import {$, $$, assertNotNull, click, getBrowserAndPages, goToResource, pasteText, timeout, waitFor, waitForAria, waitForFunction} from '../../shared/helper.js';
 import {AsyncScope} from '../../shared/mocha-extensions.js';
 
 export const CONSOLE_TAB_SELECTOR = '#tab-console';
@@ -52,6 +52,17 @@ export async function waitForConsoleMessagesToBeNonEmpty(numberOfMessages: numbe
     const textContents =
         await Promise.all(messages.map(message => message.evaluate(message => message.textContent || '')));
     return textContents.every(text => text !== '');
+  });
+}
+
+export async function waitForLastConsoleMessageToHaveContent(expectedTextContent: string) {
+  await waitForFunction(async () => {
+    const messages = await $$(CONSOLE_FIRST_MESSAGES_SELECTOR);
+    if (messages.length === 0) {
+      return false;
+    }
+    const lastMessageContent = await messages[messages.length - 1].evaluate(message => message.textContent);
+    return lastMessageContent === expectedTextContent;
   });
 }
 
@@ -243,4 +254,11 @@ export async function waitForIssueButtonLabel(expectedLabel: string) {
     const label = await getIssueButtonLabel();
     return expectedLabel === label;
   });
+}
+
+export async function clickOnContextMenu(selectorForNode: string, ctxMenuItemName: string) {
+  const node = await waitFor(selectorForNode);
+  await click(node, {clickOptions: {button: 'right'}});
+  const copyButton = await waitForAria(ctxMenuItemName);
+  await copyButton.click();
 }

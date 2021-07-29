@@ -170,7 +170,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.FailedTasksChrome"
-    enum="ChromeBrowsingDataRemoverTasks" expires_after="2021-09-01">
+    enum="ChromeBrowsingDataRemoverTasks" expires_after="2021-12-19">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <summary>
@@ -374,7 +374,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.UserDeletedFromTab"
-    enum="ClearBrowsingDataTab" expires_after="2021-10-04">
+    enum="ClearBrowsingDataTab" expires_after="2021-12-05">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <summary>
@@ -432,7 +432,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.DomainCount1Day" units="domains"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -443,6 +443,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     current date, and also reported once every 24 hours thereafter for the
     latest unreported day, while the profile remains open. If no domains are
     visited in a given day, a count of 0 will be reported for that day.
+
+    Warning about delayed data: Chrome may upload logs on a given day without
+    uploading this histogram. This can happen because Chrome uploads logs
+    initially upon startup. This histogram is emitted shortly _after_ startup.
+    In the case of short sessions, it's possible the log with this histogram did
+    not have time to be uploaded. Generally the log will be cached and uploaded
+    the next time the user starts Chrome. We should still get one count per
+    calendar day; it simply may not be on the day the metric was computed.
+    (Exception: on Android before M-91, sometimes these emitted histograms were
+    lost due to lack of robust &quot;background logging&quot;.)
 
     Note: for users syncing between multiple devices, this count may include
     some URLs/domains that weren't visited on this device. In other words, some
@@ -457,7 +467,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.DomainCount28Day" units="domains"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -469,6 +479,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Also reported once every 24 hours thereafter for the latest unreported
     period, while the profile remains open. If no domains are visited during a
     28-day period, a count of 0 will be reported for that period.
+
+    Warning about delayed data: Chrome may upload logs on a given day without
+    uploading this histogram. This can happen because Chrome uploads logs
+    initially upon startup. This histogram is emitted shortly _after_ startup.
+    In the case of short sessions, it's possible the log with this histogram did
+    not have time to be uploaded. Generally the log will be cached and uploaded
+    the next time the user starts Chrome. We should still get one count per
+    calendar day; it simply may not be on the day the metric was computed.
+    (Exception: on Android before M-91, sometimes these emitted histograms were
+    lost due to lack of robust &quot;background logging&quot;.)
 
     Note: for users syncing between multiple devices, this count may include
     some URLs/domains that weren't visited on this device. In other words, some
@@ -483,7 +503,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.DomainCount7Day" units="domains"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -495,6 +515,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Also reported once every 24 hours thereafter for the latest unreported
     period, while the profile remains open. If no domains are visited during a
     7-day period, a count 0 will be reported for that period.
+
+    Warning about delayed data: Chrome may upload logs on a given day without
+    uploading this histogram. This can happen because Chrome uploads logs
+    initially upon startup. This histogram is emitted shortly _after_ startup.
+    In the case of short sessions, it's possible the log with this histogram did
+    not have time to be uploaded. Generally the log will be cached and uploaded
+    the next time the user starts Chrome. We should still get one count per
+    calendar day; it simply may not be on the day the metric was computed.
+    (Exception: on Android before M-91, sometimes these emitted histograms were
+    lost due to lack of robust &quot;background logging&quot;.)
 
     Note: for users syncing between multiple devices, this count may include
     some URLs/domains that weren't visited on this device. In other words, some
@@ -509,7 +539,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.DomainCountQueryTime" units="ms"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -659,7 +689,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.InMemoryURLHistoryItems" units="units"
-    expires_after="2021-10-04">
+    expires_after="2021-12-05">
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -728,7 +758,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.MonthlyHostCount" units="hosts"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>

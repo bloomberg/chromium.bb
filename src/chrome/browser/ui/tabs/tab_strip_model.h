@@ -18,7 +18,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_multi_source_observation.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -140,6 +141,18 @@ class TabStripModel : public TabGroupController {
     NEW_TAB_ENUM_COUNT = 5,
   };
 
+  // Enumerates different types of tab activation. Mainly used for
+  // comparison between classic tab strip and WebUI tab strip.
+  // KEEP IN SYNC WITH THE TabActivationTypes ENUM IN enums.xml.
+  // NEW VALUES MUST BE APPENDED AND AVOID CHANGING ANY PRE-EXISTING VALUES.
+  enum class TabActivationTypes {
+    // Switch to a tab.
+    kTab = 0,
+    // Open the context menu of a tab.
+    kContextMenu = 1,
+    kMaxValue = kContextMenu,
+  };
+
   static constexpr int kNoTab = -1;
 
   // Construct a TabStripModel with a delegate to help it do certain things
@@ -217,11 +230,13 @@ class TabStripModel : public TabGroupController {
       int index,
       std::unique_ptr<content::WebContents> new_contents);
 
-  // Detaches the WebContents at the specified index from this strip. The
-  // WebContents is not destroyed, just removed from display. The caller
-  // is responsible for doing something with it (e.g. stuffing it into another
-  // strip). Returns the detached WebContents.
-  std::unique_ptr<content::WebContents> DetachWebContentsAt(int index);
+  // Detaches the WebContents at the specified index for reinsertion into
+  // another tab strip. Returns the detached WebContents.
+  std::unique_ptr<content::WebContents> DetachWebContentsAtForInsertion(
+      int index);
+
+  // Detaches the WebContents at the specified index and immediately deletes it.
+  void DetachAndDeleteWebContentsAt(int index);
 
   // User gesture type that triggers ActivateTabAt. kNone indicates that it was
   // not triggered by a user gesture, but by a by-product of some other action.
@@ -500,7 +515,6 @@ class TabStripModel : public TabGroupController {
     CommandCloseTabsToRight,
     CommandTogglePinned,
     CommandToggleGrouped,
-    CommandFocusMode,
     CommandToggleSiteMuted,
     CommandSendTabToSelf,
     CommandSendTabToSelfSingleTarget,
@@ -595,6 +609,14 @@ class TabStripModel : public TabGroupController {
   struct DetachedWebContents;
   struct DetachNotifications;
 
+  // Detaches the WebContents at the specified |index| from this strip. |reason|
+  // is used to indicate to observers what is going to happen to the WebContents
+  // (i.e. deleted or reinserted into another tab strip). Returns the detached
+  // WebContents.
+  std::unique_ptr<content::WebContents> DetachWebContentsWithReasonAt(
+      int index,
+      TabStripModelChange::RemoveReason reason);
+
   // Performs all the work to detach a WebContents instance but avoids sending
   // most notifications. TabClosingAt() and TabDetachedAt() are sent because
   // observers are reliant on the selection model being accurate at the time
@@ -665,8 +687,8 @@ class TabStripModel : public TabGroupController {
   //
   // Returns true if the WebContentses were closed immediately, false if we
   // are waiting for the result of an onunload handler.
-  bool InternalCloseTabs(base::span<content::WebContents* const> items,
-                         uint32_t close_types);
+  bool CloseTabs(base::span<content::WebContents* const> items,
+                 uint32_t close_types);
 
   // |close_types| is a bitmask of the types in CloseTypes.
   // Returns true if all the tabs have been deleted. A return value of false
@@ -700,14 +722,22 @@ class TabStripModel : public TabGroupController {
       TabStripModelObserver::ChangeReason reason,
       bool triggered_by_other_operation);
 
-  // Selects either the next tab (|forward| is true), or the previous tab
-  // (|forward| is false).
-  void SelectRelativeTab(bool forward, UserGestureDetails detail);
+  // direction of relative tab movements or selections. kNext indicates moving
+  // forward (positive increment) in the tab strip. kPrevious indicates
+  // backward (negative increment).
+  enum class TabRelativeDirection {
+    kNext,
+    kPrevious,
+  };
 
-  // Moves the active tabs into the next slot (|forward| is true), or the
-  // previous slot (|forward| is false). Respects group boundaries and creates
+  // Selects either the next tab (kNext), or the previous tab (kPrevious).
+  void SelectRelativeTab(TabRelativeDirection direction,
+                         UserGestureDetails detail);
+
+  // Moves the active tabs into the next slot (kNext), or the
+  // previous slot (kPrevious). Respects group boundaries and creates
   // movement slots into and out of groups.
-  void MoveTabRelative(bool forward);
+  void MoveTabRelative(TabRelativeDirection direction);
 
   // Does the work of MoveWebContentsAt. This has no checks to make sure the
   // position is valid, those are done in MoveWebContentsAt.
@@ -823,14 +853,27 @@ class TabStripModel : public TabGroupController {
   DISALLOW_IMPLICIT_CONSTRUCTORS(TabStripModel);
 };
 
-// Forbid construction of ScopedObserver with TabStripModel:
-// TabStripModelObserver already implements ScopedObserver's functionality
-// natively.
+// Forbid construction of ScopedObservation and ScopedMultiSourceObservation
+// with TabStripModel: TabStripModelObserver already implements their
+// functionality natively.
+namespace base {
+
 template <>
-class ScopedObserver<TabStripModel, TabStripModelObserver> {
+class ScopedObservation<TabStripModel, TabStripModelObserver> {
  public:
   // Deleting the constructor gives a clear error message traceable back to here.
-  explicit ScopedObserver(TabStripModelObserver* observer) = delete;
+  explicit ScopedObservation(TabStripModelObserver* observer) = delete;
 };
+
+template <>
+class ScopedMultiSourceObservation<TabStripModel, TabStripModelObserver> {
+ public:
+  // Deleting the constructor gives a clear error message traceable back to
+  // here.
+  explicit ScopedMultiSourceObservation(TabStripModelObserver* observer) =
+      delete;
+};
+
+}  // namespace base
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_H_

@@ -38,23 +38,20 @@
 #include "chrome/browser/ash/crostini/crostini_types.mojom.h"
 #include "chrome/browser/ash/crostini/crostini_upgrade_available_notification.h"
 #include "chrome/browser/ash/crostini/throttle/crostini_throttle.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/guest_os/guest_os_stability_monitor.h"
+#include "chrome/browser/ash/policy/handlers/powerwash_requirements_checker.h"
 #include "chrome/browser/ash/usb/cros_usb_detector.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/anomaly_detector_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/image_loader_client.h"
@@ -152,28 +149,28 @@ void EmitTimeInStageHistogram(base::TimeDelta duration,
   std::string name;
   switch (state) {
     case mojom::InstallerState::kStart:
-      name = "Crostini.RestarterTimeInState.Start";
+      name = "Crostini.RestarterTimeInState2.Start";
       break;
     case mojom::InstallerState::kInstallImageLoader:
-      name = "Crostini.RestarterTimeInState.InstallImageLoader";
+      name = "Crostini.RestarterTimeInState2.InstallImageLoader";
       break;
     case mojom::InstallerState::kCreateDiskImage:
-      name = "Crostini.RestarterTimeInState.CreateDiskImage";
+      name = "Crostini.RestarterTimeInState2.CreateDiskImage";
       break;
     case mojom::InstallerState::kStartTerminaVm:
-      name = "Crostini.RestarterTimeInState.StartTerminaVm";
+      name = "Crostini.RestarterTimeInState2.StartTerminaVm";
       break;
     case mojom::InstallerState::kStartLxd:
-      name = "Crostini.RestarterTimeInState.StartLxd";
+      name = "Crostini.RestarterTimeInState2.StartLxd";
       break;
     case mojom::InstallerState::kCreateContainer:
-      name = "Crostini.RestarterTimeInState.CreateContainer";
+      name = "Crostini.RestarterTimeInState2.CreateContainer";
       break;
     case mojom::InstallerState::kSetupContainer:
-      name = "Crostini.RestarterTimeInState.SetupContainer";
+      name = "Crostini.RestarterTimeInState2.SetupContainer";
       break;
     case mojom::InstallerState::kStartContainer:
-      name = "Crostini.RestarterTimeInState.StartContainer";
+      name = "Crostini.RestarterTimeInState2.StartContainer";
       break;
     case mojom::InstallerState::kConfigureContainer:
       NOTREACHED();
@@ -412,8 +409,8 @@ class CrostiniManager::CrostiniRestarter
     // try mounting sshfs in that case.
     auto info = crostini_manager_->GetContainerInfo(container_id_);
     if (container_id_ == ContainerId::GetDefault() && info) {
-      crostini_manager_->MountCrostiniFiles(container_id_, base::DoNothing());
-      // TODO(crbug/1142321): Metrics
+      crostini_manager_->MountCrostiniFiles(container_id_, base::DoNothing(),
+                                            true);
     }
     FinishRestart(result);
   }
@@ -465,7 +462,12 @@ class CrostiniManager::CrostiniRestarter
   };
 
   void StartStage(mojom::InstallerState stage) {
-    EmitTimeInStageHistogram(base::TimeTicks::Now() - stage_start_, stage);
+    int finished_stage = static_cast<int>(stage) - 1;
+    if (finished_stage >= 0) {
+      EmitTimeInStageHistogram(
+          base::TimeTicks::Now() - stage_start_,
+          static_cast<mojom::InstallerState>(finished_stage));
+    }
     this->stage_ = stage;
     stage_start_ = base::TimeTicks::Now();
     DCHECK(stage_timeouts_.find(stage) != stage_timeouts_.end());
@@ -482,6 +484,7 @@ class CrostiniManager::CrostiniRestarter
 
   void FinishRestart(CrostiniResult result) {
     DCHECK(!is_aborted_);
+    EmitTimeInStageHistogram(base::TimeTicks::Now() - stage_start_, stage_);
 
     // FinishRestart will delete this, so it's not safe to call any methods
     // after this point.
@@ -2275,12 +2278,10 @@ void CrostiniManager::OnStartTerminaVm(
   }
 
   // The UI can only resize the default VM, so only (maybe) show the
-  // notification for the default VM. Additionally, ignore <= 0 as -1 means
-  // error and 0 is ambiguous meaning both no free space and missing data.
-  // TODO(crbug/1212890): Distinguish 0 bytes free from didn't populate field
-  // e.g. when VM is already running.
+  // notification for the default VM, if we got a value, and if the value isn't
+  // an error (the API we call for space returns -1 on error).
   if (vm_name == ContainerId::GetDefault().vm_name &&
-      response->free_bytes() > 0) {
+      response->free_bytes_has_value() && response->free_bytes() >= 0) {
     low_disk_notifier_->ShowNotificationIfAppropriate(response->free_bytes());
   }
 
@@ -2846,16 +2847,51 @@ void CrostiniManager::OnSetUpLxdContainerUser(
     return;
   }
 
-  if (response->status() !=
-          vm_tools::cicerone::SetUpLxdContainerUserResponse::SUCCESS &&
-      response->status() !=
-          vm_tools::cicerone::SetUpLxdContainerUserResponse::EXISTS) {
-    LOG(ERROR) << "Failed to set up container user: "
-               << response->failure_reason();
-    std::move(callback).Run(/*success=*/false);
-    return;
+  switch (response->status()) {
+    case vm_tools::cicerone::SetUpLxdContainerUserResponse::UNKNOWN:
+      // If we hit this then we don't know if users are set up or not; a
+      // possible cause is we weren't able to read the /etc/passwd file.
+      // We're in one of the following cases:
+      // - Users are already set up but hit a transient error reading the file
+      //   e.g. crbug/1216305. This would be a no-op so safe to continue.
+      // - The container is in a bad state e.g. file is missing entirely.
+      //   Once we start the container (next step) the system will try to repair
+      //   this. It won't recover enough for restart to succeed, but it will
+      //   give us a valid passwd file so that next launch we'll set up users
+      //   and all will be good again. If we errored out here then we'd never
+      //   repair the file and the container is borked for good.
+      // - Lastly and least likely, it could be a transient issue but users
+      //   aren't set up correctly. The container will either fail to start,
+      //   or start but won't completely work (e.g. maybe adb sideloading will
+      //   fail). Either way, restarting the container should get them back into
+      //   a good state.
+      // Note that if the user's account is missing then garcon won't start,
+      // which combined with crbug/1197416 means launch will hang forever (well,
+      // it's a 5 day timeout so not forever but may as well be). They would
+      // have to be incredibly unlucky and restarting will fix things so that's
+      // acceptable.
+      base::UmaHistogramBoolean("Crostini.SetUpLxdContainerUser.UnknownResult",
+                                true);
+      LOG(ERROR) << "Failed to set up container user: "
+                 << response->failure_reason();
+      std::move(callback).Run(/*success=*/true);
+      break;
+    case vm_tools::cicerone::SetUpLxdContainerUserResponse::SUCCESS:
+    case vm_tools::cicerone::SetUpLxdContainerUserResponse::EXISTS:
+      base::UmaHistogramBoolean("Crostini.SetUpLxdContainerUser.UnknownResult",
+                                false);
+      std::move(callback).Run(/*success=*/true);
+      break;
+    case vm_tools::cicerone::SetUpLxdContainerUserResponse::FAILED:
+      LOG(ERROR) << "Failed to set up container user: "
+                 << response->failure_reason();
+      base::UmaHistogramBoolean("Crostini.SetUpLxdContainerUser.UnknownResult",
+                                false);
+      std::move(callback).Run(/*success=*/false);
+      break;
+    default:
+      NOTREACHED();
   }
-  std::move(callback).Run(/*success=*/true);
 }
 
 void CrostiniManager::OnLxdContainerCreated(
@@ -3578,15 +3614,18 @@ void CrostiniManager::EmitVmDiskTypeMetric(const std::string vm_name) {
 }
 
 void CrostiniManager::MountCrostiniFiles(ContainerId container_id,
-                                         CrostiniResultCallback callback) {
+                                         CrostiniResultCallback callback,
+                                         bool background) {
   crostini_sshfs_->MountCrostiniFiles(
-      container_id, base::BindOnce(
-                        [](CrostiniResultCallback callback, bool success) {
-                          std::move(callback).Run(
-                              success ? CrostiniResult::SUCCESS
-                                      : CrostiniResult::SSHFS_MOUNT_ERROR);
-                        },
-                        std::move(callback)));
+      container_id,
+      base::BindOnce(
+          [](CrostiniResultCallback callback, bool success) {
+            std::move(callback).Run(success
+                                        ? CrostiniResult::SUCCESS
+                                        : CrostiniResult::SSHFS_MOUNT_ERROR);
+          },
+          std::move(callback)),
+      background);
 }
 
 void CrostiniManager::CallRestarterStartLxdContainerFinishedForTesting(

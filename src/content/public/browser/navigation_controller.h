@@ -7,12 +7,10 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
@@ -24,21 +22,23 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/was_activated_option.mojom.h"
+#include "net/base/net_errors.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/navigation/was_activated_option.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace base {
-
 class RefCountedString;
-
 }  // namespace base
+
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace content {
 
@@ -47,13 +47,28 @@ class BrowserContext;
 class NavigationEntry;
 class RenderFrameHost;
 class WebContents;
+class NavigationHandle;
 struct OpenURLParams;
 
-// A NavigationController maintains the back-forward list for a WebContents and
-// manages all navigation within that list.
+// A NavigationController manages session history, i.e., a back-forward list
+// of navigation entries.
 //
-// Each NavigationController belongs to one WebContents; each WebContents has
-// exactly one NavigationController.
+// FOR CONTENT EMBEDDERS: You can think of each WebContents as having one
+// NavigationController. Technically, this is the NavigationController for
+// the primary frame tree of the WebContents. See the comments for
+// WebContents::GetPrimaryPage() for more about primary vs non-primary frame
+// trees. This NavigationController is retrievable by
+// WebContents::GetController(). It is the only one that affects the actual
+// user-exposed session history list (e.g., via back/forward buttons). It is
+// not intended to expose other NavigationControllers to the content/public
+// API.
+//
+// FOR CONTENT INTERNALS: Be aware that NavigationControllerImpl is 1:1 with a
+// FrameTree. With MPArch there can be multiple FrameTrees associated with a
+// WebContents, so there can be multiple NavigationControllers associated with
+// a WebContents. However only the primary one, and the
+// NavigationEntries/events originating from it, is exposed to //content
+// embedders.
 class NavigationController {
  public:
   using DeletionPredicate =
@@ -257,8 +272,8 @@ class NavigationController {
 
     // Set to |kYes| if the navigation should propagate user activation. This
     // is used by embedders where the activation has occurred outside the page.
-    mojom::WasActivatedOption was_activated =
-        mojom::WasActivatedOption::kUnknown;
+    blink::mojom::WasActivatedOption was_activated =
+        blink::mojom::WasActivatedOption::kUnknown;
 
     // If this navigation was initiated from a link that specified the
     // hrefTranslate attribute, this contains the attribute's value (a BCP47
@@ -283,7 +298,10 @@ class NavigationController {
 
   // Returns the web contents associated with this controller. It can never be
   // nullptr.
-  virtual WebContents* GetWebContents() = 0;
+  //
+  // TODO(crbug.com/1225205): Remove this. It is a layering violation as it is
+  // implemented in renderer_host/ which cannot depend on WebContents.
+  virtual WebContents* DeprecatedGetWebContents() = 0;
 
   // Get the browser context for this controller. It can never be nullptr.
   virtual BrowserContext* GetBrowserContext() = 0;
@@ -369,15 +387,22 @@ class NavigationController {
   // New navigations -----------------------------------------------------------
 
   // Loads the specified URL, specifying extra http headers to add to the
-  // request.  Extra headers are separated by \n.
-  virtual void LoadURL(const GURL& url,
-                       const Referrer& referrer,
-                       ui::PageTransition type,
-                       const std::string& extra_headers) = 0;
+  // request. Extra headers are separated by \n.
+  //
+  // Returns NavigationHandle for the initiated navigation (might be null if
+  // the navigation couldn't be started for some reason). WeakPtr is used as if
+  // the navigation is cancelled before it reaches DidStartNavigation, the
+  // WebContentsObserver::DidFinishNavigation callback won't be dispatched.
+  virtual base::WeakPtr<NavigationHandle> LoadURL(
+      const GURL& url,
+      const Referrer& referrer,
+      ui::PageTransition type,
+      const std::string& extra_headers) = 0;
 
   // More general version of LoadURL. See comments in LoadURLParams for
   // using |params|.
-  virtual void LoadURLWithParams(const LoadURLParams& params) = 0;
+  virtual base::WeakPtr<NavigationHandle> LoadURLWithParams(
+      const LoadURLParams& params) = 0;
 
   // Loads the current page if this NavigationController was restored from
   // history and the current page has not loaded yet or if the load was

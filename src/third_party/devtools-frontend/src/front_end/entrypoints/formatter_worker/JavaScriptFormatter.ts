@@ -148,6 +148,9 @@ export class JavaScriptFormatter {
     if (node.type === 'Identifier') {
       return 't';
     }
+    if (node.type === 'PrivateIdentifier') {
+      return 't';
+    }
     if (node.type === 'ReturnStatement') {
       if (AT.punctuator(token, ';')) {
         return 't';
@@ -241,6 +244,13 @@ export class JavaScriptFormatter {
           allVariablesInitialized = allVariablesInitialized && Boolean(declarations[i].init);
         }
         return !this._inForLoopHeader(node) && allVariablesInitialized ? 'nSSts' : 'ts';
+      }
+    } else if (node.type === 'PropertyDefinition') {
+      if (AT.punctuator(token, '=')) {
+        return 'sts';
+      }
+      if (AT.punctuator(token, ';')) {
+        return 'tn';
       }
     } else if (node.type === 'BlockStatement') {
       if (AT.punctuator(token, '{')) {

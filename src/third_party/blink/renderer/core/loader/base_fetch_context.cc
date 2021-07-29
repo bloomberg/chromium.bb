@@ -335,6 +335,16 @@ void BaseFetchContext::AddClientHintsIfNecessary(
               network::mojom::blink::WebClientHintsType::kUAFullVersion)],
           SerializeHeaderString(ua->full_version));
     }
+
+    if (ShouldSendClientHint(
+            ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
+            network::mojom::blink::WebClientHintsType::kUABitness,
+            hints_preferences)) {
+      request.SetHttpHeaderField(
+          blink::kClientHintsHeaderMapping[static_cast<size_t>(
+              network::mojom::blink::WebClientHintsType::kUABitness)],
+          SerializeHeaderString(ua->bitness));
+    }
   }
 
   if (ShouldSendClientHint(
@@ -401,8 +411,9 @@ BaseFetchContext::CheckCSPForRequestInternal(
     return absl::nullopt;
   }
 
-  if (ShouldDisableCSPCheckForSubresourceRedirectOrigin(request_context,
-                                                        redirect_status, url)) {
+  if (ShouldDisableCSPCheckForLitePageSubresourceRedirectOrigin(
+          GetResourceFetcherProperties().GetLitePageSubresourceRedirectOrigin(),
+          request_context, redirect_status, url)) {
     return absl::nullopt;
   }
 

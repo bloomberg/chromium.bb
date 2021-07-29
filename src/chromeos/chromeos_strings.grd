@@ -221,7 +221,7 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ASH_BROWSE_AS_GUEST_BUTTON" desc="Text shown on Chrome OS sign-in screen button that launches guest session. Should be short.">
         Browse as Guest
       </message>
-      <message name="IDS_ASH_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
+      <message name="IDS_ASH_ADD_USER_BUTTON" desc="Text shown on an add user button on login/lock screen">
         Add Person
       </message>
       <message name="IDS_ASH_PARENT_ACCESS_BUTTON" desc="Text shown on an parent access button on login/lock screen">
@@ -232,6 +232,12 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_ASH_ENTERPRISE_ENROLLMENT_BUTTON" desc="Text shown on enterprise enrollment button on oobe screen.">
         Enterprise enrollment
+      </message>
+      <message name="IDS_ASH_SHELF_SIGNIN_BUTTON" desc="Text shown on sign in button on enrollment screen.">
+        Use as personal device
+      </message>
+      <message name="IDS_ASH_SHELF_OS_INSTALL_BUTTON" desc="Text shown on install cloudready button on login screen.">
+        Install CloudReady
       </message>
 
       <message name="IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE" desc="The title used for the Ash Launcher in the Shelf (not mentioning 'Apps' since this is a general launcher).">
@@ -261,6 +267,12 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_PASSWORD_EXPIRY_CHANGE_PASSWORD_BUTTON" desc="Text on a button that takes the user to page to change their password">
         Change password
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_NOTIFICATION_TITLE" desc="Message title for a notification that tells the user that the password was updated.">
+        Chrome OS password updated
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_NOTIFICATION_BODY" desc="Message body on a notification that politely requests the user to start using the new password.">
+        Your password change was successful. Please use the new password from now on.
       </message>
 
       <!-- In-session password change -->
@@ -574,7 +586,10 @@ Try tapping the mic to ask me anything.
         Place your document on the scanner and select Scan to get started
       </message>
       <message name="IDS_SCANNING_APP_SCAN_BUTTON_TEXT" desc="The text displayed for the button that starts a scan.">
-        Scan
+        {NUMBER_OF_PAGES, plural,
+        =0 {Scan}
+        =1 {Scan page {NUMBER_OF_PAGES}}
+        other {Scan page {NUMBER_OF_PAGES}}}
       </message>
       <message name="IDS_SCANNING_APP_MY_DRIVE" desc="The text displayed in the Scan To dropdown when the user selects to save completed scans to their Google Drive 'My Drive' folder.">
         My Drive
@@ -669,6 +684,30 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SCANNING_APP_SHOW_IN_FOLDER_BUTTON_LABEL" desc="The label for the button that opens the files app in the location of the saved scan.">
         Show in folder
       </message>
+      <message name="IDS_SCANNING_APP_MULTI_PAGE_CHECKBOX_TEXT" desc="The description for the checkbox that starts a multi-page scan job. This checkbox allows users to scan multiple pages from their scanner into a new PDF file.">
+        Scan multiple pages to one PDF
+      </message>
+      <message name="IDS_SCANNING_APP_SAVE_BUTTON_LABEL" desc="The label for the button to save a scan to a PDF file">
+        Save
+      </message>
+      <message name="IDS_SCANNING_APP_MULTI_PAGE_SCAN_INSTRUCTIONS_TEXT" desc="The text instructions for a multi-page scan job to tell the user to scan another page from their scanner.">
+        Place another page on the scanner and select Scan to add page.
+      </message>
+      <message name="IDS_SCANNING_APP_ACTION_TOOLBAR_PAGE_COUNT_TEXT" desc="The text in the action toolbar that shows the current page number and the total number of pages scanned.">
+        <ph name="CURRENT_PAGE">$1<ex>2</ex></ph> of <ph name="TOTAL_PAGES">$2<ex>4</ex></ph>
+      </message>
+      <message name="IDS_SCANNING_APP_REMOVE_PAGE_BUTTON_LABEL" desc="The label for the button that lets the user delete a page from their scan job.">
+        {PAGE_NUMBER, plural,
+        =0 {Remove page}
+        =1 {Remove page {PAGE_NUMBER}}
+        other {Remove page {PAGE_NUMBER}}}
+      </message>
+      <message name="IDS_SCANNING_APP_RESCAN_PAGE_BUTTON_LABEL" desc="The label for the button that lets the user replace a page from their scan job by scanning a new page from their scanner.">
+        {PAGE_NUMBER, plural,
+        =0 {Rescan page}
+        =1 {Rescan page {PAGE_NUMBER}}
+        other {Rescan page {PAGE_NUMBER}}}
+      </message>
 
       <!-- Diagnostics App -->
       <message name="IDS_DIAGNOSTICS_TITLE" desc="The title of the diagnostics app.">
@@ -736,6 +775,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_DIAGNOSTICS_BATTERY_FULL_MESSAGE" desc="The message shown when the battery is full and the charge test can not be run.">
         To test battery charging rate, let your battery drain for a short period
+      </message>
+      <message name="IDS_DIAGNOSTICS_NOT_ENOUGH_AVAILABLE_MEMORY" desc="The message shown when the amount of available memory on a device is less than 500 MB  and the memory test can not be run.">
+        You need at least 500 MB free to run a Memory test. To free up space, go to Settings > Storage management.
       </message>
       <message name="IDS_DIAGNOSTICS_BATTERY_HEALTH_LABEL" desc="The label for a battery's health.">
         Battery health
@@ -816,7 +858,7 @@ Try tapping the mic to ask me anything.
         FAILED
       </message>
       <message name="IDS_DIAGNOSTICS_TEST_SUCCESS_BADGE_TEXT" desc="The text displayed to indicate that a test passed.">
-        SUCCESS
+        PASSED
       </message>
       <message name="IDS_DIAGNOSTICS_TEST_QUEUED_BADGE_TEXT" desc="The text displayed to indicate that a test is currently queued.">
         QUEUED
@@ -883,6 +925,25 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_DIAGNOSTICS_CPU_BANNER_MESSAGE" desc="The text shown while a user is running their CPU test.">
         Running a CPU test may affect your system performance
+      </message>
+      <message name="IDS_DIAGNOSTICS_MEMORY_BANNER_MESSAGE" desc="The text shown while a user is running their Memory test.">
+        For more accurate results, close all apps until the test is complete.
+      </message>
+      <message name="IDS_DIAGNOSTICS_TROUBLE_CONNECTING" desc="The label for the text link that leads to a help support article to learn more about connecting to Ethernet networks.">
+        Having trouble connecting?
+      </message>
+      <message name="IDS_DIAGNOSTICS_NO_ETHERNET" desc="The label for the text displayed when a dongle is connected to a device but an Ethernet connection is not detected.">
+        No Ethernet connection detected
+      </message>
+      <message name="IDS_DIAGNOSTICS_OVERVIEW" desc="The label for the overview navigation panel item.">
+        Overview
+      </message>
+      <message name="IDS_DIAGNOSTICS_CONNECTIVITY" desc="The label for the connectivity navigation panel item.">
+        Connectivity
+      </message>
+
+      <message name="IDS_DIAGNOSTICS_SETTINGS_LINK_TEXT" desc="The text contains a link to the settings page, allowing a user to set up a new connection.">
+        To set up a new connection, go to <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Settings<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
 
       <message name="IDS_ECHE_APP_DEFAULT_DEVICE_NAME" desc="The default device name used to display on Android endpoint of Eche app.">
@@ -967,7 +1028,7 @@ Try tapping the mic to ask me anything.
         Connected
       </message>
       <message name="IDS_ONC_CONNECTING" desc="Settings > Internet, text in network summary when a network is connecting.">
-        Connecting
+        Connecting...
       </message>
       <message name="IDS_ONC_PORTAL_STATE" desc="Settings > Internet, label in network details page for the captive portal state.">
         Portal State
@@ -1469,6 +1530,81 @@ Try tapping the mic to ask me anything.
       <!-- Personalization App -->
       <message name="IDS_PERSONALIZATION_APP_TITLE" desc="Name of the system web app for personalizing ChromeOS.">
         Wallpaper
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_BACK_BUTTON" desc="Aria label for the back button to return to a prior page">
+        Back to <ph name="PAGE_NAME">$1<ex>Wallpaper</ex></ph>
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_WALLPAPER_COLLECTIONS" desc="Aria label for the wallpaper collections grid">
+        Wallpaper Collections
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_CURRENTLY_SET" desc="Label for the currently set user wallpaper section.">
+        Currently set
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_MY_IMAGES" desc="Label for the local images page in wallpaper app.">
+        My Images
+      </message>
+      <!-- Not using plural format because not supported in load_time_data.js -->
+      <message name="IDS_PERSONALIZATION_APP_NO_IMAGES" desc="Label for a wallpaper collection with no images">
+        No Images
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_ONE_IMAGE" desc="Label for a wallpaper collection with one image">
+        1 Image
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_MULTIPLE_IMAGES" desc="Label for a wallpaper collection with multiple images">
+        <ph name="IMAGE_COUNT">$1<ex>5</ex></ph> Images
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_CENTER" desc="Label for center cropping option for local images">
+        Center
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_FILL" desc="Label for fill cropping option for local images">
+        Fill
+      </message>
+
+      <!-- Traffic Counters UI -->
+      <message name="IDS_TRAFFIC_COUNTERS_UNKNOWN" desc="Traffic counters related to an unknown source">
+        Unknown
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_CHROME" desc="Traffic counters related to Chrome">
+        Chrome
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_USER" desc="Traffic counters related to User">
+        User
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_ARC" desc="Traffic counters related to ARC">
+        ARC
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_CROSVM" desc="Traffic counters related to Crosvm">
+        Crosvm
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_PLUGINVM" desc="Traffic counters related to Pluginvm">
+        Pluginvm
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_UPDATE_ENGINE" desc="Traffic counters related to Update Engine">
+        Update Engine
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_VPN" desc="Traffic counters related to virtual private network (VPN)">
+        VPN
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_SYSTEM" desc="Traffic counters related to System">
+        System
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_GUID" desc="Label for a network service's globally unique identifier (GUID)">
+        GUID
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_NAME" desc="Label for a network service's name">
+        Name
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_REQUEST_TRAFFIC_COUNTERS" desc="Label for button requesting traffic counters">
+        Request Traffic Counters
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_RESET_TRAFFIC_COUNTERS" desc="Label for button resetting traffic counters">
+        Reset Traffic Counters
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_LAST_RESET_TIME" desc="Label for traffic counters' last reset time">
+        Last Reset Time
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_TRAFFIC_COUNTERS" desc="Label for showing traffic counters">
+        Traffic Counters
       </message>
     </messages>
   </release>

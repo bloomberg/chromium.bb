@@ -275,6 +275,24 @@ export namespace ProtocolMapping {
      */
     'Network.trustTokenOperationDone': [Protocol.Network.TrustTokenOperationDoneEvent];
     /**
+     * Fired once when parsing the .wbn file has succeeded.
+     * The event contains the information about the web bundle contents.
+     */
+    'Network.subresourceWebBundleMetadataReceived': [Protocol.Network.SubresourceWebBundleMetadataReceivedEvent];
+    /**
+     * Fired once when parsing the .wbn file has failed.
+     */
+    'Network.subresourceWebBundleMetadataError': [Protocol.Network.SubresourceWebBundleMetadataErrorEvent];
+    /**
+     * Fired when handling requests for resources within a .wbn file.
+     * Note: this will only be fired for resources that are requested by the webpage.
+     */
+    'Network.subresourceWebBundleInnerResponseParsed': [Protocol.Network.SubresourceWebBundleInnerResponseParsedEvent];
+    /**
+     * Fired when request for resources within a .wbn file failed.
+     */
+    'Network.subresourceWebBundleInnerResponseError': [Protocol.Network.SubresourceWebBundleInnerResponseErrorEvent];
+    /**
      * Fired when the node should be inspected. This happens after call to `setInspectMode` or when
      * user manually inspects an element.
      */
@@ -617,7 +635,7 @@ export namespace ProtocolMapping {
      * Reports coverage delta since the last poll (either from an event like this, or from
      * `takePreciseCoverage` for the current isolate. May only be sent if precise code
      * coverage has been started. This event can be trigged by the embedder to, for example,
-     * trigger collection of coverage data immediatelly at a certain point in time.
+     * trigger collection of coverage data immediately at a certain point in time.
      */
     'Profiler.preciseCoverageDeltaUpdate': [Protocol.Profiler.PreciseCoverageDeltaUpdateEvent];
     /**
@@ -978,6 +996,12 @@ export namespace ProtocolMapping {
     'CSS.setMediaText':
         {paramsType: [Protocol.CSS.SetMediaTextRequest]; returnType: Protocol.CSS.SetMediaTextResponse;};
     /**
+     * Modifies the expression of a container query.
+     */
+    'CSS.setContainerQueryText': {
+      paramsType: [Protocol.CSS.SetContainerQueryTextRequest]; returnType: Protocol.CSS.SetContainerQueryTextResponse;
+    };
+    /**
      * Modifies the rule selector.
      */
     'CSS.setRuleSelector':
@@ -1292,6 +1316,13 @@ export namespace ProtocolMapping {
      */
     'DOM.getFrameOwner':
         {paramsType: [Protocol.DOM.GetFrameOwnerRequest]; returnType: Protocol.DOM.GetFrameOwnerResponse;};
+    /**
+     * Returns the container of the given node based on container query conditions.
+     * If containerName is given, it will find the nearest container with a matching name;
+     * otherwise it will find the nearest container regardless of its container name.
+     */
+    'DOM.getContainerForNode':
+        {paramsType: [Protocol.DOM.GetContainerForNodeRequest]; returnType: Protocol.DOM.GetContainerForNodeResponse;};
     /**
      * Returns event listeners of the given object.
      */
@@ -1890,11 +1921,6 @@ export namespace ProtocolMapping {
      */
     'Network.setCookies': {paramsType: [Protocol.Network.SetCookiesRequest]; returnType: void;};
     /**
-     * For testing.
-     */
-    'Network.setDataSizeLimitsForTest':
-        {paramsType: [Protocol.Network.SetDataSizeLimitsForTestRequest]; returnType: void;};
-    /**
      * Specifies whether to always send extra HTTP headers with the requests from this page.
      */
     'Network.setExtraHTTPHeaders': {paramsType: [Protocol.Network.SetExtraHTTPHeadersRequest]; returnType: void;};
@@ -2006,6 +2032,8 @@ export namespace ProtocolMapping {
     'Overlay.setShowFlexOverlays': {paramsType: [Protocol.Overlay.SetShowFlexOverlaysRequest]; returnType: void;};
     'Overlay.setShowScrollSnapOverlays':
         {paramsType: [Protocol.Overlay.SetShowScrollSnapOverlaysRequest]; returnType: void;};
+    'Overlay.setShowContainerQueryOverlays':
+        {paramsType: [Protocol.Overlay.SetShowContainerQueryOverlaysRequest]; returnType: void;};
     /**
      * Requests that backend shows paint rectangles
      */

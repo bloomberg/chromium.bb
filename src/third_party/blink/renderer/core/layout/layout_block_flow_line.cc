@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/layout/bidi_run_for_line.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_ruby_run.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/breaking_context_inline_headers.h"
@@ -59,7 +60,8 @@ class ExpansionOpportunities {
     unsigned opportunities_in_run;
     if (text.Is8Bit()) {
       opportunities_in_run = Character::ExpansionOpportunityCount(
-          {text.Characters8() + run.start_, run.stop_ - run.start_},
+          {text.Characters8() + run.start_,
+           static_cast<size_t>(run.stop_ - run.start_)},
           run.box_->Direction(), is_after_expansion, text_justify);
     } else if (run.line_layout_item_.IsCombineText()) {
       // Justfication applies to before and after the combined text as if
@@ -69,7 +71,8 @@ class ExpansionOpportunities {
       is_after_expansion = true;
     } else {
       opportunities_in_run = Character::ExpansionOpportunityCount(
-          {text.Characters16() + run.start_, run.stop_ - run.start_},
+          {text.Characters16() + run.start_,
+           static_cast<size_t>(run.stop_ - run.start_)},
           run.box_->Direction(), is_after_expansion, text_justify);
     }
     runs_with_expansions_.push_back(opportunities_in_run);

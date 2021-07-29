@@ -4,6 +4,8 @@
 
 #include "core/fxge/skia/fx_skia_device.h"
 
+#include <limits.h>
+
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -25,7 +27,7 @@
 #include "core/fxge/cfx_defaultrenderdevice.h"
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_graphstatedata.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/cfx_textrenderoptions.h"
 #include "core/fxge/dib/cfx_bitmapcomposer.h"
@@ -36,9 +38,9 @@
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
 #include "third_party/base/notreached.h"
+#include "third_party/base/numerics/ranges.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/span.h"
-#include "third_party/base/stl_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkClipOp.h"
@@ -325,17 +327,17 @@ bool IsEvenOddFillType(SkPathFillType fill) {
          fill == SkPathFillType::kInverseEvenOdd;
 }
 
-SkPath BuildPath(const CFX_PathData* pPathData) {
+SkPath BuildPath(const CFX_Path* pPath) {
   SkPath sk_path;
-  pdfium::span<const FX_PATHPOINT> points = pPathData->GetPoints();
+  pdfium::span<const CFX_Path::Point> points = pPath->GetPoints();
   for (size_t i = 0; i < points.size(); ++i) {
     const CFX_PointF& point = points[i].m_Point;
-    FXPT_TYPE point_type = points[i].m_Type;
-    if (point_type == FXPT_TYPE::MoveTo) {
+    CFX_Path::Point::Type point_type = points[i].m_Type;
+    if (point_type == CFX_Path::Point::Type::kMove) {
       sk_path.moveTo(point.x, point.y);
-    } else if (point_type == FXPT_TYPE::LineTo) {
+    } else if (point_type == CFX_Path::Point::Type::kLine) {
       sk_path.lineTo(point.x, point.y);
-    } else if (point_type == FXPT_TYPE::BezierTo) {
+    } else if (point_type == CFX_Path::Point::Type::kBezier) {
       const CFX_PointF& point2 = points[i + 1].m_Point;
       const CFX_PointF& point3 = points[i + 2].m_Point;
       sk_path.cubicTo(point.x, point.y, point2.x, point2.y, point3.x, point3.y);
@@ -750,7 +752,7 @@ class SkiaState {
   // mark all cached state as uninitialized
   explicit SkiaState(CFX_SkiaDeviceDriver* pDriver) : m_pDriver(pDriver) {}
 
-  bool DrawPath(const CFX_PathData* pPathData,
+  bool DrawPath(const CFX_Path* pPath,
                 const CFX_Matrix* pMatrix,
                 const CFX_GraphStateData* pDrawState,
                 uint32_t fill_color,
@@ -786,7 +788,7 @@ class SkiaState {
       m_drawIndex = m_commandIndex;
       m_type = Accumulator::kPath;
     }
-    SkPath skPath = BuildPath(pPathData);
+    SkPath skPath = BuildPath(pPath);
     SkPoint delta;
     if (MatrixOffset(pMatrix, &delta))
       skPath.offset(delta.fX, delta.fY);
@@ -988,7 +990,7 @@ class SkiaState {
     font.setEmbolden(m_isSubstFontBold);
     font.setHinting(SkFontHinting::kNone);
     font.setScaleX(m_scaleX);
-    font.setSkewX(tanf(m_italicAngle * FX_PI / 180.0));
+    font.setSkewX(tanf(m_italicAngle * FXSYS_PI / 180.0));
     font.setSize(SkTAbs(m_fontSize));
     font.setSubpixel(true);
     font.setEdging(GetFontEdgingType(m_textOptions));
@@ -1048,16 +1050,15 @@ class SkiaState {
 
   bool IsEmpty() const { return !m_commands.count(); }
 
-  bool SetClipFill(const CFX_PathData* pPathData,
+  bool SetClipFill(const CFX_Path* pPath,
                    const CFX_Matrix* pMatrix,
                    const CFX_FillRenderOptions& fill_options) {
     if (m_debugDisable)
       return false;
     Dump(__func__);
     SkPath skClipPath;
-    if (pPathData->GetPoints().size() == 5 ||
-        pPathData->GetPoints().size() == 4) {
-      Optional<CFX_FloatRect> maybe_rectf = pPathData->GetRect(pMatrix);
+    if (pPath->GetPoints().size() == 5 || pPath->GetPoints().size() == 4) {
+      Optional<CFX_FloatRect> maybe_rectf = pPath->GetRect(pMatrix);
       if (maybe_rectf.has_value()) {
         CFX_FloatRect& rectf = maybe_rectf.value();
         rectf.Intersect(CFX_FloatRect(
@@ -1071,7 +1072,7 @@ class SkiaState {
       }
     }
     if (skClipPath.isEmpty()) {
-      skClipPath = BuildPath(pPathData);
+      skClipPath = BuildPath(pPath);
       skClipPath.setFillType(GetAlternateOrWindingFillType(fill_options));
       SkMatrix skMatrix = ToSkMatrix(*pMatrix);
       skClipPath.transform(skMatrix);
@@ -1107,13 +1108,13 @@ class SkiaState {
     return true;
   }
 
-  bool SetClipStroke(const CFX_PathData* pPathData,
+  bool SetClipStroke(const CFX_Path* pPath,
                      const CFX_Matrix* pMatrix,
                      const CFX_GraphStateData* pGraphState) {
     if (m_debugDisable)
       return false;
     Dump(__func__);
-    SkPath skPath = BuildPath(pPathData);
+    SkPath skPath = BuildPath(pPath);
     SkMatrix skMatrix = ToSkMatrix(*pMatrix);
     SkPaint skPaint;
     m_pDriver->PaintStroke(&skPaint, pGraphState, skMatrix);
@@ -1720,7 +1721,7 @@ bool CFX_SkiaDeviceDriver::DrawDeviceText(
   font.setHinting(SkFontHinting::kNone);
   font.setSize(SkTAbs(font_size));
   font.setSubpixel(true);
-  font.setSkewX(tanf(pFont->GetSubstFontItalicAngle() * FX_PI / 180.0));
+  font.setSkewX(tanf(pFont->GetSubstFontItalicAngle() * FXSYS_PI / 180.0));
   font.setEdging(GetFontEdgingType(options));
 
   SkAutoCanvasRestore scoped_save_restore(m_pCanvas, /*doSave=*/true);
@@ -1979,22 +1980,21 @@ void CFX_SkiaDeviceDriver::SetClipMask(const FX_RECT& clipBox,
 #endif  // defined(_SKIA_SUPPORT_PATHS_)
 
 bool CFX_SkiaDeviceDriver::SetClip_PathFill(
-    const CFX_PathData* pPathData,     // path info
+    const CFX_Path* pPath,             // path info
     const CFX_Matrix* pObject2Device,  // flips object's y-axis
     const CFX_FillRenderOptions& fill_options) {
   m_FillOptions = fill_options;
   CFX_Matrix identity;
   const CFX_Matrix* deviceMatrix = pObject2Device ? pObject2Device : &identity;
-  bool cached = m_pCache->SetClipFill(pPathData, deviceMatrix, fill_options);
+  bool cached = m_pCache->SetClipFill(pPath, deviceMatrix, fill_options);
 #if defined(_SKIA_SUPPORT_PATHS_)
   if (!m_pClipRgn) {
     m_pClipRgn = std::make_unique<CFX_ClipRgn>(
         GetDeviceCaps(FXDC_PIXEL_WIDTH), GetDeviceCaps(FXDC_PIXEL_HEIGHT));
   }
 #endif
-  if (pPathData->GetPoints().size() == 5 ||
-      pPathData->GetPoints().size() == 4) {
-    Optional<CFX_FloatRect> maybe_rectf = pPathData->GetRect(deviceMatrix);
+  if (pPath->GetPoints().size() == 5 || pPath->GetPoints().size() == 4) {
+    Optional<CFX_FloatRect> maybe_rectf = pPath->GetRect(deviceMatrix);
     if (maybe_rectf.has_value()) {
       CFX_FloatRect& rectf = maybe_rectf.value();
       rectf.Intersect(CFX_FloatRect(0, 0,
@@ -2016,7 +2016,7 @@ bool CFX_SkiaDeviceDriver::SetClip_PathFill(
       return true;
     }
   }
-  SkPath skClipPath = BuildPath(pPathData);
+  SkPath skClipPath = BuildPath(pPath);
   skClipPath.setFillType(GetAlternateOrWindingFillType(fill_options));
   SkMatrix skMatrix = ToSkMatrix(*deviceMatrix);
   skClipPath.transform(skMatrix);
@@ -2035,11 +2035,11 @@ bool CFX_SkiaDeviceDriver::SetClip_PathFill(
 }
 
 bool CFX_SkiaDeviceDriver::SetClip_PathStroke(
-    const CFX_PathData* pPathData,         // path info
+    const CFX_Path* pPath,                 // path info
     const CFX_Matrix* pObject2Device,      // required transformation
     const CFX_GraphStateData* pGraphState  // graphic state, for pen attributes
-    ) {
-  bool cached = m_pCache->SetClipStroke(pPathData, pObject2Device, pGraphState);
+) {
+  bool cached = m_pCache->SetClipStroke(pPath, pObject2Device, pGraphState);
 
 #if defined(_SKIA_SUPPORT_PATHS_)
   if (!m_pClipRgn) {
@@ -2048,7 +2048,7 @@ bool CFX_SkiaDeviceDriver::SetClip_PathStroke(
   }
 #endif
   // build path data
-  SkPath skPath = BuildPath(pPathData);
+  SkPath skPath = BuildPath(pPath);
   SkMatrix skMatrix = ToSkMatrix(*pObject2Device);
   SkPaint skPaint;
   PaintStroke(&skPaint, pGraphState, skMatrix);
@@ -2069,7 +2069,7 @@ bool CFX_SkiaDeviceDriver::SetClip_PathStroke(
 }
 
 bool CFX_SkiaDeviceDriver::DrawPath(
-    const CFX_PathData* pPathData,          // path info
+    const CFX_Path* pPath,                  // path info
     const CFX_Matrix* pObject2Device,       // optional transformation
     const CFX_GraphStateData* pGraphState,  // graphic state, for pen attributes
     uint32_t fill_color,                    // fill color
@@ -2077,7 +2077,7 @@ bool CFX_SkiaDeviceDriver::DrawPath(
     const CFX_FillRenderOptions& fill_options,
     BlendMode blend_type) {
   m_FillOptions = fill_options;
-  if (m_pCache->DrawPath(pPathData, pObject2Device, pGraphState, fill_color,
+  if (m_pCache->DrawPath(pPath, pObject2Device, pGraphState, fill_color,
                          stroke_color, fill_options, blend_type)) {
     return true;
   }
@@ -2094,7 +2094,7 @@ bool CFX_SkiaDeviceDriver::DrawPath(
   bool is_paint_stroke = pGraphState && stroke_alpha;
   if (is_paint_stroke)
     PaintStroke(&skPaint, pGraphState, skMatrix);
-  SkPath skPath = BuildPath(pPathData);
+  SkPath skPath = BuildPath(pPath);
   SkAutoCanvasRestore scoped_save_restore(m_pCanvas, /*doSave=*/true);
   m_pCanvas->concat(skMatrix);
   bool do_stroke = true;

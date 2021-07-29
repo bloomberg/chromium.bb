@@ -58,17 +58,6 @@
 
 namespace blink {
 
-class DSFStateTestingPlatformSupport : public TestingPlatformSupport {
- public:
-  bool IsUseZoomForDSFEnabled() override { return use_zoom_for_dsf_; }
-  void SetUseZoomForDSF(bool use_zoom_for_dsf) {
-    use_zoom_for_dsf_ = use_zoom_for_dsf;
-  }
-
- private:
-  bool use_zoom_for_dsf_ = false;
-};
-
 class ViewportTest : public testing::Test {
  protected:
   ViewportTest()
@@ -107,7 +96,7 @@ class ViewportTest : public testing::Test {
   std::string chrome_url_;
 
  private:
-  ScopedTestingPlatformSupport<DSFStateTestingPlatformSupport> platform_;
+  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 };
 
 static void SetViewportSettings(WebSettings* settings) {
@@ -3147,6 +3136,36 @@ TEST_F(ViewportTest, viewportUseZoomForDSF4) {
   EXPECT_EQ(2100, constraints.layout_size.Height());
   EXPECT_NEAR(1.6f, constraints.initial_scale, 0.01f);
   EXPECT_NEAR(1.6f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
+}
+
+// Verifies that the value clamping from
+// https://www.w3.org/TR/css-device-adapt-1/#width-and-height-properties
+// applies to CSS pixel not physical pixel.
+TEST_F(ViewportTest, viewportUseZoomForDSF5) {
+  RegisterMockedHttpURLLoad("viewport/viewport-48.html");
+  SetUseZoomForDSF(true);
+
+  frame_test_helpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view_impl =
+      web_view_helper.InitializeWithSettings(SetViewportSettings);
+  web_view_impl->MainFrameWidget()->SetDeviceScaleFactorForTesting(4.f);
+  frame_test_helpers::LoadFrame(web_view_impl->MainFrameImpl(),
+                                base_url_ + "viewport/viewport-48.html");
+
+  Page* page = web_view_helper.GetWebView()->GetPage();
+  // Initial width and height must be scaled by DSF when --use-zoom-for-dsf
+  // is enabled.
+  PageScaleConstraints constraints = RunViewportTest(page, 960, 1056);
+
+  // When --use-zoom-for-dsf is enabled,
+  // constraints layout width == 3000 * DSF = 12000 and it should not be clamped
+  // to 10000.
+  EXPECT_EQ(12000, constraints.layout_size.Width());
+  EXPECT_EQ(1056, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }

@@ -72,6 +72,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/identifiability_metrics.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/manifest_handlers/cross_origin_isolation_info.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
@@ -92,6 +93,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/self_deleting_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/features.h"
@@ -368,9 +370,11 @@ bool GetDirectoryForExtensionURL(const GURL& url,
 }
 
 void GetSecurityPolicyForURL(const network::ResourceRequest& request,
-                             const Extension* extension,
+                             const Extension& extension,
                              bool is_web_view_request,
                              std::string* content_security_policy,
+                             const std::string** cross_origin_embedder_policy,
+                             const std::string** cross_origin_opener_policy,
                              bool* send_cors_header,
                              bool* follow_symlinks_anywhere) {
   std::string resource_path = request.url.path();
@@ -378,23 +382,88 @@ void GetSecurityPolicyForURL(const network::ResourceRequest& request,
   // Use default CSP for <webview>.
   if (!is_web_view_request) {
     *content_security_policy =
-        extensions::CSPInfo::GetResourceContentSecurityPolicy(extension,
-                                                              resource_path);
+        CSPInfo::GetResourceContentSecurityPolicy(&extension, resource_path);
   }
 
-  if (extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
-          extension, resource_path, request.request_initiator)) {
+  *cross_origin_embedder_policy =
+      CrossOriginIsolationHeader::GetCrossOriginEmbedderPolicy(extension);
+  *cross_origin_opener_policy =
+      CrossOriginIsolationHeader::GetCrossOriginOpenerPolicy(extension);
+
+  if (WebAccessibleResourcesInfo::IsResourceWebAccessible(
+          &extension, resource_path, request.request_initiator)) {
     *send_cors_header = true;
   }
 
   *follow_symlinks_anywhere =
-      (extension->creation_flags() & Extension::FOLLOW_SYMLINKS_ANYWHERE) != 0;
+      (extension.creation_flags() & Extension::FOLLOW_SYMLINKS_ANYWHERE) != 0;
 }
 
 bool IsBackgroundPageURL(const GURL& url) {
   base::StringPiece path_piece = url.path_piece();
   return path_piece.size() > 1 &&
          path_piece.substr(1) == kGeneratedBackgroundPageFilename;
+}
+
+scoped_refptr<net::HttpResponseHeaders> BuildHttpHeaders(
+    const std::string& content_security_policy,
+    const std::string* cross_origin_embedder_policy,
+    const std::string* cross_origin_opener_policy,
+    bool send_cors_header,
+    bool include_allow_service_worker_header) {
+  std::string raw_headers;
+  raw_headers.append("HTTP/1.1 200 OK");
+  if (!content_security_policy.empty()) {
+    raw_headers.append(1, '\0');
+    raw_headers.append("Content-Security-Policy: ");
+    raw_headers.append(content_security_policy);
+  }
+
+  if (cross_origin_embedder_policy) {
+    raw_headers.append(1, '\0');
+    raw_headers.append("Cross-Origin-Embedder-Policy: ");
+    raw_headers.append(*cross_origin_embedder_policy);
+  }
+
+  if (cross_origin_opener_policy) {
+    raw_headers.append(1, '\0');
+    raw_headers.append("Cross-Origin-Opener-Policy: ");
+    raw_headers.append(*cross_origin_opener_policy);
+  }
+
+  if (send_cors_header) {
+    raw_headers.append(1, '\0');
+    raw_headers.append("Access-Control-Allow-Origin: *");
+    raw_headers.append(1, '\0');
+    raw_headers.append("Cross-Origin-Resource-Policy: cross-origin");
+  }
+
+  if (include_allow_service_worker_header) {
+    raw_headers.append(1, '\0');
+    raw_headers.append("Service-Worker-Allowed: /");
+  }
+
+  raw_headers.append(2, '\0');
+  return base::MakeRefCounted<net::HttpResponseHeaders>(raw_headers);
+}
+
+void AddCacheHeaders(net::HttpResponseHeaders& headers,
+                     base::Time last_modified_time) {
+  if (last_modified_time.is_null())
+    return;
+
+  // Hash the time and make an etag to avoid exposing the exact
+  // user installation time of the extension.
+  std::string hash =
+      base::StringPrintf("%" PRId64, last_modified_time.ToInternalValue());
+  hash = base::SHA1HashString(hash);
+  std::string etag;
+  base::Base64Encode(hash, &etag);
+  etag = "\"" + etag + "\"";
+  headers.SetHeader("ETag", etag);
+
+  // Also force revalidation.
+  headers.SetHeader("cache-control", "no-cache");
 }
 
 class FileLoaderObserver : public content::FileURLLoaderObserver {
@@ -583,14 +652,26 @@ class ExtensionURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       scoped_refptr<const Extension> extension,
       base::FilePath directory_path) {
-    // Set up content security policy.
     std::string content_security_policy;
+    const std::string* cross_origin_embedder_policy = nullptr;
+    const std::string* cross_origin_opener_policy = nullptr;
     bool send_cors_header = false;
     bool follow_symlinks_anywhere = false;
+    bool include_allow_service_worker_header = false;
+
     if (extension) {
-      GetSecurityPolicyForURL(request, extension.get(), is_web_view_request_,
-                              &content_security_policy, &send_cors_header,
-                              &follow_symlinks_anywhere);
+      GetSecurityPolicyForURL(
+          request, *extension, is_web_view_request_, &content_security_policy,
+          &cross_origin_embedder_policy, &cross_origin_opener_policy,
+          &send_cors_header, &follow_symlinks_anywhere);
+      if (BackgroundInfo::IsServiceWorkerBased(extension.get())) {
+        include_allow_service_worker_header =
+            request.destination ==
+                network::mojom::RequestDestination::kServiceWorker &&
+            request.url == extension->GetResourceURL(
+                               BackgroundInfo::GetBackgroundServiceWorkerScript(
+                                   extension.get()));
+      }
     }
 
     // If the extension is the Media Router Component Extension used to support
@@ -613,9 +694,10 @@ class ExtensionURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
 
       // Leave cache headers out of generated background page jobs.
       auto head = network::mojom::URLResponseHead::New();
-      const bool send_cors_headers = false;
-      head->headers = BuildHttpHeaders(content_security_policy,
-                                       send_cors_headers, base::Time());
+      head->headers = BuildHttpHeaders(
+          content_security_policy, cross_origin_embedder_policy,
+          cross_origin_opener_policy, false /* send_cors_headers */,
+          include_allow_service_worker_header);
       std::string contents;
       GenerateBackgroundPageContents(extension.get(), &head->mime_type,
                                      &head->charset, &contents);
@@ -645,6 +727,10 @@ class ExtensionURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
       return;
     }
 
+    auto headers =
+        BuildHttpHeaders(content_security_policy, cross_origin_embedder_policy,
+                         cross_origin_opener_policy, send_cors_header,
+                         include_allow_service_worker_header);
     // Component extension resources may be part of the embedder's resource
     // files, for example component_extension_resources.pak in Chrome.
     int resource_id = 0;
@@ -654,7 +740,7 @@ class ExtensionURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
     if (!bundle_resource_path.empty()) {
       ExtensionsBrowserClient::Get()->LoadResourceFromResourceBundle(
           request, std::move(loader), bundle_resource_path, resource_id,
-          content_security_policy, std::move(client), send_cors_header);
+          std::move(headers), std::move(client));
       return;
     }
 
@@ -719,7 +805,7 @@ class ExtensionURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
             &OnFilePathAndLastModifiedTimeRead, base::Owned(read_file_path),
             base::Owned(last_modified_time), request, std::move(loader),
             std::move(client), std::move(content_verifier), resource,
-            content_security_policy, send_cors_header));
+            std::move(headers)));
   }
 
   static void OnFilePathAndLastModifiedTimeRead(
@@ -730,17 +816,15 @@ class ExtensionURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       scoped_refptr<ContentVerifier> content_verifier,
       const extensions::ExtensionResource& resource,
-      const std::string& content_security_policy,
-      bool send_cors_header) {
+      scoped_refptr<net::HttpResponseHeaders> headers) {
     request.url = net::FilePathToFileURL(*read_file_path);
 
+    AddCacheHeaders(*headers, *last_modified_time);
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            &StartVerifyJob, std::move(request), std::move(loader),
-            std::move(client), std::move(content_verifier), resource,
-            BuildHttpHeaders(content_security_policy, send_cors_header,
-                             *last_modified_time)));
+        base::BindOnce(&StartVerifyJob, std::move(request), std::move(loader),
+                       std::move(client), std::move(content_verifier), resource,
+                       std::move(headers)));
   }
 
   static void StartVerifyJob(
@@ -811,46 +895,6 @@ class ExtensionURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
 };
 
 }  // namespace
-
-scoped_refptr<net::HttpResponseHeaders> BuildHttpHeaders(
-    const std::string& content_security_policy,
-    bool send_cors_header,
-    const base::Time& last_modified_time) {
-  std::string raw_headers;
-  raw_headers.append("HTTP/1.1 200 OK");
-  if (!content_security_policy.empty()) {
-    raw_headers.append(1, '\0');
-    raw_headers.append("Content-Security-Policy: ");
-    raw_headers.append(content_security_policy);
-  }
-
-  if (send_cors_header) {
-    raw_headers.append(1, '\0');
-    raw_headers.append("Access-Control-Allow-Origin: *");
-    raw_headers.append(1, '\0');
-    raw_headers.append("Cross-Origin-Resource-Policy: cross-origin");
-  }
-
-  if (!last_modified_time.is_null()) {
-    // Hash the time and make an etag to avoid exposing the exact
-    // user installation time of the extension.
-    std::string hash =
-        base::StringPrintf("%" PRId64, last_modified_time.ToInternalValue());
-    hash = base::SHA1HashString(hash);
-    std::string etag;
-    base::Base64Encode(hash, &etag);
-    raw_headers.append(1, '\0');
-    raw_headers.append("ETag: \"");
-    raw_headers.append(etag);
-    raw_headers.append("\"");
-    // Also force revalidation.
-    raw_headers.append(1, '\0');
-    raw_headers.append("cache-control: no-cache");
-  }
-
-  raw_headers.append(2, '\0');
-  return new net::HttpResponseHeaders(raw_headers);
-}
 
 void SetExtensionProtocolTestHandler(ExtensionProtocolTestHandler* handler) {
   g_test_handler = handler;

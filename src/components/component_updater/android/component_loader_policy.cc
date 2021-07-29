@@ -6,7 +6,6 @@
 
 #include <jni.h>
 #include <stdio.h>
-#include <unistd.h>
 
 #include <map>
 #include <memory>
@@ -104,18 +103,19 @@ void AndroidComponentLoaderPolicy::ComponentLoaded(
 
   // Construct the file_name->file_descriptor map excluding the manifest file
   // as it's parsed and passed separately.
-  base::flat_map<std::string, int> fd_map;
+  base::flat_map<std::string, base::ScopedFD> fd_map;
   int manifest_fd = -1;
   for (size_t i = 0; i < file_names.size(); ++i) {
     const std::string& file_name = file_names[i];
     if (file_name == kManifestFileName) {
       manifest_fd = fds[i];
     } else {
-      fd_map[file_name] = fds[i];
+      fd_map[file_name] = base::ScopedFD(fds[i]);
     }
   }
+
   if (manifest_fd == -1) {
-    CloseFdsAndFail(fd_map);
+    loader_policy_->ComponentLoadFailed(ComponentLoadError::kMissingManifest);
     return;
   }
 
@@ -124,12 +124,18 @@ void AndroidComponentLoaderPolicy::ComponentLoaded(
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(ReadManifestFromFd, manifest_fd),
       base::BindOnce(&AndroidComponentLoaderPolicy::NotifyNewVersion,
-                     base::Owned(this), fd_map));
+                     base::Owned(this), base::OwnedRef(std::move(fd_map))));
 }
 
-void AndroidComponentLoaderPolicy::ComponentLoadFailed(JNIEnv* env) {
+void AndroidComponentLoaderPolicy::ComponentLoadFailed(JNIEnv* env,
+                                                       jint error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  loader_policy_->ComponentLoadFailed();
+  DCHECK(error_code >=
+         static_cast<int>(
+             ComponentLoadError::kFailedToConnectToComponentsProviderService));
+  DCHECK(error_code <= static_cast<int>(ComponentLoadError::kMaxValue));
+  loader_policy_->ComponentLoadFailed(
+      static_cast<ComponentLoadError>(error_code));
   delete this;
 }
 
@@ -142,31 +148,23 @@ AndroidComponentLoaderPolicy::GetComponentId(JNIEnv* env) {
 }
 
 void AndroidComponentLoaderPolicy::NotifyNewVersion(
-    const base::flat_map<std::string, int>& fd_map,
+    base::flat_map<std::string, base::ScopedFD>& fd_map,
     std::unique_ptr<base::DictionaryValue> manifest) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!manifest) {
-    CloseFdsAndFail(fd_map);
+    loader_policy_->ComponentLoadFailed(ComponentLoadError::kMalformedManifest);
     return;
   }
   std::string version_ascii;
   manifest->GetStringASCII("version", &version_ascii);
   base::Version version(version_ascii);
   if (!version.IsValid()) {
-    CloseFdsAndFail(fd_map);
+    loader_policy_->ComponentLoadFailed(ComponentLoadError::kInvalidVersion);
     return;
   }
-  loader_policy_->ComponentLoaded(version, fd_map, std::move(manifest));
-}
 
-void AndroidComponentLoaderPolicy::CloseFdsAndFail(
-    const base::flat_map<std::string, int>& fd_map) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& iter : fd_map) {
-    close(iter.second);
-  }
-  loader_policy_->ComponentLoadFailed();
+  loader_policy_->ComponentLoaded(version, fd_map, std::move(manifest));
 }
 
 // static

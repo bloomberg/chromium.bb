@@ -312,7 +312,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox implements PerfUI.Fla
     if (model === this._model) {
       return;
     }
-    Common.EventTarget.EventTarget.removeEventListeners(this._eventListeners);
+    Common.EventTarget.removeEventListeners(this._eventListeners);
     this._model = model;
     this._selectedTrack = null;
     this._mainDataProvider.setModel(this._model);
@@ -568,7 +568,7 @@ export class TimelineFlameChartMarker implements PerfUI.FlameChart.FlameChartMar
     if (this._style.lowPriority) {
       return null;
     }
-    const startTime = Number.millisToString(this._startOffset);
+    const startTime = i18n.i18n.millisToString(this._startOffset);
     return i18nString(UIStrings.sAtS, {PH1: this._style.title, PH2: startTime});
   }
 

@@ -455,7 +455,7 @@ TEST(ValuesTest, TakeDict) {
   Value value(std::move(storage));
 
   // Take ownership of the dict and make sure its contents are what we expect.
-  auto dict = value.TakeDict();
+  auto dict = std::move(value).TakeDict();
   EXPECT_EQ(8u, dict.size());
   EXPECT_TRUE(dict["null"].is_none());
   EXPECT_TRUE(dict["bool"].is_bool());
@@ -497,7 +497,7 @@ TEST(ValuesTest, TakeList) {
   value.Append(Value(Value::Type::DICTIONARY));
 
   // Take ownership of the list and make sure its contents are what we expect.
-  auto list = value.TakeList();
+  auto list = std::move(value).TakeList();
   EXPECT_EQ(8u, list.size());
   EXPECT_TRUE(list[0].is_none());
   EXPECT_TRUE(list[1].is_bool());
@@ -1425,7 +1425,6 @@ TEST(ValuesTest, List) {
   base::Value not_found_value(false);
 
   ASSERT_TRUE(Contains(mixed_list->GetList(), sought_value));
-  ASSERT_TRUE((*mixed_list->Find(sought_value)).GetAsInteger(&int_value));
   ASSERT_EQ(42, int_value);
   ASSERT_FALSE(Contains(mixed_list->GetList(), not_found_value));
 }
@@ -1490,44 +1489,9 @@ TEST(ValuesTest, StringValue) {
 TEST(ValuesTest, ListDeletion) {
   ListValue list;
   list.Append(std::make_unique<Value>());
-  EXPECT_FALSE(list.empty());
-  list.Clear();
-  EXPECT_TRUE(list.empty());
-}
-
-TEST(ValuesTest, ListRemoval) {
-  std::unique_ptr<Value> removed_item;
-
-  {
-    ListValue list;
-    list.Append(std::make_unique<Value>());
-    EXPECT_EQ(1U, list.GetSize());
-    EXPECT_FALSE(
-        list.Remove(std::numeric_limits<size_t>::max(), &removed_item));
-    EXPECT_FALSE(list.Remove(1, &removed_item));
-    EXPECT_TRUE(list.Remove(0, &removed_item));
-    ASSERT_TRUE(removed_item);
-    EXPECT_EQ(0U, list.GetSize());
-  }
-  removed_item.reset();
-
-  {
-    ListValue list;
-    list.Append(std::make_unique<Value>());
-    EXPECT_TRUE(list.Remove(0, nullptr));
-    EXPECT_EQ(0U, list.GetSize());
-  }
-
-  {
-    ListValue list;
-    auto value = std::make_unique<Value>();
-    Value original_value = value->Clone();
-    list.Append(std::move(value));
-    size_t index = 0;
-    list.Remove(original_value, &index);
-    EXPECT_EQ(0U, index);
-    EXPECT_EQ(0U, list.GetSize());
-  }
+  EXPECT_FALSE(list.GetList().empty());
+  list.ClearList();
+  EXPECT_TRUE(list.GetList().empty());
 }
 
 TEST(ValuesTest, DictionaryDeletion) {
@@ -1646,8 +1610,8 @@ TEST(ValuesTest, DictionaryWithoutPathExpansion) {
   EXPECT_TRUE(dict.HasKey("this.isnt.expanded"));
   Value* value3;
   EXPECT_FALSE(dict.Get("this.isnt.expanded", &value3));
-  Value* value4;
-  ASSERT_TRUE(dict.GetWithoutPathExpansion("this.isnt.expanded", &value4));
+  Value* value4 = dict.FindKey("this.isnt.expanded");
+  ASSERT_TRUE(value4);
   EXPECT_EQ(Value::Type::NONE, value4->type());
 }
 
@@ -1670,56 +1634,27 @@ TEST(ValuesTest, DictionaryWithoutPathExpansionDeprecated) {
   EXPECT_TRUE(dict.HasKey("this.isnt.expanded"));
   Value* value3;
   EXPECT_FALSE(dict.Get("this.isnt.expanded", &value3));
-  Value* value4;
-  ASSERT_TRUE(dict.GetWithoutPathExpansion("this.isnt.expanded", &value4));
+  Value* value4 = dict.FindKey("this.isnt.expanded");
+  ASSERT_TRUE(value4);
   EXPECT_EQ(Value::Type::NONE, value4->type());
-}
-
-TEST(ValuesTest, DictionaryRemovePath) {
-  DictionaryValue dict;
-  dict.SetInteger("a.long.way.down", 1);
-  dict.SetBoolean("a.long.key.path", true);
-
-  std::unique_ptr<Value> removed_item;
-  EXPECT_TRUE(dict.RemovePath("a.long.way.down", &removed_item));
-  ASSERT_TRUE(removed_item);
-  EXPECT_TRUE(removed_item->is_int());
-  EXPECT_FALSE(dict.HasKey("a.long.way.down"));
-  EXPECT_FALSE(dict.HasKey("a.long.way"));
-  EXPECT_TRUE(dict.Get("a.long.key.path", nullptr));
-
-  removed_item.reset();
-  EXPECT_FALSE(dict.RemovePath("a.long.way.down", &removed_item));
-  EXPECT_FALSE(removed_item);
-  EXPECT_TRUE(dict.Get("a.long.key.path", nullptr));
-
-  removed_item.reset();
-  EXPECT_TRUE(dict.RemovePath("a.long.key.path", &removed_item));
-  ASSERT_TRUE(removed_item);
-  EXPECT_TRUE(removed_item->is_bool());
-  EXPECT_TRUE(dict.DictEmpty());
 }
 
 TEST(ValuesTest, DeepCopy) {
   DictionaryValue original_dict;
-  Value* null_weak = original_dict.Set("null", std::make_unique<Value>());
-  Value* bool_weak = original_dict.Set("bool", std::make_unique<Value>(true));
-  Value* int_weak = original_dict.Set("int", std::make_unique<Value>(42));
-  Value* double_weak =
-      original_dict.Set("double", std::make_unique<Value>(3.14));
-  Value* string_weak =
-      original_dict.Set("string", std::make_unique<Value>("hello"));
-  Value* string16_weak =
-      original_dict.Set("string16", std::make_unique<Value>(u"hello16"));
+  Value* null_weak = original_dict.SetKey("null", Value());
+  Value* bool_weak = original_dict.SetKey("bool", Value(true));
+  Value* int_weak = original_dict.SetKey("int", Value(42));
+  Value* double_weak = original_dict.SetKey("double", Value(3.14));
+  Value* string_weak = original_dict.SetKey("string", Value("hello"));
+  Value* string16_weak = original_dict.SetKey("string16", Value(u"hello16"));
 
-  Value* binary_weak = original_dict.Set(
-      "binary", std::make_unique<Value>(Value::BlobStorage(42, '!')));
+  Value* binary_weak =
+      original_dict.SetKey("binary", Value(Value::BlobStorage(42, '!')));
 
   Value::ListStorage storage;
   storage.emplace_back(0);
   storage.emplace_back(1);
-  Value* list_weak =
-      original_dict.Set("list", std::make_unique<Value>(std::move(storage)));
+  Value* list_weak = original_dict.SetKey("list", Value(std::move(storage)));
   Value* list_element_0_weak = &list_weak->GetList()[0];
   Value* list_element_1_weak = &list_weak->GetList()[1];
 
@@ -1742,27 +1677,21 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_bool);
   ASSERT_NE(copy_bool, bool_weak);
   ASSERT_TRUE(copy_bool->is_bool());
-  bool copy_bool_value = false;
-  ASSERT_TRUE(copy_bool->GetAsBoolean(&copy_bool_value));
-  ASSERT_TRUE(copy_bool_value);
+  ASSERT_TRUE(copy_bool->GetBool());
 
   Value* copy_int = nullptr;
   ASSERT_TRUE(copy_dict->Get("int", &copy_int));
   ASSERT_TRUE(copy_int);
   ASSERT_NE(copy_int, int_weak);
   ASSERT_TRUE(copy_int->is_int());
-  int copy_int_value = 0;
-  ASSERT_TRUE(copy_int->GetAsInteger(&copy_int_value));
-  ASSERT_EQ(42, copy_int_value);
+  ASSERT_EQ(42, copy_int->GetInt());
 
   Value* copy_double = nullptr;
   ASSERT_TRUE(copy_dict->Get("double", &copy_double));
   ASSERT_TRUE(copy_double);
   ASSERT_NE(copy_double, double_weak);
   ASSERT_TRUE(copy_double->is_double());
-  double copy_double_value = 0;
-  ASSERT_TRUE(copy_double->GetAsDouble(&copy_double_value));
-  ASSERT_EQ(3.14, copy_double_value);
+  ASSERT_EQ(3.14, copy_double->GetDouble());
 
   Value* copy_string = nullptr;
   ASSERT_TRUE(copy_dict->Get("string", &copy_string));
@@ -1808,17 +1737,15 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_list->Get(0, &copy_list_element_0));
   ASSERT_TRUE(copy_list_element_0);
   ASSERT_NE(copy_list_element_0, list_element_0_weak);
-  int copy_list_element_0_value;
-  ASSERT_TRUE(copy_list_element_0->GetAsInteger(&copy_list_element_0_value));
-  ASSERT_EQ(0, copy_list_element_0_value);
+  ASSERT_TRUE(copy_list_element_0->is_int());
+  ASSERT_EQ(0, copy_list_element_0->GetInt());
 
   Value* copy_list_element_1;
   ASSERT_TRUE(copy_list->Get(1, &copy_list_element_1));
   ASSERT_TRUE(copy_list_element_1);
   ASSERT_NE(copy_list_element_1, list_element_1_weak);
-  int copy_list_element_1_value;
-  ASSERT_TRUE(copy_list_element_1->GetAsInteger(&copy_list_element_1_value));
-  ASSERT_EQ(1, copy_list_element_1_value);
+  ASSERT_TRUE(copy_list_element_1->is_int());
+  ASSERT_EQ(1, copy_list_element_1->GetInt());
 
   copy_value = nullptr;
   ASSERT_TRUE(copy_dict->Get("dictionary", &copy_value));
@@ -1846,7 +1773,7 @@ TEST(ValuesTest, Equals) {
   dv.SetDoubleKey("c", 2.5);
   dv.SetStringKey("d1", "string");
   dv.SetStringKey("d2", u"http://google.com");
-  dv.Set("e", std::make_unique<Value>());
+  dv.SetKey("e", Value());
 
   auto copy = dv.CreateDeepCopy();
   EXPECT_EQ(dv, *copy);
@@ -1854,11 +1781,11 @@ TEST(ValuesTest, Equals) {
   std::unique_ptr<ListValue> list(new ListValue);
   list->Append(std::make_unique<Value>());
   list->Append(std::make_unique<DictionaryValue>());
-  auto list_copy = std::make_unique<Value>(list->Clone());
+  Value list_copy(list->Clone());
 
   ListValue* list_weak = dv.SetList("f", std::move(list));
   EXPECT_NE(dv, *copy);
-  copy->Set("f", std::move(list_copy));
+  copy->SetKey("f", std::move(list_copy));
   EXPECT_EQ(dv, *copy);
 
   list_weak->Append(std::make_unique<Value>(true));
@@ -2039,15 +1966,15 @@ TEST(ValuesTest, DeepCopyCovariantReturnTypes) {
 TEST(ValuesTest, RemoveEmptyChildren) {
   auto root = std::make_unique<DictionaryValue>();
   // Remove empty lists and dictionaries.
-  root->Set("empty_dict", std::make_unique<DictionaryValue>());
-  root->Set("empty_list", std::make_unique<ListValue>());
-  root->SetKey("a.b.c.d.e", DictionaryValue());
+  root->SetKey("empty_dict", DictionaryValue());
+  root->SetKey("empty_list", ListValue());
+  root->SetPath("a.b.c.d.e", DictionaryValue());
   root = root->DeepCopyWithoutEmptyChildren();
   EXPECT_TRUE(root->DictEmpty());
 
   // Make sure we don't prune too much.
   root->SetBoolKey("bool", true);
-  root->Set("empty_dict", std::make_unique<DictionaryValue>());
+  root->SetKey("empty_dict", DictionaryValue());
   root->SetStringKey("empty_string", std::string());
   root = root->DeepCopyWithoutEmptyChildren();
   EXPECT_EQ(2U, root->DictSize());
@@ -2059,58 +1986,58 @@ TEST(ValuesTest, RemoveEmptyChildren) {
   // Nested test cases.  These should all reduce back to the bool and string
   // set above.
   {
-    root->Set("a.b.c.d.e", std::make_unique<DictionaryValue>());
+    root->SetPath("a.b.c.d.e", DictionaryValue());
     root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(2U, root->DictSize());
   }
   {
-    auto inner = std::make_unique<DictionaryValue>();
-    inner->Set("empty_dict", std::make_unique<DictionaryValue>());
-    inner->Set("empty_list", std::make_unique<ListValue>());
-    root->Set("dict_with_empty_children", std::move(inner));
+    Value inner(Value::Type::DICTIONARY);
+    inner.SetKey("empty_dict", DictionaryValue());
+    inner.SetKey("empty_list", ListValue());
+    root->SetKey("dict_with_empty_children", std::move(inner));
     root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(2U, root->DictSize());
   }
   {
-    auto inner = std::make_unique<ListValue>();
-    inner->Append(std::make_unique<DictionaryValue>());
-    inner->Append(std::make_unique<ListValue>());
-    root->Set("list_with_empty_children", std::move(inner));
+    ListValue inner;
+    inner.Append(std::make_unique<DictionaryValue>());
+    inner.Append(std::make_unique<ListValue>());
+    root->SetKey("list_with_empty_children", std::move(inner));
     root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(2U, root->DictSize());
   }
 
   // Nested with siblings.
   {
-    auto inner = std::make_unique<ListValue>();
-    inner->Append(std::make_unique<DictionaryValue>());
-    inner->Append(std::make_unique<ListValue>());
-    root->Set("list_with_empty_children", std::move(inner));
-    auto inner2 = std::make_unique<DictionaryValue>();
-    inner2->Set("empty_dict", std::make_unique<DictionaryValue>());
-    inner2->Set("empty_list", std::make_unique<ListValue>());
-    root->Set("dict_with_empty_children", std::move(inner2));
+    ListValue inner;
+    inner.Append(std::make_unique<DictionaryValue>());
+    inner.Append(std::make_unique<ListValue>());
+    root->SetKey("list_with_empty_children", std::move(inner));
+    DictionaryValue inner2;
+    inner2.SetKey("empty_dict", DictionaryValue());
+    inner2.SetKey("empty_list", ListValue());
+    root->SetKey("dict_with_empty_children", std::move(inner2));
     root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(2U, root->DictSize());
   }
 
   // Make sure nested values don't get pruned.
   {
-    auto inner = std::make_unique<ListValue>();
+    ListValue inner;
     auto inner2 = std::make_unique<ListValue>();
     inner2->Append(std::make_unique<Value>("hello"));
-    inner->Append(std::make_unique<DictionaryValue>());
-    inner->Append(std::move(inner2));
-    root->Set("list_with_empty_children", std::move(inner));
+    inner.Append(std::make_unique<DictionaryValue>());
+    inner.Append(std::move(inner2));
+    root->SetKey("list_with_empty_children", std::move(inner));
     root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(3U, root->DictSize());
 
     ListValue* inner_value;
     EXPECT_TRUE(root->GetList("list_with_empty_children", &inner_value));
-    EXPECT_EQ(1U, inner_value->GetSize());  // Dictionary was pruned.
-    ListValue* inner_value2;
-    EXPECT_TRUE(inner_value->GetList(0, &inner_value2));
-    EXPECT_EQ(1U, inner_value2->GetSize());
+    ASSERT_EQ(1U, inner_value->GetSize());  // Dictionary was pruned.
+    const Value& inner_value2 = inner_value->GetList()[0];
+    ASSERT_TRUE(inner_value2.is_list());
+    EXPECT_EQ(1U, inner_value2.GetList().size());
   }
 }
 
@@ -2118,19 +2045,18 @@ TEST(ValuesTest, MergeDictionary) {
   std::unique_ptr<DictionaryValue> base(new DictionaryValue);
   base->SetStringKey("base_key", "base_key_value_base");
   base->SetStringKey("collide_key", "collide_key_value_base");
-  std::unique_ptr<DictionaryValue> base_sub_dict(new DictionaryValue);
-  base_sub_dict->SetStringKey("sub_base_key", "sub_base_key_value_base");
-  base_sub_dict->SetStringKey("sub_collide_key", "sub_collide_key_value_base");
-  base->Set("sub_dict_key", std::move(base_sub_dict));
+  DictionaryValue base_sub_dict;
+  base_sub_dict.SetStringKey("sub_base_key", "sub_base_key_value_base");
+  base_sub_dict.SetStringKey("sub_collide_key", "sub_collide_key_value_base");
+  base->SetKey("sub_dict_key", std::move(base_sub_dict));
 
   std::unique_ptr<DictionaryValue> merge(new DictionaryValue);
   merge->SetStringKey("merge_key", "merge_key_value_merge");
   merge->SetStringKey("collide_key", "collide_key_value_merge");
-  std::unique_ptr<DictionaryValue> merge_sub_dict(new DictionaryValue);
-  merge_sub_dict->SetStringKey("sub_merge_key", "sub_merge_key_value_merge");
-  merge_sub_dict->SetStringKey("sub_collide_key",
-                               "sub_collide_key_value_merge");
-  merge->Set("sub_dict_key", std::move(merge_sub_dict));
+  DictionaryValue merge_sub_dict;
+  merge_sub_dict.SetStringKey("sub_merge_key", "sub_merge_key_value_merge");
+  merge_sub_dict.SetStringKey("sub_collide_key", "sub_collide_key_value_merge");
+  merge->SetKey("sub_dict_key", std::move(merge_sub_dict));
 
   base->MergeDictionary(merge.get());
 
@@ -2254,7 +2180,7 @@ TEST(ValuesTest, StdDictionaryIterator) {
   Value value1("value1");
   dict.SetKey("key1", value1.Clone());
   bool seen1 = false;
-  for (const auto& it : dict.DictItems()) {
+  for (auto it : dict.DictItems()) {
     EXPECT_FALSE(seen1);
     EXPECT_EQ("key1", it.first);
     EXPECT_EQ(value1, it.second);
@@ -2265,7 +2191,7 @@ TEST(ValuesTest, StdDictionaryIterator) {
   Value value2("value2");
   dict.SetKey("key2", value2.Clone());
   bool seen2 = seen1 = false;
-  for (const auto& it : dict.DictItems()) {
+  for (auto it : dict.DictItems()) {
     if (it.first == "key1") {
       EXPECT_FALSE(seen1);
       EXPECT_EQ(value1, it.second);
@@ -2405,42 +2331,6 @@ TEST(ValuesTest, GetWithNullOutValue) {
   EXPECT_TRUE(main_dict.GetList("list", nullptr));
   EXPECT_FALSE(main_dict.GetList("DNE", nullptr));
 
-  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("bool", nullptr));
-  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("int", nullptr));
-  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("double", nullptr));
-  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("string", nullptr));
-  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("binary", nullptr));
-  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("dict", nullptr));
-  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("list", nullptr));
-  EXPECT_FALSE(main_dict.GetWithoutPathExpansion("DNE", nullptr));
-
-  EXPECT_TRUE(main_dict.GetBooleanWithoutPathExpansion("bool", nullptr));
-  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("int", nullptr));
-  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("double", nullptr));
-  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("string", nullptr));
-  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("binary", nullptr));
-  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("dict", nullptr));
-  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("list", nullptr));
-  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("DNE", nullptr));
-
-  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("bool", nullptr));
-  EXPECT_TRUE(main_dict.GetIntegerWithoutPathExpansion("int", nullptr));
-  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("double", nullptr));
-  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("string", nullptr));
-  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("binary", nullptr));
-  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("dict", nullptr));
-  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("list", nullptr));
-  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("DNE", nullptr));
-
-  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("bool", nullptr));
-  EXPECT_TRUE(main_dict.GetDoubleWithoutPathExpansion("int", nullptr));
-  EXPECT_TRUE(main_dict.GetDoubleWithoutPathExpansion("double", nullptr));
-  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("string", nullptr));
-  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("binary", nullptr));
-  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("dict", nullptr));
-  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("list", nullptr));
-  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("DNE", nullptr));
-
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
       "bool", static_cast<std::string*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
@@ -2558,15 +2448,6 @@ TEST(ValuesTest, GetWithNullOutValue) {
   EXPECT_TRUE(main_list.GetDictionary(5, nullptr));
   EXPECT_FALSE(main_list.GetDictionary(6, nullptr));
   EXPECT_FALSE(main_list.GetDictionary(7, nullptr));
-
-  EXPECT_FALSE(main_list.GetList(0, nullptr));
-  EXPECT_FALSE(main_list.GetList(1, nullptr));
-  EXPECT_FALSE(main_list.GetList(2, nullptr));
-  EXPECT_FALSE(main_list.GetList(3, nullptr));
-  EXPECT_FALSE(main_list.GetList(4, nullptr));
-  EXPECT_FALSE(main_list.GetList(5, nullptr));
-  EXPECT_TRUE(main_list.GetList(6, nullptr));
-  EXPECT_FALSE(main_list.GetList(7, nullptr));
 }
 
 TEST(ValuesTest, SelfSwap) {

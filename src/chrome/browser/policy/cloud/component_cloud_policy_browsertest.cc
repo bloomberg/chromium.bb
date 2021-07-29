@@ -26,7 +26,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
-#include "components/policy/core/common/cloud/policy_builder.h"
+#include "components/policy/core/common/cloud/test/policy_builder.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/core/common/policy_test_utils.h"
@@ -42,7 +42,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_switches.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_chromeos.h"
 #else
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -243,14 +243,28 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
   CloudPolicyClient* client_ = nullptr;
 };
 
-IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, FetchExtensionPolicy) {
+// crbug.com/1224925 flaky on Win.
+// crbug.com/1230268 not working on Lacros.
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_FetchExtensionPolicy DISABLED_FetchExtensionPolicy
+#else
+#define MAYBE_FetchExtensionPolicy FetchExtensionPolicy
+#endif
+IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, MAYBE_FetchExtensionPolicy) {
   // Read the initial policy.
   ExtensionTestMessageListener policy_listener(kTestPolicyJSON, false);
   event_listener_->Reply("get-policy-Name");
   EXPECT_TRUE(policy_listener.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, UpdateExtensionPolicy) {
+// crbug.com/1224925 flaky on Win.
+// crbug.com/1230268 not working on Lacros.
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_UpdateExtensionPolicy DISABLED_UpdateExtensionPolicy
+#else
+#define MAYBE_UpdateExtensionPolicy UpdateExtensionPolicy
+#endif
+IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, MAYBE_UpdateExtensionPolicy) {
   // Read the initial policy.
   ExtensionTestMessageListener policy_listener(kTestPolicyJSON, true);
   event_listener_->Reply("get-policy-Name");
@@ -278,7 +292,14 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, UpdateExtensionPolicy) {
   EXPECT_TRUE(policy_listener2.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, InstallNewExtension) {
+// crbug.com/1224925 flaky on Win.
+// crbug.com/1230268 not working on Lacros.
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_InstallNewExtension DISABLED_InstallNewExtension
+#else
+#define MAYBE_InstallNewExtension InstallNewExtension
+#endif
+IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, MAYBE_InstallNewExtension) {
   event_listener_->Reply("idle");
   event_listener_.reset();
 
@@ -310,8 +331,9 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, InstallNewExtension) {
 // This test verifies that when the user signs out then any existing component
 // policy caches are dropped, and that it's still possible to sign back in and
 // get policy for components working again.
+// TODO(https://crbug.com/1224925): Test is flaky on all platforms.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, SignOutAndBackIn) {
+IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, DISABLED_SignOutAndBackIn) {
   // Read the initial policy.
   ExtensionTestMessageListener initial_policy_listener(kTestPolicyJSON, true);
   event_listener_->Reply("get-policy-Name");
@@ -351,6 +373,7 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, SignOutAndBackIn) {
 
   // Verify that the policy is fetched again if the user signs back in.
   ExtensionTestMessageListener event_listener2("event", true);
+
   SignInAndRegister();
   EXPECT_TRUE(event_listener2.WaitUntilSatisfied());
 
@@ -386,7 +409,14 @@ class KeyRotationComponentCloudPolicyTest : public ComponentCloudPolicyTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(KeyRotationComponentCloudPolicyTest, Basic) {
+// crbug.com/1224925 flaky on Win.
+// crbug.com/1230268 not working on Lacros.
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+IN_PROC_BROWSER_TEST_F(KeyRotationComponentCloudPolicyTest, MAYBE_Basic) {
   // Read the initial policy.
   ExtensionTestMessageListener policy_listener(kTestPolicyJSON, true);
   event_listener_->Reply("get-policy-Name");

@@ -10,14 +10,15 @@
 
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/file_icon_util.h"
+#include "ash/public/cpp/image_util.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharesheet/sharesheet_metrics.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
@@ -39,7 +40,9 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -57,8 +60,8 @@ const std::u16string ConcatenateFileNames(
 
 gfx::ImageSkia CreateMimeTypeIcon(const gfx::ImageSkia& file_type_icon,
                                   const gfx::Size& image_size) {
-  return ash::HoldingSpaceImage::SuperimposeOverEmptyImage(file_type_icon,
-                                                           image_size);
+  return gfx::ImageSkiaOperations::CreateSuperimposedImage(
+      ash::image_util::CreateEmptyImage(image_size), file_type_icon);
 }
 
 gfx::Size GetImagePreviewSize(size_t index, int grid_icon_count) {
@@ -90,20 +93,14 @@ class SharesheetHeaderView::SharesheetImagePreview : public views::View {
  public:
   METADATA_HEADER(SharesheetImagePreview);
   explicit SharesheetImagePreview(size_t file_count) {
-    const int border_radius =
-        views::LayoutProvider::Get()->GetCornerRadiusMetric(
-            views::Emphasis::kMedium);
     SetBackground(views::CreateRoundedRectBackground(
-        kImagePreviewPlaceholderBackgroundColor, border_radius));
-    SetBorder(views::CreateRoundedRectBorder(
-        /* thickness */ 1, border_radius,
-        GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_UnfocusedBorderColor)));
+        kImagePreviewPlaceholderBackgroundColor,
+        views::LayoutProvider::Get()->GetCornerRadiusMetric(
+            views::Emphasis::kMedium)));
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical,
         /* inside_border_insets */ gfx::Insets(),
-        /* between_child_spacing */ kImagePreviewBetweenChildSpacing,
-        /* collapse_margins_spacing */ false));
+        /* between_child_spacing */ kImagePreviewBetweenChildSpacing));
     SetPreferredSize(kImagePreviewFullSize);
     SetFocusBehavior(View::FocusBehavior::NEVER);
 
@@ -184,13 +181,22 @@ class SharesheetHeaderView::SharesheetImagePreview : public views::View {
       was_pressed_ = true;
   }
 
+  void OnThemeChanged() override {
+    View::OnThemeChanged();
+    SetBorder(views::CreateRoundedRectBorder(
+        /*thickness=*/1,
+        views::LayoutProvider::Get()->GetCornerRadiusMetric(
+            views::Emphasis::kMedium),
+        GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_UnfocusedBorderColor)));
+  }
+
   void AddRowToImageContainerView() {
     auto* row = AddChildView(std::make_unique<views::View>());
     row->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal,
         /* inside_border_insets */ gfx::Insets(),
-        /* between_child_spacing */ kImagePreviewBetweenChildSpacing,
-        /* collapse_margins_spacing */ false));
+        /* between_child_spacing */ kImagePreviewBetweenChildSpacing));
   }
 
   void AddImageViewTo(views::View* parent_view, const gfx::Size& size) {
@@ -250,10 +256,10 @@ SharesheetHeaderView::SharesheetHeaderView(apps::mojom::IntentPtr intent,
   SetFocusBehavior(View::FocusBehavior::ALWAYS);
 
   const bool has_files =
-      (intent_->file_urls.has_value() && !intent_->file_urls.value().empty());
+      (intent_->files.has_value() && !intent_->files.value().empty());
   // The image view is initialised first to ensure its left most placement.
   if (show_content_previews) {
-    auto file_count = (has_files) ? intent_->file_urls.value().size() : 0;
+    auto file_count = (has_files) ? intent_->files.value().size() : 0;
     image_preview_ =
         AddChildView(std::make_unique<SharesheetImagePreview>(file_count));
   }
@@ -296,10 +302,10 @@ void SharesheetHeaderView::ShowTextPreview() {
   std::vector<std::u16string> text_fields = ExtractShareText();
 
   std::u16string filenames_tooltip_text = u"";
-  if (intent_->file_urls.has_value() && !intent_->file_urls.value().empty()) {
+  if (intent_->files.has_value() && !intent_->files.value().empty()) {
     std::vector<std::u16string> file_names;
-    for (const auto& file_url : intent_->file_urls.value()) {
-      const auto& file_path = GetFilePathFromFileSystemUrl(file_url);
+    for (const auto& file : intent_->files.value()) {
+      const auto& file_path = GetFilePathFromFileSystemUrl(file->url);
       file_names.push_back(file_path.BaseName().LossyDisplayName());
     }
     std::u16string file_text;
@@ -308,7 +314,7 @@ void SharesheetHeaderView::ShowTextPreview() {
     } else {
       // If there is more than 1 file, show an enumeration of the number of
       // files.
-      auto size = intent_->file_urls.value().size();
+      auto size = intent_->files.value().size();
       DCHECK_NE(size, 0);
       file_text =
           l10n_util::GetPluralStringFUTF16(IDS_SHARESHEET_FILES_LABEL, size);
@@ -411,19 +417,15 @@ void SharesheetHeaderView::ResolveImages() {
 
 void SharesheetHeaderView::ResolveImage(size_t index) {
   const auto& file_path =
-      GetFilePathFromFileSystemUrl(intent_->file_urls.value()[index]);
+      GetFilePathFromFileSystemUrl(intent_->files.value()[index]->url);
 
-  const auto& size =
-      GetImagePreviewSize(index, intent_->file_urls.value().size());
+  const auto& size = GetImagePreviewSize(index, intent_->files.value().size());
   auto image = std::make_unique<HoldingSpaceImage>(
       size, file_path,
       base::BindRepeating(&SharesheetHeaderView::LoadImage,
                           weak_ptr_factory_.GetWeakPtr()),
-      // We pass our own icon in here because we want the icon to appear
-      // while an image has not been loaded. If we didn't pass our own icon in,
-      // the container is left blank while we wait for an image to load.
-      absl::optional<gfx::ImageSkia>(CreateMimeTypeIcon(
-          GetIconForPath(file_path, /* dark_background= */ false), size)));
+      HoldingSpaceImage::CreateDefaultPlaceholderImageSkiaResolver(
+          /*use_light_mode_as_default=*/true));
   DCHECK_GT(image_preview_->GetImageViewCount(), index);
   image_preview_->GetImageViewAt(index)->SetImage(image->GetImageSkia(size));
   // TODO(crbug.com/2896003) Here and above, update this to check whether we're

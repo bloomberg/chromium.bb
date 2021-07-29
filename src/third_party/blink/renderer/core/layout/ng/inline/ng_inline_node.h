@@ -20,7 +20,7 @@ class NGInlineChildLayoutContext;
 class NGLayoutResult;
 class NGOffsetMapping;
 struct NGInlineItemsData;
-struct SVGTextPathRange;
+struct SvgTextContentRange;
 
 // Represents an anonymous block box to be laid out, that contains consecutive
 // inline nodes and their descendants.
@@ -96,7 +96,9 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   bool HasLineEvenIfEmpty() { return EnsureData().has_line_even_if_empty_; }
   bool HasRuby() const { return Data().has_ruby_; }
 
-  bool IsEmptyInline() { return EnsureData().is_empty_inline_; }
+  bool IsEmptyInline() {
+    return !HasLineEvenIfEmpty() && EnsureData().is_empty_inline_;
+  }
 
   bool IsBlockLevel() { return EnsureData().is_block_level_; }
 
@@ -116,10 +118,12 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
       const LayoutBlockFlow* block_flow);
 
   // This function is available after PrepareLayout(), only for SVG <text>.
-  const Vector<std::pair<unsigned, NGSVGCharacterData>>& SVGCharacterDataList()
+  const Vector<std::pair<unsigned, NGSvgCharacterData>>& SvgCharacterDataList()
       const;
   // This function is available after PrepareLayout(), only for SVG <text>.
-  const Vector<SVGTextPathRange>& SVGTextPathRangeList() const;
+  const Vector<SvgTextContentRange>& SvgTextLengthRangeList() const;
+  // This function is available after PrepareLayout(), only for SVG <text>.
+  const Vector<SvgTextContentRange>& SvgTextPathRangeList() const;
 
   String ToString() const;
 
@@ -135,25 +139,29 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   static bool NeedsShapingForTesting(const NGInlineItem& item);
 
+  // Prepare inline and text content for layout. Must be called before
+  // calling the Layout method.
+  void PrepareLayoutIfNeeded() const;
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(NGInlineNodeTest, SegmentBidiChangeSetsNeedsLayout);
 
   bool IsPrepareLayoutFinished() const;
 
-  // Prepare inline and text content for layout. Must be called before
-  // calling the Layout method.
-  void PrepareLayoutIfNeeded() const;
   void PrepareLayout(std::unique_ptr<NGInlineNodeData> previous_data) const;
 
   void CollectInlines(NGInlineNodeData*,
                       NGInlineNodeData* previous_data = nullptr) const;
+  const SvgTextChunkOffsets* FindSvgTextChunks(LayoutBlockFlow& block,
+                                               NGInlineNodeData& data) const;
   void SegmentText(NGInlineNodeData*) const;
   void SegmentScriptRuns(NGInlineNodeData*) const;
   void SegmentFontOrientation(NGInlineNodeData*) const;
   void SegmentBidiRuns(NGInlineNodeData*) const;
   void ShapeText(NGInlineItemsData*,
                  const String* previous_text = nullptr,
-                 const Vector<NGInlineItem>* previous_items = nullptr) const;
+                 const Vector<NGInlineItem>* previous_items = nullptr,
+                 const Font* override_font = nullptr) const;
   void ShapeTextForFirstLineIfNeeded(NGInlineNodeData*) const;
   void AssociateItemsWithInlines(NGInlineNodeData*) const;
 
@@ -171,6 +179,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
     return *To<LayoutBlockFlow>(box_)->GetNGInlineNodeData();
   }
   const NGInlineNodeData& EnsureData() const;
+
+  void AdjustFontForTextCombineUprightAll() const;
 
   static void ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
                                    NGInlineNodeData* data);

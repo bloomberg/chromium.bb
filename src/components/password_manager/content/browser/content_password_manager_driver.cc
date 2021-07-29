@@ -184,18 +184,17 @@ void ContentPasswordManagerDriver::SendLoggingAvailability() {
       client_->GetLogManager()->IsLoggingActive());
 }
 
-autofill::AutofillDriver* ContentPasswordManagerDriver::GetAutofillDriver() {
-  return autofill::ContentAutofillDriver::GetForRenderFrameHost(
-      render_frame_host_);
-}
-
 bool ContentPasswordManagerDriver::IsMainFrame() const {
   return is_main_frame_;
 }
 
 bool ContentPasswordManagerDriver::CanShowAutofillUi() const {
-  // Don't show AutofillUi for non-current RenderFrameHost.
-  return render_frame_host_->IsCurrent();
+  // Don't show AutofillUi for inactive RenderFrameHost.
+  return render_frame_host_->IsActive();
+}
+
+::ui::AXTreeID ContentPasswordManagerDriver::GetAxTreeId() const {
+  return render_frame_host_->GetAXTreeID();
 }
 
 const GURL& ContentPasswordManagerDriver::GetLastCommittedURL() const {
@@ -291,9 +290,10 @@ void ContentPasswordManagerDriver::UserModifiedPasswordField() {
 
 void ContentPasswordManagerDriver::UserModifiedNonPasswordField(
     autofill::FieldRendererId renderer_id,
+    const std::u16string& field_name,
     const std::u16string& value) {
   GetPasswordManager()->OnUserModifiedNonPasswordField(this, renderer_id,
-                                                       value);
+                                                       field_name, value);
 }
 
 void ContentPasswordManagerDriver::ShowPasswordSuggestions(
@@ -333,6 +333,26 @@ void ContentPasswordManagerDriver::LogFirstFillingResult(
     autofill::FormRendererId form_renderer_id,
     int32_t result) {
   GetPasswordManager()->LogFirstFillingResult(this, form_renderer_id, result);
+}
+
+void ContentPasswordManagerDriver::SetKeyPressHandler(
+    const content::RenderWidgetHost::KeyPressEventCallback& handler) {
+  UnsetKeyPressHandler();
+  content::RenderWidgetHostView* view = render_frame_host_->GetView();
+  if (!view)
+    return;
+  view->GetRenderWidgetHost()->AddKeyPressEventCallback(handler);
+  key_press_handler_ = handler;
+}
+
+void ContentPasswordManagerDriver::UnsetKeyPressHandler() {
+  if (key_press_handler_.is_null())
+    return;
+  content::RenderWidgetHostView* view = render_frame_host_->GetView();
+  if (!view)
+    return;
+  view->GetRenderWidgetHost()->RemoveKeyPressEventCallback(key_press_handler_);
+  key_press_handler_.Reset();
 }
 
 const mojo::AssociatedRemote<autofill::mojom::AutofillAgent>&

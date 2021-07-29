@@ -23,6 +23,9 @@ namespace {
 class TestDownloadShelfHandler : public DownloadShelfHandler {
  public:
   MOCK_METHOD0(DoClose, void());
+  MOCK_METHOD0(DoShowAll, void());
+  MOCK_METHOD1(DiscardDownload, void(uint32_t));
+  MOCK_METHOD1(KeepDownload, void(uint32_t));
   MOCK_METHOD1(GetDownloads,
                void(download_shelf::mojom::PageHandler::GetDownloadsCallback));
   MOCK_METHOD4(ShowContextMenu,
@@ -31,6 +34,7 @@ class TestDownloadShelfHandler : public DownloadShelfHandler {
                     int32_t client_y,
                     double timestamp));
   MOCK_METHOD1(DoShowDownload, void(DownloadUIModel*));
+  MOCK_METHOD1(OnDownloadOpened, void(uint32_t download_id));
   MOCK_METHOD1(OnDownloadUpdated, void(DownloadUIModel*));
   MOCK_METHOD1(OnDownloadErased, void(uint32_t download_id));
 };
@@ -115,6 +119,7 @@ TEST_F(DownloadShelfUITest, DownloadLifecycle) {
   EXPECT_CALL(*download_item, GetId()).Times(AtLeast(1));
   DownloadUIModel::DownloadUIModelPtr download_model =
       DownloadItemModel::Wrap(download_item.get());
+  DownloadUIModel* download_model_ptr = download_model.get();
   EXPECT_CALL(*handler_, DoShowDownload(_)).Times(1);
   download_shelf_ui()->DoShowDownload(std::move(download_model),
                                       base::TimeTicks::Now());
@@ -128,7 +133,13 @@ TEST_F(DownloadShelfUITest, DownloadLifecycle) {
   mock_timer_->Fire();
   download_item->NotifyObserversDownloadUpdated();
 
-  // Assert handler onDownloadRemoved called on item removal notification.
+  // Assert handler onDownloadErased called when setting download to not show
+  // on shelf.
+  EXPECT_CALL(*handler_, OnDownloadErased(_)).Times(1);
+  download_model_ptr->SetShouldShowInShelf(false);
+  download_item->NotifyObserversDownloadUpdated();
+
+  // Assert handler onDownloadErased called on item removal notification.
   EXPECT_CALL(*handler_, OnDownloadErased(_)).Times(1);
   download_item->NotifyObserversDownloadRemoved();
 

@@ -24,6 +24,7 @@
 #include "libavutil/frame.h"
 
 #include "avcodec.h"
+#include "packet.h"
 
 /**
  * Called by encoders to get the next frame for encoding.
@@ -35,5 +36,18 @@
  *                     will be available
  */
 int ff_encode_get_frame(AVCodecContext *avctx, AVFrame *frame);
+
+/**
+ * Get a buffer for a packet. This is a wrapper around
+ * AVCodecContext.get_encode_buffer() and should be used instead calling get_encode_buffer()
+ * directly.
+ */
+int ff_get_encode_buffer(AVCodecContext *avctx, AVPacket *avpkt, int64_t size, int flags);
+
+/*
+ * Perform encoder initialization and validation.
+ * Called when opening the encoder, before the AVCodec.init() call.
+ */
+int ff_encode_preinit(AVCodecContext *avctx);
 
 #endif /* AVCODEC_ENCODE_H */

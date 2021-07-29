@@ -8,6 +8,7 @@ import * as IssuesManager from '../../../models/issues_manager/issues_manager.js
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import type * as IconButton from '../icon_button/icon_button.js';
+import issueCounterStyles from './issueCounter.css.js';
 
 const UIStrings = {
   /**
@@ -103,6 +104,7 @@ export function getIssueCountsEnumeration(
 }
 
 export class IssueCounter extends HTMLElement {
+  static readonly litTagName = LitHtml.literal`issue-counter`;
   private readonly shadow = this.attachShadow({mode: 'open'});
   private clickHandler: undefined|(() => void) = undefined;
   private tooltipCallback: undefined|(() => void) = undefined;
@@ -120,6 +122,10 @@ export class IssueCounter extends HTMLElement {
     } else {
       this.render();
     }
+  }
+
+  connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [issueCounterStyles];
   }
 
   set data(data: IssueCounterData) {
@@ -200,17 +206,12 @@ export class IssueCounter extends HTMLElement {
       ],
       clickHandler: this.clickHandler,
       leadingText: this.leadingText,
+      accessibleName: this.accessibleName,
     };
     LitHtml.render(
         LitHtml.html`
-        <style>
-            :host {
-              white-space: normal;
-              display: inline-block;
-            }
-        </style>
-        <icon-button .data=${data as IconButton.IconButton.IconButtonData}
-          aria-label="${LitHtml.Directives.ifDefined(this.accessibleName)}"></icon-button>
+        <icon-button .data=${data as IconButton.IconButton.IconButtonData} .accessibleName="${
+            this.accessibleName}"></icon-button>
         `,
         this.shadow);
     this.tooltipCallback?.();

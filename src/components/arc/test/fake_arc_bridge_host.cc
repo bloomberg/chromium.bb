@@ -32,8 +32,10 @@
 #include "components/arc/mojom/kiosk.mojom.h"
 #include "components/arc/mojom/lock_screen.mojom.h"
 #include "components/arc/mojom/media_session.mojom.h"
+#include "components/arc/mojom/memory.mojom.h"
 #include "components/arc/mojom/metrics.mojom.h"
 #include "components/arc/mojom/midis.mojom.h"
+#include "components/arc/mojom/nearby_share.mojom.h"
 #include "components/arc/mojom/net.mojom.h"
 #include "components/arc/mojom/notifications.mojom.h"
 #include "components/arc/mojom/obb_mounter.mojom.h"
@@ -161,11 +163,17 @@ void FakeArcBridgeHost::OnLockScreenInstanceReady(
 void FakeArcBridgeHost::OnMediaSessionInstanceReady(
     mojo::PendingRemote<mojom::MediaSessionInstance> media_sesssion_remote) {}
 
+void FakeArcBridgeHost::OnMemoryInstanceReady(
+    mojo::PendingRemote<mojom::MemoryInstance> memory_remote) {}
+
 void FakeArcBridgeHost::OnMetricsInstanceReady(
     mojo::PendingRemote<mojom::MetricsInstance> metrics_remote) {}
 
 void FakeArcBridgeHost::OnMidisInstanceReady(
     mojo::PendingRemote<mojom::MidisInstance> midis_remote) {}
+
+void FakeArcBridgeHost::OnNearbyShareInstanceReady(
+    mojo::PendingRemote<mojom::NearbyShareInstance> nearby_share_remote) {}
 
 void FakeArcBridgeHost::OnNetInstanceReady(
     mojo::PendingRemote<mojom::NetInstance> net_remote) {}

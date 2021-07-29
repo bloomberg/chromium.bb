@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -137,7 +136,6 @@ class AutofillTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     // Slower test bots (chromeos, debug, etc) are flaky
     // due to slower loading interacting with deferred commits.
     command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
@@ -805,7 +803,6 @@ class FormSubmissionDetectionTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     // Slower test bots (chromeos, debug, etc) are flaky
     // due to slower loading interacting with deferred commits.
     command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);

@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "include/base/cef_bind.h"
+#include "include/base/cef_callback.h"
 #include "include/cef_pack_strings.h"
 #include "include/views/cef_textfield.h"
 #include "include/views/cef_textfield_delegate.h"
@@ -199,8 +199,8 @@ class TestTextfieldDelegate : public CefTextfieldDelegate {
     if (event.type == KEYEVENT_RAWKEYDOWN &&
         event.windows_key_code == VKEY_RETURN) {
       // Got the whole string. Finish the test asynchronously.
-      CefPostTask(TID_UI, base::Bind(&TestTextfieldDelegate::FinishTest, this,
-                                     textfield));
+      CefPostTask(TID_UI, base::BindOnce(&TestTextfieldDelegate::FinishTest,
+                                         this, textfield));
       return true;
     }
 
@@ -276,10 +276,10 @@ void RunTextfieldKeyEvent(CefRefPtr<CefWindow> window) {
 }
 
 void TextfieldKeyEventImpl(CefRefPtr<CefWaitableEvent> event) {
-  TestWindowDelegate::Config config;
-  config.on_window_created = base::Bind(RunTextfieldKeyEvent);
-  config.close_window = false;
-  TestWindowDelegate::RunTest(event, config);
+  auto config = std::make_unique<TestWindowDelegate::Config>();
+  config->on_window_created = base::BindOnce(RunTextfieldKeyEvent);
+  config->close_window = false;
+  TestWindowDelegate::RunTest(event, std::move(config));
 }
 
 }  // namespace

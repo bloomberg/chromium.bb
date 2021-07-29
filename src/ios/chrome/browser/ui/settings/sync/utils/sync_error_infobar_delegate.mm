@@ -19,7 +19,7 @@
 #include "components/sync/driver/sync_service_utils.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
@@ -59,13 +59,13 @@ SyncErrorInfoBarDelegate::SyncErrorInfoBarDelegate(
 
   // Register for sync status changes.
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForBrowserState(browser_state_);
+      SyncServiceFactory::GetForBrowserState(browser_state_);
   sync_service->AddObserver(this);
 }
 
 SyncErrorInfoBarDelegate::~SyncErrorInfoBarDelegate() {
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForBrowserState(browser_state_);
+      SyncServiceFactory::GetForBrowserState(browser_state_);
   sync_service->RemoveObserver(this);
 }
 
@@ -105,8 +105,14 @@ bool SyncErrorInfoBarDelegate::Accept() {
     [presenter_ showSyncPassphraseSettings];
   } else if (error_state_ ==
              SyncSetupService::kSyncServiceNeedsTrustedVaultKey) {
-    [presenter_ showTrustedVaultReauthenticationWithRetrievalTrigger:
-                    syncer::KeyRetrievalTriggerForUMA::kNewTabPageInfobar];
+    [presenter_
+        showTrustedVaultReauthForFetchKeysWithTrigger:
+            syncer::TrustedVaultUserActionTriggerForUMA::kNewTabPageInfobar];
+  } else if (error_state_ ==
+             SyncSetupService::kSyncServiceTrustedVaultRecoverabilityDegraded) {
+    [presenter_
+        showTrustedVaultReauthForDegradedRecoverabilityWithTrigger:
+            syncer::TrustedVaultUserActionTriggerForUMA::kNewTabPageInfobar];
   }
   return false;
 }

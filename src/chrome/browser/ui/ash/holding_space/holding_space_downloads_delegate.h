@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/scoped_observation.h"
@@ -43,12 +44,23 @@ class HoldingSpaceDownloadsDelegate
   static void SetDownloadManagerForTesting(
       content::DownloadManager* download_manager);
 
+  // Attempts to cancel/pause/resume the download underlying the given `item`.
+  void Cancel(const HoldingSpaceItem* item);
+  void Pause(const HoldingSpaceItem* item);
+  void Resume(const HoldingSpaceItem* item);
+
+  // Attempts to mark the download underlying the given `item` to be opened when
+  // complete, returning whether or not the attempt was successful.
+  bool OpenWhenComplete(const HoldingSpaceItem* item);
+
  private:
   class InProgressDownload;
 
   // HoldingSpaceKeyedServiceDelegate:
   void Init() override;
   void OnPersistenceRestored() override;
+  void OnHoldingSpaceItemsRemoved(
+      const std::vector<const HoldingSpaceItem*>& items) override;
 
   // arc::ArcIntentHelperObserver:
   void OnArcDownloadAdded(const base::FilePath& relative_path,
@@ -65,10 +77,10 @@ class HoldingSpaceDownloadsDelegate
       const crosapi::mojom::DownloadEvent& event) override;
 
   // Invoked when the specified `in_progress_download` is updated.
-  void OnDownloadUpdated(const InProgressDownload* in_progress_download);
+  void OnDownloadUpdated(InProgressDownload* in_progress_download);
 
   // Invoked when the specified `in_progress_download` is completed.
-  void OnDownloadCompleted(const InProgressDownload* in_progress_download);
+  void OnDownloadCompleted(InProgressDownload* in_progress_download);
 
   // Invoked when the specified `in_progress_download` fails. This may be due to
   // cancellation, interruption, or destruction of the underlying download.
@@ -77,6 +89,10 @@ class HoldingSpaceDownloadsDelegate
   // Invoked to erase the specified `in_progress_download` when it is no longer
   // needed either due to completion or failure of the underlying download.
   void EraseDownload(const InProgressDownload* in_progress_download);
+
+  // Creates or updates the holding space item in the model associated with the
+  // specified `in_progress_download`.
+  void CreateOrUpdateHoldingSpaceItem(InProgressDownload* in_progress_download);
 
   // The collection of currently in-progress downloads.
   std::set<std::unique_ptr<InProgressDownload>, base::UniquePtrComparator>

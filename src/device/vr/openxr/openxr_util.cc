@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/check_op.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/version.h"
 #include "base/win/scoped_handle.h"
 #include "build/build_config.h"
@@ -43,12 +43,18 @@ XrPosef GfxTransformToXrPose(const gfx::Transform& transform) {
   // This pose should always be a simple translation and rotation so this should
   // always be true
   DCHECK(decomposition_result);
-  return {
-      {decomposed_transform.quaternion.x(), decomposed_transform.quaternion.y(),
-       decomposed_transform.quaternion.z(),
-       decomposed_transform.quaternion.w()},
-      {decomposed_transform.translate[0], decomposed_transform.translate[1],
-       decomposed_transform.translate[2]}};
+  return {{static_cast<float>(decomposed_transform.quaternion.x()),
+           static_cast<float>(decomposed_transform.quaternion.y()),
+           static_cast<float>(decomposed_transform.quaternion.z()),
+           static_cast<float>(decomposed_transform.quaternion.w())},
+          {decomposed_transform.translate[0], decomposed_transform.translate[1],
+           decomposed_transform.translate[2]}};
+}
+
+bool IsPoseValid(XrSpaceLocationFlags locationFlags) {
+  XrSpaceLocationFlags PoseValidFlags = XR_SPACE_LOCATION_POSITION_VALID_BIT |
+                                        XR_SPACE_LOCATION_ORIENTATION_VALID_BIT;
+  return (locationFlags & PoseValidFlags) == PoseValidFlags;
 }
 
 XrResult GetSystem(XrInstance instance, XrSystemId* system) {
@@ -174,6 +180,13 @@ XrResult CreateInstance(
           XR_MSFT_SPATIAL_ANCHOR_EXTENSION_NAME);
   if (anchorsExtensionSupported) {
     extensions.push_back(XR_MSFT_SPATIAL_ANCHOR_EXTENSION_NAME);
+  }
+
+  const bool sceneUnderstandingExtensionSupported =
+      extension_enumeration.ExtensionSupported(
+          XR_MSFT_SCENE_UNDERSTANDING_EXTENSION_NAME);
+  if (sceneUnderstandingExtensionSupported) {
+    extensions.push_back(XR_MSFT_SCENE_UNDERSTANDING_EXTENSION_NAME);
   }
 
   instance_create_info.enabledExtensionCount =

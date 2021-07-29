@@ -11,7 +11,7 @@ import {cssMetadata} from './CSSMetadata.js';
 import type {CSSModel, Edit} from './CSSModel.js'; // eslint-disable-line no-unused-vars
 import {CSSProperty} from './CSSProperty.js';
 import type {CSSRule} from './CSSRule.js'; // eslint-disable-line no-unused-vars
-import type {Target} from './SDKModel.js'; // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';   // eslint-disable-line no-unused-vars
 
 export class CSSStyleDeclaration {
   _cssModel: CSSModel;
@@ -180,7 +180,7 @@ export class CSSStyleDeclaration {
     // For style-based properties, generate shorthands with values when possible.
     for (const property of this._allProperties) {
       // For style-based properties, try generating shorthands.
-      const shorthands = cssMetadata().shorthands(property.name) || [];
+      const shorthands = cssMetadata().getShorthands(property.name) || [];
       for (const shorthand of shorthands) {
         if (propertiesSet.has(shorthand)) {
           continue;
@@ -212,7 +212,7 @@ export class CSSStyleDeclaration {
 
     const leadingProperties = [];
     for (const property of this._allProperties) {
-      const shorthands = cssMetadata().shorthands(property.name) || [];
+      const shorthands = cssMetadata().getShorthands(property.name) || [];
       let belongToAnyShorthand = false;
       for (const shorthand of shorthands) {
         if (this._shorthandValues.get(shorthand)) {
@@ -251,11 +251,22 @@ export class CSSStyleDeclaration {
         property.setActive(false);
         continue;
       }
-      const canonicalName = cssMetadata().canonicalPropertyName(property.name);
+      const metadata = cssMetadata();
+      const canonicalName = metadata.canonicalPropertyName(property.name);
+      const longhands = metadata.getLonghands(canonicalName);
+      if (longhands) {
+        for (const longhand of longhands) {
+          const activeLonghand = activeProperties.get(longhand);
+          if (activeLonghand && activeLonghand.range && (!activeLonghand.important || property.important)) {
+            activeLonghand.setActive(false);
+            activeProperties.delete(longhand);
+          }
+        }
+      }
       const activeProperty = activeProperties.get(canonicalName);
       if (!activeProperty) {
         activeProperties.set(canonicalName, property);
-      } else if (!this.leadingProperties().find(prop => prop === property)) {
+      } else if (!property.range) {
         // For some -webkit- properties, the backend returns also the canonical
         // property. e.g. if you set in the css only the property
         // -webkit-background-clip, the backend will return
@@ -289,7 +300,7 @@ export class CSSStyleDeclaration {
   }
 
   longhandProperties(name: string): CSSProperty[] {
-    const longhands = cssMetadata().longhands(name.toLowerCase());
+    const longhands = cssMetadata().getLonghands(name.toLowerCase());
     const result = [];
     for (let i = 0; longhands && i < longhands.length; ++i) {
       const property = this._activePropertyMap.get(longhands[i]);

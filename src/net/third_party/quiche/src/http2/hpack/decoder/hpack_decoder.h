@@ -92,11 +92,12 @@ class QUICHE_EXPORT_PRIVATE HpackDecoder {
   // detected.
   bool DetectError();
 
+  size_t GetDynamicTableSize() const {
+    return decoder_state_.GetDynamicTableSize();
+  }
+
   // Error code if an error has occurred, HpackDecodingError::kOk otherwise.
   HpackDecodingError error() const { return error_; }
-
-  // Returns the estimate of dynamically allocated memory in bytes.
-  size_t EstimateMemoryUsage() const;
 
   std::string detailed_error() const { return detailed_error_; }
 

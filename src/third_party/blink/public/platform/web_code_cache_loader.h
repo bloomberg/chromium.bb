@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "mojo/public/cpp/base/big_buffer.h"
+#include "third_party/blink/public/mojom/loader/code_cache.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -24,15 +25,7 @@ class BLINK_PLATFORM_EXPORT WebCodeCacheLoader {
   virtual ~WebCodeCacheLoader() = default;
 
   static std::unique_ptr<WebCodeCacheLoader> Create(
-      base::WaitableEvent* terminate_sync_load_event = nullptr);
-
-  // Fetched code cache corresponding to |url| synchronously and returns
-  // response in |response_time_out| and |data_out|. |response_time_out| and
-  // |data_out| cannot be nullptrs.
-  virtual void FetchFromCodeCacheSynchronously(
-      const WebURL& url,
-      base::Time* response_time_out,
-      mojo_base::BigBuffer* data_out) = 0;
+      blink::mojom::CodeCacheHost* code_cache_host);
   virtual void FetchFromCodeCache(blink::mojom::CodeCacheType cache_type,
                                   const WebURL& url,
                                   FetchCodeCacheCallback) = 0;

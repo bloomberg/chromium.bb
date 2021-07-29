@@ -189,7 +189,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 // `front_end/sdk/module.json` to make this feature available in the
 // Command Menu.
 const supportsPrefersReducedData = (): boolean => {
-  const query = '(prefers-reduced-data: reduce)';
+  const query = '(prefers-reduced-data)';
   // Note: `media` serializes to `'not all'` for unsupported queries.
   return window.matchMedia(query).media === query;
 };
@@ -210,7 +210,7 @@ let renderingOptionsViewInstance: RenderingOptionsView;
 export class RenderingOptionsView extends UI.Widget.VBox {
   private constructor() {
     super(true);
-    this.registerRequiredCSS('entrypoints/inspector_main/renderingOptions.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('entrypoints/inspector_main/renderingOptions.css');
 
     this._appendCheckbox(
         i18nString(UIStrings.paintFlashing), i18nString(UIStrings.highlightsAreasOfThePageGreen),

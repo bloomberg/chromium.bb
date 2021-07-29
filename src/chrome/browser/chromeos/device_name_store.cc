@@ -4,50 +4,29 @@
 
 #include "chrome/browser/chromeos/device_name_store.h"
 
-#include <math.h>
-
-#include "base/rand_util.h"
-#include "base/strings/char_traits.h"
-#include "base/strings/string_number_conversions.h"
+#include "ash/constants/ash_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
-
 namespace {
 
-const size_t kMaxDeviceNameLength = 15;
+const char kDefaultDeviceName[] = "ChromeOS";
 
-// Returns a randomly generated device name of the form 'ChromeOS_123456'.
-std::string GenerateDeviceName() {
-  static constexpr const char* kDeviceNamePrefix = "ChromeOS_";
-  constexpr size_t kPrefixLength =
-      base::CharTraits<char>::length(kDeviceNamePrefix);
-  constexpr size_t kNumDigits = kMaxDeviceNameLength - kPrefixLength;
-
-  // The algorithm below uses the range of integers between 10^n and double
-  // that value to create a string of n digits representing the 10^n values in
-  // that range while preserving leading zeroes.
-  //
-  // Example: 3 digits
-  // Expected output: 000...999
-  // Rand[1000, 1999] -> 1000 -> 1{000} -> "000"
-  // Rand[1000, 1999] -> 1782 -> 1{782} -> "782"
-  int min = std::pow(10, kNumDigits);
-  int max = 2 * min - 1;
-  int rand_num = base::RandInt(min, max);
-  std::string rand_num_str = base::NumberToString(rand_num).substr(1);
-  return kDeviceNamePrefix + rand_num_str;
-}
+// This will point to the singleton instance upon initialization.
+DeviceNameStore* g_instance = nullptr;
 
 }  // namespace
+
+DeviceNameStore::~DeviceNameStore() = default;
 
 // static
 DeviceNameStore* DeviceNameStore::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return base::Singleton<DeviceNameStore>::get();
+  CHECK(g_instance);
+  return g_instance;
 }
 
 // static
@@ -56,15 +35,27 @@ void DeviceNameStore::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kDeviceName, "");
 }
 
+// static
 void DeviceNameStore::Initialize(PrefService* prefs) {
+  CHECK(base::FeatureList::IsEnabled(features::kEnableHostnameSetting));
+  CHECK(!g_instance);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(prefs);
-  prefs_ = prefs;
+  g_instance = new DeviceNameStore(prefs);
+}
 
-  std::string device_name = prefs_->GetString(prefs::kDeviceName);
-  if (device_name.empty()) {
-    device_name = GenerateDeviceName();
-    prefs_->SetString(prefs::kDeviceName, device_name);
+// static
+void DeviceNameStore::Shutdown() {
+  if (g_instance) {
+    delete g_instance;
+    g_instance = nullptr;
+  }
+}
+
+DeviceNameStore::DeviceNameStore(PrefService* prefs) : prefs_(prefs) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(prefs_);
+  if (prefs_->GetString(prefs::kDeviceName).empty()) {
+    prefs_->SetString(prefs::kDeviceName, kDefaultDeviceName);
   }
 }
 

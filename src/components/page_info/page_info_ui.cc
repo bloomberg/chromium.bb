@@ -8,13 +8,15 @@
 
 #include "base/command_line.h"
 #include "base/containers/span.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/page_info/features.h"
 #include "components/page_info/page_info_ui_delegate.h"
+#include "components/permissions/features.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
 #include "components/permissions/permission_util.h"
@@ -23,7 +25,6 @@
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/vector_icons/vector_icons.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/device_features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -33,24 +34,16 @@
 #else
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-#include "components/safe_browsing/content/password_protection/password_protection_service.h"
+#include "components/safe_browsing/content/browser/password_protection/password_protection_service.h"
 #endif
 
 namespace {
 
 const int kInvalidResourceID = -1;
-
-#if !defined(OS_ANDROID)
-// The icon size is actually 16, but the vector icons being used generally all
-// have additional internal padding. Account for this difference by asking for
-// the vectors in 18x18dip sizes.
-constexpr int kVectorIconSize = 18;
-#endif
 
 // The resource IDs for the strings that are displayed on the permissions
 // button if the permission setting is managed by policy.
@@ -252,6 +245,99 @@ ContentSetting GetEffectiveSetting(ContentSettingsType type,
   return effective_setting;
 }
 
+void SetTargetContentSetting(PageInfo::PermissionInfo& permission,
+                             ContentSetting target_setting) {
+  // If content setting's default setting matches target setting, set
+  // default setting to avoid crearing a site exception.
+  permission.setting = permission.default_setting == target_setting
+                           ? CONTENT_SETTING_DEFAULT
+                           : target_setting;
+}
+
+void CreateOppositeToDefaultSiteException(
+    PageInfo::PermissionInfo& permission,
+    ContentSetting opposite_to_block_setting) {
+  // For guard content settings opposite to block setting is ask, for the
+  // rest opposite is allow.
+  permission.setting = permission.default_setting == opposite_to_block_setting
+                           ? CONTENT_SETTING_BLOCK
+                           : opposite_to_block_setting;
+}
+
+std::u16string GetPermissionAskStateString(ContentSettingsType type) {
+  int message_id = kInvalidResourceID;
+
+  switch (type) {
+    case ContentSettingsType::GEOLOCATION:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_LOCATION_ASK;
+      break;
+    case ContentSettingsType::NOTIFICATIONS:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_NOTIFICATIONS_ASK;
+      break;
+    case ContentSettingsType::MIDI_SYSEX:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_MIDI_ASK;
+      break;
+    case ContentSettingsType::MEDIASTREAM_CAMERA:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_CAMERA_ASK;
+      break;
+    case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_CAMERA_PAN_TILT_ZOOM_ASK;
+      break;
+    case ContentSettingsType::MEDIASTREAM_MIC:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_MIC_ASK;
+      break;
+    case ContentSettingsType::CLIPBOARD_READ_WRITE:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_CLIPBOARD_ASK;
+      break;
+    case ContentSettingsType::AUTOMATIC_DOWNLOADS:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_AUTOMATIC_DOWNLOADS_ASK;
+      break;
+    case ContentSettingsType::VR:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_VR_ASK;
+      break;
+    case ContentSettingsType::AR:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_AR_ASK;
+      break;
+    case ContentSettingsType::WINDOW_PLACEMENT:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_WINDOW_PLACEMENT_ASK;
+      break;
+    case ContentSettingsType::FONT_ACCESS:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_FONT_ACCESS_ASK;
+      break;
+    case ContentSettingsType::IDLE_DETECTION:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_IDLE_DETECTION_ASK;
+      break;
+    case ContentSettingsType::FILE_HANDLING:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_FILE_HANDLING_ASK;
+      break;
+    // Guard content settings:
+    case ContentSettingsType::USB_GUARD:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_USB_ASK;
+      break;
+    case ContentSettingsType::HID_GUARD:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_HID_DEVICES_ASK;
+      break;
+    case ContentSettingsType::SERIAL_GUARD:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_SERIAL_ASK;
+      break;
+    case ContentSettingsType::BLUETOOTH_GUARD:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_BLUETOOTH_DEVICES_ASK;
+      break;
+    case ContentSettingsType::BLUETOOTH_SCANNING:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_BLUETOOTH_SCANNING_ASK;
+      break;
+    case ContentSettingsType::FILE_SYSTEM_WRITE_GUARD:
+      message_id = IDS_PAGE_INFO_STATE_TEXT_FILE_SYSTEM_WRITE_ASK;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  if (message_id == kInvalidResourceID)
+    return std::u16string();
+  return l10n_util::GetStringUTF16(message_id);
+}
+
 }  // namespace
 
 PageInfoUI::CookieInfo::CookieInfo() : allowed(-1), blocked(-1) {}
@@ -402,10 +488,13 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
                                            IDS_PAGE_INFO_LEGACY_TLS_DETAILS,
                                            SecurityDescriptionType::CONNECTION);
         default:
-          return CreateSecurityDescription(SecuritySummaryColor::GREEN,
-                                           IDS_PAGE_INFO_SECURE_SUMMARY,
-                                           IDS_PAGE_INFO_SECURE_DETAILS,
-                                           SecurityDescriptionType::CONNECTION);
+          return CreateSecurityDescription(
+              SecuritySummaryColor::GREEN, IDS_PAGE_INFO_SECURE_SUMMARY,
+              base::FeatureList::IsEnabled(
+                  omnibox::kUpdatedConnectionSecurityIndicators)
+                  ? IDS_PAGE_INFO_SECURE_DETAILS_V2
+                  : IDS_PAGE_INFO_SECURE_DETAILS,
+              SecurityDescriptionType::CONNECTION);
       }
     case PageInfo::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
     case PageInfo::SITE_IDENTITY_STATUS_UNKNOWN:
@@ -494,23 +583,110 @@ std::u16string PageInfoUI::PermissionActionToUIString(
 }
 
 // static
-std::u16string PageInfoUI::PermissionDecisionReasonToUIString(
+std::u16string PageInfoUI::PermissionStateToUIString(
     PageInfoUiDelegate* delegate,
     const PageInfo::PermissionInfo& permission) {
+  int message_id = kInvalidResourceID;
   ContentSetting effective_setting = GetEffectiveSetting(
       permission.type, permission.setting, permission.default_setting);
+  switch (effective_setting) {
+    case CONTENT_SETTING_ALLOW:
+#if !defined(OS_ANDROID)
+      if (permission.type == ContentSettingsType::SOUND &&
+          delegate->IsBlockAutoPlayEnabled() &&
+          permission.setting == CONTENT_SETTING_DEFAULT) {
+        message_id = IDS_PAGE_INFO_BUTTON_TEXT_AUTOMATIC_BY_DEFAULT;
+        break;
+      }
+#endif
+      if (permission.setting == CONTENT_SETTING_DEFAULT) {
+        message_id = IDS_PAGE_INFO_STATE_TEXT_ALLOWED_BY_DEFAULT;
+#if !defined(OS_ANDROID)
+      } else if (permission.is_one_time) {
+        DCHECK_EQ(permission.source, content_settings::SETTING_SOURCE_USER);
+        DCHECK(permissions::PermissionUtil::CanPermissionBeAllowedOnce(
+            permission.type));
+        message_id = delegate->IsMultipleTabsOpen()
+                         ? IDS_PAGE_INFO_STATE_TEXT_ALLOWED_ONCE_MULTIPLE_TAB
+                         : IDS_PAGE_INFO_STATE_TEXT_ALLOWED_ONCE_ONE_TAB;
+#endif
+      } else {
+        message_id = IDS_PAGE_INFO_STATE_TEXT_ALLOWED;
+      }
+      break;
+    case CONTENT_SETTING_BLOCK:
+      if (permission.setting == CONTENT_SETTING_DEFAULT) {
+#if !defined(OS_ANDROID)
+        if (permission.type == ContentSettingsType::SOUND) {
+          message_id = IDS_PAGE_INFO_BUTTON_TEXT_MUTED_BY_DEFAULT;
+          break;
+        }
+#endif
+        message_id = IDS_PAGE_INFO_STATE_TEXT_NOT_ALLOWED_BY_DEFAULT;
+      } else {
+#if !defined(OS_ANDROID)
+        if (permission.type == ContentSettingsType::SOUND) {
+          message_id = IDS_PAGE_INFO_STATE_TEXT_MUTED;
+          break;
+        }
+#endif
+        message_id = IDS_PAGE_INFO_STATE_TEXT_NOT_ALLOWED;
+      }
+      break;
+    case CONTENT_SETTING_ASK:
+      return GetPermissionAskStateString(permission.type);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  return l10n_util::GetStringUTF16(message_id);
+}
+
+// static
+std::u16string PageInfoUI::PermissionMainPageStateToUIString(
+    PageInfoUiDelegate* delegate,
+    const PageInfo::PermissionInfo& permission) {
+  std::u16string auto_blocked_text =
+      PermissionAutoBlockedToUIString(delegate, permission);
+  if (!auto_blocked_text.empty())
+    return auto_blocked_text;
+
+  if (permission.is_one_time || permission.setting == CONTENT_SETTING_DEFAULT ||
+      permission.setting == CONTENT_SETTING_ASK) {
+    return PermissionStateToUIString(delegate, permission);
+  }
+
+  return std::u16string();
+}
+
+// static
+std::u16string PageInfoUI::PermissionManagedTooltipToUIString(
+    PageInfoUiDelegate* delegate,
+    const PageInfo::PermissionInfo& permission) {
   int message_id = kInvalidResourceID;
   switch (permission.source) {
     case content_settings::SettingSource::SETTING_SOURCE_POLICY:
-      message_id = kPermissionButtonTextIDPolicyManaged[effective_setting];
+      message_id = IDS_PAGE_INFO_PERMISSION_MANAGED_BY_POLICY;
       break;
     case content_settings::SettingSource::SETTING_SOURCE_EXTENSION:
-      message_id = kPermissionButtonTextIDExtensionManaged[effective_setting];
+      // TODO(crbug.com/1225563): Consider "enforced" instead of "managed".
+      message_id = IDS_PAGE_INFO_PERMISSION_MANAGED_BY_EXTENSION;
       break;
     default:
       break;
   }
 
+  if (message_id == kInvalidResourceID)
+    return std::u16string();
+  return l10n_util::GetStringUTF16(message_id);
+}
+
+// static
+std::u16string PageInfoUI::PermissionAutoBlockedToUIString(
+    PageInfoUiDelegate* delegate,
+    const PageInfo::PermissionInfo& permission) {
+  int message_id = kInvalidResourceID;
   // TODO(crbug.com/1063023): PageInfo::PermissionInfo should be modified
   // to contain all needed information regarding Automatically Blocked flag.
   if (permission.setting == CONTENT_SETTING_BLOCK &&
@@ -528,13 +704,126 @@ std::u16string PageInfoUI::PermissionDecisionReasonToUIString(
         break;
     }
   }
+  if (message_id == kInvalidResourceID)
+    return std::u16string();
+  return l10n_util::GetStringUTF16(message_id);
+}
 
-  if (permission.type == ContentSettingsType::ADS)
-    message_id = IDS_PAGE_INFO_PERMISSION_ADS_SUBTITLE;
+// static
+std::u16string PageInfoUI::PermissionDecisionReasonToUIString(
+    PageInfoUiDelegate* delegate,
+    const PageInfo::PermissionInfo& permission) {
+  ContentSetting effective_setting = GetEffectiveSetting(
+      permission.type, permission.setting, permission.default_setting);
+  int message_id = kInvalidResourceID;
+  switch (permission.source) {
+    case content_settings::SettingSource::SETTING_SOURCE_POLICY:
+      message_id = kPermissionButtonTextIDPolicyManaged[effective_setting];
+      break;
+    case content_settings::SettingSource::SETTING_SOURCE_EXTENSION:
+      message_id = kPermissionButtonTextIDExtensionManaged[effective_setting];
+      break;
+    default:
+      break;
+  }
+
+  auto auto_block_text = PermissionAutoBlockedToUIString(delegate, permission);
+  if (!auto_block_text.empty())
+    return auto_block_text;
 
   if (message_id == kInvalidResourceID)
     return std::u16string();
   return l10n_util::GetStringUTF16(message_id);
+}
+
+// static
+void PageInfoUI::ToggleBetweenAllowAndBlock(
+    PageInfo::PermissionInfo& permission) {
+  auto opposite_to_block_setting =
+      permissions::PermissionUtil::IsGuardContentSetting(permission.type)
+          ? CONTENT_SETTING_ASK
+          : CONTENT_SETTING_ALLOW;
+  switch (permission.setting) {
+    case CONTENT_SETTING_ALLOW:
+      DCHECK_EQ(opposite_to_block_setting, CONTENT_SETTING_ALLOW);
+      if (permission.is_one_time) {
+        permission.setting = CONTENT_SETTING_DEFAULT;
+      } else {
+        SetTargetContentSetting(permission, CONTENT_SETTING_BLOCK);
+      }
+      permission.is_one_time = false;
+      break;
+    case CONTENT_SETTING_BLOCK:
+      SetTargetContentSetting(permission, opposite_to_block_setting);
+      permission.is_one_time = false;
+      break;
+    case CONTENT_SETTING_DEFAULT: {
+      CreateOppositeToDefaultSiteException(permission,
+                                           opposite_to_block_setting);
+      // If one-time permissions are supported, permission should go from
+      // default state to allow once state, not directly to allow.
+      if (permissions::PermissionUtil::CanPermissionBeAllowedOnce(
+              permission.type)) {
+        permission.is_one_time = true;
+      }
+      break;
+    }
+    case CONTENT_SETTING_ASK:
+      DCHECK_EQ(opposite_to_block_setting, CONTENT_SETTING_ASK);
+      SetTargetContentSetting(permission, CONTENT_SETTING_BLOCK);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+// static
+void PageInfoUI::ToggleBetweenRememberAndForget(
+    PageInfo::PermissionInfo& permission) {
+  DCHECK(permissions::PermissionUtil::IsPermission(permission.type));
+  switch (permission.setting) {
+    case CONTENT_SETTING_ALLOW: {
+      // If one-time permissions are supported, toggle is_one_time.
+      // Otherwise, go directly to default.
+      if (permissions::PermissionUtil::CanPermissionBeAllowedOnce(
+              permission.type)) {
+        permission.is_one_time = !permission.is_one_time;
+      } else {
+        permission.setting = CONTENT_SETTING_DEFAULT;
+      }
+      break;
+    }
+    case CONTENT_SETTING_BLOCK:
+      // TODO(olesiamarukhno): If content setting is in the blocklist, setting
+      // it to default, doesn't do anything. Fix this before introducing
+      // subpages for content settings (not permissions).
+      permission.setting = CONTENT_SETTING_DEFAULT;
+      permission.is_one_time = false;
+      break;
+    case CONTENT_SETTING_DEFAULT:
+      // When user checks the checkbox to remember the permission setting,
+      // it should go to the "allow" state, only if default setting is
+      // explicitly allow.
+      if (permission.default_setting == CONTENT_SETTING_ALLOW) {
+        permission.setting = CONTENT_SETTING_ALLOW;
+      } else {
+        permission.setting = CONTENT_SETTING_BLOCK;
+      }
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+// static
+bool PageInfoUI::IsToggleOn(const PageInfo::PermissionInfo& permission) {
+  ContentSetting effective_setting = GetEffectiveSetting(
+      permission.type, permission.setting, permission.default_setting);
+  return permissions::PermissionUtil::IsGuardContentSetting(permission.type)
+             ? effective_setting == CONTENT_SETTING_ASK
+             : effective_setting == CONTENT_SETTING_ALLOW;
 }
 
 // static
@@ -616,205 +905,7 @@ int PageInfoUI::GetConnectionIconColorID(
   return 0;
 }
 
-#else  // !defined(OS_ANDROID)
-// static
-const ui::ImageModel PageInfoUI::GetPermissionIcon(
-    const PageInfo::PermissionInfo& info) {
-  const gfx::VectorIcon* icon = &gfx::kNoneIcon;
-  switch (info.type) {
-    case ContentSettingsType::COOKIES:
-      icon = &vector_icons::kCookieIcon;
-      break;
-    case ContentSettingsType::IMAGES:
-      icon = &vector_icons::kPhotoIcon;
-      break;
-    case ContentSettingsType::JAVASCRIPT:
-      icon = &vector_icons::kCodeIcon;
-      break;
-    case ContentSettingsType::POPUPS:
-      icon = &vector_icons::kLaunchIcon;
-      break;
-    case ContentSettingsType::GEOLOCATION:
-      icon = &vector_icons::kLocationOnIcon;
-      break;
-    case ContentSettingsType::NOTIFICATIONS:
-      icon = &vector_icons::kNotificationsIcon;
-      break;
-    case ContentSettingsType::MEDIASTREAM_MIC:
-      icon = &vector_icons::kMicIcon;
-      break;
-    case ContentSettingsType::MEDIASTREAM_CAMERA:
-    case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
-      icon = &vector_icons::kVideocamIcon;
-      break;
-    case ContentSettingsType::AUTOMATIC_DOWNLOADS:
-      icon = &vector_icons::kFileDownloadIcon;
-      break;
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
-    case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:
-      icon = &vector_icons::kProtectedContentIcon;
-      break;
-#endif
-    case ContentSettingsType::MIDI_SYSEX:
-      icon = &vector_icons::kMidiIcon;
-      break;
-    case ContentSettingsType::BACKGROUND_SYNC:
-      icon = &vector_icons::kSyncIcon;
-      break;
-    case ContentSettingsType::ADS:
-      icon = &vector_icons::kAdsIcon;
-      break;
-    case ContentSettingsType::SOUND:
-      icon = &vector_icons::kVolumeUpIcon;
-      break;
-    case ContentSettingsType::CLIPBOARD_READ_WRITE:
-      icon = &vector_icons::kPageInfoContentPasteIcon;
-      break;
-    case ContentSettingsType::SENSORS:
-      icon = &vector_icons::kSensorsIcon;
-      break;
-    case ContentSettingsType::USB_GUARD:
-      icon = &vector_icons::kUsbIcon;
-      break;
-    case ContentSettingsType::SERIAL_GUARD:
-      icon = &vector_icons::kSerialPortIcon;
-      break;
-    case ContentSettingsType::BLUETOOTH_GUARD:
-      icon = &vector_icons::kBluetoothIcon;
-      break;
-    case ContentSettingsType::BLUETOOTH_SCANNING:
-      icon = &vector_icons::kBluetoothScanningIcon;
-      break;
-    case ContentSettingsType::FILE_SYSTEM_WRITE_GUARD:
-      icon = &vector_icons::kSaveOriginalFileIcon;
-      break;
-    case ContentSettingsType::VR:
-    case ContentSettingsType::AR:
-      icon = &vector_icons::kVrHeadsetIcon;
-      break;
-    case ContentSettingsType::WINDOW_PLACEMENT:
-      icon = &vector_icons::kSelectWindowIcon;
-      break;
-    case ContentSettingsType::FONT_ACCESS:
-      icon = &vector_icons::kFontDownloadIcon;
-      break;
-    case ContentSettingsType::HID_GUARD:
-      icon = &vector_icons::kVideogameAssetIcon;
-      break;
-    case ContentSettingsType::IDLE_DETECTION:
-      icon = &vector_icons::kDevicesIcon;
-      break;
-    case ContentSettingsType::FILE_HANDLING:
-      icon = &vector_icons::kDescriptionIcon;
-      break;
-    default:
-      // All other |ContentSettingsType|s do not have icons on desktop or are
-      // not shown in the Page Info bubble.
-      NOTREACHED();
-      break;
-  }
-
-  ContentSetting setting = info.setting == CONTENT_SETTING_DEFAULT
-                               ? info.default_setting
-                               : info.setting;
-  return ui::ImageModel::FromVectorIcon(
-      *icon, ui::NativeTheme::kColorId_DefaultIconColor, kVectorIconSize,
-      (setting == CONTENT_SETTING_BLOCK) ? &vector_icons::kBlockedBadgeIcon
-                                         : nullptr);
-}
-
-// static
-const ui::ImageModel PageInfoUI::GetChosenObjectIcon(
-    const ChosenObjectInfo& object,
-    bool deleted) {
-  // The permissions data for device APIs will always appear even if the device
-  // is not currently conncted to the system.
-  // TODO(https://crbug.com/1048860): Check the connected status of devices and
-  // change the icon to one that reflects that status.
-  const gfx::VectorIcon* icon = &gfx::kNoneIcon;
-  switch (object.ui_info.content_settings_type) {
-    case ContentSettingsType::USB_CHOOSER_DATA:
-      icon = &vector_icons::kUsbIcon;
-      break;
-    case ContentSettingsType::SERIAL_CHOOSER_DATA:
-      icon = &vector_icons::kSerialPortIcon;
-      break;
-    case ContentSettingsType::BLUETOOTH_CHOOSER_DATA:
-      icon = &vector_icons::kBluetoothIcon;
-      break;
-    case ContentSettingsType::HID_CHOOSER_DATA:
-      icon = &vector_icons::kVideogameAssetIcon;
-      break;
-    default:
-      // All other content settings types do not represent chosen object
-      // permissions.
-      NOTREACHED();
-      break;
-  }
-
-  return ui::ImageModel::FromVectorIcon(
-      *icon, ui::NativeTheme::kColorId_DefaultIconColor, kVectorIconSize,
-      deleted ? &vector_icons::kBlockedBadgeIcon : nullptr);
-}
-
-// static
-const ui::ImageModel PageInfoUI::GetValidCertificateIcon() {
-  return ui::ImageModel::FromVectorIcon(
-      vector_icons::kCertificateIcon,
-      ui::NativeTheme::kColorId_DefaultIconColor, kVectorIconSize);
-}
-
-// static
-const ui::ImageModel PageInfoUI::GetInvalidCertificateIcon() {
-  return ui::ImageModel::FromVectorIcon(
-      vector_icons::kCertificateIcon,
-      ui::NativeTheme::kColorId_DefaultIconColor, kVectorIconSize,
-      &vector_icons::kBlockedBadgeIcon);
-}
-
-// static
-const ui::ImageModel PageInfoUI::GetSiteSettingsIcon() {
-  return ui::ImageModel::FromVectorIcon(
-      vector_icons::kSettingsIcon, ui::NativeTheme::kColorId_DefaultIconColor,
-      kVectorIconSize);
-}
-
-// static
-const ui::ImageModel PageInfoUI::GetVrSettingsIcon() {
-  return ui::ImageModel::FromVectorIcon(
-      vector_icons::kVrHeadsetIcon, ui::NativeTheme::kColorId_DefaultIconColor,
-      kVectorIconSize);
-}
-
-// static
-const ui::ImageModel PageInfoUI::GetLaunchIcon() {
-  return ui::ImageModel::FromVectorIcon(
-      vector_icons::kLaunchIcon, ui::NativeTheme::kColorId_SecondaryIconColor,
-      kVectorIconSize);
-}
-
-// static
-const ui::ImageModel PageInfoUI::GetConnectionNotSecureIcon() {
-  return ui::ImageModel::FromVectorIcon(
-      vector_icons::kNotSecureWarningIcon,
-      ui::NativeTheme::kColorId_AlertSeverityHigh);
-}
-
-// static
-const ui::ImageModel PageInfoUI::GetConnectionSecureIcon() {
-  return ui::ImageModel::FromVectorIcon(
-      vector_icons::kHttpsValidIcon,
-      ui::NativeTheme::kColorId_DefaultIconColor);
-}
-
-// static
-const ui::ImageModel PageInfoUI::GetOpenSubpageIcon() {
-  return ui::ImageModel::FromVectorIcon(
-      vector_icons::kSubmenuArrowIcon,
-      ui::NativeTheme::kColorId_DefaultIconColor);
-}
-
-#endif
+#endif  // defined(OS_ANDROID)
 
 // static
 bool PageInfoUI::ContentSettingsTypeInPageInfo(ContentSettingsType type) {

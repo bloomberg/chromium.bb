@@ -23,16 +23,15 @@ class ViewportTest : public DawnTest {
         DawnTest::SetUp();
 
         mQuadVS = utils::CreateShaderModule(device, R"(
-            let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
-                vec2<f32>(-1.0,  1.0),
-                vec2<f32>(-1.0, -1.0),
-                vec2<f32>( 1.0,  1.0),
-                vec2<f32>( 1.0,  1.0),
-                vec2<f32>(-1.0, -1.0),
-                vec2<f32>( 1.0, -1.0));
-
             [[stage(vertex)]]
             fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                var pos = array<vec2<f32>, 6>(
+                    vec2<f32>(-1.0,  1.0),
+                    vec2<f32>(-1.0, -1.0),
+                    vec2<f32>( 1.0,  1.0),
+                    vec2<f32>( 1.0,  1.0),
+                    vec2<f32>(-1.0, -1.0),
+                    vec2<f32>( 1.0, -1.0));
                 return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
             })");
 
@@ -57,11 +56,11 @@ class ViewportTest : public DawnTest {
                           uint32_t height,
                           bool doViewportCall = true) {
         // Create a pipeline that will draw a white quad.
-        utils::ComboRenderPipelineDescriptor2 pipelineDesc;
+        utils::ComboRenderPipelineDescriptor pipelineDesc;
         pipelineDesc.vertex.module = mQuadVS;
         pipelineDesc.cFragment.module = mQuadFS;
         pipelineDesc.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDesc);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDesc);
 
         // Render the quad with the viewport call.
         utils::BasicRenderPass rp = utils::CreateBasicRenderPass(device, kWidth, kHeight);
@@ -91,15 +90,14 @@ class ViewportTest : public DawnTest {
 
     void TestViewportDepth(float minDepth, float maxDepth, bool doViewportCall = true) {
         // Create a pipeline drawing 3 points at depth 1.0, 0.5 and 0.0.
-        utils::ComboRenderPipelineDescriptor2 pipelineDesc;
+        utils::ComboRenderPipelineDescriptor pipelineDesc;
         pipelineDesc.vertex.module = utils::CreateShaderModule(device, R"(
-            let points : array<vec3<f32>, 3> = array<vec3<f32>, 3>(
-                vec3<f32>(-0.9, 0.0, 1.0),
-                vec3<f32>( 0.0, 0.0, 0.5),
-                vec3<f32>( 0.9, 0.0, 0.0));
-
             [[stage(vertex)]]
             fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                var points : array<vec3<f32>, 3> = array<vec3<f32>, 3>(
+                    vec3<f32>(-0.9, 0.0, 1.0),
+                    vec3<f32>( 0.0, 0.0, 0.5),
+                    vec3<f32>( 0.9, 0.0, 0.0));
                 return vec4<f32>(points[VertexIndex], 1.0);
             })");
         pipelineDesc.cFragment.module = mQuadFS;
@@ -108,7 +106,7 @@ class ViewportTest : public DawnTest {
         wgpu::DepthStencilState* depthStencil =
             pipelineDesc.EnableDepthStencil(wgpu::TextureFormat::Depth32Float);
         depthStencil->depthWriteEnabled = true;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDesc);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDesc);
 
         // Create the texture that will store the post-viewport-transform depth.
         wgpu::TextureDescriptor depthDesc;
@@ -182,11 +180,11 @@ TEST_P(ViewportTest, ViewportDepth) {
 
 // Test that a draw with an empty viewport doesn't draw anything.
 TEST_P(ViewportTest, EmptyViewport) {
-    utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor pipelineDescriptor;
     pipelineDescriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
     pipelineDescriptor.vertex.module = mQuadVS;
     pipelineDescriptor.cFragment.module = mQuadFS;
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
 
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
 

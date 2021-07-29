@@ -28,6 +28,7 @@
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/folder_header_view.h"
 #include "ash/app_list/views/page_switcher.h"
+#include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_container_view.h"
@@ -43,7 +44,6 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/test/test_app_list_color_provider.h"
@@ -534,10 +534,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   // Add search results for test on focus movement.
   void SetUpSearchResults(int tile_results_num, int list_results_num) {
     std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
-    result_types.push_back(
-        std::make_pair(ash::SearchResultDisplayType::kTile, tile_results_num));
-    result_types.push_back(
-        std::make_pair(ash::SearchResultDisplayType::kList, list_results_num));
+    result_types.emplace_back(SearchResultDisplayType::kTile, tile_results_num);
+    result_types.emplace_back(SearchResultDisplayType::kList, list_results_num);
 
     SearchModel::SearchResults* results =
         delegate_->GetSearchModel()->results();
@@ -1580,14 +1578,14 @@ TEST_F(AppListViewFocusTest, SelectionHighlightFollowsChangingPage) {
 
   // Test that focus followed to the next page.
   EXPECT_EQ(view_model->view_at(test_api()->TilesPerPage()),
-            apps_grid_view()->GetSelectedView());
+            apps_grid_view()->selected_view());
 
   // Select the first page.
   apps_grid_view()->pagination_model()->SelectPage(0, false);
 
   // Test that focus followed.
   EXPECT_EQ(view_model->view_at(test_api()->TilesPerPage() - 1),
-            apps_grid_view()->GetSelectedView());
+            apps_grid_view()->selected_view());
 }
 
 // Tests that the selection highlight only shows up inside a folder if the
@@ -1638,7 +1636,7 @@ TEST_F(AppListViewFocusTest, SelectionGoesIntoFolderIfSelected) {
 
   // Test that the focused view is also selected.
   AppsGridView* items_grid_view = app_list_folder_view()->items_grid_view();
-  EXPECT_EQ(items_grid_view->GetSelectedView(), focused_view());
+  EXPECT_EQ(items_grid_view->selected_view(), focused_view());
   EXPECT_EQ(items_grid_view->view_model()->view_at(0), focused_view());
 
   // Hide the folder, expect that the folder is selected and focused.

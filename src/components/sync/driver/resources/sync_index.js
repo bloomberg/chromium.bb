@@ -8,7 +8,6 @@ import 'chrome://resources/js/ios/web_ui.js';
 
 import './about.js';
 import './data.js';
-import './events.js';
 import './sync_node_browser.js';
 import './user_events.js';
 import './traffic_log.js';
@@ -17,7 +16,7 @@ import './strings.m.js';
 import './invalidations.js';
 import {isWindows} from 'chrome://resources/js/cr.m.js';
 import {decorate} from 'chrome://resources/js/cr/ui.m.js';
-import {TabBox} from 'chrome://resources/js/cr/ui/tabs.m.js';
+import {TabBox} from 'chrome://resources/js/cr/ui/tabs.js';
 import {$} from 'chrome://resources/js/util.m.js';
 
 // Allow platform specific CSS rules.

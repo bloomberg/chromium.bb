@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from 'chrome://resources/js/assert.m.js';
 import {$} from 'chrome://resources/js/util.m.js';
 import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 
@@ -9,31 +10,31 @@ import {ConversionInternalsHandler, ConversionInternalsHandlerRemote, SentReport
 
 /**
  * Reference to the backend providing all the data.
- * @type {ConversionInternalsHandlerRemote}
+ * @type {?ConversionInternalsHandlerRemote}
  */
 let pageHandler = null;
 
 /**
- * All impressions held in storage at last update.
+ * All sources held in storage at last update.
  * @type {!Array<!WebUIImpression>}
  */
-let impressions = null;
+let sources = [];
 
 /**
  * All reports held in storage at last update.
  * @type {!Array<!WebUIConversionReport>}
  */
-let reports = null;
+let reports = [];
 
 /**
  * All sent reports at last update.
  * @type {!Array<!SentReportInfo>}
  */
-let sentReports = null;
+let sentReports = [];
 
 /**
  * This is used to create TrustedHTML.
- * @type {!TrustedTypePolicy}
+ * @type {?TrustedTypePolicy}
  */
 let staticHtmlPolicy = null;
 
@@ -66,7 +67,7 @@ function UrlToText(origin) {
 
 /**
  * Converts a mojo SourceType into a user-readable string.
- * @param {WebUIImpression_SourceType} sourceType Source type to convert
+ * @param {SourceType} sourceType Source type to convert
  * @return {string}
  */
 function SourceTypeToText(sourceType) {
@@ -81,32 +82,32 @@ function SourceTypeToText(sourceType) {
 }
 
 /**
- * Creates a single row for the impression table.
- * @param {!WebUIImpression} impression The info to create the row.
- * @return {!HTMLElement}
+ * Creates a single row for the source table.
+ * @param {!WebUIImpression} source The info to create the row.
+ * @return {!Node}
  */
-function createImpressionRow(impression) {
-  const template = $('impressionrow').cloneNode(true);
+function createSourceRow(source) {
+  const template = $('source-row').cloneNode(true);
   const td = template.content.querySelectorAll('td');
 
-  td[0].textContent = impression.impressionData;
-  td[1].textContent = UrlToText(impression.impressionOrigin);
-  td[2].textContent = UrlToText(impression.conversionDestination);
-  td[3].textContent = UrlToText(impression.reportingOrigin);
-  td[4].textContent = new Date(impression.impressionTime).toLocaleString();
-  td[5].textContent = new Date(impression.expiryTime).toLocaleString();
-  td[6].textContent = SourceTypeToText(impression.sourceType);
-  td[7].textContent = impression.priority;
+  td[0].textContent = source.impressionData;
+  td[1].textContent = UrlToText(source.impressionOrigin);
+  td[2].textContent = UrlToText(source.conversionDestination);
+  td[3].textContent = UrlToText(source.reportingOrigin);
+  td[4].textContent = new Date(source.impressionTime).toLocaleString();
+  td[5].textContent = new Date(source.expiryTime).toLocaleString();
+  td[6].textContent = SourceTypeToText(source.sourceType);
+  td[7].textContent = source.priority;
   return document.importNode(template.content, true);
 }
 
 /**
  * Creates a single row for the report table.
  * @param {!WebUIConversionReport} report The info to create the row.
- * @return {!HTMLElement}
+ * @return {!Node}
  */
 function createReportRow(report) {
-  const template = $('reportrow').cloneNode(true);
+  const template = $('report-row').cloneNode(true);
   const td = template.content.querySelectorAll('td');
 
   td[0].textContent = report.impressionData;
@@ -121,10 +122,10 @@ function createReportRow(report) {
 /**
  * Creates a single row for the sent report table.
  * @param {!SentReportInfo} info The info to create the row.
- * @return {!HTMLElement}
+ * @return {!Node}
  */
 function createSentReportRow(info) {
-  const template = $('sentreportrow').cloneNode(true);
+  const template = $('sent-report-row').cloneNode(true);
   const td = template.content.querySelectorAll('td');
 
   td[0].textContent = info.reportUrl.url;
@@ -134,22 +135,21 @@ function createSentReportRow(info) {
 }
 
 /**
- * Regenerates the impression table from |impressions|.
+ * Regenerates the source table from |sources|.
  */
-function renderImpressionTable() {
-  const impressionTable = $('impression-table-body');
-  clearTable(impressionTable);
-  impressions.forEach(
-      impression =>
-          impressionTable.appendChild(createImpressionRow(impression)));
+function renderSourceTable() {
+  const sourceTable = $('source-table-body');
+  assert(sourceTable);
+  clearTable(sourceTable);
+  sources.forEach(source => sourceTable.appendChild(createSourceRow(source)));
 
-  // If there are no impressions, add an empty row to indicate the table is
+  // If there are no sources, add an empty row to indicate the table is
   // purposefully empty.
-  if (!impressions.length) {
-    const template = $('impressionrow').cloneNode(true);
+  if (!sources.length) {
+    const template = $('source-row').cloneNode(true);
     const td = template.content.querySelectorAll('td');
-    td[0].textContent = 'No active impressions.';
-    impressionTable.appendChild(document.importNode(template.content, true));
+    td[0].textContent = 'No active sources.';
+    sourceTable.appendChild(document.importNode(template.content, true));
   }
 }
 
@@ -158,13 +158,14 @@ function renderImpressionTable() {
  */
 function renderReportTable() {
   const reportTable = $('report-table-body');
+  assert(reportTable);
   clearTable(reportTable);
   reports.forEach(report => reportTable.appendChild(createReportRow(report)));
 
   // If there are no reports, add an empty row to indicate the table is
   // purposefully empty.
   if (!reports.length) {
-    const template = $('reportrow').cloneNode(true);
+    const template = $('report-row').cloneNode(true);
     const td = template.content.querySelectorAll('td');
     td[0].textContent = 'No pending reports.';
     reportTable.appendChild(document.importNode(template.content, true));
@@ -176,6 +177,7 @@ function renderReportTable() {
  */
 function renderSentReportTable() {
   const sentReportTable = $('sent-report-table-body');
+  assert(sentReportTable);
   clearTable(sentReportTable);
   sentReports.forEach(
       report => sentReportTable.appendChild(createSentReportRow(report)));
@@ -183,7 +185,7 @@ function renderSentReportTable() {
   // If there are no sent reports, add an empty row to indicate the table is
   // purposefully empty.
   if (!sentReports.length) {
-    const template = $('sentreportrow').cloneNode(true);
+    const template = $('sent-report-row').cloneNode(true);
     const td = template.content.querySelectorAll('td');
     td[0].textContent = 'No sent reports.';
     sentReportTable.appendChild(document.importNode(template.content, true));
@@ -191,7 +193,7 @@ function renderSentReportTable() {
 }
 
 /**
- * Fetch all active impressions, pending reports, and sent reports from the
+ * Fetch all active sources, pending reports, and sent reports from the
  * backend and populate the tables. Also update measurement enabled status.
  */
 function updatePageData() {
@@ -221,8 +223,8 @@ function updatePageData() {
   });
 
   pageHandler.getActiveImpressions().then((response) => {
-    impressions = response.impressions;
-    renderImpressionTable();
+    sources = response.impressions;
+    renderSourceTable();
   });
 
   pageHandler.getPendingReports().then((response) => {

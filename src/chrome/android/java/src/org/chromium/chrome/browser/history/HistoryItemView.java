@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.history;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
@@ -25,19 +24,16 @@ import org.chromium.chrome.browser.ui.favicon.FaviconHelper.DefaultFaviconHelper
 import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
-import org.chromium.components.favicon.IconType;
-import org.chromium.components.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 
 /**
  * The SelectableItemView for items displayed in the browsing history UI.
  */
-public class HistoryItemView extends SelectableItemView<HistoryItem> implements LargeIconCallback {
+public class HistoryItemView extends SelectableItemView<HistoryItem> {
     private ImageButton mRemoveButton;
     private VectorDrawableCompat mBlockedVisitDrawable;
 
-    private HistoryManager mHistoryManager;
     private final RoundedIconGenerator mIconGenerator;
     private DefaultFaviconHelper mFaviconHelper;
 
@@ -107,22 +103,11 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
         } else {
             setStartIconDrawable(mFaviconHelper.getDefaultFaviconDrawable(
                     getContext().getResources(), item.getUrl(), true));
-            if (mHistoryManager != null) requestIcon();
+            requestIcon();
 
             mTitleView.setTextColor(
                     ApiCompatibilityUtils.getColor(getResources(), R.color.default_text_color));
         }
-    }
-
-    /**
-     * @param manager The HistoryManager associated with this item.
-     */
-    public void setHistoryManager(HistoryManager manager) {
-        getItem().setHistoryManager(manager);
-        if (mHistoryManager == manager) return;
-
-        mHistoryManager = manager;
-        if (!getItem().wasBlockedVisit()) requestIcon();
     }
 
     /**
@@ -140,7 +125,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
         if (getItem() == null || mIsItemRemoved) return;
 
         mIsItemRemoved = true;
-        getItem().remove();
+        getItem().onItemRemoved();
     }
 
     /**
@@ -165,22 +150,22 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
     @Override
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public void onClick() {
-        if (getItem() != null) getItem().open();
-    }
-
-    @Override
-    public void onLargeIconAvailable(Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
-            @IconType int iconType) {
-        Drawable drawable = FaviconUtils.getIconDrawableWithoutFilter(icon, getItem().getUrl(),
-                fallbackColor, mIconGenerator, getResources(), mDisplayedIconSize);
-        setStartIconDrawable(drawable);
+        if (getItem() != null) getItem().onItemClicked();
     }
 
     private void requestIcon() {
-        if (mHistoryManager == null || mHistoryManager.getLargeIconBridge() == null) return;
+        HistoryItem item = getItem();
+        if (item.wasBlockedVisit()) return;
+        item.getLargeIconForUrl(
+                mMinIconSize, (icon, fallbackColor, isFallbackColorDefault, iconType) -> {
+                    // Prevent stale icons from making it through to the UI.
+                    if (item != getItem()) return;
 
-        mHistoryManager.getLargeIconBridge().getLargeIconForUrl(
-                getItem().getUrl(), mMinIconSize, this);
+                    Drawable drawable = FaviconUtils.getIconDrawableWithoutFilter(icon,
+                            getItem().getUrl(), fallbackColor, mIconGenerator, getResources(),
+                            mDisplayedIconSize);
+                    setStartIconDrawable(drawable);
+                });
     }
 
     private void updateRemoveButtonVisibility() {

@@ -10,15 +10,20 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/automated_tests/cache_replayer.h"
 #include "chrome/browser/autofill/captured_sites_test_utils.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
+#include "chrome/browser/password_manager/password_manager_uitest_util.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 
@@ -48,6 +53,11 @@ base::FilePath GetReplayFilesRootDirectory() {
   ADD_FAILURE() << "Unable to obtain the Chromium src directory!";
   src_dir.clear();
   return src_dir;
+}
+
+std::unique_ptr<KeyedService> BuildTestSyncService(
+    content::BrowserContext* context) {
+  return std::make_unique<syncer::TestSyncService>();
 }
 
 }  // namespace
@@ -121,6 +131,12 @@ class CapturedSitesPasswordManagerBrowserTest
     return false;
   }
 
+  bool IsChromeShowingPasswordGenerationPrompt() override {
+    return observer_.popup_showing() &&
+           observer_.state() ==
+               PasswordGenerationPopupController::kOfferGeneration;
+  }
+
   bool HasChromeShownSavePasswordPrompt() override {
     BubbleObserver bubble_observer(WebContents());
     return bubble_observer.IsSavePromptShownAutomatically();
@@ -163,6 +179,12 @@ class CapturedSitesPasswordManagerBrowserTest
         BrowserContextDependencyManager::GetInstance()
             ->RegisterCreateServicesCallbackForTesting(
                 base::BindRepeating([](content::BrowserContext* context) {
+                  // Set up a TestSyncService which will happily return
+                  // "everything is active" so that password generation is
+                  // considered enabled.
+                  SyncServiceFactory::GetInstance()->SetTestingFactory(
+                      context, base::BindRepeating(&BuildTestSyncService));
+
                   PasswordStoreFactory::GetInstance()->SetTestingFactory(
                       context, base::BindRepeating(
                                    &password_manager::BuildPasswordStore<
@@ -182,12 +204,18 @@ class CapturedSitesPasswordManagerBrowserTest
             GetParam().capture_file_path,
             ServerCacheReplayer::kOptionFailOnInvalidJsonRecord |
                 ServerCacheReplayer::kOptionSplitRequestsByForm)));
+
+    ChromePasswordManagerClient* client =
+        ChromePasswordManagerClient::FromWebContents(WebContents());
+    client->SetTestObserver(&observer_);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kUsernameFirstFlow}, {});
-    InProcessBrowserTest::SetUpCommandLine(command_line);
+        /*enabled_features=*/{autofill::features::kAutofillShowTypePredictions,
+                              features::kUsernameFirstFlow},
+        {});
+    command_line->AppendSwitch(autofill::switches::kShowAutofillSignatures);
     captured_sites_test_utils::TestRecipeReplayer::SetUpCommandLine(
         command_line);
   }
@@ -216,6 +244,7 @@ class CapturedSitesPasswordManagerBrowserTest
   }
 
  private:
+  TestGenerationPopupObserver observer_;
   std::unique_ptr<captured_sites_test_utils::TestRecipeReplayer>
       recipe_replayer_;
   base::test::ScopedFeatureList feature_list_;

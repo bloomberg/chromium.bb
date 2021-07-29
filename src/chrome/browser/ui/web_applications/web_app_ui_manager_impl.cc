@@ -15,17 +15,22 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
+#include "chrome/browser/ui/webui/web_app_internals/web_app_internals_source.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
+#include "chrome/browser/web_applications/components/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "components/constrained_window/constrained_window_views.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -121,6 +126,10 @@ void WebAppUiManagerImpl::Start() {
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE, base::BindOnce(&WebAppUiManagerImpl::OnExtensionSystemReady,
                                 weak_ptr_factory_.GetWeakPtr()));
+
+  // Register the source for the chrome://web-app-internals page.
+  content::URLDataSource::Add(
+      profile_, std::make_unique<WebAppInternalsSource>(profile_));
 
   BrowserList::AddObserver(this);
 }
@@ -275,8 +284,25 @@ void WebAppUiManagerImpl::OnShortcutLocationGathered(
     ShortcutLocations locations) {
   apps::AppServiceProxyBase* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
+
+  const bool is_extension = proxy->AppRegistryCache().GetAppType(from_app) ==
+                            apps::mojom::AppType::kExtension;
+  if (is_extension) {
+    WaitForExtensionShortcutsDeleted(
+        from_app,
+        base::BindOnce(&WebAppUiManagerImpl::InstallOsHooksForReplacementApp,
+                       weak_ptr_factory_.GetWeakPtr(), app_id, locations));
+  }
+
   proxy->UninstallSilently(from_app, apps::mojom::UninstallSource::kMigration);
 
+  if (!is_extension)
+    InstallOsHooksForReplacementApp(app_id, locations);
+}
+
+void WebAppUiManagerImpl::InstallOsHooksForReplacementApp(
+    const AppId& app_id,
+    ShortcutLocations locations) {
   InstallOsHooksOptions options;
   options.os_hooks[OsHookType::kShortcuts] =
       locations.on_desktop || locations.applications_menu_location ||
@@ -360,6 +386,21 @@ content::WebContents* WebAppUiManagerImpl::NavigateExistingWindow(
     }
   }
   return nullptr;
+}
+
+void WebAppUiManagerImpl::ShowWebAppIdentityUpdateDialog(
+    const std::string& app_id,
+    bool title_change,
+    bool icon_change,
+    const std::u16string& old_title,
+    const std::u16string& new_title,
+    const SkBitmap& old_icon,
+    const SkBitmap& new_icon,
+    content::WebContents* web_contents,
+    web_app::AppIdentityDialogCallback callback) {
+  chrome::ShowWebAppIdentityUpdateDialog(
+      app_id, title_change, icon_change, old_title, new_title, old_icon,
+      new_icon, web_contents, std::move(callback));
 }
 
 void WebAppUiManagerImpl::OnBrowserAdded(Browser* browser) {

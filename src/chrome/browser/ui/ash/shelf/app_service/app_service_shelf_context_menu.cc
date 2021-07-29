@@ -39,9 +39,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/views/crostini/crostini_app_restart_dialog.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/context_menu_params.h"
 #include "extensions/browser/extension_prefs.h"
@@ -54,14 +51,16 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
   return item->contexts().Contains(extensions::MenuItem::LAUNCHER);
 }
 
-web_app::DisplayMode ConvertLaunchTypeCommandToDisplayMode(int command_id) {
+apps::mojom::WindowMode ConvertLaunchTypeCommandToWindowMode(int command_id) {
   switch (command_id) {
     case ash::LAUNCH_TYPE_REGULAR_TAB:
-      return web_app::DisplayMode::kBrowser;
+      return apps::mojom::WindowMode::kBrowser;
     case ash::LAUNCH_TYPE_WINDOW:
-      return web_app::DisplayMode::kStandalone;
+      return apps::mojom::WindowMode::kWindow;
+    case ash::LAUNCH_TYPE_TABBED_WINDOW:
+      return apps::mojom::WindowMode::kTabbedWindow;
     default:
-      return web_app::DisplayMode::kUndefined;
+      return apps::mojom::WindowMode::kUnknown;
   }
 }
 
@@ -160,13 +159,7 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
       break;
 
     case ash::LAUNCH_TYPE_TABBED_WINDOW:
-      if (app_type_ == apps::mojom::AppType::kWeb) {
-        auto* provider = web_app::WebAppProvider::Get(controller()->profile());
-        DCHECK(provider);
-        provider->registry_controller().SetExperimentalTabbedWindowMode(
-            item().id.app_id, true, /*is_user_action=*/true);
-      }
-      return;
+      FALLTHROUGH;
     case ash::LAUNCH_TYPE_PINNED_TAB:
       FALLTHROUGH;
     case ash::LAUNCH_TYPE_REGULAR_TAB:
@@ -216,20 +209,19 @@ bool AppServiceShelfContextMenu::IsCommandIdChecked(int command_id) const {
   switch (app_type_) {
     case apps::mojom::AppType::kWeb:
     case apps::mojom::AppType::kSystemWeb: {
-      auto* provider = web_app::WebAppProvider::Get(controller()->profile());
-      DCHECK(provider);
       if ((command_id >= ash::LAUNCH_TYPE_PINNED_TAB &&
            command_id <= ash::LAUNCH_TYPE_WINDOW) ||
           command_id == ash::LAUNCH_TYPE_TABBED_WINDOW) {
-        if (provider->registrar().IsInExperimentalTabbedWindowMode(
-                item().id.app_id)) {
-          return command_id == ash::LAUNCH_TYPE_TABBED_WINDOW;
-        }
-        web_app::DisplayMode user_display_mode =
-            provider->registrar().GetAppUserDisplayMode(item().id.app_id);
-        return user_display_mode != web_app::DisplayMode::kUndefined &&
-               user_display_mode ==
-                   ConvertLaunchTypeCommandToDisplayMode(command_id);
+        auto user_window_mode = apps::mojom::WindowMode::kUnknown;
+        apps::AppServiceProxyFactory::GetForProfile(controller()->profile())
+            ->AppRegistryCache()
+            .ForOneApp(item().id.app_id,
+                       [&user_window_mode](const apps::AppUpdate& update) {
+                         user_window_mode = update.WindowMode();
+                       });
+        return user_window_mode != apps::mojom::WindowMode::kUnknown &&
+               user_window_mode ==
+                   ConvertLaunchTypeCommandToWindowMode(command_id);
       }
       return ShelfContextMenu::IsCommandIdChecked(command_id);
     }
@@ -281,7 +273,7 @@ void AppServiceShelfContextMenu::OnGetMenuModel(
           menu_items->items, menu_model.get(), submenu_.get(),
           base::BindOnce(&AppServiceShelfContextMenu::GetCommandIdVectorIcon,
                          base::Unretained(this)))) {
-    index = 1;
+    ++index;
   }
 
   // The special rule to ensure that FilesManager's first menu item is "New
@@ -292,6 +284,14 @@ void AppServiceShelfContextMenu::OnGetMenuModel(
 
   if (build_extension_menu_before_pin)
     BuildExtensionAppShortcutsMenu(menu_model.get());
+
+  // "New Window" should go above "Pin".
+  if (menu_items->items.size() > index &&
+      menu_items->items[index]->command_id == ash::MENU_NEW_WINDOW) {
+    AddContextMenuOption(menu_model.get(), ash::MENU_NEW_WINDOW,
+                         menu_items->items[index]->string_id);
+    ++index;
+  }
 
   if (ShouldAddPinMenu())
     AddPinMenu(menu_model.get());
@@ -452,16 +452,12 @@ void AppServiceShelfContextMenu::SetLaunchType(int command_id) {
   switch (app_type_) {
     case apps::mojom::AppType::kWeb:
     case apps::mojom::AppType::kSystemWeb: {
-      // Web apps can only toggle between kStandalone and kBrowser.
-      web_app::DisplayMode user_display_mode =
-          ConvertLaunchTypeCommandToDisplayMode(command_id);
-      if (user_display_mode != web_app::DisplayMode::kUndefined) {
-        auto* provider = web_app::WebAppProvider::Get(controller()->profile());
-        DCHECK(provider);
-        provider->registry_controller().SetExperimentalTabbedWindowMode(
-            item().id.app_id, false, /*is_user_action=*/true);
-        provider->registry_controller().SetAppUserDisplayMode(
-            item().id.app_id, user_display_mode, /*is_user_action=*/true);
+      // Web apps can only toggle between kWindow and kBrowser.
+      apps::mojom::WindowMode user_window_mode =
+          ConvertLaunchTypeCommandToWindowMode(command_id);
+      if (user_window_mode != apps::mojom::WindowMode::kUnknown) {
+        apps::AppServiceProxyFactory::GetForProfile(controller()->profile())
+            ->SetWindowMode(item().id.app_id, user_window_mode);
       }
       return;
     }
@@ -557,6 +553,7 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
     case apps::mojom::AppType::kExtension:
     case apps::mojom::AppType::kWeb:
     case apps::mojom::AppType::kSystemWeb:
+    case apps::mojom::AppType::kStandaloneBrowserExtension:
       return true;
     case apps::mojom::AppType::kStandaloneBrowser:
       // Lacros behaves like the Chrome browser icon and cannot be unpinned.

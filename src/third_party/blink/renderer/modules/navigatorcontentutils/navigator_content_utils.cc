@@ -26,7 +26,6 @@
 
 #include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils.h"
 
-#include "base/stl_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/custom_handlers/protocol_handler_utils.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
@@ -37,6 +36,7 @@
 #include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils_client.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -60,7 +60,7 @@ static bool VerifyCustomHandlerURLSecurity(
   bool has_valid_scheme =
       full_url.ProtocolIsInHTTPFamily() ||
       (security_level == ProtocolHandlerSecurityLevel::kExtensionFeatures &&
-       full_url.ProtocolIs("chrome-extension"));
+       SchemeRegistry::IsExtensionScheme(full_url.Protocol()));
   if (!has_valid_scheme || !network::IsUrlPotentiallyTrustworthy(full_url)) {
     error_message = "The scheme of the url provided must be HTTP(S).";
     return false;

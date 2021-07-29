@@ -19,14 +19,16 @@ import {SameSiteCookieIssue} from './SameSiteCookieIssue.js';
 import {SharedArrayBufferIssue} from './SharedArrayBufferIssue.js';
 import {SourceFrameIssuesManager} from './SourceFrameIssuesManager.js';
 import {TrustedWebActivityIssue} from './TrustedWebActivityIssue.js';
+import {AttributionReportingIssue} from './AttributionReportingIssue.js';
+import {WasmCrossOriginModuleSharingIssue} from './WasmCrossOriginModuleSharingIssue.js';
 
 let issuesManagerInstance: IssuesManager|null = null;
 
 
 function createIssuesForBlockedByResponseIssue(
     issuesModel: SDK.IssuesModel.IssuesModel,
-    inspectorDetails: Protocol.Audits.InspectorIssueDetails): CrossOriginEmbedderPolicyIssue[] {
-  const blockedByResponseIssueDetails = inspectorDetails.blockedByResponseIssueDetails;
+    inspectorIssue: Protocol.Audits.InspectorIssue): CrossOriginEmbedderPolicyIssue[] {
+  const blockedByResponseIssueDetails = inspectorIssue.details.blockedByResponseIssueDetails;
   if (!blockedByResponseIssueDetails) {
     console.warn('BlockedByResponse issue without details received.');
     return [];
@@ -39,7 +41,7 @@ function createIssuesForBlockedByResponseIssue(
 
 const issueCodeHandlers = new Map<
     Protocol.Audits.InspectorIssueCode,
-    (model: SDK.IssuesModel.IssuesModel, details: Protocol.Audits.InspectorIssueDetails) => Issue[]>([
+    (model: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue) => Issue[]>([
   [
     Protocol.Audits.InspectorIssueCode.SameSiteCookieIssue,
     SameSiteCookieIssue.fromInspectorIssue,
@@ -54,7 +56,7 @@ const issueCodeHandlers = new Map<
   ],
   [
     Protocol.Audits.InspectorIssueCode.ContentSecurityPolicyIssue,
-    ContentSecurityPolicyIssue.fromInsectorIssue,
+    ContentSecurityPolicyIssue.fromInspectorIssue,
   ],
   [Protocol.Audits.InspectorIssueCode.BlockedByResponseIssue, createIssuesForBlockedByResponseIssue],
   [
@@ -78,24 +80,29 @@ const issueCodeHandlers = new Map<
     QuirksModeIssue.fromInspectorIssue,
   ],
   [
-    // TODO(crbug.com/1072335) Update types once protocol rolls
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    'NavigatorUserAgentIssue' as Protocol.Audits.InspectorIssueCode,
+    Protocol.Audits.InspectorIssueCode.NavigatorUserAgentIssue,
     DeprecationIssue.fromInspectorIssue,
+  ],
+  [
+    Protocol.Audits.InspectorIssueCode.AttributionReportingIssue,
+    AttributionReportingIssue.fromInspectorIssue,
+  ],
+  [
+    Protocol.Audits.InspectorIssueCode.WasmCrossOriginModuleSharingIssue,
+    WasmCrossOriginModuleSharingIssue.fromInspectorIssue,
   ],
 ]);
 
 /**
-   * Each issue reported by the backend can result in multiple {!Issue} instances.
-   * Handlers are simple functions hard-coded into a map.
-   */
+ * Each issue reported by the backend can result in multiple `Issue` instances.
+ * Handlers are simple functions hard-coded into a map.
+ */
 function createIssuesFromProtocolIssue(
     issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): Issue[] {
   const handler = issueCodeHandlers.get(inspectorIssue.code);
   if (handler) {
-    return handler(issuesModel, inspectorIssue.details);
+    return handler(issuesModel, inspectorIssue);
   }
-
   console.warn(`No handler registered for issue code ${inspectorIssue.code}`);
   return [];
 }
@@ -119,34 +126,26 @@ export interface IssuesManagerCreationOptions {
  * `IssuesManager#issues()`.
  */
 export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper implements
-    SDK.SDKModel.SDKModelObserver<SDK.IssuesModel.IssuesModel> {
-  private eventListeners: WeakMap<SDK.IssuesModel.IssuesModel, Common.EventTarget.EventDescriptor>;
-  private allIssues: Map<string, Issue>;
-  private filteredIssues: Map<string, Issue>;
-  private issueCounts: Map<IssueKind, number>;
-  private hasSeenTopFrameNavigated: boolean;
-  private sourceFrameIssuesManager: SourceFrameIssuesManager;
-  private showThirdPartyIssuesSetting?: Common.Settings.Setting<boolean>;
+    SDK.TargetManager.SDKModelObserver<SDK.IssuesModel.IssuesModel> {
+  private eventListeners = new WeakMap<SDK.IssuesModel.IssuesModel, Common.EventTarget.EventDescriptor>();
+  private allIssues = new Map<string, Issue>();
+  private filteredIssues = new Map<string, Issue>();
+  private issueCounts = new Map<IssueKind, number>();
+  private hasSeenTopFrameNavigated = false;
+  private sourceFrameIssuesManager = new SourceFrameIssuesManager(this);
+  private issuesById: Map<string, Issue> = new Map();
 
-  constructor(showThirdPartyIssuesSetting?: Common.Settings.Setting<boolean>) {
+  constructor(private readonly showThirdPartyIssuesSetting?: Common.Settings.Setting<boolean>) {
     super();
-    this.eventListeners = new WeakMap();
-    SDK.SDKModel.TargetManager.instance().observeModels(SDK.IssuesModel.IssuesModel, this);
-    this.allIssues = new Map();
-    this.filteredIssues = new Map();
-    this.issueCounts = new Map();
-    this.hasSeenTopFrameNavigated = false;
+    SDK.TargetManager.TargetManager.instance().observeModels(SDK.IssuesModel.IssuesModel, this);
     SDK.FrameManager.FrameManager.instance().addEventListener(
         SDK.FrameManager.Events.TopFrameNavigated, this.onTopFrameNavigated, this);
     SDK.FrameManager.FrameManager.instance().addEventListener(
         SDK.FrameManager.Events.FrameAddedToTarget, this.onFrameAddedToTarget, this);
 
-    this.showThirdPartyIssuesSetting = showThirdPartyIssuesSetting;
     // issueFilter uses the 'showThirdPartyIssues' setting. Clients of IssuesManager need
     // a full update when the setting changes to get an up-to-date issues list.
     this.showThirdPartyIssuesSetting?.addChangeListener(() => this.updateFilteredIssues());
-
-    this.sourceFrameIssuesManager = new SourceFrameIssuesManager(this);
   }
 
   static instance(opts: IssuesManagerCreationOptions = {
@@ -211,7 +210,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper implements
   modelRemoved(issuesModel: SDK.IssuesModel.IssuesModel): void {
     const listener = this.eventListeners.get(issuesModel);
     if (listener) {
-      Common.EventTarget.EventTarget.removeEventListeners([listener]);
+      Common.EventTarget.removeEventListeners([listener]);
     }
   }
 
@@ -240,6 +239,10 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper implements
     if (this.issueFilter(issue)) {
       this.filteredIssues.set(primaryKey, issue);
       this.issueCounts.set(issue.getKind(), 1 + (this.issueCounts.get(issue.getKind()) || 0));
+      const issueId = issue.getIssueId();
+      if (issueId) {
+        this.issuesById.set(issueId, issue);
+      }
       this.dispatchEventToListeners(Events.IssueAdded, {issuesModel, issue});
     }
     // Always fire the "count" event even if the issue was filtered out.
@@ -269,15 +272,24 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper implements
   private updateFilteredIssues(): void {
     this.filteredIssues.clear();
     this.issueCounts.clear();
+    this.issuesById.clear();
     for (const [key, issue] of this.allIssues) {
       if (this.issueFilter(issue)) {
         this.filteredIssues.set(key, issue);
         this.issueCounts.set(issue.getKind(), 1 + (this.issueCounts.get(issue.getKind()) ?? 0));
+        const issueId = issue.getIssueId();
+        if (issueId) {
+          this.issuesById.set(issueId, issue);
+        }
       }
     }
 
     this.dispatchEventToListeners(Events.FullUpdateRequired);
     this.dispatchEventToListeners(Events.IssuesCountUpdated);
+  }
+
+  getIssueById(id: string): Issue|undefined {
+    return this.issuesById.get(id);
   }
 }
 
@@ -291,7 +303,7 @@ export enum Events {
 
 // @ts-ignore
 globalThis.addIssueForTest = (issue: Protocol.Audits.InspectorIssue): void => {
-  const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+  const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
   const issuesModel = mainTarget?.model(SDK.IssuesModel.IssuesModel);
   issuesModel?.issueAdded({issue});
 };

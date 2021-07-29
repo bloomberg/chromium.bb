@@ -77,7 +77,8 @@ class RenderFrameHostAndroid : public base::SupportsUserData::Data {
   jboolean IsProcessBlocked(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>&) const;
 
-  jint PerformGetAssertionWebAuthSecurityChecks(
+  base::android::ScopedJavaLocalRef<jobject>
+  PerformGetAssertionWebAuthSecurityChecks(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>&,
       const base::android::JavaParamRef<jstring>&,
@@ -87,7 +88,11 @@ class RenderFrameHostAndroid : public base::SupportsUserData::Data {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>&,
       const base::android::JavaParamRef<jstring>&,
-      const base::android::JavaParamRef<jobject>&) const;
+      const base::android::JavaParamRef<jobject>&,
+      jboolean is_payment_credential_creation) const;
+
+  jint GetLifecycleState(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>&) const;
 
   RenderFrameHostImpl* render_frame_host() const { return render_frame_host_; }
 

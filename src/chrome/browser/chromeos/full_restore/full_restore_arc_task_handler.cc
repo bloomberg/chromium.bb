@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/full_restore/full_restore_arc_task_handler.h"
 
+#include "chrome/browser/chromeos/full_restore/arc_app_launch_handler.h"
+#include "chrome/browser/chromeos/full_restore/arc_window_handler.h"
 #include "chrome/browser/chromeos/full_restore/arc_window_utils.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_arc_task_handler_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,6 +31,8 @@ FullRestoreArcTaskHandler::FullRestoreArcTaskHandler(Profile* profile) {
   if (IsArcGhostWindowEnabled())
     window_handler_ = std::make_unique<ArcWindowHandler>();
 #endif
+
+  arc_app_launch_handler_ = std::make_unique<ArcAppLaunchHandler>();
 }
 
 FullRestoreArcTaskHandler::~FullRestoreArcTaskHandler() = default;
@@ -61,6 +65,23 @@ void FullRestoreArcTaskHandler::OnAppConnectionReady() {
   if (window_handler_)
     window_handler_->OnAppInstanceConnected();
 #endif
+
+  if (arc_app_launch_handler_)
+    arc_app_launch_handler_->OnAppConnectionReady();
+}
+
+void FullRestoreArcTaskHandler::OnArcAppListPrefsDestroyed() {
+  arc_prefs_observer_.Reset();
+}
+
+void FullRestoreArcTaskHandler::OnShelfReady() {
+  if (arc_app_launch_handler_)
+    arc_app_launch_handler_->OnShelfReady();
+}
+
+void FullRestoreArcTaskHandler::Shutdown() {
+  arc_app_launch_handler_.reset();
+  window_handler_.reset();
 }
 
 }  // namespace full_restore

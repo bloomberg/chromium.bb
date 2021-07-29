@@ -34,26 +34,21 @@ namespace dawn_native {
                                            std::bitset<kMaxVertexAttributes>* attributesSetMask) {
             DAWN_TRY(ValidateVertexFormat(attribute->format));
 
-            if (dawn::IsDeprecatedVertexFormat(attribute->format)) {
-                device->EmitDeprecationWarning(
-                    "Vertex formats have changed and the old types will be removed soon.");
-            }
-
             if (attribute->shaderLocation >= kMaxVertexAttributes) {
                 return DAWN_VALIDATION_ERROR("Setting attribute out of bounds");
             }
 
             // No underflow is possible because the max vertex format size is smaller than
-            // kMaxVertexBufferStride.
-            ASSERT(kMaxVertexBufferStride >= dawn::VertexFormatSize(attribute->format));
+            // kMaxVertexBufferArrayStride.
+            ASSERT(kMaxVertexBufferArrayStride >= dawn::VertexFormatSize(attribute->format));
             if (attribute->offset >
-                kMaxVertexBufferStride - dawn::VertexFormatSize(attribute->format)) {
+                kMaxVertexBufferArrayStride - dawn::VertexFormatSize(attribute->format)) {
                 return DAWN_VALIDATION_ERROR("Setting attribute offset out of bounds");
             }
 
             // No overflow is possible because the offset is already validated to be less
-            // than kMaxVertexBufferStride.
-            ASSERT(attribute->offset < kMaxVertexBufferStride);
+            // than kMaxVertexBufferArrayStride.
+            ASSERT(attribute->offset < kMaxVertexBufferArrayStride);
             if (vertexBufferStride > 0 &&
                 attribute->offset + dawn::VertexFormatSize(attribute->format) >
                     vertexBufferStride) {
@@ -78,7 +73,7 @@ namespace dawn_native {
             const VertexBufferLayout* buffer,
             std::bitset<kMaxVertexAttributes>* attributesSetMask) {
             DAWN_TRY(ValidateInputStepMode(buffer->stepMode));
-            if (buffer->arrayStride > kMaxVertexBufferStride) {
+            if (buffer->arrayStride > kMaxVertexBufferArrayStride) {
                 return DAWN_VALIDATION_ERROR("Setting arrayStride out of bounds");
             }
 
@@ -321,7 +316,7 @@ namespace dawn_native {
     }
 
     MaybeError ValidateRenderPipelineDescriptor(DeviceBase* device,
-                                                const RenderPipelineDescriptor2* descriptor) {
+                                                const RenderPipelineDescriptor* descriptor) {
         if (descriptor->nextInChain != nullptr) {
             return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
         }
@@ -355,7 +350,7 @@ namespace dawn_native {
         return {};
     }
 
-    std::vector<StageAndDescriptor> GetStages(const RenderPipelineDescriptor2* descriptor) {
+    std::vector<StageAndDescriptor> GetStages(const RenderPipelineDescriptor* descriptor) {
         std::vector<StageAndDescriptor> stages;
         stages.push_back(
             {SingleShaderStage::Vertex, descriptor->vertex.module, descriptor->vertex.entryPoint});
@@ -377,19 +372,10 @@ namespace dawn_native {
                mDepthStencil->stencilFront.passOp != wgpu::StencilOperation::Keep;
     }
 
-    bool BlendEnabled(const ColorStateDescriptor* mColorState) {
-        return mColorState->alphaBlend.operation != wgpu::BlendOperation::Add ||
-               mColorState->alphaBlend.srcFactor != wgpu::BlendFactor::One ||
-               mColorState->alphaBlend.dstFactor != wgpu::BlendFactor::Zero ||
-               mColorState->colorBlend.operation != wgpu::BlendOperation::Add ||
-               mColorState->colorBlend.srcFactor != wgpu::BlendFactor::One ||
-               mColorState->colorBlend.dstFactor != wgpu::BlendFactor::Zero;
-    }
-
     // RenderPipelineBase
 
     RenderPipelineBase::RenderPipelineBase(DeviceBase* device,
-                                           const RenderPipelineDescriptor2* descriptor)
+                                           const RenderPipelineDescriptor* descriptor)
         : PipelineBase(device,
                        descriptor->layout,
                        {{SingleShaderStage::Vertex, descriptor->vertex.module,
@@ -417,9 +403,7 @@ namespace dawn_native {
                 mAttributeInfos[location].shaderLocation = location;
                 mAttributeInfos[location].vertexBufferSlot = typedSlot;
                 mAttributeInfos[location].offset = buffers[slot].attributes[i].offset;
-
-                mAttributeInfos[location].format =
-                    dawn::NormalizeVertexFormat(buffers[slot].attributes[i].format);
+                mAttributeInfos[location].format = buffers[slot].attributes[i].format;
             }
         }
 
@@ -474,9 +458,6 @@ namespace dawn_native {
                     NormalizeBlendFactor(mTargetBlend[i].color.dstFactor);
             }
         }
-
-        // TODO(cwallez@chromium.org): Check against the shader module that the correct color
-        // attachment are set?
     }
 
     RenderPipelineBase::RenderPipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag)

@@ -1,8 +1,12 @@
+// Copyright (c) 2017-2021, The Khronos Group Inc.
+// Copyright (c) 2017-2019 Valve Corporation
+// Copyright (c) 2017-2019 LunarG, Inc.
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 // *********** THIS FILE IS GENERATED - DO NOT EDIT ***********
 //     See utility_source_generator.py for modifications
 // ************************************************************
 
-// Copyright (c) 2017-2020 The Khronos Group Inc.
+// Copyright (c) 2017-2021, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -155,6 +159,23 @@ struct XrGeneratedDispatchTable {
     PFN_xrConvertTimeToTimespecTimeKHR ConvertTimeToTimespecTimeKHR;
 #endif // defined(XR_USE_TIMESPEC)
 
+    // ---- XR_KHR_loader_init extension commands
+    PFN_xrInitializeLoaderKHR InitializeLoaderKHR;
+
+    // ---- XR_KHR_vulkan_enable2 extension commands
+#if defined(XR_USE_GRAPHICS_API_VULKAN)
+    PFN_xrCreateVulkanInstanceKHR CreateVulkanInstanceKHR;
+#endif // defined(XR_USE_GRAPHICS_API_VULKAN)
+#if defined(XR_USE_GRAPHICS_API_VULKAN)
+    PFN_xrCreateVulkanDeviceKHR CreateVulkanDeviceKHR;
+#endif // defined(XR_USE_GRAPHICS_API_VULKAN)
+#if defined(XR_USE_GRAPHICS_API_VULKAN)
+    PFN_xrGetVulkanGraphicsDevice2KHR GetVulkanGraphicsDevice2KHR;
+#endif // defined(XR_USE_GRAPHICS_API_VULKAN)
+#if defined(XR_USE_GRAPHICS_API_VULKAN)
+    PFN_xrGetVulkanGraphicsRequirements2KHR GetVulkanGraphicsRequirements2KHR;
+#endif // defined(XR_USE_GRAPHICS_API_VULKAN)
+
     // ---- XR_EXT_performance_settings extension commands
     PFN_xrPerfSettingsSetPerformanceLevelEXT PerfSettingsSetPerformanceLevelEXT;
 
@@ -193,6 +214,63 @@ struct XrGeneratedDispatchTable {
     // ---- XR_MSFT_hand_tracking_mesh extension commands
     PFN_xrCreateHandMeshSpaceMSFT CreateHandMeshSpaceMSFT;
     PFN_xrUpdateHandMeshMSFT UpdateHandMeshMSFT;
+
+    // ---- XR_MSFT_controller_model extension commands
+    PFN_xrGetControllerModelKeyMSFT GetControllerModelKeyMSFT;
+    PFN_xrLoadControllerModelMSFT LoadControllerModelMSFT;
+    PFN_xrGetControllerModelPropertiesMSFT GetControllerModelPropertiesMSFT;
+    PFN_xrGetControllerModelStateMSFT GetControllerModelStateMSFT;
+
+    // ---- XR_MSFT_perception_anchor_interop extension commands
+#if defined(XR_USE_PLATFORM_WIN32)
+    PFN_xrCreateSpatialAnchorFromPerceptionAnchorMSFT CreateSpatialAnchorFromPerceptionAnchorMSFT;
+#endif // defined(XR_USE_PLATFORM_WIN32)
+#if defined(XR_USE_PLATFORM_WIN32)
+    PFN_xrTryGetPerceptionAnchorFromSpatialAnchorMSFT TryGetPerceptionAnchorFromSpatialAnchorMSFT;
+#endif // defined(XR_USE_PLATFORM_WIN32)
+
+    // ---- XR_MSFT_composition_layer_reprojection extension commands
+    PFN_xrEnumerateReprojectionModesMSFT EnumerateReprojectionModesMSFT;
+
+    // ---- XR_FB_swapchain_update_state extension commands
+    PFN_xrUpdateSwapchainFB UpdateSwapchainFB;
+    PFN_xrGetSwapchainStateFB GetSwapchainStateFB;
+
+    // ---- XR_MSFT_scene_understanding extension commands
+    PFN_xrEnumerateSceneComputeFeaturesMSFT EnumerateSceneComputeFeaturesMSFT;
+    PFN_xrCreateSceneObserverMSFT CreateSceneObserverMSFT;
+    PFN_xrDestroySceneObserverMSFT DestroySceneObserverMSFT;
+    PFN_xrCreateSceneMSFT CreateSceneMSFT;
+    PFN_xrDestroySceneMSFT DestroySceneMSFT;
+    PFN_xrComputeNewSceneMSFT ComputeNewSceneMSFT;
+    PFN_xrGetSceneComputeStateMSFT GetSceneComputeStateMSFT;
+    PFN_xrGetSceneComponentsMSFT GetSceneComponentsMSFT;
+    PFN_xrLocateSceneComponentsMSFT LocateSceneComponentsMSFT;
+    PFN_xrGetSceneMeshBuffersMSFT GetSceneMeshBuffersMSFT;
+
+    // ---- XR_MSFT_scene_understanding_serialization extension commands
+    PFN_xrDeserializeSceneMSFT DeserializeSceneMSFT;
+    PFN_xrGetSerializedSceneFragmentDataMSFT GetSerializedSceneFragmentDataMSFT;
+
+    // ---- XR_FB_display_refresh_rate extension commands
+    PFN_xrEnumerateDisplayRefreshRatesFB EnumerateDisplayRefreshRatesFB;
+    PFN_xrGetDisplayRefreshRateFB GetDisplayRefreshRateFB;
+    PFN_xrRequestDisplayRefreshRateFB RequestDisplayRefreshRateFB;
+
+    // ---- XR_FB_color_space extension commands
+    PFN_xrEnumerateColorSpacesFB EnumerateColorSpacesFB;
+    PFN_xrSetColorSpaceFB SetColorSpaceFB;
+
+    // ---- XR_VARJO_environment_depth_estimation extension commands
+    PFN_xrSetEnvironmentDepthEstimationVARJO SetEnvironmentDepthEstimationVARJO;
+
+    // ---- XR_OCULUS_audio_device_guid extension commands
+#if defined(XR_USE_PLATFORM_WIN32)
+    PFN_xrGetAudioOutputDeviceGuidOculus GetAudioOutputDeviceGuidOculus;
+#endif // defined(XR_USE_PLATFORM_WIN32)
+#if defined(XR_USE_PLATFORM_WIN32)
+    PFN_xrGetAudioInputDeviceGuidOculus GetAudioInputDeviceGuidOculus;
+#endif // defined(XR_USE_PLATFORM_WIN32)
 };
 
 

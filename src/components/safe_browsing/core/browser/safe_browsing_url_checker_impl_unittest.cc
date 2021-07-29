@@ -6,18 +6,18 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "components/safe_browsing/core/browser/db/test_database_manager.h"
+#include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/browser/realtime/url_lookup_service.h"
 #include "components/safe_browsing/core/browser/safe_browsing_token_fetcher.h"
 #include "components/safe_browsing/core/browser/url_checker_delegate.h"
-#include "components/safe_browsing/core/common/test_task_environment.h"
-#include "components/safe_browsing/core/common/thread_utils.h"
-#include "components/safe_browsing/core/db/test_database_manager.h"
-#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
-#include "components/safe_browsing/core/realtime/url_lookup_service.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,11 +34,12 @@ MATCHER_P(IsSameThreatSource, threatSource, "") {
   return arg.threat_source == threatSource;
 }
 
-}  // namespace
-
 class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
  public:
-  MockSafeBrowsingDatabaseManager() = default;
+  MockSafeBrowsingDatabaseManager()
+      : TestSafeBrowsingDatabaseManager(
+            base::SequencedTaskRunnerHandle::Get(),
+            base::SequencedTaskRunnerHandle::Get()) {}
   // SafeBrowsingDatabaseManager implementation.
   // Checks the threat type of |gurl| previously set by |SetThreatTypeForUrl|.
   // It crashes if the threat type of |gurl| is not set in advance.
@@ -52,10 +53,9 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
       return true;
     }
     if (!urls_delayed_callback_[url]) {
-      GetTaskRunner(ThreadID::IO)
-          ->PostTask(FROM_HERE,
-                     base::BindOnce(
-                         &MockSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&MockSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
                          this, gurl, client));
     } else {
       // If delayed callback is set to true, store the client in |urls_client_|.
@@ -94,10 +94,9 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
     std::string url = gurl.spec();
     DCHECK(base::Contains(urls_delayed_callback_, url));
     DCHECK_EQ(true, urls_delayed_callback_[url]);
-    GetTaskRunner(ThreadID::IO)
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(
-                       &MockSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MockSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
                        this, gurl, urls_client_[url]));
   }
 
@@ -187,9 +186,11 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupService {
             /*referrer_chain_provider=*/nullptr) {}
   // Returns the threat type previously set by |SetThreatTypeForUrl|. It crashes
   // if the threat type for the |gurl| is not set in advance.
-  void StartLookup(const GURL& gurl,
-                   RTLookupRequestCallback request_callback,
-                   RTLookupResponseCallback response_callback) override {
+  void StartLookup(
+      const GURL& gurl,
+      RTLookupRequestCallback request_callback,
+      RTLookupResponseCallback response_callback,
+      scoped_refptr<base::SequencedTaskRunner> callback_task_runner) override {
     std::string url = gurl.spec();
     DCHECK(base::Contains(urls_threat_type_, url));
     auto response = std::make_unique<RTLookupResponse>();
@@ -215,9 +216,8 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupService {
     threat_info.set_threat_type(threat_type);
     threat_info.set_verdict_type(verdict_type);
     *new_threat_info = threat_info;
-    GetTaskRunner(ThreadID::IO)
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(std::move(response_callback),
+    callback_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(std::move(response_callback),
                                   /* is_rt_lookup_successful */ true,
                                   /* is_cached_response */ is_cached_response_,
                                   std::move(response)));
@@ -236,10 +236,11 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupService {
   bool is_cached_response_ = false;
 };
 
+}  // namespace
+
 class SafeBrowsingUrlCheckerTest : public PlatformTest {
  public:
-  SafeBrowsingUrlCheckerTest()
-      : task_environment_(CreateTestTaskEnvironment()) {}
+  SafeBrowsingUrlCheckerTest() = default;
 
   void SetUp() override {
     PlatformTest::SetUp();
@@ -259,11 +260,13 @@ class SafeBrowsingUrlCheckerTest : public PlatformTest {
         /*has_user_gesture=*/false, url_checker_delegate_,
         mock_web_contents_getter.Get(), real_time_lookup_enabled,
         /*can_rt_check_subresource_url=*/false, can_check_safe_browsing_db,
-        real_time_lookup_enabled ? url_lookup_service_->GetWeakPtr() : nullptr);
+        base::SequencedTaskRunnerHandle::Get(),
+        real_time_lookup_enabled ? url_lookup_service_->GetWeakPtr() : nullptr,
+        /*webui_delegate_=*/nullptr);
   }
 
  protected:
-  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<MockSafeBrowsingDatabaseManager> database_manager_;
   scoped_refptr<MockUrlCheckerDelegate> url_checker_delegate_;
   std::unique_ptr<MockRealTimeUrlLookupService> url_lookup_service_;
@@ -285,7 +288,7 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_SafeUrl) {
       .Times(0);
 
   safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
-  task_environment_->RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_DangerousUrl) {
@@ -305,7 +308,7 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_DangerousUrl) {
                   IsSameThreatSource(ThreatSource::UNKNOWN), _, _, _, _))
       .Times(1);
   safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
-  task_environment_->RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_RedirectUrlsSafe) {
@@ -336,7 +339,7 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_RedirectUrlsSafe) {
   safe_browsing_url_checker->CheckUrl(redirect_url, "GET",
                                       redirect_callback.Get());
 
-  task_environment_->RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest,
@@ -358,7 +361,7 @@ TEST_F(SafeBrowsingUrlCheckerTest,
       .Times(0);
   safe_browsing_url_checker->CheckUrl(origin_url, "GET", origin_callback.Get());
 
-  task_environment_->RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   GURL redirect_url("https://example.redirect.test/");
   base::MockCallback<SafeBrowsingUrlCheckerImpl::NativeCheckUrlCallback>
@@ -373,7 +376,7 @@ TEST_F(SafeBrowsingUrlCheckerTest,
               StartDisplayingBlockingPageHelper(_, _, _, _, _))
       .Times(1);
   database_manager_->RestartDelayedCallback(origin_url);
-  task_environment_->RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_RealTimeEnabledAllowlistMatch) {
@@ -398,7 +401,7 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_RealTimeEnabledAllowlistMatch) {
       .Times(1);
   safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
 
-  task_environment_->RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_RealTimeEnabledSafeUrl) {
@@ -419,7 +422,7 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_RealTimeEnabledSafeUrl) {
       .Times(0);
   safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
 
-  task_environment_->RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // The false positive metric should not be logged, because the
   // verdict is not from cache.
@@ -448,7 +451,7 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_RealTimeEnabledSafeUrlFromCache) {
       .Times(0);
   safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
 
-  task_environment_->RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   histograms.ExpectUniqueSample("SafeBrowsing.RT.GetCache.FallbackThreatType",
                                 /* sample */ SB_THREAT_TYPE_SAFE,
@@ -476,7 +479,7 @@ TEST_F(SafeBrowsingUrlCheckerTest,
       .Times(1);
   safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
 
-  task_environment_->RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   histograms.ExpectUniqueSample("SafeBrowsing.RT.GetCache.FallbackThreatType",
                                 /* sample */ SB_THREAT_TYPE_URL_PHISHING,
@@ -501,7 +504,7 @@ TEST_F(SafeBrowsingUrlCheckerTest,
       .Times(1);
   safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
 
-  task_environment_->RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace safe_browsing

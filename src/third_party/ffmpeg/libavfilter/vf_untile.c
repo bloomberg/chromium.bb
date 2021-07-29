@@ -136,7 +136,7 @@ static int activate(AVFilterContext *ctx)
         out->height = outlink->h;
         out->data[0] += y * out->linesize[0];
         out->data[0] += x * s->max_step[0];
-        if (!(s->desc->flags & AV_PIX_FMT_FLAG_PAL || s->desc->flags & FF_PSEUDOPAL)) {
+        if (!(s->desc->flags & AV_PIX_FMT_FLAG_PAL)) {
             for (i = 1; i < 3; i ++) {
                 if (out->data[i]) {
                     out->data[i] += (y >> s->desc->log2_chroma_w) * out->linesize[i];
@@ -184,7 +184,7 @@ static const AVFilterPad untile_outputs[] = {
     { NULL }
 };
 
-AVFilter ff_vf_untile = {
+const AVFilter ff_vf_untile = {
     .name          = "untile",
     .description   = NULL_IF_CONFIG_SMALL("Untile a frame into a sequence of frames."),
     .init          = init,

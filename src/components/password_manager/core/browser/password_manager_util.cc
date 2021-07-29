@@ -11,10 +11,10 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
@@ -24,6 +24,7 @@
 #include "components/password_manager/core/browser/credentials_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner_runner.h"
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
+#include "components/password_manager/core/browser/old_google_credentials_cleaner.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
@@ -185,6 +186,12 @@ void RemoveUselessCredentials(
   }
 #endif  // !defined(OS_IOS)
 
+  // TODO(crbug.com/450621): Remove this when enough number of clients switch
+  // to the new version of Chrome.
+  cleaning_tasks_runner->MaybeAddCleaningTask(
+      std::make_unique<password_manager::OldGoogleCredentialCleaner>(store,
+                                                                     prefs));
+
   if (cleaning_tasks_runner->HasPendingTasks()) {
     // The runner will delete itself once the clearing tasks are done, thus we
     // are releasing ownership here.
@@ -309,7 +316,7 @@ const PasswordForm* GetMatchForUpdating(
 }
 
 PasswordForm MakeNormalizedBlocklistedForm(
-    password_manager::PasswordStore::FormDigest digest) {
+    password_manager::PasswordFormDigest digest) {
   PasswordForm result;
   result.blocked_by_user = true;
   result.scheme = std::move(digest.scheme);
@@ -327,6 +334,15 @@ PasswordForm MakeNormalizedBlocklistedForm(
     result.url = digest.url.GetOrigin();
   }
   return result;
+}
+
+bool CanUseBiometricAuth(
+    password_manager::BiometricAuthenticator* authenticator) {
+  return authenticator &&
+         authenticator->CanAuthenticate() ==
+             password_manager::BiometricsAvailability::kAvailable &&
+         base::FeatureList::IsEnabled(
+             password_manager::features::kBiometricTouchToFill);
 }
 
 }  // namespace password_manager_util

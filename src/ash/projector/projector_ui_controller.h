@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/accessibility/magnifier/partial_magnification_controller.h"
+#include "ash/accessibility/magnifier/partial_magnifier_controller.h"
 #include "ash/ash_export.h"
 #include "ash/fast_ink/laser/laser_pointer_controller.h"
 #include "ash/marker/marker_controller.h"
@@ -29,7 +29,7 @@ class ASH_EXPORT ProjectorUiController
     : public LaserPointerObserver,
       public MarkerObserver,
       public ProjectorSessionObserver,
-      public PartialMagnificationController::Observer {
+      public PartialMagnifierController::Observer {
  public:
   explicit ProjectorUiController(ProjectorControllerImpl* projector_controller);
   ProjectorUiController(const ProjectorUiController&) = delete;
@@ -50,6 +50,8 @@ class ASH_EXPORT ProjectorUiController
   virtual void OnMarkerPressed();
   // Invoked when the clear all markers button is pressed. Virtual for testing.
   virtual void OnClearAllMarkersPressed();
+  // Invoked when the undo marker button is pressed. Virtual for testing.
+  virtual void OnUndoPressed();
   // Invoked when transcription is available for rendering. Virtual for testing.
   virtual void OnTranscription(const std::string& transcription, bool is_final);
   // Invoked when the selfie cam button is pressed. Virtual for testing.
@@ -109,8 +111,8 @@ class ASH_EXPORT ProjectorUiController
   base::ScopedObservation<ProjectorSession, ProjectorSessionObserver>
       projector_session_observation_{this};
 
-  base::ScopedObservation<PartialMagnificationController,
-                          PartialMagnificationController::Observer>
+  base::ScopedObservation<PartialMagnifierController,
+                          PartialMagnifierController::Observer>
       partial_magnification_observation_{this};
 };
 

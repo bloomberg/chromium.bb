@@ -163,9 +163,6 @@ config("ios_dynamic_flags") {
   ldflags = [
     # Always load Objective-C categories and class.
     "-Wl,-ObjC",
-
-    # Uses version 2 of Objective-C ABI.
-    "-Wl,-objc_abi_version,2",
   ]
 
   # The path to the Swift compatibility libraries (required to run code built
@@ -202,7 +199,15 @@ config("disable_implicit_retain_self_warning") {
 }
 
 config("xctest_config") {
-  framework_dirs = [ "$ios_sdk_platform_path/Developer/Library/Frameworks" ]
+  # Use -iframework for XCTest.framework so that the compiler will treat it as a
+  # system framework and ignore warnings in XCTest framework headers.
+  common_flags = [
+    "-iframework",
+    rebase_path("$ios_sdk_platform_path/Developer/Library/Frameworks",
+                root_build_dir),
+  ]
+  cflags = common_flags
+  ldflags = common_flags
 
   frameworks = [
     "Foundation.framework",

@@ -87,6 +87,7 @@ class DeviceCommandRemotePowerwashJobTest : public testing::Test {
 
   const std::unique_ptr<MockCloudPolicyClient> client_;
   const std::unique_ptr<TestingRemoteCommandsService> service_;
+  chromeos::ScopedFakeInMemorySessionManagerClient scoped_session_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceCommandRemotePowerwashJobTest);
@@ -97,12 +98,10 @@ DeviceCommandRemotePowerwashJobTest::DeviceCommandRemotePowerwashJobTest()
           base::TestMockTimeTaskRunner::Type::kBoundToThread)),
       client_(std::make_unique<MockCloudPolicyClient>()),
       service_(std::make_unique<TestingRemoteCommandsService>(client_.get())) {
-  chromeos::SessionManagerClient::InitializeFakeInMemory();
 }
 
-DeviceCommandRemotePowerwashJobTest::~DeviceCommandRemotePowerwashJobTest() {
-  chromeos::SessionManagerClient::Shutdown();
-}
+DeviceCommandRemotePowerwashJobTest::~DeviceCommandRemotePowerwashJobTest() =
+    default;
 
 // Make sure that the command is still valid 5*365-1 days after being issued.
 TEST_F(DeviceCommandRemotePowerwashJobTest, TestCommandLifetime) {
@@ -161,13 +160,13 @@ TEST_F(DeviceCommandRemotePowerwashJobTest, TestFailsafeTimerStartsPowerwash) {
                        run_loop_.QuitClosure()));
   run_loop_.Run();
 
-  // After 500ms the timer is not run yet.
-  task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(500));
+  // After 5s the timer is not run yet.
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(5));
   EXPECT_EQ(0, chromeos::FakeSessionManagerClient::Get()
                    ->start_device_wipe_call_count());
 
-  // After 1s the timer is run.
-  task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(500));
+  // After 10s the timer is run.
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(5));
   EXPECT_EQ(1, chromeos::FakeSessionManagerClient::Get()
                    ->start_device_wipe_call_count());
 }

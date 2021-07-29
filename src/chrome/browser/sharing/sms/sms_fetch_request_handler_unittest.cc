@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sharing/sms/sms_fetch_request_handler.h"
+
 #include <string>
 
 #include "base/android/jni_android.h"
@@ -12,6 +13,8 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/sharing/mock_sharing_device_source.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "components/url_formatter/elide_url.h"
@@ -33,6 +36,9 @@ using ::testing::SaveArg;
 using ::testing::StrictMock;
 
 namespace {
+
+const char kEmptyDeviceName[] = "";
+const char kDefaultDeviceName[] = "Default Device";
 
 class MockSmsFetcher : public SmsFetcher {
  public:
@@ -58,32 +64,52 @@ class MockSmsFetcher : public SmsFetcher {
 class MockSmsFetchRequestHandler : public SmsFetchRequestHandler {
  public:
   explicit MockSmsFetchRequestHandler(content::SmsFetcher* fetcher)
-      : SmsFetchRequestHandler(fetcher) {}
+      : SmsFetchRequestHandler(&device_source_, fetcher) {}
   ~MockSmsFetchRequestHandler() = default;
 
-  MOCK_METHOD2(AskUserPermission,
+  MOCK_METHOD3(AskUserPermission,
                void(const content::OriginList&,
-                    const std::string& one_time_code));
-  MOCK_METHOD2(OnConfirm, void(JNIEnv*, jstring origin));
-  MOCK_METHOD2(OnDismiss, void(JNIEnv*, jstring origin));
+                    const std::string& one_time_code,
+                    const std::string& client_name));
+
+  content::BrowserTaskEnvironment& task_environment() {
+    return task_environment_;
+  }
 
   MockSmsFetchRequestHandler(const MockSmsFetchRequestHandler&) = delete;
   MockSmsFetchRequestHandler& operator=(const MockSmsFetchRequestHandler&) =
       delete;
+
+ private:
+  MockSharingDeviceSource device_source_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 };
 
-SharingMessage CreateRequest(const std::string& origin) {
+SharingMessage CreateRequest(
+    const std::string& origin,
+    const std::string& device_name = kDefaultDeviceName) {
   SharingMessage message;
-  message.mutable_sms_fetch_request()->set_origin(origin);
+  message.set_sender_device_name(device_name);
+  message.mutable_sms_fetch_request()->add_origins(origin);
+  return message;
+}
+
+SharingMessage CreateRequestWithMultipleOrigins(
+    const std::vector<std::string>& origins,
+    const std::string& device_name = kDefaultDeviceName) {
+  SharingMessage message;
+  message.set_sender_device_name(device_name);
+  for (const auto& origin : origins)
+    message.mutable_sms_fetch_request()->add_origins(origin);
   return message;
 }
 
 }  // namespace
 
 TEST(SmsFetchRequestHandlerTest, Basic) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   StrictMock<MockSmsFetcher> fetcher;
-  SmsFetchRequestHandler handler(&fetcher);
+  MockSmsFetchRequestHandler handler(&fetcher);
   const std::string origin = "https://a.com";
   SharingMessage message = CreateRequest(origin);
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -110,14 +136,13 @@ TEST(SmsFetchRequestHandlerTest, Basic) {
 
   subscriber->OnReceive(content::OriginList{url::Origin::Create(GURL(origin))},
                         "123", SmsFetcher::UserConsent::kNotObtained);
-  handler.OnConfirm(env, j_origin.obj());
+  handler.OnConfirm(env, j_origin.obj(), nullptr);
   loop.Run();
 }
 
 TEST(SmsFetchRequestHandlerTest, OutOfOrder) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   StrictMock<MockSmsFetcher> fetcher;
-  SmsFetchRequestHandler handler(&fetcher);
+  MockSmsFetchRequestHandler handler(&fetcher);
   JNIEnv* env = base::android::AttachCurrentThread();
   const std::string origin1 = "https://a.com";
   SharingMessage message1 = CreateRequest(origin1);
@@ -166,20 +191,19 @@ TEST(SmsFetchRequestHandlerTest, OutOfOrder) {
 
   request2->OnReceive(content::OriginList{url::Origin::Create(GURL(origin2))},
                       "2", SmsFetcher::UserConsent::kNotObtained);
-  handler.OnConfirm(env, j_origin2.obj());
+  handler.OnConfirm(env, j_origin2.obj(), nullptr);
   loop2.Run();
 
   request1->OnReceive(content::OriginList{url::Origin::Create(GURL(origin1))},
                       "1", SmsFetcher::UserConsent::kNotObtained);
-  handler.OnConfirm(env, j_origin1.obj());
+  handler.OnConfirm(env, j_origin1.obj(), nullptr);
   loop1.Run();
 }
 
 TEST(SmsFetchRequestHandlerTest, HangingRequestUnsubscribedUponDestruction) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   StrictMock<MockSmsFetcher> fetcher;
 
-  SmsFetchRequestHandler handler(&fetcher);
+  MockSmsFetchRequestHandler handler(&fetcher);
   SharingMessage message = CreateRequest("https://a.com");
   SmsFetcher::Subscriber* subscriber;
   EXPECT_CALL(fetcher, Subscribe(_, _)).WillOnce(SaveArg<1>(&subscriber));
@@ -196,27 +220,29 @@ TEST(SmsFetchRequestHandlerTest, HangingRequestUnsubscribedUponDestruction) {
 }
 
 TEST(SmsFetchRequestHandlerTest, AskUserPermissionOnReceive) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   StrictMock<MockSmsFetcher> fetcher;
   MockSmsFetchRequestHandler handler(&fetcher);
   SharingMessage message = CreateRequest("https://a.com");
 
   SmsFetcher::Subscriber* subscriber;
   EXPECT_CALL(fetcher, Subscribe(_, _)).WillOnce(SaveArg<1>(&subscriber));
-  EXPECT_CALL(handler, AskUserPermission);
   EXPECT_CALL(fetcher, Unsubscribe);
 
   handler.OnMessage(message, base::DoNothing());
 
+  EXPECT_CALL(handler, AskUserPermission).Times(0);
   subscriber->OnReceive(
       content::OriginList{url::Origin::Create(GURL("https://a.com"))}, "123",
       SmsFetcher::UserConsent::kNotObtained);
+
+  testing::Mock::VerifyAndClear(&handler);
+  EXPECT_CALL(handler, AskUserPermission);
+  handler.task_environment().FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
 
 TEST(SmsFetchRequestHandlerTest, SendSuccessMessageOnConfirm) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   StrictMock<MockSmsFetcher> fetcher;
-  SmsFetchRequestHandler handler(&fetcher);
+  MockSmsFetchRequestHandler handler(&fetcher);
   const std::string origin = "https://a.com";
   SharingMessage message = CreateRequest(origin);
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -243,14 +269,13 @@ TEST(SmsFetchRequestHandlerTest, SendSuccessMessageOnConfirm) {
 
   subscriber->OnReceive(content::OriginList{url::Origin::Create(GURL(origin))},
                         "123", SmsFetcher::UserConsent::kNotObtained);
-  handler.OnConfirm(env, j_origin.obj());
+  handler.OnConfirm(env, j_origin.obj(), nullptr);
   loop.Run();
 }
 
 TEST(SmsFetchRequestHandlerTest, SendFailureMessageOnDismiss) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   StrictMock<MockSmsFetcher> fetcher;
-  SmsFetchRequestHandler handler(&fetcher);
+  MockSmsFetchRequestHandler handler(&fetcher);
   const std::string origin = "https://a.com";
   SharingMessage message = CreateRequest(origin);
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -279,6 +304,133 @@ TEST(SmsFetchRequestHandlerTest, SendFailureMessageOnDismiss) {
 
   subscriber->OnReceive(content::OriginList{url::Origin::Create(GURL(origin))},
                         "123", SmsFetcher::UserConsent::kNotObtained);
-  handler.OnDismiss(env, j_origin.obj());
+  handler.OnDismiss(env, j_origin.obj(), nullptr);
   loop.Run();
+}
+
+TEST(SmsFetchRequestHandlerTest, EmbeddedFrameConfirm) {
+  StrictMock<MockSmsFetcher> fetcher;
+  MockSmsFetchRequestHandler handler(&fetcher);
+  const std::string top_origin = "https://top.com";
+  const std::string embedded_origin = "https://embedded.com";
+  std::vector<std::string> origins{embedded_origin, top_origin};
+  SharingMessage message = CreateRequestWithMultipleOrigins(origins);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  const std::u16string formatted_top_origin =
+      url_formatter::FormatOriginForSecurityDisplay(
+          url::Origin::Create(GURL(top_origin)),
+          url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+  base::android::ScopedJavaLocalRef<jstring> j_top_origin =
+      base::android::ConvertUTF16ToJavaString(env, formatted_top_origin);
+
+  const std::u16string formatted_embedded_origin =
+      url_formatter::FormatOriginForSecurityDisplay(
+          url::Origin::Create(GURL(embedded_origin)),
+          url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+  base::android::ScopedJavaLocalRef<jstring> j_embedded_origin =
+      base::android::ConvertUTF16ToJavaString(env, formatted_embedded_origin);
+
+  base::RunLoop loop;
+
+  SmsFetcher::Subscriber* subscriber;
+  EXPECT_CALL(fetcher, Subscribe(_, _)).WillOnce(SaveArg<1>(&subscriber));
+  EXPECT_CALL(fetcher, Unsubscribe(_, _));
+
+  handler.OnMessage(
+      message,
+      BindLambdaForTesting([&](std::unique_ptr<ResponseMessage> response) {
+        EXPECT_TRUE(response->has_sms_fetch_response());
+        EXPECT_EQ("123", response->sms_fetch_response().one_time_code());
+        const auto& origin_strings = response->sms_fetch_response().origins();
+        EXPECT_EQ(embedded_origin, origin_strings[0]);
+        EXPECT_EQ(top_origin, origin_strings[1]);
+        loop.Quit();
+      }));
+
+  content::OriginList origin_list;
+  origin_list.push_back(url::Origin::Create(GURL(embedded_origin)));
+  origin_list.push_back(url::Origin::Create(GURL(top_origin)));
+  subscriber->OnReceive(origin_list, "123",
+                        SmsFetcher::UserConsent::kNotObtained);
+  handler.OnConfirm(env, j_top_origin.obj(), j_embedded_origin.obj());
+  loop.Run();
+}
+
+TEST(SmsFetchRequestHandlerTest, EmbeddedFrameDismiss) {
+  StrictMock<MockSmsFetcher> fetcher;
+  MockSmsFetchRequestHandler handler(&fetcher);
+  const std::string top_origin = "https://top.com";
+  const std::string embedded_origin = "https://embedded.com";
+  std::vector<std::string> origins{embedded_origin, top_origin};
+  SharingMessage message = CreateRequestWithMultipleOrigins(origins);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  const std::u16string formatted_top_origin =
+      url_formatter::FormatOriginForSecurityDisplay(
+          url::Origin::Create(GURL(top_origin)),
+          url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+  base::android::ScopedJavaLocalRef<jstring> j_top_origin =
+      base::android::ConvertUTF16ToJavaString(env, formatted_top_origin);
+
+  const std::u16string formatted_embedded_origin =
+      url_formatter::FormatOriginForSecurityDisplay(
+          url::Origin::Create(GURL(embedded_origin)),
+          url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+  base::android::ScopedJavaLocalRef<jstring> j_embedded_origin =
+      base::android::ConvertUTF16ToJavaString(env, formatted_embedded_origin);
+
+  base::RunLoop loop;
+
+  SmsFetcher::Subscriber* subscriber;
+  EXPECT_CALL(fetcher, Subscribe(_, _)).WillOnce(SaveArg<1>(&subscriber));
+  EXPECT_CALL(fetcher, Unsubscribe(_, _));
+
+  handler.OnMessage(
+      message,
+      BindLambdaForTesting([&](std::unique_ptr<ResponseMessage> response) {
+        EXPECT_TRUE(response->has_sms_fetch_response());
+        EXPECT_EQ(content::SmsFetchFailureType::kPromptCancelled,
+                  static_cast<content::SmsFetchFailureType>(
+                      response->sms_fetch_response().failure_type()));
+        loop.Quit();
+      }));
+
+  content::OriginList origin_list;
+  origin_list.push_back(url::Origin::Create(GURL(embedded_origin)));
+  origin_list.push_back(url::Origin::Create(GURL(top_origin)));
+  subscriber->OnReceive(origin_list, "123",
+                        SmsFetcher::UserConsent::kNotObtained);
+  handler.OnDismiss(env, j_top_origin.obj(), j_embedded_origin.obj());
+  loop.Run();
+}
+
+TEST(SmsFetchRequestHandlerTest, DefaultDeviceName) {
+  base::HistogramTester histogram_tester;
+  StrictMock<MockSmsFetcher> fetcher;
+  MockSmsFetchRequestHandler handler(&fetcher);
+  const std::string origin = "https://a.com";
+  SharingMessage message = CreateRequest(origin, kDefaultDeviceName);
+
+  EXPECT_CALL(fetcher, Subscribe(_, _));
+  EXPECT_CALL(fetcher, Unsubscribe(_, _));
+
+  handler.OnMessage(message, base::DoNothing());
+  EXPECT_EQ(handler.requests_.size(), 1u);
+
+  histogram_tester.ExpectBucketCount("Sharing.SmsFetcherClientNameIsEmpty", 0,
+                                     1);
+  histogram_tester.ExpectTotalCount("Sharing.SmsFetcherClientNameIsEmpty", 1);
+}
+
+TEST(SmsFetchRequestHandlerTest, EmptyDeviceName) {
+  base::HistogramTester histogram_tester;
+  StrictMock<MockSmsFetcher> fetcher;
+  MockSmsFetchRequestHandler handler(&fetcher);
+  const std::string origin = "https://a.com";
+  SharingMessage message = CreateRequest(origin, kEmptyDeviceName);
+  handler.OnMessage(message, base::DoNothing());
+  EXPECT_TRUE(handler.requests_.empty());
+
+  histogram_tester.ExpectBucketCount("Sharing.SmsFetcherClientNameIsEmpty", 1,
+                                     1);
+  histogram_tester.ExpectTotalCount("Sharing.SmsFetcherClientNameIsEmpty", 1);
 }

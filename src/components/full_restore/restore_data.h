@@ -79,12 +79,25 @@ class COMPONENT_EXPORT(FULL_RESTORE) RestoreData {
   // }
   base::Value ConvertToValue() const;
 
+  // Returns true if there are app type browsers. Otherwise, returns false.
+  bool HasAppTypeBrowser();
+
+  // Returns true if there are normal browsers. Otherwise, returns false.
+  bool HasBrowser();
+
   // Returns true if there is a AppRestoreData for the given |app_id| and
   // |window_id|. Otherwise, returns false.
   bool HasAppRestoreData(const std::string& app_id, int32_t window_id);
 
   // Adds |app_launch_info| to |app_id_to_launch_list_|.
   void AddAppLaunchInfo(std::unique_ptr<AppLaunchInfo> app_launch_info);
+
+  // Modify the window id for |app_id| from |old_window_id| to |new_window_id|.
+  // This function is used for ARC ghost window only, to switch the window id
+  // from the session id to the task id.
+  void ModifyWindowId(const std::string& app_id,
+                      int32_t old_window_id,
+                      int32_t new_window_id);
 
   // Modifies the window's information based on |window_info| for the window
   // with |window_id| of the app with |app_id|.
@@ -121,6 +134,10 @@ class COMPONENT_EXPORT(FULL_RESTORE) RestoreData {
   // Removes the launch list for |app_id|.
   void RemoveApp(const std::string& app_id);
 
+  // Gets the app launch information with `window_id` for `app_id`.
+  std::unique_ptr<AppLaunchInfo> GetAppLaunchInfo(const std::string& app_id,
+                                                  int window_id);
+
   // Gets the window information with |window_id| for |app_id|.
   std::unique_ptr<WindowInfo> GetWindowInfo(const std::string& app_id,
                                             int window_id);
@@ -156,6 +173,9 @@ class COMPONENT_EXPORT(FULL_RESTORE) RestoreData {
   // FetchRestoreWindowId('bb') return 0.
   int32_t FetchRestoreWindowId(const std::string& app_id);
 
+  const AppRestoreData* GetAppRestoreData(const std::string& app_id,
+                                          int window_id) const;
+
   const AppIdToLaunchList& app_id_to_launch_list() const {
     return app_id_to_launch_list_;
   }
@@ -163,7 +183,8 @@ class COMPONENT_EXPORT(FULL_RESTORE) RestoreData {
  private:
   // Returns the pointer to AppRestoreData for the given |app_id| and
   // |window_id|. Returns null if there is no AppRestoreData.
-  AppRestoreData* GetAppRestoreData(const std::string& app_id, int window_id);
+  AppRestoreData* GetAppRestoreDataMutable(const std::string& app_id,
+                                           int window_id);
 
   AppIdToLaunchList app_id_to_launch_list_;
 

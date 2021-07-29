@@ -8,12 +8,17 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace network {
 namespace {
 
+using mojom::ContentSecurityPolicy;
 using mojom::IPAddressSpace;
+using mojom::ParsedHeaders;
+using mojom::URLResponseHead;
 using net::IPAddress;
 using net::IPAddressBytes;
 using net::IPEndPoint;
@@ -406,6 +411,148 @@ TEST(IPAddressSpaceTest, IsLessPublicAddressSpaceThanUnknown) {
                                         IPAddressSpace::kPublic));
   EXPECT_FALSE(IsLessPublicAddressSpace(IPAddressSpace::kUnknown,
                                         IPAddressSpace::kUnknown));
+}
+
+TEST(IPAddressSpaceUtilTest, CalculateClientAddressSpaceFileURL) {
+  EXPECT_EQ(IPAddressSpace::kLocal,
+            CalculateClientAddressSpace(GURL("file:///foo"), absl::nullopt));
+}
+
+TEST(IPAddressSpaceUtilTest,
+     CalculateClientAddressSpaceFetchedViaServiceWorkerFromFile) {
+  std::vector<GURL> url_list_via_service_worker = {GURL("http://bar.test"),
+                                                   GURL("file:///foo")};
+  auto parsed_headers = ParsedHeaders::New();
+  auto remote_endpoint = net::IPEndPoint();
+  CalculateClientAddressSpaceParams params(url_list_via_service_worker,
+                                           parsed_headers, remote_endpoint);
+
+  EXPECT_EQ(IPAddressSpace::kLocal,
+            CalculateClientAddressSpace(GURL("http://foo.test"), params));
+}
+
+TEST(IPAddressSpaceUtilTest,
+     CalculateClientAddressSpaceFetchedViaServiceWorkerFromHttp) {
+  std::vector<GURL> url_list_via_service_worker = {GURL("file:///foo"),
+                                                   GURL("http://bar.test")};
+  auto parsed_headers = ParsedHeaders::New();
+  auto remote_endpoint = net::IPEndPoint();
+  CalculateClientAddressSpaceParams params(url_list_via_service_worker,
+                                           parsed_headers, remote_endpoint);
+
+  EXPECT_EQ(IPAddressSpace::kUnknown,
+            CalculateClientAddressSpace(GURL("http://foo.test"), params));
+}
+
+TEST(IPAddressSpaceUtilTest,
+     CalculateClientAddressSpaceFetchedViaServiceWorkerFromHttpInsteadOfFile) {
+  std::vector<GURL> url_list_via_service_worker = {GURL("http://bar.test")};
+  auto parsed_headers = ParsedHeaders::New();
+  auto remote_endpoint = net::IPEndPoint();
+  CalculateClientAddressSpaceParams params(url_list_via_service_worker,
+                                           parsed_headers, remote_endpoint);
+
+  EXPECT_EQ(IPAddressSpace::kUnknown,
+            CalculateClientAddressSpace(GURL("file:///foo"), params));
+}
+
+TEST(IPAddressSpaceUtilTest, CalculateClientAddressSpaceNullParams) {
+  EXPECT_EQ(
+      IPAddressSpace::kUnknown,
+      CalculateClientAddressSpace(GURL("http://foo.test"), absl::nullopt));
+}
+
+TEST(IPAddressSpaceUtilTest, CalculateClientAddressSpaceEmptyParams) {
+  std::vector<GURL> url_list_via_service_worker = {};
+  auto parsed_headers = ParsedHeaders::New();
+  auto remote_endpoint = net::IPEndPoint();
+  CalculateClientAddressSpaceParams params(url_list_via_service_worker,
+                                           parsed_headers, remote_endpoint);
+  EXPECT_EQ(IPAddressSpace::kUnknown,
+            CalculateClientAddressSpace(GURL("http://foo.test"), params));
+}
+
+TEST(IPAddressSpaceUtilTest, CalculateClientAddressSpaceIPAddress) {
+  std::vector<GURL> url_list_via_service_worker = {};
+  auto parsed_headers = ParsedHeaders::New();
+  auto remote_endpoint = IPEndPoint(PrivateIPv4Address(), 1234);
+  CalculateClientAddressSpaceParams params(url_list_via_service_worker,
+                                           parsed_headers, remote_endpoint);
+
+  EXPECT_EQ(IPAddressSpace::kPrivate,
+            CalculateClientAddressSpace(GURL("http://foo.test"), params));
+}
+
+TEST(IPAddressSpaceUtilTest, CalculateClientAddressSpaceTreatAsPublicAddress) {
+  std::vector<GURL> url_list_via_service_worker = {};
+  auto csp = ContentSecurityPolicy::New();
+  csp->treat_as_public_address = true;
+  auto parsed_headers = ParsedHeaders::New();
+  parsed_headers->content_security_policy.push_back(std::move(csp));
+  auto remote_endpoint = IPEndPoint(IPAddress::IPv4Localhost(), 1234);
+
+  CalculateClientAddressSpaceParams params(url_list_via_service_worker,
+                                           parsed_headers, remote_endpoint);
+
+  EXPECT_EQ(IPAddressSpace::kPublic,
+            CalculateClientAddressSpace(GURL("http://foo.test"), params));
+}
+
+TEST(IPAddressSpaceTest, CalculateClientAddressSpaceOverride) {
+  auto& command_line = *base::CommandLine::ForCurrentProcess();
+  command_line.AppendSwitchASCII(network::switches::kIpAddressSpaceOverrides,
+                                 "10.2.3.4:80=public,8.8.8.8:8888=private");
+
+  std::vector<GURL> url_list_via_service_worker = {};
+  auto parsed_headers = ParsedHeaders::New();
+  auto remote_endpoint = IPEndPoint(IPAddress(10, 2, 3, 4), 80);
+
+  CalculateClientAddressSpaceParams params(url_list_via_service_worker,
+                                           parsed_headers, remote_endpoint);
+
+  EXPECT_EQ(IPAddressSpace::kPublic,
+            CalculateClientAddressSpace(GURL("http://foo.test"), params));
+
+  remote_endpoint = IPEndPoint(IPAddress(8, 8, 8, 8), 8888);
+
+  EXPECT_EQ(IPAddressSpace::kPrivate,
+            CalculateClientAddressSpace(GURL("http://foo.test"), params));
+}
+
+TEST(IPAddressSpaceTest, CalculateResourceAddressSpaceFileURL) {
+  EXPECT_EQ(IPAddressSpace::kLocal,
+            CalculateResourceAddressSpace(GURL("file:///foo"), IPEndPoint()));
+}
+
+TEST(IPAddressSpaceTest, CalculateResourceAddressSpaceIPAddress) {
+  EXPECT_EQ(
+      IPAddressSpace::kLocal,
+      CalculateResourceAddressSpace(
+          GURL("http://foo.test"), IPEndPoint(IPAddress::IPv4Localhost(), 80)));
+  EXPECT_EQ(IPAddressSpace::kPrivate,
+            CalculateResourceAddressSpace(
+                GURL("http://foo.test"), IPEndPoint(PrivateIPv4Address(), 80)));
+  EXPECT_EQ(IPAddressSpace::kPublic,
+            CalculateResourceAddressSpace(GURL("http://foo.test"),
+                                          IPEndPoint(PublicIPv4Address(), 80)));
+  EXPECT_EQ(
+      IPAddressSpace::kUnknown,
+      CalculateResourceAddressSpace(GURL("http://foo.test"), IPEndPoint()));
+}
+
+TEST(IPAddressSpaceTest, CalculateResourceAddressSpaceOverride) {
+  auto& command_line = *base::CommandLine::ForCurrentProcess();
+  command_line.AppendSwitchASCII(network::switches::kIpAddressSpaceOverrides,
+                                 "10.2.3.4:80=public,8.8.8.8:8888=private");
+
+  EXPECT_EQ(
+      IPAddressSpace::kPublic,
+      CalculateResourceAddressSpace(GURL("http://foo.test"),
+                                    IPEndPoint(IPAddress(10, 2, 3, 4), 80)));
+  EXPECT_EQ(
+      IPAddressSpace::kPrivate,
+      CalculateResourceAddressSpace(GURL("http://foo.test"),
+                                    IPEndPoint(IPAddress(8, 8, 8, 8), 8888)));
 }
 
 }  // namespace

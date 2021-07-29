@@ -134,10 +134,9 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                       net::IOBuffer* buf,
                       int buf_len,
                       CompletionOnceCallback callback) override;
-  int GetAvailableRange(int64_t offset,
-                        int len,
-                        int64_t* start,
-                        CompletionOnceCallback callback) override;
+  RangeResult GetAvailableRange(int64_t offset,
+                                int len,
+                                RangeResultCallback callback) override;
   bool CouldBeSparse() const override;
   void CancelSparseIO() override;
   net::Error ReadyForSparseIO(CompletionOnceCallback callback) override;
@@ -182,15 +181,6 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
     // The disk has been updated. This corresponds to the state where we
     // are in neither |entries_pending_doom_| nor |active_entries_|.
     DOOM_COMPLETED,
-  };
-
-  // Used in histograms, please only add entries at the end.
-  enum CheckCrcResult {
-    CRC_CHECK_NEVER_READ_TO_END = 0,
-    CRC_CHECK_NOT_DONE = 1,
-    CRC_CHECK_DONE = 2,
-    CRC_CHECK_NEVER_READ_AT_ALL = 3,
-    CRC_CHECK_MAX = 4,
   };
 
   ~SimpleEntryImpl() override;
@@ -272,8 +262,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
 
   void GetAvailableRangeInternal(int64_t sparse_offset,
                                  int len,
-                                 int64_t* out_start,
-                                 CompletionOnceCallback callback);
+                                 RangeResultCallback callback);
 
   void DoomEntryInternal(CompletionOnceCallback callback);
 
@@ -293,6 +282,11 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // point it is.
   void CloseOperationComplete(
       std::unique_ptr<SimpleEntryCloseResults> in_results);
+
+  // Internal utility method used by other completion methods.
+  // Updaties state and dooms on errors.
+  void UpdateStateAfterOperationComplete(const SimpleEntryStat& entry_stat,
+                                         int result);
 
   // Internal utility method used by other completion methods. Calls
   // |completion_callback| after updating state and dooming on errors.
@@ -328,8 +322,8 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                                     std::unique_ptr<int> result);
 
   void GetAvailableRangeOperationComplete(
-      CompletionOnceCallback completion_callback,
-      std::unique_ptr<int> result);
+      RangeResultCallback completion_callback,
+      std::unique_ptr<RangeResult> result);
 
   // Called after an asynchronous doom completes.
   void DoomOperationComplete(CompletionOnceCallback callback,
@@ -416,10 +410,6 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // If |have_written_[index]| is true, we have written to the file that
   // contains stream |index|.
   bool have_written_[kSimpleEntryStreamCount];
-
-  // Reflects how much CRC checking has been done with the entry. This state is
-  // reported on closing each entry stream.
-  CheckCrcResult crc_check_state_[kSimpleEntryStreamCount];
 
   // The |synchronous_entry_| is the worker thread object that performs IO on
   // entries. It's owned by this SimpleEntryImpl whenever |executing_operation_|

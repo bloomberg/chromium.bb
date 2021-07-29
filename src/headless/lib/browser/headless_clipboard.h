@@ -17,6 +17,7 @@
 
 namespace headless {
 
+// TODO(crbug.com/1213221): Add tests. This class is mostly untested.
 class HeadlessClipboard : public ui::Clipboard {
  public:
   HeadlessClipboard();
@@ -79,12 +80,9 @@ class HeadlessClipboard : public ui::Clipboard {
 #if defined(USE_OZONE)
   bool IsSelectionBufferAvailable() const override;
 #endif  // defined(USE_OZONE)
-  void WritePortableRepresentations(
+  void WritePortableAndPlatformRepresentations(
       ui::ClipboardBuffer buffer,
       const ObjectMap& objects,
-      std::unique_ptr<ui::DataTransferEndpoint> data_src) override;
-  void WritePlatformRepresentations(
-      ui::ClipboardBuffer buffer,
       std::vector<Clipboard::PlatformRepresentation> platform_representations,
       std::unique_ptr<ui::DataTransferEndpoint> data_src) override;
   void WriteText(const char* text_data, size_t text_len) override;
@@ -114,7 +112,7 @@ class HeadlessClipboard : public ui::Clipboard {
     std::map<ui::ClipboardFormatType, std::string> data;
     std::string url_title;
     std::string html_src_url;
-    SkBitmap image;
+    std::vector<uint8_t> png;
     std::vector<ui::FileInfo> filenames;
   };
 

@@ -18,7 +18,7 @@ class Label;
 
 @class FullscreenToolbarController;
 
-class CaptionButtonPlaceholderContainerMac;
+class CaptionButtonPlaceholderContainer;
 class WindowControlsOverlayInputRoutingMac;
 
 class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
@@ -26,8 +26,6 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   // Mac implementation of BrowserNonClientFrameView.
   BrowserNonClientFrameViewMac(BrowserFrame* frame, BrowserView* browser_view);
   ~BrowserNonClientFrameViewMac() override;
-
-  SkColor GetTitlebarColor() const;
 
   // BrowserNonClientFrameView:
   void OnFullscreenStateChanged() override;
@@ -39,6 +37,9 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   void UpdateFullscreenTopUI() override;
   bool ShouldHideTopUIForFullscreen() const override;
   void UpdateThrobber(bool running) override;
+  void PaintAsActiveChanged() override;
+  void UpdateFrameColor() override;
+  void OnThemeChanged() override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -50,6 +51,7 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
   void UpdateMinimumSize() override;
+  void WindowControlsOverlayEnabledChanged() override;
 
   // views::View:
   gfx::Size GetMinimumSize() const override;
@@ -95,6 +97,15 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   void LayoutTitleBarForWebApp();
   void LayoutWindowControlsOverlay();
 
+  void UpdateCaptionButtonPlaceholderContainerBackground();
+
+  void AddRoutingForWindowControlsOverlayViews();
+
+  // Toggle the visibility of the web_app_frame_toolbar_view() for PWAs with
+  // window controls overlay display override when entering full screen or when
+  // toolbar style is changed.
+  void ToggleWebAppFrameToolbarViewVisibility();
+
   // Used to keep track of the update of kShowFullscreenToolbar preference.
   BooleanPrefMember show_fullscreen_toolbar_;
 
@@ -102,7 +113,7 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
 
   // A placeholder container that lies on top of the traffic lights to indicate
   // NonClientArea. Only for PWAs with window controls overlay display override.
-  CaptionButtonPlaceholderContainerMac* caption_button_placeholder_container_ =
+  CaptionButtonPlaceholderContainer* caption_button_placeholder_container_ =
       nullptr;
 
   // PWAs with window controls overlay display override covers the browser

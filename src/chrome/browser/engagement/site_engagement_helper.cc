@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
@@ -161,15 +161,8 @@ void SiteEngagementService::Helper::MediaTracker::TrackingStarted() {
   Pause();
 }
 
-void SiteEngagementService::Helper::MediaTracker::DidFinishNavigation(
-    content::NavigationHandle* handle) {
-  // Ignore subframe navigation to avoid clearing main frame active media
-  // players when they navigate.
-  if (!handle->HasCommitted() || !handle->IsInMainFrame() ||
-      handle->IsSameDocument()) {
-    return;
-  }
-
+void SiteEngagementService::Helper::MediaTracker::PrimaryPageChanged(
+    content::Page& page) {
   // Media stops playing on navigation, so clear our state.
   active_media_players_.clear();
 }
@@ -213,7 +206,7 @@ void SiteEngagementService::Helper::RecordMediaPlaying(bool is_hidden) {
 void SiteEngagementService::Helper::DidFinishNavigation(
     content::NavigationHandle* handle) {
   // Ignore uncommitted, non main-frame, same page, or error page navigations.
-  if (!handle->HasCommitted() || !handle->IsInMainFrame() ||
+  if (!handle->HasCommitted() || !handle->IsInPrimaryMainFrame() ||
       handle->IsSameDocument() || handle->IsErrorPage()) {
     return;
   }

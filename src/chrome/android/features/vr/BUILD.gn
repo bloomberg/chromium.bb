@@ -83,6 +83,7 @@ android_library("java") {
     "//chrome/browser/util:java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/notifications/android:java",
+    "//components/browser_ui/widget/android:java",
     "//components/embedder_support/android:content_view_java",
     "//components/external_intents/android:java",
     "//components/infobars/core:infobar_enums_java",
@@ -99,6 +100,7 @@ android_library("java") {
     "//third_party/gvr-android-sdk:gvr_common_java",
     "//ui/android:ui_full_java",
     "//ui/android:ui_utils_java",
+    "//url:gurl_java",
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]

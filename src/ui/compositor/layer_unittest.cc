@@ -23,7 +23,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -49,6 +51,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -105,8 +108,7 @@ class ColoredLayer : public Layer, public LayerDelegate {
   SkColor color_;
 };
 
-// Param specifies whether to use SkiaRenderer or not
-class LayerWithRealCompositorTest : public testing::TestWithParam<bool> {
+class LayerWithRealCompositorTest : public testing::Test {
  public:
   LayerWithRealCompositorTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
@@ -125,7 +127,7 @@ class LayerWithRealCompositorTest : public testing::TestWithParam<bool> {
 
     const bool enable_pixel_output = true;
     context_factories_ =
-        std::make_unique<TestContextFactories>(enable_pixel_output, GetParam());
+        std::make_unique<TestContextFactories>(enable_pixel_output);
 
     const gfx::Rect host_bounds(10, 10, 500, 500);
     compositor_host_.reset(TestCompositorHost::Create(
@@ -451,9 +453,7 @@ class TestCallbackAnimationObserver : public ImplicitAnimationObserver {
 
 }  // namespace
 
-INSTANTIATE_TEST_SUITE_P(All, LayerWithRealCompositorTest, ::testing::Bool());
-
-TEST_P(LayerWithRealCompositorTest, Draw) {
+TEST_F(LayerWithRealCompositorTest, Draw) {
   std::unique_ptr<Layer> layer =
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 50, 50));
   DrawTree(layer.get());
@@ -465,7 +465,7 @@ TEST_P(LayerWithRealCompositorTest, Draw) {
 // |   +-- L3 - yellow
 // +-- L4 - magenta
 //
-TEST_P(LayerWithRealCompositorTest, Hierarchy) {
+TEST_F(LayerWithRealCompositorTest, Hierarchy) {
   std::unique_ptr<Layer> l1 =
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 400, 400));
   std::unique_ptr<Layer> l2 =
@@ -627,7 +627,7 @@ TEST_F(LayerWithDelegateTest, ConvertPointToLayer_Medium) {
   EXPECT_EQ(point2_in_l3_coords, point2_in_l1_coords);
 }
 
-TEST_P(LayerWithRealCompositorTest, Delegate) {
+TEST_F(LayerWithRealCompositorTest, Delegate) {
   // This test makes sure that whenever paint happens at a layer, its layer
   // delegate gets the paint, which in this test update its color and
   // |color_index|.
@@ -659,7 +659,7 @@ TEST_P(LayerWithRealCompositorTest, Delegate) {
   EXPECT_EQ(0, delegate.color_index());
 }
 
-TEST_P(LayerWithRealCompositorTest, DrawTree) {
+TEST_F(LayerWithRealCompositorTest, DrawTree) {
   std::unique_ptr<Layer> l1 =
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 400, 400));
   std::unique_ptr<Layer> l2 =
@@ -687,7 +687,7 @@ TEST_P(LayerWithRealCompositorTest, DrawTree) {
 }
 
 // Tests that scheduling paint on a layer with a mask updates the mask.
-TEST_P(LayerWithRealCompositorTest, SchedulePaintUpdatesMask) {
+TEST_F(LayerWithRealCompositorTest, SchedulePaintUpdatesMask) {
   std::unique_ptr<Layer> layer =
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 400, 400));
   std::unique_ptr<Layer> mask_layer = CreateLayer(ui::LAYER_TEXTURED);
@@ -715,7 +715,7 @@ TEST_P(LayerWithRealCompositorTest, SchedulePaintUpdatesMask) {
 // |   +-- L3 - yellow
 // +-- L4 - magenta
 //
-TEST_P(LayerWithRealCompositorTest, HierarchyNoTexture) {
+TEST_F(LayerWithRealCompositorTest, HierarchyNoTexture) {
   std::unique_ptr<Layer> l1 =
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 400, 400));
   std::unique_ptr<Layer> l2 = CreateNoTextureLayer(gfx::Rect(10, 10, 350, 350));
@@ -1601,7 +1601,7 @@ void ExpectRgba(int x, int y, SkColor expected_color, SkColor actual_color) {
 }
 
 // Checks that pixels are actually drawn to the screen with a read back.
-TEST_P(LayerWithRealCompositorTest, DrawPixels) {
+TEST_F(LayerWithRealCompositorTest, DrawPixels) {
   gfx::Size viewport_size = GetCompositor()->size();
 
   // The window should be some non-trivial size but may not be exactly
@@ -1635,7 +1635,7 @@ TEST_P(LayerWithRealCompositorTest, DrawPixels) {
 
 // Checks that drawing a layer with transparent pixels is blended correctly
 // with the lower layer.
-TEST_P(LayerWithRealCompositorTest, DrawAlphaBlendedPixels) {
+TEST_F(LayerWithRealCompositorTest, DrawAlphaBlendedPixels) {
   gfx::Size viewport_size = GetCompositor()->size();
 
   int test_size = 200;
@@ -1671,7 +1671,7 @@ TEST_P(LayerWithRealCompositorTest, DrawAlphaBlendedPixels) {
 
 // Checks that using the AlphaShape filter applied to a layer with
 // transparency, alpha-blends properly with the layer below.
-TEST_P(LayerWithRealCompositorTest, DrawAlphaThresholdFilterPixels) {
+TEST_F(LayerWithRealCompositorTest, DrawAlphaThresholdFilterPixels) {
   gfx::Size viewport_size = GetCompositor()->size();
 
   int test_size = 200;
@@ -1711,7 +1711,7 @@ TEST_P(LayerWithRealCompositorTest, DrawAlphaThresholdFilterPixels) {
 }
 
 // Checks the logic around Compositor::SetRootLayer and Layer::SetCompositor.
-TEST_P(LayerWithRealCompositorTest, SetRootLayer) {
+TEST_F(LayerWithRealCompositorTest, SetRootLayer) {
   Compositor* compositor = GetCompositor();
   std::unique_ptr<Layer> l1 =
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 400, 400));
@@ -1750,7 +1750,7 @@ TEST_P(LayerWithRealCompositorTest, SetRootLayer) {
 #else
 #define MAYBE_CompositorObservers CompositorObservers
 #endif
-TEST_P(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
+TEST_F(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
   std::unique_ptr<Layer> l1 =
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 400, 400));
   std::unique_ptr<Layer> l2 =
@@ -1815,7 +1815,7 @@ TEST_P(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
 }
 
 // Checks that modifying the hierarchy correctly affects final composite.
-TEST_P(LayerWithRealCompositorTest, ModifyHierarchy) {
+TEST_F(LayerWithRealCompositorTest, ModifyHierarchy) {
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(50, 50),
@@ -1884,13 +1884,12 @@ TEST_P(LayerWithRealCompositorTest, ModifyHierarchy) {
 }
 
 // Checks that basic background blur is working.
-// TODO(crbug.com/1174372) Flaky on Windows
-#if defined(OS_WIN)
-#define MAYBE_BackgroundBlur DISABLED_BackgroundBlur
-#else
-#define MAYBE_BackgroundBlur BackgroundBlur
+TEST_F(LayerWithRealCompositorTest, BackgroundBlur) {
+#if defined(THREAD_SANITIZER)
+  const base::test::ScopedRunLoopTimeout increased_run_timeout(
+      FROM_HERE, TestTimeouts::action_max_timeout());
 #endif
-TEST_P(LayerWithRealCompositorTest, MAYBE_BackgroundBlur) {
+
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(200, 200),
@@ -1933,7 +1932,7 @@ TEST_P(LayerWithRealCompositorTest, MAYBE_BackgroundBlur) {
 
 // Checks that background blur bounds rect gets properly updated when device
 // scale changes.
-TEST_P(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
+TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(200, 200),
@@ -1981,7 +1980,7 @@ TEST_P(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
 
 // Opacity is rendered correctly.
 // Checks that modifying the hierarchy correctly affects final composite.
-TEST_P(LayerWithRealCompositorTest, Opacity) {
+TEST_F(LayerWithRealCompositorTest, Opacity) {
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(50, 50),
@@ -2086,7 +2085,7 @@ TEST_F(LayerWithDelegateTest, SchedulePaintFromOnPaintLayer) {
                   gfx::Rect(10, 10, 30, 30)));
 }
 
-TEST_P(LayerWithRealCompositorTest, ScaleUpDown) {
+TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   std::unique_ptr<Layer> root =
       CreateColorLayer(SK_ColorWHITE, gfx::Rect(10, 20, 200, 220));
   TestLayerDelegate root_delegate;
@@ -2163,7 +2162,7 @@ TEST_P(LayerWithRealCompositorTest, ScaleUpDown) {
   EXPECT_EQ(0.0f, l1_delegate.device_scale_factor());
 }
 
-TEST_P(LayerWithRealCompositorTest, ScaleReparent) {
+TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
   std::unique_ptr<Layer> root =
@@ -2389,7 +2388,7 @@ TEST_F(LayerWithDelegateTest, LayerFiltersSurvival) {
 }
 
 // Tests Layer::AddThreadedAnimation and Layer::RemoveThreadedAnimation.
-TEST_P(LayerWithRealCompositorTest, AddRemoveThreadedAnimations) {
+TEST_F(LayerWithRealCompositorTest, AddRemoveThreadedAnimations) {
   std::unique_ptr<Layer> root = CreateLayer(LAYER_TEXTURED);
   std::unique_ptr<Layer> l1 = CreateLayer(LAYER_TEXTURED);
   std::unique_ptr<Layer> l2 = CreateLayer(LAYER_TEXTURED);
@@ -2438,7 +2437,7 @@ TEST_P(LayerWithRealCompositorTest, AddRemoveThreadedAnimations) {
 
 // Tests that in-progress threaded animations complete when a Layer's
 // cc::Layer changes.
-TEST_P(LayerWithRealCompositorTest, SwitchCCLayerAnimations) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerAnimations) {
   std::unique_ptr<Layer> root = CreateLayer(LAYER_TEXTURED);
   std::unique_ptr<Layer> l1 = CreateLayer(LAYER_TEXTURED);
   GetCompositor()->SetRootLayer(root.get());
@@ -2460,7 +2459,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerAnimations) {
 
 // Tests that when a LAYER_SOLID_COLOR has its CC layer switched, that
 // opaqueness and color set while not animating, are maintained.
-TEST_P(LayerWithRealCompositorTest, SwitchCCLayerSolidColorNotAnimating) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerSolidColorNotAnimating) {
   SkColor transparent = SK_ColorTRANSPARENT;
   std::unique_ptr<Layer> root = CreateLayer(LAYER_SOLID_COLOR);
   GetCompositor()->SetRootLayer(root.get());
@@ -2486,7 +2485,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerSolidColorNotAnimating) {
 // Tests that when a LAYER_SOLID_COLOR has its CC layer switched during an
 // animation of its opaquness and color, that both the current values, and the
 // targets are maintained.
-TEST_P(LayerWithRealCompositorTest, SwitchCCLayerSolidColorWhileAnimating) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerSolidColorWhileAnimating) {
   SkColor transparent = SK_ColorTRANSPARENT;
   std::unique_ptr<Layer> root = CreateLayer(LAYER_SOLID_COLOR);
   GetCompositor()->SetRootLayer(root.get());
@@ -2531,7 +2530,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerSolidColorWhileAnimating) {
 
 // Tests that when a layer with cache_render_surface flag has its CC layer
 // switched, that the cache_render_surface flag is maintained.
-TEST_P(LayerWithRealCompositorTest, SwitchCCLayerCacheRenderSurface) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerCacheRenderSurface) {
   std::unique_ptr<Layer> root = CreateLayer(LAYER_TEXTURED);
   std::unique_ptr<Layer> l1 = CreateLayer(LAYER_TEXTURED);
   GetCompositor()->SetRootLayer(root.get());
@@ -2548,7 +2547,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerCacheRenderSurface) {
 
 // Tests that when a layer with trilinear_filtering flag has its CC layer
 // switched, that the trilinear_filtering flag is maintained.
-TEST_P(LayerWithRealCompositorTest, SwitchCCLayerTrilinearFiltering) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerTrilinearFiltering) {
   std::unique_ptr<Layer> root = CreateLayer(LAYER_TEXTURED);
   std::unique_ptr<Layer> l1 = CreateLayer(LAYER_TEXTURED);
   GetCompositor()->SetRootLayer(root.get());
@@ -2565,7 +2564,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerTrilinearFiltering) {
 
 // Tests that when a layer with masks_to_bounds flag has its CC layer switched,
 // that the masks_to_bounds flag is maintained.
-TEST_P(LayerWithRealCompositorTest, SwitchCCLayerMasksToBounds) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerMasksToBounds) {
   std::unique_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
   std::unique_ptr<Layer> l1(CreateLayer(LAYER_TEXTURED));
   GetCompositor()->SetRootLayer(root.get());
@@ -2583,7 +2582,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerMasksToBounds) {
 
 // Tests that no crash happens when switching cc layer with an animation
 // observer that deletes the layer itself.
-TEST_P(LayerWithRealCompositorTest, SwitchCCLayerDeleteLayer) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerDeleteLayer) {
   std::unique_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
   std::unique_ptr<Layer> l1(CreateLayer(LAYER_TEXTURED));
   GetCompositor()->SetRootLayer(root.get());
@@ -2611,7 +2610,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerDeleteLayer) {
 // transform animation, may cause a crash. This is because an animation observer
 // may mutate the tree, e.g. deleting a layer, changing ancestor z-order etc,
 // which breaks the tree traversal and might lead to a use-after-free seg fault.
-TEST_P(LayerWithRealCompositorTest, TreeMutationDuringScaleFactorChange) {
+TEST_F(LayerWithRealCompositorTest, TreeMutationDuringScaleFactorChange) {
   TestCallbackAnimationObserver animation_observer;
 
   std::unique_ptr<Layer> root = CreateLayer(LAYER_SOLID_COLOR);
@@ -2713,7 +2712,7 @@ TEST_P(LayerWithRealCompositorTest, TreeMutationDuringScaleFactorChange) {
 
 // Tests that no crash when parent/child layer is released by an animation
 // observer of the child layer bounds animation.
-TEST_P(LayerWithRealCompositorTest, ParentOrChildGoneDuringRemove) {
+TEST_F(LayerWithRealCompositorTest, ParentOrChildGoneDuringRemove) {
   std::unique_ptr<Layer> root = CreateLayer(LAYER_SOLID_COLOR);
   GetCompositor()->SetRootLayer(root.get());
   root->SetBounds(gfx::Rect(0, 0, 100, 100));
@@ -2878,7 +2877,7 @@ std::string Vector2dFTo100thPrecisionString(const gfx::Vector2dF& vector) {
 
 }  // namespace
 
-TEST_P(LayerWithRealCompositorTest, SnapLayerToPixels) {
+TEST_F(LayerWithRealCompositorTest, SnapLayerToPixels) {
   std::unique_ptr<Layer> root = CreateLayer(LAYER_TEXTURED);
   std::unique_ptr<Layer> c1 = CreateLayer(LAYER_TEXTURED);
   std::unique_ptr<Layer> c11 = CreateLayer(LAYER_TEXTURED);
@@ -3244,7 +3243,7 @@ TEST(LayerDelegateTest, OnLayerAlphaShapeChanged) {
   testing::Mock::VerifyAndClear(&delegate);
 }
 
-TEST_P(LayerWithRealCompositorTest, CompositorAnimationObserverTest) {
+TEST_F(LayerWithRealCompositorTest, CompositorAnimationObserverTest) {
   std::unique_ptr<Layer> root = CreateLayer(LAYER_TEXTURED);
 
   root->SetAnimator(LayerAnimator::CreateImplicitAnimator());

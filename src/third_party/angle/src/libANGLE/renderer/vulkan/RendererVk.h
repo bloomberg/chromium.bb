@@ -389,6 +389,10 @@ class RendererVk : angle::NonCopyable
         return mSupportedVulkanPipelineStageMask;
     }
 
+    angle::Result getFormatDescriptorCountForExternalFormats(ContextVk *contextVk,
+                                                             uint64_t format,
+                                                             uint32_t *descriptorCountOut);
+
   private:
     angle::Result initializeDevice(DisplayVk *displayVk, uint32_t queueFamilyIndex);
     void ensureCapsInitialized() const;
@@ -446,7 +450,10 @@ class RendererVk : angle::NonCopyable
     VkPhysicalDeviceDepthStencilResolvePropertiesKHR mDepthStencilResolveProperties;
     VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT
         mMultisampledRenderToSingleSampledFeatures;
+    VkPhysicalDeviceMultiviewFeatures mMultiviewFeatures;
+    VkPhysicalDeviceMultiviewProperties mMultiviewProperties;
     VkPhysicalDeviceDriverPropertiesKHR mDriverProperties;
+    VkPhysicalDeviceCustomBorderColorFeaturesEXT mCustomBorderColorFeatures;
     VkExternalFenceProperties mExternalFenceProperties;
     VkExternalSemaphoreProperties mExternalSemaphoreProperties;
     VkPhysicalDeviceSamplerYcbcrConversionFeatures mSamplerYcbcrConversionFeatures;

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_JAVASCRIPT_FRAMEWORKS_UKM_OBSERVER_H_
 
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
+#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 
 // If URL-Keyed-Metrics (UKM) is enabled in the system, this is used to
 // populate it with JavaScript framework-related page-load metrics.
@@ -15,13 +16,22 @@ class JavascriptFrameworksUkmObserver
   JavascriptFrameworksUkmObserver();
   ~JavascriptFrameworksUkmObserver() override;
 
+  // page_load_metrics::PageLoadMetricsObserver
   void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
                                  int behavior_flag) override;
+  void OnComplete(const page_load_metrics::mojom::PageLoadTiming&) override;
+  JavascriptFrameworksUkmObserver::ObservePolicy
+  FlushMetricsOnAppEnterBackground(
+      const page_load_metrics::mojom::PageLoadTiming&) override;
 
  private:
-  bool nextjs_detected = false;
-  void RecordNextJS();
+  // Called towards the end of the page lifecycle to report metrics on the
+  // frameworks detected.
+  void RecordJavascriptFrameworkPageLoad();
 
+  // Bitmap containing the blink::LoadingBehaviorFlag values corresponding to
+  // frameworks that are detected.
+  int32_t frameworks_detected_ = 0;
   DISALLOW_COPY_AND_ASSIGN(JavascriptFrameworksUkmObserver);
 };
 

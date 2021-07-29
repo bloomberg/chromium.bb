@@ -564,16 +564,36 @@ GLuint TextureState::getEnabledLevelCount() const
 
     // The mip chain will have either one or more sequential levels, or max levels,
     // but not a sparse one.
-    for (size_t descIndex = baseLevel; descIndex < mImageDescs.size();)
+    Optional<Extents> expectedSize;
+    for (size_t enabledLevel = baseLevel; enabledLevel <= maxLevel; ++enabledLevel, ++levelCount)
     {
-        if (!mImageDescs[descIndex].size.empty())
+        // Note: for cube textures, we only check the first face.
+        TextureTarget target     = TextureTypeToTarget(mType, 0);
+        size_t descIndex         = GetImageDescIndex(target, enabledLevel);
+        const Extents &levelSize = mImageDescs[descIndex].size;
+
+        if (levelSize.empty())
         {
-            levelCount++;
+            break;
         }
-        descIndex = (mType == TextureType::CubeMap) ? descIndex + 6 : descIndex + 1;
+        if (expectedSize.valid())
+        {
+            Extents newSize = expectedSize.value();
+            newSize.width   = std::max(1, newSize.width >> 1);
+            newSize.height  = std::max(1, newSize.height >> 1);
+
+            if (!IsArrayTextureType(mType))
+            {
+                newSize.depth = std::max(1, newSize.depth >> 1);
+            }
+
+            if (newSize != levelSize)
+            {
+                break;
+            }
+        }
+        expectedSize = levelSize;
     }
-    // The original image already takes account into the levelCount.
-    levelCount = std::min(maxLevel - baseLevel + 1, levelCount);
 
     return levelCount;
 }
@@ -633,9 +653,9 @@ void TextureState::setImageDesc(TextureTarget target, size_t level, const ImageD
         // initialization which is already very expensive.
         bool allImagesInitialized = true;
 
-        for (const ImageDesc &desc : mImageDescs)
+        for (const ImageDesc &initDesc : mImageDescs)
         {
-            if (desc.initState == InitState::MayNeedInit)
+            if (initDesc.initState == InitState::MayNeedInit)
             {
                 allImagesInitialized = false;
                 break;
@@ -724,7 +744,6 @@ Texture::Texture(rx::GLImplFactory *factory, TextureID id, TextureType type)
       mTexture(factory->createTexture(mState)),
       mImplObserver(this, rx::kTextureImageImplObserverMessageIndex),
       mBufferObserver(this, kBufferSubjectIndex),
-      mLabel(),
       mBoundSurface(nullptr),
       mBoundStream(nullptr)
 {
@@ -764,13 +783,13 @@ Texture::~Texture()
 
 void Texture::setLabel(const Context *context, const std::string &label)
 {
-    mLabel = label;
+    mState.mLabel = label;
     signalDirtyState(DIRTY_BIT_LABEL);
 }
 
 const std::string &Texture::getLabel() const
 {
-    return mLabel;
+    return mState.mLabel;
 }
 
 void Texture::setSwizzleRed(const Context *context, GLenum swizzleRed)
@@ -1657,6 +1676,16 @@ angle::Result Texture::generateMipmap(Context *context)
         return angle::Result::Continue;
     }
 
+    // If any dimension is zero, this is a no-op:
+    //
+    // > Otherwise, if level_base is not defined, or if any dimension is zero, all mipmap levels are
+    // > left unchanged. This is not an error.
+    const ImageDesc &baseImageInfo = mState.getImageDesc(mState.getBaseImageTarget(), baseLevel);
+    if (baseImageInfo.size.empty())
+    {
+        return angle::Result::Continue;
+    }
+
     ANGLE_TRY(syncState(context, Command::GenerateMipmap));
 
     // Clear the base image(s) immediately if needed
@@ -1681,7 +1710,6 @@ angle::Result Texture::generateMipmap(Context *context)
 
     // Propagate the format and size of the base mip to the smaller ones. Cube maps are guaranteed
     // to have faces of the same size and format so any faces can be picked.
-    const ImageDesc &baseImageInfo = mState.getImageDesc(mState.getBaseImageTarget(), baseLevel);
     mState.setImageDescChain(baseLevel, maxLevel, baseImageInfo.size, baseImageInfo.format,
                              InitState::Initialized);
 

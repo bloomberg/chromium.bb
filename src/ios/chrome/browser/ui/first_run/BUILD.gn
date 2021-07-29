@@ -5,6 +5,8 @@
 source_set("field_trial") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "fre_field_trial.cc",
+    "fre_field_trial.h",
     "ios_first_run_field_trials.cc",
     "ios_first_run_field_trials.h",
     "location_permissions_field_trial.cc",
@@ -46,6 +48,7 @@ source_set("first_run") {
     ":field_trial",
     ":first_run_ui",
     ":screen_delegate",
+    ":static_file_ui",
     ":utils",
     "resources:checkbox",
     "resources:checkbox_checked",
@@ -80,9 +83,7 @@ source_set("first_run") {
     "//ios/chrome/browser/ui/first_run/signin",
     "//ios/chrome/browser/ui/first_run/sync",
     "//ios/chrome/browser/ui/first_run/welcome",
-    "//ios/chrome/browser/ui/first_run/welcome:static_file_ui",
     "//ios/chrome/browser/ui/settings/resources:enterprise_icon",
-    "//ios/chrome/browser/ui/settings/sync/utils",
     "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/util:terms_util",
@@ -142,6 +143,8 @@ source_set("first_run_ui") {
     "first_run_screen_view_controller.h",
     "first_run_screen_view_controller.mm",
     "first_run_screen_view_controller_delegate.h",
+    "highlighted_button.h",
+    "highlighted_button.mm",
   ]
   deps = [
     "//base",
@@ -150,6 +153,25 @@ source_set("first_run_ui") {
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
     "//ui/base",
+  ]
+}
+
+source_set("static_file_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "static_file_view_controller.h",
+    "static_file_view_controller.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/ui/icons",
+    "//ios/chrome/browser/ui/material_components",
+    "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/ui/colors",
+    "//ios/third_party/material_components_ios",
+    "//ios/web/common:web_view_creation_util",
   ]
 }
 
@@ -187,12 +209,16 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [ "first_run_egtest.mm" ]
+  sources = [
+    "first_run_egtest.mm",
+    "legacy_first_run_egtest.mm",
+  ]
   deps = [
     ":constants",
     ":eg_test_support+eg2",
     "//base",
     "//base/test:test_support",
+    "//components/policy/core/common:common_constants",
     "//ios/chrome/app/strings:ios_chromium_strings_grit",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/ui:feature_flags",
@@ -223,6 +249,7 @@ source_set("eg_app_support+eg2") {
     "//components/metrics",
     "//components/prefs",
     "//ios/chrome/app:app_internal",
+    "//ios/chrome/app:first_run_app_state_agent",
     "//ios/chrome/browser",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui/main:scene",

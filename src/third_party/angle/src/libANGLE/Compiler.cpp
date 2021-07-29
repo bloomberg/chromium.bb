@@ -223,7 +223,8 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const State &state, egl::Disp
     }
 
     // Geometry Shader constants
-    mResources.EXT_geometry_shader          = extensions.geometryShader;
+    mResources.EXT_geometry_shader          = extensions.geometryShaderEXT;
+    mResources.OES_geometry_shader          = extensions.geometryShaderOES;
     mResources.MaxGeometryUniformComponents = caps.maxShaderUniformComponents[ShaderType::Geometry];
     mResources.MaxGeometryUniformBlocks     = caps.maxShaderUniformBlocks[ShaderType::Geometry];
     mResources.MaxGeometryInputComponents   = caps.maxGeometryInputComponents;
@@ -272,6 +273,11 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const State &state, egl::Disp
 
     // Subpixel bits.
     mResources.SubPixelBits = static_cast<int>(caps.subPixelBits);
+
+    // Direct-to-metal constants:
+    mResources.DriverUniformsBindingIndex    = caps.driverUniformsBindingIndex;
+    mResources.DefaultUniformsBindingIndex   = caps.defaultUniformsBindingIndex;
+    mResources.UBOArgumentBufferBindingIndex = caps.UBOArgumentBufferBindingIndex;
 }
 
 Compiler::~Compiler() = default;

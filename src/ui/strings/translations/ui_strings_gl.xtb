@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Comprobando a túa conexión a Internet</translation>
 <translation id="2388990488038464401">Queres chamar a este número desde o teu teléfono?</translation>
+<translation id="2435457462613246316">Mostrar contrasinal</translation>
 <translation id="24452542372838207">Despregar notificación</translation>
 <translation id="2445449901874883781">Utilizar alta densidade</translation>
 <translation id="2482878487686419369">Notificacións</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{Hai un ano}other{Hai # anos}}</translation>
 <translation id="2878511608894704031">Eliminar todo</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{en 1 d}other{en # d}}</translation>
+<translation id="2922712708897119705">A columna <ph name="COLUMN_NAME" /> está organizada por orde descendente.</translation>
 <translation id="2931838996092594335">facer clic</translation>
 <translation id="2981684127883932071">Mostrando suxestións</translation>
 <translation id="3036649622769666520">Abrir ficheiros</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3909791450649380159">Cor&amp;tar</translation>
 <translation id="3990502903496589789">Bordo dereito</translation>
+<translation id="3994749195054421561">A columna <ph name="COLUMN_NAME" /> está organizada por orde ascendente.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 notificación sen ler}other{# notificacións sen ler}}</translation>
 <translation id="4202807286478387388">salto</translation>
 <translation id="4250229828105606438">Captura de pantalla</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Quitar do portapapeis.</translation>
 <translation id="4316910396681052118">TODAS AS APLICACIÓNS</translation>
 <translation id="4491109536499578614">Imaxe</translation>
+<translation id="4565377596337484307">Ocultar contrasinal</translation>
 <translation id="4588090240171750605">Desprazar cara á dereita</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, valoración en estrelas: <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, recomendación de aplicación</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Páxina <ph name="SELECTED_PAGE" /> de <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Borrar texto da caixa de busca</translation>
 <translation id="6040143037577758943">Pechar</translation>
+<translation id="6117103120090651229">Botón do centro</translation>
 <translation id="6119846243427417423">activar</translation>
 <translation id="6129953537138746214">Espazo</translation>
 <translation id="6134259848159370930">Realiza buscas no teu dispositivo, nas aplicacións, nas opcións de configuración e na Web.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Despregar todas as aplicacións</translation>
 <translation id="6165508094623778733">Máis información</translation>
 <translation id="6166852626429024716">Realiza buscas no teu dispositivo, nas aplicacións, nas opcións de configuración, na Web…</translation>
+<translation id="6237461503717005873">Seleccionouse: <ph name="ROW_NAME" />.</translation>
 <translation id="6264365405983206840">Seleccionar &amp;todo</translation>
 <translation id="6351032674660237738">SUXESTIÓNS DE APLICACIÓNS</translation>
 <translation id="6364916375976753737">Desprazar cara á esquerda</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">: <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Queda un minuto}other{Quedan # minutos}}</translation>
 <translation id="7430878839542012341">Queres eliminar esta busca do historial?</translation>
+<translation id="7437971918971306061">A columna <ph name="COLUMN_NAME" /> non está ordenada.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emojis</translation>
 <translation id="7620655452534002301">Eliminouse.</translation>

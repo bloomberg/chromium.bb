@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "net/cookies/cookie_util.h"
+#include "net/cookies/same_party_context.h"
 
 namespace net {
 
@@ -33,10 +34,22 @@ CookieOptions::SameSiteCookieContext::GetContextForCookieInclusion() const {
   return context_;
 }
 
+const CookieOptions::SameSiteCookieContext::ContextMetadata&
+CookieOptions::SameSiteCookieContext::GetMetadataForCurrentSchemefulMode()
+    const {
+  return cookie_util::IsSchemefulSameSiteEnabled() ? schemeful_metadata()
+                                                   : metadata();
+}
+
+void CookieOptions::SameSiteCookieContext::SetContextTypesForTesting(
+    ContextType context_type,
+    ContextType schemeful_context_type) {
+  context_ = context_type;
+  schemeful_context_ = schemeful_context_type;
+}
+
 bool CookieOptions::SameSiteCookieContext::AffectedByBugfix1166211() const {
-  return cookie_util::IsSchemefulSameSiteEnabled()
-             ? schemeful_affected_by_bugfix_1166211_
-             : affected_by_bugfix_1166211_;
+  return GetMetadataForCurrentSchemefulMode().affected_by_bugfix_1166211;
 }
 
 void CookieOptions::SameSiteCookieContext::
@@ -58,6 +71,12 @@ void CookieOptions::SameSiteCookieContext::
       "Cookie.SameSiteCookieInclusionChangedByBugfix1166211", changed);
 }
 
+bool CookieOptions::SameSiteCookieContext::CompleteEquivalenceForTesting(
+    const SameSiteCookieContext& other) const {
+  return (*this == other) && (metadata() == other.metadata()) &&
+         (schemeful_metadata() == other.schemeful_metadata());
+}
+
 bool operator==(const CookieOptions::SameSiteCookieContext& lhs,
                 const CookieOptions::SameSiteCookieContext& rhs) {
   return std::tie(lhs.context_, lhs.schemeful_context_) ==
@@ -69,13 +88,26 @@ bool operator!=(const CookieOptions::SameSiteCookieContext& lhs,
   return !(lhs == rhs);
 }
 
-// Keep default values in sync with content/public/common/cookie_manager.mojom.
+bool operator==(
+    const CookieOptions::SameSiteCookieContext::ContextMetadata& lhs,
+    const CookieOptions::SameSiteCookieContext::ContextMetadata& rhs) {
+  return std::tie(lhs.affected_by_bugfix_1166211,
+                  lhs.cross_site_redirect_downgrade) ==
+         std::tie(rhs.affected_by_bugfix_1166211,
+                  rhs.cross_site_redirect_downgrade);
+}
+
+bool operator!=(
+    const CookieOptions::SameSiteCookieContext::ContextMetadata& lhs,
+    const CookieOptions::SameSiteCookieContext::ContextMetadata& rhs) {
+  return !(lhs == rhs);
+}
+
+// Keep default values in sync with
+// services/network/public/mojom/cookie_manager.mojom.
 CookieOptions::CookieOptions()
-    : exclude_httponly_(true),
-      same_site_cookie_context_(SameSiteCookieContext(
-          SameSiteCookieContext::ContextType::CROSS_SITE)),
-      update_access_time_(true),
-      return_excluded_cookies_(false) {}
+    : same_site_cookie_context_(SameSiteCookieContext(
+          SameSiteCookieContext::ContextType::CROSS_SITE)) {}
 
 CookieOptions::CookieOptions(const CookieOptions& other) = default;
 CookieOptions::CookieOptions(CookieOptions&& other) = default;
@@ -90,8 +122,7 @@ CookieOptions CookieOptions::MakeAllInclusive() {
   options.set_include_httponly();
   options.set_same_site_cookie_context(SameSiteCookieContext::MakeInclusive());
   options.set_do_not_update_access_time();
-  options.set_same_party_cookie_context_type(
-      SamePartyCookieContextType::kSameParty);
+  options.set_same_party_context(SamePartyContext::MakeInclusive());
   options.set_is_in_nontrivial_first_party_set(true);
   return options;
 }

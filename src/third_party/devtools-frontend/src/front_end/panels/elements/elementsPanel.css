@@ -73,3 +73,18 @@ devtools-adorner-settings-pane {
   border-bottom: 1px solid var(--color-details-hairline);
   overflow: auto;
 }
+
+devtools-tree-outline {
+  overflow: auto;
+}
+
+.axtree-button {
+  position: absolute;
+  padding: 4px;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}

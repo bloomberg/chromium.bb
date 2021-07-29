@@ -58,12 +58,14 @@ static int candidate_refresh_aq(const CYCLIC_REFRESH *cr,
                                 const MB_MODE_INFO *mbmi, int64_t rate,
                                 int64_t dist, int bsize) {
   MV mv = mbmi->mv[0].as_mv;
-  // Reject the block for lower-qp coding if projected distortion
-  // is above the threshold, and any of the following is true:
+  int is_compound = has_second_ref(mbmi);
+  // Reject the block for lower-qp coding for non-compound mode if
+  // projected distortion is above the threshold, and any of the following
+  // is true:
   // 1) mode uses large mv
   // 2) mode is an intra-mode
   // Otherwise accept for refresh.
-  if (dist > cr->thresh_dist_sb &&
+  if (!is_compound && dist > cr->thresh_dist_sb &&
       (mv.row > cr->motion_thresh || mv.row < -cr->motion_thresh ||
        mv.col > cr->motion_thresh || mv.col < -cr->motion_thresh ||
        !is_inter_block(mbmi)))
@@ -398,11 +400,20 @@ void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
   int qp_thresh = AOMMIN(20, rc->best_quality << 1);
   int qp_max_thresh = 118 * MAXQ >> 7;
   cr->apply_cyclic_refresh = 1;
+  int avg_frame_qindex_inter_frame;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  avg_frame_qindex_inter_frame =
+      (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0)
+          ? cpi->ppi->temp_avg_frame_qindex[INTER_FRAME]
+          : rc->avg_frame_qindex[INTER_FRAME];
+#else
+  avg_frame_qindex_inter_frame = rc->avg_frame_qindex[INTER_FRAME];
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
   if (frame_is_intra_only(cm) || is_lossless_requested(&cpi->oxcf.rc_cfg) ||
       cpi->svc.temporal_layer_id > 0 ||
-      rc->avg_frame_qindex[INTER_FRAME] < qp_thresh ||
+      avg_frame_qindex_inter_frame < qp_thresh ||
       (rc->frames_since_key > 20 &&
-       rc->avg_frame_qindex[INTER_FRAME] > qp_max_thresh) ||
+       avg_frame_qindex_inter_frame > qp_max_thresh) ||
       (rc->avg_frame_low_motion < 45 && rc->frames_since_key > 40)) {
     cr->apply_cyclic_refresh = 0;
     return;

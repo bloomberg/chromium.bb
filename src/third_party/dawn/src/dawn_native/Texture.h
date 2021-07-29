@@ -99,7 +99,6 @@ namespace dawn_native {
 
         MaybeError ValidateDestroy() const;
         wgpu::TextureDimension mDimension;
-        // TODO(cwallez@chromium.org): This should be deduplicated in the Device
         const Format& mFormat;
         Extent3D mSize;
         uint32_t mMipLevelCount;
@@ -107,7 +106,7 @@ namespace dawn_native {
         wgpu::TextureUsage mUsage = wgpu::TextureUsage::None;
         TextureState mState;
 
-        // TODO(natlee@microsoft.com): Use a more optimized data structure to save space
+        // TODO(crbug.com/dawn/845): Use a more optimized data structure to save space
         std::vector<bool> mIsSubresourceContentInitializedAtIndex;
     };
 
@@ -134,7 +133,6 @@ namespace dawn_native {
 
         Ref<TextureBase> mTexture;
 
-        // TODO(cwallez@chromium.org): This should be deduplicated in the Device
         const Format& mFormat;
         wgpu::TextureViewDimension mDimension;
         SubresourceRange mRange;

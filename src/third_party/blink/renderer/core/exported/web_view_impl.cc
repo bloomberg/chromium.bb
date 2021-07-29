@@ -170,6 +170,7 @@
 #include "third_party/blink/renderer/platform/theme/web_theme_engine_helper.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/skia_util.h"
@@ -351,18 +352,6 @@ void ApplyCommandLineToSettings(WebSettings* settings) {
     selection_strategy = WebSettings::SelectionStrategyType::kCharacter;
   settings->SetSelectionStrategy(selection_strategy);
 
-  WebString passive_listeners_default = WebString::FromUTF8(
-      command_line.GetSwitchValueASCII(switches::kPassiveListenersDefault));
-  if (!passive_listeners_default.IsEmpty()) {
-    WebSettings::PassiveEventListenerDefault passive_default =
-        WebSettings::PassiveEventListenerDefault::kFalse;
-    if (passive_listeners_default == "true")
-      passive_default = WebSettings::PassiveEventListenerDefault::kTrue;
-    else if (passive_listeners_default == "forcealltrue")
-      passive_default = WebSettings::PassiveEventListenerDefault::kForceAllTrue;
-    settings->SetPassiveEventListenerDefault(passive_default);
-  }
-
   WebString network_quiet_timeout = WebString::FromUTF8(
       command_line.GetSwitchValueASCII(switches::kNetworkQuietTimeout));
   if (!network_quiet_timeout.IsEmpty()) {
@@ -462,6 +451,7 @@ SkFontHinting RendererPreferencesToSkiaHinting(
 WebView* WebView::Create(
     WebViewClient* client,
     bool is_hidden,
+    bool is_prerendering,
     bool is_inside_portal,
     bool compositing_enabled,
     bool widgets_never_composited,
@@ -469,34 +459,43 @@ WebView* WebView::Create(
     CrossVariantMojoAssociatedReceiver<mojom::PageBroadcastInterfaceBase>
         page_handle,
     scheduler::WebAgentGroupScheduler& agent_group_scheduler,
-    const SessionStorageNamespaceId& session_storage_namespace_id) {
+    const SessionStorageNamespaceId& session_storage_namespace_id,
+    absl::optional<SkColor> page_base_background_color) {
   return WebViewImpl::Create(
       client,
       is_hidden ? mojom::blink::PageVisibilityState::kHidden
                 : mojom::blink::PageVisibilityState::kVisible,
-      is_inside_portal, compositing_enabled, widgets_never_composited,
-      static_cast<WebViewImpl*>(opener), std::move(page_handle),
-      agent_group_scheduler, session_storage_namespace_id);
+      is_prerendering, is_inside_portal, compositing_enabled,
+      widgets_never_composited, To<WebViewImpl>(opener), std::move(page_handle),
+      agent_group_scheduler, session_storage_namespace_id,
+      std::move(page_base_background_color));
 }
 
 WebViewImpl* WebViewImpl::Create(
     WebViewClient* client,
     mojom::blink::PageVisibilityState visibility,
+    bool is_prerendering,
     bool is_inside_portal,
     bool compositing_enabled,
     bool widgets_never_composited,
     WebViewImpl* opener,
     mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle,
     blink::scheduler::WebAgentGroupScheduler& agent_group_scheduler,
-    const SessionStorageNamespaceId& session_storage_namespace_id) {
+    const SessionStorageNamespaceId& session_storage_namespace_id,
+    absl::optional<SkColor> page_base_background_color) {
   // Take a self-reference for WebViewImpl that is released by calling Close(),
   // then return a raw pointer to the caller.
-  auto web_view = base::AdoptRef(
-      new WebViewImpl(client, visibility, is_inside_portal, compositing_enabled,
-                      widgets_never_composited, opener, std::move(page_handle),
-                      agent_group_scheduler, session_storage_namespace_id));
+  auto web_view = base::AdoptRef(new WebViewImpl(
+      client, visibility, is_prerendering, is_inside_portal,
+      compositing_enabled, widgets_never_composited, opener,
+      std::move(page_handle), agent_group_scheduler,
+      session_storage_namespace_id, std::move(page_base_background_color)));
   web_view->AddRef();
   return web_view.get();
+}
+
+size_t WebView::GetWebViewCount() {
+  return WebViewImpl::AllInstances().size();
 }
 
 void WebView::UpdateVisitedLinkState(uint64_t link_hash) {
@@ -548,13 +547,15 @@ void WebViewImpl::DoDeferredCloseWindowSoon() {
 WebViewImpl::WebViewImpl(
     WebViewClient* client,
     mojom::blink::PageVisibilityState visibility,
+    bool is_prerendering,
     bool is_inside_portal,
     bool does_composite,
     bool widgets_never_composited,
     WebViewImpl* opener,
     mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle,
     blink::scheduler::WebAgentGroupScheduler& agent_group_scheduler,
-    const SessionStorageNamespaceId& session_storage_namespace_id)
+    const SessionStorageNamespaceId& session_storage_namespace_id,
+    absl::optional<SkColor> page_base_background_color)
     : widgets_never_composited_(widgets_never_composited),
       web_view_client_(client),
       chrome_client_(MakeGarbageCollected<ChromeClientImpl>(this)),
@@ -563,6 +564,8 @@ WebViewImpl::WebViewImpl(
       should_use_external_popup_menus_(g_should_use_external_popup_menus),
       does_composite_(does_composite),
       fullscreen_controller_(std::make_unique<FullscreenController>(this)),
+      page_base_background_color_(
+          page_base_background_color.value_or(SK_ColorWHITE)),
       receiver_(this,
                 std::move(page_handle),
                 agent_group_scheduler.DefaultTaskRunner()),
@@ -576,6 +579,7 @@ WebViewImpl::WebViewImpl(
       *page_, session_storage_namespace_id_);
 
   SetVisibilityState(visibility, /*is_initial_state=*/true);
+  page_->SetIsPrerendering(is_prerendering);
 
   // We pass this state to Page, but it's only used by the main frame in the
   // page.
@@ -1110,6 +1114,11 @@ void WebViewImpl::ResizeVisualViewport(const gfx::Size& new_size) {
   GetPage()->GetVisualViewport().ClampToBoundaries();
 }
 
+void WebViewImpl::DidFirstVisuallyNonEmptyPaint() {
+  DCHECK(MainFrameImpl());
+  local_main_frame_host_remote_->DidFirstVisuallyNonEmptyPaint();
+}
+
 void WebViewImpl::UpdateICBAndResizeViewport(
     const IntSize& visible_viewport_size) {
   // We'll keep the initial containing block size from changing when the top
@@ -1320,7 +1329,7 @@ void WebViewImpl::Resize(const gfx::Size& new_size) {
 }
 
 void WebViewImpl::SetScreenOrientationOverrideForTesting(
-    absl::optional<blink::mojom::ScreenOrientation> orientation) {
+    absl::optional<display::mojom::blink::ScreenOrientation> orientation) {
   screen_orientation_override_ = orientation;
 
   // Since we updated the override value, notify all widgets.
@@ -1343,7 +1352,7 @@ void WebViewImpl::SetWindowRectSynchronouslyForTesting(
   web_widget_->SetWindowRectSynchronouslyForTesting(new_window_rect);
 }
 
-absl::optional<mojom::blink::ScreenOrientation>
+absl::optional<display::mojom::blink::ScreenOrientation>
 WebViewImpl::ScreenOrientationOverride() {
   return screen_orientation_override_;
 }
@@ -1404,7 +1413,7 @@ void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const gfx::Rect& rect) {
 // static
 void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
                                   WebView* web_view) {
-  WebViewImpl* web_view_impl = static_cast<WebViewImpl*>(web_view);
+  WebViewImpl* web_view_impl = To<WebViewImpl>(web_view);
   WebSettings* settings = web_view->GetSettings();
   ApplyFontsFromMap(prefs.standard_font_family_map,
                     SetStandardFontFamilyWrapper, settings);
@@ -1480,6 +1489,9 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   // Enable new canvas 2d api features
   RuntimeEnabledFeatures::SetNewCanvas2DAPIEnabled(
       prefs.new_canvas_2d_api_enabled);
+
+  RuntimeEnabledFeatures::SetCanvas2dLayersEnabled(
+      prefs.canvas_2d_layers_enabled);
 
   // Disable antialiasing for 2d canvas if requested on the command line.
   settings->SetAntialiased2dCanvasEnabled(
@@ -1782,6 +1794,8 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   settings->SetTouchDragDropEnabled(prefs.touch_drag_drop_enabled);
   settings->SetTouchDragEndContextMenu(prefs.touch_dragend_context_menu);
   settings->SetWebXRImmersiveArAllowed(prefs.webxr_immersive_ar_allowed);
+  settings->SetLitePageSubresourceRedirectOrigin(WebString::FromASCII(
+      prefs.litepage_subresource_redirect_origin.Serialize()));
 
 #if defined(OS_MAC)
   web_view_impl->SetMaximumLegibleScale(
@@ -1794,8 +1808,6 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 
   RuntimeEnabledFeatures::SetTranslateServiceEnabled(
       prefs.translate_service_available);
-
-  web_view->SetBaseBackgroundColor(prefs.base_background_color);
 }
 
 void WebViewImpl::ThemeChanged() {
@@ -2364,8 +2376,18 @@ void WebViewImpl::SetPageLifecycleStateInternal(
   if (storing_in_bfcache) {
     Scheduler()->SetPageBackForwardCached(new_state->is_in_back_forward_cache);
   }
-  if (freezing_page)
+
+  if (freezing_page) {
+    // Notify all local frames that we are about to freeze.
+    for (WebFrame* frame = MainFrame(); frame; frame = frame->TraverseNext()) {
+      if (frame->IsWebLocalFrame()) {
+        frame->ToWebLocalFrame()->Client()->WillFreezePage();
+      }
+    }
+
     SetPageFrozen(true);
+  }
+
   if (restoring_from_bfcache) {
     DCHECK(page_restore_params);
     // Update the history offset and length value, as pages that are kept in
@@ -3036,14 +3058,17 @@ Color WebViewImpl::BaseBackgroundColor() const {
     return SK_ColorTRANSPARENT;
   if (base_background_color_override_for_inspector_)
     return base_background_color_override_for_inspector_.value();
-  return base_background_color_;
+  // Use the page background color if this is the WebView of the main frame.
+  if (MainFrameImpl())
+    return page_base_background_color_;
+  return Color::kWhite;
 }
 
-void WebViewImpl::SetBaseBackgroundColor(SkColor color) {
-  if (base_background_color_ == color)
+void WebViewImpl::SetPageBaseBackgroundColor(absl::optional<SkColor> color) {
+  SkColor new_color = color.value_or(SK_ColorWHITE);
+  if (page_base_background_color_ == new_color)
     return;
-
-  base_background_color_ = color;
+  page_base_background_color_ = new_color;
   UpdateBaseBackgroundColor();
 }
 
@@ -3125,6 +3150,10 @@ void WebViewImpl::UpdateFontRenderingFromRendererPrefs() {
 #endif  // !defined(OS_MAC)
 }
 
+void WebViewImpl::ActivatePrerenderedPage() {
+  GetPage()->SetIsPrerendering(false);
+}
+
 void WebViewImpl::SetInsidePortal(bool inside_portal) {
   GetPage()->SetInsidePortal(inside_portal);
 
@@ -3178,8 +3207,7 @@ void WebViewImpl::UpdateRendererPreferences(
   }
 #endif
 
-  if (::features::IsFormControlsRefreshEnabled() &&
-      renderer_preferences_.use_custom_colors) {
+  if (renderer_preferences_.use_custom_colors) {
     SetFocusRingColor(renderer_preferences_.focus_ring_color);
   }
 
@@ -3613,7 +3641,6 @@ LocalFrame* WebViewImpl::FocusedLocalFrameInWidget() const {
 
 void WebViewImpl::SetPageFrozen(bool frozen) {
   Scheduler()->SetPageFrozen(frozen);
-  web_view_client_->OnPageFrozenChanged(frozen);
 }
 
 WebFrameWidget* WebViewImpl::MainFrameWidget() {

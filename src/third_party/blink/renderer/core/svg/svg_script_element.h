@@ -52,12 +52,8 @@ class SVGScriptElement final : public SVGElement,
 
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8HTMLOrSVGScriptElement* AsV8HTMLOrSVGScriptElement() override;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void SetScriptElementForBinding(
-      HTMLScriptElementOrSVGScriptElement&) override;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  DOMNodeId GetDOMNodeId() override;
 
   void Trace(Visitor*) const override;
 

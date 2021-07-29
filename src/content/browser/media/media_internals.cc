@@ -12,11 +12,12 @@
 
 #include "base/bind.h"
 #include "base/containers/adapters.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -539,11 +540,11 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
                                  media::VideoCaptureFormats>>&
         descriptors_and_formats) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  video_capture_capabilities_cached_data_.Clear();
+  video_capture_capabilities_cached_data_.ClearList();
 
   for (const auto& device_format_pair : descriptors_and_formats) {
-    auto control_support = std::make_unique<base::ListValue>();
-    auto format_list = std::make_unique<base::ListValue>();
+    base::ListValue control_support;
+    base::ListValue format_list;
     // TODO(nisse): Representing format information as a string, to be
     // parsed by the javascript handler, is brittle. Consider passing
     // a list of mappings instead.
@@ -553,20 +554,20 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
     const media::VideoCaptureFormats& supported_formats =
         std::get<1>(device_format_pair);
     if (descriptor.control_support().pan)
-      control_support->AppendString("pan");
+      control_support.AppendString("pan");
     if (descriptor.control_support().tilt)
-      control_support->AppendString("tilt");
+      control_support.AppendString("tilt");
     if (descriptor.control_support().zoom)
-      control_support->AppendString("zoom");
+      control_support.AppendString("zoom");
     for (const auto& format : supported_formats)
-      format_list->AppendString(media::VideoCaptureFormat::ToString(format));
+      format_list.AppendString(media::VideoCaptureFormat::ToString(format));
 
     std::unique_ptr<base::DictionaryValue> device_dict(
         new base::DictionaryValue());
     device_dict->SetString("id", descriptor.device_id);
     device_dict->SetString("name", descriptor.GetNameAndModel());
-    device_dict->Set("controlSupport", std::move(control_support));
-    device_dict->Set("formats", std::move(format_list));
+    device_dict->SetKey("controlSupport", std::move(control_support));
+    device_dict->SetKey("formats", std::move(format_list));
     device_dict->SetString("captureApi", descriptor.GetCaptureApiTypeString());
     video_capture_capabilities_cached_data_.Append(std::move(device_dict));
   }
@@ -665,8 +666,7 @@ void MediaInternals::UpdateAudioLog(AudioLogUpdateType type,
       return;
     } else if (!has_entry) {
       DCHECK_EQ(type, CREATE);
-      audio_streams_cached_data_.Set(
-          cache_key, std::make_unique<base::Value>(value->Clone()));
+      audio_streams_cached_data_.SetKey(cache_key, value->Clone());
     } else if (type == UPDATE_AND_DELETE) {
       std::unique_ptr<base::Value> out_value;
       CHECK(audio_streams_cached_data_.Remove(cache_key, &out_value));

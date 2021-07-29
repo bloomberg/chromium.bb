@@ -20,11 +20,11 @@
 
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/media_list_or_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_css_style_sheet_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_medialist_string.h"
 #include "third_party/blink/renderer/core/css/css_import_rule.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
@@ -96,34 +96,21 @@ const Document* CSSStyleSheet::SingleOwnerDocument(
 CSSStyleSheet* CSSStyleSheet::Create(Document& document,
                                      const CSSStyleSheetInit* options,
                                      ExceptionState& exception_state) {
-  auto* parser_context = MakeGarbageCollected<CSSParserContext>(document);
+  return CSSStyleSheet::Create(document, document.BaseURL(), options,
+                               exception_state);
+}
+
+CSSStyleSheet* CSSStyleSheet::Create(Document& document,
+                                     const KURL& base_url,
+                                     const CSSStyleSheetInit* options,
+                                     ExceptionState& exception_state) {
+  auto* parser_context =
+      MakeGarbageCollected<CSSParserContext>(document, base_url);
   if (AdTracker::IsAdScriptExecutingInDocument(&document))
     parser_context->SetIsAdRelated();
 
-  // Following steps at spec draft
-  // https://wicg.github.io/construct-stylesheets/#dom-cssstylesheet-cssstylesheet
   auto* contents = MakeGarbageCollected<StyleSheetContents>(parser_context);
-  CSSStyleSheet* sheet = MakeGarbageCollected<CSSStyleSheet>(contents, nullptr);
-  sheet->SetConstructorDocument(document);
-  sheet->SetTitle(options->title());
-  sheet->ClearOwnerNode();
-  sheet->ClearOwnerRule();
-  contents->RegisterClient(sheet);
-  scoped_refptr<MediaQuerySet> media_query_set;
-  if (options->media().IsString()) {
-    media_query_set = MediaQuerySet::Create(options->media().GetAsString(),
-                                            document.GetExecutionContext());
-  } else {
-    media_query_set = options->media().GetAsMediaList()->Queries()->Copy();
-  }
-  auto* media_list = MakeGarbageCollected<MediaList>(
-      media_query_set, const_cast<CSSStyleSheet*>(sheet));
-  sheet->SetMedia(media_list);
-  if (options->alternate())
-    sheet->SetAlternateFromConstructor(true);
-  if (options->disabled())
-    sheet->setDisabled(true);
-  return sheet;
+  return MakeGarbageCollected<CSSStyleSheet>(contents, document, options);
 }
 
 CSSStyleSheet* CSSStyleSheet::CreateInline(StyleSheetContents* sheet,
@@ -143,10 +130,13 @@ CSSStyleSheet* CSSStyleSheet::CreateInline(Node& owner_node,
       owner_node_document, owner_node_document.BaseURL(),
       true /* origin_clean */,
       Referrer(
-          owner_node_document.GetExecutionContext()
-              ? owner_node_document.GetExecutionContext()->OutgoingReferrer()
-              : String(),  // GetExecutionContext() only returns null in tests.
-          owner_node.GetDocument().GetReferrerPolicy()),
+          // Fetch requests from an inline CSS use the referrer of the owner
+          // document. `Referrer::ClientReferrerString()` for a fetch request
+          // just means "use the default referrer", which will be computed from
+          // the client (in this case, the owner document's ExecutionContext)
+          // when fetching.
+          Referrer::ClientReferrerString(),
+          network::mojom::ReferrerPolicy::kDefault),
       encoding);
   if (AdTracker::IsAdScriptExecutingInDocument(&owner_node.GetDocument()))
     parser_context->SetIsAdRelated();
@@ -162,6 +152,36 @@ CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents,
       owner_rule_(owner_rule),
       start_position_(TextPosition::MinimumPosition()) {
   contents_->RegisterClient(this);
+}
+
+CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents,
+                             Document& document,
+                             const CSSStyleSheetInit* options)
+    : CSSStyleSheet(contents, nullptr) {
+  // Following steps at spec draft
+  // https://wicg.github.io/construct-stylesheets/#dom-cssstylesheet-cssstylesheet
+  SetConstructorDocument(document);
+  SetTitle(options->title());
+  ClearOwnerNode();
+  ClearOwnerRule();
+  Contents()->RegisterClient(this);
+  scoped_refptr<MediaQuerySet> media_query_set;
+  switch (options->media()->GetContentType()) {
+    case V8UnionMediaListOrString::ContentType::kMediaList:
+      media_query_set = options->media()->GetAsMediaList()->Queries()->Copy();
+      break;
+    case V8UnionMediaListOrString::ContentType::kString:
+      media_query_set = MediaQuerySet::Create(options->media()->GetAsString(),
+                                              document.GetExecutionContext());
+      break;
+  }
+  auto* media_list = MakeGarbageCollected<MediaList>(
+      media_query_set, const_cast<CSSStyleSheet*>(this));
+  SetMedia(media_list);
+  if (options->alternate())
+    SetAlternateFromConstructor(true);
+  if (options->disabled())
+    setDisabled(true);
 }
 
 CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents,

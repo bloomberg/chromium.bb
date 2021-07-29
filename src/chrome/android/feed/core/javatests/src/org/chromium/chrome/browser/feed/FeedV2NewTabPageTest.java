@@ -20,10 +20,14 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
-import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
-import static org.chromium.chrome.test.util.ViewUtils.waitForView;
+import static org.chromium.ui.test.util.ViewUtils.VIEW_NULL;
+import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
+import android.accounts.Account;
 import android.content.pm.ActivityInfo;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
@@ -39,6 +43,8 @@ import androidx.test.espresso.action.Swipe;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.MediumTest;
 
+import com.google.common.base.Optional;
+
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -49,6 +55,7 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.Promise;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
@@ -78,8 +85,9 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
-import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
@@ -90,6 +98,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.ui.test.util.ViewUtils;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -120,26 +129,30 @@ public class FeedV2NewTabPageTest {
 
     private boolean mIsCachePopulatedInAccountManagerFacade = true;
 
-    @Rule
-    public final SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
-
     private final ChromeTabbedActivityTestRule mActivityTestRule =
             new ChromeTabbedActivityTestRule();
+
+    private final FakeAccountManagerFacade mFakeAccountManagerFacade =
+            spy(new FakeAccountManagerFacade(null) {
+                @Override
+                public Promise<List<Account>> getAccounts() {
+                    // Attention. When cache is not populated, the Promise shouldn't be fulfilled.
+                    if (mIsCachePopulatedInAccountManagerFacade) {
+                        return super.getAccounts();
+                    }
+                    return new Promise<>();
+                }
+            });
+
+    @Rule
+    public final SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
 
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
-    private final AccountManagerTestRule mAccountManagerTestRule =
-            new AccountManagerTestRule(new FakeAccountManagerFacade(null) {
-                @Override
-                public boolean isCachePopulated() {
-                    // Attention. When isCachePopulated() returns false,
-                    // runAfterCacheIsPopulated(...) shouldn't run. If this becomes a problem,
-                    // we can override runAfterCacheIsPopulated(...) as well.
-                    return mIsCachePopulatedInAccountManagerFacade;
-                }
-            });
+    public final AccountManagerTestRule mAccountManagerTestRule =
+            new AccountManagerTestRule(mFakeAccountManagerFacade);
 
     // Mock sign-in environment needs to be destroyed after ChromeActivity in case there are
     // observers registered in the AccountManagerFacade mock.
@@ -339,6 +352,43 @@ public class FeedV2NewTabPageTest {
         onView(withId(R.id.feed_stream_recycler_view))
                 .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"FeedNewTabPage"})
+    @EnableFeatures(ChromeFeatureList.MINOR_MODE_SUPPORT)
+    @DisabledTest(message = "Flaky -- crbug.com/1225429")
+    public void testSignInPromoWhenDefaultAccountCanNotOfferExtendedSyncPromos() {
+        mAccountManagerTestRule.addAccount("test@gmail.com");
+        mIsCachePopulatedInAccountManagerFacade = true;
+        doReturn(Optional.of(false))
+                .when(mFakeAccountManagerFacade)
+                .canOfferExtendedSyncPromos(any());
+
+        openNewTabPage();
+        onView(withId(R.id.feed_stream_recycler_view))
+                .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
+
+        // Check that the sign-in promo is not displayed.
+        onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"FeedNewTabPage"})
+    @EnableFeatures(ChromeFeatureList.FORCE_DISABLE_EXTENDED_SYNC_PROMOS)
+    @DisableFeatures(ChromeFeatureList.MINOR_MODE_SUPPORT)
+    public void testSignInPromoWhenExtendedSyncPromosAreDisabledByForce() {
+        mAccountManagerTestRule.addAccount("test@gmail.com");
+        mIsCachePopulatedInAccountManagerFacade = true;
+
+        openNewTabPage();
+        onView(withId(R.id.feed_stream_recycler_view))
+                .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
+
+        // Check that the sign-in promo is not displayed.
+        onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
     }
 
     @Test

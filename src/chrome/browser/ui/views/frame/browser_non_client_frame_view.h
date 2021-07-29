@@ -17,6 +17,7 @@
 
 class BrowserFrame;
 class BrowserView;
+class TabSearchBubbleHost;
 class WebAppFrameToolbarView;
 
 // Type used for functions whose return values depend on the active state of
@@ -129,6 +130,13 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Provided for platform-specific updates of minimum window size.
   virtual void UpdateMinimumSize();
 
+  // Updates the state of the title bar when window controls overlay is enabled
+  // or disabled.
+  virtual void WindowControlsOverlayEnabledChanged() {}
+
+  // Set the visibility of the window controls overlay toggle button.
+  void SetWindowControlsOverlayToggleVisible(bool visible);
+
   // views::NonClientFrameView:
   using views::NonClientFrameView::ShouldPaintAsActive;
   void Layout() override;
@@ -139,6 +147,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   WebAppFrameToolbarView* web_app_frame_toolbar_for_testing() {
     return web_app_frame_toolbar_;
   }
+
+  // Gets the TabSearchBubbleHost if present in the NonClientFrameView. Can
+  // return null.
+  virtual TabSearchBubbleHost* GetTabSearchBubbleHost();
 
  protected:
   // Called when |frame_|'s "paint as active" state has changed.

@@ -19,6 +19,7 @@
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/holding_space/holding_space_progress_ring.h"
 #include "ash/system/holding_space/holding_space_tray_bubble.h"
 #include "ash/system/holding_space/holding_space_tray_icon.h"
 #include "ash/system/holding_space/pinned_files_section.h"
@@ -29,6 +30,7 @@
 #include "base/check.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/pickle.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -43,7 +45,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/vector_icons.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -254,9 +255,6 @@ HoldingSpaceTray::HoldingSpaceTray(Shelf* shelf) : TrayBackgroundView(shelf) {
       std::make_unique<HoldingSpaceTrayIcon>(shelf));
   previews_tray_icon_->SetVisible(false);
 
-  // Enable context menu, which supports an action to toggle item previews.
-  set_context_menu_controller(this);
-
   // Drop target overlay.
   // NOTE: The `drop_target_overlay_` will only be visible when:
   //   * a drag is in progress,
@@ -268,6 +266,17 @@ HoldingSpaceTray::HoldingSpaceTray(Shelf* shelf) : TrayBackgroundView(shelf) {
   // Drop target icon.
   drop_target_icon_ =
       drop_target_overlay_->AddChildView(CreateDropTargetIcon());
+
+  // Progress ring.
+  // NOTE: The `progress_ring_` will only be visible when:
+  //   * there is at least one in-progress item in the attached model, and
+  //   * previews are hidden.
+  progress_ring_ = HoldingSpaceProgressRing::CreateForController(
+      HoldingSpaceController::Get());
+  layer()->Add(progress_ring_->layer());
+
+  // Enable context menu, which supports an action to toggle item previews.
+  SetContextMenuEnabled(true);
 }
 
 HoldingSpaceTray::~HoldingSpaceTray() = default;
@@ -449,7 +458,13 @@ void HoldingSpaceTray::Layout() {
   // The `drop_target_overlay_` should always fill this view's bounds as they
   // are perceived by the user. Note that the user perceives the bounds of this
   // view to be its background bounds, not its local bounds.
-  drop_target_overlay_->SetBoundsRect(GetMirroredRect(GetBackgroundBounds()));
+  const gfx::Rect background_bounds(GetBackgroundBounds());
+  drop_target_overlay_->SetBoundsRect(GetMirroredRect(background_bounds));
+
+  // The `progress_ring_` should also fill this view's bounds as they are
+  // perceived by the user, but these bounds do not need to be mirrored since
+  // they are in layer coordinates.
+  progress_ring_->layer()->SetBounds(background_bounds);
 }
 
 void HoldingSpaceTray::VisibilityChanged(views::View* starting_from,
@@ -483,6 +498,9 @@ void HoldingSpaceTray::OnThemeChanged() {
   // Drop target icon.
   drop_target_icon_->SetImage(
       gfx::CreateVectorIcon(views::kUnpinIcon, kHoldingSpaceIconSize, color));
+
+  // Progress ring.
+  progress_ring_->InvalidateLayer();
 }
 
 void HoldingSpaceTray::UpdateVisibility() {
@@ -522,6 +540,34 @@ void HoldingSpaceTray::HideBubble(const TrayBubbleView* bubble_view) {
 
 void HoldingSpaceTray::OnShouldShowAnimationChanged(bool should_animate) {
   previews_tray_icon_->set_should_animate_updates(should_animate);
+}
+
+std::unique_ptr<ui::SimpleMenuModel>
+HoldingSpaceTray::CreateContextMenuModel() {
+  holding_space_metrics::RecordPodAction(
+      holding_space_metrics::PodAction::kShowContextMenu);
+
+  bool previews_enabled = holding_space_prefs::IsPreviewsEnabled(
+      Shell::Get()->session_controller()->GetActivePrefService());
+  auto context_menu_model = std::make_unique<ui::SimpleMenuModel>(this);
+
+  if (previews_enabled) {
+    context_menu_model->AddItemWithIcon(
+        static_cast<int>(HoldingSpaceCommandId::kHidePreviews),
+        l10n_util::GetStringUTF16(
+            IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_HIDE_PREVIEWS),
+        ui::ImageModel::FromVectorIcon(kVisibilityOffIcon, /*color_id=*/-1,
+                                       kHoldingSpaceIconSize));
+  } else {
+    context_menu_model->AddItemWithIcon(
+        static_cast<int>(HoldingSpaceCommandId::kShowPreviews),
+        l10n_util::GetStringUTF16(
+            IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_SHOW_PREVIEWS),
+        ui::ImageModel::FromVectorIcon(kVisibilityIcon, /*color_id=*/-1,
+                                       kHoldingSpaceIconSize));
+  }
+
+  return context_menu_model;
 }
 
 void HoldingSpaceTray::OnHoldingSpaceModelAttached(HoldingSpaceModel* model) {
@@ -606,60 +652,6 @@ void HoldingSpaceTray::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
-void HoldingSpaceTray::ShowContextMenuForViewImpl(
-    views::View* source,
-    const gfx::Point& point,
-    ui::MenuSourceType source_type) {
-  holding_space_metrics::RecordPodAction(
-      holding_space_metrics::PodAction::kShowContextMenu);
-
-  context_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
-
-  const bool previews_enabled = holding_space_prefs::IsPreviewsEnabled(
-      Shell::Get()->session_controller()->GetActivePrefService());
-
-  if (previews_enabled) {
-    context_menu_model_->AddItemWithIcon(
-        static_cast<int>(HoldingSpaceCommandId::kHidePreviews),
-        l10n_util::GetStringUTF16(
-            IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_HIDE_PREVIEWS),
-        ui::ImageModel::FromVectorIcon(kVisibilityOffIcon, /*color_id=*/-1,
-                                       kHoldingSpaceIconSize));
-  } else {
-    context_menu_model_->AddItemWithIcon(
-        static_cast<int>(HoldingSpaceCommandId::kShowPreviews),
-        l10n_util::GetStringUTF16(
-            IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_SHOW_PREVIEWS),
-        ui::ImageModel::FromVectorIcon(kVisibilityIcon, /*color_id=*/-1,
-                                       kHoldingSpaceIconSize));
-  }
-
-  const int run_types = views::MenuRunner::USE_TOUCHABLE_LAYOUT |
-                        views::MenuRunner::CONTEXT_MENU |
-                        views::MenuRunner::FIXED_ANCHOR;
-
-  context_menu_runner_ =
-      std::make_unique<views::MenuRunner>(context_menu_model_.get(), run_types);
-
-  views::MenuAnchorPosition anchor;
-  switch (shelf()->alignment()) {
-    case ShelfAlignment::kBottom:
-    case ShelfAlignment::kBottomLocked:
-      anchor = views::MenuAnchorPosition::kBubbleAbove;
-      break;
-    case ShelfAlignment::kLeft:
-      anchor = views::MenuAnchorPosition::kBubbleRight;
-      break;
-    case ShelfAlignment::kRight:
-      anchor = views::MenuAnchorPosition::kBubbleLeft;
-      break;
-  }
-
-  context_menu_runner_->RunMenuAt(
-      source->GetWidget(), /*button_controller=*/nullptr,
-      source->GetBoundsInScreen(), anchor, source_type);
-}
-
 void HoldingSpaceTray::OnWidgetDragWillStart(views::Widget* widget) {
   // The holding space bubble should be closed while dragging holding space
   // items so as not to obstruct drop targets. Post the task to close the bubble
@@ -711,6 +703,7 @@ void HoldingSpaceTray::UpdatePreviewsVisibility() {
 
   default_tray_icon_->SetVisible(!show_previews);
   previews_tray_icon_->SetVisible(show_previews);
+  progress_ring_->layer()->SetVisible(!show_previews);
 
   if (!show_previews) {
     previews_tray_icon_->Clear();
@@ -785,14 +778,15 @@ void HoldingSpaceTray::UpdateDropTargetState(const ui::DropTargetEvent* event) {
   const views::InkDropState target_ink_drop_state =
       is_drop_target ? views::InkDropState::ACTION_PENDING
                      : views::InkDropState::HIDDEN;
-  if (ink_drop()->GetInkDrop()->GetTargetInkDropState() ==
+  if (views::InkDrop::Get(this)->GetInkDrop()->GetTargetInkDropState() ==
       target_ink_drop_state)
     return;
 
   // Do *not* pass in an event as the origin for the ink drop. Since the user is
   // not directly over this view, it would look strange to give the ink drop an
   // out-of-bounds origin.
-  ink_drop()->AnimateToState(target_ink_drop_state, /*event=*/nullptr);
+  views::InkDrop::Get(this)->AnimateToState(target_ink_drop_state,
+                                            /*event=*/nullptr);
 }
 
 void HoldingSpaceTray::SetShouldAnimate(bool should_animate) {

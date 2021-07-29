@@ -91,19 +91,6 @@ std::u16string LocationBarModelImpl::GetFormattedURL(
                    ~url_formatter::kFormatUrlOmitHTTP;
   }
 
-  // Prevent scheme/trivial subdomain elision when simplified domain field
-  // trials are enabled. In these field trials, OmniboxViewViews handles elision
-  // of scheme and trivial subdomains because they are shown/hidden based on
-  // user interactions with the omnibox.
-  if (base::FeatureList::IsEnabled(
-          omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover) ||
-      base::FeatureList::IsEnabled(
-          omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction)) {
-    format_types &= ~url_formatter::kFormatUrlOmitHTTP;
-    format_types &= ~url_formatter::kFormatUrlOmitHTTPS;
-    format_types &= ~url_formatter::kFormatUrlOmitTrivialSubdomains;
-  }
-
   GURL url(GetURL());
 
 #if defined(OS_IOS)
@@ -207,7 +194,9 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
     return omnibox::kOfflinePinIcon;
 #endif
 
-  return location_bar_model::GetSecurityVectorIcon(GetSecurityLevel());
+  return location_bar_model::GetSecurityVectorIcon(
+      GetSecurityLevel(),
+      delegate_->ShouldUseUpdatedConnectionSecurityIndicators());
 }
 
 std::u16string LocationBarModelImpl::GetSecureDisplayText() const {

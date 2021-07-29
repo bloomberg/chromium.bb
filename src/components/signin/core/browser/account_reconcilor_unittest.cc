@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
@@ -362,8 +363,8 @@ AccountReconcilorTest::~AccountReconcilorTest() {
 
 AccountInfo AccountReconcilorTest::ConnectProfileToAccount(
     const std::string& email) {
-  AccountInfo account_info =
-      identity_test_env()->MakePrimaryAccountAvailable(email);
+  AccountInfo account_info = identity_test_env()->MakePrimaryAccountAvailable(
+      email, signin::ConsentLevel::kSync);
   return account_info;
 }
 
@@ -644,7 +645,8 @@ TEST_F(AccountReconcilorMirrorTest, IdentityManagerRegistration) {
   ASSERT_TRUE(reconcilor);
   ASSERT_FALSE(reconcilor->IsRegisteredWithIdentityManager());
 
-  identity_test_env()->MakePrimaryAccountAvailable("user@gmail.com");
+  identity_test_env()->MakePrimaryAccountAvailable("user@gmail.com",
+                                                   signin::ConsentLevel::kSync);
   ASSERT_TRUE(reconcilor->IsRegisteredWithIdentityManager());
 
   EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
@@ -1183,7 +1185,8 @@ TEST_F(AccountReconcilorDiceTest, DiceTokenServiceRegistration) {
   ASSERT_TRUE(reconcilor);
   ASSERT_TRUE(reconcilor->IsRegisteredWithIdentityManager());
 
-  identity_test_env()->MakePrimaryAccountAvailable("user@gmail.com");
+  identity_test_env()->MakePrimaryAccountAvailable("user@gmail.com",
+                                                   signin::ConsentLevel::kSync);
   ASSERT_TRUE(reconcilor->IsRegisteredWithIdentityManager());
 
   // Reconcilor should not logout all accounts from the cookies when
@@ -1400,7 +1403,8 @@ TEST_F(AccountReconcilorTest, DiceDeleteCookie) {
 
   const CoreAccountId primary_account_id =
       identity_test_env()
-          ->MakePrimaryAccountAvailable("user@gmail.com")
+          ->MakePrimaryAccountAvailable("user@gmail.com",
+                                        signin::ConsentLevel::kSync)
           .account_id;
   const CoreAccountId secondary_account_id =
       identity_test_env()->MakeAccountAvailable("other@gmail.com").account_id;

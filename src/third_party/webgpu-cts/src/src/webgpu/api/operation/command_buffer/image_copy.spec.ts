@@ -34,18 +34,21 @@ TODO: Fix this test for the various skipped formats:
 - compressed formats
 `;
 
-import { params, poptions } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
-import { assert, unreachable } from '../../../../common/framework/util/util.js';
+import { assert, unreachable } from '../../../../common/util/util.js';
 import {
-  kSizedTextureFormatInfo,
+  kTextureFormatInfo,
   SizedTextureFormat,
   kSizedTextureFormats,
 } from '../../../capability_info.js';
 import { GPUTest } from '../../../gpu_test.js';
 import { align } from '../../../util/math.js';
-import { bytesInACompleteRow, dataBytesForCopyOrFail } from '../../../util/texture/image_copy.js';
-import { getTextureCopyLayout, TextureCopyLayout } from '../../../util/texture/layout.js';
+import {
+  bytesInACompleteRow,
+  dataBytesForCopyOrFail,
+  getTextureCopyLayout,
+  TextureCopyLayout,
+} from '../../../util/texture/layout.js';
 
 interface TextureCopyViewWithRequiredOrigin {
   texture: GPUTexture;
@@ -115,7 +118,7 @@ class ImageCopyTest extends GPUTest {
     origin: Required<GPUOrigin3DDict> = { x: 0, y: 0, z: 0 }
   ): number {
     const { offset, bytesPerRow, rowsPerImage } = textureDataLayout;
-    const info = kSizedTextureFormatInfo[format];
+    const info = kTextureFormatInfo[format];
 
     assert(texel.x >= origin.x && texel.y >= origin.y && texel.z >= origin.z);
     assert(texel.x % info.blockWidth === 0);
@@ -142,7 +145,7 @@ class ImageCopyTest extends GPUTest {
       // do not iterate anything for an empty region
       return;
     }
-    const info = kSizedTextureFormatInfo[format];
+    const info = kTextureFormatInfo[format];
     assert(size.height % info.blockHeight === 0);
     for (let y = 0; y < size.height; y += info.blockHeight) {
       for (let z = 0; z < size.depthOrArrayLayers; ++z) {
@@ -407,7 +410,7 @@ class ImageCopyTest extends GPUTest {
       expected
     );
 
-    this.expectContents(buffer, bufferData);
+    this.expectGPUBufferValuesEqual(buffer, bufferData);
   }
 
   /**
@@ -495,15 +498,17 @@ class ImageCopyTest extends GPUTest {
     partialData: Uint8Array
   ): void {
     const { mipSize, bytesPerRow, rowsPerImage, byteLength } = fullTextureCopyLayout;
-    const { dst, begin, end } = this.createAlignedCopyForMapRead(fullData, byteLength, 0);
+    const readbackPromise = this.readGPUBufferRangeTyped(fullData, {
+      type: Uint8Array,
+      typedLength: byteLength,
+    });
 
     const destinationOrigin = { x: 0, y: 0, z: 0 };
 
     // We add an eventual async expectation which will update the full data and then add
     // other eventual async expectations to ensure it will be correct.
     this.eventualAsyncExpectation(async () => {
-      await dst.mapAsync(GPUMapMode.READ);
-      const actual = new Uint8Array(dst.getMappedRange()).subarray(begin, end);
+      const readback = await readbackPromise;
       this.updateLinearTextureDataSubBox(
         { offset: 0, ...fullTextureCopyLayout },
         texturePartialDataLayout,
@@ -511,17 +516,17 @@ class ImageCopyTest extends GPUTest {
         destinationOrigin,
         origin,
         format,
-        actual,
+        readback.data,
         partialData
       );
       this.copyPartialTextureToBufferAndCheckContents(
         { texture, mipLevel, origin: destinationOrigin },
         { width: mipSize[0], height: mipSize[1], depthOrArrayLayers: mipSize[2] },
         format,
-        actual,
+        readback.data,
         { bytesPerRow, rowsPerImage, offset: 0 }
       );
-      dst.destroy();
+      readback.cleanup();
     });
   }
 
@@ -630,7 +635,7 @@ class ImageCopyTest extends GPUTest {
  * TODO: Modify this after introducing tests with rendering.
  */
 function formatCanBeTested({ format }: { format: SizedTextureFormat }): boolean {
-  return kSizedTextureFormatInfo[format].copyDst && kSizedTextureFormatInfo[format].copySrc;
+  return kTextureFormatInfo[format].copyDst && kTextureFormatInfo[format].copySrc;
 }
 
 export const g = makeTestGroup(ImageCopyTest);
@@ -647,21 +652,19 @@ bytes in copy works for every format.
     bytesPerRow == bytesInACompleteCopyImage
   `
   )
-  .cases(
-    params()
-      .combine(kMethodsToTest)
-      .combine(poptions('format', kWorkingTextureFormats))
+  .params(u =>
+    u
+      .combineWithParams(kMethodsToTest)
+      .combine('format', kWorkingTextureFormats)
       .filter(formatCanBeTested)
-  )
-  .subcases(() =>
-    params()
-      .combine([
+      .beginSubcases()
+      .combineWithParams([
         { bytesPerRowPadding: 0, rowsPerImagePadding: 0 }, // no padding
         { bytesPerRowPadding: 0, rowsPerImagePadding: 6 }, // rowsPerImage padding
         { bytesPerRowPadding: 6, rowsPerImagePadding: 0 }, // bytesPerRow padding
         { bytesPerRowPadding: 15, rowsPerImagePadding: 17 }, // both paddings
       ])
-      .combine([
+      .combineWithParams([
         // In the two cases below, for (WriteTexture, PartialCopyB2T) and (CopyB2T, FullCopyT2B)
         // sets of methods we will have bytesPerRow = 256 and copyDepth % 2 == { 0, 1 }
         // respectively. This covers a special code path for D3D12.
@@ -696,7 +699,7 @@ bytes in copy works for every format.
       initMethod,
       checkMethod,
     } = t.params;
-    const info = kSizedTextureFormatInfo[format];
+    const info = kTextureFormatInfo[format];
     await t.selectDeviceOrSkipTestCase(info.feature);
 
     // For CopyB2T and CopyT2B we need to have bytesPerRow 256-aligned,
@@ -745,16 +748,14 @@ works for every format with 2d and 2d-array textures.
     offset > bytesInACompleteCopyImage
 `
   )
-  .cases(
-    params()
-      .combine(kMethodsToTest)
-      .combine(poptions('format', kWorkingTextureFormats))
-      .filter(formatCanBeTested)
-  )
-  .subcases(
-    () =>
-      params()
-        .combine([
+  .params(
+    u =>
+      u
+        .combineWithParams(kMethodsToTest)
+        .combine('format', kWorkingTextureFormats)
+        .filter(formatCanBeTested)
+        .beginSubcases()
+        .combineWithParams([
           { offsetInBlocks: 0, dataPaddingInBytes: 0 }, // no offset and no padding
           { offsetInBlocks: 1, dataPaddingInBytes: 0 }, // offset = 1
           { offsetInBlocks: 2, dataPaddingInBytes: 0 }, // offset = 2
@@ -767,7 +768,7 @@ works for every format with 2d and 2d-array textures.
           { offsetInBlocks: 0, dataPaddingInBytes: 1 }, // dataPaddingInBytes > 0
           { offsetInBlocks: 1, dataPaddingInBytes: 8 }, // offset > 0 and dataPaddingInBytes > 0
         ])
-        .combine(poptions('copyDepth', [1, 2])) // 2d and 2d-array textures
+        .combine('copyDepth', [1, 2]) // 2d and 2d-array textures
   )
   .fn(async t => {
     const {
@@ -778,7 +779,7 @@ works for every format with 2d and 2d-array textures.
       initMethod,
       checkMethod,
     } = t.params;
-    const info = kSizedTextureFormatInfo[format];
+    const info = kTextureFormatInfo[format];
     await t.selectDeviceOrSkipTestCase(info.feature);
 
     const offset = offsetInBlocks * info.bytesPerBlock;
@@ -816,23 +817,21 @@ g.test('origins_and_extents')
     `Test that copying slices of a texture works with various origin and copyExtent values
 for all formats. We pass origin and copyExtent as [number, number, number].`
   )
-  .cases(
-    params()
-      .combine(kMethodsToTest)
-      .combine(poptions('format', kWorkingTextureFormats))
+  .params(u =>
+    u
+      .combineWithParams(kMethodsToTest)
+      .combine('format', kWorkingTextureFormats)
       .filter(formatCanBeTested)
-  )
-  .subcases(() =>
-    params()
-      .combine(poptions('originValueInBlocks', [0, 7, 8]))
-      .combine(poptions('copySizeValueInBlocks', [0, 7, 8]))
-      .combine(poptions('textureSizePaddingValueInBlocks', [0, 7, 8]))
+      .beginSubcases()
+      .combine('originValueInBlocks', [0, 7, 8])
+      .combine('copySizeValueInBlocks', [0, 7, 8])
+      .combine('textureSizePaddingValueInBlocks', [0, 7, 8])
       .unless(
         p =>
           // we can't create an empty texture
           p.copySizeValueInBlocks + p.originValueInBlocks + p.textureSizePaddingValueInBlocks === 0
       )
-      .combine(poptions('coordinateToTest', [0, 1, 2] as const))
+      .combine('coordinateToTest', [0, 1, 2] as const)
   )
   .fn(async t => {
     const {
@@ -843,7 +842,7 @@ for all formats. We pass origin and copyExtent as [number, number, number].`
       initMethod,
       checkMethod,
     } = t.params;
-    const info = kSizedTextureFormatInfo[format];
+    const info = kTextureFormatInfo[format];
     await t.selectDeviceOrSkipTestCase(info.feature);
 
     const originBlocks = [1, 1, 1];
@@ -912,8 +911,8 @@ function* generateTestTextureSizes({
   format: SizedTextureFormat;
   mipLevel: number;
   _mipSizeInBlocks: Required<GPUExtent3DDict>;
-}): Generator<{ textureSize: [number, number, number] }> {
-  const info = kSizedTextureFormatInfo[format];
+}): Generator<[number, number, number]> {
+  const info = kTextureFormatInfo[format];
 
   const widthAtThisLevel = _mipSizeInBlocks.width * info.blockWidth;
   const heightAtThisLevel = _mipSizeInBlocks.height * info.blockHeight;
@@ -922,9 +921,7 @@ function* generateTestTextureSizes({
     heightAtThisLevel << mipLevel,
     _mipSizeInBlocks.depthOrArrayLayers,
   ];
-  yield {
-    textureSize,
-  };
+  yield textureSize;
 
   // We choose width and height of the texture so that the values are divisible by blockWidth and
   // blockHeight respectively and so that the virtual size at mip level corresponds to the same
@@ -942,19 +939,13 @@ function* generateTestTextureSizes({
   const modifyHeight = info.blockHeight > 1 && modifiedHeight !== textureSize[1];
 
   if (modifyWidth) {
-    yield {
-      textureSize: [modifiedWidth, textureSize[1], textureSize[2]],
-    };
+    yield [modifiedWidth, textureSize[1], textureSize[2]];
   }
   if (modifyHeight) {
-    yield {
-      textureSize: [textureSize[0], modifiedHeight, textureSize[2]],
-    };
+    yield [textureSize[0], modifiedHeight, textureSize[2]];
   }
   if (modifyWidth && modifyHeight) {
-    yield {
-      textureSize: [modifiedWidth, modifiedHeight, textureSize[2]],
-    };
+    yield [modifiedWidth, modifiedHeight, textureSize[2]];
   }
 }
 
@@ -965,15 +956,13 @@ g.test('mip_levels')
   - bufferSize - offset < bytesPerImage * copyExtent.depthOrArrayLayers, and copyExtent needs to be clamped for all block formats.
   `
   )
-  .cases(
-    params()
-      .combine(kMethodsToTest)
-      .combine(poptions('format', kWorkingTextureFormats))
+  .params(u =>
+    u
+      .combineWithParams(kMethodsToTest)
+      .combine('format', kWorkingTextureFormats)
       .filter(formatCanBeTested)
-  )
-  .subcases(p =>
-    params()
-      .combine([
+      .beginSubcases()
+      .combineWithParams([
         // origin + copySize = texturePhysicalSizeAtMipLevel for all coordinates, 2d texture */
         {
           copySizeInBlocks: { width: 5, height: 4, depthOrArrayLayers: 1 },
@@ -1017,9 +1006,7 @@ g.test('mip_levels')
           mipLevel: 6,
         },
       ])
-      .expand(({ mipLevel, _mipSizeInBlocks }) =>
-        generateTestTextureSizes({ mipLevel, _mipSizeInBlocks, format: p.format })
-      )
+      .expand('textureSize', generateTestTextureSizes)
   )
   .fn(async t => {
     const {
@@ -1031,7 +1018,7 @@ g.test('mip_levels')
       initMethod,
       checkMethod,
     } = t.params;
-    const info = kSizedTextureFormatInfo[format];
+    const info = kTextureFormatInfo[format];
     await t.selectDeviceOrSkipTestCase(info.feature);
 
     const origin = {
@@ -1075,22 +1062,24 @@ g.test('undefined_params')
   Ensures bytesPerRow/rowsPerImage=undefined are valid and behave as expected.
   Ensures origin.x/y/z undefined default to 0.`
   )
-  .cases(kMethodsToTest)
-  .subcases(() =>
-    params().combine([
-      // copying one row: bytesPerRow and rowsPerImage can be undefined
-      { copySize: [3, 1, 1], origin: [UND, UND, UND], bytesPerRow: UND, rowsPerImage: UND },
-      // copying one slice: rowsPerImage can be undefined
-      { copySize: [3, 3, 1], origin: [UND, UND, UND], bytesPerRow: 256, rowsPerImage: UND },
-      // copying two slices
-      { copySize: [3, 3, 2], origin: [UND, UND, UND], bytesPerRow: 256, rowsPerImage: 3 },
-      // origin.x = undefined
-      { copySize: [1, 1, 1], origin: [UND, 1, 1], bytesPerRow: UND, rowsPerImage: UND },
-      // origin.y = undefined
-      { copySize: [1, 1, 1], origin: [1, UND, 1], bytesPerRow: UND, rowsPerImage: UND },
-      // origin.z = undefined
-      { copySize: [1, 1, 1], origin: [1, 1, UND], bytesPerRow: UND, rowsPerImage: UND },
-    ])
+  .params(u =>
+    u
+      .combineWithParams(kMethodsToTest)
+      .beginSubcases()
+      .combineWithParams([
+        // copying one row: bytesPerRow and rowsPerImage can be undefined
+        { copySize: [3, 1, 1], origin: [UND, UND, UND], bytesPerRow: UND, rowsPerImage: UND },
+        // copying one slice: rowsPerImage can be undefined
+        { copySize: [3, 3, 1], origin: [UND, UND, UND], bytesPerRow: 256, rowsPerImage: UND },
+        // copying two slices
+        { copySize: [3, 3, 2], origin: [UND, UND, UND], bytesPerRow: 256, rowsPerImage: 3 },
+        // origin.x = undefined
+        { copySize: [1, 1, 1], origin: [UND, 1, 1], bytesPerRow: UND, rowsPerImage: UND },
+        // origin.y = undefined
+        { copySize: [1, 1, 1], origin: [1, UND, 1], bytesPerRow: UND, rowsPerImage: UND },
+        // origin.z = undefined
+        { copySize: [1, 1, 1], origin: [1, 1, UND], bytesPerRow: UND, rowsPerImage: UND },
+      ])
   )
   .fn(async t => {
     const { bytesPerRow, rowsPerImage, copySize, origin, initMethod, checkMethod } = t.params;
@@ -1114,3 +1103,35 @@ g.test('undefined_params')
       changeBeforePass: 'undefined',
     });
   });
+
+g.test('copy_from_stencil_aspect')
+  .desc(
+    `
+  Validate the correctness of copyTextureToBuffer() with stencil aspect.
+
+  For all the texture formats with stencil aspect:
+  - Initialize the source texture with the stencil comparison function "always" and the stencil
+    operation "replace" in a render pass encoder
+  - Copy the stencil aspect of the source texture into the destination buffer
+  - Check if the data in the destination buffer is expected
+  - Test the copies from / into zero / non-zero array layer / mipmap levels
+  - Test copying multiple array layers
+  `
+  )
+  .unimplemented();
+
+g.test('copy_into_stencil_aspect')
+  .desc(
+    `
+  Validate the correctness of copyBufferToTexture() with stencil aspect.
+
+  For all the texture formats with stencil aspect:
+  - Initialize the source buffer with the expected data
+  - Copy the data in the source buffer into the stencil aspect of the destination texture
+  - Check if the data in the stencil aspect of the destination texture is expected with the stencil
+    comparison function "equal" and the stencil operation "keep" in a render pass encoder
+  - Test the copies from / into zero / non-zero array layer / mipmap levels
+  - Test copying multiple array layers
+  `
+  )
+  .unimplemented();

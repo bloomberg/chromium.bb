@@ -29,7 +29,10 @@ const base::Feature kTrimOnMemoryPressure{"TrimOnMemoryPressure",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTrimArcOnMemoryPressure{"TrimArcOnMemoryPressure",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kTrimArcVmOnMemoryPressure{
+    "TrimArcVmOnMemoryPressure", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTrimOnFreeze{"TrimOnFreeze",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
@@ -38,10 +41,10 @@ const base::FeatureParam<int> kGraphWalkBackoffTimeSec = {
     &kTrimOnMemoryPressure, "GraphWalkBackoffTimeSec", 180};
 
 const base::FeatureParam<int> kArcProcessListFetchBackoffTimeSec = {
-    &kTrimArcOnMemoryPressure, "ArcProcessListFetchBackoffTimeSec", 180};
+    &kTrimArcOnMemoryPressure, "ArcProcessListFetchBackoffTimeSec", 600};
 
 const base::FeatureParam<int> kArcProcessTrimBackoffTimeSec = {
-    &kTrimArcOnMemoryPressure, "ArcProcessTrimBackoffTimeSec", 1800};
+    &kTrimArcOnMemoryPressure, "ArcProcessTrimBackoffTimeSec", 1200};
 
 const base::FeatureParam<bool> kTrimArcAppProcesses = {
     &kTrimArcOnMemoryPressure, "ArcTrimAppProcesses", true};
@@ -53,10 +56,21 @@ const base::FeatureParam<bool> kTrimArcAggressive = {
     &kTrimArcOnMemoryPressure, "ArcTrimAggressive", false};
 
 const base::FeatureParam<int> kArcMaxProcessesPerTrim = {
-    &kTrimArcOnMemoryPressure, "ArcMaxProcessesPerTrim", -1};
+    &kTrimArcOnMemoryPressure, "ArcMaxProcessesPerTrim", 10};
 
 const base::FeatureParam<int> kArcProcessInactivityTimeSec = {
-    &kTrimArcOnMemoryPressure, "ArcProcessInactivityTimeSec", 300};
+    &kTrimArcOnMemoryPressure, "ArcProcessInactivityTimeSec", 600};
+
+const base::FeatureParam<base::TimeDelta> kArcVmInactivityTimeMs = {
+    &kTrimArcVmOnMemoryPressure, "ArcVmInactivityTimeMs",
+    base::TimeDelta::FromSeconds(600)};
+
+const base::FeatureParam<base::TimeDelta> kArcVmTrimBackoffTimeMs = {
+    &kTrimArcVmOnMemoryPressure, "ArcVmTrimBackoffTimeMs",
+    base::TimeDelta::FromSeconds(900)};
+
+const base::FeatureParam<bool> kTrimArcVmOnCriticalPressure = {
+    &kTrimArcVmOnMemoryPressure, "TrimArcVmOnCriticalPressure", false};
 
 // Specifies the minimum amount of time a parent frame node must be invisible
 // before considering the process node for working set trim.
@@ -98,6 +112,11 @@ TrimOnMemoryPressureParams TrimOnMemoryPressureParams::GetParams() {
     // This causes us to ignore the last activity time if it was not configured.
     params.arc_process_inactivity_time = base::TimeDelta::Min();
   }
+
+  params.arcvm_inactivity_time = kArcVmInactivityTimeMs.Get();
+  params.arcvm_trim_backoff_time = kArcVmTrimBackoffTimeMs.Get();
+  params.trim_arcvm_on_critical_pressure = kTrimArcVmOnCriticalPressure.Get();
+
   return params;
 }
 

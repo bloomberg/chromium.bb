@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_list_navigator.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -243,7 +244,7 @@ BOOL AreCredentialsAtIndexesConnected(
                   : nullptr;
     if (base::FeatureList::IsEnabled(
             password_manager::features::kEnableManualPasswordGeneration) &&
-        _syncService && _syncService->IsSyncEnabled() &&
+        _syncService && _syncService->CanSyncFeatureStart() &&
         passwordManagerClient &&
         passwordManagerClient->IsSavingAndFillingEnabled(_URL) &&
         _activeFieldIsPassword) {

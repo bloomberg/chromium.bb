@@ -170,10 +170,10 @@ source_set("web_view_sources") {
     "internal/passwords/web_view_password_manager_log_router_factory.mm",
     "internal/passwords/web_view_password_requirements_service_factory.h",
     "internal/passwords/web_view_password_requirements_service_factory.mm",
+    "internal/passwords/web_view_password_reuse_manager_factory.h",
+    "internal/passwords/web_view_password_reuse_manager_factory.mm",
     "internal/passwords/web_view_password_store_factory.h",
     "internal/passwords/web_view_password_store_factory.mm",
-    "internal/pref_names.h",
-    "internal/pref_names.mm",
     "internal/signin/cwv_identity.mm",
     "internal/signin/ios_web_view_signin_client.h",
     "internal/signin/ios_web_view_signin_client.mm",
@@ -197,12 +197,12 @@ source_set("web_view_sources") {
     "internal/sync/web_view_model_type_store_service_factory.mm",
     "internal/sync/web_view_profile_invalidation_provider_factory.h",
     "internal/sync/web_view_profile_invalidation_provider_factory.mm",
-    "internal/sync/web_view_profile_sync_service_factory.h",
-    "internal/sync/web_view_profile_sync_service_factory.mm",
     "internal/sync/web_view_sync_client.h",
     "internal/sync/web_view_sync_client.mm",
     "internal/sync/web_view_sync_invalidations_service_factory.h",
     "internal/sync/web_view_sync_invalidations_service_factory.mm",
+    "internal/sync/web_view_sync_service_factory.h",
+    "internal/sync/web_view_sync_service_factory.mm",
     "internal/translate/cwv_translation_controller.mm",
     "internal/translate/cwv_translation_controller_internal.h",
     "internal/translate/cwv_translation_language.mm",
@@ -297,6 +297,7 @@ source_set("web_view_sources") {
     "//components/translate/ios/browser",
     "//components/unified_consent",
     "//components/url_formatter",
+    "//components/variations",
     "//components/variations/net",
     "//components/version_info",
     "//components/version_info:version_string",
@@ -324,6 +325,7 @@ source_set("web_view_sources") {
     "//net:extras",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/network:network_service",
+    "//third_party/abseil-cpp:absl",
     "//ui/base",
     "//url",
   ]
@@ -544,7 +546,7 @@ group("web_view_resources") {
   ]
 }
 
-if (additional_toolchains == [] || current_toolchain == default_toolchain) {
+if (!is_fat_secondary_toolchain) {
   _package_dir = "$root_out_dir/ios_web_view"
 
   action("ios_web_view_generate_license") {

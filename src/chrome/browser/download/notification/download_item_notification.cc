@@ -25,6 +25,7 @@
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/notification/download_notification_manager.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -40,9 +41,10 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_context.h"
@@ -88,10 +90,6 @@ std::string ReadNotificationImage(const base::FilePath& file_path) {
   DCHECK_LE(data.size(), static_cast<size_t>(kMaxImagePreviewSize));
 
   return data;
-}
-
-bool IsPromptEsbForDeepScanningEnabled() {
-  return base::FeatureList::IsEnabled(safe_browsing::kPromptEsbForDeepScanning);
 }
 
 SkBitmap CropImage(const SkBitmap& original_bitmap) {
@@ -325,7 +323,7 @@ void DownloadItemNotification::Click(
       item_->CompleteSafeBrowsingScan();
     }
 
-    DownloadCommands(item_.get()).ExecuteCommand(command);
+    DownloadCommands(item_->GetWeakPtr()).ExecuteCommand(command);
 
     // ExecuteCommand() might cause |item_| to be destroyed.
     if (item_ && command != DownloadCommands::PAUSE &&
@@ -443,7 +441,7 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
     return;
   }
 
-  DownloadCommands command(item_.get());
+  DownloadCommands command(item_->GetWeakPtr());
 
   notification_->set_title(GetTitle());
   notification_->set_message(GetSubStatusString());
@@ -451,6 +449,9 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
 
   if (item_->IsDangerous()) {
     notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
+    RecordDangerousDownloadWarningShown(
+        item_->GetDangerType(), item_->GetTargetFilePath(),
+        item_->GetURL().SchemeIs(url::kHttpsScheme), item_->HasUserGesture());
     if (!item_->MightBeMalicious() &&
         item_->GetDangerType() !=
             download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING) {
@@ -640,9 +641,8 @@ DownloadItemNotification::GetExtraActions() const {
   std::unique_ptr<std::vector<DownloadCommands::Command>> actions(
       new std::vector<DownloadCommands::Command>());
 
-  if (IsPromptEsbForDeepScanningEnabled() &&
-      item_->GetDangerType() ==
-          download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
+  if (item_->GetDangerType() ==
+      download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
     actions->push_back(DownloadCommands::DEEP_SCAN);
     actions->push_back(DownloadCommands::KEEP);
     return actions;
@@ -714,9 +714,8 @@ DownloadItemNotification::GetExtraActions() const {
 std::u16string DownloadItemNotification::GetTitle() const {
   std::u16string title_text;
 
-  if (IsPromptEsbForDeepScanningEnabled() &&
-      item_->GetDangerType() ==
-          download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
+  if (item_->GetDangerType() ==
+      download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
     return l10n_util::GetStringUTF16(
         IDS_PROMPT_SEND_TO_SAFEBROWSING_DOWNLOAD_TITLE);
   }
@@ -793,8 +792,7 @@ std::u16string DownloadItemNotification::GetCommandLabel(
       id = IDS_DOWNLOAD_LINK_RESUME;
       break;
     case DownloadCommands::SHOW_IN_FOLDER:
-      id = IDS_DOWNLOAD_LINK_SHOW;
-      break;
+      return item_->GetShowInFolderText();
     case DownloadCommands::DISCARD:
       id = IDS_DISCARD_DOWNLOAD;
       break;
@@ -817,7 +815,6 @@ std::u16string DownloadItemNotification::GetCommandLabel(
       id = IDS_LEARN_MORE;
       break;
     case DownloadCommands::DEEP_SCAN:
-      DCHECK(IsPromptEsbForDeepScanningEnabled());
       id = IDS_SCAN_DOWNLOAD;
       break;
     case DownloadCommands::ALWAYS_OPEN_TYPE:
@@ -902,9 +899,7 @@ std::u16string DownloadItemNotification::GetWarningStatusString() const {
     }
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING: {
-      return l10n_util::GetStringFUTF16(IsPromptEsbForDeepScanningEnabled()
-                                            ? IDS_PROMPT_DEEP_SCANNING
-                                            : IDS_PROMPT_APP_DEEP_SCANNING,
+      return l10n_util::GetStringFUTF16(IDS_PROMPT_DEEP_SCANNING,
                                         elided_filename);
     }
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
@@ -974,6 +969,7 @@ std::u16string DownloadItemNotification::GetSubStatusString() const {
         IDS_PROMPT_DOWNLOAD_DEEP_SCANNED_OPENED_DANGEROUS);
   }
 
+  auto web_drive = item_->GetWebDriveName();
   switch (item_->GetState()) {
     case download::DownloadItem::IN_PROGRESS:
       // The download is a CRX (app, extension, theme, ...) and it is being
@@ -981,35 +977,41 @@ std::u16string DownloadItemNotification::GetSubStatusString() const {
       if (item_->AllDataSaved() && IsExtensionDownload(item_.get())) {
         return l10n_util::GetStringUTF16(
             IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING);
+      } else if (web_drive.size()) {
+        // If the file is being uploaded: "Sending to <WEB_DRIVE>"
+        return l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_UPLOADING,
+                                          web_drive);
       } else {
         return GetInProgressSubStatusString();
       }
-    case download::DownloadItem::COMPLETE:
-      // If the file has been removed: Removed
+    case download::DownloadItem::COMPLETE: {
       if (item_->GetFileExternallyRemoved()) {
+        // If the file has been removed: "Removed"
         return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_REMOVED);
+      } else if (web_drive.size()) {
+        // If the file was uploaded: "Saved to <WEB_DRIVE>"
+        return l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_UPLOADED,
+                                          web_drive);
       } else {
         std::u16string file_name =
             item_->GetFileNameToReportUser().LossyDisplayName();
         base::i18n::AdjustStringForLocaleDirection(&file_name);
         return file_name;
       }
-    case download::DownloadItem::CANCELLED:
-      // "Cancelled"
-      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);
+    }
     case download::DownloadItem::INTERRUPTED: {
       FailState fail_state = item_->GetLastFailState();
       if (fail_state != FailState::USER_CANCELED) {
-        // "Failed - <REASON>"
-        std::u16string interrupt_reason = item_->GetInterruptReasonText();
-        DCHECK(!interrupt_reason.empty());
-        return l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_INTERRUPTED,
-                                          interrupt_reason);
-      } else {
-        // Same as DownloadItem::CANCELLED.
-        return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);
+        const auto interrupt_text = item_->GetInterruptDescription();
+        DCHECK(!interrupt_text.empty());
+        return interrupt_text;
       }
+      FALLTHROUGH;  // Same as download::DownloadItem::CANCELLED.
     }
+    case download::DownloadItem::CANCELLED:
+      // "Cancelled"
+      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);
+
     default:
       NOTREACHED();
   }
@@ -1022,7 +1024,9 @@ std::u16string DownloadItemNotification::GetStatusString() const {
     return std::u16string();
 
   if (IsScanning()) {
-    return l10n_util::GetStringUTF16(IDS_PROMPT_DEEP_SCANNING_APP_DOWNLOAD);
+    return l10n_util::GetStringFUTF16(
+        IDS_PROMPT_DEEP_SCANNING_APP_DOWNLOAD,
+        item_->GetFileNameToReportUser().LossyDisplayName());
   }
 
   // The hostname. (E.g.:"example.com" or "127.0.0.1")

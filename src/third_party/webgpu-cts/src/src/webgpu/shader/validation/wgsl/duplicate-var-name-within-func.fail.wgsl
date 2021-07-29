@@ -1,6 +1,6 @@
 // v-0014 - This fails because variable `a` is redeclared.
 
-[[stage(vertex)]]
+[[stage(fragment)]]
 fn main() {
   var a : u32 = 1u;
   if (true) {

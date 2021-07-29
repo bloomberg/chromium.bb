@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2021 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <dimen name="quick_action_search_widget_default_height">110dp</dimen>
+    <dimen name="quick_action_search_widget_width">308dp</dimen>
+    <dimen name="quick_action_search_widget_margin">16dp</dimen>
+
+    <dimen name="quick_action_search_widget_background_radius">16dp</dimen>
+
+    <dimen name="quick_action_search_widget_button_container_margin">12dp</dimen>
+    <dimen name="quick_action_search_widget_button_margin">4dp</dimen>
+    <dimen name="quick_action_search_widget_button_icon_padding">20dp</dimen>
+    <dimen name="quick_action_search_widget_button_radius">30dp</dimen>
+    <dimen name="quick_action_search_widget_button_height">60dp</dimen>
+    <dimen name="quick_action_search_widget_button_width">60dp</dimen>
+
+    <dimen name="quick_action_search_widget_search_bar_corner_radius">28dp</dimen>
+    <dimen name="quick_action_search_widget_search_bar_height">56dp</dimen>
+    <dimen name="quick_action_search_widget_search_bar_icon_size">40dp</dimen>
+    <dimen name="quick_action_search_widget_search_bar_icon_margin">8dp</dimen>
+</resources>

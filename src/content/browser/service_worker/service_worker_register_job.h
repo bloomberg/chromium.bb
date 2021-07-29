@@ -15,7 +15,9 @@
 #include "content/browser/service_worker/service_worker_register_job_base.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_update_checker.h"
+#include "content/public/browser/global_routing_id.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
@@ -51,8 +53,10 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
       ServiceWorkerContextCore* context,
       const GURL& script_url,
       const blink::mojom::ServiceWorkerRegistrationOptions& options,
+      const blink::StorageKey& key,
       blink::mojom::FetchClientSettingsObjectPtr
-          outside_fetch_client_settings_object);
+          outside_fetch_client_settings_object,
+      const GlobalRenderFrameHostId& requesting_frame_id);
 
   // For update jobs.
   CONTENT_EXPORT ServiceWorkerRegisterJob(
@@ -135,12 +139,22 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
       blink::ServiceWorkerStatusCode status);
   void UpdateAndContinue();
 
-  // PlzServiceWorker:
-  // Starts script loading before starting the worker. This is called only when
-  // the job type is REGISTRATION_JOB and the worker doesn't need an
-  // byte-for-byte check.
+  // With PlzServiceWorker, we start fetching the script before starting the
+  // worker. The 3 functions below represent the expected order of execution
+  // in this process:
+  // - Devtools might decide it wants to auto-attach to new targets and to start
+  //   intercepting messages before the fetch starts. If so it needs to start
+  //   some handlers asynchronously. We pass down to the handlers a "throttle"
+  //   that can resume script fetching via a callback when ready.
+  // - We create a factory and a pass it to a ServiceWorkerNewScriptFetcher.
+  //   Once the script fetch succeeded (or failed), it calls into the final
+  //   step.
+  // - We inspect the response, determine if its a failure or not and update
+  //   state. If successful we start the worker with load parameters returned by
+  //   the ServiceWorkerNewScriptFetcher.
+  void MaybeThrottleForDevToolsBeforeStartingScriptFetch(
+      scoped_refptr<ServiceWorkerVersion> version);
   void StartScriptFetchForNewWorker(
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       scoped_refptr<ServiceWorkerVersion> version);
   void OnScriptFetchCompleted(
       scoped_refptr<ServiceWorkerVersion> version,
@@ -185,6 +199,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   RegistrationJobType job_type_;
   const GURL scope_;
   GURL script_url_;
+  const blink::StorageKey key_;
   // "A job has a worker type ("classic" or "module")."
   // https://w3c.github.io/ServiceWorker/#dfn-job-worker-type
   blink::mojom::ScriptType worker_script_type_ =
@@ -205,6 +220,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   blink::ServiceWorkerStatusCode promise_resolved_status_;
   std::string promise_resolved_status_message_;
   scoped_refptr<ServiceWorkerRegistration> promise_resolved_registration_;
+  const GlobalRenderFrameHostId requesting_frame_id_;
 
   base::WeakPtrFactory<ServiceWorkerRegisterJob> weak_factory_{this};
 

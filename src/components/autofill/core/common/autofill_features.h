@@ -39,6 +39,9 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<int>
     kAutofillAutoBlockUpdateAddressProfilePromptStrikeLimit;
 COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature
+    kAutofillAddressProfileSavePromptAddressVerificationSupport;
+COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillAddressProfileSavePromptNicknameSupport;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillAllowDuplicateFormSubmissions;
@@ -144,6 +147,9 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillUseImprovedLabelDisambiguation;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillUseNewSectioningMethod;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature
+    kAutofillUseOnlyFormRendererIDForOldDuplicateFormRemoval;
 
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableAblationStudy;

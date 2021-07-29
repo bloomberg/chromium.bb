@@ -4,6 +4,7 @@
 
 #include "chromeos/services/network_config/cros_network_config.h"
 
+#include <cmath>
 #include <vector>
 
 #include "ash/constants/ash_features.h"
@@ -178,6 +179,8 @@ mojom::VpnType OncVpnTypeToMojo(const std::string& onc_vpn_type) {
     return mojom::VpnType::kL2TPIPsec;
   if (onc_vpn_type == ::onc::vpn::kOpenVPN)
     return mojom::VpnType::kOpenVPN;
+  if (onc_vpn_type == ::onc::vpn::kWireGuard)
+    return mojom::VpnType::kWireGuard;
   if (onc_vpn_type == ::onc::vpn::kThirdPartyVpn)
     return mojom::VpnType::kExtension;
   if (onc_vpn_type == ::onc::vpn::kArcVpn)
@@ -192,6 +195,8 @@ std::string MojoVpnTypeToOnc(mojom::VpnType mojo_vpn_type) {
       return ::onc::vpn::kTypeL2TP_IPsec;
     case mojom::VpnType::kOpenVPN:
       return ::onc::vpn::kOpenVPN;
+    case mojom::VpnType::kWireGuard:
+      return ::onc::vpn::kWireGuard;
     case mojom::VpnType::kExtension:
       return ::onc::vpn::kThirdPartyVpn;
     case mojom::VpnType::kArc:
@@ -579,6 +584,15 @@ int32_t GetInt32(const base::Value* dict, const char* key) {
     return false;
   }
   return v ? v->GetInt() : false;
+}
+
+double GetDouble(const base::Value* dict, const char* key) {
+  const base::Value* v = dict->FindKey(key);
+  if (v && !v->is_double()) {
+    NET_LOG(ERROR) << "Expected double, found: " << *v;
+    return false;
+  }
+  return v ? v->GetDouble() : false;
 }
 
 std::vector<int32_t> GetInt32List(const base::Value* dict, const char* key) {
@@ -1111,6 +1125,8 @@ mojom::ManagedEAPPropertiesPtr GetManagedEAPProperties(const base::Value* dict,
       eap_dict, ::onc::client_cert::kClientCertPattern);
   eap->client_cert_pkcs11_id =
       GetManagedString(eap_dict, ::onc::client_cert::kClientCertPKCS11Id);
+  eap->client_cert_provisioning_profile_id = GetManagedString(
+      eap_dict, ::onc::client_cert::kClientCertProvisioningProfileId);
   eap->client_cert_ref =
       GetManagedString(eap_dict, ::onc::client_cert::kClientCertRef);
   eap->client_cert_type =
@@ -1150,6 +1166,8 @@ mojom::ManagedIPSecPropertiesPtr GetManagedIPSecProperties(
       ipsec_dict, ::onc::client_cert::kClientCertPattern);
   ipsec->client_cert_pkcs11_id =
       GetManagedString(ipsec_dict, ::onc::client_cert::kClientCertPKCS11Id);
+  ipsec->client_cert_provisioning_profile_id = GetManagedString(
+      ipsec_dict, ::onc::client_cert::kClientCertProvisioningProfileId);
   ipsec->client_cert_ref =
       GetManagedString(ipsec_dict, ::onc::client_cert::kClientCertRef);
   ipsec->client_cert_type =
@@ -1208,6 +1226,8 @@ mojom::ManagedOpenVPNPropertiesPtr GetManagedOpenVPNProperties(
       GetManagedString(openvpn_dict, ::onc::client_cert::kClientCertPKCS11Id);
   openvpn->client_cert_pattern = GetManagedCertificatePattern(
       openvpn_dict, ::onc::client_cert::kClientCertPattern);
+  openvpn->client_cert_provisioning_profile_id = GetManagedString(
+      openvpn_dict, ::onc::client_cert::kClientCertProvisioningProfileId);
   openvpn->client_cert_ref =
       GetManagedString(openvpn_dict, ::onc::client_cert::kClientCertRef);
   openvpn->client_cert_type =
@@ -1327,6 +1347,11 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       GetDictionary(properties, ::onc::network_config::kSavedIPConfig);
   if (saved_ip_config)
     result->saved_ip_config = GetIPConfig(saved_ip_config);
+
+  double traffic_counter_reset_time =
+      GetDouble(properties, ::onc::network_config::kTrafficCounterResetTime);
+  result->traffic_counter_reset_time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMilliseconds(traffic_counter_reset_time));
 
   // Managed properties
   result->ip_address_config_type = GetRequiredManagedString(
@@ -1491,6 +1516,9 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
         case mojom::VpnType::kOpenVPN:
           vpn->open_vpn =
               GetManagedOpenVPNProperties(vpn_dict, ::onc::vpn::kOpenVPN);
+          break;
+        case mojom::VpnType::kWireGuard:
+          // TODO: Detail Managed ONC implemention in following patches
           break;
         case mojom::VpnType::kExtension:
         case mojom::VpnType::kArc:
@@ -1841,6 +1869,30 @@ mojom::NetworkCertificatePtr GetMojoCert(
   if (type == mojom::CertificateType::kUserCert)
     result->pem_or_id = cert.pkcs11_id;
   return result;
+}
+
+mojom::TrafficCounterSource ConvertToTrafficCounterSourceEnum(
+    const std::string& source) {
+  if (source == shill::kTrafficCounterSourceUnknown)
+    return mojom::TrafficCounterSource::kUnknown;
+  if (source == shill::kTrafficCounterSourceChrome)
+    return mojom::TrafficCounterSource::kChrome;
+  if (source == shill::kTrafficCounterSourceUser)
+    return mojom::TrafficCounterSource::kUser;
+  if (source == shill::kTrafficCounterSourceArc)
+    return mojom::TrafficCounterSource::kArc;
+  if (source == shill::kTrafficCounterSourceCrosvm)
+    return mojom::TrafficCounterSource::kCrosvm;
+  if (source == shill::kTrafficCounterSourcePluginvm)
+    return mojom::TrafficCounterSource::kPluginvm;
+  if (source == shill::kTrafficCounterSourceUpdateEngine)
+    return mojom::TrafficCounterSource::kUpdateEngine;
+  if (source == shill::kTrafficCounterSourceVpn)
+    return mojom::TrafficCounterSource::kVpn;
+  if (source == shill::kTrafficCounterSourceSystem)
+    return mojom::TrafficCounterSource::kSystem;
+  NOTREACHED() << "Unknown traffic counter source: " << source;
+  return mojom::TrafficCounterSource::kUnknown;
 }
 
 }  // namespace
@@ -2821,6 +2873,88 @@ void CrosNetworkConfig::SetAlwaysOnVpn(
     return;
   }
   network_profile_handler_->SetAlwaysOnVpnService(profile->path, service_path);
+}
+
+void CrosNetworkConfig::RequestTrafficCounters(
+    const std::string& guid,
+    RequestTrafficCountersCallback callback) {
+  std::string service_path = GetServicePathFromGuid(guid);
+  if (service_path.empty()) {
+    NET_LOG(ERROR) << "RequestTrafficCounters: service path for guid " << guid
+                   << " not found";
+    std::move(callback).Run({});
+    return;
+  }
+  network_state_handler_->RequestTrafficCounters(
+      service_path,
+      base::BindOnce(&CrosNetworkConfig::PopulateTrafficCounters,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+// static
+mojom::TrafficCounterSource CrosNetworkConfig::GetTrafficCounterEnumForTesting(
+    const std::string& source) {
+  return ConvertToTrafficCounterSourceEnum(source);
+}
+
+void CrosNetworkConfig::PopulateTrafficCounters(
+    RequestTrafficCountersCallback callback,
+    const base::ListValue& traffic_counters) {
+  if (!traffic_counters.GetList().size()) {
+    std::move(callback).Run({});
+    return;
+  }
+  std::vector<mojom::TrafficCounterPtr> counters;
+  for (const base::Value& tc : traffic_counters.GetList()) {
+    DCHECK(tc.is_dict());
+    const base::Value* source =
+        tc.FindKeyOfType("source", base::Value::Type::STRING);
+    DCHECK(source);
+
+    // Since rx_bytes may be larger than the maximum value representable by
+    // uint32_t, we must check whether it was implicitly converted to a double
+    // during D-Bus deserialization.
+    uint64_t rx_bytes;
+    const base::Value* rb = tc.FindKey("rx_bytes");
+    DCHECK(rb);
+    if (rb->type() == base::Value::Type::INTEGER) {
+      rx_bytes = rb->GetInt();
+    } else if (rb->type() == base::Value::Type::DOUBLE) {
+      rx_bytes = std::floor(rb->GetDouble());
+    } else {
+      NOTREACHED();
+    }
+
+    // Since tx_bytes may be larger than the maximum value representable by
+    // uint32_t, we must check whether it was implicitly converted to a double
+    // during D-Bus deserialization.
+    uint64_t tx_bytes;
+    const base::Value* tb = tc.FindKey("tx_bytes");
+    DCHECK(tb);
+    if (tb->type() == base::Value::Type::INTEGER) {
+      tx_bytes = tb->GetInt();
+    } else if (tb->type() == base::Value::Type::DOUBLE) {
+      tx_bytes = std::floor(tb->GetDouble());
+    } else {
+      NOTREACHED();
+    }
+
+    counters.push_back(
+        mojom::TrafficCounter::New(ConvertToTrafficCounterSourceEnum(
+                                       base::ToLowerASCII(source->GetString())),
+                                   rx_bytes, tx_bytes));
+  }
+  std::move(callback).Run(std::move(counters));
+}
+
+void CrosNetworkConfig::ResetTrafficCounters(const std::string& guid) {
+  std::string service_path = GetServicePathFromGuid(guid);
+  if (service_path.empty()) {
+    NET_LOG(ERROR) << "ResetTrafficCounters: service path for guid " << guid
+                   << " not found";
+    return;
+  }
+  network_state_handler_->ResetTrafficCounters(service_path);
 }
 
 // NetworkStateHandlerObserver

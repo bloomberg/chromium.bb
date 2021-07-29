@@ -1,10 +1,13 @@
 import { Fixture } from '../../common/framework/fixture.js';
-import { assert } from '../../common/framework/util/util.js';
+import { assert } from '../../common/util/util.js';
 
 interface UnknownObject {
   [k: string]: unknown;
 }
 
+/**
+ * Base fixture for testing the exposed interface is correct (without actually using WebGPU).
+ */
 export class IDLTest extends Fixture {
   // TODO: add a helper to check prototype chains
 

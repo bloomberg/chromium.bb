@@ -9,8 +9,8 @@
 #include <string>
 
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
-#include "components/safe_browsing/core/realtime/url_lookup_service_base.h"
+#include "components/safe_browsing/core/browser/realtime/url_lookup_service_base.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -55,9 +55,11 @@ class ChromeEnterpriseRealTimeUrlLookupService
   bool CanPerformFullURLLookupWithToken() const override;
   bool CanAttachReferrerChain() const override;
   int GetReferrerUserGestureLimit() const override;
-  void GetAccessToken(const GURL& url,
-                      RTLookupRequestCallback request_callback,
-                      RTLookupResponseCallback response_callback) override;
+  void GetAccessToken(
+      const GURL& url,
+      RTLookupRequestCallback request_callback,
+      RTLookupResponseCallback response_callback,
+      scoped_refptr<base::SequencedTaskRunner> callback_task_runner) override;
   absl::optional<std::string> GetDMTokenString() const override;
   std::string GetMetricSuffix() const override;
   bool ShouldIncludeCredentials() const override;

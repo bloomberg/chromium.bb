@@ -25,6 +25,7 @@ for use with the corresponding arguments to `builder`. Can also be accessed
 through `builders.cpu`, `builders.os` and `builders.goma` respectively.
 """
 
+load("@stdlib//internal/graph.star", "graph")
 load("//project.star", "settings")
 load("./args.star", "args")
 load("./branches.star", "branches")
@@ -35,6 +36,7 @@ load("./branches.star", "branches")
 
 # The cpu constants to be used with the builder function
 cpu = struct(
+    ARM64 = "arm64",
     X86 = "x86",
     X86_64 = "x86-64",
 )
@@ -99,6 +101,7 @@ os = struct(
     WINDOWS_10 = os_enum("Windows-10", os_category.WINDOWS),
     WINDOWS_10_1703 = os_enum("Windows-10-15063", os_category.WINDOWS),
     WINDOWS_10_20h2 = os_enum("Windows-10-19042", os_category.WINDOWS),
+    WINDOWS_10_1909 = os_enum("Windows-10-18363", os_category.WINDOWS),
     WINDOWS_DEFAULT = os_enum("Windows-10", os_category.WINDOWS),
     WINDOWS_ANY = os_enum("Windows", os_category.WINDOWS),
 )
@@ -159,16 +162,16 @@ def xcode_enum(version):
 
 # Keep this in-sync with the versions of bots in //ios/build/bots/.
 xcode = struct(
-    # in use by webrtc mac builders
-    x11c29 = xcode_enum("11c29"),
-    # in use by ios-webkit-tot
-    x11e608cwk = xcode_enum("11e608cwk"),
     # (current default for other projects) xc12.0 gm seed
     x12a7209 = xcode_enum("12a7209"),
     # (current default for iOS) xc12.4 gm seed
     x12d4e = xcode_enum("12d4e"),
     # Xcode 12.5. Requires Mac11+ OS.
     x12e262 = xcode_enum("12e262"),
+    # in use by ios-webkit-tot
+    x12e262wk = xcode_enum("12e262wk"),
+    # Xcode 13.0 beta 2.
+    x13latestbeta = xcode_enum("13a5155e"),
 )
 
 ################################################################################
@@ -219,7 +222,8 @@ def _code_coverage_property(
         use_java_coverage,
         use_javascript_coverage,
         coverage_exclude_sources,
-        coverage_test_types):
+        coverage_test_types,
+        coverage_reference_commit):
     code_coverage = {}
 
     use_clang_coverage = defaults.get_value(
@@ -251,6 +255,13 @@ def _code_coverage_property(
     if coverage_test_types:
         code_coverage["coverage_test_types"] = coverage_test_types
 
+    coverage_reference_commit = defaults.get_value(
+        "coverage_reference_commit",
+        coverage_reference_commit,
+    )
+    if coverage_reference_commit:
+        code_coverage["coverage_reference_commit"] = coverage_reference_commit
+
     return code_coverage or None
 
 def _isolated_property(*, isolated_server):
@@ -262,7 +273,7 @@ def _isolated_property(*, isolated_server):
 
     return isolated or None
 
-def _reclient_property(*, instance, service, jobs, rewrapper_env):
+def _reclient_property(*, instance, service, jobs, rewrapper_env, profiler_service):
     reclient = {}
     instance = defaults.get_value("reclient_instance", instance)
     if instance:
@@ -281,6 +292,9 @@ def _reclient_property(*, instance, service, jobs, rewrapper_env):
                 fail("Environment variables in rewrapper_env must start with " +
                      "'RBE_', got '%s'" % k)
         reclient["rewrapper_env"] = rewrapper_env
+    profiler_service = defaults.get_value("reclient_profiler_service", profiler_service)
+    if profiler_service:
+        reclient["profiler_service"] = profiler_service
     return reclient or None
 
 ################################################################################
@@ -315,6 +329,7 @@ defaults = args.defaults(
     use_javascript_coverage = False,
     coverage_exclude_sources = None,
     coverage_test_types = None,
+    coverage_reference_commit = None,
     resultdb_bigquery_exports = [],
     resultdb_index_by_timestamp = False,
     isolated_server = "https://isolateserver.appspot.com",
@@ -322,6 +337,7 @@ defaults = args.defaults(
     reclient_service = None,
     reclient_jobs = None,
     reclient_rewrapper_env = None,
+    reclient_profiler_service = None,
 
     # Provide vars for bucket and executable so users don't have to
     # unnecessarily make wrapper functions
@@ -343,6 +359,7 @@ def builder(
         fully_qualified_builder_dimension = args.DEFAULT,
         cores = args.DEFAULT,
         cpu = args.DEFAULT,
+        bootstrap = False,
         builder_group = args.DEFAULT,
         pool = args.DEFAULT,
         ssd = args.DEFAULT,
@@ -361,6 +378,7 @@ def builder(
         use_javascript_coverage = args.DEFAULT,
         coverage_exclude_sources = args.DEFAULT,
         coverage_test_types = args.DEFAULT,
+        coverage_reference_commit = args.DEFAULT,
         resultdb_bigquery_exports = args.DEFAULT,
         resultdb_index_by_timestamp = args.DEFAULT,
         isolated_server = args.DEFAULT,
@@ -368,7 +386,7 @@ def builder(
         reclient_service = args.DEFAULT,
         reclient_jobs = args.DEFAULT,
         reclient_rewrapper_env = args.DEFAULT,
-        experiments = None,
+        reclient_profiler_service = args.DEFAULT,
         **kwargs):
     """Define a builder.
 
@@ -381,7 +399,7 @@ def builder(
     attribute with a `lucicfg.var` for all of the fields defined here as well as
     all of the parameters of `luci.builder` that support module-level defaults.
 
-    See https://chromium.googlesource.com/infra/luci/luci-go/+/refs/heads/master/lucicfg/doc/README.md#luci.builder
+    See https://chromium.googlesource.com/infra/luci/luci-go/+/HEAD/lucicfg/doc/README.md#luci.builder
     for more information.
 
     Arguments:
@@ -392,6 +410,12 @@ def builder(
         (may be specified by module-level default).
       * executable - an executable to run, e.g. a luci.recipe(...). Required (may
         be specified by module-level default).
+      * bootstrap - a boolean indicating whether the builder should have its
+        properties bootstrapped. If True, the builder's properties will be
+        written to a separate file and its definition will be updated with new
+        properties and executable that cause a bootstrapping binary to be used.
+        The build's default values for properties will be taken from the
+        properties file at the version that the build will check out.
       * os - a member of the `os` enum indicating the OS the builder requires for
         the machines that run it. Emits a dimension of the form 'os:os'. By
         default considered None.
@@ -482,6 +506,10 @@ def builder(
       * coverage_test_types - a list of string as test types to process data for
         in code_coverage recipe module. Will be copied to '$build/code_coverage'
         property. By default, considered None.
+      * coverage_reference_commit - a string representing the hash of a past
+        commit used to generate additional coverge reports i.e.
+        referenced_reports. Will be copied to '$build/code_coverage' property.
+        By default, considered None.
       * resultdb_bigquery_exports - a list of resultdb.export_test_results(...)
         specifying parameters for exporting test results to BigQuery. By default,
         do not export.
@@ -501,8 +529,8 @@ def builder(
         compilations to run when using re-client as the compiler.
       * reclient_rewrapper_env - a map that sets the rewrapper flags via the
         environment variables. All such vars must start with the "RBE_" prefix.
-      * experiments - a dict of experiment name to the percentage chance (0-100)
-        that it will apply to builds generated from this builder.
+      * reclient_profiler_service - a string indicating service name for
+        re-client's cloud profiler.
       * kwargs - Additional keyword arguments to forward on to `luci.builder`.
     """
 
@@ -524,7 +552,8 @@ def builder(
     if "$build/code_coverage" in properties:
         fail('Setting "$build/code_coverage" property is not supported: ' +
              "use use_clang_coverage, use_java_coverage, use_javascript_coverage " +
-             " coverage_exclude_sources and/or coverage_test_types instead")
+             " coverage_exclude_sources, coverage_test_types" +
+             " and/or coverage_reference_commit instead")
     if "$recipe_engine/isolated" in properties:
         fail('Setting "$recipe_engine/isolated" property is not supported: ' +
              "use isolated_server instead")
@@ -587,14 +616,6 @@ def builder(
     if ssd != None:
         dimensions["ssd"] = str(int(ssd))
 
-    # TODO(crbug.com/1143122): remove this.
-    experiments = experiments or {}
-    if os and os.category == os_category.MAC:
-        experiments["chromium.chromium_tests.use_rbe_cas"] = 50
-    elif os and os.category == os_category.WINDOWS:
-        experiments["chromium.chromium_tests.use_rbe_cas"] = 20
-    kwargs["experiments"] = experiments
-
     configure_kitchen = defaults.get_value("configure_kitchen", configure_kitchen)
     if configure_kitchen:
         properties["$kitchen"] = {
@@ -633,6 +654,7 @@ def builder(
         use_javascript_coverage = use_javascript_coverage,
         coverage_exclude_sources = coverage_exclude_sources,
         coverage_test_types = coverage_test_types,
+        coverage_reference_commit = coverage_reference_commit,
     )
     if code_coverage != None:
         properties["$build/code_coverage"] = code_coverage
@@ -648,6 +670,7 @@ def builder(
         service = reclient_service,
         jobs = reclient_jobs,
         rewrapper_env = reclient_rewrapper_env,
+        profiler_service = reclient_profiler_service,
     )
     if reclient != None:
         properties["$build/reclient"] = reclient
@@ -694,6 +717,11 @@ def builder(
         ),
         **kwargs
     )
+
+    # Add a bootstrap node for the builder so the _bootstrap_properties
+    # generator can determine which builders are being bootstrapped
+    if bootstrap:
+        graph.add_node(_bootstrap_key(bucket, name))
 
     builder_name = "{}/{}".format(bucket, name)
 
@@ -745,6 +773,89 @@ def builder(
             )
 
     return builder
+
+# Bootstrapping is currently under development, it's not for general use yet
+_BOOTSTRAP_ALLOWLIST = {e: True for e in [
+    ("ci", "linux-bootstrap"),
+    ("ci", "linux-bootstrap-tests"),
+    ("try", "linux-bootstrap"),
+]}
+
+_NON_BOOTSTRAPPED_PROPERTIES = [
+    # Sheriff-o-Matic queries for builder_group in the input properties to find
+    # builds for the main sheriff rotation. Bootstrapped properties don't appear
+    # in the build's input properties, so don't bootstrap this property.
+    # TODO(gbeaty) When finalized input properties are exported to BQ, remove
+    # this.
+    "builder_group",
+]
+
+def _bootstrap_key(bucket_name, builder_name):
+    return graph.key("@chromium", "", "bootstrap", "{}/{}".format(bucket_name, builder_name))
+
+def _bootstrap_properties(ctx):
+    """Update builder properties for bootstrapping.
+
+    For builders that have opted in to bootstrapping, their properties will be
+    moved to a separate file. The bootstrapper will read this file at build-time
+    and update the build's properties with the contents of the file. The
+    builder's properties within the buildbucket configuration will be modified
+    with the properties that control the bootstrapper itself.
+
+    The builders that have opted in to bootstrapping is determined by examining
+    the lucicfg graph to find a bootstrap node for a given builder. These nodes
+    will be added by the builder function. This is done rather than writing out
+    the properties file in the builder function so that the bootstrapped
+    properties have any final modifications that luci.builder would perform
+    (merging module-level defaults, setting global defaults, etc.).
+    """
+    cfg = None
+    for f in ctx.output:
+        if f.startswith("cr-buildbucket"):
+            cfg = ctx.output[f]
+            break
+    if cfg == None:
+        fail("There is no buildbucket configuration file to reformat properties")
+
+    for bucket in cfg.buckets:
+        bucket_name = bucket.name
+        for builder in bucket.swarming.builders:
+            builder_name = builder.name
+            bootstrap = graph.node(_bootstrap_key(bucket_name, builder_name))
+            if not bootstrap:
+                continue
+
+            if (bucket_name, builder_name) not in _BOOTSTRAP_ALLOWLIST:
+                fail("{}/{} is not approved for bootstrapping at this time"
+                    .format(bucket_name, builder_name))
+
+            properties_file = "builders/{}/{}/properties.textpb".format(bucket_name, builder_name)
+            non_bootstrapped_properties = {
+                "$bootstrap": {
+                    "top_level_project": {
+                        "repo": {
+                            "host": "chromium.googlesource.com",
+                            "project": "chromium/src",
+                        },
+                        "ref": settings.ref,
+                    },
+                    "properties_file": "infra/config/generated/{}".format(properties_file),
+                    "exe": builder.exe,
+                },
+            }
+            builder_properties = json.decode(builder.properties)
+            for p in _NON_BOOTSTRAPPED_PROPERTIES:
+                if p in builder_properties:
+                    non_bootstrapped_properties[p] = builder_properties.pop(p)
+            ctx.output[properties_file] = json.indent(json.encode(builder_properties), indent = "  ")
+
+            builder.properties = json.encode(non_bootstrapped_properties)
+
+            builder.exe.cipd_package = "infra/chromium/bootstrapper/${platform}"
+            builder.exe.cipd_version = "latest"
+            builder.exe.cmd = ["bootstrapper"]
+
+lucicfg.generator(_bootstrap_properties)
 
 builders = struct(
     builder = builder,

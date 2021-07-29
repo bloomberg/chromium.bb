@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython3
+#!/usr/bin/env python3
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -36,6 +36,10 @@ _SRC_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), '..',
 sys.path.append(os.path.join(_SRC_ROOT, 'build', 'android'))
 from pylib import constants
 
+_AUTONINJA_PATH = os.path.join(_SRC_ROOT, 'third_party', 'depot_tools',
+                               'autoninja')
+_NINJA_PATH = os.path.join(_SRC_ROOT, 'third_party', 'depot_tools', 'ninja')
+
 _VALID_TYPES = (
     'android_apk',
     'android_app_bundle',
@@ -55,7 +59,7 @@ _VALID_TYPES = (
 
 def _run_ninja(output_dir, args):
   cmd = [
-      'autoninja',
+      _AUTONINJA_PATH,
       '-C',
       output_dir,
   ]
@@ -66,7 +70,7 @@ def _run_ninja(output_dir, args):
 
 def _query_for_build_config_targets(output_dir):
   # Query ninja rather than GN since it's faster.
-  cmd = ['ninja', '-C', output_dir, '-t', 'targets']
+  cmd = [_NINJA_PATH, '-C', output_dir, '-t', 'targets']
   logging.info('Running: %r', cmd)
   ninja_output = subprocess.run(cmd,
                                 check=True,
@@ -100,23 +104,23 @@ class _TargetEntry(object):
 
   @property
   def build_config_path(self):
-    """Returns the filepath of the project's .build_config."""
+    """Returns the filepath of the project's .build_config.json."""
     ninja_target = self.ninja_target
     # Support targets at the root level. e.g. //:foo
     if ninja_target[0] == ':':
       ninja_target = ninja_target[1:]
-    subpath = ninja_target.replace(':', os.path.sep) + '.build_config'
+    subpath = ninja_target.replace(':', os.path.sep) + '.build_config.json'
     return os.path.join(constants.GetOutDirectory(), 'gen', subpath)
 
   def build_config(self):
-    """Reads and returns the project's .build_config JSON."""
+    """Reads and returns the project's .build_config.json JSON."""
     if not self._build_config:
       with open(self.build_config_path) as jsonfile:
         self._build_config = json.load(jsonfile)
     return self._build_config
 
   def get_type(self):
-    """Returns the target type from its .build_config."""
+    """Returns the target type from its .build_config.json."""
     return self.build_config()['deps_info']['type']
 
   def proguard_enabled(self):
@@ -145,12 +149,13 @@ def main():
   parser.add_argument('--print-types',
                       action='store_true',
                       help='Print type of each target')
-  parser.add_argument('--print-build-config-paths',
-                      action='store_true',
-                      help='Print path to the .build_config of each target')
+  parser.add_argument(
+      '--print-build-config-paths',
+      action='store_true',
+      help='Print path to the .build_config.json of each target')
   parser.add_argument('--build',
                       action='store_true',
-                      help='Build all .build_config files.')
+                      help='Build all .build_config.json files.')
   parser.add_argument('--type',
                       action='append',
                       help='Restrict to targets of given type',
@@ -180,7 +185,7 @@ def main():
   entries = [_TargetEntry(t) for t in targets]
 
   if args.build:
-    logging.warning('Building %d .build_config files...', len(entries))
+    logging.warning('Building %d .build_config.json files...', len(entries))
     _run_ninja(output_dir, [e.ninja_build_config_target for e in entries])
 
   if args.type:

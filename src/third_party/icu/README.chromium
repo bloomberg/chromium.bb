@@ -249,3 +249,24 @@ D. Local Modifications
     https://unicode-org.atlassian.net/browse/ICU-21587
   - upstream PR:
     https://github.com/unicode-org/icu/pull/1698
+
+11. Patch source/common/uresbund.cpp  for missing "emoji" and "eor"
+    patches/Collator_getKeywordValues.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21641
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/1743
+
+12. Patch source/common/serv.cpp to fix memory leak
+    patches/ICUService_getKey.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21644
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/1751
+
+13. Patch icu4c/source/common/uloc_tag.cpp to fix buffer issue.
+    patches/ultag_parse_Null.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21676
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/1767

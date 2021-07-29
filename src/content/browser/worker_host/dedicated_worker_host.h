@@ -10,6 +10,7 @@
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "content/browser/browser_interface_broker_impl.h"
+#include "content/browser/renderer_host/code_cache_host_impl.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -17,11 +18,15 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/base/isolation_info.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
 #include "third_party/blink/public/mojom/loader/content_security_notifier.mojom.h"
 #include "third_party/blink/public/mojom/sms/webotp_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-forward.h"
@@ -39,10 +44,13 @@
 
 namespace content {
 
+class ServiceWorkerContainerHost;
+class ServiceWorkerRegistration;
 class DedicatedWorkerServiceImpl;
 class ServiceWorkerMainResourceHandle;
 class ServiceWorkerObjectHost;
 class StoragePartitionImpl;
+class CrossOriginEmbedderPolicyReporter;
 
 // A host for a single dedicated worker. It deletes itself upon Mojo
 // disconnection from the worker in the renderer or when the RenderProcessHost
@@ -56,10 +64,10 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
       DedicatedWorkerServiceImpl* service,
       const blink::DedicatedWorkerToken& token,
       RenderProcessHost* worker_process_host,
-      absl::optional<GlobalFrameRoutingId> creator_render_frame_host_id,
+      absl::optional<GlobalRenderFrameHostId> creator_render_frame_host_id,
       absl::optional<blink::DedicatedWorkerToken> creator_worker_token,
-      GlobalFrameRoutingId ancestor_render_frame_host_id,
-      const url::Origin& creator_origin,
+      GlobalRenderFrameHostId ancestor_render_frame_host_id,
+      const blink::StorageKey& creator_storage_key,
       const net::IsolationInfo& isolation_info,
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       base::WeakPtr<CrossOriginEmbedderPolicyReporter> creator_coep_reporter,
@@ -72,8 +80,8 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
 
   const blink::DedicatedWorkerToken& GetToken() const { return token_; }
   RenderProcessHost* GetProcessHost() const { return worker_process_host_; }
-  const url::Origin& GetWorkerOrigin() const { return worker_origin_; }
-  const GlobalFrameRoutingId& GetAncestorRenderFrameHostId() const {
+  const blink::StorageKey& GetStorageKey() const { return storage_key_; }
+  const GlobalRenderFrameHostId& GetAncestorRenderFrameHostId() const {
     return ancestor_render_frame_host_id_;
   }
   const absl::optional<GURL>& GetFinalResponseURL() const {
@@ -98,6 +106,8 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
       mojo::PendingReceiver<blink::mojom::WakeLockService> receiver);
   void BindCacheStorage(
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver);
+  void CreateCodeCacheHost(
+      mojo::PendingReceiver<blink::mojom::CodeCacheHost> receiver);
 
 #if !defined(OS_ANDROID)
   void BindSerialService(
@@ -131,6 +141,10 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
     return isolation_info_.network_isolation_key();
   }
 
+  const base::UnguessableToken& GetReportingSource() const {
+    return reporting_source_;
+  }
+
   const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy()
       const {
     DCHECK(worker_cross_origin_embedder_policy_.has_value());
@@ -145,6 +159,7 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
   // RenderProcessHostObserver:
   void RenderProcessExited(RenderProcessHost* render_process_host,
                            const ChildProcessTerminationInfo& info) override;
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
   // Called from WorkerScriptFetchInitiator. Continues starting the dedicated
   // worker in the renderer process.
@@ -201,12 +216,18 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
 
   base::WeakPtr<CrossOriginEmbedderPolicyReporter> GetWorkerCoepReporter();
 
+  // This outlives `this` as follows:
+  //  - StoragePartitionImpl owns DedicatedWorkerServiceImpl until its dtor.
+  //  - StoragePartitionImpl outlives RenderProcessHostImpl.
+  //  - RenderProcessHostImpl outlives DedicatedWorkerHost.
+  // As the conclusion of the above, DedicatedWorkerServiceImpl outlives
+  // DedicatedWorkerHost.
   DedicatedWorkerServiceImpl* const service_;
 
   // The renderer generated ID of this worker, unique across all processes.
   const blink::DedicatedWorkerToken token_;
 
-  // The RenderProcessHost that hosts this worker.
+  // The RenderProcessHost that hosts this worker. This outlives `this`.
   RenderProcessHost* const worker_process_host_;
 
   base::ScopedObservation<RenderProcessHost, RenderProcessHostObserver>
@@ -214,7 +235,7 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
 
   // The ID of the frame that directly starts this worker. This is absl::nullopt
   // when this worker is nested.
-  const absl::optional<GlobalFrameRoutingId> creator_render_frame_host_id_;
+  const absl::optional<GlobalRenderFrameHostId> creator_render_frame_host_id_;
 
   // The token of the dedicated worker that directly starts this worker. This is
   // absl::nullopt when this worker is created from a frame.
@@ -222,18 +243,21 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
 
   // The ID of the frame that owns this worker, either directly, or (in the case
   // of nested workers) indirectly via a tree of dedicated workers.
-  const GlobalFrameRoutingId ancestor_render_frame_host_id_;
+  const GlobalRenderFrameHostId ancestor_render_frame_host_id_;
 
   // The origin of the frame or dedicated worker that starts this worker.
   const url::Origin creator_origin_;
 
-  // The origin of this worker.
-  // https://html.spec.whatwg.org/C/#concept-settings-object-origin
-  const url::Origin worker_origin_;
+  // The storage key of this worker. This is used for storage partitioning and
+  // for retrieving the origin of this worker
+  // (https://html.spec.whatwg.org/C/#concept-settings-object-origin).
+  const blink::StorageKey storage_key_;
 
   // The IsolationInfo associated with this worker. Same as that of the
   // frame or the worker that created this worker.
   const net::IsolationInfo isolation_info_;
+
+  const base::UnguessableToken reporting_source_;
 
   // The frame/worker's Cross-Origin-Embedder-Policy (COEP) that directly starts
   // this worker.
@@ -253,6 +277,13 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
 
   std::unique_ptr<ServiceWorkerMainResourceHandle> service_worker_handle_;
 
+  // BrowserInterfaceBroker implementation through which this
+  // DedicatedWorkerHost exposes worker-scoped Mojo services to the
+  // corresponding worker in the renderer.
+  //
+  // The interfaces that can be requested from this broker are defined in the
+  // content/browser/browser_interface_binders.cc file, in the functions which
+  // take a `DedicatedWorkerHost*` parameter.
   BrowserInterfaceBrokerImpl<DedicatedWorkerHost, const url::Origin&> broker_{
       this};
   mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
@@ -284,6 +315,10 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
 
   // Will be set once the worker script started loading.
   absl::optional<GURL> final_response_url_;
+
+  // CodeCacheHost processes requests to fetch / write generated code for
+  // JavaScript / WebAssembly resources.
+  CodeCacheHostImpl::ReceiverSet code_cache_host_receivers_;
 
   base::WeakPtrFactory<DedicatedWorkerHost> weak_factory_{this};
 

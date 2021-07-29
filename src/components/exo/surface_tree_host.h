@@ -103,6 +103,9 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void UnsetSnap() override {}
   void SetCanGoBack() override {}
   void UnsetCanGoBack() override {}
+  void SetPip() override {}
+  void UnsetPip() override {}
+  void SetAspectRatio(const gfx::SizeF& aspect_ratio) override {}
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -155,6 +158,8 @@ class SurfaceTreeHost : public SurfaceDelegate,
   viz::FrameTokenGenerator next_token_;
 
   scoped_refptr<viz::ContextProvider> context_provider_;
+
+  display::ScopedDisplayObserver display_observer_{this};
 
   int64_t display_id_ = display::kInvalidDisplayId;
 

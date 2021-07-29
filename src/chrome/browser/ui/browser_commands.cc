@@ -78,11 +78,12 @@
 #include "chrome/browser/ui/user_education/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -458,9 +459,6 @@ void NewEmptyWindow(Profile* profile) {
     else
       base::RecordAction(UserMetricsAction("NewIncognitoWindow2"));
     OpenEmptyWindow(profile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
-  } else if (profile->IsEphemeralGuestProfile()) {
-    base::RecordAction(UserMetricsAction("NewGuestWindow"));
-    OpenEmptyWindow(profile);
   } else {
     base::RecordAction(UserMetricsAction("NewWindow"));
     SessionService* session_service =
@@ -617,6 +615,11 @@ void OpenCurrentURL(Browser* browser) {
 
   GURL url(location_bar->GetDestinationURL());
 
+  if (ShouldInterceptChromeURLNavigationInIncognito(browser, url)) {
+    ProcessInterceptedChromeURLNavigationInIncognito(browser, url);
+    return;
+  }
+
   NavigateParams params(browser, url, location_bar->GetPageTransition());
   params.disposition = location_bar->GetWindowOpenDisposition();
   // Use ADD_INHERIT_OPENER so that all pages opened by the omnibox at least
@@ -658,7 +661,7 @@ void NewWindow(Browser* browser) {
 
     auto launch_container =
         apps::mojom::LaunchContainer::kLaunchContainerWindow;
-    if (web_app::WebAppProviderBase::GetProviderBase(profile)
+    if (web_app::WebAppProvider::Get(profile)
             ->registrar()
             .GetAppEffectiveDisplayMode(app_id) ==
         blink::mojom::DisplayMode::kBrowser) {
@@ -869,7 +872,8 @@ void MoveTabsToNewWindow(Browser* browser,
     int adjusted_index = tab_indices[i] - i;
     bool pinned = browser->tab_strip_model()->IsTabPinned(adjusted_index);
     std::unique_ptr<WebContents> contents_move =
-        browser->tab_strip_model()->DetachWebContentsAt(adjusted_index);
+        browser->tab_strip_model()->DetachWebContentsAtForInsertion(
+            adjusted_index);
 
     int add_types = pinned ? TabStripModel::ADD_PINNED : 0;
     // The last tab made active takes precedence, so activate the last active
@@ -944,7 +948,8 @@ void MoveTabsToExistingWindow(Browser* source,
     int adjusted_index = tab_indices[i] - i;
     bool pinned = source->tab_strip_model()->IsTabPinned(adjusted_index);
     std::unique_ptr<WebContents> contents_move =
-        source->tab_strip_model()->DetachWebContentsAt(adjusted_index);
+        source->tab_strip_model()->DetachWebContentsAtForInsertion(
+            adjusted_index);
     int add_types = TabStripModel::ADD_ACTIVE |
                     (pinned ? TabStripModel::ADD_PINNED : 0);
     target->tab_strip_model()->AddWebContents(
@@ -1009,7 +1014,7 @@ void ConvertPopupToTabbedBrowser(Browser* browser) {
   base::RecordAction(UserMetricsAction("ShowAsTab"));
   TabStripModel* tab_strip = browser->tab_strip_model();
   std::unique_ptr<content::WebContents> contents =
-      tab_strip->DetachWebContentsAt(tab_strip->active_index());
+      tab_strip->DetachWebContentsAtForInsertion(tab_strip->active_index());
   Browser* b = Browser::Create(Browser::CreateParams(browser->profile(), true));
   b->tab_strip_model()->AppendWebContents(std::move(contents), true);
   b->window()->Show();
@@ -1460,6 +1465,11 @@ void FocusInactivePopupForAccessibility(Browser* browser) {
   browser->window()->FocusInactivePopupForAccessibility();
 }
 
+void FocusHelpBubble(Browser* browser) {
+  base::RecordAction(UserMetricsAction("FocusHelpBubble"));
+  browser->window()->FocusHelpBubble();
+}
+
 void FocusNextPane(Browser* browser) {
   base::RecordAction(UserMetricsAction("FocusNextPane"));
   browser->window()->RotatePaneFocus(true);
@@ -1658,8 +1668,17 @@ Browser* OpenInChrome(Browser* hosted_app_browser) {
   }
 
   TabStripModel* source_tabstrip = hosted_app_browser->tab_strip_model();
+
+  // Clear bounds once a PWA with window controls overlay display override opens
+  // in browser.
+  if (hosted_app_browser->app_controller()->IsWindowControlsOverlayEnabled()) {
+    source_tabstrip->GetActiveWebContents()->UpdateWindowControlsOverlay(
+        gfx::Rect());
+  }
+
   target_browser->tab_strip_model()->AppendWebContents(
-      source_tabstrip->DetachWebContentsAt(source_tabstrip->active_index()),
+      source_tabstrip->DetachWebContentsAtForInsertion(
+          source_tabstrip->active_index()),
       true);
   target_browser->window()->Show();
   return target_browser;
@@ -1730,5 +1749,29 @@ absl::optional<int> GetKeyboardFocusedTabIndex(const Browser* browser) {
   return absl::nullopt;
 }
 #endif
+
+void ShowIncognitoClearBrowsingDataDialog(Browser* browser) {
+  browser->window()->ShowIncognitoClearBrowsingDataDialog();
+}
+
+bool ShouldInterceptChromeURLNavigationInIncognito(Browser* browser,
+                                                   const GURL& url) {
+  if (!browser || !browser->profile()->IsIncognitoProfile())
+    return false;
+
+  return url == GURL(chrome::kChromeUISettingsURL)
+                    .Resolve(chrome::kClearBrowserDataSubPage) &&
+         base::FeatureList::IsEnabled(
+             features::kIncognitoClearBrowsingDataDialogForDesktop);
+}
+
+void ProcessInterceptedChromeURLNavigationInIncognito(Browser* browser,
+                                                      const GURL& url) {
+  DCHECK(url == GURL(chrome::kChromeUISettingsURL)
+                    .Resolve(chrome::kClearBrowserDataSubPage));
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kIncognitoClearBrowsingDataDialogForDesktop));
+  ShowIncognitoClearBrowsingDataDialog(browser);
+}
 
 }  // namespace chrome

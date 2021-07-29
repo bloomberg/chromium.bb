@@ -23,6 +23,7 @@
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrStyle.h"
 #include "src/gpu/GrSurfaceDrawContext.h"
+#include "src/gpu/GrUtil.h"
 #include "src/gpu/effects/GrBezierEffect.h"
 #include "src/gpu/geometry/GrPathUtils.h"
 #include "src/gpu/geometry/GrStyledShape.h"
@@ -740,7 +741,7 @@ GrAAHairLinePathRenderer::onCanDrawPath(const CanDrawPathArgs& args) const {
         return CanDrawPath::kNo;
     }
 
-    if (!IsStrokeHairlineOrEquivalent(args.fShape->style(), *args.fViewMatrix, nullptr)) {
+    if (!GrIsStrokeHairlineOrEquivalent(args.fShape->style(), *args.fViewMatrix, nullptr)) {
         return CanDrawPath::kNo;
     }
 
@@ -810,7 +811,7 @@ public:
                             const GrUserStencilSettings* stencilSettings) {
         SkScalar hairlineCoverage;
         uint8_t newCoverage = 0xff;
-        if (GrPathRenderer::IsStrokeHairlineOrEquivalent(style, viewMatrix, &hairlineCoverage)) {
+        if (GrIsStrokeHairlineOrEquivalent(style, viewMatrix, &hairlineCoverage)) {
             newCoverage = SkScalarRoundToInt(hairlineCoverage * 0xff);
         }
 
@@ -842,7 +843,7 @@ public:
 
     const char* name() const override { return "AAHairlineOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
 
         bool visited = false;
         for (int i = 0; i < 3; ++i) {
@@ -906,19 +907,20 @@ private:
     void onCreateProgramInfo(const GrCaps*,
                              SkArenaAlloc*,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&&,
-                             const GrXferProcessor::DstProxyView&,
+                             const GrDstProxyView&,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override;
 
     void onPrePrepareDraws(GrRecordingContext*,
                            const GrSurfaceProxyView& writeView,
                            GrAppliedClip*,
-                           const GrXferProcessor::DstProxyView&,
+                           const GrDstProxyView&,
                            GrXferBarrierFlags renderPassXferBarriers,
                            GrLoadOp colorLoadOp) override;
 
-    void onPrepareDraws(Target*) override;
+    void onPrepareDraws(GrMeshDrawTarget*) override;
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
 
     typedef SkTArray<SkPoint, true> PtArray;
@@ -1107,8 +1109,9 @@ AAHairlineOp::Program AAHairlineOp::predictPrograms(const GrCaps* caps) const {
 void AAHairlineOp::onCreateProgramInfo(const GrCaps* caps,
                                        SkArenaAlloc* arena,
                                        const GrSurfaceProxyView& writeView,
+                                       bool usesMSAASurface,
                                        GrAppliedClip&& appliedClip,
-                                       const GrXferProcessor::DstProxyView& dstProxyView,
+                                       const GrDstProxyView& dstProxyView,
                                        GrXferBarrierFlags renderPassXferBarriers,
                                        GrLoadOp colorLoadOp) {
     // Setup the viewmatrix and localmatrix for the GrGeometryProcessor.
@@ -1150,11 +1153,14 @@ void AAHairlineOp::onCreateProgramInfo(const GrCaps* caps,
 void AAHairlineOp::onPrePrepareDraws(GrRecordingContext* context,
                                      const GrSurfaceProxyView& writeView,
                                      GrAppliedClip* clip,
-                                     const GrXferProcessor::DstProxyView& dstProxyView,
+                                     const GrDstProxyView& dstProxyView,
                                      GrXferBarrierFlags renderPassXferBarriers,
                                      GrLoadOp colorLoadOp) {
     SkArenaAlloc* arena = context->priv().recordTimeAllocator();
     const GrCaps* caps = context->priv().caps();
+
+    // http://skbug.com/12201 -- DDL does not yet support DMSAA.
+    bool usesMSAASurface = writeView.asRenderTargetProxy()->numSamples() > 1;
 
     // This is equivalent to a GrOpFlushState::detachAppliedClip
     GrAppliedClip appliedClip = clip ? std::move(*clip) : GrAppliedClip::Disabled();
@@ -1162,15 +1168,15 @@ void AAHairlineOp::onPrePrepareDraws(GrRecordingContext* context,
     // Conservatively predict which programs will be required
     fCharacterization = this->predictPrograms(caps);
 
-    this->createProgramInfo(caps, arena, writeView, std::move(appliedClip), dstProxyView,
-                            renderPassXferBarriers, colorLoadOp);
+    this->createProgramInfo(caps, arena, writeView, usesMSAASurface, std::move(appliedClip),
+                            dstProxyView, renderPassXferBarriers, colorLoadOp);
 
     context->priv().recordProgramInfo(fProgramInfos[0]);
     context->priv().recordProgramInfo(fProgramInfos[1]);
     context->priv().recordProgramInfo(fProgramInfos[2]);
 }
 
-void AAHairlineOp::onPrepareDraws(Target* target) {
+void AAHairlineOp::onPrepareDraws(GrMeshDrawTarget* target) {
     // Setup the viewmatrix and localmatrix for the GrGeometryProcessor.
     SkMatrix invert;
     if (!this->viewMatrix().invert(&invert)) {
@@ -1309,9 +1315,9 @@ void AAHairlineOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBoun
 }
 
 bool GrAAHairLinePathRenderer::onDrawPath(const DrawPathArgs& args) {
-    GR_AUDIT_TRAIL_AUTO_FRAME(args.fRenderTargetContext->auditTrail(),
+    GR_AUDIT_TRAIL_AUTO_FRAME(args.fContext->priv().auditTrail(),
                               "GrAAHairlinePathRenderer::onDrawPath");
-    SkASSERT(args.fRenderTargetContext->numSamples() <= 1);
+    SkASSERT(args.fSurfaceDrawContext->numSamples() <= 1);
 
     SkPath path;
     args.fShape->asPath(&path);
@@ -1319,7 +1325,7 @@ bool GrAAHairLinePathRenderer::onDrawPath(const DrawPathArgs& args) {
             AAHairlineOp::Make(args.fContext, std::move(args.fPaint), *args.fViewMatrix, path,
                                args.fShape->style(), *args.fClipConservativeBounds,
                                args.fUserStencilSettings);
-    args.fRenderTargetContext->addDrawOp(args.fClip, std::move(op));
+    args.fSurfaceDrawContext->addDrawOp(args.fClip, std::move(op));
     return true;
 }
 

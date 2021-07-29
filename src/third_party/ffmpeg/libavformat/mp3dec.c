@@ -383,7 +383,7 @@ static int mp3_read_header(AVFormatContext *s)
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id = AV_CODEC_ID_MP3;
-    st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
+    st->internal->need_parsing = AVSTREAM_PARSE_FULL_RAW;
     st->start_time = 0;
 
     // lcm of all mp3 sample rates
@@ -615,7 +615,7 @@ static const AVClass demuxer_class = {
     .category   = AV_CLASS_CATEGORY_DEMUXER,
 };
 
-AVInputFormat ff_mp3_demuxer = {
+const AVInputFormat ff_mp3_demuxer = {
     .name           = "mp3",
     .long_name      = NULL_IF_CONFIG_SMALL("MP2/3 (MPEG audio layer 2/3)"),
     .read_probe     = mp3_read_probe,

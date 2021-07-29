@@ -1,0 +1,27 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void max_0c0aae() {
+  uint res = max(1u, 1u);
+}
+
+vertex tint_symbol vertex_main() {
+  max_0c0aae();
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  max_0c0aae();
+  return;
+}
+
+kernel void compute_main() {
+  max_0c0aae();
+  return;
+}
+

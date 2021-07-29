@@ -11,6 +11,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/unguessable_token_android.h"
 #include "base/bind.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -56,6 +57,7 @@ ScopedJavaLocalRef<jobjectArray> ToJavaUnguessableTokenArray(
 }
 
 ScopedJavaGlobalRef<jobject> ConvertToJavaBitmap(const SkBitmap& sk_bitmap) {
+  TRACE_EVENT0("paint_preview", "ConvertToJavaBitmap");
   return ScopedJavaGlobalRef<jobject>(
       gfx::ConvertToJavaBitmap(sk_bitmap, gfx::OomBehavior::kReturnNullOnOom));
 }
@@ -72,6 +74,7 @@ jlong JNI_PlayerCompositorDelegateImpl_Initialize(
     jboolean j_main_frame_mode,
     const JavaParamRef<jobject>& j_compositor_error_callback,
     jboolean j_is_low_mem) {
+  TRACE_EVENT0("paint_preview", "JNI_PlayerCompositorDelegateImpl_Initialize");
   PlayerCompositorDelegateAndroid* delegate =
       new PlayerCompositorDelegateAndroid(
           env, j_object,
@@ -95,6 +98,7 @@ PlayerCompositorDelegateAndroid::PlayerCompositorDelegateAndroid(
       request_id_(0),
       startup_timestamp_(base::TimeTicks::Now()) {
   if (j_proto) {
+    // Show@Startup doesn't use this.
     std::string serialized_proto;
     base::android::JavaByteArrayToString(env, j_proto, &serialized_proto);
     auto proto = std::make_unique<PaintPreviewProto>();
@@ -106,6 +110,7 @@ PlayerCompositorDelegateAndroid::PlayerCompositorDelegateAndroid(
     }
     PlayerCompositorDelegate::SetProto(std::move(proto));
   }
+
   PlayerCompositorDelegate::Initialize(
       paint_preview_service,
       GURL(base::android::ConvertJavaStringToUTF8(env, j_url_spec)),
@@ -117,6 +122,7 @@ PlayerCompositorDelegateAndroid::PlayerCompositorDelegateAndroid(
       base::TimeDelta::FromSeconds(15),
       (static_cast<bool>(j_is_low_mem) ? kMaxParallelBitmapRequestsLowMemory
                                        : kMaxParallelBitmapRequests));
+
   java_ref_.Reset(env, j_object);
 }
 
@@ -124,6 +130,8 @@ void PlayerCompositorDelegateAndroid::OnCompositorReady(
     CompositorStatus compositor_status,
     mojom::PaintPreviewBeginCompositeResponsePtr composite_response,
     std::unique_ptr<ui::AXTreeUpdate> ax_tree) {
+  TRACE_EVENT0("paint_preview",
+               "PlayerCompositorDelegateAndroid::OnCompositorReady");
   bool compositor_started = CompositorStatus::OK == compositor_status;
   base::UmaHistogramBoolean(
       "Browser.PaintPreview.Player.CompositorProcessStartedCorrectly",
@@ -242,6 +250,7 @@ jint PlayerCompositorDelegateAndroid::RequestBitmap(
     jint j_clip_y,
     jint j_clip_width,
     jint j_clip_height) {
+  TRACE_EVENT0("paint_preview", "RequestBitmap");
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
       "paint_preview", "PlayerCompositorDelegateAndroid::RequestBitmap",
       TRACE_ID_LOCAL(request_id_));
@@ -281,6 +290,7 @@ void PlayerCompositorDelegateAndroid::OnBitmapCallback(
     int request_id,
     mojom::PaintPreviewCompositor::BitmapStatus status,
     const SkBitmap& sk_bitmap) {
+  TRACE_EVENT0("paint_preview", "OnBitmapReceived");
   TRACE_EVENT_NESTABLE_ASYNC_END2(
       "paint_preview", "PlayerCompositorDelegateAndroid::RequestBitmap",
       TRACE_ID_LOCAL(request_id), "status", static_cast<int>(status), "bytes",

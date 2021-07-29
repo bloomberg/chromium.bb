@@ -12,6 +12,7 @@
 #include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/web_bundle_handle.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 
@@ -32,7 +33,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebBundleURLLoaderFactory {
   WebBundleURLLoaderFactory(
       const GURL& bundle_url,
       mojo::Remote<mojom::WebBundleHandle> web_bundle_handle,
-      const absl::optional<url::Origin>& request_initiator_origin_lock,
       std::unique_ptr<WebBundleMemoryQuotaConsumer>
           web_bundle_memory_quota_consumer,
       mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer,
@@ -55,7 +55,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebBundleURLLoaderFactory {
       mojo::PendingReceiver<mojom::URLLoader> receiver,
       const ResourceRequest& url_request,
       mojo::PendingRemote<mojom::URLLoaderClient> client,
-      mojo::Remote<mojom::TrustedHeaderClient> trusted_header_client);
+      mojo::Remote<mojom::TrustedHeaderClient> trusted_header_client,
+      base::Time request_start_time,
+      base::TimeTicks request_start_time_ticks);
 
   void OnWebBundleFetchFailed();
 

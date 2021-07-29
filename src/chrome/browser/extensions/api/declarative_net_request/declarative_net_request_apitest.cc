@@ -24,6 +24,10 @@ class DeclarativeNetRequestAPItest
       public testing::WithParamInterface<ContextType> {
  public:
   DeclarativeNetRequestAPItest() = default;
+  ~DeclarativeNetRequestAPItest() override = default;
+  DeclarativeNetRequestAPItest(const DeclarativeNetRequestAPItest&) = delete;
+  DeclarativeNetRequestAPItest& operator=(const DeclarativeNetRequestAPItest&) =
+      delete;
 
  protected:
   // ExtensionApiTest override.
@@ -51,7 +55,7 @@ class DeclarativeNetRequestAPItest
 
   bool RunTest(const std::string& extension_path) {
     return RunExtensionTest(
-        {.name = extension_path.c_str()},
+        extension_path.c_str(), {},
         {.load_as_service_worker = GetParam() == ContextType::kServiceWorker});
   }
 

@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "ios/components/webui/web_ui_url_constants.h"
 
 const char kChromeUIChromeURLsURL[] = "chrome://chrome-urls/";
@@ -22,7 +22,6 @@ const char kChromeUINTPTilesInternalsURL[] = "chrome://ntp-tiles-internals/";
 const char kChromeUIOfflineURL[] = "chrome://offline/";
 const char kChromeUIPolicyURL[] = "chrome://policy/";
 const char kChromeUISettingsURL[] = "chrome://settings/";
-const char kChromeUISuggestionsURL[] = "chrome://suggestions/";
 const char kChromeUITermsURL[] = "chrome://terms/";
 const char kChromeUIVersionURL[] = "chrome://version/";
 
@@ -51,7 +50,6 @@ const char kChromeUIPasswordManagerInternalsHost[] =
 const char kChromeUIPolicyHost[] = "policy";
 const char kChromeUIPrefsInternalsHost[] = "prefs-internals";
 const char kChromeUISignInInternalsHost[] = "signin-internals";
-const char kChromeUISuggestionsHost[] = "suggestions";
 const char kChromeUITermsHost[] = "terms";
 const char kChromeUITranslateInternalsHost[] = "translate-internals";
 const char kChromeUIURLKeyedMetricsHost[] = "ukm";
@@ -73,7 +71,6 @@ const char* const kChromeHostURLs[] = {
     kChromeUINTPTilesInternalsHost,
     kChromeUIPasswordManagerInternalsHost,
     kChromeUISignInInternalsHost,
-    kChromeUISuggestionsHost,
     kChromeUISyncInternalsHost,
     kChromeUITermsHost,
     kChromeUIUserActionsHost,
@@ -106,6 +103,12 @@ const char kClearBrowsingDataLearnMoreURL[] =
 
 const char kClearBrowsingDataMyActivityUrlInFooterURL[] =
     "https://history.google.com/history/?utm_source=chrome_cbd";
+
+const char kClearBrowsingDataDSEMyActivityUrlInFooterURL[] =
+    "https://myactivity.google.com/myactivity?utm_source=chrome_cbd";
+
+const char kClearBrowsingDataDSESearchUrlInFooterURL[] =
+    "https://myactivity.google.com/product/search?utm_source=chrome_cbd";
 
 const char kClearBrowsingDataMyActivityUrlInDialogURL[] =
     "https://history.google.com/history/?utm_source=chrome_n";

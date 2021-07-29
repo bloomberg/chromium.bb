@@ -10,6 +10,8 @@ import("//build/config/linux/pkg_config.gni")
 import("//build/config/ozone.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
+import("//third_party/angle/gni/angle.gni")
+import("//third_party/dawn/scripts/dawn_features.gni")
 import("//ui/gl/features.gni")
 
 declare_args() {
@@ -28,6 +30,7 @@ if (is_android) {
 buildflag_header("buildflags") {
   header = "buildflags.h"
   flags = [
+    "DAWN_ENABLE_BACKEND_OPENGLES=$dawn_enable_opengles",
     "ENABLE_SWIFTSHADER=$enable_swiftshader",
     "USE_DAWN=$use_dawn",
     "USE_STATIC_ANGLE=$use_static_angle",
@@ -249,6 +252,15 @@ component("gl") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone:buildflags" ]
+    if (use_egl && !is_fuchsia) {
+      data_deps += [
+        "//third_party/angle:libEGL",
+        "//third_party/angle:libGLESv2",
+      ]
+      if (angle_shared_libvulkan && !is_chromeos) {
+        data_deps += [ "//third_party/vulkan-deps/vulkan-loader/src:libvulkan" ]
+      }
+    }
   }
 
   if (use_x11 || ozone_platform_x11) {
@@ -275,6 +287,9 @@ component("gl") {
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",
     ]
+    if (angle_shared_libvulkan && !is_chromeos) {
+      data_deps += [ "//third_party/vulkan-deps/vulkan-loader/src:libvulkan" ]
+    }
   }
   if (use_glx) {
     sources += [
@@ -305,6 +320,8 @@ component("gl") {
       "child_window_win.h",
       "dc_layer_tree.cc",
       "dc_layer_tree.h",
+      "dcomp_surface_registry.cc",
+      "dcomp_surface_registry.h",
       "delegated_ink_point_renderer_gpu.h",
       "direct_composition_child_surface_win.cc",
       "direct_composition_child_surface_win.h",
@@ -316,6 +333,8 @@ component("gl") {
       "gl_fence_win.h",
       "gl_image_d3d.cc",
       "gl_image_d3d.h",
+      "gl_image_dcomp_surface.cc",
+      "gl_image_dcomp_surface.h",
       "gl_image_dxgi.cc",
       "gl_image_dxgi.h",
       "hdr_metadata_helper_win.cc",
@@ -345,6 +364,9 @@ component("gl") {
       "//third_party/angle:libGLESv2",
       "//third_party/swiftshader",
     ]
+    if (angle_shared_libvulkan && !is_chromeos) {
+      data_deps += [ "//third_party/vulkan-deps/vulkan-loader/src:libvulkan" ]
+    }
   }
   if (is_mac) {
     sources += [

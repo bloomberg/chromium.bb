@@ -15,18 +15,18 @@
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfdoc/cpdf_nametree.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
+#include "core/fxcrt/stl_util.h"
 #include "fpdfsdk/cpdfsdk_actionhandler.h"
 #include "fpdfsdk/cpdfsdk_annothandlermgr.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
-#include "fpdfsdk/formfiller/cffl_formfiller.h"
+#include "fpdfsdk/formfiller/cffl_formfield.h"
 #include "fpdfsdk/formfiller/cffl_interactiveformfiller.h"
 #include "fpdfsdk/formfiller/cffl_privatedata.h"
 #include "fxjs/ijs_runtime.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
 
 static_assert(FXCT_ARROW ==
                   static_cast<int>(IPWL_SystemHandler::CursorStyle::kArrow),
@@ -78,10 +78,10 @@ CPDFSDK_FormFillEnvironment::~CPDFSDK_FormFillEnvironment() {
   // itself up. Make sure it is deleted before |m_pFormFiller|.
   m_pAnnotHandlerMgr.reset();
 
-  // Must destroy the |m_pFormFiller| before the environment (|this|)
+  // Must destroy the |m_pInteractiveFormFiller| before the environment (|this|)
   // because any created form widgets hold a pointer to the environment.
   // Those widgets may call things like KillTimer() as they are shutdown.
-  m_pFormFiller.reset();
+  m_pInteractiveFormFiller.reset();
 
   if (m_pInfo && m_pInfo->Release)
     m_pInfo->Release(m_pInfo);
@@ -110,16 +110,16 @@ void CPDFSDK_FormFillEnvironment::InvalidateRect(PerWindowData* pWidgetData,
 }
 
 void CPDFSDK_FormFillEnvironment::OutputSelectedRect(
-    CFFL_FormFiller* pFormFiller,
+    CFFL_FormField* pFormField,
     const CFX_FloatRect& rect) {
-  if (!pFormFiller || !m_pInfo || !m_pInfo->FFI_OutputSelectedRect)
+  if (!pFormField || !m_pInfo || !m_pInfo->FFI_OutputSelectedRect)
     return;
 
-  auto* pPage = FPDFPageFromIPDFPage(pFormFiller->GetSDKAnnot()->GetPage());
+  auto* pPage = FPDFPageFromIPDFPage(pFormField->GetSDKAnnot()->GetPage());
   DCHECK(pPage);
 
-  CFX_PointF ptA = pFormFiller->PWLtoFFL(CFX_PointF(rect.left, rect.bottom));
-  CFX_PointF ptB = pFormFiller->PWLtoFFL(CFX_PointF(rect.right, rect.top));
+  CFX_PointF ptA = pFormField->PWLtoFFL(CFX_PointF(rect.left, rect.bottom));
+  CFX_PointF ptB = pFormField->PWLtoFFL(CFX_PointF(rect.right, rect.top));
   m_pInfo->FFI_OutputSelectedRect(m_pInfo, pPage, ptA.x, ptB.y, ptB.x, ptA.y);
 }
 
@@ -131,7 +131,7 @@ bool CPDFSDK_FormFillEnvironment::IsSelectionImplemented() const {
 #ifdef PDF_ENABLE_V8
 CPDFSDK_PageView* CPDFSDK_FormFillEnvironment::GetCurrentView() {
   IPDF_Page* pPage = IPDFPageFromFPDFPage(GetCurrentPage());
-  return pPage ? GetPageView(pPage, true) : nullptr;
+  return pPage ? GetOrCreatePageView(pPage) : nullptr;
 }
 
 FPDF_PAGE CPDFSDK_FormFillEnvironment::GetCurrentPage() const {
@@ -351,9 +351,11 @@ CPDFSDK_ActionHandler* CPDFSDK_FormFillEnvironment::GetActionHandler() {
 
 CFFL_InteractiveFormFiller*
 CPDFSDK_FormFillEnvironment::GetInteractiveFormFiller() {
-  if (!m_pFormFiller)
-    m_pFormFiller = std::make_unique<CFFL_InteractiveFormFiller>(this);
-  return m_pFormFiller.get();
+  if (!m_pInteractiveFormFiller) {
+    m_pInteractiveFormFiller =
+        std::make_unique<CFFL_InteractiveFormFiller>(this);
+  }
+  return m_pInteractiveFormFiller.get();
 }
 
 void CPDFSDK_FormFillEnvironment::Invalidate(IPDF_Page* page,
@@ -425,7 +427,7 @@ void CPDFSDK_FormFillEnvironment::DoGoToAction(int nPageIndex,
 
 #ifdef PDF_ENABLE_XFA
 int CPDFSDK_FormFillEnvironment::GetPageViewCount() const {
-  return pdfium::CollectionSize<int>(m_PageMap);
+  return fxcrt::CollectionSize<int>(m_PageMap);
 }
 
 void CPDFSDK_FormFillEnvironment::DisplayCaret(IPDF_Page* page,
@@ -587,15 +589,11 @@ void CPDFSDK_FormFillEnvironment::ClearAllFocusedAnnots() {
   }
 }
 
-CPDFSDK_PageView* CPDFSDK_FormFillEnvironment::GetPageView(
-    IPDF_Page* pUnderlyingPage,
-    bool renew) {
-  auto it = m_PageMap.find(pUnderlyingPage);
-  if (it != m_PageMap.end())
-    return it->second.get();
-
-  if (!renew)
-    return nullptr;
+CPDFSDK_PageView* CPDFSDK_FormFillEnvironment::GetOrCreatePageView(
+    IPDF_Page* pUnderlyingPage) {
+  CPDFSDK_PageView* pExisting = GetPageView(pUnderlyingPage);
+  if (pExisting)
+    return pExisting;
 
   auto pNew = std::make_unique<CPDFSDK_PageView>(this, pUnderlyingPage);
   CPDFSDK_PageView* pPageView = pNew.get();
@@ -606,13 +604,15 @@ CPDFSDK_PageView* CPDFSDK_FormFillEnvironment::GetPageView(
   return pPageView;
 }
 
+CPDFSDK_PageView* CPDFSDK_FormFillEnvironment::GetPageView(
+    IPDF_Page* pUnderlyingPage) {
+  auto it = m_PageMap.find(pUnderlyingPage);
+  return it != m_PageMap.end() ? it->second.get() : nullptr;
+}
+
 CPDFSDK_PageView* CPDFSDK_FormFillEnvironment::GetPageViewAtIndex(int nIndex) {
   IPDF_Page* pTempPage = GetPage(nIndex);
-  if (!pTempPage)
-    return nullptr;
-
-  auto it = m_PageMap.find(pTempPage);
-  return it != m_PageMap.end() ? it->second.get() : nullptr;
+  return pTempPage ? GetPageView(pTempPage) : nullptr;
 }
 
 void CPDFSDK_FormFillEnvironment::ProcJavascriptAction() {
@@ -677,7 +677,7 @@ void CPDFSDK_FormFillEnvironment::RemovePageView(IPDF_Page* pUnderlyingPage) {
   m_PageMap.erase(it);
 }
 
-IPDF_Page* CPDFSDK_FormFillEnvironment::GetPage(int nIndex) {
+IPDF_Page* CPDFSDK_FormFillEnvironment::GetPage(int nIndex) const {
   if (!m_pInfo || !m_pInfo->FFI_GetPage)
     return nullptr;
   return IPDFPageFromFPDFPage(m_pInfo->FFI_GetPage(

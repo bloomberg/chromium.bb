@@ -15,7 +15,6 @@
 #include "base/hash/md5_constexpr.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
@@ -73,6 +72,18 @@ using pASurfaceTransaction_setGeometry =
              const ARect& src,
              const ARect& dst,
              int32_t transform);
+using pASurfaceTransaction_setPosition =
+    void (*)(ASurfaceTransaction* transaction,
+             ASurfaceControl* surface,
+             int32_t x,
+             int32_t y);
+using pASurfaceTransaction_setScale = void (*)(ASurfaceTransaction* transaction,
+                                               ASurfaceControl* surface,
+                                               float x_scale,
+                                               float y_scale);
+using pASurfaceTransaction_setCrop = void (*)(ASurfaceTransaction* transaction,
+                                              ASurfaceControl* surface,
+                                              const ARect& src);
 using pASurfaceTransaction_setBufferTransparency =
     void (*)(ASurfaceTransaction* transaction,
              ASurfaceControl* surface,
@@ -132,12 +143,66 @@ uint64_t g_agb_required_usage_bits = AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY;
 
 struct SurfaceControlMethods {
  public:
-  static const SurfaceControlMethods& Get() {
-    static const base::NoDestructor<SurfaceControlMethods> instance;
-    return *instance;
+  static SurfaceControlMethods& GetImpl(bool load_functions) {
+    static SurfaceControlMethods instance(load_functions);
+    return instance;
   }
 
-  SurfaceControlMethods() {
+  static const SurfaceControlMethods& Get() {
+    return GetImpl(/*load_functions=*/true);
+  }
+
+  void InitWithStubs() {
+    struct TransactionStub {
+      ASurfaceTransaction_OnComplete on_complete = nullptr;
+      void* on_complete_ctx = nullptr;
+      ASurfaceTransaction_OnCommit on_commit = nullptr;
+      void* on_commit_ctx = nullptr;
+    };
+
+    ASurfaceTransaction_createFn = []() {
+      return reinterpret_cast<ASurfaceTransaction*>(new TransactionStub);
+    };
+    ASurfaceTransaction_deleteFn = [](ASurfaceTransaction* transaction) {
+      delete reinterpret_cast<TransactionStub*>(transaction);
+    };
+    ASurfaceTransaction_applyFn = [](ASurfaceTransaction* transaction) {
+      auto* stub = reinterpret_cast<TransactionStub*>(transaction);
+
+      if (stub->on_commit)
+        stub->on_commit(stub->on_commit_ctx, nullptr);
+      stub->on_commit = nullptr;
+      stub->on_commit_ctx = nullptr;
+
+      if (stub->on_complete)
+        stub->on_complete(stub->on_complete_ctx, nullptr);
+      stub->on_complete = nullptr;
+      stub->on_complete_ctx = nullptr;
+
+      return static_cast<int64_t>(0);
+    };
+
+    ASurfaceTransaction_setOnCompleteFn =
+        [](ASurfaceTransaction* transaction, void* ctx,
+           ASurfaceTransaction_OnComplete callback) {
+          auto* stub = reinterpret_cast<TransactionStub*>(transaction);
+          stub->on_complete = callback;
+          stub->on_complete_ctx = ctx;
+        };
+
+    ASurfaceTransaction_setOnCommitFn =
+        [](ASurfaceTransaction* transaction, void* ctx,
+           ASurfaceTransaction_OnCommit callback) {
+          auto* stub = reinterpret_cast<TransactionStub*>(transaction);
+          stub->on_commit = callback;
+          stub->on_commit_ctx = ctx;
+        };
+  }
+
+  SurfaceControlMethods(bool load_functions) {
+    if (!load_functions)
+      return;
+
     void* main_dl_handle = dlopen("libandroid.so", RTLD_NOW);
     if (!main_dl_handle) {
       LOG(ERROR) << "Couldnt load android so";
@@ -159,6 +224,9 @@ struct SurfaceControlMethods {
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setZOrder);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setBuffer);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setGeometry);
+    LOAD_FUNCTION_MAYBE(main_dl_handle, ASurfaceTransaction_setPosition);
+    LOAD_FUNCTION_MAYBE(main_dl_handle, ASurfaceTransaction_setScale);
+    LOAD_FUNCTION_MAYBE(main_dl_handle, ASurfaceTransaction_setCrop);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setBufferTransparency);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setDamageRegion);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setBufferDataSpace);
@@ -192,6 +260,9 @@ struct SurfaceControlMethods {
   pASurfaceTransaction_setZOrder ASurfaceTransaction_setZOrderFn;
   pASurfaceTransaction_setBuffer ASurfaceTransaction_setBufferFn;
   pASurfaceTransaction_setGeometry ASurfaceTransaction_setGeometryFn;
+  pASurfaceTransaction_setPosition ASurfaceTransaction_setPositionFn;
+  pASurfaceTransaction_setScale ASurfaceTransaction_setScaleFn;
+  pASurfaceTransaction_setCrop ASurfaceTransaction_setCropFn;
   pASurfaceTransaction_setBufferTransparency
       ASurfaceTransaction_setBufferTransparencyFn;
   pASurfaceTransaction_setDamageRegion ASurfaceTransaction_setDamageRegionFn;
@@ -258,6 +329,11 @@ uint64_t ColorSpaceToADataSpace(const gfx::ColorSpace& color_space) {
 SurfaceControl::TransactionStats ToTransactionStats(
     ASurfaceTransactionStats* stats) {
   SurfaceControl::TransactionStats transaction_stats;
+
+  // In unit tests we don't have stats.
+  if (!stats)
+    return transaction_stats;
+
   transaction_stats.present_fence = base::ScopedFD(
       SurfaceControlMethods::Get().ASurfaceTransactionStats_getPresentFenceFdFn(
           stats));
@@ -374,6 +450,10 @@ bool SurfaceControl::SupportsOnCommit() {
              nullptr;
 }
 
+void SurfaceControl::SetStubImplementationForTesting() {
+  SurfaceControlMethods::GetImpl(/*load_functions=*/false).InitWithStubs();
+}
+
 void SurfaceControl::ApplyTransaction(ASurfaceTransaction* transaction) {
   SurfaceControlMethods::Get().ASurfaceTransaction_applyFn(transaction);
 }
@@ -488,6 +568,28 @@ void SurfaceControl::Transaction::SetGeometry(const Surface& surface,
       OverlayTransformToWindowTransform(transform));
 }
 
+void SurfaceControl::Transaction::SetPosition(const Surface& surface,
+                                              const gfx::Point& position) {
+  CHECK(SurfaceControlMethods::Get().ASurfaceTransaction_setPositionFn);
+  SurfaceControlMethods::Get().ASurfaceTransaction_setPositionFn(
+      transaction_, surface.surface(), position.x(), position.y());
+}
+
+void SurfaceControl::Transaction::SetScale(const Surface& surface,
+                                           const float sx,
+                                           float sy) {
+  CHECK(SurfaceControlMethods::Get().ASurfaceTransaction_setScaleFn);
+  SurfaceControlMethods::Get().ASurfaceTransaction_setScaleFn(
+      transaction_, surface.surface(), sx, sy);
+}
+
+void SurfaceControl::Transaction::SetCrop(const Surface& surface,
+                                          const gfx::Rect& rect) {
+  CHECK(SurfaceControlMethods::Get().ASurfaceTransaction_setCropFn);
+  SurfaceControlMethods::Get().ASurfaceTransaction_setCropFn(
+      transaction_, surface.surface(), RectToARect(rect));
+}
+
 void SurfaceControl::Transaction::SetOpaque(const Surface& surface,
                                             bool opaque) {
   int8_t transparency = opaque ? ASURFACE_TRANSACTION_TRANSPARENCY_OPAQUE
@@ -558,6 +660,17 @@ void SurfaceControl::Transaction::SetOnCommitCb(
 void SurfaceControl::Transaction::Apply() {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("gpu,benchmark",
                                     "SurfaceControlTransaction", id_);
+
+  PrepareCallbacks();
+  SurfaceControlMethods::Get().ASurfaceTransaction_applyFn(transaction_);
+}
+
+ASurfaceTransaction* SurfaceControl::Transaction::GetTransaction() {
+  PrepareCallbacks();
+  return transaction_;
+}
+
+void SurfaceControl::Transaction::PrepareCallbacks() {
   if (on_commit_cb_) {
     TransactionAckCtx* ack_ctx = new TransactionAckCtx;
     ack_ctx->latch_callback = std::move(on_commit_cb_);
@@ -575,8 +688,6 @@ void SurfaceControl::Transaction::Apply() {
     SurfaceControlMethods::Get().ASurfaceTransaction_setOnCompleteFn(
         transaction_, ack_ctx, &OnTransactionCompletedOnAnyThread);
   }
-
-  SurfaceControlMethods::Get().ASurfaceTransaction_applyFn(transaction_);
 }
 
 }  // namespace gfx

@@ -1708,7 +1708,7 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
   const int num_planes = av1_num_planes(cm);
   assert(!cm->features.all_lossless);
 
-  av1_fill_lr_rates(&x->mode_costs, cm->fc);
+  av1_fill_lr_rates(&x->mode_costs, x->e_mbd.tile_ctx);
 
   int ntiles[2];
   for (int is_uv = 0; is_uv < 2; ++is_uv)

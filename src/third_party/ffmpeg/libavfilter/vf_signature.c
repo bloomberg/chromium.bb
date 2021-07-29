@@ -561,7 +561,7 @@ static int binary_export(AVFilterContext *ctx, StreamContext *sc, const char* fi
     }
 
     flush_put_bits(&buf);
-    fwrite(buffer, 1, put_bits_count(&buf)/8, f);
+    fwrite(buffer, 1, put_bytes_output(&buf), f);
     fclose(f);
     av_freep(&buffer);
     return 0;
@@ -758,7 +758,7 @@ static const AVFilterPad signature_outputs[] = {
     { NULL }
 };
 
-AVFilter ff_vf_signature = {
+const AVFilter ff_vf_signature = {
     .name          = "signature",
     .description   = NULL_IF_CONFIG_SMALL("Calculate the MPEG-7 video signature"),
     .priv_size     = sizeof(SignatureContext),

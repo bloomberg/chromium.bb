@@ -29,8 +29,22 @@ TEST_F(MslUnaryOpTest, AddressOf) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(op)) << gen.error();
-  EXPECT_EQ(gen.result(), "&(expr)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, op)) << gen.error();
+  EXPECT_EQ(out.str(), "&(expr)");
+}
+
+TEST_F(MslUnaryOpTest, Complement) {
+  Global("expr", ty.i32(), ast::StorageClass::kPrivate);
+  auto* op =
+      create<ast::UnaryOpExpression>(ast::UnaryOp::kComplement, Expr("expr"));
+  WrapInFunction(op);
+
+  GeneratorImpl& gen = Build();
+
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, op)) << gen.error();
+  EXPECT_EQ(out.str(), "~(expr)");
 }
 
 TEST_F(MslUnaryOpTest, Indirection) {
@@ -44,31 +58,34 @@ TEST_F(MslUnaryOpTest, Indirection) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(op)) << gen.error();
-  EXPECT_EQ(gen.result(), "*(expr)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, op)) << gen.error();
+  EXPECT_EQ(out.str(), "*(expr)");
 }
 
 TEST_F(MslUnaryOpTest, Not) {
-  Global("expr", ty.f32(), ast::StorageClass::kPrivate);
+  Global("expr", ty.bool_(), ast::StorageClass::kPrivate);
   auto* op = create<ast::UnaryOpExpression>(ast::UnaryOp::kNot, Expr("expr"));
   WrapInFunction(op);
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(op)) << gen.error();
-  EXPECT_EQ(gen.result(), "!(expr)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, op)) << gen.error();
+  EXPECT_EQ(out.str(), "!(expr)");
 }
 
 TEST_F(MslUnaryOpTest, Negation) {
-  Global("expr", ty.f32(), ast::StorageClass::kPrivate);
+  Global("expr", ty.i32(), ast::StorageClass::kPrivate);
   auto* op =
       create<ast::UnaryOpExpression>(ast::UnaryOp::kNegation, Expr("expr"));
   WrapInFunction(op);
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(op)) << gen.error();
-  EXPECT_EQ(gen.result(), "-(expr)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, op)) << gen.error();
+  EXPECT_EQ(out.str(), "-(expr)");
 }
 
 }  // namespace

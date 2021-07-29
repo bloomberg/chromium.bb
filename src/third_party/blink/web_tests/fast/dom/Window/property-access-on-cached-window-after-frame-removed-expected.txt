@@ -1,8 +1,10 @@
-CONSOLE WARNING: line 148: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 151: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 Tests property access on a cached DOMWindow after the associated frame is no longer in a web page. Test should not crash and properties should be set to sane defaults.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS childWindow.appHistory.canGoBack is false
+PASS childWindow.appHistory.canGoForward is false
 PASS childWindow.appHistory.current is null
 PASS childWindow.appHistory.onnavigate is null
 PASS childWindow.appHistory.onnavigateerror is null
@@ -37,16 +39,6 @@ PASS childWindow.navigator.userActivation.isActive is false
 PASS childWindow.navigator.userAgent is ''
 PASS childWindow.navigator.vendor is window.navigator.vendor
 PASS childWindow.navigator.vendorSub is ''
-PASS childWindow.navigator.virtualKeyboard.boundingRect.bottom is 0
-PASS childWindow.navigator.virtualKeyboard.boundingRect.height is 0
-PASS childWindow.navigator.virtualKeyboard.boundingRect.left is 0
-PASS childWindow.navigator.virtualKeyboard.boundingRect.right is 0
-PASS childWindow.navigator.virtualKeyboard.boundingRect.top is 0
-PASS childWindow.navigator.virtualKeyboard.boundingRect.width is 0
-PASS childWindow.navigator.virtualKeyboard.boundingRect.x is 0
-PASS childWindow.navigator.virtualKeyboard.boundingRect.y is 0
-PASS childWindow.navigator.virtualKeyboard.ongeometrychange is null
-PASS childWindow.navigator.virtualKeyboard.overlaysContent is false
 PASS childWindow.navigator.webdriver is false
 PASS childWindow.onabort is null
 PASS childWindow.onafterprint is null
@@ -131,7 +123,6 @@ PASS childWindow.onratechange is null
 PASS childWindow.onrejectionhandled is null
 PASS childWindow.onreset is null
 PASS childWindow.onresize is null
-PASS childWindow.onscreenschange is null
 PASS childWindow.onscroll is null
 PASS childWindow.onscrollend is null
 PASS childWindow.onsearch is null

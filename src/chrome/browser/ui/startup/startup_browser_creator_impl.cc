@@ -25,7 +25,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/extension_checkup.h"
 #include "chrome/browser/infobars/simple_alert_infobar_creator.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -53,6 +52,8 @@
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/welcome/helpers.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -82,6 +83,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/crosapi/browser_util.h"
+#include "components/full_restore/features.h"
+#include "components/full_restore/full_restore_utils.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -101,18 +104,22 @@ namespace {
 // Utility functions ----------------------------------------------------------
 
 #if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
-// ChromeOS always restores apps unconditionally. Other platforms restore apps
-// only when the browser is automatically restarted.
-bool ShouldRestoreApps(bool is_post_restart) {
+// In ChromeOS, if the full restore feature is disabled, always restores apps
+// unconditionally. If the full restore feature is enabled, check the previous
+// apps launching history info to decide whether restore apps.
+//
+// In other platforms, restore apps only when the browser is automatically
+// restarted.
+bool ShouldRestoreApps(bool is_post_restart, Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // If the full restore feature is enabled, check the full restore file.
+  // Restore apps only when there are apps launched before reboot.
+  if (full_restore::features::IsFullRestoreEnabled())
+    return full_restore::HasAppTypeBrowser(profile->GetPath());
+
+  // If the full restore feature is disabled, always restores apps
+  // unconditionally.
   return true;
-#elif defined(OS_MAC) || defined(OS_LINUX) || defined(OS_WIN)
-  // TODO(stahon@microsoft.com)
-  // Even when app restores are enabled on mac, don't actually restore apps
-  // because they do not restore correctly. http://crbug.com/1194201
-  // On windows and linux, apps can be restored without the proper app frame,
-  // disabling restorations for now. http://crbug.com/1199109
-  return false;
 #else
   return is_post_restart;
 #endif
@@ -120,12 +127,8 @@ bool ShouldRestoreApps(bool is_post_restart) {
 #endif
 
 void UrlsToTabs(const std::vector<GURL>& urls, StartupTabs* tabs) {
-  for (const GURL& url : urls) {
-    StartupTab tab;
-    tab.is_pinned = false;
-    tab.url = url;
-    tabs->push_back(tab);
-  }
+  for (const GURL& url : urls)
+    tabs->push_back(StartupTab(url, false));
 }
 
 std::vector<GURL> TabsToUrls(const StartupTabs& tabs) {
@@ -273,6 +276,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
     // incomplete check on whether a user gesture created a window which looked
     // at the state of the MessageLoop.
     Browser::CreateParams params = Browser::CreateParams(profile_, false);
+    params.creation_source = Browser::CreationSource::kStartupCreator;
     browser = Browser::Create(params);
   }
 
@@ -334,8 +338,7 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
   StartupTabs cmd_line_tabs;
   UrlsToTabs(cmd_line_urls, &cmd_line_tabs);
 
-  const bool is_incognito_or_guest =
-      profile_->IsOffTheRecord() || profile_->IsEphemeralGuestProfile();
+  const bool is_incognito_or_guest = profile_->IsOffTheRecord();
   bool is_post_crash_launch = HasPendingUncleanExit(profile_);
   bool has_incompatible_applications = false;
   LogSessionServiceStartEvent(profile_, is_post_crash_launch);
@@ -382,14 +385,10 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
     welcome_enabled = false;
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-  bool serve_extensions_page =
-      extensions::ShouldShowExtensionsCheckupOnStartup(profile_);
-
   StartupTabs tabs = DetermineStartupTabs(
       StartupTabProviderImpl(), cmd_line_tabs, process_startup,
       is_incognito_or_guest, is_post_crash_launch,
-      has_incompatible_applications, promotional_tabs_enabled, welcome_enabled,
-      serve_extensions_page);
+      has_incompatible_applications, promotional_tabs_enabled, welcome_enabled);
 
   // Return immediately if we start an async restore, since the remainder of
   // that process is self-contained.
@@ -410,7 +409,8 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
       StartupBrowserCreator::GetSessionStartupPref(command_line_, profile_),
       behavior_options);
 
-  SessionRestore::BehaviorBitmask restore_options = 0;
+  SessionRestore::BehaviorBitmask restore_options =
+      SessionRestore::RESTORE_BROWSER;
   if (behavior == BrowserOpenBehavior::SYNCHRONOUS_RESTORE) {
 #if defined(OS_MAC)
     bool was_mac_login_or_resume = base::mac::WasLaunchedAsLoginOrResumeItem();
@@ -441,8 +441,7 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     bool is_post_crash_launch,
     bool has_incompatible_applications,
     bool promotional_tabs_enabled,
-    bool welcome_enabled,
-    bool serve_extensions_page) {
+    bool welcome_enabled) {
   // Only the New Tab Page or command line URLs may be shown in incognito mode.
   // A similar policy exists for crash recovery launches, to prevent getting the
   // user stuck in a crash loop.
@@ -478,6 +477,7 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
 
     StartupTabs onboarding_tabs;
     if (promotional_tabs_enabled) {
+#if defined(OS_WIN)
       // This is a launch from a prompt presented to an inactive user who chose
       // to open Chrome and is being brought to a specific URL for this one
       // launch. Launch the browser with the desired welcome back URL in the
@@ -486,6 +486,7 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
       StartupTabs welcome_back_tabs = provider.GetWelcomeBackTabs(
           profile_, browser_creator_, process_startup);
       AppendTabs(welcome_back_tabs, &tabs);
+#endif  // defined(OS_WIN)
 
       if (welcome_enabled) {
         // Policies for welcome (e.g., first run) may show promotional and
@@ -505,11 +506,6 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     // Potentially add the New Tab Page. Onboarding content is designed to
     // replace (and eventually funnel the user to) the NTP.
     if (onboarding_tabs.empty()) {
-      // Potentially show the extensions page in addition to the NTP if the user
-      // is part of the extensions checkup experiment and they have not been
-      // redirected to the extensions page upon startup before.
-      AppendTabs(provider.GetExtensionCheckupTabs(serve_extensions_page),
-                 &tabs);
       // URLs from preferences are explicitly meant to override showing the NTP.
       if (prefs_tabs.empty()) {
         AppendTabs(provider.GetNewTabPageTabs(command_line_, profile_), &tabs);
@@ -537,7 +533,8 @@ bool StartupBrowserCreatorImpl::MaybeAsyncRestore(const StartupTabs& tabs,
 
   bool restore_apps = false;
 #if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
-  restore_apps = ShouldRestoreApps(StartupBrowserCreator::WasRestarted());
+  restore_apps =
+      ShouldRestoreApps(StartupBrowserCreator::WasRestarted(), profile_);
 #endif  // BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
   // Note: there's no session service in incognito or guest mode.
   SessionService* service =
@@ -559,7 +556,7 @@ Browser* StartupBrowserCreatorImpl::RestoreOrCreateBrowser(
     // because we want to avoid a crash restore loop, so we don't
     // automatically restore after a crash.
     // Crash restores are triggered via session_crashed_bubble_view.cc
-    if (ShouldRestoreApps(StartupBrowserCreator::WasRestarted()))
+    if (ShouldRestoreApps(StartupBrowserCreator::WasRestarted(), profile_))
       restore_options |= SessionRestore::RESTORE_APPS;
 #endif  //  BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
 
@@ -637,13 +634,21 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     PrefService* local_state = g_browser_process->local_state();
-    if (local_state &&
-        !local_state->GetBoolean(lacros_prefs::kShowedExperimentalBannerPref)) {
-      LacrosStartupInfoBarDelegate::Create(infobar_manager);
+    if (local_state) {
+      // We show the banner if it's never shown before.
+      bool should_show_banner =
+          !local_state->GetBoolean(lacros_prefs::kShowedExperimentalBannerPref);
+      // If Lacros is not the primary browser, we always show the banner.
+      should_show_banner |= !chromeos::LacrosService::Get()
+                                 ->init_params()
+                                 ->standalone_browser_is_primary;
 
-      // Mark the pref as shown, so that we don't show the banner again.
-      local_state->SetBoolean(lacros_prefs::kShowedExperimentalBannerPref,
-                              true);
+      if (should_show_banner) {
+        LacrosStartupInfoBarDelegate::Create(infobar_manager);
+
+        local_state->SetBoolean(lacros_prefs::kShowedExperimentalBannerPref,
+                                true);
+      }
     }
 #endif
 
@@ -699,7 +704,8 @@ StartupBrowserCreatorImpl::DetermineSynchronousRestoreOptions(
     bool has_create_browser_default,
     bool has_create_browser_switch,
     bool was_mac_login_or_resume) {
-  SessionRestore::BehaviorBitmask options = SessionRestore::SYNCHRONOUS;
+  SessionRestore::BehaviorBitmask options =
+      SessionRestore::SYNCHRONOUS | SessionRestore::RESTORE_BROWSER;
 
   // Suppress the creation of a new window on Mac when restoring with no windows
   // if launching Chrome via a login item or the resume feature in OS 10.7+.

@@ -273,6 +273,8 @@ class PLATFORM_EXPORT FontCache {
 
   FontFallbackMap& GetFontFallbackMap();
 
+  FontCache(const FontCache&) = delete;
+  FontCache& operator=(const FontCache&) = delete;
   ~FontCache() = default;
 
  private:
@@ -334,6 +336,7 @@ class PLATFORM_EXPORT FontCache {
   static AtomicString GetFamilyNameForCharacter(SkFontMgr*,
                                                 UChar32,
                                                 const FontDescription&,
+                                                const char* family_name,
                                                 FontFallbackPriority);
 #endif  // defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
@@ -402,8 +405,6 @@ class PLATFORM_EXPORT FontCache {
 
   friend class SimpleFontData;  // For fontDataFromFontPlatformData
   friend class FontFallbackList;
-
-  DISALLOW_COPY_AND_ASSIGN(FontCache);
 };
 
 class PLATFORM_EXPORT FontCachePurgePreventer {
@@ -411,10 +412,9 @@ class PLATFORM_EXPORT FontCachePurgePreventer {
 
  public:
   FontCachePurgePreventer() { FontCache::GetFontCache()->DisablePurging(); }
+  FontCachePurgePreventer(const FontCachePurgePreventer&) = delete;
+  FontCachePurgePreventer& operator=(const FontCachePurgePreventer&) = delete;
   ~FontCachePurgePreventer() { FontCache::GetFontCache()->EnablePurging(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FontCachePurgePreventer);
 };
 
 AtomicString ToAtomicString(const SkString&);

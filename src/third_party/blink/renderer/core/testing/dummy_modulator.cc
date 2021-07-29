@@ -61,10 +61,6 @@ bool DummyModulator::IsScriptingDisabled() const {
   return false;
 }
 
-bool DummyModulator::ImportMapsEnabled() const {
-  return false;
-}
-
 ModuleRecordResolver* DummyModulator::GetModuleRecordResolver() {
   return resolver_.Get();
 }
@@ -158,18 +154,6 @@ ModuleImportMeta DummyModulator::HostGetImportMetaProperties(
     v8::Local<v8::Module>) const {
   NOTREACHED();
   return ModuleImportMeta(String());
-}
-
-ScriptValue DummyModulator::InstantiateModule(v8::Local<v8::Module>,
-                                              const KURL&) {
-  NOTREACHED();
-  return ScriptValue();
-}
-
-Vector<ModuleRequest> DummyModulator::ModuleRequestsFromModuleRecord(
-    v8::Local<v8::Module>) {
-  NOTREACHED();
-  return Vector<ModuleRequest>();
 }
 
 ModuleType DummyModulator::ModuleTypeFromRequest(

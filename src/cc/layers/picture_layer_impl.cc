@@ -788,6 +788,8 @@ void PictureLayerImpl::UpdateRasterSource(
   bool could_have_tilings = CanHaveTilings();
   raster_source_.swap(raster_source);
 
+  raster_source_->set_debug_name(DebugName());
+
   // Register images from the new raster source, if the recording was updated.
   // TODO(khushalsagar): UMA the number of animated images in layer?
   if (recording_updated)
@@ -1683,7 +1685,7 @@ bool PictureLayerImpl::CalculateRasterTranslation(
   // a layer of size 10000px does not exceed 0.001px.
   static constexpr float kPixelErrorThreshold = 0.001f;
   static constexpr float kScaleErrorThreshold = kPixelErrorThreshold / 10000;
-  auto is_raster_scale = [this](const SkMatrix44& matrix) -> bool {
+  auto is_raster_scale = [this](const skia::Matrix44& matrix) -> bool {
     // The matrix has the X scale at (0,0), and the Y scale at (1,1).
     return std::abs(matrix.getFloat(0, 0) - raster_contents_scale_.x()) <=
                kScaleErrorThreshold &&

@@ -42,7 +42,7 @@ This is somebody who reviews and comments on the proposal. Their input should be
 
 _LGTM_: Not required. However, LGTM or non-LGTM is binding.
 
-Stuck proposals can be escalated to the [ENG_REVIEW_OWNERS](https://cs.chromium.org/chromium/src/third_party/devtools-frontend/src/ENG_REVIEW_OWNERS) Potential use cases of such an escalation:
+Stuck proposals can be escalated to the [ENG_REVIEW_OWNERS](https://cs.chromium.org/chromium/src/third_party/devtools-frontend/src/config/owner/ENG_REVIEW_OWNERS) Potential use cases of such an escalation:
 
 - An LGTM provider is non-responsive.
 - No consensus on the design can be reached.
@@ -59,7 +59,7 @@ The EnReOw can overrule non-LGTMs or LGTMs.
 1. IC collects LGTMs by addressing feedback. Iterate if necessary.
 1. Once all required LGTMs have been collected, proceed with implementation.
 1. On disagreement that cannot be resolved or unreasonable delays, escalate to EnReOw.
-1. Implement and iterate on CLs with code owners. We expect the implementation to take place on the public repository's master branch. Note that a series of small incremental changes has a higher chance of receiving timely reviews and actionable feedback.
+1. Implement and iterate on CLs with code owners. We expect the implementation to take place on the public repository's main branch. Note that a series of small incremental changes has a higher chance of receiving timely reviews and actionable feedback.
 
 ## FAQ
 

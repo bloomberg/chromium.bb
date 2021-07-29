@@ -301,9 +301,9 @@ std::unique_ptr<base::DictionaryValue> CreateGalleryPrefInfoDictionary(
     dict->SetString(kMediaGalleriesVolumeLabelKey, gallery.volume_label);
     dict->SetString(kMediaGalleriesVendorNameKey, gallery.vendor_name);
     dict->SetString(kMediaGalleriesModelNameKey, gallery.model_name);
-    dict->SetDouble(kMediaGalleriesSizeKey, gallery.total_size_in_bytes);
-    dict->SetDouble(kMediaGalleriesLastAttachTimeKey,
-                    gallery.last_attach_time.ToInternalValue());
+    dict->SetDoubleKey(kMediaGalleriesSizeKey, gallery.total_size_in_bytes);
+    dict->SetDoubleKey(kMediaGalleriesLastAttachTimeKey,
+                       gallery.last_attach_time.ToInternalValue());
   } else {
     dict->SetString(kMediaGalleriesDisplayNameKey, gallery.display_name);
   }
@@ -1011,7 +1011,7 @@ void MediaGalleriesPreferences::EraseOrBlacklistGalleryById(
           iter->SetIntKey(kMediaGalleriesScanVideoCountKey, 0);
         }
       } else {
-        list->Erase(iter, nullptr);
+        list->EraseListIter(iter);
       }
       update.reset();  // commits the update.
 
@@ -1213,7 +1213,7 @@ bool MediaGalleriesPreferences::UnsetGalleryPermissionInPrefs(
             &base::Value::AsDictionaryValue(*iter), &perm))
       continue;
     if (perm.pref_id == gallery_id) {
-      permissions->Erase(iter, nullptr);
+      permissions->EraseListIter(iter);
       return true;
     }
   }

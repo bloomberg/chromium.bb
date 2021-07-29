@@ -667,12 +667,6 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
             q->extco.RateDistortionOpt = q->rdo > 0 ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
 
         if (avctx->codec_id == AV_CODEC_ID_H264) {
-#if FF_API_CODER_TYPE
-FF_DISABLE_DEPRECATION_WARNINGS
-            if (avctx->coder_type >= 0)
-                q->cavlc = avctx->coder_type == FF_CODER_TYPE_VLC;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
             q->extco.CAVLC = q->cavlc ? MFX_CODINGOPTION_ON
                                       : MFX_CODINGOPTION_UNKNOWN;
 
@@ -722,12 +716,6 @@ FF_ENABLE_DEPRECATION_WARNINGS
             q->extco2.LookAheadDS = q->look_ahead_downsampling;
             q->extco2.RepeatPPS   = q->repeat_pps ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
 
-#if FF_API_PRIVATE_OPT
-FF_DISABLE_DEPRECATION_WARNINGS
-            if (avctx->b_frame_strategy >= 0)
-                q->b_strategy = avctx->b_frame_strategy;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
             if (q->b_strategy >= 0)
                 q->extco2.BRefType = q->b_strategy ? MFX_B_REF_PYRAMID : MFX_B_REF_OFF;
             if (q->adaptive_i >= 0)
@@ -1566,12 +1554,6 @@ int ff_qsv_encode(AVCodecContext *avctx, QSVEncContext *q,
             av_log(avctx, AV_LOG_ERROR, "Invalid FrameType:%d.\n", bs->FrameType);
             return AVERROR_INVALIDDATA;
         }
-
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-        avctx->coded_frame->pict_type = pict_type;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
 
 #if QSV_VERSION_ATLEAST(1, 26)
         if (avctx->codec_id == AV_CODEC_ID_H264) {

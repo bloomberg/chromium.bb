@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -15,6 +15,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/chromeos/bluetooth_utils.h"
 
 namespace ash {
 
@@ -248,6 +249,7 @@ void BluetoothPowerController::SetBluetoothPowerOnAdapterReady() {
       &BluetoothPowerController::RunNextPendingBluetoothTask,
       weak_ptr_factory_.GetWeakPtr());
   bluetooth_adapter_->SetPowered(enabled, run_next_task, run_next_task);
+  device::RecordPoweredState(enabled);
 }
 
 void BluetoothPowerController::RunBluetoothTaskWhenAdapterReady(
@@ -294,7 +296,6 @@ bool BluetoothPowerController::ShouldApplyUserBluetoothSetting(
     user_manager::UserType user_type) const {
   return user_type == user_manager::USER_TYPE_REGULAR ||
          user_type == user_manager::USER_TYPE_CHILD ||
-         user_type == user_manager::USER_TYPE_SUPERVISED_DEPRECATED ||
          user_type == user_manager::USER_TYPE_ACTIVE_DIRECTORY;
 }
 

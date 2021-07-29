@@ -7,6 +7,7 @@ include_rules = [
   "+net",
   "+ppapi",
   "+printing",
+  "+services/network/public/mojom/referrer_policy.mojom-shared.h",
   "+third_party/blink/public",
   "+third_party/skia/include/core",
   "+ui/base",

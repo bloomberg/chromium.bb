@@ -8,7 +8,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
@@ -140,8 +139,8 @@ class PerUserTopicSubscriptionManagerTest : public testing::Test {
   void SetUp() override {
     PerUserTopicSubscriptionManager::RegisterProfilePrefs(
         pref_service_.registry());
-    AccountInfo account =
-        identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
+    AccountInfo account = identity_test_env_.MakePrimaryAccountAvailable(
+        "example@gmail.com", signin::ConsentLevel::kSync);
     identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
     identity_provider_ = std::make_unique<ProfileIdentityProvider>(
         identity_test_env_.identity_manager());

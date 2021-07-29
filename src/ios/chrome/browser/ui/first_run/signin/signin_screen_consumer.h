@@ -14,16 +14,16 @@
 // default image.
 - (void)setUserImage:(UIImage*)userImage;
 
-// Sets the |userName| and its |email| of the selected identity. Notifies the UI
-// that an identity is available.
-- (void)setSelectedIdentityUserName:(NSString*)userName email:(NSString*)email;
+// Sets the |userName|, |email| and |givenName| of the selected identity. The
+// |userName| and |givenName| can be nil. Notifies the UI that an identity is
+// available.
+- (void)setSelectedIdentityUserName:(NSString*)userName
+                              email:(NSString*)email
+                          givenName:(NSString*)givenName;
 
 // Notifies the consumer that no identity is available and that the UI should be
 // updated accordingly.
 - (void)noIdentityAvailable;
-
-// Sets the UI as interactable or not.
-- (void)setUIEnabled:(BOOL)UIEnabled;
 
 @end
 

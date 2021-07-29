@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -37,9 +38,9 @@ Status SetUpOpenH264Params(const VideoEncoder::Options& options,
     params->uiIntraPeriod = options.keyframe_interval.value();
 
   if (options.bitrate.has_value()) {
+    auto& bitrate = options.bitrate.value();
     params->iRCMode = RC_BITRATE_MODE;
-    params->iTargetBitrate = int{std::min(
-        options.bitrate.value(), uint64_t{std::numeric_limits<int>::max()})};
+    params->iTargetBitrate = base::saturated_cast<int>(bitrate.target());
   } else {
     params->iRCMode = RC_OFF_MODE;
   }
@@ -60,6 +61,9 @@ Status SetUpOpenH264Params(const VideoEncoder::Options& options,
 OpenH264VideoEncoder::ISVCEncoderDeleter::ISVCEncoderDeleter() = default;
 OpenH264VideoEncoder::ISVCEncoderDeleter::ISVCEncoderDeleter(
     const ISVCEncoderDeleter&) = default;
+OpenH264VideoEncoder::ISVCEncoderDeleter&
+OpenH264VideoEncoder::ISVCEncoderDeleter::operator=(const ISVCEncoderDeleter&) =
+    default;
 void OpenH264VideoEncoder::ISVCEncoderDeleter::operator()(ISVCEncoder* codec) {
   if (codec) {
     if (initialized_) {

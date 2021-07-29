@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/extensions/extension_checkup.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/chrome_colors/chrome_colors_factory.h"
@@ -28,7 +27,6 @@
 #include "chrome/browser/search/search_suggest/search_suggest_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -64,7 +62,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/extension_features.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -167,7 +164,10 @@ void SearchTabHelper::OnTabClosing() {
 
 void SearchTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame())
     return;
 
   if (navigation_handle->IsSameDocument())
@@ -272,57 +272,6 @@ void SearchTabHelper::OnUndoMostVisitedDeletion(const GURL& url) {
 void SearchTabHelper::OnUndoAllMostVisitedDeletions() {
   if (instant_service_)
     instant_service_->UndoAllMostVisitedDeletions();
-}
-
-bool SearchTabHelper::OnAddCustomLink(const GURL& url,
-                                      const std::string& title) {
-  DCHECK(!url.is_empty());
-  if (instant_service_)
-    return instant_service_->AddCustomLink(url, title);
-  return false;
-}
-
-bool SearchTabHelper::OnUpdateCustomLink(const GURL& url,
-                                         const GURL& new_url,
-                                         const std::string& new_title) {
-  DCHECK(!url.is_empty());
-  if (instant_service_)
-    return instant_service_->UpdateCustomLink(url, new_url, new_title);
-  return false;
-}
-
-bool SearchTabHelper::OnReorderCustomLink(const GURL& url, int new_pos) {
-  DCHECK(!url.is_empty());
-  if (instant_service_)
-    return instant_service_->ReorderCustomLink(url, new_pos);
-  return false;
-}
-
-bool SearchTabHelper::OnDeleteCustomLink(const GURL& url) {
-  DCHECK(!url.is_empty());
-  if (instant_service_)
-    return instant_service_->DeleteCustomLink(url);
-  return false;
-}
-
-void SearchTabHelper::OnUndoCustomLinkAction() {
-  if (instant_service_)
-    instant_service_->UndoCustomLinkAction();
-}
-
-void SearchTabHelper::OnResetCustomLinks() {
-  if (instant_service_)
-    instant_service_->ResetCustomLinks();
-}
-
-void SearchTabHelper::OnToggleMostVisitedOrCustomLinks() {
-  if (instant_service_)
-    instant_service_->ToggleMostVisitedOrCustomLinks();
-}
-
-void SearchTabHelper::OnToggleShortcutsVisibility(bool do_notify) {
-  if (instant_service_)
-    instant_service_->ToggleShortcutsVisibility(do_notify);
 }
 
 void SearchTabHelper::OnLogEvent(NTPLoggingEventType event,
@@ -501,31 +450,6 @@ void SearchTabHelper::BlocklistPromo(const std::string& promo_id) {
   }
 
   promo_service->BlocklistPromo(promo_id);
-}
-
-void SearchTabHelper::OpenExtensionsPage(double button,
-                                         bool alt_key,
-                                         bool ctrl_key,
-                                         bool meta_key,
-                                         bool shift_key) {
-  if (!search::DefaultSearchProviderIsGoogle(profile()))
-    return;
-  base::RecordAction(base::UserMetricsAction("Extensions.NtpPromoClicked"));
-  UMA_HISTOGRAM_ENUMERATION(
-      "Extensions.Checkup.NtpPromoClicked",
-      static_cast<extensions::CheckupMessage>(
-          base::GetFieldTrialParamByFeatureAsInt(
-              extensions_features::kExtensionsCheckup,
-              extensions_features::kExtensionsCheckupBannerMessageParameter,
-              static_cast<int>(extensions::CheckupMessage::NEUTRAL))));
-
-  WindowOpenDisposition disposition =
-      (button > 1) ? WindowOpenDisposition::NEW_FOREGROUND_TAB
-                   : ui::DispositionFromClick((button == 1.0), alt_key,
-                                              ctrl_key, meta_key, shift_key);
-  web_contents_->OpenURL(content::OpenURLParams(
-      GURL(chrome::kChromeUIExtensionsURL), content::Referrer(), disposition,
-      ui::PAGE_TRANSITION_LINK, false));
 }
 
 Profile* SearchTabHelper::profile() const {

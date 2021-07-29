@@ -64,6 +64,25 @@ int ff_dnn_init(DnnContext *ctx, DNNFunctionType func_type, AVFilterContext *fil
     return 0;
 }
 
+int ff_dnn_set_frame_proc(DnnContext *ctx, FramePrePostProc pre_proc, FramePrePostProc post_proc)
+{
+    ctx->model->frame_pre_proc = pre_proc;
+    ctx->model->frame_post_proc = post_proc;
+    return 0;
+}
+
+int ff_dnn_set_detect_post_proc(DnnContext *ctx, DetectPostProc post_proc)
+{
+    ctx->model->detect_post_proc = post_proc;
+    return 0;
+}
+
+int ff_dnn_set_classify_post_proc(DnnContext *ctx, ClassifyPostProc post_proc)
+{
+    ctx->model->classify_post_proc = post_proc;
+    return 0;
+}
+
 DNNReturnType ff_dnn_get_input(DnnContext *ctx, DNNData *input)
 {
     return ctx->model->get_input(ctx->model->model, input, ctx->model_inputname);
@@ -77,14 +96,41 @@ DNNReturnType ff_dnn_get_output(DnnContext *ctx, int input_width, int input_heig
 
 DNNReturnType ff_dnn_execute_model(DnnContext *ctx, AVFrame *in_frame, AVFrame *out_frame)
 {
-    return (ctx->dnn_module->execute_model)(ctx->model, ctx->model_inputname, in_frame,
-                                            (const char **)&ctx->model_outputname, 1, out_frame);
+    DNNExecBaseParams exec_params = {
+        .input_name     = ctx->model_inputname,
+        .output_names   = (const char **)&ctx->model_outputname,
+        .nb_output      = 1,
+        .in_frame       = in_frame,
+        .out_frame      = out_frame,
+    };
+    return (ctx->dnn_module->execute_model)(ctx->model, &exec_params);
 }
 
 DNNReturnType ff_dnn_execute_model_async(DnnContext *ctx, AVFrame *in_frame, AVFrame *out_frame)
 {
-    return (ctx->dnn_module->execute_model_async)(ctx->model, ctx->model_inputname, in_frame,
-                                                  (const char **)&ctx->model_outputname, 1, out_frame);
+    DNNExecBaseParams exec_params = {
+        .input_name     = ctx->model_inputname,
+        .output_names   = (const char **)&ctx->model_outputname,
+        .nb_output      = 1,
+        .in_frame       = in_frame,
+        .out_frame      = out_frame,
+    };
+    return (ctx->dnn_module->execute_model_async)(ctx->model, &exec_params);
+}
+
+DNNReturnType ff_dnn_execute_model_classification(DnnContext *ctx, AVFrame *in_frame, AVFrame *out_frame, char *target)
+{
+    DNNExecClassificationParams class_params = {
+        {
+            .input_name     = ctx->model_inputname,
+            .output_names   = (const char **)&ctx->model_outputname,
+            .nb_output      = 1,
+            .in_frame       = in_frame,
+            .out_frame      = out_frame,
+        },
+        .target = target,
+    };
+    return (ctx->dnn_module->execute_model_async)(ctx->model, &class_params.base);
 }
 
 DNNAsyncStatusType ff_dnn_get_async_result(DnnContext *ctx, AVFrame **in_frame, AVFrame **out_frame)

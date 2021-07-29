@@ -25,6 +25,8 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/hats/trust_safety_sentiment_service.h"
+#include "chrome/browser/ui/hats/trust_safety_sentiment_service_factory.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/passwords/credential_leak_dialog_controller_impl.h"
@@ -66,7 +68,7 @@ int ManagePasswordsUIController::save_fallback_timeout_in_seconds_ = 90;
 
 namespace {
 
-password_manager::PasswordStore* GetProfilePasswordStore(
+password_manager::PasswordStoreInterface* GetProfilePasswordStore(
     content::WebContents* web_contents) {
   return PasswordStoreFactory::GetForProfile(
              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
@@ -74,7 +76,7 @@ password_manager::PasswordStore* GetProfilePasswordStore(
       .get();
 }
 
-password_manager::PasswordStore* GetAccountPasswordStore(
+password_manager::PasswordStoreInterface* GetAccountPasswordStore(
     content::WebContents* web_contents) {
   return AccountPasswordStoreFactory::GetForProfile(
              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
@@ -109,11 +111,11 @@ ManagePasswordsUIController::ManagePasswordsUIController(
       are_passwords_revealed_when_next_bubble_is_opened_(false) {
   passwords_data_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents));
-  password_manager::PasswordStore* profile_password_store =
+  password_manager::PasswordStoreInterface* profile_password_store =
       GetProfilePasswordStore(web_contents);
   if (profile_password_store)
     profile_password_store->AddObserver(this);
-  password_manager::PasswordStore* account_password_store =
+  password_manager::PasswordStoreInterface* account_password_store =
       GetAccountPasswordStore(web_contents);
   if (account_password_store)
     account_password_store->AddObserver(this);
@@ -313,6 +315,7 @@ void ManagePasswordsUIController::NotifyUnsyncedCredentialsWillBeDeleted(
 }
 
 void ManagePasswordsUIController::OnLoginsChanged(
+    password_manager::PasswordStoreInterface* /*store*/,
     const password_manager::PasswordStoreChangeList& changes) {
   password_manager::ui::State current_state = GetState();
   passwords_data_.ProcessLoginsChanged(changes);
@@ -320,6 +323,11 @@ void ManagePasswordsUIController::OnLoginsChanged(
     ClearPopUpFlagForBubble();
     UpdateBubbleAndIconVisibility();
   }
+}
+
+void ManagePasswordsUIController::OnLoginsRetained(
+    password_manager::PasswordStoreInterface* /*store*/,
+    const std::vector<password_manager::PasswordForm>& /*retained_passwords*/) {
 }
 
 void ManagePasswordsUIController::UpdateIconAndBubbleState(
@@ -496,6 +504,13 @@ void ManagePasswordsUIController::SavePassword(const std::u16string& username,
                                                const std::u16string& password) {
   UpdatePasswordFormUsernameAndPassword(username, password,
                                         passwords_data_.form_manager());
+
+  if (auto* sentiment_service =
+          TrustSafetySentimentServiceFactory::GetForProfile(
+              Profile::FromBrowserContext(
+                  web_contents()->GetBrowserContext()))) {
+    sentiment_service->SavedPassword();
+  }
 
   if (GetPasswordFormMetricsRecorder() && BubbleIsManualFallbackForSaving()) {
     GetPasswordFormMetricsRecorder()->RecordDetailedUserAction(
@@ -726,7 +741,10 @@ bool ManagePasswordsUIController::HasBrowserWindow() const {
 
 void ManagePasswordsUIController::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       !navigation_handle->HasCommitted() ||
       // Don't react to same-document (fragment) navigations.
       navigation_handle->IsSameDocument()) {
@@ -781,11 +799,11 @@ void ManagePasswordsUIController::DestroyAccountChooser() {
 }
 
 void ManagePasswordsUIController::WebContentsDestroyed() {
-  password_manager::PasswordStore* profile_password_store =
+  password_manager::PasswordStoreInterface* profile_password_store =
       GetProfilePasswordStore(web_contents());
   if (profile_password_store)
     profile_password_store->RemoveObserver(this);
-  password_manager::PasswordStore* account_password_store =
+  password_manager::PasswordStoreInterface* account_password_store =
       GetAccountPasswordStore(web_contents());
   if (account_password_store)
     account_password_store->RemoveObserver(this);

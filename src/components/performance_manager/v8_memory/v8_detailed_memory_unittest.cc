@@ -20,9 +20,9 @@
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
@@ -162,7 +162,31 @@ class V8DetailedMemoryDecoratorSingleProcessModeTest
 
 using V8DetailedMemoryDecoratorDeathTest = V8DetailedMemoryDecoratorTest;
 
-using V8DetailedMemoryRequestAnySeqTest = V8MemoryPerformanceManagerTestHarness;
+// TODO(crbug.com/1212792):
+// V8DetailedMemoryRequestAnySeqTest.SingleProcessRequest is sometimes timing
+// out on Windows without any logs to diagnose why. This adds a shorter timeout
+// around the test harness setup and teardown functions so we can tell if any
+// of them are the slow step. Remove this once the cause is found.
+class V8DetailedMemoryRequestAnySeqTest
+    : public V8MemoryPerformanceManagerTestHarness {
+ public:
+  using Super = V8MemoryPerformanceManagerTestHarness;
+
+  V8DetailedMemoryRequestAnySeqTest() = default;
+  ~V8DetailedMemoryRequestAnySeqTest() override = default;
+
+  void SetUp() override {
+    base::test::ScopedRunLoopTimeout timeout(FROM_HERE,
+                                             TestTimeouts::action_timeout());
+    Super::SetUp();
+  }
+
+  void TearDown() override {
+    base::test::ScopedRunLoopTimeout timeout(FROM_HERE,
+                                             TestTimeouts::action_timeout());
+    Super::TearDown();
+  }
+};
 
 TEST_F(V8DetailedMemoryDecoratorTest, InstantiateOnEmptyGraph) {
   V8DetailedMemoryRequest memory_request(kMinTimeBetweenRequests, graph());
@@ -1346,13 +1370,7 @@ TEST_F(V8DetailedMemoryDecoratorTest, ObserverOutlivesDecorator) {
   memory_request.RemoveObserver(&observer);
 }
 
-// TODO(crbug.com/1203439) Sometimes timing out on Windows.
-#if defined(OS_WIN)
-#define MAYBE_SingleProcessRequest DISABLED_SingleProcessRequest
-#else
-#define MAYBE_SingleProcessRequest SingleProcessRequest
-#endif
-TEST_F(V8DetailedMemoryDecoratorTest, MAYBE_SingleProcessRequest) {
+TEST_F(V8DetailedMemoryDecoratorTest, SingleProcessRequest) {
   // Create 2 renderer processes. Create one request that measures both of
   // them, and one request that measures only one.
   constexpr RenderProcessHostId kProcessId1 = RenderProcessHostId(0xFAB);
@@ -1597,8 +1615,8 @@ TEST_F(V8DetailedMemoryRequestAnySeqTest, RequestIsSequenceSafe) {
   // Create some test data to return for a measurement request.
   constexpr uint64_t kAssociatedBytes = 0x123;
   const blink::LocalFrameToken frame_token(main_frame()->GetFrameToken());
-  const content::GlobalFrameRoutingId frame_id(main_process_id().value(),
-                                               main_frame()->GetRoutingID());
+  const content::GlobalRenderFrameHostId frame_id(main_process_id().value(),
+                                                  main_frame()->GetRoutingID());
 
   V8DetailedMemoryProcessData expected_process_data;
   expected_process_data.set_shared_v8_bytes_used(kSharedBytes);
@@ -1655,7 +1673,7 @@ TEST_F(V8DetailedMemoryRequestAnySeqTest, RequestIsSequenceSafe) {
         // thread.
         EXPECT_NE(nullptr, content::RenderProcessHost::FromID(
                                main_process_id().value()));
-        const content::GlobalFrameRoutingId frame_id =
+        const content::GlobalRenderFrameHostId frame_id =
             expected_frame_data.cbegin()->first;
         EXPECT_NE(nullptr, content::RenderFrameHost::FromID(frame_id));
       });
@@ -1697,7 +1715,15 @@ TEST_F(V8DetailedMemoryRequestAnySeqTest, RequestIsSequenceSafe) {
 }
 
 TEST_F(V8DetailedMemoryRequestAnySeqTest, SingleProcessRequest) {
-  CreateCrossProcessChildFrame();
+  {
+    // TODO(crbug.com/1212792): This test is sometimes timing out on Windows
+    // without any logs to diagnose why. This puts a shorter timeout around
+    // the NavigationSimulator in CreateCrossProcessChildFrame so we can tell
+    // if this is the slow step. Remove this once the cause is found.
+    base::test::ScopedRunLoopTimeout navigation_timeout(
+        FROM_HERE, TestTimeouts::action_timeout());
+    CreateCrossProcessChildFrame();
+  }
 
   V8DetailedMemoryProcessData expected_process_data1;
   expected_process_data1.set_shared_v8_bytes_used(1U);
@@ -1738,6 +1764,13 @@ TEST_F(V8DetailedMemoryRequestAnySeqTest, SingleProcessRequest) {
   MockV8DetailedMemoryObserverAnySeq single_process_observer;
   single_process_request.AddObserver(&single_process_observer);
 
+  // TODO(crbug.com/1212792): This test is sometimes timing out on Windows
+  // without any logs to diagnose why. This puts a shorter timeout around the
+  // RunLoop below so we can tell if this is the slow step. Remove this once
+  // the cause is found.
+  base::test::ScopedRunLoopTimeout timeout(FROM_HERE,
+                                           TestTimeouts::action_timeout());
+
   // When a measurement is available the all process observer should be invoked
   // for both processes, and the single process observer only for process 1.
   base::RunLoop run_loop;
@@ -1755,13 +1788,6 @@ TEST_F(V8DetailedMemoryRequestAnySeqTest, SingleProcessRequest) {
               OnV8MemoryMeasurementAvailable(main_process_id(),
                                              expected_process_data1, _))
       .WillOnce(base::test::RunClosure(barrier));
-
-  // If all measurements don't arrive in a reasonable period, cancel the
-  // run loop. This ensures the test will fail with errors from the unfulfilled
-  // EXPECT_CALL statements, as expected, instead of timing out.
-  base::OneShotTimer timeout;
-  timeout.Start(FROM_HERE, TestTimeouts::action_timeout(),
-                run_loop.QuitClosure());
 
   // Now execute all the above tasks.
   run_loop.Run();
@@ -2007,6 +2033,43 @@ TEST_F(V8DetailedMemoryDecoratorTest, DedicatedWorkers) {
             V8DetailedMemoryExecutionContextData::ForWorkerNode(worker.get())
                 ->v8_bytes_used());
   worker->RemoveClientFrame(frame.get());
+}
+
+TEST_F(V8DetailedMemoryDecoratorTest, CanvasMemory) {
+  V8DetailedMemoryRequest memory_request(kMinTimeBetweenRequests, graph());
+
+  MockV8DetailedMemoryReporter reporter;
+
+  auto process = CreateNode<ProcessNodeImpl>(
+      content::PROCESS_TYPE_RENDERER,
+      RenderProcessHostProxy::CreateForTesting(kTestProcessID));
+
+  // Create a couple of frames with specified IDs.
+  auto page = CreateNode<PageNodeImpl>();
+
+  blink::LocalFrameToken frame_id = blink::LocalFrameToken();
+  auto frame = CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 1,
+                                         2, frame_id);
+
+  {
+    auto data = NewPerProcessV8MemoryUsage(1);
+    AddIsolateMemoryUsage(frame_id, 1001u, data->isolates[0].get());
+    AddIsolateCanvasMemoryUsage(frame_id, 2002u, data->isolates[0].get());
+
+    ExpectBindAndRespondToQuery(&reporter, std::move(data));
+  }
+
+  task_env().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&reporter);
+
+  ASSERT_TRUE(V8DetailedMemoryExecutionContextData::ForFrameNode(frame.get()));
+  EXPECT_EQ(1001u,
+            V8DetailedMemoryExecutionContextData::ForFrameNode(frame.get())
+                ->v8_bytes_used());
+  EXPECT_EQ(2002u,
+            V8DetailedMemoryExecutionContextData::ForFrameNode(frame.get())
+                ->canvas_bytes_used()
+                .value());
 }
 
 }  // namespace v8_memory

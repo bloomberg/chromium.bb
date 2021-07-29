@@ -35,7 +35,6 @@ class SessionSyncServiceImpl : public SessionSyncService {
   base::CallbackListSubscription SubscribeToForeignSessionsChanged(
       const base::RepeatingClosure& cb) override WARN_UNUSED_RESULT;
 
-  // For ProfileSyncService to initialize the controller for SESSIONS.
   base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate()
       override;
 
@@ -46,10 +45,6 @@ class SessionSyncServiceImpl : public SessionSyncService {
   // Returns OpenTabsUIDelegate regardless of sync being enabled or disabled,
   // useful for tests.
   OpenTabsUIDelegate* GetUnderlyingOpenTabsUIDelegateForTest();
-
-  SyncSessionsClient* GetSessionsClientForTest() {
-    return sessions_client_.get();
-  }
 
  private:
   void NotifyForeignSessionUpdated();

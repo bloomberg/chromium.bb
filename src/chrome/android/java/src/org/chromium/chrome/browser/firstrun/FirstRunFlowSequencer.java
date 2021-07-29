@@ -20,11 +20,11 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.SearchEnginePromoType;
@@ -71,11 +71,13 @@ public abstract class FirstRunFlowSequencer  {
      */
     public void start() {
         long childAccountStatusStart = SystemClock.elapsedRealtime();
-        ChildAccountService.checkChildAccountStatus(status -> {
-            RecordHistogram.recordTimesHistogram("MobileFre.ChildAccountStatusDuration",
-                    SystemClock.elapsedRealtime() - childAccountStatusStart);
-            initializeSharedState(status);
-            processFreEnvironmentPreNative();
+        AccountManagerFacadeProvider.getInstance().getAccounts().then(accounts -> {
+            ChildAccountService.checkChildAccountStatus(accounts, status -> {
+                RecordHistogram.recordTimesHistogram("MobileFre.ChildAccountStatusDuration",
+                        SystemClock.elapsedRealtime() - childAccountStatusStart);
+                initializeSharedState(status, accounts);
+                processFreEnvironmentPreNative();
+            });
         });
     }
 
@@ -100,11 +102,6 @@ public abstract class FirstRunFlowSequencer  {
     }
 
     @VisibleForTesting
-    protected List<Account> getGoogleAccounts() {
-        return AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts();
-    }
-
-    @VisibleForTesting
     protected boolean shouldSkipFirstUseHints() {
         return Settings.Secure.getInt(
                        mActivity.getContentResolver(), Settings.Secure.SKIP_FIRST_USE_HINTS, 0)
@@ -124,7 +121,7 @@ public abstract class FirstRunFlowSequencer  {
     @VisibleForTesting
     protected boolean shouldShowSearchEnginePage() {
         @SearchEnginePromoType
-        int searchPromoType = AppHooks.get().getLocaleManager().getSearchEnginePromoShowType();
+        int searchPromoType = LocaleManager.getInstance().getSearchEnginePromoShowType();
         return searchPromoType == SearchEnginePromoType.SHOW_NEW
                 || searchPromoType == SearchEnginePromoType.SHOW_EXISTING;
     }
@@ -134,12 +131,11 @@ public abstract class FirstRunFlowSequencer  {
         FirstRunSignInProcessor.setFirstRunFlowSignInComplete(true);
     }
 
-    void initializeSharedState(@ChildAccountStatus.Status int childAccountStatus) {
+    @VisibleForTesting
+    void initializeSharedState(
+            @ChildAccountStatus.Status int childAccountStatus, List<Account> accounts) {
         mChildAccountStatus = childAccountStatus;
-        // Note that fetching accounts isn't instrumented because it's typically very fast. It seems
-        // fetching child account status causes accounts to be cached. Revisit this if the ordering
-        // of these calls is changed.
-        mGoogleAccounts = getGoogleAccounts();
+        mGoogleAccounts = accounts;
     }
 
     void processFreEnvironmentPreNative() {

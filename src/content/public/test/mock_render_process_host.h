@@ -34,6 +34,10 @@
 #include "content/public/browser/android/child_process_importance.h"
 #endif
 
+namespace blink {
+class StorageKey;
+}  // namespace blink
+
 namespace network {
 namespace mojom {
 
@@ -92,6 +96,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   unsigned int GetFrameDepth() override;
   bool GetIntersectsViewport() override;
   bool IsForGuestsOnly() override;
+  bool IsJitDisabled() override;
   void OnMediaStreamAdded() override;
   void OnMediaStreamRemoved() override;
   void OnForegroundServiceWorkerAdded() override;
@@ -140,7 +145,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void BindReceiver(mojo::GenericPendingReceiver receiver) override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
-  const base::TimeTicks& GetInitTimeForNavigationMetrics() override;
+  const base::TimeTicks& GetLastInitTime() override;
   bool IsProcessBackgrounded() override;
   size_t GetKeepAliveRefCount() const;
   void IncrementKeepAliveRefCount() override;
@@ -164,7 +169,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void BindCacheStorage(
       const network::CrossOriginEmbedderPolicy&,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override;
   void BindFileSystemManager(
       const url::Origin& origin,
@@ -175,7 +180,7 @@ class MockRenderProcessHost : public RenderProcessHost {
       mojo::PendingReceiver<blink::mojom::FileSystemAccessManager> receiver)
       override {}
   void BindIndexedDB(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void BindBucketManagerHost(
       const url::Origin& origin,

@@ -10,14 +10,15 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/location.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/one_shot_event.h"
 #include "base/ranges/algorithm.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -309,11 +310,11 @@ void ToolbarActionsModel::InitializeActionList() {
   if (!profile_->IsOffTheRecord() && !action_ids_.empty()) {
     base::UmaHistogramCounts100("Extensions.Toolbar.PinnedExtensionCount2",
                                 pinned_action_ids_.size());
-    double percentage_double =
-        double{pinned_action_ids_.size()} / double{action_ids_.size()} * 100.0;
-    int percentage = int{percentage_double};
+    double percentage_double = static_cast<double>(pinned_action_ids_.size()) /
+                               action_ids_.size() * 100.0;
     base::UmaHistogramPercentageObsoleteDoNotUse(
-        "Extensions.Toolbar.PinnedExtensionPercentage3", percentage);
+        "Extensions.Toolbar.PinnedExtensionPercentage3",
+        base::ClampRound(percentage_double));
   }
 }
 

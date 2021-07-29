@@ -47,15 +47,15 @@ const globalThis: any = global;
  * the left edge of the bounding box.
  */
 export const getElementPosition =
-    async (selector: string|puppeteer.JSHandle, root?: puppeteer.JSHandle, maxPixelsFromLeft?: number) => {
-  let element;
+    async (selector: string|puppeteer.ElementHandle, root?: puppeteer.JSHandle, maxPixelsFromLeft?: number) => {
+  let element: puppeteer.ElementHandle;
   if (typeof selector === 'string') {
     element = await waitFor(selector, root);
   } else {
     element = selector;
   }
 
-  const rect = await element.evaluate(element => {
+  const rect = await element.evaluate((element: Element) => {
     if (!element) {
       return {};
     }
@@ -84,7 +84,7 @@ interface ClickOptions extends puppeteer.ClickOptions {
 }
 
 export const click = async (
-    selector: string|puppeteer.JSHandle,
+    selector: string|puppeteer.ElementHandle,
     options?: {root?: puppeteer.JSHandle, clickOptions?: ClickOptions, maxPixelsFromLeft?: number}) => {
   const {frontend} = getBrowserAndPages();
   const clickableElement =
@@ -271,6 +271,9 @@ export const waitForNoElementsWithTextContent =
 export const waitForFunction = async<T>(fn: () => Promise<T|undefined>, asyncScope = new AsyncScope()): Promise<T> => {
   return await asyncScope.exec(async () => {
     while (true) {
+      if (asyncScope.isCanceled()) {
+        throw new Error('Test timed out');
+      }
       const result = await fn();
       if (result) {
         return result;
@@ -398,21 +401,21 @@ export const step = async (description: string, step: Function) => {
 };
 
 export const waitForAnimationFrame = async () => {
-  const {target} = getBrowserAndPages();
+  const {frontend} = getBrowserAndPages();
 
-  await target.waitForFunction(() => {
+  await frontend.waitForFunction(() => {
     return new Promise(resolve => {
       requestAnimationFrame(resolve);
     });
   });
 };
 
-export const activeElement = async () => {
-  const {target} = getBrowserAndPages();
+export const activeElement = async(): Promise<puppeteer.ElementHandle> => {
+  const {frontend} = getBrowserAndPages();
 
   await waitForAnimationFrame();
 
-  return target.evaluateHandle(() => {
+  return frontend.evaluateHandle(() => {
     let activeElement = document.activeElement;
 
     while (activeElement && activeElement.shadowRoot) {
@@ -428,18 +431,35 @@ export const activeElementTextContent = async () => {
   return element.evaluate(node => node.textContent);
 };
 
-export const tabForward = async () => {
-  const {target} = getBrowserAndPages();
-
-  await target.keyboard.press('Tab');
+export const activeElementAccessibleName = async () => {
+  const element = await activeElement();
+  return element.evaluate(node => node.getAttribute('aria-label'));
 };
 
-export const tabBackward = async () => {
-  const {target} = getBrowserAndPages();
+export const tabForward = async (page?: puppeteer.Page) => {
+  let targetPage: puppeteer.Page;
+  if (page) {
+    targetPage = page;
+  } else {
+    const {frontend} = getBrowserAndPages();
+    targetPage = frontend;
+  }
 
-  await target.keyboard.down('Shift');
-  await target.keyboard.press('Tab');
-  await target.keyboard.up('Shift');
+  await targetPage.keyboard.press('Tab');
+};
+
+export const tabBackward = async (page?: puppeteer.Page) => {
+  let targetPage: puppeteer.Page;
+  if (page) {
+    targetPage = page;
+  } else {
+    const {frontend} = getBrowserAndPages();
+    targetPage = frontend;
+  }
+
+  await targetPage.keyboard.down('Shift');
+  await targetPage.keyboard.press('Tab');
+  await targetPage.keyboard.up('Shift');
 };
 
 export const selectTextFromNodeToNode = async (
@@ -569,27 +589,59 @@ export function assertNotNull<T>(val: T): asserts val is NonNullable<T> {
 // on Node modules resolution to import it.
 export {getBrowserAndPages, getTestServerPort, reloadDevTools, puppeteer};
 
-export function matchArray(actual: Array<string>, expected: Array<string|RegExp>): true|string {
+export function matchString(actual: string, expected: string|RegExp): true|string {
+  if (typeof expected === 'string') {
+    if (actual !== expected) {
+      return `Expected item "${actual}" to equal "${expected}"`;
+    }
+  } else if (!expected.test(actual)) {
+    return `Expected item "${actual}" to match "${expected}"`;
+  }
+  return true;
+}
+
+export function matchArray<A, E>(
+    actual: A[], expected: E[], comparator: (actual: A, expected: E) => true | string): true|string {
   if (actual.length !== expected.length) {
     return `Expected [${actual.map(x => `"${x}"`).join(', ')}] to have length ${expected.length}`;
   }
 
   for (let i = 0; i < expected.length; ++i) {
-    const expectedItem = expected[i];
-    if (typeof expectedItem === 'string') {
-      if (actual[i] !== expectedItem) {
-        return `Expected item at position ${i} which was "${actual[i]}" to equal "${expectedItem}"`;
-      }
-    } else if (!expectedItem.test(actual[i])) {
-      return `Expected item at position ${i} which was "${actual[i]}" to match "${expectedItem}"`;
+    const result = comparator(actual[i], expected[i]);
+    if (result !== true) {
+      return `Mismatch in row ${i}: ${result}`;
     }
   }
   return true;
 }
 
-export function assertMatchArray(actual: Array<string>, expected: Array<string|RegExp>) {
-  const result = matchArray(actual, expected);
-  if (result !== true) {
-    throw new AssertionError(result);
-  }
+export function assertOk<Args extends unknown[]>(check: (...args: Args) => true | string) {
+  return (...args: Args) => {
+    const result = check(...args);
+    if (result !== true) {
+      throw new AssertionError(result);
+    }
+  };
+}
+
+export function matchTable<A, E>(
+    actual: A[][], expected: E[][], comparator: (actual: A, expected: E) => true | string) {
+  return matchArray(actual, expected, (actual, expected) => matchArray<A, E>(actual, expected, comparator));
+}
+
+export const matchStringArray = (actual: string[], expected: (string|RegExp)[]) =>
+    matchArray(actual, expected, matchString);
+
+export const assertMatchArray = assertOk(matchStringArray);
+
+export const matchStringTable = (actual: string[][], expected: (string|RegExp)[][]) =>
+    matchTable(actual, expected, matchString);
+
+export async function renderCoordinatorQueueEmpty(): Promise<void> {
+  const {frontend} = await getBrowserAndPages();
+  await frontend.evaluate(() => {
+    return new Promise(resolve => {
+      globalThis.addEventListener('renderqueueempty', resolve, {once: true});
+    });
+  });
 }

@@ -24,6 +24,7 @@
 Калі птушка побач з параметрам "<ph name="SERVICE_SCRIPT_NAME" />" была ўжо пастаўлена, зніміце яе і пастаўце зноў.</translation>
 <translation id="225614027745146050">Вітаем</translation>
 <translation id="2320166752086256636">Схаваць клавіятуру</translation>
+<translation id="2329392777730037872">Не ўдалося адкрыць URL-адрас <ph name="URL" /> на кліенцкай прыладзе.</translation>
 <translation id="2333212046079545895">Аўтарскае права належыць Google LLC, 2021. Усе правы абаронены.</translation>
 <translation id="2359808026110333948">Працягнуць</translation>
 <translation id="2366718077645204424">Не ўдалося звязацца з хостам. Магчыма, праблема з канфігурацыяй сеткі, якой вы карыстаецеся.</translation>
@@ -67,6 +68,7 @@
 <translation id="4176825807642096119">Код доступу</translation>
 <translation id="4227991223508142681">Утыліта забеспячэння хоста</translation>
 <translation id="4240294130679914010">Праграма выдалення хоста Chromoting</translation>
+<translation id="4257751272692708833">Праграма для пераадрасацыі URL-адраса <ph name="PRODUCT_NAME" /></translation>
 <translation id="4277736576214464567">Несапраўдны код доступу. Паўтарыце спробу.</translation>
 <translation id="4281844954008187215">Умовы выкарыстання</translation>
 <translation id="4405930547258349619">Асноўная бібліятэка</translation>
@@ -87,6 +89,7 @@
 <translation id="4867841927763172006">Адправіць націсканне клавішы PrtScn</translation>
 <translation id="4974476491460646149">Падключэнне для хоста <ph name="HOSTNAME" /> спынена</translation>
 <translation id="4985296110227979402">Спачатку наладзьце камп'ютар для аддаленага доступу</translation>
+<translation id="4987330545941822761">Аддалены працоўны стол Chrome не можа вызначыць браўзер для лакальнага адкрыцця URL-адрасоў. Выберыце браўзер са спіса ніжэй.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (па-за сеткай)</translation>
 <translation id="507204348399810022">Сапраўды выключыць аддаленыя падключэнні да хоста <ph name="HOSTNAME" />?</translation>
 <translation id="5170982930780719864">Няправільны ідэнтыфікатар хоста.</translation>
@@ -121,6 +124,7 @@
 <translation id="6612717000975622067">Адправіць Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Абагуліць</translation>
 <translation id="677755392401385740">Хост запушчаны для карыстальніка: <ph name="HOST_USERNAME" />.</translation>
+<translation id="6902524959760471898">Праграма-памочнік для адкрыцця URL-адраса ў кліенце <ph name="PRODUCT_NAME" /></translation>
 <translation id="6939719207673461467">Паказаць або схаваць клавіятуру.</translation>
 <translation id="6963936880795878952">Падключэнні да аддаленага камп'ютара часова заблакіраваны, бо нехта спрабаваў падключыцца да яго з выкарыстаннем няправільнага PIN-кода. Паўтарыце спробу пазней.</translation>
 <translation id="6965382102122355670">ОК</translation>
@@ -133,6 +137,7 @@
 <translation id="7144878232160441200">Паўтарыць</translation>
 <translation id="7312846573060934304">Хост па-за сеткай</translation>
 <translation id="7319983568955948908">Спыніць абагульванне</translation>
+<translation id="7359298090707901886">Выбраны браўзер не можа выкарыстоўвацца для адкрыцця URL-адрасоў на лакальнай машыне.</translation>
 <translation id="7401733114166276557">Аддалены працоўны стол Chrome</translation>
 <translation id="7434397035092923453">Кліенту адмоўлена ў доступе: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Падключыўся кліент: <ph name="CLIENT_USERNAME" />.</translation>

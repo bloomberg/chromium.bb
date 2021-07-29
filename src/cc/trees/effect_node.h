@@ -10,8 +10,10 @@
 #include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
 #include "components/viz/common/surfaces/subtree_capture_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/mask_filter_info.h"
 #include "ui/gfx/rrect_f.h"
@@ -95,6 +97,7 @@ struct CC_EXPORT EffectNode {
   gfx::Vector2dF surface_contents_scale;
 
   viz::SubtreeCaptureId subtree_capture_id;
+  gfx::Size subtree_size;
 
   bool cache_render_surface : 1;
   bool has_copy_request : 1;

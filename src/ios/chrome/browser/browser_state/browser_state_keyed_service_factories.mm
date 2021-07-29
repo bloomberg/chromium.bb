@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/device_sharing/device_sharing_manager_factory.h"
 #include "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
 #include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
+#include "ios/chrome/browser/download/background_service/background_download_service_factory.h"
 #include "ios/chrome/browser/download/browser_download_service_factory.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
@@ -49,15 +50,15 @@
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/signin_browser_state_info_updater_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
-#include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
 #include "ios/chrome/browser/translate/translate_ranker_factory.h"
@@ -109,16 +110,17 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ios::WebDataServiceFactory::GetInstance();
   ios::WebHistoryServiceFactory::GetInstance();
   translate::TranslateRankerFactory::GetInstance();
-  suggestions::SuggestionsServiceFactory::GetInstance();
   AuthenticationServiceFactory::GetInstance();
   BreadcrumbManagerKeyedServiceFactory::GetInstance();
   BrowserDownloadServiceFactory::GetInstance();
   BrowsingDataRemoverFactory::GetInstance();
+  ChromeAccountManagerServiceFactory::GetInstance();
   ChromePasswordProtectionServiceFactory::GetInstance();
   ConsentAuditorFactory::GetInstance();
   DeviceSharingManagerFactory::GetInstance();
   DiscoverFeedServiceFactory::GetInstance();
   DomainDiversityReporterFactory::GetInstance();
+  BackgroundDownloadServiceFactory::GetInstance();
   GoogleLogoServiceFactory::GetInstance();
   IdentityManagerFactory::GetInstance();
   IOSChromeContentSuggestionsServiceFactory::GetInstance();
@@ -134,7 +136,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   LanguageModelManagerFactory::GetInstance();
   ManagedBookmarkServiceFactory::GetInstance();
   ModelTypeStoreServiceFactory::GetInstance();
-  ProfileSyncServiceFactory::GetInstance();
+  SyncServiceFactory::GetInstance();
   ReadingListModelFactory::GetInstance();
   RealTimeUrlLookupServiceFactory::GetInstance();
   SigninBrowserStateInfoUpdaterFactory::GetInstance();

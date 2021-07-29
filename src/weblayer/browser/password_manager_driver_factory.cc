@@ -4,6 +4,7 @@
 
 #include "weblayer/browser/password_manager_driver_factory.h"
 
+#include "base/stl_util.h"
 #include "components/password_manager/content/browser/bad_message.h"
 #include "components/site_isolation/site_isolation_policy.h"
 #include "content/public/browser/browser_context.h"
@@ -67,6 +68,7 @@ class PasswordManagerDriverFactory::PasswordManagerDriver
   void RecordSavePasswordProgress(const std::string& log) override {}
   void UserModifiedPasswordField() override {}
   void UserModifiedNonPasswordField(autofill::FieldRendererId renderer_id,
+                                    const std::u16string& field_name,
                                     const std::u16string& value) override {}
   void ShowPasswordSuggestions(base::i18n::TextDirection text_direction,
                                const std::u16string& typed_username,

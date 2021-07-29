@@ -5,6 +5,7 @@
 #ifndef NET_COOKIES_COOKIE_INCLUSION_STATUS_H_
 #define NET_COOKIES_COOKIE_INCLUSION_STATUS_H_
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -58,7 +59,9 @@ class NET_EXPORT CookieInclusionStatus {
 
     // Statuses only applied when creating/setting cookies:
 
-    // Cookie was malformed and could not be stored.
+    // Cookie was malformed and could not be stored, due to problem(s) while
+    // parsing.
+    // TODO(crbug.com/1228815): Use more specific reasons for parsing errors.
     EXCLUDE_FAILURE_TO_STORE = 11,
     // Attempted to set a cookie from a scheme that does not support cookies.
     EXCLUDE_NONCOOKIEABLE_SCHEME = 12,
@@ -176,6 +179,38 @@ class NET_EXPORT CookieInclusionStatus {
     // TODO(crbug.com/1166211): Remove when no longer needed.
     WARN_SAMESITE_LAX_EXCLUDED_AFTER_BUGFIX_1166211 = 12,
 
+    // This cookie was SameSite=None and was included, but would have been
+    // excluded if it had been SameParty and the SameParty context had been
+    // computed using *either* top & current or the whole ancestor tree.
+    WARN_SAMESITE_NONE_REQUIRED = 13,
+    // This cookie was SameSite=None, was included, would have been included if
+    // it had been SameParty and the SameParty context type had been computed
+    // with only the top frame & resource URL, but would have been excluded if
+    // the SameParty context type had been computed using all ancestor frames.
+    WARN_SAMESITE_NONE_INCLUDED_BY_SAMEPARTY_TOP_RESOURCE = 14,
+    // This cookie was SameSite=None, was included, and would have been included
+    // if it had been SameParty and the SameParty context type had been computed
+    // using all ancestor frames.
+    WARN_SAMESITE_NONE_INCLUDED_BY_SAMEPARTY_ANCESTORS = 15,
+    // This cookie was SameSite=None, was included, and would have been included
+    // if it had been SameSite=Lax.
+    WARN_SAMESITE_NONE_INCLUDED_BY_SAMESITE_LAX = 16,
+    // This cookie was SameSite=None, was included, and would have been included
+    // if it had been SameSite=Strict.
+    WARN_SAMESITE_NONE_INCLUDED_BY_SAMESITE_STRICT = 17,
+
+    // The cookie would have been included prior to the spec change considering
+    // redirects in the SameSite context calculation
+    // (https://github.com/httpwg/http-extensions/pull/1348)
+    // but would have been excluded after the spec change, due to a cross-site
+    // redirect causing the SameSite context calculation to be downgraded.
+    // This is applied if and only if the cookie's inclusion was changed by
+    // considering redirect chains (and is applied regardless of which context
+    // was actually used for the inclusion decision). This is not applied if
+    // the context was downgraded but the cookie would have been
+    // included/excluded in both cases.
+    WARN_CROSS_SITE_REDIRECT_DOWNGRADE_CHANGES_INCLUSION = 18,
+
     // This should be kept last.
     NUM_WARNING_REASONS
   };
@@ -214,6 +249,8 @@ class NET_EXPORT CookieInclusionStatus {
   explicit CookieInclusionStatus(ExclusionReason reason);
   // Makes a status that contains the given exclusion reason and warning.
   CookieInclusionStatus(ExclusionReason reason, WarningReason warning);
+  // Makes a status that contains the given warning.
+  explicit CookieInclusionStatus(WarningReason warning);
 
   bool operator==(const CookieInclusionStatus& other) const;
   bool operator!=(const CookieInclusionStatus& other) const;
@@ -239,8 +276,8 @@ class NET_EXPORT CookieInclusionStatus {
   void RemoveExclusionReasons(const std::vector<ExclusionReason>& reasons);
 
   // If the cookie would have been excluded for reasons other than
-  // SAMESITE_UNSPECIFIED_TREATED_AS_LAX or SAMESITE_NONE_INSECURE, don't bother
-  // warning about it (clear the warning).
+  // SameSite-related reasons, don't bother warning about it (clear the
+  // warning).
   void MaybeClearSameSiteWarning();
 
   // Whether to record the breaking downgrade metrics if the cookie is included

@@ -95,8 +95,9 @@ class QUICHE_EXPORT_PRIVATE HpackEncoder {
 
   void DisableCompression() { enable_compression_ = false; }
 
-  // Returns the estimate of dynamically allocated memory in bytes.
-  size_t EstimateMemoryUsage() const;
+  // Returns the current dynamic table size, including the 32 bytes per entry
+  // overhead mentioned in RFC 7541 section 4.1.
+  size_t GetDynamicTableSize() const { return header_table_.size(); }
 
  private:
   friend class test::HpackEncoderPeer;

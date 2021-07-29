@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/login/session/user_session_initializer.h"
 
+#include "ash/components/pcie_peripheral/pcie_peripheral_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/files/file_util.h"
@@ -29,8 +30,8 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/chromeos/phonehub/phone_hub_manager_factory.h"
-#include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
-#include "chrome/browser/chromeos/policy/extension_install_event_log_manager_wrapper.h"
+#include "chrome/browser/chromeos/policy/reporting/app_install_event_log_manager_wrapper.h"
+#include "chrome/browser/chromeos/policy/reporting/extension_install_event_log_manager_wrapper.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/ui/ash/clipboard_image_model_factory_impl.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/media_client_impl.h"
+#include "chrome/browser/ui/webui/settings/chromeos/peripheral_data_access_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/pciguard/pciguard_client.h"
 #include "chromeos/network/network_cert_loader.h"
@@ -255,13 +257,14 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
 
     VmCameraMicManager::Get()->OnPrimaryUserSessionStarted(primary_profile_);
 
-    bool pcie_tunneling_allowed = false;
-    CrosSettings::Get()->GetBoolean(
-        chromeos::kDevicePeripheralDataAccessEnabled, &pcie_tunneling_allowed);
     // Pciguard can only be set by non-guest, primary users. By default,
     // Pciguard is turned on.
+    if (PciePeripheralManager::IsInitialized()) {
+      PciePeripheralManager::Get()->SetPcieTunnelingAllowedState(
+          chromeos::settings::PeripheralDataAccessHandler::GetPrefState());
+    }
     PciguardClient::Get()->SendExternalPciDevicesPermissionState(
-        pcie_tunneling_allowed);
+        chromeos::settings::PeripheralDataAccessHandler::GetPrefState());
 
     if (features::IsInputNoiseCancellationUiEnabled()) {
       chromeos::CrasAudioClient::Get()->GetNoiseCancellationSupported(

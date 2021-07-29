@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
@@ -41,11 +41,13 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
@@ -73,22 +75,14 @@ constexpr gfx::Insets kTitleViewPadding(8, 16, 8, 16);
 // Spacing between buttons in the title view (dp).
 constexpr int kTitleViewChildSpacing = 16;
 
-// Returns true if the |palette_tray| is on an internal display or on every
-// display if requested from the command line.
-bool ShouldShowOnDisplay(PaletteTray* palette_tray) {
-  if (stylus_utils::IsPaletteEnabledOnEveryDisplay())
-    return true;
-
-  // |widget| is null when this function is called from PaletteTray constructor
-  // before it is added to a widget.
-  views::Widget* const widget = palette_tray->GetWidget();
-  if (!widget)
-    return false;
-
-  const display::Display& display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(
-          widget->GetNativeWindow());
-  return display.IsInternal();
+bool HasSomeStylusDisplay() {
+  for (const ui::TouchscreenDevice& device :
+       ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices()) {
+    if (device.has_stylus) {
+      return true;
+    }
+  }
+  return false;
 }
 
 class BatteryView : public views::View {
@@ -133,6 +127,7 @@ class BatteryView : public views::View {
 
     icon_->SetImage(stylus_battery_delegate_.GetBatteryImage());
     label_->SetVisible(stylus_battery_delegate_.IsBatteryLevelLow() &&
+                       stylus_battery_delegate_.IsBatteryStatusEligible() &&
                        !stylus_battery_delegate_.IsBatteryStatusStale() &&
                        !stylus_battery_delegate_.IsBatteryCharging());
   }
@@ -254,6 +249,7 @@ PaletteTray::PaletteTray(Shelf* shelf)
   tray_container()->AddChildView(icon_);
 
   Shell::Get()->AddShellObserver(this);
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 PaletteTray::~PaletteTray() {
@@ -262,6 +258,7 @@ PaletteTray::~PaletteTray() {
 
   ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
 }
 
 // static
@@ -288,8 +285,59 @@ bool PaletteTray::ContainsPointInScreen(const gfx::Point& point) {
 
 bool PaletteTray::ShouldShowPalette() const {
   return is_palette_enabled_ && stylus_utils::HasStylusInput() &&
-         (display::Display::HasInternalDisplay() ||
+         (HasSomeStylusDisplay() ||
           stylus_utils::IsPaletteEnabledOnEveryDisplay());
+}
+
+bool PaletteTray::ShouldShowOnDisplay() {
+  if (stylus_utils::IsPaletteEnabledOnEveryDisplay() ||
+      display_has_stylus_for_testing_)
+    return true;
+
+  // |widget| is null when this function is called from PaletteTray constructor
+  // before it is added to a widget.
+  views::Widget* const widget = GetWidget();
+  if (!widget)
+    return false;
+
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          widget->GetNativeWindow());
+
+  // Is there a TouchscreenDevice which targets this display or one of
+  // the active mirrors?
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::DisplayIdList ids;
+  ids.push_back(display.id());
+  if (display_manager->IsInMirrorMode()) {
+    display::DisplayIdList mirrors =
+        display_manager->GetMirroringDestinationDisplayIdList();
+    ids.insert(ids.end(), mirrors.begin(), mirrors.end());
+    ids.push_back(display_manager->mirroring_source_id());
+  }
+  for (const ui::TouchscreenDevice& device :
+       ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices()) {
+    if (device.has_stylus && std::find(ids.begin(), ids.end(),
+                                       device.target_display_id) != ids.end()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool PaletteTray::IsWidgetOnInternalDisplay() {
+  // |widget| is null when this function is called from PaletteTray constructor
+  // before it is added to a widget.
+  views::Widget* const widget = GetWidget();
+  if (!widget)
+    return false;
+
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          widget->GetNativeWindow());
+
+  return display.IsInternal();
 }
 
 void PaletteTray::OnStylusEvent(const ui::TouchEvent& event) {
@@ -357,6 +405,10 @@ void PaletteTray::OnLockStateChanged(bool locked) {
   }
 }
 
+void PaletteTray::OnDisplayConfigurationChanged() {
+  UpdateIconVisibility();
+}
+
 void PaletteTray::ClickedOutsideBubble() {
   if (num_actions_in_bubble_ == 0) {
     RecordPaletteOptionsUsage(PaletteTrayOptions::PALETTE_CLOSED_NO_ACTION,
@@ -390,6 +442,10 @@ void PaletteTray::OnInputDeviceConfigurationChanged(
   }
 }
 
+void PaletteTray::OnTouchDeviceAssociationChanged() {
+  UpdateIconVisibility();
+}
+
 void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
   // Device may have a stylus but it has been forcibly disabled.
   if (!stylus_utils::HasStylusInput())
@@ -397,6 +453,10 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
 
   // Don't do anything if the palette tray is not shown.
   if (!GetVisible())
+    return;
+
+  // Only respond on the internal display.
+  if (!IsWidgetOnInternalDisplay())
     return;
 
   // Auto show/hide the palette if allowed by the user.
@@ -686,10 +746,15 @@ bool PaletteTray::HasSeenStylus() {
   return local_state_ && local_state_->GetBoolean(prefs::kHasSeenStylus);
 }
 
+void PaletteTray::SetDisplayHasStylusForTesting() {
+  display_has_stylus_for_testing_ = true;
+  UpdateIconVisibility();
+}
+
 void PaletteTray::UpdateIconVisibility() {
   bool visible_preferred =
       is_palette_enabled_ && stylus_utils::HasStylusInput() &&
-      ShouldShowOnDisplay(this) && palette_utils::IsInUserSession();
+      ShouldShowOnDisplay() && palette_utils::IsInUserSession();
   SetVisiblePreferred(visible_preferred);
   if (visible_preferred)
     UpdateLayout();

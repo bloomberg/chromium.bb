@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Interneti-ühenduse kontrollimine</translation>
 <translation id="2388990488038464401">Kas soovite telefonist sellele numbrile helistada?</translation>
+<translation id="2435457462613246316">Kuva parool</translation>
 <translation id="24452542372838207">Laienda märguannet</translation>
 <translation id="2445449901874883781">Kasuta kõrget tihedust</translation>
 <translation id="2482878487686419369">Märguanded</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 aasta tagasi}other{# aastat tagasi}}</translation>
 <translation id="2878511608894704031">Kustuta kõik</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 p pärast}other{# p pärast}}</translation>
+<translation id="2922712708897119705">Veerg <ph name="COLUMN_NAME" /> on sorditud kahanevas järjestuses.</translation>
 <translation id="2931838996092594335">klõpsake</translation>
 <translation id="2981684127883932071">Soovitused on kuvatud</translation>
 <translation id="3036649622769666520">Failide avamine</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Menüü</translation>
 <translation id="3909791450649380159">Lõ&amp;ika</translation>
 <translation id="3990502903496589789">Parem serv</translation>
+<translation id="3994749195054421561">Veerg <ph name="COLUMN_NAME" /> on sorditud kasvavas järjestuses.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 lugemata märguanne}other{# lugemata märguannet}}</translation>
 <translation id="4202807286478387388">liigu</translation>
 <translation id="4250229828105606438">Ekraanipilt</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Eemalda lõikelaualt.</translation>
 <translation id="4316910396681052118">KÕIK RAKENDUSED</translation>
 <translation id="4491109536499578614">Image</translation>
+<translation id="4565377596337484307">Peida parool</translation>
 <translation id="4588090240171750605">Keri paremale</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, tärnhinnang <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, rakenduse soovitus</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Leht <ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Kustuta otsingukastis olev tekst</translation>
 <translation id="6040143037577758943">Sulge</translation>
+<translation id="6117103120090651229">Keskmine nupp</translation>
 <translation id="6119846243427417423">aktiveeri</translation>
 <translation id="6129953537138746214">Tühik</translation>
 <translation id="6134259848159370930">Otsige oma seadmest, rakendustest, seadetest ja veebist.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Laiendage kõikide rakenduste kuvamiseks</translation>
 <translation id="6165508094623778733">Lisateave</translation>
 <translation id="6166852626429024716">Otsige oma seadmest, rakendustest, seadetest, veebist …</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> on valitud.</translation>
 <translation id="6264365405983206840">Vali &amp;kõik</translation>
 <translation id="6351032674660237738">RAKENDUSTE SOOVITUSED</translation>
 <translation id="6364916375976753737">Keri vasakule</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut on jäänud}other{# minutit on jäänud}}</translation>
 <translation id="7430878839542012341">Kas kustutada see otsing teie ajaloost?</translation>
+<translation id="7437971918971306061">Veerg <ph name="COLUMN_NAME" /> on sortimata.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emotikonid</translation>
 <translation id="7620655452534002301">Eemaldatud.</translation>

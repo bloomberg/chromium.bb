@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/file_system_access/file_system_file_handle.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_error.mojom-blink.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_file_writer.mojom-blink.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_transfer_token.mojom-blink.h"
@@ -13,6 +14,8 @@
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/file_system_access/file_system_access_error.h"
+#include "third_party/blink/renderer/modules/file_system_access/file_system_access_file_delegate.h"
+#include "third_party/blink/renderer/modules/file_system_access/file_system_sync_access_handle.h"
 #include "third_party/blink/renderer/modules/file_system_access/file_system_writable_file_stream.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
@@ -20,6 +23,7 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
+
 using mojom::blink::FileSystemAccessErrorPtr;
 
 FileSystemFileHandle::FileSystemFileHandle(
@@ -93,6 +97,55 @@ ScriptPromise FileSystemFileHandle::getFile(ScriptState* script_state,
   return result;
 }
 
+ScriptPromise FileSystemFileHandle::createSyncAccessHandle(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  // TODO(fivedots): Check if storage access is allowed.
+  if (!mojo_ptr_.is_bound()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError, "");
+    return ScriptPromise();
+  }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise result = resolver->Promise();
+
+  mojo_ptr_->OpenAccessHandle(WTF::Bind(
+      [](ScriptPromiseResolver* resolver, FileSystemAccessErrorPtr result,
+         mojom::blink::FileSystemAccessAccessHandleFilePtr file) {
+        if (result->status != mojom::blink::FileSystemAccessStatus::kOk) {
+          file_system_access_error::Reject(resolver, *result);
+          return;
+        }
+        DCHECK(!file.is_null());
+
+        FileSystemAccessFileDelegate* file_delegate = nullptr;
+        if (file->is_regular_file()) {
+          file_delegate = FileSystemAccessFileDelegate::Create(
+              std::move(file->get_regular_file()));
+        } else if (file->is_incognito_file_delegate()) {
+          ExecutionContext* context = resolver->GetExecutionContext();
+          if (!context)
+            return;
+          file_delegate = FileSystemAccessFileDelegate::CreateForIncognito(
+              context, std::move(file->get_incognito_file_delegate()));
+        }
+
+        if (!file_delegate || !file_delegate->IsValid()) {
+          file_system_access_error::Reject(
+              resolver,
+              *mojom::blink::FileSystemAccessError::New(
+                  mojom::blink::FileSystemAccessStatus::kFileError,
+                  base::File::Error::FILE_ERROR_FAILED, "File not valid"));
+          return;
+        }
+        resolver->Resolve(MakeGarbageCollected<FileSystemSyncAccessHandle>(
+            std::move(file_delegate)));
+      },
+      WrapPersistent(resolver)));
+
+  return result;
+}
+
 mojo::PendingRemote<mojom::blink::FileSystemAccessTransferToken>
 FileSystemFileHandle::Transfer() {
   mojo::PendingRemote<mojom::blink::FileSystemAccessTransferToken> result;
@@ -130,6 +183,19 @@ void FileSystemFileHandle::RequestPermissionImpl(
   }
 
   mojo_ptr_->RequestPermission(writable, std::move(callback));
+}
+
+void FileSystemFileHandle::RemoveImpl(
+    const FileSystemRemoveOptions* options,
+    base::OnceCallback<void(mojom::blink::FileSystemAccessErrorPtr)> callback) {
+  if (!mojo_ptr_.is_bound()) {
+    std::move(callback).Run(mojom::blink::FileSystemAccessError::New(
+        mojom::blink::FileSystemAccessStatus::kInvalidState,
+        base::File::Error::FILE_ERROR_FAILED, "Context Destroyed"));
+    return;
+  }
+
+  mojo_ptr_->Remove(std::move(callback));
 }
 
 void FileSystemFileHandle::IsSameEntryImpl(

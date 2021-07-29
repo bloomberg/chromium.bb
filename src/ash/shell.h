@@ -115,7 +115,7 @@ class DisplayHighlightController;
 class DisplayPrefs;
 class DisplayShutdownObserver;
 class DisplaySpeakerController;
-class DockedMagnifierControllerImpl;
+class DockedMagnifierController;
 class DragDropController;
 class EventClientImpl;
 class EventRewriterControllerImpl;
@@ -123,6 +123,7 @@ class EventTransformationHandler;
 class FullRestoreController;
 class FocusCycler;
 class FrameThrottlingController;
+class FullscreenMagnifierController;
 class HighContrastController;
 class HighlighterController;
 class HoldingSpaceController;
@@ -137,10 +138,11 @@ class LockStateController;
 class LogoutConfirmationController;
 class LoginScreenController;
 class LoginUnlockThroughputRecorder;
-class MagnificationController;
 class MarkerController;
+class TabClusterUIController;
 class TabletModeController;
 class MediaControllerImpl;
+class MessageCenterAshImpl;
 class MessageCenterController;
 class MouseCursorEventFilter;
 class MruWindowTracker;
@@ -152,10 +154,11 @@ class OcclusionTrackerPauser;
 class OverlayEventFilter;
 class OverviewController;
 class ParentAccessController;
-class PartialMagnificationController;
+class PartialMagnifierController;
 class PciePeripheralNotificationController;
 class PeripheralBatteryListener;
 class PeripheralBatteryNotifier;
+class PersistentDesksBarController;
 class PersistentWindowController;
 class PolicyRecommendationRestorer;
 class PowerButtonController;
@@ -204,6 +207,10 @@ class WindowTreeHostManager;
 class ArcInputMethodBoundsTracker;
 
 enum class LoginStatus;
+
+namespace quick_pair {
+class Mediator;
+}  // namespace quick_pair
 
 // Shell is a singleton object that presents the Shell API and implements the
 // RootWindow's delegate interface.
@@ -348,6 +355,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   ::wm::CursorManager* cursor_manager() { return cursor_manager_.get(); }
   DesksController* desks_controller() { return desks_controller_.get(); }
+  PersistentDesksBarController* persistent_desks_bar_controller() {
+    return persistent_desks_bar_controller_.get();
+  }
   DetachableBaseHandler* detachable_base_handler() {
     return detachable_base_handler_.get();
   }
@@ -375,7 +385,9 @@ class ASH_EXPORT Shell : public SessionObserver,
     return display_highlight_controller_.get();
   }
 
-  DockedMagnifierControllerImpl* docked_magnifier_controller();
+  DockedMagnifierController* docked_magnifier_controller() {
+    return docked_magnifier_controller_.get();
+  }
   ::wm::CompoundEventFilter* env_filter() { return env_filter_.get(); }
   EventRewriterControllerImpl* event_rewriter_controller() {
     return event_rewriter_controller_.get();
@@ -387,6 +399,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   ::wm::FocusController* focus_controller() { return focus_controller_.get(); }
   AshFocusRules* focus_rules() { return focus_rules_; }
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
+  FullscreenMagnifierController* fullscreen_magnifier_controller() {
+    return fullscreen_magnifier_controller_.get();
+  }
   HighlighterController* highlighter_controller() {
     return highlighter_controller_.get();
   }
@@ -421,11 +436,11 @@ class ASH_EXPORT Shell : public SessionObserver,
   LogoutConfirmationController* logout_confirmation_controller() {
     return logout_confirmation_controller_.get();
   }
-  MagnificationController* magnification_controller() {
-    return magnification_controller_.get();
-  }
   MarkerController* marker_controller() { return marker_controller_.get(); }
   MediaControllerImpl* media_controller() { return media_controller_.get(); }
+  MessageCenterAshImpl* message_center_ash_impl() {
+    return message_center_ash_impl_.get();
+  }
   MessageCenterController* message_center_controller() {
     return message_center_controller_.get();
   }
@@ -449,8 +464,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   ParentAccessController* parent_access_controller() {
     return parent_access_controller_.get();
   }
-  PartialMagnificationController* partial_magnification_controller() {
-    return partial_magnification_controller_.get();
+  PartialMagnifierController* partial_magnifier_controller() {
+    return partial_magnifier_controller_.get();
   }
   PeripheralBatteryListener* peripheral_battery_listener() {
     return peripheral_battery_listener_.get();
@@ -506,6 +521,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   SystemTrayModel* system_tray_model() { return system_tray_model_.get(); }
   SystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
+  }
+  TabClusterUIController* tab_cluster_ui_controller() const {
+    return tab_cluster_ui_controller_.get();
   }
   TabletModeController* tablet_mode_controller() const {
     return tablet_mode_controller_.get();
@@ -715,7 +733,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<LocaleUpdateControllerImpl> locale_update_controller_;
   std::unique_ptr<LoginScreenController> login_screen_controller_;
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
+  std::unique_ptr<TabClusterUIController> tab_cluster_ui_controller_;
   std::unique_ptr<TabletModeController> tablet_mode_controller_;
+  std::unique_ptr<MessageCenterAshImpl> message_center_ash_impl_;
   std::unique_ptr<MediaControllerImpl> media_controller_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<MultiDeviceNotificationPresenter>
@@ -725,6 +745,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ParentAccessController> parent_access_controller_;
   std::unique_ptr<PciePeripheralNotificationController>
       pcie_peripheral_notification_controller_;
+  std::unique_ptr<PersistentDesksBarController>
+      persistent_desks_bar_controller_;
   std::unique_ptr<QuickAnswersController> quick_answers_controller_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<SessionControllerImpl> session_controller_;
@@ -764,7 +786,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<WindowTreeHostManager> window_tree_host_manager_;
   std::unique_ptr<PersistentWindowController> persistent_window_controller_;
   std::unique_ptr<HighContrastController> high_contrast_controller_;
-  std::unique_ptr<MagnificationController> magnification_controller_;
+  std::unique_ptr<FullscreenMagnifierController>
+      fullscreen_magnifier_controller_;
   std::unique_ptr<MarkerController> marker_controller_;
   std::unique_ptr<AutoclickController> autoclick_controller_;
   std::unique_ptr<::wm::FocusController> focus_controller_;
@@ -842,11 +865,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ui::EventHandler> magnifier_key_scroll_handler_;
   std::unique_ptr<ui::EventHandler> speech_feedback_handler_;
   std::unique_ptr<LaserPointerController> laser_pointer_controller_;
-  std::unique_ptr<PartialMagnificationController>
-      partial_magnification_controller_;
+  std::unique_ptr<PartialMagnifierController> partial_magnifier_controller_;
   std::unique_ptr<HighlighterController> highlighter_controller_;
 
-  std::unique_ptr<DockedMagnifierControllerImpl> docked_magnifier_controller_;
+  std::unique_ptr<DockedMagnifierController> docked_magnifier_controller_;
 
   std::unique_ptr<chromeos::SnapController> snap_controller_;
 
@@ -875,6 +897,8 @@ class ASH_EXPORT Shell : public SessionObserver,
       login_unlock_throughput_recorder_;
 
   std::unique_ptr<OcclusionTrackerPauser> occlusion_tracker_pauser_;
+
+  std::unique_ptr<quick_pair::Mediator> quick_pair_mediator_;
 
   base::ObserverList<ShellObserver>::Unchecked shell_observers_;
 

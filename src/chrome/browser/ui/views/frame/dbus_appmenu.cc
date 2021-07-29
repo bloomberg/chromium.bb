@@ -69,9 +69,9 @@ const unsigned int kRecentlyClosedCount = 8;
 const size_t kMaximumMenuWidthInChars = 50;
 
 // Constants used in menu definitions.  The first non-Chrome command is at
-// IDC_FIRST_BOOKMARK_MENU.
+// IDC_FIRST_UNBOUNDED_MENU.
 enum ReservedCommandId {
-  kLastChromeCommand = IDC_FIRST_BOOKMARK_MENU - 1,
+  kLastChromeCommand = IDC_FIRST_UNBOUNDED_MENU - 1,
   kMenuEnd,
   kSeparator,
   kSubmenu,
@@ -143,13 +143,6 @@ constexpr DbusAppmenuCommand kToolsMenu[] = {
     {IDC_DEV_TOOLS_INSPECT, IDS_DEV_TOOLS_ELEMENTS},
     {IDC_DEV_TOOLS_CONSOLE, IDS_DEV_TOOLS_CONSOLE},
     {IDC_DEV_TOOLS_DEVICES, IDS_DEV_TOOLS_DEVICES},
-    {kMenuEnd}};
-
-// TODO(crbug.com/1108289): Remove after launch.
-constexpr DbusAppmenuCommand kOldProfilesMenu[] = {
-    {kSeparator},
-    {kTagProfileEdit, IDS_PROFILES_MANAGE_BUTTON_LABEL},
-    {kTagProfileCreate, IDS_PROFILES_CREATE_BUTTON_LABEL},
     {kMenuEnd}};
 
 constexpr DbusAppmenuCommand kProfilesMenu[] = {
@@ -256,10 +249,7 @@ void DbusAppmenu::Initialize(DbusMenu::InitializedCallback callback) {
   BuildStaticMenu(IDS_VIEW_MENU_LINUX, kViewMenu);
   history_menu_ = BuildStaticMenu(IDS_HISTORY_MENU_LINUX, kHistoryMenu);
   BuildStaticMenu(IDS_TOOLS_MENU_LINUX, kToolsMenu);
-  profiles_menu_ =
-      base::FeatureList::IsEnabled(features::kNewProfilePicker)
-          ? BuildStaticMenu(IDS_PROFILES_MENU_NAME, kProfilesMenu)
-          : BuildStaticMenu(IDS_PROFILES_OPTIONS_GROUP_NAME, kOldProfilesMenu);
+  profiles_menu_ = BuildStaticMenu(IDS_PROFILES_MENU_NAME, kProfilesMenu);
   BuildStaticMenu(IDS_HELP_MENU_LINUX, kHelpMenu);
 
   pref_change_registrar_.Init(browser_->profile()->GetPrefs());

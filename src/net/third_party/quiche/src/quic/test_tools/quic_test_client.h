@@ -14,11 +14,10 @@
 #include "quic/core/quic_framer.h"
 #include "quic/core/quic_packet_creator.h"
 #include "quic/core/quic_packets.h"
-#include "quic/platform/api/quic_containers.h"
 #include "quic/platform/api/quic_epoll.h"
-#include "quic/platform/api/quic_map_util.h"
 #include "quic/platform/api/quic_test.h"
 #include "quic/tools/quic_client.h"
+#include "common/quiche_linked_hash_map.h"
 
 namespace quic {
 
@@ -282,8 +281,8 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   // or the empty std::string if no signed timestamp was presented.
   const std::string& cert_sct() const;
 
-  // Get the server config map.
-  QuicTagValueMap GetServerConfig() const;
+  // Get the server config map.  Server config must exist.
+  const QuicTagValueMap& GetServerConfig() const;
 
   void set_auto_reconnect(bool reconnect) { auto_reconnect_ = reconnect; }
 
@@ -401,7 +400,8 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   QuicSpdyClientStream* latest_created_stream_;
   std::map<QuicStreamId, QuicSpdyClientStream*> open_streams_;
   // Received responses of closed streams.
-  QuicLinkedHashMap<QuicStreamId, PerStreamState> closed_stream_states_;
+  quiche::QuicheLinkedHashMap<QuicStreamId, PerStreamState>
+      closed_stream_states_;
 
   QuicRstStreamErrorCode stream_error_;
 

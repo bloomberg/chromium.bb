@@ -391,8 +391,8 @@ void NearbyShareCertificateManagerImpl::OnContactsUploaded(
 void NearbyShareCertificateManagerImpl::OnLocalDeviceDataChanged(
     bool did_device_name_change,
     bool did_full_name_change,
-    bool did_icon_url_change) {
-  if (!did_device_name_change && !did_full_name_change && !did_icon_url_change)
+    bool did_icon_change) {
+  if (!did_device_name_change && !did_full_name_change && !did_icon_change)
     return;
 
   // Recreate all private certificates to ensure up-to-date metadata.
@@ -473,7 +473,7 @@ void NearbyShareCertificateManagerImpl::FinishPrivateCertificateRefresh(
 
   // Add new certificates if necessary. Each visibility should have
   // kNearbyShareNumPrivateCertificates.
-  NS_LOG(VERBOSE)
+  NS_LOG(INFO)
       << __func__ << ": Creating "
       << kNearbyShareNumPrivateCertificates -
              num_valid_certs[nearby_share::mojom::Visibility::kAllContacts]
@@ -517,8 +517,8 @@ void NearbyShareCertificateManagerImpl::
 
 void NearbyShareCertificateManagerImpl::OnLocalDeviceCertificateUploadFinished(
     bool success) {
-  NS_LOG(VERBOSE) << __func__ << ": Upload of local device certificates "
-                  << (success ? "succeeded" : "failed.");
+  NS_LOG(INFO) << __func__ << ": Upload of local device certificates "
+               << (success ? "succeeded" : "failed.");
   upload_local_device_certificates_scheduler_->HandleResult(success);
 }
 
@@ -601,8 +601,8 @@ void NearbyShareCertificateManagerImpl::OnListPublicCertificatesSuccess(
 
   client_.reset();
 
-  NS_LOG(VERBOSE) << __func__ << ": " << certs.size()
-                  << " public certificates downloaded.";
+  NS_LOG(INFO) << __func__ << ": " << certs.size()
+               << " public certificates downloaded.";
   certificate_storage_->AddPublicCertificates(
       certs, base::BindOnce(&NearbyShareCertificateManagerImpl::
                                 OnPublicCertificatesAddedToStorage,

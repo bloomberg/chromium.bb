@@ -100,9 +100,9 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar implements DataDisp
   constructor(name: string, profileTypes: ProfileType[], recordingActionId: string) {
     super(name);
     this._profileTypes = profileTypes;
-    this.registerRequiredCSS('panels/profiler/heapProfiler.css', {enableLegacyPatching: false});
-    this.registerRequiredCSS('panels/profiler/profilesPanel.css', {enableLegacyPatching: false});
-    this.registerRequiredCSS('ui/legacy/components/object_ui/objectValue.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/profiler/heapProfiler.css');
+    this.registerRequiredCSS('panels/profiler/profilesPanel.css');
+    this.registerRequiredCSS('ui/legacy/components/object_ui/objectValue.css');
 
     const mainContainer = new UI.Widget.VBox();
     this.splitWidget().setMainWidget(mainContainer);
@@ -110,7 +110,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar implements DataDisp
     this.profilesItemTreeElement = new ProfilesSidebarTreeElement(this);
 
     this._sidebarTree = new UI.TreeOutline.TreeOutlineInShadow();
-    this._sidebarTree.registerRequiredCSS('panels/profiler/profilesSidebarTree.css', {enableLegacyPatching: true});
+    this._sidebarTree.registerRequiredCSS('panels/profiler/profilesSidebarTree.css');
     this._sidebarTree.element.classList.add('profiles-sidebar-tree-box');
     this.panelSidebarElement().appendChild(this._sidebarTree.element);
 
@@ -165,8 +165,8 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar implements DataDisp
 
     this.element.addEventListener('contextmenu', this._handleContextMenuEvent.bind(this), false);
 
-    SDK.SDKModel.TargetManager.instance().addEventListener(
-        SDK.SDKModel.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
+    SDK.TargetManager.TargetManager.instance().addEventListener(
+        SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
     UI.Context.Context.instance().addFlavorChangeListener(
         SDK.CPUProfilerModel.CPUProfilerModel, this._updateProfileTypeSpecificUI, this);
     UI.Context.Context.instance().addFlavorChangeListener(
@@ -263,7 +263,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar implements DataDisp
     const hasSelectedTarget = Boolean(
         UI.Context.Context.instance().flavor(SDK.CPUProfilerModel.CPUProfilerModel) ||
         UI.Context.Context.instance().flavor(SDK.HeapProfilerModel.HeapProfilerModel));
-    const enable = toggled || (!SDK.SDKModel.TargetManager.instance().allTargetsSuspended() && hasSelectedTarget);
+    const enable = toggled || (!SDK.TargetManager.TargetManager.instance().allTargetsSuspended() && hasSelectedTarget);
     this._toggleRecordAction.setEnabled(enable);
     this._toggleRecordAction.setToggled(toggled);
     if (enable) {

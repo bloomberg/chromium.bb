@@ -5,10 +5,15 @@
 #ifndef PDF_PDF_VIEW_WEB_PLUGIN_H_
 #define PDF_PDF_VIEW_WEB_PLUGIN_H_
 
+#include <stdint.h>
+
 #include <memory>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "cc/paint/paint_image.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "pdf/mojom/pdf.mojom.h"
 #include "pdf/pdf_view_plugin_base.h"
 #include "pdf/post_message_receiver.h"
 #include "pdf/post_message_sender.h"
@@ -22,7 +27,9 @@
 
 namespace blink {
 class WebAssociatedURLLoader;
+class WebElement;
 class WebLocalFrame;
+class WebLocalFrameClient;
 class WebPluginContainer;
 class WebURL;
 class WebURLRequest;
@@ -32,6 +39,10 @@ struct WebAssociatedURLLoaderOptions;
 namespace gfx {
 class Range;
 }  // namespace gfx
+
+namespace printing {
+class MetafileSkia;
+}  // namespace printing
 
 namespace chrome_pdf {
 
@@ -50,12 +61,31 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
     // page in it.
     virtual void Invalidate() = 0;
 
+    // Notify the web plugin container about the total matches of a find
+    // request.
+    virtual void ReportFindInPageMatchCount(int identifier,
+                                            int total,
+                                            bool final_update) = 0;
+
+    // Notify the web plugin container about the selected find result in plugin.
+    virtual void ReportFindInPageSelection(int identifier, int index) = 0;
+
     // Returns the device scale factor.
     virtual float DeviceScaleFactor() const = 0;
 
     // Calls underlying WebLocalFrame::SetReferrerForRequest().
     virtual void SetReferrerForRequest(blink::WebURLRequest& request,
                                        const blink::WebURL& referrer_url) = 0;
+
+    // Calls underlying WebLocalFrame::Alert().
+    virtual void Alert(const blink::WebString& message) = 0;
+
+    // Calls underlying WebLocalFrame::Confirm().
+    virtual bool Confirm(const blink::WebString& message) = 0;
+
+    // Calls underlying WebLocalFrame::Prompt().
+    virtual blink::WebString Prompt(const blink::WebString& message,
+                                    const blink::WebString& default_value) = 0;
 
     // Calls underlying WebLocalFrame::TextSelectionChanged().
     virtual void TextSelectionChanged(const blink::WebString& selection_text,
@@ -73,12 +103,26 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
     // Returns the local frame to which the web plugin container belongs.
     virtual blink::WebLocalFrame* GetFrame() = 0;
 
+    // Returns the local frame's client (render frame). May be null in unit
+    // tests.
+    virtual blink::WebLocalFrameClient* GetWebLocalFrameClient() = 0;
+
     // Returns the blink web plugin container pointer that's wrapped inside this
     // object. Returns nullptr if this object is for test only.
     virtual blink::WebPluginContainer* Container() = 0;
   };
 
-  explicit PdfViewWebPlugin(const blink::WebPluginParams& params);
+  class PrintClient {
+   public:
+    virtual ~PrintClient() = default;
+
+    virtual void Print(const blink::WebElement& element) = 0;
+  };
+
+  PdfViewWebPlugin(
+      mojo::AssociatedRemote<pdf::mojom::PdfService> pdf_service_remote,
+      std::unique_ptr<PrintClient> print_client,
+      const blink::WebPluginParams& params);
   PdfViewWebPlugin(const PdfViewWebPlugin& other) = delete;
   PdfViewWebPlugin& operator=(const PdfViewWebPlugin& other) = delete;
 
@@ -102,6 +146,12 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void DidReceiveData(const char* data, size_t data_length) override;
   void DidFinishLoading() override;
   void DidFailLoading(const blink::WebURLError& error) override;
+  bool SupportsPaginatedPrint() override;
+  bool GetPrintPresetOptionsFromDocument(
+      blink::WebPrintPresetOptions* print_preset_options) override;
+  int PrintBegin(const blink::WebPrintParams& print_params) override;
+  void PrintPage(int page_number, cc::PaintCanvas* canvas) override;
+  void PrintEnd() override;
   bool HasSelection() const override;
   blink::WebString SelectionAsText() const override;
   blink::WebString SelectionAsMarkup() const override;
@@ -111,6 +161,14 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   bool CanRedo() const override;
   bool ExecuteEditCommand(const blink::WebString& name,
                           const blink::WebString& value) override;
+  blink::WebURL LinkAtPosition(const gfx::Point& /*position*/) const override;
+  bool StartFind(const blink::WebString& search_text,
+                 bool case_sensitive,
+                 int identifier) override;
+  void SelectFindResult(bool forward, int identifier) override;
+  void StopFind() override;
+  bool CanRotateView() override;
+  void RotateView(blink::WebPlugin::RotationType type) override;
   blink::WebTextInputType GetPluginTextInputType() override;
 
   // PdfViewPluginBase:
@@ -122,20 +180,13 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   bool Confirm(const std::string& message) override;
   std::string Prompt(const std::string& question,
                      const std::string& default_answer) override;
-  void Print() override;
   void SubmitForm(const std::string& url,
                   const void* data,
                   int length) override;
   std::vector<SearchStringResult> SearchString(const char16_t* string,
                                                const char16_t* term,
                                                bool case_sensitive) override;
-  pp::Instance* GetPluginInstance() override;
-  void DocumentHasUnsupportedFeature(const std::string& feature) override;
-  bool IsPrintPreview() override;
-  void SelectionChanged(const gfx::Rect& left, const gfx::Rect& right) override;
-  void EnteredEditMode() override;
   void SetSelectedText(const std::string& selected_text) override;
-  void SetLinkUnderCursor(const std::string& link_under_cursor) override;
   bool IsValidLink(const std::string& url) override;
   std::unique_ptr<Graphics> CreatePaintGraphics(const gfx::Size& size) override;
   bool BindPaintGraphics(Graphics& graphics) override;
@@ -170,9 +221,8 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   base::WeakPtr<PdfViewPluginBase> GetWeakPtr() override;
   std::unique_ptr<UrlLoader> CreateUrlLoaderInternal() override;
   void DidOpen(std::unique_ptr<UrlLoader> loader, int32_t result) override;
-  void DidOpenPreview(std::unique_ptr<UrlLoader> loader,
-                      int32_t result) override;
   void SendMessage(base::Value message) override;
+  void SaveAs() override;
   void InitImageData(const gfx::Size& size) override;
   void SetFormFieldInFocus(bool in_focus) override;
   void SetAccessibilityDocInfo(const AccessibilityDocInfo& doc_info) override;
@@ -183,9 +233,15 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void SetAccessibilityViewportInfo(
       const AccessibilityViewportInfo& viewport_info) override;
   void SetContentRestrictions(int content_restrictions) override;
-  void DidStartLoading() override;
-  void DidStopLoading() override;
-  void OnPrintPreviewLoaded() override;
+  void SetPluginCanSave(bool can_save) override;
+  void PluginDidStartLoading() override;
+  void PluginDidStopLoading() override;
+  void InvokePrintDialog() override;
+  void NotifySelectionChanged(const gfx::PointF& left,
+                              int left_height,
+                              const gfx::PointF& right,
+                              int right_height) override;
+  void NotifyUnsupportedFeature() override;
   void UserMetricsRecordAction(const std::string& action) override;
 
  private:
@@ -207,10 +263,30 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   bool Undo();
   bool Redo();
 
+  // Callback to print without re-entrancy issues. The callback prevents the
+  // invocation of printing in the middle of an event handler, which is risky;
+  // see crbug.com/66334.
+  // TODO(crbug.com/1217012): Re-evaluate the need for a callback when parts of
+  // the plugin are moved off the main thread.
+  void OnInvokePrintDialog(int32_t /*result*/);
+
+  // May be null in unit tests.
+  pdf::mojom::PdfService* GetPdfService();
+
   blink::WebString selected_text_;
+
+  // The id of the current find operation, or -1 if no current operation is
+  // present.
+  int find_identifier_ = -1;
 
   blink::WebTextInputType text_input_type_ =
       blink::WebTextInputType::kWebTextInputTypeNone;
+
+  // May be unbound in unit tests.
+  mojo::AssociatedRemote<pdf::mojom::PdfService> const pdf_service_remote_;
+
+  // May be null in unit tests, or if there is no printing support.
+  std::unique_ptr<PrintClient> const print_client_;
 
   blink::WebPluginParams initial_params_;
 
@@ -220,6 +296,13 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   PostMessageSender post_message_sender_;
 
   cc::PaintImage snapshot_;
+
+  // The metafile in which to save the printed output. Assigned a value only
+  // between `PrintBegin()` and `PrintEnd()` calls.
+  printing::MetafileSkia* printing_metafile_ = nullptr;
+
+  // The indices of pages to print.
+  std::vector<int> pages_to_print_;
 
   base::WeakPtrFactory<PdfViewWebPlugin> weak_factory_{this};
 };

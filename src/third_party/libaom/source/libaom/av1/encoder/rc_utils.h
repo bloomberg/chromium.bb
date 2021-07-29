@@ -181,13 +181,21 @@ static AOM_INLINE double av1_get_kf_boost_projection_factor(int frame_count) {
   return factor;
 }
 
-static AOM_INLINE int get_regulated_q_overshoot(AV1_COMP *const cpi, int q_low,
-                                                int q_high, int top_index,
+static AOM_INLINE int get_regulated_q_overshoot(AV1_COMP *const cpi,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                                                int is_encode_stage,
+#endif
+                                                int q_low, int q_high,
+                                                int top_index,
                                                 int bottom_index) {
   const AV1_COMMON *const cm = &cpi->common;
   const RATE_CONTROL *const rc = &cpi->rc;
 
-  av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
+  av1_rc_update_rate_correction_factors(cpi,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                                        is_encode_stage,
+#endif
+                                        cm->width, cm->height);
 
   int q_regulated =
       av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
@@ -195,7 +203,11 @@ static AOM_INLINE int get_regulated_q_overshoot(AV1_COMP *const cpi, int q_low,
 
   int retries = 0;
   while (q_regulated < q_low && retries < 10) {
-    av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
+    av1_rc_update_rate_correction_factors(cpi,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                                          is_encode_stage,
+#endif
+                                          cm->width, cm->height);
     q_regulated =
         av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
                           AOMMAX(q_high, top_index), cm->width, cm->height);
@@ -205,18 +217,29 @@ static AOM_INLINE int get_regulated_q_overshoot(AV1_COMP *const cpi, int q_low,
 }
 
 static AOM_INLINE int get_regulated_q_undershoot(AV1_COMP *const cpi,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                                                 int is_encode_stage,
+#endif
                                                  int q_high, int top_index,
                                                  int bottom_index) {
   const AV1_COMMON *const cm = &cpi->common;
   const RATE_CONTROL *const rc = &cpi->rc;
 
-  av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
+  av1_rc_update_rate_correction_factors(cpi,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                                        is_encode_stage,
+#endif
+                                        cm->width, cm->height);
   int q_regulated = av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
                                       top_index, cm->width, cm->height);
 
   int retries = 0;
   while (q_regulated > q_high && retries < 10) {
-    av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
+    av1_rc_update_rate_correction_factors(cpi,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                                          is_encode_stage,
+#endif
+                                          cm->width, cm->height);
     q_regulated = av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
                                     top_index, cm->width, cm->height);
     retries++;
@@ -365,19 +388,31 @@ static AOM_INLINE void recode_loop_update_q(
 
       if (*undershoot_seen || loop_count > 2 ||
           (loop_count == 2 && !frame_is_intra_only(cm))) {
-        av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
+        av1_rc_update_rate_correction_factors(cpi,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                                              1,
+#endif
+                                              cm->width, cm->height);
 
         *q = (*q_high + *q_low + 1) / 2;
       } else if (loop_count == 2 && frame_is_intra_only(cm)) {
         const int q_mid = (*q_high + *q_low + 1) / 2;
-        const int q_regulated = get_regulated_q_overshoot(
-            cpi, *q_low, *q_high, top_index, bottom_index);
+        const int q_regulated =
+            get_regulated_q_overshoot(cpi,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                                      1,
+#endif
+                                      *q_low, *q_high, top_index, bottom_index);
         // Get 'q' in-between 'q_mid' and 'q_regulated' for a smooth
         // transition between loop_count < 2 and loop_count > 2.
         *q = (q_mid + q_regulated + 1) / 2;
       } else {
-        *q = get_regulated_q_overshoot(cpi, *q_low, *q_high, top_index,
-                                       bottom_index);
+        *q =
+            get_regulated_q_overshoot(cpi,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                                      1,
+#endif
+                                      *q_low, *q_high, top_index, bottom_index);
       }
 
       *overshoot_seen = 1;
@@ -387,12 +422,20 @@ static AOM_INLINE void recode_loop_update_q(
 
       if (*overshoot_seen || loop_count > 2 ||
           (loop_count == 2 && !frame_is_intra_only(cm))) {
-        av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
+        av1_rc_update_rate_correction_factors(cpi,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                                              1,
+#endif
+                                              cm->width, cm->height);
         *q = (*q_high + *q_low) / 2;
       } else if (loop_count == 2 && frame_is_intra_only(cm)) {
         const int q_mid = (*q_high + *q_low) / 2;
         const int q_regulated =
-            get_regulated_q_undershoot(cpi, *q_high, top_index, bottom_index);
+            get_regulated_q_undershoot(cpi,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                                       1,
+#endif
+                                       *q_high, top_index, bottom_index);
         // Get 'q' in-between 'q_mid' and 'q_regulated' for a smooth
         // transition between loop_count < 2 and loop_count > 2.
         *q = (q_mid + q_regulated) / 2;
@@ -405,7 +448,11 @@ static AOM_INLINE void recode_loop_update_q(
           *q_low = *q;
         }
       } else {
-        *q = get_regulated_q_undershoot(cpi, *q_high, top_index, bottom_index);
+        *q = get_regulated_q_undershoot(cpi,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                                        1,
+#endif
+                                        *q_high, top_index, bottom_index);
 
         // Special case reset for qlow for constrained quality.
         // This should only trigger where there is very substantial

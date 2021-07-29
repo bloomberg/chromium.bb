@@ -154,15 +154,12 @@ static unsigned int haar_ac_energy(MACROBLOCK *x, BLOCK_SIZE bs) {
   MACROBLOCKD *xd = &x->e_mbd;
   int stride = x->plane[0].src.stride;
   uint8_t *buf = x->plane[0].src.buf;
-  const int bw = MI_SIZE * mi_size_wide[bs];
-  const int bh = MI_SIZE * mi_size_high[bs];
+  const int num_8x8_cols = block_size_wide[bs] / 8;
+  const int num_8x8_rows = block_size_high[bs] / 8;
   const int hbd = is_cur_buf_hbd(xd);
 
-  int var = 0;
-  for (int r = 0; r < bh; r += 8)
-    for (int c = 0; c < bw; c += 8) {
-      var += av1_haar_ac_sad_8x8_uint8_input(buf + c + r * stride, stride, hbd);
-    }
+  int64_t var = av1_haar_ac_sad_mxn_uint8_input(buf, stride, hbd, num_8x8_rows,
+                                                num_8x8_cols);
 
   return (unsigned int)((uint64_t)var * 256) >> num_pels_log2_lookup[bs];
 }

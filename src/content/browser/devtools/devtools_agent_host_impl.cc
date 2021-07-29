@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/observer_list.h"
-#include "base/stl_util.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_stream_file.h"
 #include "content/browser/devtools/forwarding_agent_host.h"
@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace content {
 

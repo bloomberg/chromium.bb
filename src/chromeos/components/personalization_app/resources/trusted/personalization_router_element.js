@@ -12,9 +12,10 @@ import 'chrome://resources/polymer/v3_0/iron-location/iron-query-params.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 /** @enum {string} */
-const Paths = {
+export const Paths = {
   CollectionImages: '/collection',
   Collections: '/',
+  LocalCollection: '/local',
 };
 
 export class PersonalizationRouter extends PolymerElement {
@@ -45,9 +46,32 @@ export class PersonalizationRouter extends PolymerElement {
     };
   }
 
-  constructor() {
-    super();
-    this.selectCollection_ = this.selectCollection_.bind(this);
+  static instance() {
+    return document.querySelector(PersonalizationRouter.is);
+  }
+
+  get collectionId() {
+    if (this.path_ !== Paths.CollectionImages) {
+      return null;
+    }
+    return this.queryParams_.id;
+  }
+
+  /**
+   * Navigate to the selected collection id. Assumes validation of the
+   * collection id has already happened.
+   * @param {!string} collectionId
+   */
+  selectCollection(collectionId) {
+    this.setProperties(
+        {path_: Paths.CollectionImages, queryParams_: {id: collectionId}});
+  }
+
+  /**
+   * Navigate to the local collection page.
+   */
+  selectLocalCollection() {
+    this.setProperties({path_: Paths.LocalCollection, query_: ''});
   }
 
   /**
@@ -60,23 +84,21 @@ export class PersonalizationRouter extends PolymerElement {
   }
 
   /**
-   * Navigate to the selected collection id. Assumes validation of the
-   * collection id has already happened.
-   * @param {!string} collectionId
-   * @private
-   */
-  selectCollection_(collectionId) {
-    this.setProperties(
-        {path_: Paths.CollectionImages, queryParams_: {id: collectionId}});
-  }
-
-  /**
    * @param {string} path
    * @return {boolean}
    * @private
    */
   shouldShowCollectionImages_(path) {
     return path === Paths.CollectionImages;
+  }
+
+  /**
+   * @param {string} path
+   * @return  {boolean}
+   * @private
+   */
+  shouldShowLocalCollection_(path) {
+    return path === Paths.LocalCollection;
   }
 }
 

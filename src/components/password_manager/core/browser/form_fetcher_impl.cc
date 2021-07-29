@@ -55,7 +55,7 @@ std::vector<std::unique_ptr<PasswordForm>> MakeCopies(
 
 // static
 std::unique_ptr<FormFetcherImpl> FormFetcherImpl::CreateFormFetcherImpl(
-    PasswordStore::FormDigest form_digest,
+    PasswordFormDigest form_digest,
     const PasswordManagerClient* client,
     bool should_migrate_http_passwords) {
   return base::FeatureList::IsEnabled(
@@ -67,7 +67,7 @@ std::unique_ptr<FormFetcherImpl> FormFetcherImpl::CreateFormFetcherImpl(
                                                  should_migrate_http_passwords);
 }
 
-FormFetcherImpl::FormFetcherImpl(PasswordStore::FormDigest form_digest,
+FormFetcherImpl::FormFetcherImpl(PasswordFormDigest form_digest,
                                  const PasswordManagerClient* client,
                                  bool should_migrate_http_passwords)
     : form_digest_(std::move(form_digest)),
@@ -121,7 +121,9 @@ void FormFetcherImpl::Fetch() {
 // processor cycles.
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   // The statistics is needed for the "Save password?" bubble.
-  password_store->GetSiteStats(form_digest_.url.GetOrigin(), this);
+  password_manager::SmartBubbleStatsStore* stats_store =
+      password_store->GetSmartBubbleStatsStore();
+  stats_store->GetSiteStats(form_digest_.url.GetOrigin(), this);
 
   // The desktop bubble needs this information.
   password_store->GetMatchingInsecureCredentials(form_digest_.signon_realm,

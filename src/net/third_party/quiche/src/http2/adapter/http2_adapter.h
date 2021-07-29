@@ -4,6 +4,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "http2/adapter/data_source.h"
 #include "http2/adapter/http2_protocol.h"
 #include "http2/adapter/http2_session.h"
 #include "http2/adapter/http2_visitor_interface.h"
@@ -22,6 +23,8 @@ class Http2Adapter {
   Http2Adapter(const Http2Adapter&) = delete;
   Http2Adapter& operator=(const Http2Adapter&) = delete;
 
+  virtual bool IsServerSession() const = 0;
+
   // Processes the incoming |bytes| as HTTP/2 and invokes callbacks on the
   // |visitor_| as appropriate.
   virtual ssize_t ProcessBytes(absl::string_view bytes) = 0;
@@ -36,17 +39,15 @@ class Http2Adapter {
                                        int weight,
                                        bool exclusive) = 0;
 
-  // Submits a PING on the connection. Note that nghttp2 automatically submits
-  // PING acks upon receiving non-ack PINGs from the peer, so callers only use
-  // this method to originate PINGs. See nghttp2_option_set_no_auto_ping_ack().
+  // Submits a PING on the connection.
   virtual void SubmitPing(Http2PingId ping_id) = 0;
 
+  // Starts a graceful shutdown. A no-op for clients.
+  virtual void SubmitShutdownNotice() = 0;
+
   // Submits a GOAWAY on the connection. Note that |last_accepted_stream_id|
-  // refers to stream IDs initiated by the peer. For client-side, this last
-  // stream ID must be even (or 0); for server-side, this last stream ID must be
-  // odd (or 0). To submit a GOAWAY with |last_accepted_stream_id| with the
-  // maximum stream ID, signaling imminent connection termination, call
-  // SubmitShutdownNotice() instead (though this is only possible server-side).
+  // refers to stream IDs initiated by the peer. For a server sending this
+  // frame, this last stream ID must be odd (or 0).
   virtual void SubmitGoAway(Http2StreamId last_accepted_stream_id,
                             Http2ErrorCode error_code,
                             absl::string_view opaque_data) = 0;
@@ -56,27 +57,85 @@ class Http2Adapter {
   virtual void SubmitWindowUpdate(Http2StreamId stream_id,
                                   int window_increment) = 0;
 
+  // Submits a RST_STREAM for the given |stream_id| and |error_code|.
+  virtual void SubmitRst(Http2StreamId stream_id,
+                         Http2ErrorCode error_code) = 0;
+
   // Submits a METADATA frame for the given stream (a |stream_id| of 0 indicates
   // connection-level METADATA). If |fin|, the frame will also have the
   // END_METADATA flag set.
   virtual void SubmitMetadata(Http2StreamId stream_id, bool fin) = 0;
 
-  // Returns serialized bytes for writing to the wire.
-  // Writes should be submitted to Http2Adapter first, so that Http2Adapter
-  // has data to serialize and return in this method.
-  virtual std::string GetBytesToWrite(absl::optional<size_t> max_bytes) = 0;
+  // Invokes the visitor's OnReadyToSend() method for serialized frame data.
+  // Returns 0 on success.
+  virtual int Send() = 0;
 
-  // Returns the connection-level flow control window for the peer.
-  virtual int GetPeerConnectionWindow() const = 0;
+  // Returns the connection-level flow control window advertised by the peer.
+  virtual int GetSendWindowSize() const = 0;
+
+  // Returns the stream-level flow control window advertised by the peer.
+  virtual int GetStreamSendWindowSize(Http2StreamId stream_id) const = 0;
+
+  // Returns the current upper bound on the flow control receive window for this
+  // stream. This value does not account for data received from the peer.
+  virtual int GetStreamReceiveWindowLimit(Http2StreamId stream_id) const = 0;
+
+  // Returns the amount of data a peer could send on a given stream. This is
+  // the outstanding stream receive window.
+  virtual int GetStreamReceiveWindowSize(Http2StreamId stream_id) const = 0;
+
+  // Returns the total amount of data a peer could send on the connection. This
+  // is the outstanding connection receive window.
+  virtual int GetReceiveWindowSize() const = 0;
+
+  // Returns the size of the HPACK encoder's dynamic table, including the
+  // per-entry overhead from the specification.
+  virtual int GetHpackEncoderDynamicTableSize() const = 0;
+
+  // Returns the size of the HPACK decoder's dynamic table, including the
+  // per-entry overhead from the specification.
+  virtual int GetHpackDecoderDynamicTableSize() const = 0;
+
+  // Gets the highest stream ID value seen in a frame received by this endpoint.
+  // This method is only guaranteed to work for server endpoints.
+  virtual Http2StreamId GetHighestReceivedStreamId() const = 0;
 
   // Marks the given amount of data as consumed for the given stream, which
-  // enables the nghttp2 layer to trigger WINDOW_UPDATEs as appropriate.
+  // enables the implementation layer to send WINDOW_UPDATEs as appropriate.
   virtual void MarkDataConsumedForStream(Http2StreamId stream_id,
                                          size_t num_bytes) = 0;
 
-  // Submits a RST_STREAM for the given stream.
-  virtual void SubmitRst(Http2StreamId stream_id,
-                         Http2ErrorCode error_code) = 0;
+  // Returns the assigned stream ID if the operation succeeds. Otherwise,
+  // returns a negative integer indicating an error code. |data_source| may be
+  // nullptr if the request does not have a body.
+  virtual int32_t SubmitRequest(absl::Span<const Header> headers,
+                                std::unique_ptr<DataFrameSource> data_source,
+                                void* user_data) = 0;
+
+  // Returns 0 on success. |data_source| may be nullptr if the response does not
+  // have a body.
+  virtual int SubmitResponse(Http2StreamId stream_id,
+                             absl::Span<const Header> headers,
+                             std::unique_ptr<DataFrameSource> data_source) = 0;
+
+  // Queues trailers to be sent after any outstanding data on the stream with ID
+  // |stream_id|. Returns 0 on success.
+  virtual int SubmitTrailer(Http2StreamId stream_id,
+                            absl::Span<const Header> trailers) = 0;
+
+  // Sets a user data pointer for the given stream. Can be called after
+  // SubmitRequest/SubmitResponse, or after receiving any frame for a given
+  // stream.
+  virtual void SetStreamUserData(Http2StreamId stream_id, void* user_data) = 0;
+
+  // Returns nullptr if the stream does not exist, or if stream user data has
+  // not been set.
+  virtual void* GetStreamUserData(Http2StreamId stream_id) = 0;
+
+  // Resumes a stream that was previously blocked (for example, due to
+  // DataFrameSource::SelectPayloadLength() returning kBlocked). Returns true if
+  // the stream was successfully resumed.
+  virtual bool ResumeStream(Http2StreamId stream_id) = 0;
 
  protected:
   // Subclasses should expose a public factory method for constructing and

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 
 #include "base/command_line.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -20,12 +20,12 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -33,24 +33,6 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 typedef BrowserWithTestWindowTest BrowserCommandControllerTest;
-
-class GuestBrowserCommandControllerTest
-    : public BrowserWithTestWindowTest,
-      public testing::WithParamInterface<bool> {
- public:
-  GuestBrowserCommandControllerTest() : is_ephemeral_(GetParam()) {
-    // Change the value if Ephemeral is not supported.
-    is_ephemeral_ &=
-        TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
-            scoped_feature_list_, is_ephemeral_);
-  }
-
-  bool is_ephemeral() const { return is_ephemeral_; }
-
- private:
-  bool is_ephemeral_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
 
 TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKey) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -176,7 +158,7 @@ TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKeyIsApp) {
 #endif  // USE_AURA
 }
 
-TEST_P(GuestBrowserCommandControllerTest, IncognitoCommands) {
+TEST_F(BrowserWithTestWindowTest, IncognitoCommands) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_SHOW_SIGNIN));
@@ -319,13 +301,9 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow,
 
 // Test that uses FullscreenTestBrowserWindow for its window.
 class BrowserCommandControllerFullscreenTest
-    : public BrowserWithTestWindowTest,
-      public testing::WithParamInterface<bool> {
+    : public BrowserWithTestWindowTest {
  public:
-  BrowserCommandControllerFullscreenTest() {
-    TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
-        scoped_feature_list_, GetParam());
-  }
+  BrowserCommandControllerFullscreenTest() = default;
   ~BrowserCommandControllerFullscreenTest() override = default;
 
   Browser* GetBrowser() { return BrowserWithTestWindowTest::browser(); }
@@ -336,7 +314,6 @@ class BrowserCommandControllerFullscreenTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(BrowserCommandControllerFullscreenTest);
 };
 
@@ -348,7 +325,7 @@ content::WebContents* FullscreenTestBrowserWindow::GetActiveWebContents() {
   return test_browser_->GetBrowser()->tab_strip_model()->GetActiveWebContents();
 }
 
-TEST_P(BrowserCommandControllerFullscreenTest,
+TEST_F(BrowserCommandControllerFullscreenTest,
        UpdateCommandsForFullscreenMode) {
   struct {
     int command_id;
@@ -477,14 +454,10 @@ TEST_P(BrowserCommandControllerFullscreenTest,
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
 }
 
-INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
-                         BrowserCommandControllerFullscreenTest,
-                         /*is_ephemeral=*/testing::Bool());
-
 // Ensure that the logic for enabling IDC_OPTIONS is consistent, regardless of
 // the order of entering fullscreen and forced incognito modes. See
 // http://crbug.com/694331.
-TEST_P(GuestBrowserCommandControllerTest, OptionsConsistency) {
+TEST_F(BrowserWithTestWindowTest, OptionsConsistency) {
   TestingProfile* profile = browser()->profile()->AsTestingProfile();
   // Setup guest session.
   profile->SetGuestSession(true);
@@ -539,6 +512,44 @@ TEST_F(BrowserCommandControllerTest, OnSigninAllowedPrefChange) {
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SIGNIN));
 }
 
-INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
-                         GuestBrowserCommandControllerTest,
-                         /*is_ephemeral=*/testing::Bool());
+class IncognitoClearBrowsingDataCommandTest
+    : public BrowserWithTestWindowTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  IncognitoClearBrowsingDataCommandTest() {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kIncognitoClearBrowsingDataDialogForDesktop);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kIncognitoClearBrowsingDataDialogForDesktop);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    IncognitoClearBrowsingDataCommandTestWithFeatureFlag,
+    IncognitoClearBrowsingDataCommandTest,
+    /*should_show_cbd_option_in_incognito=*/testing::Bool());
+
+TEST_P(IncognitoClearBrowsingDataCommandTest,
+       testClearBrowsingDataOptionStateInIncognito) {
+  // Set up a profile with an off the record profile.
+  std::unique_ptr<TestingProfile> profile1 = TestingProfile::Builder().Build();
+  Profile* incognito_profile =
+      profile1->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+  EXPECT_EQ(incognito_profile->GetOriginalProfile(), profile1.get());
+
+  // Create a new browser based on the off the record profile.
+  Browser::CreateParams profile_params(incognito_profile, true);
+  std::unique_ptr<Browser> incognito_browser =
+      CreateBrowserWithTestWindowForParams(profile_params);
+
+  chrome::BrowserCommandController command_controller(incognito_browser.get());
+  bool should_show_cbd_option_in_incognito = GetParam();
+  EXPECT_EQ(should_show_cbd_option_in_incognito,
+            command_controller.IsCommandEnabled(IDC_CLEAR_BROWSING_DATA));
+}

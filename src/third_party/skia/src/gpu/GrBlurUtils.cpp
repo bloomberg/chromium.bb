@@ -7,6 +7,8 @@
 
 #include "src/gpu/GrBlurUtils.h"
 
+#if SK_GPU_V1
+
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/GrRecordingContext.h"
 #include "src/gpu/GrCaps.h"
@@ -14,11 +16,12 @@
 #include "src/gpu/GrFixedClip.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrSoftwarePathRenderer.h"
+#include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrStyle.h"
 #include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/GrThreadSafeCache.h"
+#include "src/gpu/GrUtil.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/geometry/GrStyledShape.h"
@@ -490,8 +493,7 @@ static void draw_shape_with_mask_filter(GrRecordingContext* rContext,
 
     // If the path is hairline, ignore inverse fill.
     bool inverseFilled = shape->inverseFilled() &&
-                         !GrPathRenderer::IsStrokeHairlineOrEquivalent(shape->style(),
-                                                                       viewMatrix, nullptr);
+                         !GrIsStrokeHairlineOrEquivalent(shape->style(), viewMatrix, nullptr);
 
     SkIRect unclippedDevShapeBounds, devClipBounds;
     if (!get_shape_and_clip_bounds(surfaceDrawContext, clip, *shape, viewMatrix,
@@ -583,3 +585,24 @@ void GrBlurUtils::drawShapeWithMaskFilter(GrRecordingContext* context,
                                       viewMatrix, GrStyledShape(shape));
     }
 }
+
+#else // SK_GPU_V1
+
+void GrBlurUtils::drawShapeWithMaskFilter(GrRecordingContext* context,
+                                          GrSurfaceDrawContext* surfaceDrawContext,
+                                          const GrClip* clip,
+                                          const GrStyledShape& shape,
+                                          GrPaint&& paint,
+                                          const SkMatrix& viewMatrix,
+                                          const SkMaskFilter* mf) {
+}
+
+void GrBlurUtils::drawShapeWithMaskFilter(GrRecordingContext* context,
+                                          GrSurfaceDrawContext* surfaceDrawContext,
+                                          const GrClip* clip,
+                                          const SkPaint& paint,
+                                          const SkMatrixProvider& matrixProvider,
+                                          const GrStyledShape& shape) {
+}
+
+#endif // SK_GPU_V1

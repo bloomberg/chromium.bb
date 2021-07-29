@@ -80,9 +80,6 @@ struct Config {
   // Number of days of history to query when determining whether to show the
   // follow accelerator.
   int webfeed_accelerator_recent_visit_history_days = 14;
-  // After loading the for-you feed, should the web-feed be refreshed as well?
-  // This is true except for testing.
-  bool refresh_web_feed_after_for_you_feed_loads = true;
 
   // Configuration for `PersistentKeyValueStore`.
 
@@ -101,6 +98,7 @@ struct Config {
       feedwire::Capability::DISMISS_COMMAND,
       feedwire::Capability::DOWNLOAD_LINK,
       feedwire::Capability::INFINITE_FEED,
+      feedwire::Capability::MATERIAL_NEXT_BASELINE,
       feedwire::Capability::OPEN_IN_TAB,
       feedwire::Capability::PREFETCH_METADATA,
       feedwire::Capability::REQUEST_SCHEDULE,
@@ -117,6 +115,10 @@ struct Config {
 
 // Gets the current configuration.
 const Config& GetFeedConfig();
+
+// Sets whether the legacy feed endpoint should be used for Web Feed content
+// fetches.
+void SetUseFeedQueryRequestsForWebFeeds(const bool use_legacy);
 
 void SetFeedConfigForTesting(const Config& config);
 void OverrideConfigWithFinchForTesting();

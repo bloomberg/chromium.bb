@@ -128,6 +128,60 @@ class CORE_EXPORT SelectorChecker {
 
    public:
     PseudoId dynamic_pseudo{kPseudoIdNone};
+
+    // From the shortest argument selector match, we need to get the element
+    // that matches the leftmost compound selector to mark the correct scope
+    // elements of :has() pseudo class having the argument selectors starts
+    // with descendant combinator.
+    //
+    // <main id=main>
+    //   <div id=d1>
+    //     <div id=d2 class="a">
+    //       <div id=d3 class="a">
+    //         <div id=d4>
+    //           <div id=d5 class="b">
+    //           </div>
+    //         </div>
+    //       </div>
+    //     </div>
+    //   </div>
+    // </div>
+    // <script>
+    //  main.querySelectorAll('div:has(.a .b)'); // Should return #d1, #d2
+    // </script>
+    //
+    // In case of the above example, div#d5 element matches the argument
+    // selector '.a .b'. Among the ancestors of the div#d5, the div#d3 and
+    // div#d4 is not the correct candidate scope element of ':has(.a .b)'
+    // because those elements don't have .a element as it's descendant.
+    // So instead of marking ancestors of div#d5, we should mark ancestors
+    // of div#d3 to prevent incorrect marking.
+    // In case of the shortest match for the argument selector '.a .b' on
+    // div#d5 element, the div#d3 is the element that matches the leftmost
+    // compound selector '.a'. So the MatchResult will return the div#d3
+    // element for the matching operation.
+    //
+    // In case of matching none desendant relative argument selectors, we
+    // can get the candidate leftmost compound matches while matching the
+    // argument selector.
+    // To process the 'main.querySelectorAll("div:has(:scope > .a .b)")'
+    // on the above DOM tree, selector checker will try to match the
+    // argument selector ':scope > .a .b' on the descendants of #d1 div
+    // element with the :scope element as #d1. When it matches the argument
+    // selector on #d5 element, the matching result is true and it can get
+    // the element that matches the leftmost(except :scope) compound '.a'
+    // as #d2 element. But while matching the argument selector on the #d5
+    // element, selector checker can also aware that the #d3 element can
+    // be a leftmost compound matching element when the scope element is
+    // #d2 element. So the selector checker will return the #d2 and #d3
+    // element so that the #d1 and #d2 can be marked as matched with the
+    // ':has(:scope > .a .b)'
+    //
+    // Instead of having vector for the :has argument matching, MatchResult
+    // has a pointer field to hold a element vector instance to minimize the
+    // MatchResult instance allocation overhead for none-has matching operations
+    HeapVector<Member<Element>>* has_argument_leftmost_compound_matches{
+        nullptr};
   };
 
   bool Match(const SelectorCheckingContext& context, MatchResult& result) const;
@@ -188,6 +242,7 @@ class CORE_EXPORT SelectorChecker {
                                  MatchResult&) const;
   bool CheckPseudoHost(const SelectorCheckingContext&, MatchResult&) const;
   bool CheckPseudoNot(const SelectorCheckingContext&, MatchResult&) const;
+  bool CheckPseudoHas(const SelectorCheckingContext&, MatchResult&) const;
 
   ComputedStyle* element_style_;
   CustomScrollbar* scrollbar_;

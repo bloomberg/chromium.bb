@@ -16,6 +16,7 @@
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_types.h"
@@ -232,6 +233,10 @@ class POLICY_EXPORT PolicyMap {
 
   // Erase the given |policy|, if it exists in this map.
   void Erase(const std::string& policy);
+
+  // Erase the given iterator |it|. Returns the iterator following |it| (which
+  // could be `map_.end()`).
+  iterator EraseIt(const_iterator it);
 
   // Erase all entries for which |filter| returns true.
   void EraseMatching(

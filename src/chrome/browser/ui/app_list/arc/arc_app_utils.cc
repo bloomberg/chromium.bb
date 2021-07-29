@@ -30,8 +30,8 @@
 #include "chrome/browser/ash/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/ash/arc/notification/arc_management_transition_notification.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
+#include "chrome/browser/ash/policy/handlers/powerwash_requirements_checker.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -51,6 +51,7 @@
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/full_restore/full_restore_utils.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -317,13 +318,12 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
     return false;
   }
 
-  // In case supervision transition is in progress ARC++ is not available.
-  const ArcSupervisionTransition supervision_transition =
-      GetSupervisionTransition(profile);
-  if (supervision_transition != ArcSupervisionTransition::NO_TRANSITION) {
-    VLOG(1) << "Attempt to launch " << app_id
-            << " while supervision transition " << supervision_transition
-            << " is in progress.";
+  // In case management transition is in progress ARC++ is not available.
+  const ArcManagementTransition management_transition =
+      GetManagementTransition(profile);
+  if (management_transition != ArcManagementTransition::NO_TRANSITION) {
+    VLOG(1) << "Attempt to launch " << app_id << " while management transition "
+            << management_transition << " is in progress.";
     arc::ShowManagementTransitionNotification(profile);
     return false;
   }
@@ -374,7 +374,13 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
       }
     }
 
-    arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);
+    // App launched by user rather than full restore.
+    if (window_info &&
+        window_info->window_id <=
+            full_restore::kArcSessionIdOffsetForRestoredLaunching) {
+      arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);
+    }
+
     ChromeShelfController* chrome_controller =
         ChromeShelfController::instance();
     // chrome_controller may be null in tests.

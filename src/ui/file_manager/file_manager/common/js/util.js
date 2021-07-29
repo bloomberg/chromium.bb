@@ -6,21 +6,20 @@
  * @fileoverview This file should contain utility functions used only by the
  * files app. Other shared utility functions can be found in base/*_util.js,
  * which allows finer-grained control over introducing dependencies.
- * @suppress {uselessCode} Temporary suppress because of the line exporting.
  */
 
-// clang-format off
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// #import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
-// #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import * as wrappedVolumeManagerCommon from './volume_manager_types.m.js'; const {VolumeManagerCommon} = wrappedVolumeManagerCommon;
-// #import {decorate} from 'chrome://resources/js/cr/ui.m.js';
-// #import {FilesAppEntry, FakeEntry} from '../../externs/files_app_entry_interfaces.m.js';
-// #import {EntryList} from './files_app_entry_types.m.js';
-// #import {VolumeInfo} from '../../externs/volume_info.m.js';
-// #import {EntryLocation} from '../../externs/entry_location.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
-// clang-format on
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {decorate} from 'chrome://resources/js/cr/ui.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
+
+import {EntryLocation} from '../../externs/entry_location.js';
+import {FakeEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
+import {VolumeInfo} from '../../externs/volume_info.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
+
+import {EntryList} from './files_app_entry_types.js';
+import {VolumeManagerCommon} from './volume_manager_types.js';
 
 /**
  * Namespace for utility functions.
@@ -325,12 +324,12 @@ util.applyTransform = (element, transform) => {
 
 /**
  * Extracts path from filesystem: URL.
- * @param {string} url Filesystem URL.
- * @return {?string} The path.
+ * @param {?string=} url Filesystem URL.
+ * @return {?string} The path if it can be parsed, null if it cannot.
  */
 util.extractFilePath = url => {
   const match =
-      /^filesystem:[\w-]*:\/\/[\w]*\/(external|persistent|temporary)(\/.*)$/
+      /^filesystem:[\w-]*:\/\/[\w-]*\/(external|persistent|temporary)(\/.*)$/
           .exec(url);
   const path = match && match[2];
   if (!path) {
@@ -366,7 +365,7 @@ util.createChild = (parent, opt_className, opt_tag) => {
  */
 util.queryDecoratedElement = (query, type) => {
   const element = queryRequiredElement(query);
-  cr.ui.decorate(element, type);
+  decorate(element, type);
   return element;
 };
 
@@ -379,8 +378,13 @@ util.queryDecoratedElement = (query, type) => {
  * @param {string} id The id of the string to return.
  * @return {string} The translated string.
  */
-/* #export */ function str(id) {
-  return loadTimeData.getString(id);
+export function str(id) {
+  try {
+    return loadTimeData.getString(id);
+  } catch (e) {
+    console.warn('Failed to get string for ', id);
+    return id;
+  }
 }
 
 /**
@@ -393,7 +397,7 @@ util.queryDecoratedElement = (query, type) => {
  * @param {...*} var_args The values to replace into the string.
  * @return {string} The translated string with replaced values.
  */
-/* #export */ function strf(id, var_args) {
+export function strf(id, var_args) {
   return loadTimeData.getStringF.apply(loadTimeData, arguments);
 }
 
@@ -1815,5 +1819,25 @@ util.isDriveDssPinEnabled = () => {
       loadTimeData.getBoolean('DRIVE_DSS_PIN_ENABLED');
 };
 
-// eslint-disable-next-line semi,no-extra-semi
-/* #export */ {util};
+/**
+ *
+ * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} left
+ * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} right
+ * @returns {boolean}
+ */
+util.descriptorEqual = function(left, right) {
+  return left.appId === right.appId && left.taskType === right.taskType &&
+      left.actionId === right.actionId;
+};
+
+/**
+ * Create a taskID which is a string unique-ID for a task. This is temporary
+ * and will be removed once we use task.descriptor everywhere instead.
+ * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} descriptor
+ * @returns {string}
+ */
+util.makeTaskID = function({appId, taskType, actionId}) {
+  return `${appId}|${taskType}|${actionId}`;
+};
+
+export {util};

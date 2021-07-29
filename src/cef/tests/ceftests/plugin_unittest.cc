@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "include/base/cef_bind.h"
+#include "include/base/cef_callback.h"
 #include "include/cef_pack_resources.h"
 #include "include/cef_request_context_handler.h"
 #include "include/wrapper/cef_closure_task.h"
@@ -285,19 +285,19 @@ class PluginTestHandler : public RoutingTestHandler,
     if (got_context_menu_dismissed_) {
       // After context menu display. Destroy the test.
       CefPostDelayedTask(TID_UI,
-                         base::Bind(&PluginTestHandler::DestroyTest, this),
+                         base::BindOnce(&PluginTestHandler::DestroyTest, this),
                          kPdfLoadDelayMs);
     } else {
       // Trigger the context menu.
       CefPostDelayedTask(TID_UI,
-                         base::Bind(&PluginTestHandler::TriggerContextMenu,
-                                    this, frame->GetBrowser()),
+                         base::BindOnce(&PluginTestHandler::TriggerContextMenu,
+                                        this, frame->GetBrowser()),
                          kPdfLoadDelayMs);
     }
   }
 
   void EndTest() {
-    CefPostTask(TID_UI, base::Bind(&PluginTestHandler::DestroyTest, this));
+    CefPostTask(TID_UI, base::BindOnce(&PluginTestHandler::DestroyTest, this));
   }
 
   CefRefPtr<CefContextMenuHandler> GetContextMenuHandler() override {

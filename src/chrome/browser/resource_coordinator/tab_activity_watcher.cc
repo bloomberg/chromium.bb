@@ -265,8 +265,11 @@ class TabActivityWatcher::WebContentsData
 
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
+    // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+    // frames. This caller was converted automatically to the primary main frame
+    // to preserve its semantics. Follow up to confirm correctness.
     if (!navigation_handle->HasCommitted() ||
-        !navigation_handle->IsInMainFrame() ||
+        !navigation_handle->IsInPrimaryMainFrame() ||
         navigation_handle->IsSameDocument()) {
       return;
     }
@@ -399,11 +402,6 @@ class TabActivityWatcher::WebContentsData
 
   // Collect current ForegroundedOrClosedMetrics and send to ukm.
   void LogForegroundedOrClosedMetrics(bool is_foregrounded) {
-    // If background time logging is disabled, then we only log the case where
-    // the label_id_ != 0 (a feature is logged and a label has not been logged).
-    if (DisableBackgroundLogWithTabRanker() && label_id_ == 0)
-      return;
-
     TabMetricsLogger::ForegroundedOrClosedMetrics metrics;
     metrics.is_foregrounded = is_foregrounded;
     metrics.is_discarded = discarded_since_backgrounded_;

@@ -34,23 +34,30 @@ QuicByteCount GetTotalLength(QuicByteCount payload_length, HttpFrameType type) {
 }  // namespace
 
 // static
-QuicByteCount HttpEncoder::SerializeDataFrameHeader(
-    QuicByteCount payload_length,
-    std::unique_ptr<char[]>* output) {
+QuicByteCount HttpEncoder::GetDataFrameHeaderLength(
+    QuicByteCount payload_length) {
   QUICHE_DCHECK_NE(0u, payload_length);
-  QuicByteCount header_length = QuicDataWriter::GetVarInt62Len(payload_length) +
-                                QuicDataWriter::GetVarInt62Len(
-                                    static_cast<uint64_t>(HttpFrameType::DATA));
+  return QuicDataWriter::GetVarInt62Len(payload_length) +
+         QuicDataWriter::GetVarInt62Len(
+             static_cast<uint64_t>(HttpFrameType::DATA));
+}
 
-  output->reset(new char[header_length]);
-  QuicDataWriter writer(header_length, output->get());
+// static
+QuicBuffer HttpEncoder::SerializeDataFrameHeader(
+    QuicByteCount payload_length,
+    QuicBufferAllocator* allocator) {
+  QUICHE_DCHECK_NE(0u, payload_length);
+  QuicByteCount header_length = GetDataFrameHeaderLength(payload_length);
+
+  QuicBuffer header(allocator, header_length);
+  QuicDataWriter writer(header.size(), header.data());
 
   if (WriteFrameHeader(payload_length, HttpFrameType::DATA, &writer)) {
-    return header_length;
+    return header;
   }
   QUIC_DLOG(ERROR)
       << "Http encoder failed when attempting to serialize data frame header.";
-  return 0;
+  return QuicBuffer();
 }
 
 // static

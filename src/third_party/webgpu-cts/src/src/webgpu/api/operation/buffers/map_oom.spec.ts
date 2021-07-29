@@ -1,27 +1,21 @@
 export const description =
   'Test out-of-memory conditions creating large mappable/mappedAtCreation buffers.';
 
-import { poptions, params, pbool } from '../../../../common/framework/params_builder.js';
+import { kUnitCaseParamsBuilder } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { kBufferUsages } from '../../../capability_info.js';
 import { GPUTest } from '../../../gpu_test.js';
+import { kMaxSafeMultipleOf8 } from '../../../util/math.js';
 
-// A multiple of 8 guaranteed to be way too large to allocate (just under 8 pebibytes).
-// (Note this is likely to exceed limitations other than just the system's
-// physical memory - so test cases are also needed to try to trigger "true" OOM.)
-const MAX_ALIGNED_SAFE_INTEGER = Number.MAX_SAFE_INTEGER - 7;
-
-const oomAndSizeParams = params()
-  .combine(pbool('oom'))
-  .expand(({ oom }) => {
-    if (oom) {
-      return poptions('size', [
-        MAX_ALIGNED_SAFE_INTEGER,
-        0x2000000000, // 128 GB
-      ]);
-    } else {
-      return poptions('size', [16]);
-    }
+const oomAndSizeParams = kUnitCaseParamsBuilder
+  .combine('oom', [false, true])
+  .expand('size', ({ oom }) => {
+    return oom
+      ? [
+          kMaxSafeMultipleOf8,
+          0x2000000000, // 128 GB
+        ]
+      : [16];
   });
 
 export const g = makeTestGroup(GPUTest);
@@ -34,8 +28,11 @@ g.test('mapAsync')
   - unmap() throws an OperationError if mapping failed, and otherwise should detach the ArrayBuffer.
 `
   )
-  .cases(oomAndSizeParams)
-  .subcases(() => params().combine(pbool('write')))
+  .params(
+    oomAndSizeParams //
+      .beginSubcases()
+      .combine('write', [false, true])
+  )
   .fn(async t => {
     const { oom, write, size } = t.params;
 
@@ -86,8 +83,11 @@ an out-of-memory error if allocation fails.
   - unmap() should not throw.
   `
   )
-  .cases(oomAndSizeParams)
-  .subcases(() => params().combine(poptions('usage', kBufferUsages)))
+  .params(
+    oomAndSizeParams //
+      .beginSubcases()
+      .combine('usage', kBufferUsages)
+  )
   .fn(async t => {
     const { oom, usage, size } = t.params;
 
@@ -119,8 +119,11 @@ an out-of-memory error if allocation fails.
   - unmap() should detach the ArrayBuffer.
   `
   )
-  .cases(oomAndSizeParams)
-  .subcases(() => poptions('usage', kBufferUsages))
+  .params(
+    oomAndSizeParams //
+      .beginSubcases()
+      .combine('usage', kBufferUsages)
+  )
   .fn(async t => {
     const { usage, size } = t.params;
 

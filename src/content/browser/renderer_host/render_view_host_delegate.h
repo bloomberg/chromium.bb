@@ -13,10 +13,8 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_states.h"
-
-namespace IPC {
-class Message;
-}
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
 namespace web_pref {
@@ -32,7 +30,6 @@ class Size;
 namespace content {
 
 class RenderViewHost;
-class RenderViewHostImpl;
 class RenderViewHostDelegateView;
 class WebContents;
 
@@ -52,10 +49,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // Returns the current delegate associated with a feature. May return NULL if
   // there is no corresponding delegate.
   virtual RenderViewHostDelegateView* GetDelegateView();
-
-  // This is used to give the delegate a chance to filter IPC messages.
-  virtual bool OnMessageReceived(RenderViewHostImpl* render_view_host,
-                                 const IPC::Message& message);
 
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns NULL. DEPRECATED: Be sure to include brettw or
@@ -134,22 +127,16 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // ignored.
   virtual bool ShouldIgnoreUnresponsiveRenderer();
 
-  // The RenderView finished the first visually non-empty paint.
-  virtual void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) {}
-
   // Returns true if the render view is rendering a guest.
   virtual bool IsGuest();
 
   // Returns true if the render view is rendering a portal.
   virtual bool IsPortal();
 
-  // Called when the theme color for the underlying document as specified
-  // by theme-color meta tag has changed.
-  virtual void OnThemeColorChanged(RenderViewHostImpl* source) {}
-
-  // Called when the CSS background color for the underlying document has
-  // changed.
-  virtual void OnBackgroundColorChanged(RenderViewHostImpl* source) {}
+  // Called on RenderView creation to get the initial base background color
+  // for this RenderView. Nullopt means a color is not set, and the blink
+  // default color should be used.
+  virtual absl::optional<SkColor> GetBaseBackgroundColor();
 
  protected:
   virtual ~RenderViewHostDelegate() {}

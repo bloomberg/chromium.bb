@@ -256,6 +256,15 @@ def compile_fn(api, checkout_root, out_dir):
     args['skia_use_fontconfig'] = 'false'
   if 'ASAN' in extra_tokens:
     args['skia_enable_spirv_validation'] = 'false'
+  if 'V1only' in extra_tokens:
+    args['skia_enable_skgpu_v1'] = 'true'
+    args['skia_enable_skgpu_v2'] = 'false'
+  if 'V1andV2' in extra_tokens:
+    args['skia_enable_skgpu_v1'] = 'true'
+    args['skia_enable_skgpu_v2'] = 'true'
+  if 'V2only' in extra_tokens:
+    args['skia_enable_skgpu_v1'] = 'false'
+    args['skia_enable_skgpu_v2'] = 'true'
   if 'NoDEPS' in extra_tokens:
     args.update({
       'is_official_build':             'true',
@@ -287,20 +296,6 @@ def compile_fn(api, checkout_root, out_dir):
   if 'Metal' in extra_tokens:
     args['skia_use_metal'] = 'true'
     args['skia_use_gl'] = 'false'
-  if 'OpenCL' in extra_tokens:
-    args['skia_use_opencl'] = 'true'
-    if api.vars.is_linux:
-      extra_cflags.append(
-          '-isystem%s' % api.vars.workdir.join('opencl_headers'))
-      extra_ldflags.append(
-          '-L%s' % api.vars.workdir.join('opencl_ocl_icd_linux'))
-    elif 'Win' in os:
-      extra_cflags.append(
-          '-imsvc%s' % api.vars.workdir.join('opencl_headers'))
-      extra_ldflags.append(
-          '/LIBPATH:%s' %
-          skia_dir.join('third_party', 'externals', 'opencl-lib', '3-0', 'lib',
-                        'x86_64'))
   if 'iOS' in extra_tokens:
     # Bots use Chromium signing cert.
     args['skia_ios_identity'] = '".*GS9WA.*"'

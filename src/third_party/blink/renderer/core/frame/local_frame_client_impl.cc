@@ -88,6 +88,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
+#include "third_party/blink/renderer/core/mobile_metrics/mobile_friendliness_checker.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/plugin_data.h"
@@ -308,7 +309,7 @@ bool LocalFrameClientImpl::HasWebView() const {
 }
 
 bool LocalFrameClientImpl::InShadowTree() const {
-  return web_frame_->InShadowTree();
+  return web_frame_->GetTreeScopeType() == mojom::blink::TreeScopeType::kShadow;
 }
 
 void LocalFrameClientImpl::WillBeDetached() {
@@ -392,6 +393,10 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
         commit_type, is_synchronously_committed, is_history_api_navigation,
         is_client_redirect);
   }
+}
+
+void LocalFrameClientImpl::DispatchDidOpenDocumentInputStream(const KURL& url) {
+  web_frame_->Client()->DidOpenDocumentInputStream(url);
 }
 
 void LocalFrameClientImpl::DispatchDidReceiveTitle(const String& title) {
@@ -709,12 +714,6 @@ void LocalFrameClientImpl::DidObserveLayoutShift(double score,
     client->DidObserveLayoutShift(score, after_input_or_scroll);
 }
 
-void LocalFrameClientImpl::DidObserveInputForLayoutShiftTracking(
-    base::TimeTicks timestamp) {
-  if (WebLocalFrameClient* client = web_frame_->Client())
-    client->DidObserveInputForLayoutShiftTracking(timestamp);
-}
-
 void LocalFrameClientImpl::DidObserveLayoutNg(uint32_t all_block_count,
                                               uint32_t ng_block_count,
                                               uint32_t all_call_count,
@@ -835,6 +834,11 @@ RemoteFrame* LocalFrameClientImpl::AdoptPortal(HTMLPortalElement* portal) {
   return web_frame_->AdoptPortal(portal);
 }
 
+RemoteFrame* LocalFrameClientImpl::CreateFencedFrame(
+    HTMLFencedFrameElement* fenced_frame) {
+  return web_frame_->CreateFencedFrame(fenced_frame);
+}
+
 WebPluginContainerImpl* LocalFrameClientImpl::CreatePlugin(
     HTMLPlugInElement& element,
     const KURL& url,
@@ -912,10 +916,7 @@ void LocalFrameClientImpl::DispatchDidChangeManifest() {
 
 unsigned LocalFrameClientImpl::BackForwardLength() {
   WebViewImpl* webview = web_frame_->ViewImpl();
-  if (!webview)
-    return 0;
-  return webview->HistoryBackListCount() + 1 +
-         webview->HistoryForwardListCount();
+  return webview ? webview->HistoryListLength() : 0;
 }
 
 BlameContext* LocalFrameClientImpl::GetFrameBlameContext() {

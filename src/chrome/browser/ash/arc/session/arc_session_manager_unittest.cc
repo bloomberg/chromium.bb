@@ -35,8 +35,8 @@
 #include "chrome/browser/ash/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/ash/login/ui/fake_login_display_host.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/policy/handlers/powerwash_requirements_checker.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -58,6 +58,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session_runner.h"
+#include "components/arc/test/arc_util_test_support.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
@@ -786,8 +787,8 @@ TEST_F(ArcSessionManagerTest, RegularToChildTransition_FlagOn) {
   // Emulate the situation where a regular user has transitioned to a child
   // account.
   profile()->GetPrefs()->SetInteger(
-      prefs::kArcSupervisionTransition,
-      static_cast<int>(ArcSupervisionTransition::REGULAR_TO_CHILD));
+      prefs::kArcManagementTransition,
+      static_cast<int>(ArcManagementTransition::REGULAR_TO_CHILD));
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       kCleanArcDataOnRegularToChildTransitionFeature);
@@ -796,9 +797,8 @@ TEST_F(ArcSessionManagerTest, RegularToChildTransition_FlagOn) {
   arc_session_manager()->Initialize();
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
-  EXPECT_EQ(
-      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION),
-      profile()->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
+  EXPECT_EQ(static_cast<int>(ArcManagementTransition::NO_TRANSITION),
+            profile()->GetPrefs()->GetInteger(prefs::kArcManagementTransition));
   EXPECT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR,
             arc_session_manager()->state());
 
@@ -809,8 +809,8 @@ TEST_F(ArcSessionManagerTest, RegularToChildTransition_FlagOff) {
   // Emulate the situation where a regular user has transitioned to a child
   // account, but the feature flag is disabled.
   profile()->GetPrefs()->SetInteger(
-      prefs::kArcSupervisionTransition,
-      static_cast<int>(ArcSupervisionTransition::REGULAR_TO_CHILD));
+      prefs::kArcManagementTransition,
+      static_cast<int>(ArcManagementTransition::REGULAR_TO_CHILD));
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
       kCleanArcDataOnRegularToChildTransitionFeature);
@@ -820,9 +820,8 @@ TEST_F(ArcSessionManagerTest, RegularToChildTransition_FlagOff) {
   arc_session_manager()->RequestEnable();
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
-  EXPECT_EQ(
-      static_cast<int>(ArcSupervisionTransition::REGULAR_TO_CHILD),
-      profile()->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
+  EXPECT_EQ(static_cast<int>(ArcManagementTransition::REGULAR_TO_CHILD),
+            profile()->GetPrefs()->GetInteger(prefs::kArcManagementTransition));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
@@ -832,8 +831,8 @@ TEST_F(ArcSessionManagerTest, RegularToChildTransition_FlagOff) {
 
 TEST_F(ArcSessionManagerTest, ClearArcTransitionOnShutdown) {
   profile()->GetPrefs()->SetInteger(
-      prefs::kArcSupervisionTransition,
-      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
+      prefs::kArcManagementTransition,
+      static_cast<int>(ArcManagementTransition::NO_TRANSITION));
 
   // Initialize ARC.
   arc_session_manager()->SetProfile(profile());
@@ -850,29 +849,27 @@ TEST_F(ArcSessionManagerTest, ClearArcTransitionOnShutdown) {
   arc_session_manager()->OnProvisioningFinished(
       ArcProvisioningResult(std::move(result)));
 
-  EXPECT_EQ(
-      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION),
-      profile()->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
+  EXPECT_EQ(static_cast<int>(ArcManagementTransition::NO_TRANSITION),
+            profile()->GetPrefs()->GetInteger(prefs::kArcManagementTransition));
 
   // Child started graduation.
   profile()->GetPrefs()->SetInteger(
-      prefs::kArcSupervisionTransition,
-      static_cast<int>(ArcSupervisionTransition::CHILD_TO_REGULAR));
+      prefs::kArcManagementTransition,
+      static_cast<int>(ArcManagementTransition::CHILD_TO_REGULAR));
   // Simulate ARC shutdown.
   const bool enable_requested = arc_session_manager()->enable_requested();
   arc_session_manager()->RequestDisable();
   if (enable_requested)
     arc_session_manager()->RequestArcDataRemoval();
-  EXPECT_EQ(
-      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION),
-      profile()->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
+  EXPECT_EQ(static_cast<int>(ArcManagementTransition::NO_TRANSITION),
+            profile()->GetPrefs()->GetInteger(prefs::kArcManagementTransition));
 
   arc_session_manager()->Shutdown();
 }
 
 TEST_F(ArcSessionManagerTest, ClearArcTransitionOnArcDataRemoval) {
-  EXPECT_EQ(ArcSupervisionTransition::NO_TRANSITION,
-            arc::GetSupervisionTransition(profile()));
+  EXPECT_EQ(ArcManagementTransition::NO_TRANSITION,
+            arc::GetManagementTransition(profile()));
 
   // Initialize ARC.
   arc_session_manager()->SetProfile(profile());
@@ -889,17 +886,17 @@ TEST_F(ArcSessionManagerTest, ClearArcTransitionOnArcDataRemoval) {
   arc_session_manager()->OnProvisioningFinished(
       ArcProvisioningResult(std::move(result)));
 
-  EXPECT_EQ(ArcSupervisionTransition::NO_TRANSITION,
-            arc::GetSupervisionTransition(profile()));
+  EXPECT_EQ(ArcManagementTransition::NO_TRANSITION,
+            arc::GetManagementTransition(profile()));
 
   // Child started graduation.
   profile()->GetPrefs()->SetInteger(
-      prefs::kArcSupervisionTransition,
-      static_cast<int>(ArcSupervisionTransition::CHILD_TO_REGULAR));
+      prefs::kArcManagementTransition,
+      static_cast<int>(ArcManagementTransition::CHILD_TO_REGULAR));
 
   arc_session_manager()->RequestArcDataRemoval();
-  EXPECT_EQ(ArcSupervisionTransition::NO_TRANSITION,
-            arc::GetSupervisionTransition(profile()));
+  EXPECT_EQ(ArcManagementTransition::NO_TRANSITION,
+            arc::GetManagementTransition(profile()));
 
   arc_session_manager()->Shutdown();
 }
@@ -1352,11 +1349,10 @@ class ArcSessionManagerPolicyTest
 
  private:
   void CreateLoginDisplayHost() {
-    fake_login_display_host_ =
-        std::make_unique<chromeos::FakeLoginDisplayHost>();
+    fake_login_display_host_ = std::make_unique<ash::FakeLoginDisplayHost>();
   }
 
-  std::unique_ptr<chromeos::FakeLoginDisplayHost> fake_login_display_host_;
+  std::unique_ptr<ash::FakeLoginDisplayHost> fake_login_display_host_;
 };
 
 TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
@@ -1611,11 +1607,10 @@ class ArcSessionOobeOptInNegotiatorTest
   }
 
   void CreateLoginDisplayHost() {
-    fake_login_display_host_ =
-        std::make_unique<chromeos::FakeLoginDisplayHost>();
+    fake_login_display_host_ = std::make_unique<ash::FakeLoginDisplayHost>();
   }
 
-  chromeos::FakeLoginDisplayHost* login_display_host() {
+  ash::FakeLoginDisplayHost* login_display_host() {
     return fake_login_display_host_.get();
   }
 
@@ -1648,7 +1643,7 @@ class ArcSessionOobeOptInNegotiatorTest
 
   base::ObserverList<chromeos::ArcTermsOfServiceScreenViewObserver>::Unchecked
       observer_list_;
-  std::unique_ptr<chromeos::FakeLoginDisplayHost> fake_login_display_host_;
+  std::unique_ptr<ash::FakeLoginDisplayHost> fake_login_display_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSessionOobeOptInNegotiatorTest);
 };
@@ -2264,10 +2259,10 @@ TEST_P(ArcTransitionToManagedTest, TransitionFlow) {
   // Verify ARC state and ARC transition value.
   EXPECT_EQ(profile()->GetPrefs()->GetBoolean(prefs::kArcEnabled),
             ShouldArcTransitionToManaged());
-  EXPECT_EQ(arc::GetSupervisionTransition(profile()),
+  EXPECT_EQ(arc::GetManagementTransition(profile()),
             ShouldArcTransitionToManaged()
-                ? arc::ArcSupervisionTransition::UNMANAGED_TO_MANAGED
-                : arc::ArcSupervisionTransition::NO_TRANSITION);
+                ? arc::ArcManagementTransition::UNMANAGED_TO_MANAGED
+                : arc::ArcManagementTransition::NO_TRANSITION);
 }
 
 INSTANTIATE_TEST_SUITE_P(

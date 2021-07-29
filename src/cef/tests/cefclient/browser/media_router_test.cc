@@ -65,7 +65,7 @@ class MediaRouteCreateCallback : public CefMediaRouteCreateCallback {
   // CefMediaRouteCreateCallback method:
   void OnMediaRouteCreateFinished(RouteCreateResult result,
                                   const CefString& error,
-                                  CefRefPtr<CefMediaRoute> route) OVERRIDE {
+                                  CefRefPtr<CefMediaRoute> route) override {
     CEF_REQUIRE_UI_THREAD();
     if (result == CEF_MRCR_OK) {
       CefRefPtr<CefDictionaryValue> dict = CefDictionaryValue::Create();
@@ -74,7 +74,7 @@ class MediaRouteCreateCallback : public CefMediaRouteCreateCallback {
     } else {
       SendFailure(create_callback_, kRequestFailedError + result, error);
     }
-    create_callback_ = NULL;
+    create_callback_ = nullptr;
   }
 
  private:
@@ -98,7 +98,7 @@ class MediaObserver : public CefMediaObserver {
         pending_sink_query_id_(-1),
         pending_sink_callbacks_(0U) {}
 
-  ~MediaObserver() OVERRIDE { ClearSinkInfoMap(); }
+  ~MediaObserver() override { ClearSinkInfoMap(); }
 
   bool CreateRoute(const std::string& source_urn,
                    const std::string& sink_id,
@@ -149,18 +149,17 @@ class MediaObserver : public CefMediaObserver {
   class DeviceInfoCallback : public CefMediaSinkDeviceInfoCallback {
    public:
     // Callback to be executed when the device info is available.
-    typedef base::Callback<void(const std::string& sink_id,
-                                const CefMediaSinkDeviceInfo& device_info)>
-        CallbackType;
+    using CallbackType =
+        base::OnceCallback<void(const std::string& sink_id,
+                                const CefMediaSinkDeviceInfo& device_info)>;
 
-    DeviceInfoCallback(const std::string& sink_id, const CallbackType& callback)
-        : sink_id_(sink_id), callback_(callback) {}
+    DeviceInfoCallback(const std::string& sink_id, CallbackType callback)
+        : sink_id_(sink_id), callback_(std::move(callback)) {}
 
     void OnMediaSinkDeviceInfo(
-        const CefMediaSinkDeviceInfo& device_info) OVERRIDE {
+        const CefMediaSinkDeviceInfo& device_info) override {
       CEF_REQUIRE_UI_THREAD();
-      callback_.Run(sink_id_, device_info);
-      callback_.Reset();
+      std::move(callback_).Run(sink_id_, device_info);
     }
 
    private:
@@ -172,7 +171,7 @@ class MediaObserver : public CefMediaObserver {
   };
 
   // CefMediaObserver methods:
-  void OnSinks(const MediaSinkVector& sinks) OVERRIDE {
+  void OnSinks(const MediaSinkVector& sinks) override {
     CEF_REQUIRE_UI_THREAD();
 
     ClearSinkInfoMap();
@@ -187,9 +186,6 @@ class MediaObserver : public CefMediaObserver {
       return;
     }
 
-    DeviceInfoCallback::CallbackType callback = base::Bind(
-        &MediaObserver::OnSinkDeviceInfo, this, pending_sink_query_id_);
-
     MediaSinkVector::const_iterator it = sinks.begin();
     for (size_t idx = 0; it != sinks.end(); ++it, ++idx) {
       CefRefPtr<CefMediaSink> sink = *it;
@@ -200,11 +196,13 @@ class MediaObserver : public CefMediaObserver {
 
       // Request the device info asynchronously. Send the response once all
       // callbacks have executed.
-      sink->GetDeviceInfo(new DeviceInfoCallback(sink_id, callback));
+      auto callback = base::BindOnce(&MediaObserver::OnSinkDeviceInfo, this,
+                                     pending_sink_query_id_);
+      sink->GetDeviceInfo(new DeviceInfoCallback(sink_id, std::move(callback)));
     }
   }
 
-  void OnRoutes(const MediaRouteVector& routes) OVERRIDE {
+  void OnRoutes(const MediaRouteVector& routes) override {
     CEF_REQUIRE_UI_THREAD();
 
     route_map_.clear();
@@ -231,7 +229,7 @@ class MediaObserver : public CefMediaObserver {
   }
 
   void OnRouteStateChanged(CefRefPtr<CefMediaRoute> route,
-                           ConnectionState state) OVERRIDE {
+                           ConnectionState state) override {
     CEF_REQUIRE_UI_THREAD();
 
     CefRefPtr<CefDictionaryValue> payload = CefDictionaryValue::Create();
@@ -242,7 +240,7 @@ class MediaObserver : public CefMediaObserver {
 
   void OnRouteMessageReceived(CefRefPtr<CefMediaRoute> route,
                               const void* message,
-                              size_t message_size) OVERRIDE {
+                              size_t message_size) override {
     CEF_REQUIRE_UI_THREAD();
 
     std::string message_str(static_cast<const char*>(message), message_size);
@@ -257,7 +255,7 @@ class MediaObserver : public CefMediaObserver {
   CefRefPtr<CefMediaSource> GetSource(const std::string& source_urn) {
     CefRefPtr<CefMediaSource> source = media_router_->GetSource(source_urn);
     if (!source)
-      return NULL;
+      return nullptr;
     return source;
   }
 
@@ -265,7 +263,7 @@ class MediaObserver : public CefMediaObserver {
     SinkInfoMap::const_iterator it = sink_info_map_.find(sink_id);
     if (it != sink_info_map_.end())
       return it->second->sink;
-    return NULL;
+    return nullptr;
   }
 
   void ClearSinkInfoMap() {
@@ -299,7 +297,7 @@ class MediaObserver : public CefMediaObserver {
     RouteMap::const_iterator it = route_map_.find(route_id);
     if (it != route_map_.end())
       return it->second;
-    return NULL;
+    return nullptr;
   }
 
   void SendResponse(const std::string& name,
@@ -386,7 +384,7 @@ class Handler : public CefMessageRouterBrowserSide::Handler {
                int64 query_id,
                const CefString& request,
                bool persistent,
-               CefRefPtr<Callback> callback) OVERRIDE {
+               CefRefPtr<Callback> callback) override {
     CEF_REQUIRE_UI_THREAD();
 
     // Only handle messages from the test URL.
@@ -490,7 +488,7 @@ class Handler : public CefMessageRouterBrowserSide::Handler {
 
   void OnQueryCanceled(CefRefPtr<CefBrowser> browser,
                        CefRefPtr<CefFrame> frame,
-                       int64 query_id) OVERRIDE {
+                       int64 query_id) override {
     CEF_REQUIRE_UI_THREAD();
     RemoveSubscription(browser->GetIdentifier(), query_id);
   }
@@ -574,7 +572,7 @@ class Handler : public CefMessageRouterBrowserSide::Handler {
     if (it != subscription_state_map_.end()) {
       return it->second->observer;
     }
-    return NULL;
+    return nullptr;
   }
 
   // Map of browser ID to SubscriptionState object.

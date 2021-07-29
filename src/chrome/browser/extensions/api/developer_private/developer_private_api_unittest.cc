@@ -471,8 +471,10 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivatePackFunction) {
   // Try to pack a final time when omitting (an existing) pem file. We should
   // get an error.
   base::DeleteFile(crx_path);
-  EXPECT_TRUE(pack_args.Remove(1u, nullptr));  // Remove the pem key argument.
-  EXPECT_TRUE(pack_args.Remove(1u, nullptr));  // Remove the flags argument.
+  EXPECT_TRUE(pack_args.EraseListIter(pack_args.GetList().begin() +
+                                      1u));  // Remove the pem key argument.
+  EXPECT_TRUE(pack_args.EraseListIter(pack_args.GetList().begin() +
+                                      1u));  // Remove the flags argument.
   EXPECT_TRUE(TestPackExtensionFunction(
       pack_args, api::developer_private::PACK_STATUS_ERROR, 0));
 }
@@ -503,7 +505,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateChoosePath) {
   base::FilePath expected_file_path =
       data_dir().AppendASCII("simple_with_popup.pem");
   api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&expected_file_path);
-  choose_args.Clear();
+  choose_args.ClearList();
   choose_args.AppendString("FILE");
   choose_args.AppendString("PEM");
   function = new api::DeveloperPrivateChoosePathFunction();
@@ -1033,14 +1035,13 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
       new api::DeveloperPrivateGetExtensionsInfoFunction());
   EXPECT_TRUE(RunFunction(function, base::ListValue())) << function->GetError();
   const base::ListValue* results = function->GetResultList();
-  ASSERT_EQ(1u, results->GetSize());
-  const base::ListValue* list = nullptr;
-  ASSERT_TRUE(results->GetList(0u, &list));
-  ASSERT_EQ(1u, list->GetSize());
-  const base::Value* value = nullptr;
-  ASSERT_TRUE(list->Get(0u, &value));
+  base::Value::ConstListView results_list = results->GetList();
+  ASSERT_EQ(1u, results_list.size());
+  ASSERT_TRUE(results_list[0].is_list());
+  base::Value::ConstListView list = results_list[0].GetList();
+  ASSERT_EQ(1u, list.size());
   std::unique_ptr<api::developer_private::ExtensionInfo> info =
-      api::developer_private::ExtensionInfo::FromValue(*value);
+      api::developer_private::ExtensionInfo::FromValue(list[0]);
   ASSERT_TRUE(info);
 
   // As a sanity check, also run the GetItemsInfo and make sure it returns a
@@ -1051,12 +1052,13 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
   args.AppendBoolean(false);
   EXPECT_TRUE(RunFunction(function, args)) << function->GetError();
   results = function->GetResultList();
-  ASSERT_EQ(1u, results->GetSize());
-  ASSERT_TRUE(results->GetList(0u, &list));
-  ASSERT_EQ(1u, list->GetSize());
-  ASSERT_TRUE(list->Get(0u, &value));
+  results_list = results->GetList();
+  ASSERT_EQ(1u, results_list.size());
+  ASSERT_TRUE(results_list[0].is_list());
+  list = results_list[0].GetList();
+  ASSERT_EQ(1u, list.size());
   std::unique_ptr<api::developer_private::ItemInfo> item_info =
-      api::developer_private::ItemInfo::FromValue(*value);
+      api::developer_private::ItemInfo::FromValue(list[0]);
   ASSERT_TRUE(item_info);
 }
 

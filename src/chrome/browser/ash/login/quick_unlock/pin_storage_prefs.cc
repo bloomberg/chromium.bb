@@ -4,10 +4,9 @@
 
 #include "chrome/browser/ash/login/quick_unlock/pin_storage_prefs.h"
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
-#include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -63,8 +62,8 @@ bool PinStoragePrefs::IsPinAuthenticationAvailable() const {
   const bool exceeded_unlock_attempts =
       unlock_attempt_count() >= kMaximumUnlockAttempts;
 
-  return IsPinEnabled(pref_service_) && !IsPinDisabledByPolicy(pref_service_) &&
-         IsPinSet() && !exceeded_unlock_attempts;
+  return !IsPinDisabledByPolicy(pref_service_) && IsPinSet() &&
+         !exceeded_unlock_attempts;
 }
 
 bool PinStoragePrefs::TryAuthenticatePin(const Key& key) {

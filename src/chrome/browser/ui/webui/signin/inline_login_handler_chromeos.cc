@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/components/account_manager/account_manager_ash.h"
 #include "ash/components/account_manager/account_manager_factory.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/base64.h"
@@ -31,7 +30,9 @@
 #include "chrome/browser/ui/webui/signin/signin_helper_chromeos.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/util/version_loader.h"
+#include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_manager_facade.h"
+#include "components/account_manager_core/chromeos/account_manager_ash.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -44,7 +45,7 @@
 namespace chromeos {
 namespace {
 
-using ::ash::AccountManager;
+using ::account_manager::AccountManager;
 
 constexpr char kCrosAddAccountFlow[] = "crosAddAccount";
 constexpr char kCrosAddAccountEduFlow[] = "crosAddAccountEdu";
@@ -91,7 +92,7 @@ std::string GetInlineLoginFlowName(Profile* profile, const std::string* email) {
 class ChildSigninHelper : public SigninHelper {
  public:
   ChildSigninHelper(
-      ash::AccountManager* account_manager,
+      account_manager::AccountManager* account_manager,
       crosapi::AccountManagerAsh* account_manager_ash,
       const base::RepeatingClosure& close_dialog_closure,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -170,7 +171,7 @@ class ChildSigninHelper : public SigninHelper {
 class EduCoexistenceChildSigninHelper : public SigninHelper {
  public:
   EduCoexistenceChildSigninHelper(
-      ash::AccountManager* account_manager,
+      account_manager::AccountManager* account_manager,
       crosapi::AccountManagerAsh* account_manager_ash,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& gaia_id,

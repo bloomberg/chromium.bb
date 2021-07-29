@@ -5,8 +5,8 @@
 #include "ash/wm/window_cycle/window_cycle_event_filter.h"
 
 #include "ash/accelerators/debug_commands.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/display/screen_ash.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
@@ -260,7 +260,11 @@ void WindowCycleEventFilter::ProcessGestureEvent(ui::GestureEvent* event) {
       if (!window_cycle_controller->IsEventInCycleView(event))
         return;
 
-      window_cycle_controller->StartFling(event->details().velocity_x());
+      // Only start a fling if the x-velocity is non-zero to avoid crashing when
+      // creating a fling curve. See crbug.com/1224969.
+      float velocity_x = event->details().velocity_x();
+      if (velocity_x != 0.f)
+        window_cycle_controller->StartFling(velocity_x);
       break;
     }
     case ui::ET_GESTURE_END: {
@@ -268,10 +272,9 @@ void WindowCycleEventFilter::ProcessGestureEvent(ui::GestureEvent* event) {
         // Defer calling WindowCycleController::CompleteCycling() until we've
         // set |event| to handled and stop its propagation.
         should_complete_cycling = true;
-      } else {
-        tapped_window_ = nullptr;
-        touch_scrolling_ = false;
       }
+      tapped_window_ = nullptr;
+      touch_scrolling_ = false;
       break;
     }
     default:
@@ -385,6 +388,7 @@ void WindowCycleEventFilter::AltReleaseHandler::OnKeyEvent(
   // Views uses VKEY_MENU for both left and right Alt keys.
   if (event->key_code() == ui::VKEY_MENU &&
       event->type() == ui::ET_KEY_RELEASED) {
+    event->StopPropagation();
     Shell::Get()->window_cycle_controller()->CompleteCycling();
     // Warning: |this| will be deleted from here on.
   }

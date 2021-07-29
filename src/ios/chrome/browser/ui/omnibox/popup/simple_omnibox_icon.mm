@@ -7,7 +7,6 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_suggestion_icon_util.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/common/ui/colors/dynamic_color_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/images/branded_image_provider.h"
@@ -91,7 +90,7 @@
 
 - (UIImage*)fallbackAnswerBrandedIcon {
   return ios::GetChromeBrowserProvider()
-      ->GetBrandedImageProvider()
+      .GetBrandedImageProvider()
       ->GetOmniboxAnswerIcon();
 }
 
@@ -100,18 +99,11 @@
     case OmniboxIconTypeImage:
     case OmniboxIconTypeSuggestionIcon:
       if ([self hasCustomAnswerIcon]) {
-        return color::DarkModeDynamicColor(
-            [UIColor colorNamed:@"omnibox_suggestion_answer_icon_color"],
-            self.incognito,
-            [UIColor colorNamed:@"omnibox_suggestion_answer_icon_dark_color"]);
+        return [UIColor colorNamed:@"omnibox_suggestion_answer_icon_color"];
       }
-      return color::DarkModeDynamicColor(
-          [UIColor colorNamed:@"omnibox_suggestion_icon_color"], self.incognito,
-          [UIColor colorNamed:@"omnibox_suggestion_icon_dark_color"]);
+      return [UIColor colorNamed:@"omnibox_suggestion_icon_color"];
     case OmniboxIconTypeFavicon:
-      return color::DarkModeDynamicColor(
-          [UIColor colorNamed:@"omnibox_suggestion_icon_color"], self.incognito,
-          [UIColor colorNamed:@"omnibox_suggestion_icon_dark_color"]);
+      return [UIColor colorNamed:@"omnibox_suggestion_icon_color"];
   }
 }
 
@@ -136,9 +128,7 @@
       return nil;
     case OmniboxIconTypeSuggestionIcon:
       if ([self hasCustomAnswerIcon]) {
-        return color::DarkModeDynamicColor([UIColor colorNamed:kBlueColor],
-                                           self.incognito,
-                                           [UIColor colorNamed:kBlueDarkColor]);
+        return [UIColor colorNamed:kBlueColor];
       }
       return nil;
     case OmniboxIconTypeFavicon:

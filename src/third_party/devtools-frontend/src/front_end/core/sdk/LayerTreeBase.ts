@@ -9,7 +9,7 @@ import type * as Protocol from '../../generated/protocol.js';
 import type {DOMNode} from './DOMModel.js';
 import {DOMModel} from './DOMModel.js';                   // eslint-disable-line no-unused-vars
 import type {SnapshotWithRect} from './PaintProfiler.js'; // eslint-disable-line no-unused-vars
-import type {Target} from './SDKModel.js';                // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';                  // eslint-disable-line no-unused-vars
 
 export interface Layer {
   id(): string;
@@ -116,7 +116,7 @@ export class LayerTreeBase {
   layersById: Map<string|number, Layer>;
   _root: Layer|null;
   _contentRoot: Layer|null;
-  _backendNodeIdToNode: Map<number, DOMNode|null>;
+  _backendNodeIdToNode: Map<Protocol.DOM.BackendNodeId, DOMNode|null>;
   _viewportSize?: {
     width: number,
     height: number,
@@ -169,7 +169,7 @@ export class LayerTreeBase {
     return this.layersById.get(id) || null;
   }
 
-  async resolveBackendNodeIds(requestedNodeIds: Set<number>): Promise<void> {
+  async resolveBackendNodeIds(requestedNodeIds: Set<Protocol.DOM.BackendNodeId>): Promise<void> {
     if (!requestedNodeIds.size || !this._domModel) {
       return;
     }
@@ -184,7 +184,7 @@ export class LayerTreeBase {
     }
   }
 
-  backendNodeIdToNode(): Map<number, DOMNode|null> {
+  backendNodeIdToNode(): Map<Protocol.DOM.BackendNodeId, DOMNode|null> {
     return this._backendNodeIdToNode;
   }
 

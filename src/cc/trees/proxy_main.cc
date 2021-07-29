@@ -22,6 +22,7 @@
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/mutator_host.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "cc/trees/proxy_impl.h"
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
@@ -41,8 +42,7 @@ ProxyMain::ProxyMain(LayerTreeHost* layer_tree_host,
       deferred_final_pipeline_stage_(NO_PIPELINE_STAGE),
       commit_waits_for_activation_(false),
       started_(false),
-      defer_main_frame_update_(false),
-      defer_commits_(false) {
+      defer_main_frame_update_(false) {
   TRACE_EVENT0("cc", "ProxyMain::ProxyMain");
   DCHECK(task_runner_provider_);
   DCHECK(IsMainThread());
@@ -170,24 +170,10 @@ void ProxyMain::BeginMainFrame(
   final_pipeline_stage_ = max_requested_pipeline_stage_;
   max_requested_pipeline_stage_ = NO_PIPELINE_STAGE;
 
-  // When we don't need to produce a CompositorFrame, there's also no need to
-  // commit our updates. We still need to run layout and paint though, as it can
-  // have side effects on page loading behavior.
-  bool skip_commit = begin_main_frame_state->begin_frame_args.animate_only;
-
   // If main frame updates and commits are deferred, skip the entire pipeline.
-  bool skip_full_pipeline = defer_main_frame_update_;
-
-  // We may have previously skipped paint and commit. If we should still skip it
-  // now, and there was no intermediate request for a commit since the last
-  // BeginMainFrame, we can skip the full pipeline.
-  skip_full_pipeline |=
-      skip_commit && final_pipeline_stage_ == NO_PIPELINE_STAGE;
-
-  if (skip_full_pipeline) {
+  if (defer_main_frame_update_) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit",
                          TRACE_EVENT_SCOPE_THREAD);
-
     // In this case, since the commit is deferred to a later time, gathered
     // events metrics are not discarded so that they can be reported if the
     // commit happens in the future.
@@ -215,9 +201,9 @@ void ProxyMain::BeginMainFrame(
   // Check now if we should stop deferring commits due to a timeout. We
   // may also stop deferring in layer_tree_host_->BeginMainFrame, but update
   // the status at this point to keep scroll in sync.
-  if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_)
-    StopDeferringCommits(PaintHoldingCommitTrigger::kTimeout);
-  skip_commit |= defer_commits_;
+  if (IsDeferringCommits() && base::TimeTicks::Now() > commits_restart_time_)
+    StopDeferringCommits(ReasonToTimeoutTrigger(*paint_holding_reason_));
+  bool skip_commit = IsDeferringCommits();
 
   if (!skip_commit) {
     // Synchronizes scroll offsets and page scale deltas (for pinch zoom) from
@@ -264,7 +250,12 @@ void ProxyMain::BeginMainFrame(
   // avoid committing right now, or we may be deferring commits but not
   // deferring main frame updates. Either may have changed the status
   // of the defer... flags, so re-evaluate skip_commit.
-  skip_commit |= defer_main_frame_update_ || defer_commits_;
+  skip_commit |= defer_main_frame_update_ || IsDeferringCommits();
+
+  // When we don't need to produce a CompositorFrame, there's also no need to
+  // commit our updates. We still need to run layout and paint though, as it can
+  // have side effects on page loading behavior.
+  skip_commit |= begin_main_frame_state->begin_frame_args.animate_only;
 
   if (skip_commit) {
     current_pipeline_stage_ = NO_PIPELINE_STAGE;
@@ -387,7 +378,7 @@ void ProxyMain::BeginMainFrame(
 
 void ProxyMain::DidPresentCompositorFrame(
     uint32_t frame_token,
-    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
+    std::vector<PresentationTimeCallbackBuffer::MainCallback> callbacks,
     const gfx::PresentationFeedback& feedback) {
   layer_tree_host_->DidPresentCompositorFrame(frame_token, std::move(callbacks),
                                               feedback);
@@ -477,6 +468,15 @@ void ProxyMain::SetNextCommitWaitsForActivation() {
   commit_waits_for_activation_ = true;
 }
 
+void ProxyMain::SetTargetLocalSurfaceId(
+    const viz::LocalSurfaceId& target_local_surface_id) {
+  DCHECK(IsMainThread());
+  ImplThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ProxyImpl::SetTargetLocalSurfaceIdOnImpl,
+                                base::Unretained(proxy_impl_.get()),
+                                target_local_surface_id));
+}
+
 bool ProxyMain::RequestedAnimatePending() {
   return max_requested_pipeline_stage_ >= ANIMATE_PIPELINE_STAGE;
 }
@@ -505,35 +505,43 @@ void ProxyMain::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
                                 defer_main_frame_update));
 }
 
-void ProxyMain::StartDeferringCommits(base::TimeDelta timeout) {
+bool ProxyMain::StartDeferringCommits(base::TimeDelta timeout,
+                                      PaintHoldingReason reason) {
   DCHECK(task_runner_provider_->IsMainThread());
 
   // Do nothing if already deferring. The timeout remains as it was from when
   // we most recently began deferring.
-  if (defer_commits_)
-    return;
+  if (IsDeferringCommits())
+    return false;
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("cc", "ProxyMain::SetDeferCommits",
                                     TRACE_ID_LOCAL(this));
 
-  defer_commits_ = true;
+  paint_holding_reason_ = reason;
   commits_restart_time_ = base::TimeTicks::Now() + timeout;
 
   // Notify dependent systems that the deferral status has changed.
-  layer_tree_host_->OnDeferCommitsChanged(defer_commits_);
+  layer_tree_host_->OnDeferCommitsChanged(true, reason);
+  return true;
 }
 
 void ProxyMain::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
-  if (!defer_commits_)
+  if (!IsDeferringCommits())
     return;
-  defer_commits_ = false;
+  auto reason = *paint_holding_reason_;
+  paint_holding_reason_.reset();
   UMA_HISTOGRAM_ENUMERATION("PaintHolding.CommitTrigger2", trigger);
   commits_restart_time_ = base::TimeTicks();
   TRACE_EVENT_NESTABLE_ASYNC_END0("cc", "ProxyMain::SetDeferCommits",
                                   TRACE_ID_LOCAL(this));
 
   // Notify depended systems that the deferral status has changed.
-  layer_tree_host_->OnDeferCommitsChanged(defer_commits_);
+  layer_tree_host_->OnDeferCommitsChanged(false, reason);
+}
+
+bool ProxyMain::IsDeferringCommits() const {
+  DCHECK(IsMainThread());
+  return paint_holding_reason_.has_value();
 }
 
 bool ProxyMain::CommitRequested() const {

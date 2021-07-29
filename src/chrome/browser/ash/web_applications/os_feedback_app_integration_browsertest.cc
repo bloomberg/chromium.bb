@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/components/os_feedback_ui/url_constants.h"
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
+#include "ash/webui/os_feedback_ui/url_constants.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/web_applications/system_web_app_integration_test.h"

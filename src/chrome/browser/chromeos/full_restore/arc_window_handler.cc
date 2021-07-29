@@ -7,9 +7,12 @@
 #include "chrome/browser/chromeos/full_restore/arc_ghost_window_shell_surface.h"
 #include "chrome/browser/chromeos/full_restore/arc_window_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chromeos/ui/base/window_state_type.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/wm_helper.h"
 #include "components/full_restore/app_restore_data.h"
+#include "components/full_restore/full_restore_utils.h"
+#include "ui/views/window/caption_button_layout_constants.h"
 
 namespace chromeos {
 namespace full_restore {
@@ -25,11 +28,21 @@ void ArcWindowHandler::WindowSessionResolver::PopulateProperties(
     return;
   auto it = session_id_map_->find(params.window_session_id);
   if (it != session_id_map_->end()) {
+    // Reuse the ghost window instance for real ARC app window.
     if (it->second->HasOverlay())
       it->second->RemoveOverlay();
+    views::Widget* widget = it->second->GetWidget();
+    if (widget && widget->GetNativeWindow()) {
+      widget->GetNativeWindow()->SetProperty(::full_restore::kRealArcTaskWindow,
+                                             true);
+    }
     SetShellClientControlledShellSurface(&out_properties_container,
                                          it->second.release());
     session_id_map_->erase(it);
+  } else {
+    // ARC ghost window instance.
+    out_properties_container.SetProperty(::full_restore::kRealArcTaskWindow,
+                                         false);
   }
 }
 
@@ -48,12 +61,29 @@ void ArcWindowHandler::LaunchArcGhostWindow(
   DCHECK(restore_data->current_bounds.has_value());
   DCHECK(restore_data->display_id.has_value());
 
+  gfx::Rect adjust_bounds = restore_data->current_bounds.value();
+
+  // Replace the screen bounds by root bounds if there is.
+  if (restore_data->bounds_in_root.has_value())
+    adjust_bounds = restore_data->bounds_in_root.value();
+  if (restore_data->window_state_type.has_value() &&
+      (restore_data->window_state_type.value() ==
+           chromeos::WindowStateType::kDefault ||
+       restore_data->window_state_type.value() ==
+           chromeos::WindowStateType::kNormal)) {
+    adjust_bounds.Inset(0,
+                        views::GetCaptionButtonLayoutSize(
+                            views::CaptionButtonLayoutSize::kNonBrowserCaption)
+                            .height(),
+                        0, 0);
+  }
+
   session_id_to_shell_surface_.emplace(
       session_id,
       InitArcGhostWindow(
           this, app_id, session_id, restore_data->display_id.value(),
-          restore_data->current_bounds.value(), restore_data->maximum_size,
-          restore_data->minimum_size, restore_data->status_bar_color,
+          adjust_bounds, restore_data->maximum_size, restore_data->minimum_size,
+          restore_data->title, restore_data->status_bar_color,
           base::BindRepeating(&ArcWindowHandler::CloseWindow,
                               weak_ptr_factory_.GetWeakPtr(), session_id)));
 }

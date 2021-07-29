@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,6 +29,8 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
+#include "net/base/url_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -198,9 +201,6 @@ void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
     // |entry| points to the NavigationEntry that has just committed and it may
     // contain existing ssl flags which we do not want to reset.
     remove_content_status_flags = ~0;
-    // Also clear any UserData from the SSLStatus.
-    if (entry)
-      entry->GetSSL().user_data = nullptr;
   }
 
   if (!UpdateEntry(entry, add_content_status_flags,
@@ -216,9 +216,8 @@ void SSLManager::DidDisplayMixedContent() {
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
   if (entry && entry->GetURL().SchemeIsCryptographic() &&
       entry->GetSSL().certificate) {
-    WebContentsImpl* contents = static_cast<WebContentsImpl*>(
-        controller_->delegate()->GetWebContents());
-    ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
+    RenderFrameHostImpl* main_frame = controller_->frame_tree().GetMainFrame();
+    ukm::SourceId source_id = main_frame->GetPageUkmSourceId();
     LogMixedContentMetrics(MixedContentType::kOptionallyBlockableMixedContent,
                            source_id, ukm::UkmRecorder::Get());
   }
@@ -230,9 +229,8 @@ void SSLManager::DidContainInsecureFormAction() {
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
   if (entry && entry->GetURL().SchemeIsCryptographic() &&
       entry->GetSSL().certificate) {
-    WebContentsImpl* contents = static_cast<WebContentsImpl*>(
-        controller_->delegate()->GetWebContents());
-    ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
+    RenderFrameHostImpl* main_frame = controller_->frame_tree().GetMainFrame();
+    ukm::SourceId source_id = main_frame->GetPageUkmSourceId();
     LogMixedContentMetrics(MixedContentType::kMixedForm, source_id,
                            ukm::UkmRecorder::Get());
   }
@@ -248,9 +246,9 @@ void SSLManager::DidDisplayContentWithCertErrors() {
     // Only record information about subresources with cert errors if the
     // main page is HTTPS with a valid certificate.
     if (!net::IsCertStatusError(entry->GetSSL().cert_status)) {
-      WebContentsImpl* contents = static_cast<WebContentsImpl*>(
-          controller_->delegate()->GetWebContents());
-      ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
+      RenderFrameHostImpl* main_frame =
+          controller_->frame_tree().GetMainFrame();
+      ukm::SourceId source_id = main_frame->GetPageUkmSourceId();
       LogMixedContentMetrics(
           MixedContentType::kOptionallyBlockableWithCertErrors, source_id,
           ukm::UkmRecorder::Get());
@@ -265,9 +263,8 @@ void SSLManager::DidRunMixedContent(const GURL& security_origin) {
     return;
 
   if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate) {
-    WebContentsImpl* contents = static_cast<WebContentsImpl*>(
-        controller_->delegate()->GetWebContents());
-    ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
+    RenderFrameHostImpl* main_frame = controller_->frame_tree().GetMainFrame();
+    ukm::SourceId source_id = main_frame->GetPageUkmSourceId();
     LogMixedContentMetrics(MixedContentType::kBlockableMixedContent, source_id,
                            ukm::UkmRecorder::Get());
   }
@@ -294,9 +291,8 @@ void SSLManager::DidRunContentWithCertErrors(const GURL& security_origin) {
   // main page is HTTPS with a valid certificate.
   if (entry->GetURL().SchemeIsCryptographic() && entry->GetSSL().certificate &&
       !net::IsCertStatusError(entry->GetSSL().cert_status)) {
-    WebContentsImpl* contents = static_cast<WebContentsImpl*>(
-        controller_->delegate()->GetWebContents());
-    ukm::SourceId source_id = contents->GetMainFrame()->GetPageUkmSourceId();
+    RenderFrameHostImpl* main_frame = controller_->frame_tree().GetMainFrame();
+    ukm::SourceId source_id = main_frame->GetPageUkmSourceId();
     LogMixedContentMetrics(MixedContentType::kBlockableWithCertErrors,
                            source_id, ukm::UkmRecorder::Get());
   }
@@ -317,12 +313,22 @@ void SSLManager::DidRunContentWithCertErrors(const GURL& security_origin) {
 void SSLManager::OnCertError(std::unique_ptr<SSLErrorHandler> handler) {
   // First we check if we know the policy for this error.
   DCHECK(handler->ssl_info().is_valid());
-  SSLHostStateDelegate::CertJudgment judgment =
-      ssl_host_state_delegate_
-          ? ssl_host_state_delegate_->QueryPolicy(
-                handler->request_url().host(), *handler->ssl_info().cert.get(),
-                handler->cert_error(), handler->web_contents())
-          : SSLHostStateDelegate::DENIED;
+
+  SSLHostStateDelegate::CertJudgment judgment;
+  if (net::IsLocalhost(handler->request_url()) &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowInsecureLocalhost)) {
+    // If the appropriate flag is set, let requests on localhost go
+    // through even if there are certificate errors. Errors on localhost
+    // are unlikely to indicate actual security problems.
+    judgment = SSLHostStateDelegate::ALLOWED;
+  } else if (ssl_host_state_delegate_) {
+    judgment = ssl_host_state_delegate_->QueryPolicy(
+        handler->request_url().host(), *handler->ssl_info().cert.get(),
+        handler->cert_error(), handler->web_contents());
+  } else {
+    judgment = SSLHostStateDelegate::DENIED;
+  }
 
   if (judgment == SSLHostStateDelegate::ALLOWED) {
     handler->ContinueRequest();
@@ -342,7 +348,7 @@ void SSLManager::DidStartResourceResponse(const GURL& url,
   // any previous decisions that have occurred.
   if (!ssl_host_state_delegate_ ||
       !ssl_host_state_delegate_->HasAllowException(
-          url.host(), controller_->GetWebContents())) {
+          url.host(), controller_->DeprecatedGetWebContents())) {
     return;
   }
 
@@ -439,7 +445,7 @@ void SSLManager::UpdateLastCommittedEntry(int add_content_status_flags,
 
 void SSLManager::NotifyDidChangeVisibleSSLState() {
   WebContentsImpl* contents =
-      static_cast<WebContentsImpl*>(controller_->delegate()->GetWebContents());
+      static_cast<WebContentsImpl*>(controller_->DeprecatedGetWebContents());
   contents->DidChangeVisibleSecurityState();
 }
 

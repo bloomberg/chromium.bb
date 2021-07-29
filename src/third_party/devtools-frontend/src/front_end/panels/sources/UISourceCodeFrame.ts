@@ -49,7 +49,6 @@ import {DebuggerPlugin} from './DebuggerPlugin.js';
 import {GutterDiffPlugin} from './GutterDiffPlugin.js';
 import {JavaScriptCompilerPlugin} from './JavaScriptCompilerPlugin.js';
 import type {Plugin} from './Plugin.js'; // eslint-disable-line no-unused-vars
-import {RecorderPlugin} from './RecorderPlugin.js';
 import {ScriptOriginPlugin} from './ScriptOriginPlugin.js';
 import {SnippetsPlugin} from './SnippetsPlugin.js';
 import {SourcesPanel} from './SourcesPanel.js';
@@ -174,8 +173,8 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
     for (const message of this._allMessages()) {
       this._removeMessageFromSource(message);
     }
-    Common.EventTarget.EventTarget.removeEventListeners(this._messageAndDecorationListeners);
-    Common.EventTarget.EventTarget.removeEventListeners(this._uiSourceCodeEventListeners);
+    Common.EventTarget.removeEventListeners(this._messageAndDecorationListeners);
+    Common.EventTarget.removeEventListeners(this._uiSourceCodeEventListeners);
     this._uiSourceCode.removeWorkingCopyGetter();
     Persistence.Persistence.PersistenceImpl.instance().unsubscribeFromBindingEvent(
         this._uiSourceCode, this._boundOnBindingChanged);
@@ -359,9 +358,6 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
     }
     if (SnippetsPlugin.accepts(pluginUISourceCode)) {
       this._plugins.push(new SnippetsPlugin(this.textEditor, pluginUISourceCode));
-    }
-    if (Root.Runtime.experiments.isEnabled('recorder') && RecorderPlugin.accepts(pluginUISourceCode)) {
-      this._plugins.push(new RecorderPlugin(this.textEditor, pluginUISourceCode));
     }
     if (ScriptOriginPlugin.accepts(pluginUISourceCode)) {
       this._plugins.push(new ScriptOriginPlugin(this.textEditor, pluginUISourceCode));
@@ -744,9 +740,7 @@ export class RowMessageBucket {
 
   _messageDescription(levels: Set<Workspace.UISourceCode.Message.Level>): Element {
     this._messagesDescriptionElement.removeChildren();
-    UI.Utils.appendStyle(
-        this._messagesDescriptionElement, 'ui/legacy/components/source_frame/messagesPopover.css',
-        {enableLegacyPatching: false});
+    UI.Utils.appendStyle(this._messagesDescriptionElement, 'ui/legacy/components/source_frame/messagesPopover.css');
     for (const message of this._messages.filter(m => levels.has(m.getMessage().level()))) {
       this._messagesDescriptionElement.append(message.element);
     }

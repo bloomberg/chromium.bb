@@ -91,6 +91,16 @@ const base::Feature kIChromeAccessible{"IChromeAccessible",
 bool IsIChromeAccessibleEnabled() {
   return base::FeatureList::IsEnabled(::features::kIChromeAccessible);
 }
+
+const base::Feature kSelectiveUIAEnablement{"SelectiveUIAEnablement",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Returns true if accessibility will be selectively enabled depending on the
+// UIA APIs that are called, allowing non-screenreader usage to enable less of
+// the accessibility system.
+bool IsSelectiveUIAEnablementEnabled() {
+  return base::FeatureList::IsEnabled(::features::kSelectiveUIAEnablement);
+}
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -111,6 +121,14 @@ bool IsMagnifierContinuousMouseFollowingModeSettingEnabled() {
       ::features::kMagnifierContinuousMouseFollowingModeSetting);
 }
 
+const base::Feature kMagnifierCaretFollowingFromJavascript{
+    "MagnifierCaretFollowingFromJavascript", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsMagnifierCaretFollowingFromJavascriptEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kMagnifierCaretFollowingFromJavascript);
+}
+
 const base::Feature kEnableSwitchAccessPointScanning{
     "EnableSwitchAccessPointScanning", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -126,6 +144,22 @@ const base::Feature kExperimentalAccessibilityDictationListening{
 bool IsExperimentalAccessibilityDictationListeningEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kExperimentalAccessibilityDictationListening);
+}
+
+const base::Feature kExperimentalAccessibilityDictationOffline{
+    "ExperimentalAccessibilityDictationOffline",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsExperimentalAccessibilityDictationOfflineEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kExperimentalAccessibilityDictationOffline);
+}
+
+const base::Feature kEnhancedNetworkVoices{"EnhancedNetworkVoices",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsEnhancedNetworkVoicesEnabled() {
+  return base::FeatureList::IsEnabled(::features::kEnhancedNetworkVoices);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

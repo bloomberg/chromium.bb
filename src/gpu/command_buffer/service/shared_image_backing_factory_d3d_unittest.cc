@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "base/logging.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -471,6 +470,7 @@ class SharedImageBackingFactoryD3DTest
                     bool use_factory);
   void RunVideoTest(bool use_shared_handle, bool use_factory);
   void RunOverlayTest(bool use_shared_handle, bool use_factory);
+  void RunCreateSharedImageFromHandleTest(DXGI_FORMAT dxgi_format);
 
   scoped_refptr<SharedContextState> context_state_;
 };
@@ -580,8 +580,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
   {
     // Create a SharedImageRepresentationDawn.
     auto dawn_representation =
-        shared_image_representation_factory_->ProduceDawn(mailbox,
-                                                          device.Get());
+        shared_image_representation_factory_->ProduceDawn(
+            mailbox, device.Get(), WGPUBackendType_D3D12);
     ASSERT_TRUE(dawn_representation);
 
     auto scoped_access = dawn_representation->BeginScopedAccess(
@@ -697,8 +697,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, GL_Dawn_Skia_UnclearTexture) {
   dawnProcSetProcs(&procs);
   {
     auto dawn_representation =
-        shared_image_representation_factory_->ProduceDawn(mailbox,
-                                                          device.Get());
+        shared_image_representation_factory_->ProduceDawn(
+            mailbox, device.Get(), WGPUBackendType_D3D12);
     ASSERT_TRUE(dawn_representation);
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
@@ -781,8 +781,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, UnclearDawn_SkiaFails) {
   dawnProcSetProcs(&procs);
   {
     auto dawn_representation =
-        shared_image_representation_factory_->ProduceDawn(mailbox,
-                                                          device.Get());
+        shared_image_representation_factory_->ProduceDawn(
+            mailbox, device.Get(), WGPUBackendType_D3D12);
     ASSERT_TRUE(dawn_representation);
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
@@ -866,7 +866,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, SkiaAccessFirstFails) {
   EXPECT_EQ(scoped_read_access, nullptr);
 }
 
-TEST_F(SharedImageBackingFactoryD3DTest, CreateSharedImageFromHandle) {
+void SharedImageBackingFactoryD3DTest::RunCreateSharedImageFromHandleTest(
+    DXGI_FORMAT dxgi_format) {
   if (!IsD3DSharedImageSupported())
     return;
 
@@ -882,7 +883,7 @@ TEST_F(SharedImageBackingFactoryD3DTest, CreateSharedImageFromHandle) {
   desc.Height = size.height();
   desc.MipLevels = 1;
   desc.ArraySize = 1;
-  desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  desc.Format = dxgi_format;
   desc.SampleDesc.Count = 1;
   desc.SampleDesc.Quality = 0;
   desc.Usage = D3D11_USAGE_DEFAULT;
@@ -934,6 +935,16 @@ TEST_F(SharedImageBackingFactoryD3DTest, CreateSharedImageFromHandle) {
   EXPECT_EQ(backing_d3d->GetSharedHandle(), shared_handle);
 }
 
+TEST_F(SharedImageBackingFactoryD3DTest,
+       CreateSharedImageFromHandleFormatUNORM) {
+  RunCreateSharedImageFromHandleTest(DXGI_FORMAT_R8G8B8A8_UNORM);
+}
+
+TEST_F(SharedImageBackingFactoryD3DTest,
+       CreateSharedImageFromHandleFormatTYPELESS) {
+  RunCreateSharedImageFromHandleTest(DXGI_FORMAT_R8G8B8A8_TYPELESS);
+}
+
 #if BUILDFLAG(USE_DAWN)
 // Test to check external image stored in the backing can be reused
 TEST_F(SharedImageBackingFactoryD3DTest, Dawn_ReuseExternalImage) {
@@ -978,8 +989,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_ReuseExternalImage) {
   // Create the first Dawn texture then clear it to green.
   {
     auto dawn_representation =
-        shared_image_representation_factory_->ProduceDawn(mailbox,
-                                                          device.Get());
+        shared_image_representation_factory_->ProduceDawn(
+            mailbox, device.Get(), WGPUBackendType_D3D12);
     ASSERT_TRUE(dawn_representation);
 
     auto scoped_access = dawn_representation->BeginScopedAccess(
@@ -1014,8 +1025,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_ReuseExternalImage) {
   // Create another Dawn texture then clear it with another color.
   {
     auto dawn_representation =
-        shared_image_representation_factory_->ProduceDawn(mailbox,
-                                                          device.Get());
+        shared_image_representation_factory_->ProduceDawn(
+            mailbox, device.Get(), WGPUBackendType_D3D12);
     ASSERT_TRUE(dawn_representation);
 
     // Check again that the texture is still green

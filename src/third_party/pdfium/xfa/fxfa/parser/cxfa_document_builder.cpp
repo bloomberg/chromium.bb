@@ -24,7 +24,6 @@
 #include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/optional.h"
-#include "xfa/fxfa/fxfa.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
 #include "xfa/fxfa/parser/cxfa_subform.h"
@@ -123,7 +122,7 @@ Optional<WideString> FindAttributeWithNS(CFX_XMLElement* pElement,
     }
     return it.second;
   }
-  return {};
+  return pdfium::nullopt;
 }
 
 CFX_XMLNode* GetDataSetsFromXDP(CFX_XMLNode* pXMLDocumentNode) {
@@ -187,7 +186,7 @@ WideString GetPlainTextFromRichText(CFX_XMLNode* pXMLNode) {
     case CFX_XMLNode::Type::kElement: {
       CFX_XMLElement* pXMLElement = static_cast<CFX_XMLElement*>(pXMLNode);
       WideString wsTag = pXMLElement->GetLocalTagName();
-      uint32_t uTag = FX_HashCode_GetW(wsTag.AsStringView(), true);
+      uint32_t uTag = FX_HashCode_GetLoweredW(wsTag.AsStringView());
       if (uTag == 0x0001f714) {
         wsPlainText += L"\n";
       } else if (uTag == 0x00000070) {
@@ -358,7 +357,7 @@ CXFA_Node* CXFA_DocumentBuilder::ParseAsXDPPacket_XDP(
       continue;
     }
     // TODO(tsepez): make GetFirstChildByName() take a name.
-    uint32_t hash = FX_HashCode_GetW(config_packet.name, false);
+    uint32_t hash = FX_HashCode_GetW(config_packet.name);
     if (pXFARootNode->GetFirstChildByName(hash))
       return nullptr;
 
@@ -416,7 +415,7 @@ CXFA_Node* CXFA_DocumentBuilder::ParseAsXDPPacket_XDP(
         if (packet_info.has_value() &&
             (packet_info.value().flags & XFA_XDPPACKET_FLAGS_SUPPORTONE) &&
             pXFARootNode->GetFirstChildByName(
-                FX_HashCode_GetW(packet_info.value().name, false))) {
+                FX_HashCode_GetW(packet_info.value().name))) {
           return nullptr;
         }
         pXFARootNode->InsertChildAndNotify(pPacketNode, nullptr);
@@ -653,7 +652,7 @@ CXFA_Node* CXFA_DocumentBuilder::NormalLoader(CXFA_Node* pXFANode,
 
         if (pXFANode->HasPropertyFlags(
                 eType,
-                XFA_PROPERTYFLAG_OneOf | XFA_PROPERTYFLAG_DefaultOneOf)) {
+                XFA_PropertyFlag_OneOf | XFA_PropertyFlag_DefaultOneOf)) {
           if (bOneOfPropertyFound)
             break;
           bOneOfPropertyFound = true;

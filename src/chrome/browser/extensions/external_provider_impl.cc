@@ -58,12 +58,12 @@
 #include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/login/demo_mode/demo_extensions_external_loader.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_local_account.h"
+#include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
 #include "chrome/browser/chromeos/extensions/signin_screen_extensions_external_loader.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "components/arc/arc_util.h"
 #include "extensions/common/constants.h"
 #else
@@ -157,7 +157,7 @@ void ExternalProviderImpl::SetPrefs(
 
   InstallStageTracker* install_stage_tracker =
       InstallStageTracker::Get(profile_);
-  for (const auto& it : prefs->DictItems()) {
+  for (auto it : prefs->DictItems()) {
     install_stage_tracker->ReportInstallCreationStage(
         it.first,
         InstallStageTracker::InstallCreationStage::SEEN_BY_EXTERNAL_PROVIDER);
@@ -277,7 +277,7 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
     bool has_external_version = false;
     if (extension->Get(kExternalVersion, &external_version_value)) {
       if (external_version_value->is_string()) {
-        external_version_value->GetAsString(&external_version);
+        external_version = external_version_value->GetString();
         has_external_version = true;
       } else {
         install_stage_tracker->ReportFailure(
@@ -497,7 +497,7 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
        it != unsupported_extensions.end(); ++it) {
     // Remove extension for the list of know external extensions. The extension
     // will be uninstalled later because provider doesn't provide it anymore.
-    prefs_->Remove(*it, nullptr);
+    prefs_->RemoveKey(*it);
   }
 }
 
@@ -636,7 +636,7 @@ void ExternalProviderImpl::CreateExternalProviders(
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   policy::DeviceLocalAccount::Type account_type;
-  if (user && connector->IsEnterpriseManaged() &&
+  if (user && connector->IsDeviceEnterpriseManaged() &&
       policy::IsDeviceLocalAccountUser(user->GetAccountId().GetUserEmail(),
                                        &account_type)) {
     if (account_type == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION)
@@ -688,7 +688,7 @@ void ExternalProviderImpl::CreateExternalProviders(
           g_browser_process->platform_part()
               ->browser_policy_connector_chromeos();
       ManifestLocation location = ManifestLocation::kExternalPref;
-      if (connector && connector->IsEnterpriseManaged())
+      if (connector && connector->IsDeviceEnterpriseManaged())
         location = ManifestLocation::kExternalPolicy;
 
       auto kiosk_app_provider = std::make_unique<ExternalProviderImpl>(

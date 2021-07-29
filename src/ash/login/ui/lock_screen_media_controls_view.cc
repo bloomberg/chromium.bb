@@ -35,9 +35,12 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/vector_icons.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -156,12 +159,13 @@ class MediaActionButton : public views::ImageButton {
             view,
             this)),
         icon_size_(icon_size) {
-    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+    views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
     SetHasInkDropActionOnClick(true);
-    ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+    views::InkDrop::Get(this)->SetCreateHighlightCallback(base::BindRepeating(
         [](Button* host) {
           return std::make_unique<views::InkDropHighlight>(
-              gfx::SizeF(host->size()), host->ink_drop()->GetBaseColor());
+              gfx::SizeF(host->size()),
+              views::InkDrop::Get(host)->GetBaseColor());
         },
         this));
 
@@ -179,8 +183,8 @@ class MediaActionButton : public views::ImageButton {
     SetAction(action, accessible_name);
 
     SetInstallFocusRingOnFocus(true);
-    login_views_utils::ConfigureRectFocusRingCircleInkDrop(this, focus_ring(),
-                                                           absl::nullopt);
+    login_views_utils::ConfigureRectFocusRingCircleInkDrop(
+        this, views::FocusRing::Get(this), absl::nullopt);
   }
 
   ~MediaActionButton() override = default;

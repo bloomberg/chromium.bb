@@ -25,7 +25,6 @@ class Clock;
 
 namespace content {
 
-class StoragePartition;
 class StoragePartitionImpl;
 
 // This class is responsible for managing the dispatch of conversion reports to
@@ -46,13 +45,12 @@ class CONTENT_EXPORT ConversionReporterImpl
     using ReportSentCallback = base::OnceCallback<void(SentReportInfo)>;
 
     // Generates and sends a conversion report matching |report|. This should
-    // generate a secure POST quest with no-credentials. Does not persist the
-    // raw pointer.
-    virtual void SendReport(ConversionReport* report,
+    // generate a secure POST request with no-credentials.
+    virtual void SendReport(const ConversionReport& report,
                             ReportSentCallback sent_callback) = 0;
   };
 
-  ConversionReporterImpl(StoragePartition* storage_partition,
+  ConversionReporterImpl(StoragePartitionImpl* storage_partition,
                          const base::Clock* clock);
   ConversionReporterImpl(const ConversionReporterImpl&) = delete;
   ConversionReporterImpl& operator=(const ConversionReporterImpl&) = delete;
@@ -80,14 +78,13 @@ class CONTENT_EXPORT ConversionReporterImpl
   // Comparator used to order ConversionReports by their report time, with the
   // smallest time at the top of |report_queue_|.
   struct ReportComparator {
-    bool operator()(const std::unique_ptr<ConversionReport>& a,
-                    const std::unique_ptr<ConversionReport>& b) const;
+    bool operator()(const ConversionReport& a, const ConversionReport& b) const;
   };
 
   // Priority queue which holds reports that are yet to be sent. Reports are
   // removed from the queue when they are delivered to the NetworkSender.
-  std::priority_queue<std::unique_ptr<ConversionReport>,
-                      std::vector<std::unique_ptr<ConversionReport>>,
+  std::priority_queue<ConversionReport,
+                      std::vector<ConversionReport>,
                       ReportComparator>
       report_queue_;
 

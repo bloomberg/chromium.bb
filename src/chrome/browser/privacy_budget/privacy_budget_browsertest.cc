@@ -10,13 +10,14 @@
 
 #include "base/feature_list.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/testing/sync_metrics_test_utils.h"
 #include "chrome/browser/privacy_budget/privacy_budget_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/privacy_budget/privacy_budget_features.h"
@@ -29,6 +30,7 @@
 #include "components/ukm/ukm_test_helper.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "components/variations/service/buildflags.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -94,7 +96,7 @@ class PrivacyBudgetBrowserTest : public SyncTest {
   PrefService* local_state() const { return g_browser_process->local_state(); }
 
   void EnableSyncForProfile(Profile* profile) {
-    std::unique_ptr<ProfileSyncServiceHarness> harness =
+    std::unique_ptr<SyncServiceImplHarness> harness =
         metrics::test::InitializeProfileForSync(profile,
                                                 GetFakeServer()->AsWeakPtr());
     EXPECT_TRUE(harness->SetupSync());
@@ -163,6 +165,12 @@ IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTest, SamplingScreenAPIs) {
   ASSERT_TRUE(embedded_test_server()->Start());
+  // Ensure that the previous page won't be stored in the back/forward cache, so
+  // that the histogram will be recorded when the previous page is unloaded.
+  // TODO(https://crbug.com/1229122): Investigate if this needs further fix.
+  web_contents()->GetController().GetBackForwardCache().DisableForTesting(
+      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   content::DOMMessageQueue messages;
   base::RunLoop run_loop;
 
@@ -217,6 +225,12 @@ IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTest, SamplingScreenAPIs) {
 
 IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTest, CallsCanvasToBlob) {
   ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Ensure that the previous page won't be stored in the back/forward cache, so
+  // that the histogram will be recorded when the previous page is unloaded.
+  web_contents()->GetController().GetBackForwardCache().DisableForTesting(
+      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   content::DOMMessageQueue messages;
   base::RunLoop run_loop;
 
@@ -262,6 +276,11 @@ IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTest, CallsCanvasToBlob) {
 IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTest,
                        CanvasToBlobDifferentDocument) {
   ASSERT_TRUE(embedded_test_server()->Start());
+  // Ensure that the previous page won't be stored in the back/forward cache, so
+  // that the histogram will be recorded when the previous page is unloaded.
+  web_contents()->GetController().GetBackForwardCache().DisableForTesting(
+      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   content::DOMMessageQueue messages;
   base::RunLoop run_loop;
 
@@ -324,8 +343,6 @@ IN_PROC_BROWSER_TEST_F(PrivacyBudgetDefaultConfigBrowserTest, Variations) {
   EXPECT_TRUE(settings->IsActive());
   EXPECT_TRUE(settings->IsTypeAllowed(
       blink::IdentifiableSurface::Type::kCanvasReadback));
-  EXPECT_FALSE(
-      settings->IsTypeAllowed(blink::IdentifiableSurface::Type::kMediaQuery));
 }
 
 #endif

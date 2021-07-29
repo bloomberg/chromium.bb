@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> টি.বি./ছেকেণ্ড</translation>
 <translation id="2353636109065292463">আপোনাৰ ইণ্টাৰনেট সংযোগ পৰীক্ষা কৰি থকা হৈছে</translation>
 <translation id="2388990488038464401">আপোনাৰ ফ'নৰ পৰা এই নম্বৰটো লৈ কল কৰিবনে?</translation>
+<translation id="2435457462613246316">পাছৱৰ্ড দেখুৱাওক</translation>
 <translation id="24452542372838207">জাননী বিস্তাৰ কৰক</translation>
 <translation id="2445449901874883781">উচ্চ ঘনত্ব ব্যৱহাৰ কৰক</translation>
 <translation id="2482878487686419369">জাননী</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{১ বছৰ পূর্বে}one{# বছৰ পূর্বে}other{# বছৰ পূর্বে}}</translation>
 <translation id="2878511608894704031">সকলো মচক</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{১ দিনত}one{# দিনত}other{# দিনত}}</translation>
+<translation id="2922712708897119705"><ph name="COLUMN_NAME" /> স্তম্ভটো অধঃক্ৰমত সজোৱা হৈছে।</translation>
 <translation id="2931838996092594335">ক্লিক কৰক</translation>
 <translation id="2981684127883932071">পৰামৰ্শ দেখুৱাই থকা হৈছে</translation>
 <translation id="3036649622769666520">ফাইল খোলক</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">মেনু</translation>
 <translation id="3909791450649380159">কা&amp;ট কৰক</translation>
 <translation id="3990502903496589789">সোঁ কাষ</translation>
+<translation id="3994749195054421561"><ph name="COLUMN_NAME" /> স্তম্ভটো ঊৰ্ধ্বক্ৰমত সজোৱা হৈছে।</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{১টা নপঢ়া জাননী}one{#টা নপঢ়া জাননী}other{#টা নপঢ়া জাননী}}</translation>
 <translation id="4202807286478387388">পোনপটীয়াকৈ যাওক</translation>
 <translation id="4250229828105606438">স্ক্রীণশ্বট</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">ক্লিপব’ৰ্ডৰ পৰা আঁতৰাওক।</translation>
 <translation id="4316910396681052118">সকলো এপ্</translation>
 <translation id="4491109536499578614">প্ৰতিচ্ছবি</translation>
+<translation id="4565377596337484307">পাছৱৰ্ড লুকুৱাওক</translation>
 <translation id="4588090240171750605">সোঁফাললৈ স্ক্ৰ’ল কৰক</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, তৰাযুক্ত মূল্যাংকন <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, এপৰ চুপাৰিছ</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" />ৰ <ph name="SELECTED_PAGE" /> পৃষ্ঠা</translation>
 <translation id="6022924867608035986">সন্ধান বাকচৰ পাঠ মচক</translation>
 <translation id="6040143037577758943">বন্ধ কৰক</translation>
+<translation id="6117103120090651229">কেন্দ্ৰৰ বুটাম</translation>
 <translation id="6119846243427417423">সক্ৰিয় কৰক</translation>
 <translation id="6129953537138746214">স্পেচ</translation>
 <translation id="6134259848159370930">আপোনাৰ ডিভাইচ, এপ্‌, ছেটিংসমূহ আৰু ৱেব সন্ধান কৰক।</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">সূচীখন সকলো এপ্‌ দেখুৱাকৈ বিস্তাৰ কৰক</translation>
 <translation id="6165508094623778733">অধিক জানক</translation>
 <translation id="6166852626429024716">আপোনাৰ ডিভাইচ, এপ্‌, ছেটিংসমূহ, ৱেব সন্ধান কৰক...</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> বাছনি কৰা হৈছে।</translation>
 <translation id="6264365405983206840">&amp;সকলো বাছনি কৰক</translation>
 <translation id="6351032674660237738">এপৰ পৰামৰ্শ</translation>
 <translation id="6364916375976753737">বাওঁফাললৈ স্ক্ৰ’ল কৰক</translation>
@@ -212,6 +218,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{১ মিনিট বাকী আছে}one{# মিনিট বাকী আছে}other{# মিনিট বাকী আছে}}</translation>
 <translation id="7430878839542012341">এই সন্ধানৰ তথ্য আপোনাৰ ইতিহাসৰ পৰা বিলোপ কৰিব নেকি?</translation>
+<translation id="7437971918971306061"><ph name="COLUMN_NAME" /> স্তম্ভ সজোৱা নাই।</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> টি.বি.</translation>
 <translation id="7507604095951736240">ইম’জি</translation>
 <translation id="7620655452534002301">আঁতৰোৱা হ’ল।</translation>

@@ -47,7 +47,7 @@ class CORE_EXPORT SingleModuleClient
     : public GarbageCollected<SingleModuleClient>,
       public NameClient {
  public:
-  virtual ~SingleModuleClient() = default;
+  ~SingleModuleClient() override = default;
   virtual void Trace(Visitor* visitor) const {}
   const char* NameInHeapSnapshot() const override {
     return "SingleModuleClient";
@@ -61,7 +61,7 @@ class CORE_EXPORT SingleModuleClient
 class CORE_EXPORT ModuleTreeClient : public GarbageCollected<ModuleTreeClient>,
                                      public NameClient {
  public:
-  virtual ~ModuleTreeClient() = default;
+  ~ModuleTreeClient() override = default;
   virtual void Trace(Visitor* visitor) const {}
   const char* NameInHeapSnapshot() const override { return "ModuleTreeClient"; }
 
@@ -103,7 +103,7 @@ class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
                               public NameClient {
  public:
   static Modulator* From(ScriptState*);
-  virtual ~Modulator();
+  ~Modulator() override;
 
   static void SetModulator(ScriptState*, Modulator*);
   static void ClearModulator(ScriptState*);
@@ -121,8 +121,6 @@ class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
   // https://html.spec.whatwg.org/C/#concept-bc-noscript
   // "scripting is disabled for settings's responsible browsing context"
   virtual bool IsScriptingDisabled() const = 0;
-
-  virtual bool ImportMapsEnabled() const = 0;
 
   // https://html.spec.whatwg.org/C/#fetch-a-module-script-tree
   // https://html.spec.whatwg.org/C/#fetch-a-module-worker-script-tree
@@ -209,11 +207,6 @@ class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
       v8::Local<v8::Module>) const = 0;
 
   virtual bool HasValidContext() = 0;
-
-  virtual ScriptValue InstantiateModule(v8::Local<v8::Module>, const KURL&) = 0;
-
-  virtual Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
-      v8::Local<v8::Module>) = 0;
 
   virtual ModuleType ModuleTypeFromRequest(
       const ModuleRequest& module_request) const = 0;

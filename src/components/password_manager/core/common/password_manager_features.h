@@ -18,7 +18,6 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 
 extern const base::Feature kBiometricTouchToFill;
-extern const base::Feature kChangePasswordAffiliationInfo;
 extern const base::Feature kEditPasswordsInSettings;
 extern const base::Feature kDetectFormSubmissionOnFormClear;
 extern const base::Feature kEnableManualPasswordGeneration;
@@ -39,12 +38,13 @@ extern const base::Feature kPasswordScriptsFetching;
 extern const base::Feature kRecoverFromNeverSaveAndroid;
 extern const base::Feature kReparseServerPredictionsFollowingFormChange;
 extern const base::Feature kSecondaryServerFieldPredictions;
-extern const base::Feature kSyncingCompromisedCredentials;
+extern const base::Feature kSupportForAddPasswordsInSettings;
 extern const base::Feature kTreatNewPasswordHeuristicsAsReliable;
+extern const base::Feature kUnifiedPasswordManagerAndroid;
 extern const base::Feature kUseNewHeaderForLegacySavePasswordBubble;
 extern const base::Feature kUseNewHeaderForSavePasswordWithAccountStoreBubble;
-extern const base::Feature kUseOfHashAffiliationFetcher;
 extern const base::Feature kUsernameFirstFlow;
+extern const base::Feature kUsernameFirstFlowFilling;
 
 // Field trial and corresponding parameters.
 // To manually override this, start Chrome with the following parameters:

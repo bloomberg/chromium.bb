@@ -1,4 +1,4 @@
-// Types ensure every field is specified.
+// Note: Types ensure every field is specified.
 
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 function checkType<T>(x: T) {}
@@ -56,7 +56,7 @@ export const GPUConst = {
   MapMode,
 } as const;
 
-type Limits = Omit<GPUAdapterLimits, '__brand'>;
+type Limits = Omit<GPUSupportedLimits, '__brand'>;
 export const DefaultLimits: Limits = {
   maxTextureDimension1D: 8192,
   maxTextureDimension2D: 8192,

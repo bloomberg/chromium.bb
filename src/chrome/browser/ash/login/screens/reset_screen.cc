@@ -19,12 +19,12 @@
 #include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/ash/login/screens/network_error.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ash/reset/metrics.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/common/pref_names.h"
@@ -120,7 +120,7 @@ void ResetScreen::CheckIfPowerwashAllowed(
         callback) {
   if (g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
-          ->IsEnterpriseManaged()) {
+          ->IsDeviceEnterpriseManaged()) {
     // Powerwash is allowed by default, if the policy is loaded. Admin can
     // explicitly forbid powerwash. If the policy is not loaded yet, we
     // consider by default that the device is not allowed to powerwash.
@@ -442,7 +442,7 @@ void ResetScreen::OnRollbackCheck(bool can_rollback) {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
 
   const bool rollback_available =
-      !connector->IsEnterpriseManaged() && can_rollback;
+      !connector->IsDeviceEnterpriseManaged() && can_rollback;
   reset::DialogViewType dialog_type =
       rollback_available
           ? reset::DialogViewType::kShortcutOfferingRollbackAvailable

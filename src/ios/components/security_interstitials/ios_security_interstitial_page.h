@@ -12,7 +12,7 @@
 #include "url/gurl.h"
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 namespace web {
@@ -36,12 +36,12 @@ class IOSSecurityInterstitialPage {
   // respected by committed interstitials only.
   virtual bool ShouldDisplayURL() const;
 
-  // Handles JS commands from the interstitial page. Overridden in subclasses
+  // Handles `command` from the interstitial page. Overridden in subclasses
   // to handle actions specific to the type of interstitial.
-  virtual void HandleScriptCommand(const base::DictionaryValue& message,
-                                   const GURL& origin_url,
-                                   bool user_is_interacting,
-                                   web::WebFrame* sender_frame) = 0;
+  virtual void HandleCommand(SecurityInterstitialCommand command,
+                             const GURL& origin_url,
+                             bool user_is_interacting,
+                             web::WebFrame* sender_frame) = 0;
 
  protected:
   // Returns true if the interstitial should create a new navigation item.
@@ -49,7 +49,7 @@ class IOSSecurityInterstitialPage {
 
   // Populates the strings used to generate the HTML from the template.
   virtual void PopulateInterstitialStrings(
-      base::DictionaryValue* load_time_data) const = 0;
+      base::Value* load_time_data) const = 0;
 
   // Returns the formatted host name for the request url.
   std::u16string GetFormattedHostName() const;

@@ -262,6 +262,13 @@ class BLINK_EXPORT WebLocalFrameClient {
     return nullptr;
   }
 
+  // Request the creation of a new fenced frame, and return the WebRemoteFrame*
+  // associated with it.
+  virtual WebRemoteFrame* CreateFencedFrame(
+      const WebElement& fenced_frame_element) {
+    return nullptr;
+  }
+
   // Called when Blink cannot find a frame with the given name in the frame's
   // browsing instance.  This gives the embedder a chance to return a frame
   // from outside of the browsing instance.
@@ -424,7 +431,13 @@ class BLINK_EXPORT WebLocalFrameClient {
                                                bool is_history_api_navigation,
                                                bool is_client_redirect) {}
 
-  // Called when a RenderFrame's page lifecycle state gets updated.
+  // Called before a frame's page is frozen.
+  virtual void WillFreezePage() {}
+
+  // The frame's document changed its URL due to document.open().
+  virtual void DidOpenDocumentInputStream(const WebURL&) {}
+
+  // Called when a frame's page lifecycle state gets updated.
   virtual void DidSetPageLifecycleState() {}
 
   // Called upon update to scroll position, document state, and other
@@ -538,11 +551,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   virtual void DidObserveLayoutShift(double score, bool after_input_or_scroll) {
   }
-
-  // Reports input timestamps for segmenting layout shifts by users inputs to
-  // create Session window.
-  virtual void DidObserveInputForLayoutShiftTracking(
-      base::TimeTicks timestamp) {}
 
   // Reports the number of LayoutBlock creation, and LayoutObject::UpdateLayout
   // calls. All values are deltas since the last calls of this function.
@@ -758,6 +766,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   // than the document's URL because it will contain a data URL if a base URL
   // was used for its load or if an unreachable URL was used.
   virtual WebURL LastCommittedUrlForUKM() { return WebURL(); }
+
+  // Called when script in the frame (and it subframes) wishes to be printed via
+  // a window.print() call.
+  virtual void ScriptedPrint() {}
 };
 
 }  // namespace blink

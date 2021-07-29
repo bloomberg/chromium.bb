@@ -86,6 +86,8 @@ extern const char kReportDeviceVersionInfo[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceActivityTimes[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kReportDeviceAudioStatus[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceBoardStatus[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceBootMode[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceCpuInfo[];
@@ -96,7 +98,11 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceBacklightInfo[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceLocation[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kReportDeviceNetworkConfiguration[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceNetworkInterfaces[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kReportDeviceNetworkStatus[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDevicePowerStatus[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
@@ -120,6 +126,8 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceFanInfo[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceVpdInfo[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceSystemInfo[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDevicePrintJobs[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kReportDeviceLoginLogout[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kHeartbeatEnabled[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kHeartbeatFrequency[];
@@ -227,6 +235,9 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kUnaffiliatedArcAllowed[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kDeviceHostnameTemplate[];
 
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kDeviceHostnameUserConfigurable[];
+
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kVirtualMachinesAllowed[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
@@ -239,7 +250,6 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceUnaffiliatedCrostiniAllowed[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kPluginVmAllowed[];
-COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kPluginVmLicenseKey[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kBorealisAllowedForDevice[];
@@ -292,6 +302,12 @@ extern const char kDevicePeripheralDataAccessEnabled[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceAllowedBluetoothServices[];
+
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kDeviceScheduledReboot[];
+
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kRestrictedManagedGuestSessionEnabled[];
 }  // namespace chromeos
 
 // TODO(https://crbug.com/1164001): remove when migrated to ash/components/.
@@ -337,6 +353,7 @@ using ::chromeos::kDeviceDisabledMessage;
 using ::chromeos::kDeviceDisplayResolution;
 using ::chromeos::kDeviceDockMacAddressSource;
 using ::chromeos::kDeviceHostnameTemplate;
+using ::chromeos::kDeviceHostnameUserConfigurable;
 using ::chromeos::kDeviceLoginScreenInputMethods;
 using ::chromeos::kDeviceLoginScreenLocales;
 using ::chromeos::kDeviceLoginScreenSystemInfoEnforced;
@@ -351,6 +368,7 @@ using ::chromeos::kDevicePrintersAllowlist;
 using ::chromeos::kDevicePrintersBlocklist;
 using ::chromeos::kDeviceQuirksDownloadEnabled;
 using ::chromeos::kDeviceRebootOnUserSignout;
+using ::chromeos::kDeviceScheduledReboot;
 using ::chromeos::kDeviceScheduledUpdateCheck;
 using ::chromeos::kDeviceSecondFactorAuthenticationMode;
 using ::chromeos::kDeviceShowLowDiskSpaceNotification;
@@ -367,7 +385,6 @@ using ::chromeos::kHeartbeatFrequency;
 using ::chromeos::kLoginAuthenticationBehavior;
 using ::chromeos::kLoginVideoCaptureAllowedUrls;
 using ::chromeos::kPluginVmAllowed;
-using ::chromeos::kPluginVmLicenseKey;
 using ::chromeos::kPolicyMissingMitigationMode;
 using ::chromeos::kRebootOnShutdown;
 using ::chromeos::kReleaseChannel;
@@ -375,6 +392,7 @@ using ::chromeos::kReleaseChannelDelegated;
 using ::chromeos::kReleaseLtsTag;
 using ::chromeos::kReportDeviceActivityTimes;
 using ::chromeos::kReportDeviceAppInfo;
+using ::chromeos::kReportDeviceAudioStatus;
 using ::chromeos::kReportDeviceBacklightInfo;
 using ::chromeos::kReportDeviceBluetoothInfo;
 using ::chromeos::kReportDeviceBoardStatus;
@@ -385,8 +403,11 @@ using ::chromeos::kReportDeviceFanInfo;
 using ::chromeos::kReportDeviceGraphicsStatus;
 using ::chromeos::kReportDeviceHardwareStatus;
 using ::chromeos::kReportDeviceLocation;
+using ::chromeos::kReportDeviceLoginLogout;
 using ::chromeos::kReportDeviceMemoryInfo;
+using ::chromeos::kReportDeviceNetworkConfiguration;
 using ::chromeos::kReportDeviceNetworkInterfaces;
+using ::chromeos::kReportDeviceNetworkStatus;
 using ::chromeos::kReportDevicePowerStatus;
 using ::chromeos::kReportDevicePrintJobs;
 using ::chromeos::kReportDeviceSessionStatus;
@@ -399,6 +420,7 @@ using ::chromeos::kReportDeviceVpdInfo;
 using ::chromeos::kReportOsUpdateStatus;
 using ::chromeos::kReportRunningKioskApp;
 using ::chromeos::kReportUploadFrequency;
+using ::chromeos::kRestrictedManagedGuestSessionEnabled;
 using ::chromeos::kSamlLoginAuthenticationType;
 using ::chromeos::kServiceAccountIdentity;
 using ::chromeos::kSignedDataRoamingEnabled;

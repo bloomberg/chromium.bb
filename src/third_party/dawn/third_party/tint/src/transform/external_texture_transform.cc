@@ -18,15 +18,17 @@
 #include "src/sem/call.h"
 #include "src/sem/variable.h"
 
+TINT_INSTANTIATE_TYPEINFO(tint::transform::ExternalTextureTransform);
+
 namespace tint {
 namespace transform {
 
 ExternalTextureTransform::ExternalTextureTransform() = default;
 ExternalTextureTransform::~ExternalTextureTransform() = default;
 
-Output ExternalTextureTransform::Run(const Program* in, const DataMap&) {
-  ProgramBuilder out;
-  CloneContext ctx(&out, in);
+void ExternalTextureTransform::Run(CloneContext& ctx,
+                                   const DataMap&,
+                                   DataMap&) {
   auto& sem = ctx.src->Sem();
 
   // Within this transform, usages of texture_external are replaced with a
@@ -58,7 +60,7 @@ Output ExternalTextureTransform::Run(const Program* in, const DataMap&) {
                     ->Is<sem::ExternalTexture>()) {
               if (intrinsic->Type() == sem::IntrinsicType::kTextureLoad &&
                   call_expr->params().size() != 2) {
-                TINT_ICE(ctx.dst->Diagnostics())
+                TINT_ICE(Transform, ctx.dst->Diagnostics())
                     << "expected textureLoad call with a texture_external to "
                        "have 2 parameters, found "
                     << call_expr->params().size() << " parameters";
@@ -67,7 +69,7 @@ Output ExternalTextureTransform::Run(const Program* in, const DataMap&) {
               if (intrinsic->Type() ==
                       sem::IntrinsicType::kTextureSampleLevel &&
                   call_expr->params().size() != 3) {
-                TINT_ICE(ctx.dst->Diagnostics())
+                TINT_ICE(Transform, ctx.dst->Diagnostics())
                     << "expected textureSampleLevel call with a "
                        "texture_external to have 3 parameters, found "
                     << call_expr->params().size() << " parameters";
@@ -105,7 +107,7 @@ Output ExternalTextureTransform::Run(const Program* in, const DataMap&) {
   // Scan the AST nodes for external texture declarations.
   for (auto* node : ctx.src->ASTNodes().Objects()) {
     if (auto* var = node->As<ast::Variable>()) {
-      if (Is<ast::ExternalTexture>(var->type())) {
+      if (::tint::Is<ast::ExternalTexture>(var->type())) {
         // Replace a single-plane external texture with a 2D, f32 sampled
         // texture.
         auto* newType = ctx.dst->ty.sampled_texture(ast::TextureDimension::k2d,
@@ -115,8 +117,9 @@ Output ExternalTextureTransform::Run(const Program* in, const DataMap&) {
         auto* clonedConstructor = ctx.Clone(var->constructor());
         auto clonedDecorations = ctx.Clone(var->decorations());
         auto* newVar = ctx.dst->create<ast::Variable>(
-            clonedSrc, clonedSym, var->declared_storage_class(), newType,
-            var->is_const(), clonedConstructor, clonedDecorations);
+            clonedSrc, clonedSym, var->declared_storage_class(),
+            var->declared_access(), newType, var->is_const(), clonedConstructor,
+            clonedDecorations);
 
         ctx.Replace(var, newVar);
       }
@@ -124,7 +127,6 @@ Output ExternalTextureTransform::Run(const Program* in, const DataMap&) {
   }
 
   ctx.Clone();
-  return Output{Program(std::move(out))};
 }
 
 }  // namespace transform

@@ -4,11 +4,11 @@
 
 import {assertEquals} from 'chrome://test/chai_assert.js';
 
-import {metrics} from '../../common/js/metrics.m.js';
-import {installMockChrome, MockCommandLinePrivate} from '../../common/js/mock_chrome.m.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
+import {metrics} from '../../common/js/metrics.js';
+import {installMockChrome, MockCommandLinePrivate} from '../../common/js/mock_chrome.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 
-import {MountMetrics} from './mount_metrics.m.js';
+import {MountMetrics} from './mount_metrics.js';
 
 
 /** @type {!MountMetrics} */

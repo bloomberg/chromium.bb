@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/pickle.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -69,6 +70,27 @@ void LogDeserializationError(int version) {
 
 }  // namespace
 
+FrameTokenWithPredecessor::FrameTokenWithPredecessor() = default;
+FrameTokenWithPredecessor::FrameTokenWithPredecessor(
+    const FrameTokenWithPredecessor&) = default;
+FrameTokenWithPredecessor::FrameTokenWithPredecessor(
+    FrameTokenWithPredecessor&&) = default;
+FrameTokenWithPredecessor& FrameTokenWithPredecessor::operator=(
+    const FrameTokenWithPredecessor&) = default;
+FrameTokenWithPredecessor& FrameTokenWithPredecessor::operator=(
+    FrameTokenWithPredecessor&&) = default;
+FrameTokenWithPredecessor::~FrameTokenWithPredecessor() = default;
+
+bool operator==(const FrameTokenWithPredecessor& a,
+                const FrameTokenWithPredecessor& b) {
+  return a.token == b.token && a.predecessor == b.predecessor;
+}
+
+bool operator!=(const FrameTokenWithPredecessor& a,
+                const FrameTokenWithPredecessor& b) {
+  return !(a == b);
+}
+
 FormData::FormData() = default;
 
 FormData::FormData(const FormData&) = default;
@@ -98,8 +120,7 @@ bool FormData::SimilarFormAs(const FormData& form) const {
   if (name != form.name || id_attribute != form.id_attribute ||
       name_attribute != form.name_attribute || url != form.url ||
       action != form.action || is_action_empty != form.is_action_empty ||
-      is_form_tag != form.is_form_tag ||
-      fields.size() != form.fields.size()) {
+      is_form_tag != form.is_form_tag || fields.size() != form.fields.size()) {
     return false;
   }
   for (size_t i = 0; i < fields.size(); ++i) {
@@ -112,8 +133,9 @@ bool FormData::SimilarFormAs(const FormData& form) const {
 bool FormData::DynamicallySameFormAs(const FormData& form) const {
   if (name != form.name || id_attribute != form.id_attribute ||
       name_attribute != form.name_attribute ||
-      fields.size() != form.fields.size())
+      fields.size() != form.fields.size()) {
     return false;
+  }
   for (size_t i = 0; i < fields.size(); ++i) {
     if (!fields[i].DynamicallySameFieldAs(form.fields[i]))
       return false;
@@ -127,16 +149,29 @@ bool FormData::IdentityComparator::operator()(const FormData& a,
   // set; the other members compared below together uniquely identify the form
   // as well.
   auto tie = [](const FormData& f) {
-    return std::tie(f.unique_renderer_id, f.name, f.id_attribute,
+    return std::tie(f.host_frame, f.unique_renderer_id, f.name, f.id_attribute,
                     f.name_attribute, f.url, f.action, f.is_form_tag);
   };
   if (tie(a) < tie(b))
     return true;
   if (tie(b) < tie(a))
     return false;
-  return std::lexicographical_compare(a.fields.begin(), a.fields.end(),
-                                      b.fields.begin(), b.fields.end(),
-                                      FormFieldData::IdentityComparator());
+  // A less-than relation on FormData::child_frames.
+  auto less_child_frames =
+      [](const std::vector<FrameTokenWithPredecessor>& as,
+         const std::vector<FrameTokenWithPredecessor>& bs) {
+        return base::ranges::lexicographical_compare(
+            as, bs, [](const auto& a, const auto& b) {
+              return std::tie(a.token, a.predecessor) <
+                     std::tie(b.token, b.predecessor);
+            });
+      };
+  if (less_child_frames(a.child_frames, b.child_frames))
+    return true;
+  if (less_child_frames(b.child_frames, a.child_frames))
+    return false;
+  return base::ranges::lexicographical_compare(
+      a.fields, b.fields, FormFieldData::IdentityComparator());
 }
 
 bool FormHasNonEmptyPasswordField(const FormData& form) {
@@ -237,7 +272,12 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormData& form) {
   buffer << Tag{"div"} << Attrib{"class", "form"};
   buffer << Tag{"table"};
   buffer << Tr{} << "Form name:" << form.name;
-  buffer << Tr{} << "Unique renderer Id:" << form.unique_renderer_id.value();
+  buffer << Tr{} << "Identifiers: "
+         << base::StrCat(
+                {"renderer id: ",
+                 base::NumberToString(form.global_id().renderer_id.value()),
+                 ", host frame: ", form.global_id().frame_token.ToString(),
+                 " (", url::Origin::Create(form.url).Serialize(), ")"});
   buffer << Tr{} << "URL:" << form.url;
   buffer << Tr{} << "Action:" << form.action;
   buffer << Tr{} << "Is action empty:" << form.is_action_empty;

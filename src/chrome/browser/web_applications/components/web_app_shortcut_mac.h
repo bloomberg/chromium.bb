@@ -57,9 +57,6 @@ bool AppShimLaunchDisabled();
 // Returns a path to the Chrome Apps folder in ~/Applications.
 base::FilePath GetChromeAppsFolder();
 
-// Testing method to override calls to GetChromeAppsFolder.
-void SetChromeAppsFolderForTesting(const base::FilePath& path);
-
 // Remove the specified app from the OS login item list.
 void RemoveAppShimFromLoginItems(const std::string& app_id);
 
@@ -99,6 +96,10 @@ class WebAppShortcutCreator {
   WebAppShortcutCreator& operator=(const WebAppShortcutCreator&) = delete;
 
   virtual ~WebAppShortcutCreator();
+
+  // This allows UpdateAppShortcutsSubdirLocalizedName to be called multiple
+  // times in a process, for unit tests.
+  static void ResetHaveLocalizedAppDirNameForTesting();
 
   // Returns the base name for the shortcut. This will be a sanitized version
   // of the application title. If |copy_number| is not 1, then append it before

@@ -188,7 +188,7 @@ static size_t sbc_pack_frame(AVPacket *avpkt, struct sbc_frame *frame,
 
     flush_put_bits(&pb);
 
-    return (put_bits_count(&pb) + 7) / 8;
+    return put_bytes_output(&pb);
 }
 
 static int sbc_encode_init(AVCodecContext *avctx)
@@ -341,7 +341,7 @@ static const AVClass sbc_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_sbc_encoder = {
+const AVCodec ff_sbc_encoder = {
     .name                  = "sbc",
     .long_name             = NULL_IF_CONFIG_SMALL("SBC (low-complexity subband codec)"),
     .type                  = AVMEDIA_TYPE_AUDIO,

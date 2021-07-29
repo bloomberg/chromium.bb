@@ -32,6 +32,7 @@
 #include "cc/metrics/web_vital_metrics.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/ukm_manager.h"
@@ -202,10 +203,11 @@ void LayerTreeView::OnDeferMainFrameUpdatesChanged(bool status) {
   delegate_->OnDeferMainFrameUpdatesChanged(status);
 }
 
-void LayerTreeView::OnDeferCommitsChanged(bool status) {
+void LayerTreeView::OnDeferCommitsChanged(bool status,
+                                          cc::PaintHoldingReason reason) {
   if (!delegate_)
     return;
-  delegate_->OnDeferCommitsChanged(status);
+  delegate_->OnDeferCommitsChanged(status, reason);
 }
 
 void LayerTreeView::BeginMainFrameNotExpectedSoon() {
@@ -309,6 +311,9 @@ void LayerTreeView::DidPresentCompositorFrame(
   DCHECK(layer_tree_host_->GetTaskRunnerProvider()
              ->MainThreadTaskRunner()
              ->RunsTasksInCurrentSequence());
+  // Only run callbacks on successful presentations.
+  if (feedback.failed())
+    return;
   while (!presentation_callbacks_.empty()) {
     const auto& front = presentation_callbacks_.begin();
     if (viz::FrameTokenGT(front->first, frame_token))
@@ -406,7 +411,7 @@ void LayerTreeView::AddPresentationCallback(
   }
   std::vector<base::OnceCallback<void(base::TimeTicks)>> callbacks;
   callbacks.push_back(std::move(callback));
-  presentation_callbacks_.push_back({frame_token, std::move(callbacks)});
+  presentation_callbacks_.emplace_back(frame_token, std::move(callbacks));
   DCHECK_LE(presentation_callbacks_.size(), 25u);
 }
 

@@ -136,7 +136,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   // Sets the color matrix that will be used to transform the output of this
   // display. This is only supported for GPU compositing.
-  void SetColorMatrix(const SkMatrix44& matrix);
+  void SetColorMatrix(const skia::Matrix44& matrix);
 
   void SetDisplayColorSpaces(
       const gfx::DisplayColorSpaces& display_color_spaces);
@@ -206,7 +206,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
       mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer>
           pending_receiver);
 
- private:
+ protected:
   friend class DisplayTest;
   // PresentationGroupTiming stores rendering pipeline stage timings associated
   // with a call to Display::DrawAndSwap along with a list of

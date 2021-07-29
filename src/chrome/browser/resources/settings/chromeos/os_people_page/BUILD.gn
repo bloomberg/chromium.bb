@@ -134,8 +134,8 @@ js_library("os_people_page.m") {
     "..:os_page_visibility.m",
     "..:os_route.m",
     "../..:router",
+    "../../people_page:account_manager_browser_proxy",
     "../../settings_page:settings_animated_pages",
-    "../kerberos_page:kerberos_accounts.m",
     "../localized_link:localized_link",
     "../parental_controls_page:parental_controls_page.m",
     "//chrome/browser/resources/settings/people_page:profile_info_browser_proxy",
@@ -268,7 +268,6 @@ group("polymer3_elements") {
     "../..:web_components_local",
     "../../people_page:web_components",
     "../../privacy_page:polymer3_elements",
-    "../kerberos_page:polymer3_elements",
   ]
 }
 
@@ -296,7 +295,7 @@ polymer_modulizer("lock_screen") {
   html_type = "dom-module"
   migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
-  auto_imports = os_settings_auto_imports
+  auto_imports = os_settings_auto_imports + [ "chrome/browser/resources/settings/controls/settings_toggle_button.html|SettingsToggleButtonElement" ]
 }
 
 polymer_modulizer("lock_screen_password_prompt_dialog") {
@@ -314,7 +313,7 @@ polymer_modulizer("os_people_page") {
   html_type = "dom-module"
   migrated_imports = os_settings_migrated_imports
   namespace_rewrites = os_settings_namespace_rewrites
-  auto_imports = os_settings_auto_imports
+  auto_imports = os_settings_auto_imports + [ "chrome/browser/resources/settings/people_page/sync_page.html|SettingsSyncPageElement" ]
 }
 
 polymer_modulizer("os_sync_controls") {

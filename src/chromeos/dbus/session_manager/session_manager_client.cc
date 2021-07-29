@@ -24,7 +24,6 @@
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/writable_shared_memory_region.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -395,6 +394,20 @@ class SessionManagerClientImpl : public SessionManagerClient {
         login_manager::kSessionManagerHandleLockScreenDismissed);
   }
 
+  void RequestBrowserDataMigration(
+      const cryptohome::AccountIdentifier& cryptohome_id,
+      VoidDBusMethodCallback callback) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerStartBrowserDataMigration);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(cryptohome_id.account_id());
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void RetrieveActiveSessions(ActiveSessionsCallback callback) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
@@ -508,13 +521,26 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void SetFeatureFlagsForUser(
       const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::vector<std::string>& feature_flags) override {
+      const std::vector<std::string>& feature_flags,
+      const std::map<std::string, std::string>& origin_list_flags) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
         login_manager::kSessionManagerSetFeatureFlagsForUser);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(cryptohome_id.account_id());
     writer.AppendArrayOfStrings(feature_flags);
+
+    dbus::MessageWriter dict_writer(nullptr);
+    writer.OpenArray("{ss}", &dict_writer);
+    for (const auto& origin_entry : origin_list_flags) {
+      dbus::MessageWriter entry_writer(nullptr);
+      dict_writer.OpenDictEntry(&entry_writer);
+      entry_writer.AppendString(origin_entry.first);
+      entry_writer.AppendString(origin_entry.second);
+      dict_writer.CloseContainer(&entry_writer);
+    }
+    writer.CloseContainer(&dict_writer);
+
     session_manager_proxy_->CallMethod(&method_call,
                                        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                                        base::DoNothing());
@@ -709,18 +735,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     std::move(callback).Run(response);
   }
 
-  // Called when `StorePolicyEx()` finishes.
-  void OnStorePolicyEx(base::TimeTicks store_policy_ex_start_time,
-                       VoidDBusMethodCallback callback,
-                       dbus::Response* response) {
-    base::TimeTicks now = base::TimeTicks::Now();
-    DCHECK(!store_policy_ex_start_time.is_null());
-    base::TimeDelta delta = now - store_policy_ex_start_time;
-    base::UmaHistogramMediumTimes("Enterprise.StorePolicy.Duration", delta);
-
-    OnVoidMethod(std::move(callback), response);
-  }
-
   // Non-blocking call to Session Manager to retrieve policy.
   void CallRetrievePolicy(const login_manager::PolicyDescriptor& descriptor,
                           RetrievePolicyCallback callback) {
@@ -784,17 +798,13 @@ class SessionManagerClientImpl : public SessionManagerClient {
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8_t*>(policy_blob.data()),
         policy_blob.size());
-    // TODO(crbug/1155533) On grunt devices, initially storing device policy may
-    // take about 45s, which is longer than the default timeout for dbus calls.
-    // We need to investigate why this is happening. In the meantime, increase
-    // the timeout to make sure enrollment does not fail.
-    // Record the timing to find a reasonable timeout value.
-    base::TimeTicks store_policy_ex_start_time = base::TimeTicks::Now();
+    // The timeout is intentionally chosen to be that big because on some
+    // devices the operation is slow and a short timeout would lead to
+    // unnecessary enrollment failures. See crbug.com/1155533 for context.
     session_manager_proxy_->CallMethod(
-        &method_call, /*timeout_ms=*/90000,
-        base::BindOnce(&SessionManagerClientImpl::OnStorePolicyEx,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       store_policy_ex_start_time, std::move(callback)));
+        &method_call, /*timeout_ms=*/180000,
+        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // Called when kSessionManagerRetrieveActiveSessions method is complete.

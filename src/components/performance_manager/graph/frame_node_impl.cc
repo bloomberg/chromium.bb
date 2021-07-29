@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "components/performance_manager/graph/graph_impl.h"
 #include "components/performance_manager/graph/graph_impl_util.h"
 #include "components/performance_manager/graph/page_node_impl.h"
@@ -38,7 +39,7 @@ FrameNodeImpl::FrameNodeImpl(ProcessNodeImpl* process_node,
       frame_token_(frame_token),
       browsing_instance_id_(browsing_instance_id),
       site_instance_id_(site_instance_id),
-      render_frame_host_proxy_(content::GlobalFrameRoutingId(
+      render_frame_host_proxy_(content::GlobalRenderFrameHostId(
           process_node->render_process_host_proxy()
               .render_process_host_id()
               .value(),

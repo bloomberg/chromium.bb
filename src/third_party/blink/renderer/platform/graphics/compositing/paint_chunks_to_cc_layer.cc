@@ -708,6 +708,8 @@ void ConversionContext::EndTransform() {
 void ConversionContext::Convert(const PaintChunkSubset& chunks) {
   for (auto it = chunks.begin(); it != chunks.end(); ++it) {
     const auto& chunk = *it;
+    if (chunk.effectively_invisible)
+      continue;
     const auto& chunk_state = chunk.properties;
     bool switched_to_chunk_state = false;
 
@@ -908,7 +910,6 @@ static void UpdateNonFastScrollableRegion(
     const PropertyTreeState& layer_state,
     const PropertyTreeState& chunk_state,
     const FloatPoint& layer_offset,
-    PropertyTreeManager* property_tree_manager,
     cc::Region& non_fast_scrollable_region) {
   if (hit_test_data.scroll_hit_test_rect.IsEmpty())
     return;
@@ -919,28 +920,14 @@ static void UpdateNonFastScrollableRegion(
   // composited scrollers.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     if (const auto* scroll_translation = hit_test_data.scroll_translation) {
-      const auto& scroll_node = *scroll_translation->ScrollNode();
-      auto scroll_element_id = scroll_node.GetCompositorElementId();
+      const auto* scroll_node = scroll_translation->ScrollNode();
+      DCHECK(scroll_node);
+      // TODO(crbug.com/1222613): Remove this when we fix the root cause.
+      if (!scroll_node)
+        return;
+      auto scroll_element_id = scroll_node->GetCompositorElementId();
       if (layer.element_id() == scroll_element_id)
         return;
-      // Ensure the cc scroll node to prepare for possible descendant nodes
-      // referenced by later composited layers. This can't be done by ensuring
-      // parent transform node in EnsureCompositorTransformNode() if the
-      // transform tree and the scroll tree have different topologies.
-      // This is not necessary with ScrollUnification which ensures the
-      // complete scroll tree.
-      if (!RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
-        if (property_tree_manager) {
-          property_tree_manager->EnsureCompositorScrollNode(
-              *scroll_translation);
-        } else {
-          // A repaint-only update does not modify property tree nodes and has
-          // no property tree manager. This DCHECK ensures that a scroll node
-          // has already been created.
-          DCHECK(scroll_translation->CcNodeId(
-              layer.property_tree_sequence_number()));
-        }
-      }
     }
   }
 
@@ -956,8 +943,7 @@ static void UpdateNonFastScrollableRegion(
 static void UpdateTouchActionWheelEventHandlerAndNonFastScrollableRegions(
     cc::Layer& layer,
     const PropertyTreeState& layer_state,
-    const PaintChunkSubset& chunks,
-    PropertyTreeManager* property_tree_manager) {
+    const PaintChunkSubset& chunks) {
   gfx::Vector2dF cc_layer_offset = layer.offset_to_transform_parent();
   FloatPoint layer_offset(cc_layer_offset.x(), cc_layer_offset.y());
   cc::TouchActionRegion touch_action_region;
@@ -977,9 +963,9 @@ static void UpdateTouchActionWheelEventHandlerAndNonFastScrollableRegions(
       UpdateWheelEventRegion(*chunk.hit_test_data, layer_state, chunk_state,
                              layer_offset, wheel_event_region);
     }
-    UpdateNonFastScrollableRegion(
-        layer, *chunk.hit_test_data, layer_state, chunk_state, layer_offset,
-        property_tree_manager, non_fast_scrollable_region);
+    UpdateNonFastScrollableRegion(layer, *chunk.hit_test_data, layer_state,
+                                  chunk_state, layer_offset,
+                                  non_fast_scrollable_region);
   }
   layer.SetTouchActionRegion(std::move(touch_action_region));
   // TODO(https://crbug.com/841364): Fist condition in the "if" statement below
@@ -1055,11 +1041,10 @@ void PaintChunksToCcLayer::UpdateLayerProperties(
     cc::Layer& layer,
     const PropertyTreeState& layer_state,
     const PaintChunkSubset& chunks,
-    cc::LayerSelection& layer_selection,
-    PropertyTreeManager* property_tree_manager) {
+    cc::LayerSelection& layer_selection) {
   UpdateBackgroundColor(layer, layer_state.Effect(), chunks);
   UpdateTouchActionWheelEventHandlerAndNonFastScrollableRegions(
-      layer, layer_state, chunks, property_tree_manager);
+      layer, layer_state, chunks);
   UpdateLayerSelection(layer, layer_state, chunks, layer_selection);
 }
 

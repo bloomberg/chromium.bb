@@ -28,7 +28,6 @@
 #include "media/base/channel_layout.h"
 #include "media/base/limits.h"
 #include "media/webrtc/helpers.h"
-#include "media/webrtc/webrtc_switches.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
@@ -38,12 +37,8 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
-#include "third_party/webrtc/api/audio/echo_canceller3_config.h"
-#include "third_party/webrtc/api/audio/echo_canceller3_config_json.h"
-#include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing_statistics.h"
-#include "third_party/webrtc/modules/audio_processing/typing_detection.h"
 #include "third_party/webrtc_overrides/task_queue_factory.h"
 
 namespace WTF {
@@ -62,72 +57,6 @@ namespace blink {
 using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
 
 namespace {
-
-using webrtc::AudioProcessing;
-
-bool Allow48kHzApmProcessing() {
-  return base::FeatureList::IsEnabled(
-      ::features::kWebRtcAllow48kHzProcessingOnArm);
-}
-
-absl::optional<WebRtcHybridAgcParams> GetWebRtcHybridAgcParams() {
-  if (!base::FeatureList::IsEnabled(::features::kWebRtcHybridAgc)) {
-    return absl::nullopt;
-  }
-  return WebRtcHybridAgcParams{
-      .dry_run = base::GetFieldTrialParamByFeatureAsBool(
-          ::features::kWebRtcHybridAgc, "dry_run", false),
-      .vad_reset_period_ms = base::GetFieldTrialParamByFeatureAsInt(
-          ::features::kWebRtcHybridAgc, "vad_reset_period_ms", 1500),
-      .adjacent_speech_frames_threshold =
-          base::GetFieldTrialParamByFeatureAsInt(
-              ::features::kWebRtcHybridAgc, "adjacent_speech_frames_threshold",
-              12),
-      .max_gain_change_db_per_second = base::GetFieldTrialParamByFeatureAsInt(
-          ::features::kWebRtcHybridAgc, "max_gain_change_db_per_second", 3),
-      .max_output_noise_level_dbfs = base::GetFieldTrialParamByFeatureAsInt(
-          ::features::kWebRtcHybridAgc, "max_output_noise_level_dbfs", -50),
-      .sse2_allowed = base::GetFieldTrialParamByFeatureAsBool(
-          ::features::kWebRtcHybridAgc, "sse2_allowed", true),
-      .avx2_allowed = base::GetFieldTrialParamByFeatureAsBool(
-          ::features::kWebRtcHybridAgc, "avx2_allowed", true),
-      .neon_allowed = base::GetFieldTrialParamByFeatureAsBool(
-          ::features::kWebRtcHybridAgc, "neon_allowed", true)};
-}
-
-absl::optional<WebRtcAnalogAgcClippingControlParams>
-GetWebRtcAnalogAgcClippingControlParams() {
-  if (!base::FeatureList::IsEnabled(
-          ::features::kWebRtcAnalogAgcClippingControl)) {
-    return absl::nullopt;
-  }
-  return WebRtcAnalogAgcClippingControlParams{
-      .mode = base::GetFieldTrialParamByFeatureAsInt(
-          ::features::kWebRtcAnalogAgcClippingControl, "mode", 0),
-      .window_length = base::GetFieldTrialParamByFeatureAsInt(
-          ::features::kWebRtcAnalogAgcClippingControl, "window_length", 5),
-      .reference_window_length = base::GetFieldTrialParamByFeatureAsInt(
-          ::features::kWebRtcAnalogAgcClippingControl,
-          "reference_window_length", 5),
-      .reference_window_delay = base::GetFieldTrialParamByFeatureAsInt(
-          ::features::kWebRtcAnalogAgcClippingControl, "reference_window_delay",
-          5),
-      .clipping_threshold = base::GetFieldTrialParamByFeatureAsDouble(
-          ::features::kWebRtcAnalogAgcClippingControl, "clipping_threshold",
-          -1.0),
-      .crest_factor_margin = base::GetFieldTrialParamByFeatureAsDouble(
-          ::features::kWebRtcAnalogAgcClippingControl, "crest_factor_margin",
-          3.0),
-      .clipped_level_step = base::GetFieldTrialParamByFeatureAsInt(
-          ::features::kWebRtcAnalogAgcClippingControl, "clipped_level_step",
-          15),
-      .clipped_ratio_threshold = base::GetFieldTrialParamByFeatureAsDouble(
-          ::features::kWebRtcAnalogAgcClippingControl,
-          "clipped_ratio_threshold", 0.1),
-      .clipped_wait_frames = base::GetFieldTrialParamByFeatureAsInt(
-          ::features::kWebRtcAnalogAgcClippingControl, "clipped_wait_frames",
-          300)};
-}
 
 constexpr int kBuffersPerSecond = 100;  // 10 ms per buffer.
 
@@ -297,12 +226,11 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const AudioProcessingProperties& properties,
     bool use_capture_multi_channel_processing,
     scoped_refptr<WebRtcAudioDeviceImpl> playout_data_source)
-    : render_delay_ms_(0),
+    : render_delay_(base::TimeDelta()),
       audio_delay_stats_reporter_(kBuffersPerSecond),
       playout_data_source_(std::move(playout_data_source)),
       main_thread_runner_(base::ThreadTaskRunnerHandle::Get()),
       audio_mirroring_(false),
-      typing_detected_(false),
       aec_dump_agent_impl_(AecDumpAgentImpl::Create(this)),
       stopped_(false),
       use_capture_multi_channel_processing_(
@@ -480,8 +408,7 @@ bool MediaStreamAudioProcessor::WouldModifyAudio(
 #endif
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
-  if (properties.goog_experimental_echo_cancellation ||
-      properties.goog_typing_noise_detection) {
+  if (properties.goog_experimental_echo_cancellation) {
     return true;
   }
 #endif
@@ -497,7 +424,7 @@ bool MediaStreamAudioProcessor::WouldModifyAudio(
 
 void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
                                               int sample_rate,
-                                              int audio_delay_milliseconds) {
+                                              base::TimeDelta audio_delay) {
   DCHECK_CALLED_ON_VALID_THREAD(render_thread_checker_);
   DCHECK_GE(audio_bus->channels(), 1);
   DCHECK_LE(audio_bus->channels(), media::limits::kMaxChannels);
@@ -512,10 +439,8 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
   }
 
   TRACE_EVENT1("audio", "MediaStreamAudioProcessor::OnPlayoutData",
-               "delay (ms)", audio_delay_milliseconds);
-  DCHECK_LT(audio_delay_milliseconds,
-            std::numeric_limits<base::subtle::Atomic32>::max());
-  base::subtle::Release_Store(&render_delay_ms_, audio_delay_milliseconds);
+               "delay (ms)", audio_delay.InMillisecondsF());
+  render_delay_ = audio_delay;
 
   webrtc::StreamConfig input_stream_config(sample_rate, audio_bus->channels());
   // If the input audio appears to contain upmixed mono audio, then APM is only
@@ -531,8 +456,7 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
   for (int i = 0; i < static_cast<int>(input_stream_config.num_channels()); ++i)
     input_ptrs[i] = audio_bus->channel(i);
 
-  // TODO(ajm): Should AnalyzeReverseStream() account for the
-  // |audio_delay_milliseconds|?
+  // TODO(ajm): Should AnalyzeReverseStream() account for the |audio_delay|?
   const int apm_error = audio_processing_->AnalyzeReverseStream(
       input_ptrs.data(), input_stream_config);
   if (apm_error != webrtc::AudioProcessing::kNoError &&
@@ -558,7 +482,6 @@ void MediaStreamAudioProcessor::OnRenderThreadChanged() {
 webrtc::AudioProcessorInterface::AudioProcessorStatistics
 MediaStreamAudioProcessor::GetStats(bool has_remote_tracks) {
   AudioProcessorStatistics stats;
-  stats.typing_noise_detected = base::subtle::Acquire_Load(&typing_detected_);
   stats.apm_statistics = audio_processing_->GetStatistics(has_remote_tracks);
   return stats;
 }
@@ -576,19 +499,16 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
 #if defined(OS_ANDROID)
   const bool goog_experimental_aec = false;
-  const bool goog_typing_detection = false;
 #else
   const bool goog_experimental_aec =
       properties.goog_experimental_echo_cancellation;
-  const bool goog_typing_detection = properties.goog_typing_noise_detection;
 #endif
 
   // Return immediately if none of the goog constraints requiring
   // webrtc::AudioProcessing are enabled.
   if (!properties.EchoCancellationIsWebRtcProvided() &&
       !goog_experimental_aec && !properties.goog_noise_suppression &&
-      !properties.goog_highpass_filter && !goog_typing_detection &&
-      !properties.goog_auto_gain_control &&
+      !properties.goog_highpass_filter && !properties.goog_auto_gain_control &&
       !properties.goog_experimental_noise_suppression) {
     // Sanity-check: WouldModifyAudio() should return true iff
     // |audio_mirroring_| is true.
@@ -600,96 +520,19 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   // has determined webrtc::AudioProcessing will be used.
   DCHECK(WouldModifyAudio(properties));
 
-  // Experimental options provided at creation.
-  webrtc::Config config;
-  config.Set<webrtc::ExperimentalNs>(new webrtc::ExperimentalNs(
-      properties.goog_experimental_noise_suppression));
-
-  // TODO(bugs.webrtc.org/7494): Move logic below in ConfigAutomaticGainControl.
-  // Retrieve the Hybrid AGC experiment parameters.
-  // The hybrid AGC setup, that is AGC1 analog and AGC2 adaptive digital,
-  // requires `goog_auto_gain_control` and `goog_experimental_auto_gain_control`
-  // to be both active.
-  absl::optional<WebRtcHybridAgcParams> hybrid_agc_params;
-  absl::optional<WebRtcAnalogAgcClippingControlParams> clipping_control_params;
-  if (properties.goog_auto_gain_control &&
-      properties.goog_experimental_auto_gain_control) {
-    hybrid_agc_params = GetWebRtcHybridAgcParams();
-    clipping_control_params = GetWebRtcAnalogAgcClippingControlParams();
-  }
-  // If the experimental AGC is enabled, check for overridden config params.
-  if (properties.goog_experimental_auto_gain_control) {
-    auto startup_min_volume = Platform::Current()->GetAgcStartupMinimumVolume();
-    auto* experimental_agc = new webrtc::ExperimentalAgc(
-        /*enabled=*/true, startup_min_volume.value_or(0));
-    // Disable the AGC1 adaptive digital controller if the hybrid AGC is enabled
-    // and it's not running in dry-run mode.
-    experimental_agc->digital_adaptive_disabled =
-        hybrid_agc_params.has_value() && !hybrid_agc_params->dry_run;
-    config.Set<webrtc::ExperimentalAgc>(experimental_agc);
-#if BUILDFLAG(IS_CHROMECAST)
-  } else {
-    // Do not use the analog controller.
-    config.Set<webrtc::ExperimentalAgc>(
-        new webrtc::ExperimentalAgc(/*enabled=*/false));
-#endif  // BUILDFLAG(IS_CHROMECAST)
-  }
-
-  // Create and configure the webrtc::AudioProcessing.
+  absl::optional<int> agc_startup_min_volume =
+      Platform::Current()->GetAgcStartupMinimumVolume();
   absl::optional<std::string> audio_processing_platform_config_json =
       Platform::Current()->GetWebRTCAudioProcessingConfiguration();
-  webrtc::AudioProcessingBuilder ap_builder;
-  if (properties.EchoCancellationIsWebRtcProvided()) {
-    webrtc::EchoCanceller3Config aec3_config;
-    if (audio_processing_platform_config_json) {
-      aec3_config = webrtc::Aec3ConfigFromJsonString(
-          *audio_processing_platform_config_json);
-      bool config_parameters_already_valid =
-          webrtc::EchoCanceller3Config::Validate(&aec3_config);
-      RTC_DCHECK(config_parameters_already_valid);
-    }
 
-    ap_builder.SetEchoControlFactory(
-        std::unique_ptr<webrtc::EchoControlFactory>(
-            new webrtc::EchoCanceller3Factory(aec3_config)));
-  }
-  audio_processing_.reset(ap_builder.Create(config));
+  audio_processing_ = CreateWebRtcAudioProcessingModule(
+      properties, use_capture_multi_channel_processing_,
+      audio_processing_platform_config_json, agc_startup_min_volume);
 
-  // Enable the audio processing components.
+  // Register as a listener for the echo cancellation playout reference signal.
   if (playout_data_source_) {
     playout_data_source_->AddPlayoutSink(this);
   }
-
-  webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
-  apm_config.pipeline.multi_channel_render = true;
-  apm_config.pipeline.multi_channel_capture =
-      use_capture_multi_channel_processing_;
-
-  absl::optional<double> gain_control_compression_gain_db;
-  PopulateApmConfig(&apm_config, properties,
-                    audio_processing_platform_config_json,
-                    &gain_control_compression_gain_db);
-
-  // Set up gain control functionalities.
-  ConfigAutomaticGainControl(properties, hybrid_agc_params,
-                             clipping_control_params,
-                             gain_control_compression_gain_db, apm_config);
-
-  if (goog_typing_detection) {
-    // TODO(xians): Remove this |typing_detector_| after the typing suppression
-    // is enabled by default.
-    typing_detector_ = std::make_unique<webrtc::TypingDetection>();
-    EnableTypingDetection(&apm_config, typing_detector_.get());
-  }
-
-  // Ensure that 48 kHz APM processing is always active. This overrules the
-  // default setting in WebRTC of 32 kHz for ARM platforms.
-  if (Allow48kHzApmProcessing()) {
-    apm_config.pipeline.maximum_internal_processing_rate = 48000;
-  }
-
-  apm_config.residual_echo_detector.enabled = false;
-  audio_processing_->ApplyConfig(apm_config);
 }
 
 void MediaStreamAudioProcessor::InitializeCaptureFifo(
@@ -807,29 +650,28 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
   DCHECK(audio_processing_);
   DCHECK_CALLED_ON_VALID_THREAD(capture_thread_checker_);
 
-  base::subtle::Atomic32 render_delay_ms =
-      base::subtle::Acquire_Load(&render_delay_ms_);
-  int64_t capture_delay_ms = capture_delay.InMilliseconds();
-  DCHECK_LT(capture_delay_ms,
-            std::numeric_limits<base::subtle::Atomic32>::max());
+  const base::TimeDelta render_delay = render_delay_;
 
   TRACE_EVENT2("audio", "MediaStreamAudioProcessor::ProcessData",
-               "capture_delay_ms", capture_delay_ms, "render_delay_ms",
-               render_delay_ms);
+               "capture_delay (ms)", capture_delay.InMillisecondsF(),
+               "render_delay (ms)", render_delay.InMillisecondsF());
 
-  const int total_delay_ms =
-      static_cast<int>(capture_delay_ms) + render_delay_ms;
+  const int64_t total_delay_ms =
+      (capture_delay + render_delay).InMilliseconds();
+
   if (total_delay_ms > 300 && large_delay_log_count_ < 10) {
-    LOG(WARNING) << "Large audio delay, capture delay: " << capture_delay_ms
-                 << "ms; render delay: " << render_delay_ms << "ms";
+    LOG(WARNING) << "Large audio delay, capture delay: "
+                 << capture_delay.InMillisecondsF()
+                 << "ms; render delay: " << render_delay.InMillisecondsF()
+                 << "ms";
     ++large_delay_log_count_;
   }
 
-  audio_delay_stats_reporter_.ReportDelay(
-      capture_delay, base::TimeDelta::FromMilliseconds(render_delay_ms));
+  audio_delay_stats_reporter_.ReportDelay(capture_delay, render_delay);
 
   webrtc::AudioProcessing* ap = audio_processing_.get();
-  ap->set_stream_delay_ms(total_delay_ms);
+  DCHECK_LE(total_delay_ms, std::numeric_limits<int>::max());
+  ap->set_stream_delay_ms(base::saturated_cast<int>(total_delay_ms));
 
   // Keep track of the maximum number of preferred channels. The number of
   // output channels of APM can increase if preferred by the sinks, but
@@ -870,16 +712,6 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
       memcpy(&output_ptrs[1][0], &output_ptrs[0][0],
              output_format_.frames_per_buffer() * sizeof(output_ptrs[0][0]));
     }
-  }
-
-  if (typing_detector_) {
-    // Ignore remote tracks to avoid unnecessary stats computation.
-    auto voice_detected =
-        ap->GetStatistics(false /* has_remote_tracks */).voice_detected;
-    DCHECK(voice_detected.has_value());
-    bool typing_detected =
-        typing_detector_->Process(key_pressed, *voice_detected);
-    base::subtle::Release_Store(&typing_detected_, typing_detected);
   }
 
   PostCrossThreadTask(

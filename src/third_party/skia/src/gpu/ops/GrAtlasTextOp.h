@@ -96,7 +96,7 @@ public:
 
     const char* name() const override { return "AtlasTextOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override;
+    void visitProxies(const GrVisitProxyFunc&) const override;
 
     FixedFunctionFlags fixedFunctionFlags() const override;
 
@@ -171,8 +171,9 @@ private:
     void onCreateProgramInfo(const GrCaps*,
                              SkArenaAlloc*,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&&,
-                             const GrXferProcessor::DstProxyView&,
+                             const GrDstProxyView&,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override {
         // We cannot surface the GrAtlasTextOp's programInfo at record time. As currently
@@ -183,13 +184,13 @@ private:
     void onPrePrepareDraws(GrRecordingContext*,
                            const GrSurfaceProxyView& writeView,
                            GrAppliedClip*,
-                           const GrXferProcessor::DstProxyView&,
+                           const GrDstProxyView&,
                            GrXferBarrierFlags renderPassXferBarriers,
                            GrLoadOp colorLoadOp) override {
         // TODO [PI]: implement
     }
 
-    void onPrepareDraws(Target*) override;
+    void onPrepareDraws(GrMeshDrawTarget*) override;
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
 
 #if GR_TEST_UTILS
@@ -227,7 +228,7 @@ private:
     }
 
     inline void createDrawForGeneratedGlyphs(
-            GrMeshDrawOp::Target* target, FlushInfo* flushInfo) const;
+            GrMeshDrawTarget* target, FlushInfo* flushInfo) const;
 
     MaskType maskType() const { return static_cast<MaskType>(fMaskType); }
 

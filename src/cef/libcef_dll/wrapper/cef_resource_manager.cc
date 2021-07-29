@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "include/base/cef_callback.h"
 #include "include/base/cef_macros.h"
 #include "include/base/cef_weak_ptr.h"
 #include "include/cef_parser.h"
@@ -60,7 +61,7 @@ class ContentProvider : public CefResourceManager::Provider {
     DCHECK(!content.empty());
   }
 
-  bool OnRequest(scoped_refptr<CefResourceManager::Request> request) OVERRIDE {
+  bool OnRequest(scoped_refptr<CefResourceManager::Request> request) override {
     CEF_REQUIRE_IO_THREAD();
 
     const std::string& url = request->url();
@@ -105,7 +106,7 @@ class DirectoryProvider : public CefResourceManager::Provider {
       directory_path_ += PATH_SEP;
   }
 
-  bool OnRequest(scoped_refptr<CefResourceManager::Request> request) OVERRIDE {
+  bool OnRequest(scoped_refptr<CefResourceManager::Request> request) override {
     CEF_REQUIRE_IO_THREAD();
 
     const std::string& url = request->url();
@@ -116,9 +117,9 @@ class DirectoryProvider : public CefResourceManager::Provider {
     const std::string& file_path = GetFilePath(url);
 
     // Open |file_path| on the FILE thread.
-    CefPostTask(
-        TID_FILE_USER_BLOCKING,
-        base::Bind(&DirectoryProvider::OpenOnFileThread, file_path, request));
+    CefPostTask(TID_FILE_USER_BLOCKING,
+                base::BindOnce(&DirectoryProvider::OpenOnFileThread, file_path,
+                               request));
 
     return true;
   }
@@ -141,8 +142,9 @@ class DirectoryProvider : public CefResourceManager::Provider {
         CefStreamReader::CreateForFile(file_path);
 
     // Continue loading on the IO thread.
-    CefPostTask(TID_IO, base::Bind(&DirectoryProvider::ContinueOpenOnIOThread,
-                                   request, stream));
+    CefPostTask(TID_IO,
+                base::BindOnce(&DirectoryProvider::ContinueOpenOnIOThread,
+                               request, stream));
   }
 
   static void ContinueOpenOnIOThread(
@@ -175,7 +177,7 @@ class ArchiveProvider : public CefResourceManager::Provider {
         password_(password),
         archive_load_started_(false),
         archive_load_ended_(false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+        weak_ptr_factory_(this) {
     DCHECK(!url_path_.empty());
     DCHECK(!archive_path_.empty());
 
@@ -184,7 +186,7 @@ class ArchiveProvider : public CefResourceManager::Provider {
       url_path_ += '/';
   }
 
-  bool OnRequest(scoped_refptr<CefResourceManager::Request> request) OVERRIDE {
+  bool OnRequest(scoped_refptr<CefResourceManager::Request> request) override {
     CEF_REQUIRE_IO_THREAD();
 
     const std::string& url = request->url();
@@ -199,10 +201,10 @@ class ArchiveProvider : public CefResourceManager::Provider {
       pending_requests_.push_back(request);
 
       // Load the archive file on the FILE thread.
-      CefPostTask(
-          TID_FILE_USER_BLOCKING,
-          base::Bind(&ArchiveProvider::LoadOnFileThread,
-                     weak_ptr_factory_.GetWeakPtr(), archive_path_, password_));
+      CefPostTask(TID_FILE_USER_BLOCKING,
+                  base::BindOnce(&ArchiveProvider::LoadOnFileThread,
+                                 weak_ptr_factory_.GetWeakPtr(), archive_path_,
+                                 password_));
       return true;
     }
 
@@ -236,8 +238,8 @@ class ArchiveProvider : public CefResourceManager::Provider {
       DLOG(WARNING) << "Failed to load archive file: " << archive_path;
     }
 
-    CefPostTask(TID_IO,
-                base::Bind(&ArchiveProvider::ContinueOnIOThread, ptr, archive));
+    CefPostTask(TID_IO, base::BindOnce(&ArchiveProvider::ContinueOnIOThread,
+                                       ptr, archive));
   }
 
   void ContinueOnIOThread(CefRefPtr<CefZipArchive> archive) {
@@ -306,7 +308,7 @@ struct CefResourceManager::ProviderEntry {
         identifier_(identifier),
         deletion_pending_(false) {}
 
-  scoped_ptr<Provider> provider_;
+  std::unique_ptr<Provider> provider_;
   int order_;
   std::string identifier_;
 
@@ -330,8 +332,8 @@ CefResourceManager::RequestState::~RequestState() {
 void CefResourceManager::Request::Continue(
     CefRefPtr<CefResourceHandler> handler) {
   if (!CefCurrentlyOn(TID_IO)) {
-    CefPostTask(TID_IO, base::Bind(&CefResourceManager::Request::Continue, this,
-                                   handler));
+    CefPostTask(TID_IO, base::BindOnce(&CefResourceManager::Request::Continue,
+                                       this, handler));
     return;
   }
 
@@ -342,13 +344,14 @@ void CefResourceManager::Request::Continue(
   // not called unexpectedly if Provider::OnRequest calls this method and then
   // calls CefResourceManager::Remove*.
   CefPostTask(TID_IO,
-              base::Bind(&CefResourceManager::Request::ContinueOnIOThread,
-                         base::Passed(&state_), handler));
+              base::BindOnce(&CefResourceManager::Request::ContinueOnIOThread,
+                             std::move(state_), handler));
 }
 
 void CefResourceManager::Request::Stop() {
   if (!CefCurrentlyOn(TID_IO)) {
-    CefPostTask(TID_IO, base::Bind(&CefResourceManager::Request::Stop, this));
+    CefPostTask(TID_IO,
+                base::BindOnce(&CefResourceManager::Request::Stop, this));
     return;
   }
 
@@ -358,12 +361,13 @@ void CefResourceManager::Request::Stop() {
   // Disassociate |state_| immediately so that Provider::OnRequestCanceled is
   // not called unexpectedly if Provider::OnRequest calls this method and then
   // calls CefResourceManager::Remove*.
-  CefPostTask(TID_IO, base::Bind(&CefResourceManager::Request::StopOnIOThread,
-                                 base::Passed(&state_)));
+  CefPostTask(TID_IO,
+              base::BindOnce(&CefResourceManager::Request::StopOnIOThread,
+                             std::move(state_)));
 }
 
-CefResourceManager::Request::Request(scoped_ptr<RequestState> state)
-    : state_(state.Pass()), params_(state_->params_) {
+CefResourceManager::Request::Request(std::unique_ptr<RequestState> state)
+    : state_(std::move(state)), params_(state_->params_) {
   CEF_REQUIRE_IO_THREAD();
 
   ProviderEntry* entry = *(state_->current_entry_pos_);
@@ -379,13 +383,13 @@ CefResourceManager::Request::Request(scoped_ptr<RequestState> state)
 // handle the request. Note that |state_| may already be NULL if OnRequest
 // executes a callback before returning, in which case execution will continue
 // asynchronously in any case.
-scoped_ptr<CefResourceManager::RequestState>
+std::unique_ptr<CefResourceManager::RequestState>
 CefResourceManager::Request::SendRequest() {
   CEF_REQUIRE_IO_THREAD();
   Provider* provider = (*state_->current_entry_pos_)->provider_.get();
   if (!provider->OnRequest(this))
-    return state_.Pass();
-  return scoped_ptr<RequestState>();
+    return std::move(state_);
+  return std::unique_ptr<RequestState>();
 }
 
 bool CefResourceManager::Request::HasState() {
@@ -395,30 +399,30 @@ bool CefResourceManager::Request::HasState() {
 
 // static
 void CefResourceManager::Request::ContinueOnIOThread(
-    scoped_ptr<RequestState> state,
+    std::unique_ptr<RequestState> state,
     CefRefPtr<CefResourceHandler> handler) {
   CEF_REQUIRE_IO_THREAD();
   // The manager may already have been deleted.
   base::WeakPtr<CefResourceManager> manager = state->manager_;
   if (manager)
-    manager->ContinueRequest(state.Pass(), handler);
+    manager->ContinueRequest(std::move(state), handler);
 }
 
 // static
 void CefResourceManager::Request::StopOnIOThread(
-    scoped_ptr<RequestState> state) {
+    std::unique_ptr<RequestState> state) {
   CEF_REQUIRE_IO_THREAD();
   // The manager may already have been deleted.
   base::WeakPtr<CefResourceManager> manager = state->manager_;
   if (manager)
-    manager->StopRequest(state.Pass());
+    manager->StopRequest(std::move(state));
 }
 
 // CefResourceManager implementation.
 
 CefResourceManager::CefResourceManager()
-    : url_filter_(base::Bind(GetFilteredUrl)),
-      mime_type_resolver_(base::Bind(GetMimeType)) {}
+    : url_filter_(base::BindRepeating(GetFilteredUrl)),
+      mime_type_resolver_(base::BindRepeating(GetMimeType)) {}
 
 CefResourceManager::~CefResourceManager() {
   CEF_REQUIRE_IO_THREAD();
@@ -467,12 +471,12 @@ void CefResourceManager::AddProvider(Provider* provider,
     return;
 
   if (!CefCurrentlyOn(TID_IO)) {
-    CefPostTask(TID_IO, base::Bind(&CefResourceManager::AddProvider, this,
-                                   provider, order, identifier));
+    CefPostTask(TID_IO, base::BindOnce(&CefResourceManager::AddProvider, this,
+                                       provider, order, identifier));
     return;
   }
 
-  scoped_ptr<ProviderEntry> new_entry(
+  std::unique_ptr<ProviderEntry> new_entry(
       new ProviderEntry(provider, order, identifier));
 
   if (providers_.empty()) {
@@ -492,8 +496,8 @@ void CefResourceManager::AddProvider(Provider* provider,
 
 void CefResourceManager::RemoveProviders(const std::string& identifier) {
   if (!CefCurrentlyOn(TID_IO)) {
-    CefPostTask(TID_IO, base::Bind(&CefResourceManager::RemoveProviders, this,
-                                   identifier));
+    CefPostTask(TID_IO, base::BindOnce(&CefResourceManager::RemoveProviders,
+                                       this, identifier));
     return;
   }
 
@@ -512,7 +516,7 @@ void CefResourceManager::RemoveProviders(const std::string& identifier) {
 void CefResourceManager::RemoveAllProviders() {
   if (!CefCurrentlyOn(TID_IO)) {
     CefPostTask(TID_IO,
-                base::Bind(&CefResourceManager::RemoveAllProviders, this));
+                base::BindOnce(&CefResourceManager::RemoveAllProviders, this));
     return;
   }
 
@@ -526,28 +530,28 @@ void CefResourceManager::RemoveAllProviders() {
 
 void CefResourceManager::SetMimeTypeResolver(const MimeTypeResolver& resolver) {
   if (!CefCurrentlyOn(TID_IO)) {
-    CefPostTask(TID_IO, base::Bind(&CefResourceManager::SetMimeTypeResolver,
-                                   this, resolver));
+    CefPostTask(TID_IO, base::BindOnce(&CefResourceManager::SetMimeTypeResolver,
+                                       this, resolver));
     return;
   }
 
   if (!resolver.is_null())
     mime_type_resolver_ = resolver;
   else
-    mime_type_resolver_ = base::Bind(GetMimeType);
+    mime_type_resolver_ = base::BindRepeating(GetMimeType);
 }
 
 void CefResourceManager::SetUrlFilter(const UrlFilter& filter) {
   if (!CefCurrentlyOn(TID_IO)) {
-    CefPostTask(TID_IO,
-                base::Bind(&CefResourceManager::SetUrlFilter, this, filter));
+    CefPostTask(TID_IO, base::BindOnce(&CefResourceManager::SetUrlFilter, this,
+                                       filter));
     return;
   }
 
   if (!filter.is_null())
     url_filter_ = filter;
   else
-    url_filter_ = base::Bind(GetFilteredUrl);
+    url_filter_ = base::BindRepeating(GetFilteredUrl);
 }
 
 cef_return_value_t CefResourceManager::OnBeforeResourceLoad(
@@ -566,7 +570,7 @@ cef_return_value_t CefResourceManager::OnBeforeResourceLoad(
     return RV_CONTINUE;
   }
 
-  scoped_ptr<RequestState> state(new RequestState);
+  std::unique_ptr<RequestState> state(new RequestState);
 
   if (!weak_ptr_factory_.get()) {
     // WeakPtrFactory instances need to be created and destroyed on the same
@@ -590,7 +594,7 @@ cef_return_value_t CefResourceManager::OnBeforeResourceLoad(
   state->current_entry_pos_ = current_entry_pos;
 
   // If the request is potentially handled we need to continue asynchronously.
-  return SendRequest(state.Pass()) ? RV_CONTINUE_ASYNC : RV_CONTINUE;
+  return SendRequest(std::move(state)) ? RV_CONTINUE_ASYNC : RV_CONTINUE;
 }
 
 CefRefPtr<CefResourceHandler> CefResourceManager::GetResourceHandler(
@@ -616,13 +620,13 @@ CefRefPtr<CefResourceHandler> CefResourceManager::GetResourceHandler(
 
 // Send the request to providers in order until one potentially handles it or we
 // run out of providers. Returns true if the request is potentially handled.
-bool CefResourceManager::SendRequest(scoped_ptr<RequestState> state) {
+bool CefResourceManager::SendRequest(std::unique_ptr<RequestState> state) {
   bool potentially_handled = false;
 
   do {
     // Should not be on the last provider entry.
     DCHECK(state->current_entry_pos_ != providers_.end());
-    scoped_refptr<Request> request = new Request(state.Pass());
+    scoped_refptr<Request> request = new Request(std::move(state));
 
     // Give the provider an opportunity to handle the request.
     state = request->SendRequest();
@@ -630,7 +634,7 @@ bool CefResourceManager::SendRequest(scoped_ptr<RequestState> state) {
       // The provider will not handle the request. Move to the next provider if
       // any.
       if (!IncrementProvider(state.get()))
-        StopRequest(state.Pass());
+        StopRequest(std::move(state));
     } else {
       potentially_handled = true;
     }
@@ -640,7 +644,7 @@ bool CefResourceManager::SendRequest(scoped_ptr<RequestState> state) {
 }
 
 void CefResourceManager::ContinueRequest(
-    scoped_ptr<RequestState> state,
+    std::unique_ptr<RequestState> state,
     CefRefPtr<CefResourceHandler> handler) {
   CEF_REQUIRE_IO_THREAD();
 
@@ -648,17 +652,17 @@ void CefResourceManager::ContinueRequest(
     // The request has been handled. Associate the request ID with the handler.
     pending_handlers_.insert(
         std::make_pair(state->params_.request_->GetIdentifier(), handler));
-    StopRequest(state.Pass());
+    StopRequest(std::move(state));
   } else {
     // Move to the next provider if any.
     if (IncrementProvider(state.get()))
-      SendRequest(state.Pass());
+      SendRequest(std::move(state));
     else
-      StopRequest(state.Pass());
+      StopRequest(std::move(state));
   }
 }
 
-void CefResourceManager::StopRequest(scoped_ptr<RequestState> state) {
+void CefResourceManager::StopRequest(std::unique_ptr<RequestState> state) {
   CEF_REQUIRE_IO_THREAD();
 
   // Detach from the current provider.

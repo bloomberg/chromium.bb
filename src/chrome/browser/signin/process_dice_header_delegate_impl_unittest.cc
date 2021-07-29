@@ -50,6 +50,15 @@ class TestDiceWebSigninInterceptorDelegate
     std::move(callback).Run(SigninInterceptionResult::kDeclined);
     return nullptr;
   }
+
+  void ShowEnterpriseProfileInterceptionDialog(
+      Browser* browser,
+      const std::string& email,
+      SkColor profile_color,
+      base::OnceCallback<void(bool)> callback) override {
+    std::move(callback).Run(false);
+  }
+
   void ShowProfileCustomizationBubble(Browser* browser) override {}
 };
 
@@ -93,7 +102,7 @@ class ProcessDiceHeaderDelegateImplTest
       InitializeIdentityTestEnvironment();
     if (is_primary) {
       identity_test_environment_profile_adaptor_->identity_test_env()
-          ->SetPrimaryAccount(email_);
+          ->SetPrimaryAccount(email_, signin::ConsentLevel::kSync);
     } else {
       identity_test_environment_profile_adaptor_->identity_test_env()
           ->MakeAccountAvailable(email_);

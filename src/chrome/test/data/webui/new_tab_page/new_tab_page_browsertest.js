@@ -28,18 +28,6 @@ TEST_F('NewTabPageAppTest', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
-var NewTabPageMostVisitedTest = class extends NewTabPageBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/most_visited_test.js';
-  }
-};
-
-TEST_F('NewTabPageMostVisitedTest', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
 var NewTabPageCustomizeDialogTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
@@ -184,18 +172,6 @@ TEST_F('NewTabPageModulesModuleWrapperTest', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
-var NewTabPageImgTest = class extends NewTabPageBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/img_test.js';
-  }
-};
-
-TEST_F('NewTabPageImgTest', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
 var NewTabPageModulesModulesTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
@@ -297,6 +273,18 @@ TEST_F('NewTabPageModulesDriveModuleTest', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var NewTabPageModulesDriveV2ModuleTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/drive_v2/module_test.js';
+  }
+};
+
+TEST_F('NewTabPageModulesDriveV2ModuleTest', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var NewTabPageModulesTaskModuleTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
@@ -318,5 +306,18 @@ var NewTabPageModulesChromeCartModuleTest =
 };
 
 TEST_F('NewTabPageModulesChromeCartModuleTest', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var NewTabPageModulesChromeCartV2ModuleTest =
+    class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/cart_v2/module_test.js';
+  }
+};
+
+TEST_F('NewTabPageModulesChromeCartV2ModuleTest', 'All', function() {
   mocha.run();
 });

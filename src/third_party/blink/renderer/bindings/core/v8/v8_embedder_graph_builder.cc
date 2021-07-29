@@ -36,33 +36,6 @@ using Traceable = const void*;
 using Graph = v8::EmbedderGraph;
 using Detachedness = v8::EmbedderGraph::Node::Detachedness;
 
-// Information about whether a node is attached to the main DOM tree
-// or not. It is computed as follows:
-// 1) A ExecutionContext with IsContextDestroyed() = true is detached.
-// 2) A ExecutionContext with IsContextDestroyed() = false is attached.
-// 3) A Node that is not connected to any ExecutionContext is detached.
-// 4) A Node that is connected to a detached ExecutionContext is detached.
-// 5) A Node that is connected to an attached ExecutionContext is attached.
-// 6) A ScriptWrappable that is reachable from an attached Node is
-//    attached.
-// 7) A ScriptWrappable that is reachable from a detached Node is
-//    detached.
-// 8) A ScriptWrappable that is not reachable from any Node is
-//    considered (conservatively) as attached.
-// The unknown state applies to ScriptWrappables during graph
-// traversal when we don't have reachability information yet.
-Detachedness DetachednessFromWrapper(v8::Isolate* isolate,
-                                     uint16_t class_id,
-                                     v8::Local<v8::Object> v8_value) {
-  if (class_id != WrapperTypeInfo::kNodeClassId)
-    return Detachedness::kUnknown;
-  Node* node = V8Node::ToImpl(v8_value);
-  Node* root = V8GCController::OpaqueRootForGC(isolate, node);
-  if (root->isConnected() && node->GetExecutionContext())
-    return Detachedness::kAttached;
-  return Detachedness::kDetached;
-}
-
 class EmbedderNode : public Graph::Node {
  public:
   EmbedderNode(const char* name,
@@ -156,9 +129,7 @@ EmbedderNode* NodeBuilder::GraphNode(Traceable traceable,
 // into its own subgraph to identify and filter subgraphs that only consist of
 // internals. Roots, which are potentially Blink only, are transitively
 // traversed after handling JavaScript related objects.
-class GC_PLUGIN_IGNORE(
-    "This class is not managed by Oilpan but GC plugin recognizes it as such "
-    "due to Trace methods.") V8EmbedderGraphBuilder
+class V8EmbedderGraphBuilder
     : public Visitor,
       public v8::PersistentHandleVisitor,
       public v8::EmbedderHeapTracer::TracedGlobalHandleVisitor {
@@ -389,7 +360,6 @@ class GC_PLUGIN_IGNORE(
   void AddEphemeronEdgeName(Traceable backing, State* parent, State* current);
 
   void VisitPersistentHandleInternal(v8::Local<v8::Object>, uint16_t);
-  void VisitPendingActivities();
   void VisitBlinkRoots();
   void VisitTransitiveClosure();
 
@@ -449,7 +419,6 @@ void V8EmbedderGraphBuilder::BuildEmbedderGraph() {
       ThreadState::Current()->unified_heap_controller());
   tracer->IterateTracedGlobalHandles(this);
   VisitBlinkRoots();
-  VisitPendingActivities();
   VisitTransitiveClosure();
   DCHECK(worklist_.empty());
   // ephemeron_worklist_ might not be empty. We might have an ephemeron whose
@@ -467,7 +436,8 @@ void V8EmbedderGraphBuilder::VisitPersistentHandleInternal(
   if (!traceable)
     return;
   Graph::Node* wrapper = node_builder_->GraphNode(v8_value);
-  auto detachedness = DetachednessFromWrapper(isolate_, class_id, v8_value);
+  auto detachedness = V8GCController::DetachednessFromWrapper(
+      isolate_, v8_value.As<v8::Value>(), class_id, nullptr);
   EmbedderNode* graph_node = node_builder_->GraphNode(
       traceable, traceable->NameInHeapSnapshot(), wrapper, detachedness);
   State* const to_process_state = EnsureState(traceable, graph_node);
@@ -648,20 +618,6 @@ void V8EmbedderGraphBuilder::VisitEphemeron(
   ephemeron_worklist_.push_back(std::make_unique<EphemeronItem>(
       current_parent_, key, value_trace_descriptor.base_object_payload,
       value_trace_descriptor.callback));
-}
-
-void V8EmbedderGraphBuilder::VisitPendingActivities() {
-  // Ownership of the new node is transferred to the graph_.
-  EmbedderNode* root =
-      static_cast<EmbedderNode*>(graph_->AddNode(std::unique_ptr<Graph::Node>(
-          new EmbedderRootNode("Pending activities"))));
-  EnsureRootState(root);
-  ParentScope parent(this, root);
-  auto* asw_manager =
-      V8PerIsolateData::From(isolate_)->GetActiveScriptWrappableManager();
-  if (asw_manager) {
-    asw_manager->IterateActiveScriptWrappables(this);
-  }
 }
 
 void V8EmbedderGraphBuilder::VisitBlinkRoots() {

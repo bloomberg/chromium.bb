@@ -40,8 +40,18 @@ this.ShimlessRMABrowserTest = class extends PolymerTest {
 // although technically is not necessary.
 const debug_suites_list = [
   'FakeShimlessRmaServiceTestSuite',
-  'ShimlessRMAAppTest',
+  'OnboardingChooseDestinationPageTest',
+  'OnboardingChooseWpDisableMethodPageTest',
+  'OnboardingEnterRsuWpDisableCodePageTest',
+  'OnboardingLandingPageTest',
+  'OnboardingNetworkPageTest',
+  'OnboardingSelectComponentsPageTest',
   'OnboardingUpdatePageTest',
+  'OnboardingWaitForManualWpDisablePageTest',
+  'ReimagingFirmwareUpdatePageTest',
+  'ReimagingProvisioningPageTest',
+  'ShimlessRMAAppTest',
+  'WrapupRepairCompletePageTest',
 ];
 
 TEST_F('ShimlessRMABrowserTest', 'All', function() {

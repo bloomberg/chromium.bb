@@ -78,7 +78,7 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
     return std::make_unique<NoopWebURLLoader>();
   }
   std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() override {
-    return Platform::Current()->CreateCodeCacheLoader();
+    return std::make_unique<CodeCacheLoaderMock>();
   }
 
   class NoopWebURLLoader final : public WebURLLoader {
@@ -108,7 +108,7 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
         std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
             resource_load_info_notifier_wrapper,
         WebURLLoaderClient*) override {}
-    void SetDefersLoading(WebURLLoader::DeferType) override {}
+    void Freeze(WebLoaderFreezeMode) override {}
     void DidChangePriority(WebURLRequest::Priority, int) override {
       NOTREACHED();
     }

@@ -9818,12 +9818,6 @@ specified.
 Specify the width and height of the logo to clear. They must be
 specified.
 
-@item band, t
-Specify the thickness of the fuzzy edge of the rectangle (added to
-@var{w} and @var{h}). The default value is 1. This option is
-deprecated, setting higher values should no longer be necessary and
-is not recommended.
-
 @item show
 When set to 1, a green rectangle is drawn on the screen to simplify
 finding the right @var{x}, @var{y}, @var{w}, and @var{h} parameters.
@@ -9841,9 +9835,9 @@ compute the interpolated pixel values inside the rectangle.
 @itemize
 @item
 Set a rectangle covering the area with top left corner coordinates 0,0
-and size 100x77, and a band of size 10:
+and size 100x77:
 @example
-delogo=x=0:y=0:w=100:h=77:band=10
+delogo=x=0:y=0:w=100:h=77
 @end example
 
 @end itemize
@@ -9892,7 +9886,7 @@ Native implementation of DNN loading and execution.
 @item tensorflow
 TensorFlow backend. To enable this backend you
 need to install the TensorFlow for C library (see
-@url{https://www.tensorflow.org/install/install_c}) and configure FFmpeg with
+@url{https://www.tensorflow.org/install/lang_c}) and configure FFmpeg with
 @code{--enable-libtensorflow}
 @end table
 Default value is @samp{native}.
@@ -10133,6 +10127,85 @@ ffmpeg -i INPUT -f lavfi -i nullsrc=hd720,geq='r=128+80*(sin(sqrt((X-W/2)*(X-W/2
 @end example
 @end itemize
 
+@section dnn_classify
+
+Do classification with deep neural networks based on bounding boxes.
+
+The filter accepts the following options:
+
+@table @option
+@item dnn_backend
+Specify which DNN backend to use for model loading and execution. This option accepts
+only openvino now, tensorflow backends will be added.
+
+@item model
+Set path to model file specifying network architecture and its parameters.
+Note that different backends use different file formats.
+
+@item input
+Set the input name of the dnn network.
+
+@item output
+Set the output name of the dnn network.
+
+@item confidence
+Set the confidence threshold (default: 0.5).
+
+@item labels
+Set path to label file specifying the mapping between label id and name.
+Each label name is written in one line, tailing spaces and empty lines are skipped.
+The first line is the name of label id 0,
+and the second line is the name of label id 1, etc.
+The label id is considered as name if the label file is not provided.
+
+@item backend_configs
+Set the configs to be passed into backend
+
+For tensorflow backend, you can set its configs with @option{sess_config} options,
+please use tools/python/tf_sess_config.py to get the configs for your system.
+
+@end table
+
+@section dnn_detect
+
+Do object detection with deep neural networks.
+
+The filter accepts the following options:
+
+@table @option
+@item dnn_backend
+Specify which DNN backend to use for model loading and execution. This option accepts
+only openvino now, tensorflow backends will be added.
+
+@item model
+Set path to model file specifying network architecture and its parameters.
+Note that different backends use different file formats.
+
+@item input
+Set the input name of the dnn network.
+
+@item output
+Set the output name of the dnn network.
+
+@item confidence
+Set the confidence threshold (default: 0.5).
+
+@item labels
+Set path to label file specifying the mapping between label id and name.
+Each label name is written in one line, tailing spaces and empty lines are skipped.
+The first line is the name of label id 0 (usually it is 'background'),
+and the second line is the name of label id 1, etc.
+The label id is considered as name if the label file is not provided.
+
+@item backend_configs
+Set the configs to be passed into backend
+
+@item async
+use DNN async execution if set (default: set),
+roll back to sync execution if the backend does not support async.
+
+@end table
+
 @anchor{dnn_processing}
 @section dnn_processing
 
@@ -10153,7 +10226,7 @@ Native implementation of DNN loading and execution.
 @item tensorflow
 TensorFlow backend. To enable this backend you
 need to install the TensorFlow for C library (see
-@url{https://www.tensorflow.org/install/install_c}) and configure FFmpeg with
+@url{https://www.tensorflow.org/install/lang_c}) and configure FFmpeg with
 @code{--enable-libtensorflow}
 
 @item openvino
@@ -10179,6 +10252,12 @@ Set the input name of the dnn network.
 
 @item output
 Set the output name of the dnn network.
+
+@item backend_configs
+Set the configs to be passed into backend
+
+For tensorflow backend, you can set its configs with @option{sess_config} options,
+please use tools/python/tf_sess_config.py to get the configs of TensorFlow backend for your system.
 
 @item async
 use DNN async execution if set (default: set),
@@ -10208,9 +10287,10 @@ Handle the Y channel with srcnn.pb (see @ref{sr} filter) for frame with yuv420p 
 @end example
 
 @item
-Handle the Y channel with espcn.pb (see @ref{sr} filter), which changes frame size, for format yuv420p (planar YUV formats supported):
+Handle the Y channel with espcn.pb (see @ref{sr} filter), which changes frame size, for format yuv420p (planar YUV formats supported),
+please use tools/python/tf_sess_config.py to get the configs of TensorFlow backend for your system.
 @example
-./ffmpeg -i 480p.jpg -vf format=yuv420p,dnn_processing=dnn_backend=tensorflow:model=espcn.pb:input=x:output=y -y tmp.espcn.jpg
+./ffmpeg -i 480p.jpg -vf format=yuv420p,dnn_processing=dnn_backend=tensorflow:model=espcn.pb:input=x:output=y:backend_configs=sess_config=0x10022805320e09cdccccccccccec3f20012a01303801 -y tmp.espcn.jpg
 @end example
 
 @end itemize
@@ -11128,7 +11208,7 @@ will try to use a good random seed on a best effort basis.
 
 @item pal8
 Set pal8 output pixel format. This option does not work with codebook
-length greater than 256.
+length greater than 256. Default is disabled.
 @end table
 
 @section entropy
@@ -12145,6 +12225,9 @@ Number of mipmaps, default is 3.
 
 @item xmin, ymin, xmax, ymax
 Specifies the rectangle in which to search.
+
+@item discard
+Discard frames where object is not detected. Default is disabled.
 @end table
 
 @subsection Examples
@@ -14801,7 +14884,7 @@ Mix several video input streams into one video stream.
 A description of the accepted options follows.
 
 @table @option
-@item nb_inputs
+@item inputs
 The number of inputs. If unspecified, it defaults to 2.
 
 @item weights
@@ -18856,7 +18939,7 @@ Native implementation of DNN loading and execution.
 @item tensorflow
 TensorFlow backend. To enable this backend you
 need to install the TensorFlow for C library (see
-@url{https://www.tensorflow.org/install/install_c}) and configure FFmpeg with
+@url{https://www.tensorflow.org/install/lang_c}) and configure FFmpeg with
 @code{--enable-libtensorflow}
 @end table
 
@@ -21766,6 +21849,9 @@ Default is @code{3}.
 Apply cross fade from one input video stream to another input video stream.
 The cross fade is applied for specified duration.
 
+Both inputs must be constant frame-rate and have the same resolution, pixel format,
+frame rate and timebase.
+
 The filter accepts the following options:
 
 @table @option
@@ -22170,7 +22256,7 @@ Set the x and y expression. Default is 0.
 @item d
 Set the duration expression in number of frames.
 This sets for how many number of frames effect will last for
-single input image.
+single input image. Default is 90.
 
 @item s
 Set the output image size, default is 'hd720'.

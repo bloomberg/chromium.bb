@@ -14,9 +14,9 @@
 #include "build/build_config.h"
 #include "components/background_fetch/job_details.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/download/public/background_service/background_download_service.h"
 #include "components/download/public/background_service/blob_context_getter_factory.h"
 #include "components/download/public/background_service/download_params.h"
-#include "components/download/public/background_service/download_service.h"
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_context.h"
@@ -155,7 +155,8 @@ void BackgroundFetchDelegateBase::CancelDownload(const std::string& job_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   JobDetails* job_details = GetJobDetails(job_id);
 
-  if (job_details->job_state == JobDetails::State::kDownloadsComplete ||
+  if (!job_details ||
+      job_details->job_state == JobDetails::State::kDownloadsComplete ||
       job_details->job_state == JobDetails::State::kJobComplete) {
     // The cancel event arrived after the fetch was complete; ignore it.
     return;

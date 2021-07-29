@@ -59,65 +59,13 @@ GR_MAKE_BITFIELD_CLASS_OPS(GrXferBarrierFlags)
 class GrXferProcessor : public GrProcessor, public GrNonAtomicRef<GrXferProcessor> {
 public:
     /**
-     * A texture that contains the dst pixel values and an integer coord offset from device space
-     * to the space of the texture. Depending on GPU capabilities a DstTexture may be used by a
-     * GrXferProcessor for blending in the fragment shader.
-     */
-    class DstProxyView {
-    public:
-        DstProxyView() { fOffset.set(0, 0); }
-
-        DstProxyView(const DstProxyView& other) {
-            *this = other;
-        }
-
-        DstProxyView& operator=(const DstProxyView& other) {
-            fProxyView = other.fProxyView;
-            fOffset = other.fOffset;
-            fDstSampleType = other.fDstSampleType;
-            return *this;
-        }
-
-        bool operator==(const DstProxyView& that) const {
-            return fProxyView == that.fProxyView &&
-                   fOffset == that.fOffset &&
-                   fDstSampleType == that.fDstSampleType;
-        }
-        bool operator!=(const DstProxyView& that) const { return !(*this == that); }
-
-        const SkIPoint& offset() const { return fOffset; }
-
-        void setOffset(const SkIPoint& offset) { fOffset = offset; }
-        void setOffset(int ox, int oy) { fOffset.set(ox, oy); }
-
-        GrSurfaceProxy* proxy() const { return fProxyView.proxy(); }
-        const GrSurfaceProxyView& proxyView() const { return fProxyView; }
-
-        void setProxyView(GrSurfaceProxyView view) {
-            fProxyView = std::move(view);
-            if (!fProxyView.proxy()) {
-                fOffset = {0, 0};
-            }
-        }
-
-        GrDstSampleType dstSampleType() const { return fDstSampleType; }
-
-        void setDstSampleType(GrDstSampleType dstSampleType) { fDstSampleType = dstSampleType; }
-
-    private:
-        GrSurfaceProxyView       fProxyView;
-        SkIPoint                 fOffset;
-        GrDstSampleType          fDstSampleType = GrDstSampleType::kNone;
-    };
-
-    /**
      * Sets a unique key on the GrProcessorKeyBuilder calls onGetGLSLProcessorKey(...) to get the
      * specific subclass's key.
      */
     void getGLSLProcessorKey(const GrShaderCaps&,
                              GrProcessorKeyBuilder*,
                              const GrSurfaceOrigin* originIfDstTexture,
-                             GrDstSampleType dstSampleType) const;
+                             bool usesInputAttachmentForDstRead) const;
 
     /** Returns a new instance of the appropriate *GL* implementation class
         for the given GrXferProcessor; caller is responsible for deleting
@@ -246,8 +194,6 @@ private:
 #endif
 class GrXPFactory {
 public:
-    typedef GrXferProcessor::DstProxyView DstProxyView;
-
     enum class AnalysisProperties : unsigned {
         kNone = 0x0,
         /**

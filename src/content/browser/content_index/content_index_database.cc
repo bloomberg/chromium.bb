@@ -8,10 +8,9 @@
 #include <string>
 
 #include "base/barrier_closure.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/background_fetch/storage/image_helpers.h"
 #include "content/browser/content_index/content_index.pb.h"
 #include "content/browser/content_index/content_index_metrics.h"
@@ -19,6 +18,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -175,7 +175,7 @@ void ContentIndexDatabase::AddEntryOnCoreThread(
     return;
   }
 
-  auto* service_worker_registration =
+  scoped_refptr<ServiceWorkerRegistration> service_worker_registration =
       service_worker_context_->GetLiveRegistration(
           service_worker_registration_id);
   if (!service_worker_registration ||
@@ -226,7 +226,7 @@ void ContentIndexDatabase::DidSerializeIcons(
                           std::move(description), launch_url, entry_time);
 
   service_worker_context_->StoreRegistrationUserData(
-      service_worker_registration_id, storage::StorageKey(origin),
+      service_worker_registration_id, blink::StorageKey(origin),
       {{std::move(entry_key), std::move(entry_value)},
        {std::move(icon_key), std::move(icons_value)}},
       base::BindOnce(&ContentIndexDatabase::DidAddEntry,
@@ -657,7 +657,7 @@ void ContentIndexDatabase::DidDeleteItem(
     return;
 
   service_worker_context_->FindReadyRegistrationForId(
-      service_worker_registration_id, storage::StorageKey(origin),
+      service_worker_registration_id, blink::StorageKey(origin),
       base::BindOnce(&ContentIndexDatabase::StartActiveWorkerForDispatch,
                      weak_ptr_factory_core_.GetWeakPtr(), description_id));
 }
@@ -698,13 +698,13 @@ void ContentIndexDatabase::DeliverMessageToWorker(
 
   // Don't allow DB operations while the `contentdelete` event is firing.
   // This is to prevent re-registering the deleted content within the event.
-  BlockOrigin(service_worker->origin());
+  BlockOrigin(service_worker->key().origin());
 
   int request_id = service_worker->StartRequest(
       ServiceWorkerMetrics::EventType::CONTENT_DELETE,
       base::BindOnce(&ContentIndexDatabase::DidDispatchEvent,
                      weak_ptr_factory_core_.GetWeakPtr(),
-                     service_worker->origin()));
+                     service_worker->key().origin()));
 
   service_worker->endpoint()->DispatchContentDeleteEvent(
       description_id, service_worker->CreateSimpleEventCallback(request_id));

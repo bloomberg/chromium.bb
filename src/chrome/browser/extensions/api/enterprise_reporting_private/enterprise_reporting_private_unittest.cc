@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/signals/device_info_fetcher.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/enterprise_reporting_private_api.h"
 
@@ -12,8 +15,12 @@
 #include "chrome/browser/extensions/api/enterprise_reporting_private/chrome_desktop_report_request_helper.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/policy/dm_token_utils.h"
+#include "chrome/common/pref_names.h"
+#include "components/component_updater/pref_names.h"
 #include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/version_info/version_info.h"
@@ -116,8 +123,14 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, DeviceDataMissing) {
                                              browser(),
                                              extensions::api_test_utils::NONE);
   ASSERT_TRUE(function->GetResultList());
-  EXPECT_EQ(0u, function->GetResultList()->GetSize());
+  EXPECT_EQ(1u, function->GetResultList()->GetSize());
   EXPECT_TRUE(function->GetError().empty());
+
+  const base::Value* single_result = nullptr;
+  EXPECT_TRUE(function->GetResultList()->Get(0, &single_result));
+  ASSERT_TRUE(single_result);
+  ASSERT_TRUE(single_result->is_blob());
+  EXPECT_EQ(base::Value::BlobStorage(), single_result->GetBlob());
 }
 
 TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, DeviceBadId) {
@@ -194,8 +207,13 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, RetrieveDeviceData) {
                                              std::move(values2), browser(),
                                              extensions::api_test_utils::NONE);
   ASSERT_TRUE(get_function2->GetResultList());
-  EXPECT_EQ(0u, get_function2->GetResultList()->GetSize());
+  EXPECT_EQ(1u, get_function2->GetResultList()->GetSize());
   EXPECT_TRUE(get_function2->GetError().empty());
+
+  EXPECT_TRUE(get_function2->GetResultList()->Get(0, &single_result));
+  ASSERT_TRUE(single_result);
+  ASSERT_TRUE(single_result->is_blob());
+  EXPECT_EQ(base::Value::BlobStorage(), single_result->GetBlob());
 }
 
 // TODO(pastarmovj): Remove once implementation for the other platform exists.
@@ -296,6 +314,7 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfo) {
   EXPECT_EQ("macOS", info.os_name);
 #elif defined(OS_WIN)
   EXPECT_EQ("windows", info.os_name);
+  EXPECT_FALSE(info.device_model.empty());
 #elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   env->SetVar(base::nix::kXdgCurrentDesktopEnvVar, "XFCE");
@@ -343,6 +362,16 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfoConversion) {
 class EnterpriseReportingPrivateGetContextInfoTest
     : public ExtensionApiUnittest {
  public:
+  void SetUp() override {
+    ExtensionApiUnittest::SetUp();
+    // Only used to set the right default BuiltInDnsClientEnabled preference
+    // value according to the OS. DnsClient and DoH default preferences are
+    // updated when the object is created, making the object unnecessary outside
+    // this scope.
+    StubResolverConfigReader stub_resolver_config_reader(
+        g_browser_process->local_state());
+  }
+
   enterprise_reporting_private::ContextInfo GetContextInfo() {
     auto function = base::MakeRefCounted<
         EnterpriseReportingPrivateGetContextInfoFunction>();
@@ -355,6 +384,23 @@ class EnterpriseReportingPrivateGetContextInfoTest
         *context_info_value, &info));
 
     return info;
+  }
+
+  bool BuiltInDnsClientPlatformDefault() {
+#if defined(OS_CHROMEOS) || defined(OS_MAC) || defined(OS_ANDROID)
+    return true;
+#else
+    return false;
+#endif
+  }
+
+  void ExpectDefaultChromeCleanupEnabled(
+      enterprise_reporting_private::ContextInfo& info) {
+#if defined(OS_WIN)
+    EXPECT_TRUE(*info.chrome_cleanup_enabled);
+#else
+    EXPECT_EQ(nullptr, info.chrome_cleanup_enabled.get());
+#endif
   }
 };
 
@@ -372,7 +418,282 @@ TEST_F(EnterpriseReportingPrivateGetContextInfoTest, NoSpecialContext) {
             info.realtime_url_check_mode);
   EXPECT_TRUE(info.on_security_event_providers.empty());
   EXPECT_EQ(version_info::GetVersionNumber(), info.browser_version);
+  EXPECT_EQ(enterprise_reporting_private::SAFE_BROWSING_LEVEL_STANDARD,
+            info.safe_browsing_protection_level);
+  EXPECT_EQ(BuiltInDnsClientPlatformDefault(),
+            info.built_in_dns_client_enabled);
+  EXPECT_EQ(
+      enterprise_reporting_private::PASSWORD_PROTECTION_TRIGGER_POLICY_UNSET,
+      info.password_protection_warning_trigger);
+  ExpectDefaultChromeCleanupEnabled(info);
+  EXPECT_FALSE(info.chrome_remote_desktop_app_blocked);
 }
+
+class EnterpriseReportingPrivateGetContextInfoSafeBrowsingTest
+    : public EnterpriseReportingPrivateGetContextInfoTest,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {};
+
+TEST_P(EnterpriseReportingPrivateGetContextInfoSafeBrowsingTest, Test) {
+  std::tuple<bool, bool> params = GetParam();
+
+  bool safe_browsing_enabled = std::get<0>(params);
+  bool safe_browsing_enhanced_enabled = std::get<1>(params);
+
+  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
+                                    safe_browsing_enabled);
+  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnhanced,
+                                    safe_browsing_enhanced_enabled);
+  enterprise_reporting_private::ContextInfo info = GetContextInfo();
+
+  EXPECT_TRUE(info.browser_affiliation_ids.empty());
+  EXPECT_TRUE(info.profile_affiliation_ids.empty());
+  EXPECT_TRUE(info.on_file_attached_providers.empty());
+  EXPECT_TRUE(info.on_file_downloaded_providers.empty());
+  EXPECT_TRUE(info.on_bulk_data_entry_providers.empty());
+  EXPECT_EQ(enterprise_reporting_private::REALTIME_URL_CHECK_MODE_DISABLED,
+            info.realtime_url_check_mode);
+  EXPECT_TRUE(info.on_security_event_providers.empty());
+  EXPECT_EQ(version_info::GetVersionNumber(), info.browser_version);
+
+  if (safe_browsing_enabled) {
+    if (safe_browsing_enhanced_enabled)
+      EXPECT_EQ(enterprise_reporting_private::SAFE_BROWSING_LEVEL_ENHANCED,
+                info.safe_browsing_protection_level);
+    else
+      EXPECT_EQ(enterprise_reporting_private::SAFE_BROWSING_LEVEL_STANDARD,
+                info.safe_browsing_protection_level);
+  } else {
+    EXPECT_EQ(enterprise_reporting_private::SAFE_BROWSING_LEVEL_DISABLED,
+              info.safe_browsing_protection_level);
+  }
+  EXPECT_EQ(BuiltInDnsClientPlatformDefault(),
+            info.built_in_dns_client_enabled);
+  EXPECT_EQ(
+      enterprise_reporting_private::PASSWORD_PROTECTION_TRIGGER_POLICY_UNSET,
+      info.password_protection_warning_trigger);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    EnterpriseReportingPrivateGetContextInfoSafeBrowsingTest,
+    testing::Values(std::make_tuple(false, false),
+                    std::make_tuple(true, false),
+                    std::make_tuple(true, true)));
+
+class EnterpriseReportingPrivateGetContextInfoBuiltInDnsClientTest
+    : public EnterpriseReportingPrivateGetContextInfoTest,
+      public testing::WithParamInterface<bool> {};
+
+TEST_P(EnterpriseReportingPrivateGetContextInfoBuiltInDnsClientTest, Test) {
+  bool policyValue = GetParam();
+
+  g_browser_process->local_state()->SetBoolean(prefs::kBuiltInDnsClientEnabled,
+                                               policyValue);
+
+  enterprise_reporting_private::ContextInfo info = GetContextInfo();
+
+  EXPECT_TRUE(info.browser_affiliation_ids.empty());
+  EXPECT_TRUE(info.profile_affiliation_ids.empty());
+  EXPECT_TRUE(info.on_file_attached_providers.empty());
+  EXPECT_TRUE(info.on_file_downloaded_providers.empty());
+  EXPECT_TRUE(info.on_bulk_data_entry_providers.empty());
+  EXPECT_EQ(enterprise_reporting_private::REALTIME_URL_CHECK_MODE_DISABLED,
+            info.realtime_url_check_mode);
+  EXPECT_TRUE(info.on_security_event_providers.empty());
+  EXPECT_EQ(version_info::GetVersionNumber(), info.browser_version);
+  EXPECT_EQ(enterprise_reporting_private::SAFE_BROWSING_LEVEL_STANDARD,
+            info.safe_browsing_protection_level);
+  EXPECT_EQ(policyValue, info.built_in_dns_client_enabled);
+  EXPECT_EQ(
+      enterprise_reporting_private::PASSWORD_PROTECTION_TRIGGER_POLICY_UNSET,
+      info.password_protection_warning_trigger);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    EnterpriseReportingPrivateGetContextInfoBuiltInDnsClientTest,
+    testing::Bool());
+
+class EnterpriseReportingPrivateGetContextPasswordProtectionWarningTrigger
+    : public EnterpriseReportingPrivateGetContextInfoTest,
+      public testing::WithParamInterface<
+          enterprise_reporting_private::PasswordProtectionTrigger> {
+ public:
+  safe_browsing::PasswordProtectionTrigger MapPasswordProtectionTriggerToPolicy(
+      enterprise_reporting_private::PasswordProtectionTrigger enumValue) {
+    switch (enumValue) {
+      case enterprise_reporting_private::
+          PASSWORD_PROTECTION_TRIGGER_PASSWORD_PROTECTION_OFF:
+        return safe_browsing::PASSWORD_PROTECTION_OFF;
+      case enterprise_reporting_private::
+          PASSWORD_PROTECTION_TRIGGER_PASSWORD_REUSE:
+        return safe_browsing::PASSWORD_REUSE;
+      case enterprise_reporting_private::
+          PASSWORD_PROTECTION_TRIGGER_PHISHING_REUSE:
+        return safe_browsing::PHISHING_REUSE;
+      default:
+        NOTREACHED();
+        return safe_browsing::PASSWORD_PROTECTION_TRIGGER_MAX;
+    }
+  }
+};
+
+TEST_P(EnterpriseReportingPrivateGetContextPasswordProtectionWarningTrigger,
+       Test) {
+  enterprise_reporting_private::PasswordProtectionTrigger passwordTriggerValue =
+      GetParam();
+
+  profile()->GetPrefs()->SetInteger(
+      prefs::kPasswordProtectionWarningTrigger,
+      MapPasswordProtectionTriggerToPolicy(passwordTriggerValue));
+  enterprise_reporting_private::ContextInfo info = GetContextInfo();
+
+  EXPECT_TRUE(info.browser_affiliation_ids.empty());
+  EXPECT_TRUE(info.profile_affiliation_ids.empty());
+  EXPECT_TRUE(info.on_file_attached_providers.empty());
+  EXPECT_TRUE(info.on_file_downloaded_providers.empty());
+  EXPECT_TRUE(info.on_bulk_data_entry_providers.empty());
+  EXPECT_EQ(enterprise_reporting_private::REALTIME_URL_CHECK_MODE_DISABLED,
+            info.realtime_url_check_mode);
+  EXPECT_TRUE(info.on_security_event_providers.empty());
+  EXPECT_EQ(version_info::GetVersionNumber(), info.browser_version);
+  EXPECT_EQ(enterprise_reporting_private::SAFE_BROWSING_LEVEL_STANDARD,
+            info.safe_browsing_protection_level);
+  EXPECT_EQ(BuiltInDnsClientPlatformDefault(),
+            info.built_in_dns_client_enabled);
+  EXPECT_EQ(passwordTriggerValue, info.password_protection_warning_trigger);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    EnterpriseReportingPrivateGetContextPasswordProtectionWarningTrigger,
+    testing::Values(enterprise_reporting_private::
+                        PASSWORD_PROTECTION_TRIGGER_PASSWORD_PROTECTION_OFF,
+                    enterprise_reporting_private::
+                        PASSWORD_PROTECTION_TRIGGER_PASSWORD_REUSE,
+                    enterprise_reporting_private::
+                        PASSWORD_PROTECTION_TRIGGER_PHISHING_REUSE));
+
+#if defined(OS_WIN)
+class EnterpriseReportingPrivateGetContextInfoChromeCleanupTest
+    : public EnterpriseReportingPrivateGetContextInfoTest,
+      public testing::WithParamInterface<bool> {};
+
+TEST_P(EnterpriseReportingPrivateGetContextInfoChromeCleanupTest, Test) {
+  bool policyValue = GetParam();
+
+  g_browser_process->local_state()->SetBoolean(prefs::kSwReporterEnabled,
+                                               policyValue);
+
+  enterprise_reporting_private::ContextInfo info = GetContextInfo();
+
+  EXPECT_TRUE(info.browser_affiliation_ids.empty());
+  EXPECT_TRUE(info.profile_affiliation_ids.empty());
+  EXPECT_TRUE(info.on_file_attached_providers.empty());
+  EXPECT_TRUE(info.on_file_downloaded_providers.empty());
+  EXPECT_TRUE(info.on_bulk_data_entry_providers.empty());
+  EXPECT_EQ(enterprise_reporting_private::REALTIME_URL_CHECK_MODE_DISABLED,
+            info.realtime_url_check_mode);
+  EXPECT_TRUE(info.on_security_event_providers.empty());
+  EXPECT_EQ(version_info::GetVersionNumber(), info.browser_version);
+  EXPECT_EQ(enterprise_reporting_private::SAFE_BROWSING_LEVEL_STANDARD,
+            info.safe_browsing_protection_level);
+  EXPECT_EQ(BuiltInDnsClientPlatformDefault(),
+            info.built_in_dns_client_enabled);
+  EXPECT_EQ(
+      enterprise_reporting_private::PASSWORD_PROTECTION_TRIGGER_POLICY_UNSET,
+      info.password_protection_warning_trigger);
+  EXPECT_EQ(policyValue, *info.chrome_cleanup_enabled);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    EnterpriseReportingPrivateGetContextInfoChromeCleanupTest,
+    testing::Bool());
+#endif  // defined(OS_WIN)
+
+class EnterpriseReportingPrivateGetContextInfoChromeRemoteDesktopAppBlockedTest
+    : public EnterpriseReportingPrivateGetContextInfoTest,
+      public testing::WithParamInterface<const char*> {
+ public:
+  void SetURLBlockedPolicy(const std::string& url) {
+    base::Value blockList(base::Value::Type::LIST);
+    blockList.Append(base::Value(url));
+
+    profile()->GetPrefs()->Set(policy::policy_prefs::kUrlBlocklist,
+                               std::move(blockList));
+  }
+  void SetURLAllowedPolicy(const std::string& url) {
+    base::Value allowList(base::Value::Type::LIST);
+    allowList.Append(base::Value(url));
+
+    profile()->GetPrefs()->Set(policy::policy_prefs::kUrlAllowlist,
+                               std::move(allowList));
+  }
+
+  void ExpectDefaultPolicies(enterprise_reporting_private::ContextInfo& info) {
+    EXPECT_TRUE(info.browser_affiliation_ids.empty());
+    EXPECT_TRUE(info.profile_affiliation_ids.empty());
+    EXPECT_TRUE(info.on_file_attached_providers.empty());
+    EXPECT_TRUE(info.on_file_downloaded_providers.empty());
+    EXPECT_TRUE(info.on_bulk_data_entry_providers.empty());
+    EXPECT_EQ(enterprise_reporting_private::REALTIME_URL_CHECK_MODE_DISABLED,
+              info.realtime_url_check_mode);
+    EXPECT_TRUE(info.on_security_event_providers.empty());
+    EXPECT_EQ(version_info::GetVersionNumber(), info.browser_version);
+    EXPECT_EQ(enterprise_reporting_private::SAFE_BROWSING_LEVEL_STANDARD,
+              info.safe_browsing_protection_level);
+    EXPECT_EQ(BuiltInDnsClientPlatformDefault(),
+              info.built_in_dns_client_enabled);
+    EXPECT_EQ(
+        enterprise_reporting_private::PASSWORD_PROTECTION_TRIGGER_POLICY_UNSET,
+        info.password_protection_warning_trigger);
+    ExpectDefaultChromeCleanupEnabled(info);
+  }
+};
+
+TEST_P(
+    EnterpriseReportingPrivateGetContextInfoChromeRemoteDesktopAppBlockedTest,
+    BlockedURL) {
+  SetURLBlockedPolicy(GetParam());
+
+  enterprise_reporting_private::ContextInfo info = GetContextInfo();
+
+  ExpectDefaultPolicies(info);
+  EXPECT_TRUE(info.chrome_remote_desktop_app_blocked);
+}
+
+TEST_P(
+    EnterpriseReportingPrivateGetContextInfoChromeRemoteDesktopAppBlockedTest,
+    AllowedURL) {
+  SetURLAllowedPolicy(GetParam());
+
+  enterprise_reporting_private::ContextInfo info = GetContextInfo();
+
+  ExpectDefaultPolicies(info);
+  EXPECT_FALSE(info.chrome_remote_desktop_app_blocked);
+}
+
+TEST_P(
+    EnterpriseReportingPrivateGetContextInfoChromeRemoteDesktopAppBlockedTest,
+    BlockedAndAllowedURL) {
+  SetURLBlockedPolicy(GetParam());
+  SetURLAllowedPolicy(GetParam());
+
+  enterprise_reporting_private::ContextInfo info = GetContextInfo();
+
+  ExpectDefaultPolicies(info);
+  EXPECT_FALSE(info.chrome_remote_desktop_app_blocked);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    EnterpriseReportingPrivateGetContextInfoChromeRemoteDesktopAppBlockedTest,
+    testing::Values("https://remotedesktop.google.com",
+                    "https://remotedesktop.corp.google.com",
+                    "corp.google.com",
+                    "google.com",
+                    "https://*"));
 
 class EnterpriseReportingPrivateGetContextInfoRealTimeURLCheckTest
     : public EnterpriseReportingPrivateGetContextInfoTest,
@@ -399,7 +720,6 @@ TEST_P(EnterpriseReportingPrivateGetContextInfoRealTimeURLCheckTest, Test) {
   profile()->GetPrefs()->SetInteger(
       prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckScope,
       policy::POLICY_SCOPE_MACHINE);
-
   enterprise_reporting_private::ContextInfo info = GetContextInfo();
 
   if (url_check_enabled()) {
@@ -418,6 +738,13 @@ TEST_P(EnterpriseReportingPrivateGetContextInfoRealTimeURLCheckTest, Test) {
   EXPECT_TRUE(info.on_bulk_data_entry_providers.empty());
   EXPECT_TRUE(info.on_security_event_providers.empty());
   EXPECT_EQ(version_info::GetVersionNumber(), info.browser_version);
+  EXPECT_EQ(enterprise_reporting_private::SAFE_BROWSING_LEVEL_STANDARD,
+            info.safe_browsing_protection_level);
+  EXPECT_EQ(BuiltInDnsClientPlatformDefault(),
+            info.built_in_dns_client_enabled);
+  EXPECT_EQ(
+      enterprise_reporting_private::PASSWORD_PROTECTION_TRIGGER_POLICY_UNSET,
+      info.password_protection_warning_trigger);
 }
 
 }  // namespace extensions

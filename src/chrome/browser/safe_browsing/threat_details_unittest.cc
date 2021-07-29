@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/chrome_safe_browsing_blocking_page_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -24,7 +25,7 @@
 #include "components/safe_browsing/content/browser/threat_details_history.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/core/browser/referrer_chain_provider.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,6 +39,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -160,7 +162,10 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
  public:
   // The safe browsing UI manager does not need a service for this test.
   MockSafeBrowsingUIManager()
-      : SafeBrowsingUIManager(nullptr), report_sent_(false) {}
+      : SafeBrowsingUIManager(
+            nullptr,
+            std::make_unique<ChromeSafeBrowsingBlockingPageFactory>()),
+        report_sent_(false) {}
 
   // When the serialized report is sent, this is called.
   void SendSerializedThreatDetails(content::BrowserContext* browser_context,
@@ -431,9 +436,8 @@ TEST_F(ThreatDetailsTest, ThreatSubResource) {
   expected.set_type(ClientSafeBrowsingReportRequest::URL_MALWARE);
   expected.set_url(kThreatURL);
   expected.set_page_url(kLandingURL);
-  // Note that the referrer policy is not actually enacted here, since that's
-  // done in Blink.
-  expected.set_referrer_url(kReferrerURL);
+  // The referrer is stripped to its origin because it's a cross-origin URL.
+  expected.set_referrer_url(GURL(kReferrerURL).GetOrigin().spec());
   expected.set_did_proceed(true);
   expected.set_repeat_visit(true);
 
@@ -446,7 +450,7 @@ TEST_F(ThreatDetailsTest, ThreatSubResource) {
   pb_resource->set_url(kThreatURL);
   pb_resource = expected.add_resources();
   pb_resource->set_id(2);
-  pb_resource->set_url(kReferrerURL);
+  pb_resource->set_url(GURL(kReferrerURL).GetOrigin().spec());
 
   VerifyResults(actual, expected);
 }
@@ -489,9 +493,8 @@ TEST_F(ThreatDetailsTest, SuspiciousSiteWithReferrerChain) {
       ClientSafeBrowsingReportRequest::PVER4_NATIVE);
   expected.set_url(kThreatURL);
   expected.set_page_url(kLandingURL);
-  // Note that the referrer policy is not actually enacted here, since that's
-  // done in Blink.
-  expected.set_referrer_url(kReferrerURL);
+  // The referrer is stripped to its origin because it's a cross-origin URL.
+  expected.set_referrer_url(GURL(kReferrerURL).GetOrigin().spec());
   expected.set_did_proceed(true);
   expected.set_repeat_visit(true);
 
@@ -504,7 +507,7 @@ TEST_F(ThreatDetailsTest, SuspiciousSiteWithReferrerChain) {
   pb_resource->set_url(kThreatURL);
   pb_resource = expected.add_resources();
   pb_resource->set_id(2);
-  pb_resource->set_url(kReferrerURL);
+  pb_resource->set_url(GURL(kReferrerURL).GetOrigin().spec());
 
   // Make sure the referrer chain returned by the provider is copied into the
   // resulting proto.
@@ -1510,9 +1513,8 @@ TEST_F(ThreatDetailsTest, ThreatWithPendingLoad) {
       ClientSafeBrowsingReportRequest::PVER4_NATIVE);
   expected.set_url(kThreatURL);
   expected.set_page_url(kLandingURL);
-  // Note that the referrer policy is not actually enacted here, since that's
-  // done in Blink.
-  expected.set_referrer_url(kReferrerURL);
+  // The referrer is stripped to its origin because it's a cross-origin URL.
+  expected.set_referrer_url(GURL(kReferrerURL).GetOrigin().spec());
   expected.set_did_proceed(true);
   expected.set_repeat_visit(true);
 
@@ -1525,7 +1527,7 @@ TEST_F(ThreatDetailsTest, ThreatWithPendingLoad) {
   pb_resource->set_url(kThreatURL);
   pb_resource = expected.add_resources();
   pb_resource->set_id(2);
-  pb_resource->set_url(kReferrerURL);
+  pb_resource->set_url(GURL(kReferrerURL).GetOrigin().spec());
 
   VerifyResults(actual, expected);
 }

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/supports_user_data.h"
@@ -132,7 +133,7 @@ class SelfDeletingServiceWorkerPaymentAppFinder
       base::OnceClosure finished_using_resources_callback) {
     DCHECK(!verifier_);
     DCHECK(initiator_render_frame_host);
-    DCHECK(initiator_render_frame_host->IsCurrent());
+    DCHECK(initiator_render_frame_host->IsActive());
 
     downloader_ = std::move(downloader);
 
@@ -408,7 +409,7 @@ void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
   DCHECK(!requested_method_data.empty());
 
   auto* rfh = content::RenderFrameHost::FromID(frame_routing_id_);
-  if (!rfh || !rfh->IsCurrent())
+  if (!rfh || !rfh->IsActive())
     return;
 
   // Do not look up payment handlers for ignored payment methods.
@@ -470,8 +471,8 @@ void ServiceWorkerPaymentAppFinder::IgnorePaymentMethodForTest(
 ServiceWorkerPaymentAppFinder::ServiceWorkerPaymentAppFinder(
     content::RenderFrameHost* rfh)
     : frame_routing_id_(
-          content::GlobalFrameRoutingId(rfh->GetProcess()->GetID(),
-                                        rfh->GetRoutingID())),
+          content::GlobalRenderFrameHostId(rfh->GetProcess()->GetID(),
+                                           rfh->GetRoutingID())),
       ignored_methods_({methods::kGooglePlayBilling}),
       test_downloader_(nullptr) {}
 

@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//ios/public/provider/chrome/browser/build_config.gni")
-
 source_set("grid_ui_constants") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -31,6 +29,7 @@ source_set("grid_ui") {
     "grid_layout.h",
     "grid_layout.mm",
     "grid_menu_actions_data_source.h",
+    "grid_shareable_items_provider.h",
     "grid_theme.h",
     "grid_view_controller.h",
     "grid_view_controller.mm",
@@ -50,6 +49,8 @@ source_set("grid_ui") {
     "resources:grid_theme_selection_tint_color",
     "resources:plus_sign_grid_cell_background_color",
     "//base",
+    "//components/bookmarks/common",
+    "//components/prefs",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
@@ -66,6 +67,7 @@ source_set("grid_ui") {
     "//ios/chrome/browser/ui/ntp:util",
     "//ios/chrome/browser/ui/tab_switcher",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid:features",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid:tab_grid_paging",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/transitions",
     "//ios/chrome/browser/ui/thumb_strip",
     "//ios/chrome/browser/ui/thumb_strip:feature_flags",
@@ -73,8 +75,7 @@ source_set("grid_ui") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
-    "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/modals",
+    "//ios/public/provider/chrome/browser/modals:modals_api",
     "//ui/base",
   ]
 }

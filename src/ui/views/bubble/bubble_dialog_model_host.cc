@@ -12,6 +12,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -56,9 +57,8 @@ class CheckboxControl : public Checkbox {
       : label_line_height_(label_line_height) {
     auto* layout = SetLayoutManager(std::make_unique<BoxLayout>());
     layout->set_between_child_spacing(LayoutProvider::Get()->GetDistanceMetric(
-        views::DISTANCE_RELATED_LABEL_HORIZONTAL));
-    layout->set_cross_axis_alignment(
-        views::BoxLayout::CrossAxisAlignment::kStart);
+        DISTANCE_RELATED_LABEL_HORIZONTAL));
+    layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStart);
 
     SetAssociatedLabel(label.get());
 
@@ -223,7 +223,7 @@ BubbleDialogModelHost::BubbleDialogModelHost(
 
   // TODO(pbos): Consider refactoring ::SetExtraView() so it can be called after
   // the Widget is created and still be picked up. Moving this to
-  // OnDialogInitialized() will not work until then.
+  // OnWidgetInitialized() will not work until then.
   auto* extra_button = model_->extra_button(GetPassKey());
   if (extra_button) {
     SetExtraView(std::make_unique<MdTextButton>(
@@ -254,8 +254,8 @@ BubbleDialogModelHost::BubbleDialogModelHost(
   set_close_on_deactivate(model_->close_on_deactivate(GetPassKey()));
 
   set_fixed_width(LayoutProvider::Get()->GetDistanceMetric(
-      anchor_view ? views::DISTANCE_BUBBLE_PREFERRED_WIDTH
-                  : views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
+      anchor_view ? DISTANCE_BUBBLE_PREFERRED_WIDTH
+                  : DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
   AddInitialFields();
 }
@@ -293,7 +293,7 @@ View* BubbleDialogModelHost::GetInitiallyFocusedView() {
       FindDialogModelHostField(model_->GetFieldByUniqueId(unique_id.value())));
 }
 
-void BubbleDialogModelHost::OnDialogInitialized() {
+void BubbleDialogModelHost::OnWidgetInitialized() {
   // Dialog buttons are added on dialog initialization.
   if (GetOkButton()) {
     AddDialogModelHostFieldForExistingView(
@@ -464,17 +464,19 @@ void BubbleDialogModelHost::AddOrUpdateCombobox(
   combobox->SetCallback(base::BindRepeating(
       [](ui::DialogModelCombobox* model_field,
          base::PassKey<DialogModelHost> pass_key, Combobox* combobox) {
-        // TODO(pbos): This should be a subscription through the Combobox
-        // directly, but Combobox right now doesn't support listening to
-        // selected-index changes.
-        model_field->OnSelectedIndexChanged(pass_key,
-                                            combobox->GetSelectedIndex());
         model_field->OnPerformAction(pass_key);
       },
       model_field, GetPassKey(), combobox.get()));
 
-  // TODO(pbos): Add subscription to combobox selected-index changes.
   combobox->SetSelectedIndex(model_field->selected_index());
+  property_changed_subscriptions_.push_back(
+      combobox->AddSelectedIndexChangedCallback(base::BindRepeating(
+          [](ui::DialogModelCombobox* model_field,
+             base::PassKey<DialogModelHost> pass_key, Combobox* combobox) {
+            model_field->OnSelectedIndexChanged(pass_key,
+                                                combobox->GetSelectedIndex());
+          },
+          model_field, GetPassKey(), combobox.get())));
   const gfx::FontList& font_list = combobox->GetFontList();
   AddViewForLabelAndField(model_field, model_field->label(GetPassKey()),
                           std::move(combobox), font_list);

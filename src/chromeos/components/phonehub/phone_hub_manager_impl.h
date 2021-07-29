@@ -32,6 +32,7 @@ namespace phonehub {
 
 class BrowserTabsModelController;
 class BrowserTabsModelProvider;
+class CameraRollManager;
 class CrosStateSender;
 class InvalidConnectionDisconnector;
 class MessageSender;
@@ -66,6 +67,7 @@ class PhoneHubManagerImpl : public PhoneHubManager, public KeyedService {
   NotificationManager* GetNotificationManager() override;
   OnboardingUiTracker* GetOnboardingUiTracker() override;
   PhoneModel* GetPhoneModel() override;
+  RecentAppsInteractionHandler* GetRecentAppsInteractionHandler() override;
   TetherController* GetTetherController() override;
   UserActionRecorder* GetUserActionRecorder() override;
 
@@ -90,6 +92,8 @@ class PhoneHubManagerImpl : public PhoneHubManager, public KeyedService {
   std::unique_ptr<OnboardingUiTracker> onboarding_ui_tracker_;
   std::unique_ptr<NotificationProcessor> notification_processor_;
   std::unique_ptr<PhoneStatusProcessor> phone_status_processor_;
+  std::unique_ptr<RecentAppsInteractionHandler>
+      recent_apps_interaction_handler_;
   std::unique_ptr<TetherController> tether_controller_;
   std::unique_ptr<BrowserTabsModelProvider> browser_tabs_model_provider_;
   std::unique_ptr<BrowserTabsModelController> browser_tabs_model_controller_;
@@ -97,6 +101,7 @@ class PhoneHubManagerImpl : public PhoneHubManager, public KeyedService {
       multidevice_setup_state_updater_;
   std::unique_ptr<InvalidConnectionDisconnector>
       invalid_connection_disconnector_;
+  std::unique_ptr<CameraRollManager> camera_roll_manager_;
 };
 
 }  // namespace phonehub

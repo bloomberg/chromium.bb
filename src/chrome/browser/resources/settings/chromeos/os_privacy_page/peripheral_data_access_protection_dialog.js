@@ -7,7 +7,18 @@
  * when disabling peripheral data access setup.
  */
 
+import '//resources/cr_elements/cr_button/cr_button.m.js';
+import '//resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import '//resources/polymer/v3_0/paper-progress/paper-progress.js';
+import '../../settings_shared_css.js';
+
+import {loadTimeData} from '//resources/js/load_time_data.m.js';
+import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {PrefsBehavior} from '../../prefs/prefs_behavior.js';
+
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'settings-peripheral-data-access-protection-dialog',
 
   behaviors: [
@@ -19,6 +30,10 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    prefName: {
+      type: String,
+    },
   },
 
   /**
@@ -28,7 +43,7 @@ Polymer({
   onDisableClicked_() {
     // Send the new state immediately, this will also toggle the underlying
     // setting-toggle-button associated with this pref.
-    this.setPrefValue('cros.device.peripheral_data_access_enabled', true);
+    this.setPrefValue(this.prefName, true);
     this.$$('#warningDialog').close();
   },
 

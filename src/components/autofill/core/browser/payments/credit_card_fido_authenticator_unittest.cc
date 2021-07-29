@@ -19,7 +19,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -58,6 +57,7 @@
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/test_sync_service.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_params_manager.h"
 #include "components/version_info/channel.h"
@@ -116,6 +116,7 @@ class CreditCardFIDOAuthenticatorTest : public testing::Test {
                                 /*client_profile_validator=*/nullptr,
                                 /*history_service=*/nullptr,
                                 /*strike_database=*/nullptr,
+                                /*image_fetcher=*/nullptr,
                                 /*is_off_the_record=*/false);
     personal_data_manager_.SetPrefService(autofill_client_.GetPrefs());
 
@@ -205,9 +206,12 @@ class CreditCardFIDOAuthenticatorTest : public testing::Test {
 
   // Invokes GetRealPan callback.
   void GetRealPan(AutofillClient::PaymentsRpcResult result,
-                  const std::string& real_pan) {
+                  const std::string& real_pan,
+                  bool is_virtual_card = false) {
     DCHECK(fido_authenticator_->full_card_request_);
     payments::PaymentsClient::UnmaskResponseDetails response;
+    response.card_type = is_virtual_card ? AutofillClient::VIRTUAL_CARD
+                                         : AutofillClient::SERVER_CARD;
     fido_authenticator_->full_card_request_->OnDidGetRealPan(
         result, response.with_real_pan(real_pan));
   }
@@ -240,6 +244,8 @@ class CreditCardFIDOAuthenticatorTest : public testing::Test {
  protected:
   std::unique_ptr<TestAuthenticationRequester> requester_;
   base::test::TaskEnvironment task_environment_;
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
   TestAutofillClient autofill_client_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   scoped_refptr<AutofillWebDataService> database_;
@@ -438,6 +444,29 @@ TEST_F(CreditCardFIDOAuthenticatorTest,
   GetRealPan(AutofillClient::PaymentsRpcResult::NETWORK_ERROR, "");
 
   EXPECT_FALSE(requester_->did_succeed());
+}
+
+TEST_F(CreditCardFIDOAuthenticatorTest,
+       AuthenticateCard_PaymentsResponseVcnRetrievalError) {
+  CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
+
+  fido_authenticator_->Authenticate(
+      &card, requester_->GetWeakPtr(), AutofillTickClock::NowTicks(),
+      GetTestRequestOptions(kTestChallenge, kTestRelyingPartyId,
+                            kTestCredentialId));
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::AUTHENTICATION_FLOW,
+            fido_authenticator_->current_flow());
+
+  // Mock user verification.
+  TestCreditCardFIDOAuthenticator::GetAssertion(fido_authenticator_.get(),
+                                                /*did_succeed=*/true);
+  GetRealPan(AutofillClient::PaymentsRpcResult::VCN_RETRIEVAL_PERMANENT_FAILURE,
+             "", /*is_virtual_card=*/true);
+
+  EXPECT_FALSE(requester_->did_succeed());
+  EXPECT_EQ(
+      requester_->failure_type(),
+      payments::FullCardRequest::VIRTUAL_CARD_RETRIEVAL_PERMANENT_FAILURE);
 }
 
 TEST_F(CreditCardFIDOAuthenticatorTest, AuthenticateCard_Success) {

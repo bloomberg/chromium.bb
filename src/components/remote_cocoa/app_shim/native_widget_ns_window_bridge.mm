@@ -316,11 +316,9 @@ NativeWidgetNSWindowBridge::NativeWidgetNSWindowBridge(
       text_input_host_(text_input_host) {
   DCHECK(GetIdToWidgetImplMap().find(id_) == GetIdToWidgetImplMap().end());
   GetIdToWidgetImplMap().insert(std::make_pair(id_, this));
-  display::Screen::GetScreen()->AddObserver(this);
 }
 
 NativeWidgetNSWindowBridge::~NativeWidgetNSWindowBridge() {
-  display::Screen::GetScreen()->RemoveObserver(this);
   GetPendingWindowTitleMap().erase(window_.get());
   // The delegate should be cleared already. Note this enforces the precondition
   // that -[NSWindow close] is invoked on the hosted window before the
@@ -1169,6 +1167,20 @@ void NativeWidgetNSWindowBridge::UpdateWindowControlsOverlayNSView(
       break;
     case mojom::WindowControlsOverlayNSViewType::kWebAppFrameToolbar:
       [web_app_frame_toolbar_overlay_nsview_ updateBounds:bounds];
+      break;
+  }
+}
+
+void NativeWidgetNSWindowBridge::RemoveWindowControlsOverlayNSView(
+    const mojom::WindowControlsOverlayNSViewType overlay_type) {
+  switch (overlay_type) {
+    case mojom::WindowControlsOverlayNSViewType::kCaptionButtonContainer:
+      [caption_buttons_overlay_nsview_ removeFromSuperview];
+      caption_buttons_overlay_nsview_.reset();
+      break;
+    case mojom::WindowControlsOverlayNSViewType::kWebAppFrameToolbar:
+      [web_app_frame_toolbar_overlay_nsview_ removeFromSuperview];
+      web_app_frame_toolbar_overlay_nsview_.reset();
       break;
   }
 }

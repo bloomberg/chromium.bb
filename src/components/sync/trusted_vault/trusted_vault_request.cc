@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/sync/trusted_vault/trusted_vault_access_token_fetcher.h"
@@ -117,28 +118,45 @@ void TrustedVaultRequest::OnAccessTokenFetched(
 
 void TrustedVaultRequest::OnURLLoadComplete(
     std::unique_ptr<std::string> response_body) {
+  const int net_error = url_loader_->NetError();
   int http_response_code = 0;
+
   if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
     http_response_code = url_loader_->ResponseInfo()->headers->response_code();
   }
+
+  DCHECK_LE(net_error, 0);
+  DCHECK_GE(http_response_code, 0);
+
+  base::UmaHistogramSparse(
+      "Sync.TrustedVaultURLFetchResponse",
+      http_response_code == 0 ? net_error : http_response_code);
+
+  std::string response_content = response_body ? *response_body : std::string();
+  if (http_response_code == net::HTTP_BAD_REQUEST) {
+    RunCompletionCallbackAndMaybeDestroySelf(HttpStatus::kBadRequest,
+                                             response_content);
+    return;
+  }
   if (http_response_code == net::HTTP_NOT_FOUND) {
     RunCompletionCallbackAndMaybeDestroySelf(HttpStatus::kNotFound,
-                                             std::string());
+                                             response_content);
     return;
   }
-  if (http_response_code == net::HTTP_PRECONDITION_FAILED) {
-    RunCompletionCallbackAndMaybeDestroySelf(HttpStatus::kFailedPrecondition,
-                                             std::string());
+  if (http_response_code == net::HTTP_CONFLICT) {
+    RunCompletionCallbackAndMaybeDestroySelf(HttpStatus::kConflict,
+                                             response_content);
     return;
   }
+
   if (http_response_code != net::HTTP_OK &&
       http_response_code != net::HTTP_NO_CONTENT) {
     RunCompletionCallbackAndMaybeDestroySelf(HttpStatus::kOtherError,
-                                             std::string());
+                                             response_content);
     return;
   }
   RunCompletionCallbackAndMaybeDestroySelf(HttpStatus::kSuccess,
-                                           *response_body);
+                                           response_content);
 }
 
 std::unique_ptr<network::SimpleURLLoader> TrustedVaultRequest::CreateURLLoader(
@@ -160,6 +178,7 @@ std::unique_ptr<network::SimpleURLLoader> TrustedVaultRequest::CreateURLLoader(
       network::SimpleURLLoader::Create(std::move(request),
                                        CreateTrafficAnnotationTag());
 
+  url_loader->SetAllowHttpErrorResults(true);
   // TODO(crbug.com/1113598): do we need to set retry options? (in particular
   // RETRY_ON_NETWORK_CHANGE).
 

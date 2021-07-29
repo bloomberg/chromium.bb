@@ -19,9 +19,11 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/load_flags.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/navigation/impression.h"
+#include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom-forward.h"
 #include "url/gurl.h"
 
@@ -165,6 +167,41 @@ class NavigationSimulatorImpl : public NavigationSimulator,
     impression_ = impression;
   }
 
+  void set_skip_service_worker(bool skip_service_worker) {
+    skip_service_worker_ = skip_service_worker;
+  }
+
+  void set_initiator_origin(
+      const absl::optional<url::Origin>& initiator_origin) {
+    initiator_origin_ = initiator_origin;
+  }
+
+  void set_request_headers(const std::string& headers) { headers_ = headers; }
+
+  void set_load_flags(int load_flags) { load_flags_ = load_flags; }
+
+  void set_mixed_content_context_type(
+      blink::mojom::MixedContentContextType mixed_content_context_type) {
+    mixed_content_context_type_ = mixed_content_context_type;
+  }
+
+  void set_searchable_form_url(const GURL& searchable_form_url) {
+    searchable_form_url_ = searchable_form_url;
+  }
+
+  void set_searchable_form_encoding(
+      const std::string& searchable_form_encoding) {
+    searchable_form_encoding_ = searchable_form_encoding;
+  }
+
+  void set_history_url_for_data_url(const GURL& history_url_for_data_url) {
+    history_url_for_data_url_ = history_url_for_data_url;
+  }
+
+  void set_href_translate(const std::string& href_translate) {
+    href_translate_ = href_translate;
+  }
+
  private:
   NavigationSimulatorImpl(const GURL& original_url,
                           bool browser_initiated,
@@ -206,18 +243,20 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   // navigation failed synchronously.
   bool SimulateRendererInitiatedStart();
 
-  // This method will block waiting for throttle checks to complete if
-  // |auto_advance_|. Otherwise will just set up state for checking the result
-  // when the throttles end up finishing.
+  // This method will block waiting for the navigation to reach the next
+  // NavigationThrottle phase of the navigation to complete
+  // (StartRequest|Redirect|Failed|ProcessResponse) if |auto_advance_|. This
+  // waits until *after* throttle checks are run (if the navigation requires
+  // throttle checks).  If |!auto_advance_| this will just set up state for
+  // checking the result when the throttles end up finishing.
   void MaybeWaitForThrottleChecksComplete(base::OnceClosure complete_closure);
 
   // Like above but blocks waiting for the ReadyToCommit checks to complete.
   // This check calls ReadyToCommitComplete() when finished.
   void MaybeWaitForReadyToCommitCheckComplete();
 
-  // Sets |last_throttle_check_result_| and calls both the
-  // |wait_closure_| and the |throttle_checks_complete_closure_|, if they are
-  // set.
+  // Sets |last_throttle_check_result_| and calls both the |wait_closure_| and
+  // the |throttle_checks_complete_closure_|, if they are set.
   bool OnThrottleChecksComplete(NavigationThrottle::ThrottleCheckResult result);
 
   // Helper method to set the OnThrottleChecksComplete callback on the
@@ -248,7 +287,15 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   // - same-document navigations
   // - about:blank navigations
   // - navigations not handled by the network stack
+  // - page activations like prerendering and back-forward cache.
   bool NeedsThrottleChecks() const;
+
+  // Whether the navigation performs CommitDeferringCondition checks before
+  // committing. i.e. if it goes through the full
+  // WillStartRequest->WillProcessResponse->etc.->Commit phases. This includes
+  // all navigations that require throttle checks plus page activations like
+  // prerendering/BFCache.
+  bool NeedsPreCommitChecks() const;
 
   enum State {
     INITIALIZATION,
@@ -309,6 +356,18 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   absl::optional<url::Origin> origin_;
   absl::optional<blink::Impression> impression_;
   int64_t post_id_ = -1;
+  bool skip_service_worker_ = false;
+  absl::optional<url::Origin> initiator_origin_;
+  std::string headers_;
+  int load_flags_ = net::LOAD_NORMAL;
+  blink::mojom::MixedContentContextType mixed_content_context_type_ =
+      blink::mojom::MixedContentContextType::kBlockable;
+  GURL searchable_form_url_;
+  std::string searchable_form_encoding_;
+  absl::optional<GURL> history_url_for_data_url_;
+  std::string href_translate_;
+  blink::mojom::RequestContextType request_context_type_ =
+      blink::mojom::RequestContextType::LOCATION;
 
   // Any DNS aliases, as read from CNAME records, for the request URL that
   // would be in the network::mojom::URLResponseHead. The alias chain order
@@ -331,6 +390,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   bool was_aborted_prior_to_ready_to_commit_ = false;
 
   bool early_hints_preload_link_header_received_ = false;
+
+  absl::optional<bool> was_prerendered_page_activation_;
 
   // These are used to sanity check the content/public/ API calls emitted as
   // part of the navigation.
@@ -361,10 +422,12 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   // result. Calling this will quit the nested run loop.
   base::OnceClosure wait_closure_;
 
-  // This member simply ensures that we do not disconnect
-  // the NavigationClient interface, as it would be interpreted as a
-  // cancellation coming from the renderer process side. This member interface
-  // will never be bound.
+  // Closure that is called when DidStartNavigation is called.
+  base::OnceClosure did_start_navigation_closure_;
+
+  // This member simply ensures that we do not disconnect the NavigationClient
+  // interface, as it would be interpreted as a cancellation coming from the
+  // renderer process side. This member interface will never be bound.
   mojo::PendingAssociatedReceiver<mojom::NavigationClient>
       navigation_client_receiver_;
 

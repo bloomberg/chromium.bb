@@ -7,6 +7,7 @@
 #include "base/android/jni_array.h"
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
@@ -24,10 +25,12 @@
 #include "device/fido/cable/v2_handshake.h"
 #include "device/fido/cable/v2_registration.h"
 #include "device/fido/features.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
 #include "third_party/boringssl/src/include/openssl/ec_key.h"
 #include "third_party/boringssl/src/include/openssl/hkdf.h"
+#include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
 
 // This "header" actually contains function definitions and thus can only be
@@ -143,17 +146,43 @@ class RegistrationState {
     }
 
     if (pending_event_->source == Registration::Type::LINKING &&
-        !linking_registration_->contact_id()) {
-      // This GCM message is from a QR-linked peer so it needs the contact ID to
-      // be processed, but that contact ID isn't ready yet.
-      linking_registration_->PrepareContactID();
+        !pending_event_->contact_id) {
+      // This GCM message is from a QR-linked peer so it needs the contact ID
+      // to be processed.
+      pending_event_->contact_id = linking_registration_->contact_id();
+
+      if (!pending_event_->contact_id) {
+        // The contact ID isn't ready yet. Wait until it is.
+        linking_registration_->PrepareContactID();
+        return;
+      }
+    }
+
+    std::unique_ptr<Registration::Event> event(std::move(pending_event_));
+    if (event->source == Registration::Type::SYNC) {
+      // If this is from a synced peer then we limit how old the keys can be.
+      // Clank will update its device information once per day (when launched)
+      // and we piggyback on that to transmit fresh keys. Therefore syncing
+      // peers should have reasonably recent information.
+      uint64_t id;
+      static_assert(EXTENT(event->pairing_id) == sizeof(id), "");
+      memcpy(&id, event->pairing_id.data(), sizeof(id));
+      if (id > std::numeric_limits<uint32_t>::max() ||
+          !device::cablev2::sync::IDIsValid(static_cast<uint32_t>(id))) {
+        LOG(ERROR) << "Pairing ID " << id << " is too old. Dropping.";
+        return;
+      }
+    }
+
+    const absl::optional<std::vector<uint8_t>> serialized(event->Serialize());
+    if (!serialized) {
       return;
     }
 
+    JNIEnv* const env = base::android::AttachCurrentThread();
     Java_CableAuthenticatorModuleProvider_onCloudMessage(
-        base::android::AttachCurrentThread(),
-        static_cast<jlong>(
-            reinterpret_cast<uintptr_t>(pending_event_.release())));
+        env, base::android::ToJavaByteArray(env, *serialized),
+        event->request_type == device::FidoRequestType::kMakeCredential);
   }
 
   // MaybeSignalSync prompts the Sync system to refresh local-device data if

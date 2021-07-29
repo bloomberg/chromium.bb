@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
@@ -319,10 +318,9 @@ class MockPageSchedulerImpl : public PageSchedulerImpl {
         .WillByDefault(Return(true));
     ON_CALL(*this, IsMainFrameLocal).WillByDefault(Return(true));
   }
-  ~MockPageSchedulerImpl() override = default;
-
   MockPageSchedulerImpl(const MockPageSchedulerImpl&) = delete;
   MockPageSchedulerImpl& operator=(const MockPageSchedulerImpl&) = delete;
+  ~MockPageSchedulerImpl() override = default;
 
   MOCK_METHOD(bool, RequestBeginMainFrameNotExpected, (bool));
   MOCK_METHOD(bool, IsWaitingForMainFrameContentfulPaint, (), (const));
@@ -409,6 +407,10 @@ class MainThreadSchedulerImplTest : public testing::Test {
   }
 
   MainThreadSchedulerImplTest() : MainThreadSchedulerImplTest({}, {}) {}
+
+  MainThreadSchedulerImplTest(const MainThreadSchedulerImplTest&) = delete;
+  MainThreadSchedulerImplTest& operator=(const MainThreadSchedulerImplTest&) =
+      delete;
 
   ~MainThreadSchedulerImplTest() override = default;
 
@@ -984,8 +986,6 @@ class MainThreadSchedulerImplTest : public testing::Test {
   bool simulate_throttleable_task_ran_;
   bool initially_ensure_usecase_none_ = true;
   uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;
-
-  DISALLOW_COPY_AND_ASSIGN(MainThreadSchedulerImplTest);
 };
 
 TEST_F(MainThreadSchedulerImplTest, TestPostDefaultTask) {
@@ -2511,18 +2511,6 @@ TEST_F(MainThreadSchedulerImplTest, StopAndThrottleThrottleableQueue) {
   EXPECT_THAT(run_order, testing::ElementsAre());
 }
 
-TEST_F(MainThreadSchedulerImplTest, ThrottleAndPauseRenderer) {
-  Vector<String> run_order;
-  PostTestTasks(&run_order, "T1 T2");
-
-  MainThreadTaskQueue::ThrottleHandle handle =
-      throttleable_task_queue()->Throttle();
-  base::RunLoop().RunUntilIdle();
-  auto pause_handle = scheduler_->PauseRenderer();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre());
-}
-
 TEST_F(MainThreadSchedulerImplTest, MultipleStopsNeedMultipleResumes) {
   Vector<String> run_order;
   PostTestTasks(&run_order, "T1 T2");
@@ -3937,212 +3925,6 @@ TEST_F(VeryHighPriorityForCompositingAfterDelayExperimentTest,
   EXPECT_THAT(run_order,
               testing::ElementsAre("P1", "D1", "C1", "D2", "C2", "I1"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-}
-
-class VeryHighPriorityForCompositingBudgetExperimentTest
-    : public MainThreadSchedulerImplTest {
- public:
-  VeryHighPriorityForCompositingBudgetExperimentTest()
-      : MainThreadSchedulerImplTest({kVeryHighPriorityForCompositingBudget},
-                                    {}) {}
-};
-
-TEST_F(VeryHighPriorityForCompositingBudgetExperimentTest,
-       TestCompositorPolicy_CompositorPriorityVeryHighToNormal) {
-  Vector<String> run_order;
-  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
-  EnableIdleTasks();
-  base::RunLoop().RunUntilIdle();
-
-  // Compositor is at kVeryHighPriority Initially.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre("P1", "C1", "C2", "D1", "D2", "I1"));
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-
-  // 1000ms BeginMainFrame compositor task will exhaust the budget. Compositor
-  // tasks will be run at normal priority.
-  DoMainFrame();
-  RunSlowCompositorTask();
-
-  run_order.clear();
-  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
-  EnableIdleTasks();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_THAT(run_order,
-              testing::ElementsAre("P1", "D1", "C1", "D2", "C2", "I1"));
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-}
-
-TEST_F(VeryHighPriorityForCompositingBudgetExperimentTest,
-       TestCompositorPolicy_CompositorPriorityNormalToVeryHigh) {
-  // 1000ms BeginMainFrame compositor task will exhaust the budget.
-  DoMainFrame();
-  RunSlowCompositorTask();
-
-  Vector<String> run_order;
-  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
-  EnableIdleTasks();
-  base::RunLoop().RunUntilIdle();
-
-  // Compositor is at kNormalPriority, it will inteleave with default tasks.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre("P1", "D1", "C1", "D2", "C2", "I1"));
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-
-  // Recover the budget.
-  AdvanceTimeWithTask(12);
-
-  run_order.clear();
-  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
-  EnableIdleTasks();
-  base::RunLoop().RunUntilIdle();
-
-  // Compositor is now at kVeryHighPriority, compositing tasks will run
-  // before default tasks.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre("P1", "C1", "C2", "D1", "D2", "I1"));
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-}
-
-class DisableNonMainTimerQueuesUntilFMPTest
-    : public MainThreadSchedulerImplTest {
- public:
-  DisableNonMainTimerQueuesUntilFMPTest()
-      : MainThreadSchedulerImplTest({{kPerAgentSchedulingExperiments,
-                                      {{"queues", "timer-queues"},
-                                       {"method", "disable"},
-                                       {"signal", "fmp"}}}}) {}
-};
-
-TEST_F(DisableNonMainTimerQueuesUntilFMPTest, DisablesOnlyNonMainTimerQueue) {
-  auto page_scheduler =
-      CreatePageScheduler(nullptr, scheduler_.get(), *agent_group_scheduler_);
-
-  NiceMock<MockFrameDelegate> frame_delegate{};
-  std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
-      CreateFrameScheduler(page_scheduler.get(), &frame_delegate, nullptr,
-                           FrameScheduler::FrameType::kSubframe);
-
-  scoped_refptr<MainThreadTaskQueue> throttleable_tq = QueueForTaskType(
-      frame_scheduler.get(), TaskType::kJavascriptTimerDelayedLowNesting);
-  ForceUpdatePolicyAndGetCurrentUseCase();
-
-  EXPECT_FALSE(throttleable_tq->GetTaskQueue()->IsQueueEnabled());
-
-  ignore_result(
-      scheduler_->agent_scheduling_strategy().OnMainFrameFirstMeaningfulPaint(
-          *main_frame_scheduler_));
-  ForceUpdatePolicyAndGetCurrentUseCase();
-
-  EXPECT_TRUE(throttleable_tq->GetTaskQueue()->IsQueueEnabled());
-}
-
-TEST_F(DisableNonMainTimerQueuesUntilFMPTest,
-       ShouldNotifyAgentStrategyOnInput) {
-  auto page_scheduler =
-      CreatePageScheduler(nullptr, scheduler_.get(), *agent_group_scheduler_);
-
-  NiceMock<MockFrameDelegate> frame_delegate{};
-  std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
-      CreateFrameScheduler(page_scheduler.get(), &frame_delegate, nullptr,
-                           FrameScheduler::FrameType::kSubframe);
-
-  scoped_refptr<MainThreadTaskQueue> timer_tq = QueueForTaskType(
-      frame_scheduler.get(), TaskType::kJavascriptTimerDelayedLowNesting);
-
-  FakeInputEvent mouse_move_event{WebInputEvent::Type::kMouseMove,
-                                  blink::WebInputEvent::kLeftButtonDown};
-  FakeInputEvent mouse_down_event{WebInputEvent::Type::kMouseDown,
-                                  blink::WebInputEvent::kLeftButtonDown};
-  InputEventState event_state{};
-
-  // Mouse move event should be ignored, meaning the queue should be disabled.
-  scheduler_->DidHandleInputEventOnCompositorThread(mouse_move_event,
-                                                    event_state);
-  ForceUpdatePolicyAndGetCurrentUseCase();
-  EXPECT_FALSE(timer_tq->GetTaskQueue()->IsQueueEnabled());
-
-  // Mouse down should cause MTSI to notify the agent scheduling strategy, which
-  // should re-enable the throttleable queue.
-  scheduler_->DidHandleInputEventOnCompositorThread(mouse_down_event,
-                                                    event_state);
-  base::RunLoop().RunUntilIdle();  // Notification is posted to the main thread.
-  EXPECT_TRUE(timer_tq->GetTaskQueue()->IsQueueEnabled());
-}
-
-class BestEffortNonMainQueuesUntilOnLoadTest
-    : public MainThreadSchedulerImplTest {
- public:
-  BestEffortNonMainQueuesUntilOnLoadTest()
-      : MainThreadSchedulerImplTest({{kPerAgentSchedulingExperiments,
-                                      {{"queues", "all-queues"},
-                                       {"method", "best-effort"},
-                                       {"signal", "onload"}}}}) {}
-};
-
-TEST_F(BestEffortNonMainQueuesUntilOnLoadTest, DeprioritizesAllNonMainQueues) {
-  auto page_scheduler =
-      CreatePageScheduler(nullptr, scheduler_.get(), *agent_group_scheduler_);
-
-  NiceMock<MockFrameDelegate> frame_delegate{};
-  std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
-      CreateFrameScheduler(page_scheduler.get(), &frame_delegate, nullptr,
-                           FrameScheduler::FrameType::kSubframe);
-
-  scoped_refptr<MainThreadTaskQueue> non_timer_tq =
-      QueueForTaskType(frame_scheduler.get(), TaskType::kNetworking);
-  ForceUpdatePolicyAndGetCurrentUseCase();
-  EXPECT_EQ(non_timer_tq->GetTaskQueue()->GetQueuePriority(),
-            TaskQueue::QueuePriority::kBestEffortPriority);
-
-  scheduler_->OnMainFrameLoad(*main_frame_scheduler_);
-
-  EXPECT_EQ(non_timer_tq->GetTaskQueue()->GetQueuePriority(),
-            TaskQueue::QueuePriority::kNormalPriority);
-}
-
-class BestEffortNonMainQueuesUntilOnFMPTimeoutTest
-    : public MainThreadSchedulerImplTest {
- public:
-  BestEffortNonMainQueuesUntilOnFMPTimeoutTest()
-      : MainThreadSchedulerImplTest({{kPerAgentSchedulingExperiments,
-                                      {{"queues", "all-queues"},
-                                       {"method", "best-effort"},
-                                       {"signal", "fmp"},
-                                       {"delay_ms", "1000"}}}}) {}
-};
-
-TEST_F(BestEffortNonMainQueuesUntilOnFMPTimeoutTest,
-       DeprioritizesNonMainQueues) {
-  auto page_scheduler = CreatePageScheduler(
-      /* page_scheduler_delegate= */ nullptr, scheduler_.get(),
-      *agent_group_scheduler_);
-
-  NiceMock<MockFrameDelegate> frame_delegate{};
-  std::unique_ptr<FrameSchedulerImpl> frame_scheduler = CreateFrameScheduler(
-      page_scheduler.get(), &frame_delegate, /* blame_context= */ nullptr,
-      FrameScheduler::FrameType::kSubframe);
-
-  scoped_refptr<MainThreadTaskQueue> non_timer_tq =
-      QueueForTaskType(frame_scheduler.get(), TaskType::kNetworking);
-  ForceUpdatePolicyAndGetCurrentUseCase();
-  EXPECT_EQ(non_timer_tq->GetTaskQueue()->GetQueuePriority(),
-            TaskQueue::QueuePriority::kBestEffortPriority);
-
-  ignore_result(
-      scheduler_->agent_scheduling_strategy().OnMainFrameFirstMeaningfulPaint(
-          *main_frame_scheduler_));
-
-  // Queue should still have lower priority, since we just started counting
-  // towards the timeout.
-  EXPECT_EQ(non_timer_tq->GetTaskQueue()->GetQueuePriority(),
-            TaskQueue::QueuePriority::kBestEffortPriority);
-
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
-
-  EXPECT_EQ(non_timer_tq->GetTaskQueue()->GetQueuePriority(),
-            TaskQueue::QueuePriority::kNormalPriority);
 }
 
 TEST_F(MainThreadSchedulerImplTest, ThrottleHandleThrottlesQueue) {

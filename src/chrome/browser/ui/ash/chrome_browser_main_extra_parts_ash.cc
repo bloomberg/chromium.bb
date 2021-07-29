@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/media_notification_provider.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
@@ -18,12 +17,12 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/ash/login/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/ash/night_light/night_light_client.h"
+#include "chrome/browser/ash/policy/display/display_resolution_handler.h"
+#include "chrome/browser/ash/policy/display/display_rotation_default_handler.h"
+#include "chrome/browser/ash/policy/display/display_settings_handler.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/display_resolution_handler.h"
-#include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
-#include "chrome/browser/chromeos/policy/display_settings_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/chrome_new_window_delegate_provider.h"
 #include "chrome/browser/ui/ash/crosapi_new_window_delegate.h"
+#include "chrome/browser/ui/ash/desks_client.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
 #include "chrome/browser/ui/ash/in_session_auth_dialog_client.h"
 #include "chrome/browser/ui/ash/login_screen_client_impl.h"
@@ -50,6 +50,7 @@
 #include "chrome/browser/ui/ash/shelf/app_service/exo_app_type_resolver.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
+#include "chrome/browser/ui/ash/tab_cluster_ui_client.h"
 #include "chrome/browser/ui/ash/tab_scrubber.h"
 #include "chrome/browser/ui/ash/tablet_mode_page_behavior.h"
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
@@ -184,6 +185,14 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   system_tray_client_ = std::make_unique<SystemTrayClientImpl>();
   network_connect_delegate_->SetSystemTrayClient(system_tray_client_.get());
 
+  if (ash::features::IsTabClusterUIEnabled()) {
+    ash::TabClusterUIController* tab_cluster_ui_controller =
+        ash::Shell::Get()->tab_cluster_ui_controller();
+    DCHECK(tab_cluster_ui_controller);
+    tab_cluster_ui_client_ =
+        std::make_unique<TabClusterUIClient>(tab_cluster_ui_controller);
+  }
+
   tablet_mode_page_behavior_ = std::make_unique<TabletModePageBehavior>();
   vpn_list_forwarder_ = std::make_unique<VpnListForwarder>();
 
@@ -247,6 +256,8 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 
   // Initialize TabScrubber after the Ash Shell has been initialized.
   TabScrubber::GetInstance();
+
+  desks_client_ = std::make_unique<DesksClient>();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
@@ -267,11 +278,17 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   wallpaper_controller_client_.reset();
   vpn_list_forwarder_.reset();
 
+  tab_cluster_ui_client_.reset();
+
   // Initialized in PostProfileInit (which may not get called in some tests).
   network_portal_notification_controller_.reset();
   display_settings_handler_.reset();
   media_client_.reset();
   login_screen_client_.reset();
+
+  if (ash::features::IsMicMuteNotificationsEnabled()) {
+    microphone_mute_notification_delegate_.reset();
+  }
 
   // Initialized in PreProfileInit (which may not get called in some tests).
   system_tray_client_.reset();

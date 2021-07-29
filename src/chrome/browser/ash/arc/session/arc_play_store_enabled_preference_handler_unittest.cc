@@ -27,8 +27,8 @@
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/arc/arc_prefs.h"
-#include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session_runner.h"
+#include "components/arc/test/arc_util_test_support.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/signin/public/identity_manager/consent_level.h"
@@ -91,7 +91,8 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
     GetFakeUserManager()->LoginUser(account_id);
 
     identity_test_env_profile_adaptor_->identity_test_env()
-        ->MakeUnconsentedPrimaryAccountAvailable(kTestEmail);
+        ->MakePrimaryAccountAvailable(kTestEmail,
+                                      signin::ConsentLevel::kSignin);
   }
 
   void TearDown() override {
@@ -133,8 +134,7 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
 
  protected:
   void CreateLoginDisplayHost() {
-    fake_login_display_host_ =
-        std::make_unique<chromeos::FakeLoginDisplayHost>();
+    fake_login_display_host_ = std::make_unique<ash::FakeLoginDisplayHost>();
   }
 
  private:
@@ -145,7 +145,7 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
       identity_test_env_profile_adaptor_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
-  std::unique_ptr<chromeos::FakeLoginDisplayHost> fake_login_display_host_;
+  std::unique_ptr<ash::FakeLoginDisplayHost> fake_login_display_host_;
   std::unique_ptr<ArcPlayStoreEnabledPreferenceHandler> preference_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreEnabledPreferenceHandlerTest);

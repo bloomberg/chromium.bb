@@ -301,10 +301,6 @@
   testAppLaunchManagerBackgroundAndForegroundApp
 #endif
 - (void)FLAKY_testAppLaunchManagerBackgroundAndForegroundApp {
-  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 12 and lower.");
-  }
-
   [ChromeEarlGrey openNewTab];
   [[AppLaunchManager sharedManager] backgroundAndForegroundApp];
   [ChromeEarlGrey waitForMainTabCount:2];
@@ -313,9 +309,8 @@
 // Tests isCompactWidth method in chrome_earl_grey.h.
 - (void)testisCompactWidth {
   BOOL expectedIsCompactWidth =
-      [[[[GREY_REMOTE_CLASS_IN_APP(UIApplication) sharedApplication] keyWindow]
-          traitCollection] horizontalSizeClass] ==
-      UIUserInterfaceSizeClassCompact;
+      [[chrome_test_util::GetAnyKeyWindow() traitCollection]
+          horizontalSizeClass] == UIUserInterfaceSizeClassCompact;
   GREYAssertTrue([ChromeEarlGrey isCompactWidth] == expectedIsCompactWidth,
                  @"isCompactWidth should return %@",
                  expectedIsCompactWidth ? @"YES" : @"NO");

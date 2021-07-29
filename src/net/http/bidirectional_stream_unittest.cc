@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/containers/span.h"
+#include "base/cxx17_backports.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
@@ -66,7 +66,7 @@ void ExpectLoadTimingValid(const LoadTimingInfo& load_timing_info) {
   EXPECT_FALSE(load_timing_info.receive_headers_end.is_null());
   EXPECT_FALSE(load_timing_info.send_start.is_null());
   EXPECT_FALSE(load_timing_info.send_end.is_null());
-  EXPECT_TRUE(load_timing_info.request_start <
+  EXPECT_TRUE(load_timing_info.request_start <=
               load_timing_info.receive_headers_end);
   EXPECT_TRUE(load_timing_info.send_start <= load_timing_info.send_end);
 }

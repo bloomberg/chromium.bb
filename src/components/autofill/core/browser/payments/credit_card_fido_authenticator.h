@@ -14,8 +14,8 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/fido_authentication_strike_database.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
-#include "components/autofill/core/browser/payments/internal_authenticator.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/webauthn/core/browser/internal_authenticator.h"
 #include "device/fido/fido_constants.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom-forward.h"
@@ -76,13 +76,28 @@ class CreditCardFIDOAuthenticator
     // Authorization of a new card.
     FOLLOWUP_AFTER_CVC_AUTH_FLOW,
   };
+  // The response of FIDO authentication, including necessary information needed
+  // by the subclasses.
+  struct FidoAuthenticationResponse {
+    FidoAuthenticationResponse() = default;
+    ~FidoAuthenticationResponse() = default;
+
+    // Whether the authentication was successful.
+    bool did_succeed = false;
+    // The fetched credit card if the authentication was successful. Can be
+    // nullptr if authentication failed.
+    const CreditCard* card = nullptr;
+    // The CVC of the fetched credit card. Can be empty string.
+    std::u16string cvc = std::u16string();
+    // The type of the failure of the full card request.
+    payments::FullCardRequest::FailureType failure_type =
+        payments::FullCardRequest::UNKNOWN;
+  };
   class Requester {
    public:
     virtual ~Requester() {}
     virtual void OnFIDOAuthenticationComplete(
-        bool did_succeed,
-        const CreditCard* card = nullptr,
-        const std::u16string& cvc = std::u16string()) = 0;
+        const FidoAuthenticationResponse& response) = 0;
     virtual void OnFidoAuthorizationComplete(bool did_succeed) = 0;
   };
   CreditCardFIDOAuthenticator(AutofillDriver* driver, AutofillClient* client);

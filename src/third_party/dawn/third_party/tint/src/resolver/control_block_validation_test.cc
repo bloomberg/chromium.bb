@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "src/ast/break_statement.h"
+#include "src/ast/continue_statement.h"
 #include "src/ast/fallthrough_statement.h"
 #include "src/ast/switch_statement.h"
 #include "src/resolver/resolver_test_helper.h"
@@ -43,8 +45,8 @@ TEST_F(ResolverControlBlockValidationTest,
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error v-0025: switch statement selector expression must be "
-            "of a scalar integer type");
+            "12:34 error: switch statement selector expression must be of a "
+            "scalar integer type");
 }
 
 TEST_F(ResolverControlBlockValidationTest, SwitchWithoutDefault_Fail) {
@@ -104,8 +106,50 @@ TEST_F(ResolverControlBlockValidationTest, SwitchWithTwoDefault_Fail) {
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(
       r()->error(),
-      "12:34 error v-0008: switch statement must have exactly one default "
-      "clause");
+      "12:34 error: switch statement must have exactly one default clause");
+}
+
+TEST_F(ResolverControlBlockValidationTest, UnreachableCode_Loop_continue) {
+  // loop {
+  //   continue;
+  //   var z : i32;
+  // }
+  WrapInFunction(Loop(Block(
+      create<ast::ContinueStatement>(),
+      Decl(Source{{12, 34}}, Var("z", ty.i32(), ast::StorageClass::kNone)))));
+
+  EXPECT_FALSE(r()->Resolve()) << r()->error();
+  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+}
+
+TEST_F(ResolverControlBlockValidationTest, UnreachableCode_ForLoop_continue) {
+  // for (;;;) {
+  //   continue;
+  //   var z : i32;
+  // }
+  WrapInFunction(
+      For(nullptr, nullptr, nullptr,
+          Block(create<ast::ContinueStatement>(),
+                Decl(Source{{12, 34}},
+                     Var("z", ty.i32(), ast::StorageClass::kNone)))));
+
+  EXPECT_FALSE(r()->Resolve()) << r()->error();
+  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+}
+TEST_F(ResolverControlBlockValidationTest, UnreachableCode_break) {
+  // switch (a) {
+  //   case 1: { break; var a : u32 = 2;}
+  //   default: {}
+  // }
+  auto* decl = Decl(Source{{12, 34}},
+                    Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2)));
+
+  WrapInFunction(Loop(Block(Switch(
+      Expr(1), Case(Literal(1), Block(create<ast::BreakStatement>(), decl)),
+      DefaultCase()))));
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
 }
 
 TEST_F(ResolverControlBlockValidationTest,
@@ -133,8 +177,8 @@ TEST_F(ResolverControlBlockValidationTest,
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error v-0026: the case selector values must have the same "
-            "type as the selector expression.");
+            "12:34 error: the case selector values must have the same type as "
+            "the selector expression.");
 }
 
 TEST_F(ResolverControlBlockValidationTest,
@@ -162,8 +206,8 @@ TEST_F(ResolverControlBlockValidationTest,
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error v-0026: the case selector values must have the same "
-            "type as the selector expression.");
+            "12:34 error: the case selector values must have the same type as "
+            "the selector expression.");
 }
 
 TEST_F(ResolverControlBlockValidationTest,
@@ -197,8 +241,8 @@ TEST_F(ResolverControlBlockValidationTest,
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error v-0027: a literal value must not appear more than "
-            "once in the case selectors for a switch statement: '2u'");
+            "12:34 error: a literal value must not appear more than once in "
+            "the case selectors for a switch statement: '2u'");
 }
 
 TEST_F(ResolverControlBlockValidationTest,
@@ -233,10 +277,9 @@ TEST_F(ResolverControlBlockValidationTest,
   WrapInFunction(block);
 
   EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(
-      r()->error(),
-      "12:34 error v-0027: a literal value must not appear more than once in "
-      "the case selectors for a switch statement: '10'");
+  EXPECT_EQ(r()->error(),
+            "12:34 error: a literal value must not appear more than once in "
+            "the case selectors for a switch statement: '10'");
 }
 
 TEST_F(ResolverControlBlockValidationTest,
@@ -257,10 +300,9 @@ TEST_F(ResolverControlBlockValidationTest,
   WrapInFunction(block);
 
   EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(
-      r()->error(),
-      "12:34 error v-0028: a fallthrough statement must not appear as the "
-      "last statement in last clause of a switch");
+  EXPECT_EQ(r()->error(),
+            "12:34 error: a fallthrough statement must not appear as the last "
+            "statement in last clause of a switch");
 }
 
 TEST_F(ResolverControlBlockValidationTest, SwitchCase_Pass) {
@@ -294,8 +336,8 @@ TEST_F(ResolverControlBlockValidationTest, SwitchCaseAlias_Pass) {
   //   default: {}
   // }
 
-  auto* my_int = ty.alias("MyInt", ty.u32());
-  auto* var = Var("a", my_int, ast::StorageClass::kNone, Expr(2u));
+  auto* my_int = Alias("MyInt", ty.u32());
+  auto* var = Var("a", ty.Of(my_int), ast::StorageClass::kNone, Expr(2u));
 
   ast::CaseSelectorList default_csl;
   auto* block_default = Block();
@@ -304,7 +346,6 @@ TEST_F(ResolverControlBlockValidationTest, SwitchCaseAlias_Pass) {
                                             default_csl, block_default));
 
   auto* block = Block(Decl(var), create<ast::SwitchStatement>(Expr("a"), body));
-  AST().AddConstructedType(my_int);
 
   WrapInFunction(block);
 

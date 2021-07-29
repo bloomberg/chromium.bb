@@ -147,12 +147,14 @@ class FamilyInfoFetcherTest
 
   CoreAccountInfo SetPrimaryAccount() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    return identity_test_env_.SetUnconsentedPrimaryAccount(kAccountId);
+    return identity_test_env_.SetPrimaryAccount(kAccountId,
+                                                signin::ConsentLevel::kSignin);
 #elif defined(OS_ANDROID)
-    // TODO(https://crbug.com/1046746): Change to SetUnconsentedPrimaryAccount()
+    // TODO(https://crbug.com/1046746): Change to ConsentLevel::kSignin
     // when Android supports the concept of an unconsented primary account that
     // is different than the primary account.
-    return identity_test_env_.SetPrimaryAccount(kAccountId);
+    return identity_test_env_.SetPrimaryAccount(kAccountId,
+                                                signin::ConsentLevel::kSync);
 #else
 #error Unsupported platform.
 #endif
@@ -160,9 +162,14 @@ class FamilyInfoFetcherTest
 
   void IssueRefreshToken() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    identity_test_env_.MakeUnconsentedPrimaryAccountAvailable(kAccountId);
+    identity_test_env_.MakePrimaryAccountAvailable(
+        kAccountId, signin::ConsentLevel::kSignin);
 #elif defined(OS_ANDROID)
-    identity_test_env_.MakePrimaryAccountAvailable(kAccountId);
+    // TODO(https://crbug.com/1046746): Change to ConsentLevel::kSignin
+    // when Android supports the concept of an unconsented primary account that
+    // is different than the primary account.
+    identity_test_env_.MakePrimaryAccountAvailable(kAccountId,
+                                                   signin::ConsentLevel::kSync);
 #else
 #error Unsupported platform.
 #endif

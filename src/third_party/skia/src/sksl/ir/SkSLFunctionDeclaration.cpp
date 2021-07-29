@@ -69,6 +69,10 @@ static bool check_parameters(const Context& context,
         return type == *context.fTypes.fHalf4 || type == *context.fTypes.fFloat4;
     };
 
+    // The first color parameter passed to main() is the input color; the second is the dest color.
+    static constexpr int kBuiltinColorIDs[] = {SK_INPUT_COLOR_BUILTIN, SK_DEST_COLOR_BUILTIN};
+    unsigned int builtinColorIndex = 0;
+
     // Check modifiers on each function parameter.
     for (auto& param : parameters) {
         IRGenerator::CheckModifiers(context, param->fOffset, param->modifiers(),
@@ -78,7 +82,7 @@ static bool check_parameters(const Context& context,
         // Only the (builtin) declarations of 'sample' are allowed to have shader/colorFilter or FP
         // parameters. You can pass other opaque types to functions safely; this restriction is
         // specific to "child" objects.
-        if ((type.isEffectChild() || type.isFragmentProcessor()) && !isBuiltin) {
+        if (type.isEffectChild() && !isBuiltin) {
             context.fErrors.error(param->fOffset, "parameters of type '" + type.displayName() +
                                                   "' not allowed");
             return false;
@@ -88,14 +92,15 @@ static bool check_parameters(const Context& context,
         ProgramKind kind = context.fConfig->fKind;
         if (isMain && (kind == ProgramKind::kRuntimeColorFilter ||
                        kind == ProgramKind::kRuntimeShader ||
-                       kind == ProgramKind::kFragmentProcessor)) {
-            // We verify that the signature is fully correct later. For now, if this is an .fp or
-            // runtime effect of any flavor, a float2 param is supposed to be the coords, and
-            // a half4/float parameter is supposed to be the input color:
+                       kind == ProgramKind::kRuntimeBlender)) {
+            // We verify that the signature is fully correct later. For now, if this is a runtime
+            // effect of any flavor, a float2 param is supposed to be the coords, and a half4/float
+            // parameter is supposed to be the input or destination color:
             if (type == *context.fTypes.fFloat2) {
                 m.fLayout.fBuiltin = SK_MAIN_COORDS_BUILTIN;
-            } else if(typeIsValidForColor(type)) {
-                m.fLayout.fBuiltin = SK_INPUT_COLOR_BUILTIN;
+            } else if (typeIsValidForColor(type) &&
+                       builtinColorIndex < SK_ARRAY_COUNT(kBuiltinColorIDs)) {
+                m.fLayout.fBuiltin = kBuiltinColorIDs[builtinColorIndex++];
             }
             if (m.fLayout.fBuiltin) {
                 param->setModifiers(context.fModifiersPool->add(m));
@@ -133,11 +138,15 @@ static bool check_main_signature(const Context& context, int offset, const Type&
                                                            : SK_MAIN_COORDS_BUILTIN);
     };
 
-    auto paramIsInputColor = [&](int idx) {
-        return typeIsValidForColor(parameters[idx]->type()) &&
-               parameters[idx]->modifiers().fFlags == 0 &&
-               parameters[idx]->modifiers().fLayout.fBuiltin == SK_INPUT_COLOR_BUILTIN;
+    auto paramIsBuiltinColor = [&](int idx, int builtinID) {
+        const Variable& p = *parameters[idx];
+        return typeIsValidForColor(p.type()) &&
+               p.modifiers().fFlags == 0 &&
+               p.modifiers().fLayout.fBuiltin == builtinID;
     };
+
+    auto paramIsInputColor = [&](int n) { return paramIsBuiltinColor(n, SK_INPUT_COLOR_BUILTIN); };
+    auto paramIsDestColor  = [&](int n) { return paramIsBuiltinColor(n, SK_DEST_COLOR_BUILTIN); };
 
     switch (kind) {
         case ProgramKind::kRuntimeColorFilter: {
@@ -168,15 +177,17 @@ static bool check_main_signature(const Context& context, int offset, const Type&
             }
             break;
         }
-        case ProgramKind::kFragmentProcessor: {
-            if (returnType != *context.fTypes.fHalf4) {
-                errors.error(offset, ".fp 'main' must return 'half4'");
+        case ProgramKind::kRuntimeBlender: {
+            // (half4|float4) main(half4|float4, half4|float4)
+            if (!typeIsValidForColor(returnType)) {
+                errors.error(offset, "'main' must return: 'vec4', 'float4', or 'half4'");
                 return false;
             }
-            bool validParams = (parameters.size() == 0) ||
-                               (parameters.size() == 1 && paramIsCoords(0));
-            if (!validParams) {
-                errors.error(offset, ".fp 'main' must be declared main() or main(float2)");
+            if (!(parameters.size() == 2 &&
+                  paramIsInputColor(0) &&
+                  paramIsDestColor(1))) {
+                errors.error(offset, "'main' parameters must be (vec4|float4|half4, "
+                                                                "vec4|float4|half4)");
                 return false;
             }
             break;
@@ -210,7 +221,7 @@ static bool check_main_signature(const Context& context, int offset, const Type&
  * (or null if none) on success, returns false on error.
  */
 static bool find_existing_declaration(const Context& context, SymbolTable& symbols, int offset,
-                                      StringFragment name,
+                                      skstd::string_view name,
                                       std::vector<std::unique_ptr<Variable>>& parameters,
                                       const Type* returnType, bool isBuiltin,
                                       const FunctionDeclaration** outExistingDecl) {
@@ -283,7 +294,7 @@ static bool find_existing_declaration(const Context& context, SymbolTable& symbo
 
 FunctionDeclaration::FunctionDeclaration(int offset,
                                          const Modifiers* modifiers,
-                                         StringFragment name,
+                                         skstd::string_view name,
                                          std::vector<const Variable*> parameters,
                                          const Type* returnType,
                                          bool builtin)
@@ -294,11 +305,11 @@ FunctionDeclaration::FunctionDeclaration(int offset,
         , fReturnType(returnType)
         , fBuiltin(builtin)
         , fIsMain(name == "main")
-        , fIntrinsicKind(builtin ? identify_intrinsic(name) : kNotIntrinsic) {}
+        , fIntrinsicKind(builtin ? identify_intrinsic(String(name)) : kNotIntrinsic) {}
 
 const FunctionDeclaration* FunctionDeclaration::Convert(const Context& context,
         SymbolTable& symbols, int offset, const Modifiers* modifiers,
-        StringFragment name, std::vector<std::unique_ptr<Variable>> parameters,
+        skstd::string_view name, std::vector<std::unique_ptr<Variable>> parameters,
         const Type* returnType, bool isBuiltin) {
     bool isMain = (name == "main");
 
@@ -328,10 +339,10 @@ const FunctionDeclaration* FunctionDeclaration::Convert(const Context& context,
 String FunctionDeclaration::mangledName() const {
     if ((this->isBuiltin() && !this->definition()) || this->isMain()) {
         // Builtins without a definition (like `sin` or `sqrt`) must use their real names.
-        return this->name();
+        return String(this->name());
     }
     // GLSL forbids two underscores in a row; add an extra character if necessary to avoid this.
-    const char* splitter = this->name().endsWith("_") ? "x_" : "_";
+    const char* splitter = this->name().ends_with("_") ? "x_" : "_";
     // Rename function to `funcname_returntypeparamtypes`.
     String result = this->name() + splitter + this->returnType().abbreviatedName();
     for (const Variable* p : this->parameters()) {

@@ -17,7 +17,7 @@
 #include "content/browser/sms/sms_queue.h"
 #include "content/browser/sms/user_consent_handler.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/frame_service_base.h"
+#include "content/public/browser/document_service_base.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/sms/webotp_service.mojom.h"
 #include "url/origin.h"
@@ -31,11 +31,11 @@ struct LoadCommittedDetails;
 // WebOTPService handles mojo connections from the renderer, observing the
 // incoming SMS messages from an SmsFetcher. In practice, it is owned and
 // managed by a RenderFrameHost. It accomplishes that via subclassing
-// FrameServiceBase, which observes the lifecycle of a RenderFrameHost and
+// DocumentServiceBase, which observes the lifecycle of a RenderFrameHost and
 // manages it own memory. Create() creates a self-managed instance of
 // WebOTPService and binds it to the request.
 class CONTENT_EXPORT WebOTPService
-    : public FrameServiceBase<blink::mojom::WebOTPService>,
+    : public DocumentServiceBase<blink::mojom::WebOTPService>,
       public SmsFetcher::Subscriber {
  public:
   // Return value indicates success. Creation can fail if origin requirements
@@ -99,7 +99,7 @@ class CONTENT_EXPORT WebOTPService
   // Timer to trigger timeout for any pending request. We (re)arm the timer
   // every time we receive a new request.
   base::DelayTimer timeout_timer_;
-  absl::optional<FailureType> prompt_failure_;
+  absl::optional<FailureType> delayed_rejection_reason_;
 
   // The ptr is valid only when we are handling an incoming otp response.
   std::unique_ptr<UserConsentHandler> consent_handler_;

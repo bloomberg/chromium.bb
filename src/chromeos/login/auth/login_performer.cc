@@ -15,7 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/login/auth/login_event_recorder.h"
+#include "chromeos/metrics/login_event_recorder.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_names.h"
@@ -186,13 +186,11 @@ void LoginPerformer::LoginOffTheRecord() {
       base::BindOnce(&Authenticator::LoginOffTheRecord, authenticator_.get()));
 }
 
-void LoginPerformer::LoginAsKioskAccount(const AccountId& app_account_id,
-                                         bool use_guest_mount) {
+void LoginPerformer::LoginAsKioskAccount(const AccountId& app_account_id) {
   EnsureAuthenticator();
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&Authenticator::LoginAsKioskAccount, authenticator_.get(),
-                     app_account_id, use_guest_mount));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&Authenticator::LoginAsKioskAccount,
+                                        authenticator_.get(), app_account_id));
 }
 
 void LoginPerformer::LoginAsArcKioskAccount(

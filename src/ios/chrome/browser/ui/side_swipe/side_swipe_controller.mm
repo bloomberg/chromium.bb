@@ -25,7 +25,6 @@
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_highlighting.h"
 #include "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_interacting.h"
 #import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_interacting.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web/web_navigation_util.h"
@@ -34,6 +33,7 @@
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state_observer_bridge.h"
+#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -143,6 +143,9 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 // Removes the |curtain_| if there was an active swipe, and resets
 // |inSwipe_| value.
 - (void)dismissCurtain;
+// Cleans up Browser, WebStateList, and WebState references in the instance of a
+// BrowserDestroyed BrowserObserver call.
+- (void)browserDestroyed;
 @end
 
 // A browser observer that nullifies SideSwipeController's pointer to browser
@@ -153,7 +156,7 @@ class SideSwipeControllerBrowserRemover : public BrowserObserver {
       : side_swipe_controller_(controller) {}
 
   void BrowserDestroyed(Browser* browser) override {
-    side_swipe_controller_.browser = nullptr;
+    [side_swipe_controller_ browserDestroyed];
   }
 
  private:
@@ -205,6 +208,14 @@ class SideSwipeControllerBrowserRemover : public BrowserObserver {
 
   _scopedWebStateObservation.reset();
   _webStateObserverBridge.reset();
+}
+
+- (void)browserDestroyed {
+  self.webStateList->RemoveObserver(_webStateListObserver.get());
+  _scopedWebStateObservation.reset();
+  _webStateObserverBridge.reset();
+  self.browser->RemoveObserver(_browserRemover.get());
+  self.browser = nullptr;
 }
 
 - (void)addHorizontalGesturesToView:(UIView*)view {
@@ -364,7 +375,7 @@ class SideSwipeControllerBrowserRemover : public BrowserObserver {
 }
 
 - (void)handlePan:(SideSwipeGestureRecognizer*)gesture {
-  if (!IsIPadIdiom()) {
+  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
     return [self handleiPhoneTabSwipe:gesture];
   } else {
     return [self handleiPadTabSwipe:gesture];
@@ -374,7 +385,7 @@ class SideSwipeControllerBrowserRemover : public BrowserObserver {
 - (void)handleSwipe:(SideSwipeGestureRecognizer*)gesture {
   DCHECK(_swipeType != SwipeType::NONE);
   if (_swipeType == SwipeType::CHANGE_TAB) {
-    if (!IsIPadIdiom()) {
+    if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
       return [self handleiPhoneTabSwipe:gesture];
     } else {
       return [self handleiPadTabSwipe:gesture];

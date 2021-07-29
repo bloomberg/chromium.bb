@@ -8,9 +8,10 @@
 #include <fuchsia/media/cpp/fidl.h>
 #include <fuchsia/sysmem/cpp/fidl.h>
 
+#include <deque>
 #include <memory>
+#include <vector>
 
-#include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/media_export.h"

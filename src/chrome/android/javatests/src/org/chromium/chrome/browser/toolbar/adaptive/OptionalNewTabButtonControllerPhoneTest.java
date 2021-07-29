@@ -17,8 +17,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
-import static org.chromium.chrome.test.util.ViewUtils.waitForView;
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
+import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.content.res.Configuration;
 
@@ -43,11 +43,10 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.ActivityTestUtils;
-import org.chromium.chrome.test.util.ViewUtils;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiDisableIf;
+import org.chromium.ui.test.util.ViewUtils;
 
 /**
  * Tests {@link OptionalNewTabButtonController}. See also {@link
@@ -55,7 +54,6 @@ import org.chromium.ui.test.util.UiDisableIf;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Batch(Batch.PER_CLASS)
-@EnableFeatures({ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "enable-features=" + ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR + "<Study",
         "force-fieldtrials=Study/Group", "force-fieldtrial-params=Study.Group:mode/always-new-tab"})
@@ -177,6 +175,8 @@ public class OptionalNewTabButtonControllerPhoneTest {
     @MediumTest
     public void testButton_hidesOnNTP() {
         sActivityTestRule.loadUrl(mTestPageUrl, /*secondsToWait=*/10);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> sActivityTestRule.getActivity().getActivityTab().reload());
         onViewWaiting(allOf(withId(R.id.optional_toolbar_button), isDisplayed(), isEnabled(),
                 withContentDescription(mButtonDescription)));
 

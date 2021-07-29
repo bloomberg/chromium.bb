@@ -22,7 +22,8 @@
 
 #include "vk_layer_data.h"
 #include "vk_layer_utils.h"
-#include "core_validation.h"
+#include "pipeline_state.h"
+#include "descriptor_sets.h"
 
 void decoration_set::merge(decoration_set const &other) {
     if (other.flags & location_bit) location = other.location;
@@ -367,6 +368,8 @@ void SHADER_MODULE_STATE::BuildDefIndex() {
                 decoration_inst.push_back(insn);
                 if (insn.word(2) == spv::DecorationBuiltIn) {
                     builtin_decoration_list.emplace_back(insn.offset(), static_cast<spv::BuiltIn>(insn.word(3)));
+                } else if (insn.word(2) == spv::DecorationSpecId) {
+                    spec_const_map[insn.word(3)] = target_id;
                 }
 
             } break;

@@ -39,7 +39,7 @@ class WebUIIOSImpl : public web::WebUIIOS,
                                const MessageCallback& callback) override;
   void ProcessWebUIIOSMessage(const GURL& source_url,
                               const std::string& message,
-                              const base::ListValue& args) override;
+                              const base::Value& args) override;
   void CallJavascriptFunction(
       const std::string& function_name,
       const std::vector<const base::Value*>& args) override;
@@ -51,7 +51,7 @@ class WebUIIOSImpl : public web::WebUIIOS,
                          const std::vector<const base::Value*>& args) override;
 
  private:
-  void OnJsMessage(const base::DictionaryValue& message,
+  void OnJsMessage(const base::Value& message,
                    const GURL& page_url,
                    bool user_is_interacting,
                    web::WebFrame* sender_frame);

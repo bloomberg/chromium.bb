@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/appcache/appcache_backfillers.h"
 #include "content/browser/appcache/appcache_entry.h"
@@ -992,8 +991,8 @@ bool AppCacheDatabase::FindResponseIdsForCacheHelper(
   return statement.Succeeded();
 }
 
-void AppCacheDatabase::ReadGroupRecord(
-    const sql::Statement& statement, GroupRecord* record) {
+void AppCacheDatabase::ReadGroupRecord(sql::Statement& statement,
+                                       GroupRecord* record) {
   record->group_id = statement.ColumnInt64(0);
   record->origin = url::Origin::Create(GURL(statement.ColumnString(1)));
   record->manifest_url = GURL(statement.ColumnString(2));
@@ -1016,8 +1015,8 @@ void AppCacheDatabase::ReadGroupRecord(
       base::Time::FromInternalValue(statement.ColumnInt64(7));
 }
 
-void AppCacheDatabase::ReadCacheRecord(
-    const sql::Statement& statement, CacheRecord* record) {
+void AppCacheDatabase::ReadCacheRecord(sql::Statement& statement,
+                                       CacheRecord* record) {
   record->cache_id = statement.ColumnInt64(0);
   record->group_id = statement.ColumnInt64(1);
   record->online_wildcard = statement.ColumnBool(2);
@@ -1031,8 +1030,8 @@ void AppCacheDatabase::ReadCacheRecord(
       base::Time::FromInternalValue(statement.ColumnInt64(8));
 }
 
-void AppCacheDatabase::ReadEntryRecord(
-    const sql::Statement& statement, EntryRecord* record) {
+void AppCacheDatabase::ReadEntryRecord(sql::Statement& statement,
+                                       EntryRecord* record) {
   record->cache_id = statement.ColumnInt64(0);
   record->url = GURL(statement.ColumnString(1));
   record->flags = statement.ColumnInt(2);
@@ -1057,8 +1056,8 @@ void AppCacheDatabase::ReadNamespaceRecords(
   }
 }
 
-void AppCacheDatabase::ReadNamespaceRecord(
-    const sql::Statement* statement, NamespaceRecord* record) {
+void AppCacheDatabase::ReadNamespaceRecord(sql::Statement* statement,
+                                           NamespaceRecord* record) {
   record->cache_id = statement->ColumnInt64(0);
   record->origin = url::Origin::Create(GURL(statement->ColumnString(1)));
   record->namespace_.type =
@@ -1072,7 +1071,7 @@ void AppCacheDatabase::ReadNamespaceRecord(
       base::Time::FromInternalValue(statement->ColumnInt64(5));
 }
 
-void AppCacheDatabase::ReadOnlineSafeListRecord(const sql::Statement& statement,
+void AppCacheDatabase::ReadOnlineSafeListRecord(sql::Statement& statement,
                                                 OnlineSafeListRecord* record) {
   record->cache_id = statement.ColumnInt64(0);
   record->namespace_url = GURL(statement.ColumnString(1));

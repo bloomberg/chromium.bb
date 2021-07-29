@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/media/unified_media_controls_view.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "services/media_session/public/cpp/util.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -219,7 +220,7 @@ void UnifiedMediaControlsController::UpdateArtwork(
     return;
   }
 
-  if (media_controls_->artwork_view()->GetImage().isNull())
+  if (media_controls_->artwork_view()->GetImageModel().IsEmpty())
     return;
 
   if (!should_start_hide_timer) {

@@ -198,6 +198,22 @@ static int aom_decode(AVCodecContext *avctx, void *data, int *got_frame,
         if ((ret = ff_get_buffer(avctx, picture, 0)) < 0)
             return ret;
 
+#ifdef AOM_CTRL_AOMD_GET_FRAME_FLAGS
+        {
+            aom_codec_frame_flags_t flags;
+            ret = aom_codec_control(&ctx->decoder, AOMD_GET_FRAME_FLAGS, &flags);
+            if (ret == AOM_CODEC_OK) {
+                picture->key_frame = !!(flags & AOM_FRAME_IS_KEY);
+                if (flags & (AOM_FRAME_IS_KEY | AOM_FRAME_IS_INTRAONLY))
+                    picture->pict_type = AV_PICTURE_TYPE_I;
+                else if (flags & AOM_FRAME_IS_SWITCH)
+                    picture->pict_type = AV_PICTURE_TYPE_SP;
+                else
+                    picture->pict_type = AV_PICTURE_TYPE_P;
+            }
+        }
+#endif
+
         av_reduce(&picture->sample_aspect_ratio.num,
                   &picture->sample_aspect_ratio.den,
                   picture->height * img->r_w,
@@ -227,7 +243,7 @@ static av_cold int av1_init(AVCodecContext *avctx)
     return aom_init(avctx, &aom_codec_av1_dx_algo);
 }
 
-AVCodec ff_libaom_av1_decoder = {
+const AVCodec ff_libaom_av1_decoder = {
     .name           = "libaom-av1",
     .long_name      = NULL_IF_CONFIG_SMALL("libaom AV1"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -236,7 +252,8 @@ AVCodec ff_libaom_av1_decoder = {
     .init           = av1_init,
     .close          = aom_free,
     .decode         = aom_decode,
-    .capabilities   = AV_CODEC_CAP_AUTO_THREADS | AV_CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_OTHER_THREADS | AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
     .profiles       = NULL_IF_CONFIG_SMALL(ff_av1_profiles),
     .wrapper_name   = "libaom",
 };

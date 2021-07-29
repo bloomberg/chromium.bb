@@ -20,6 +20,9 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_status_code.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/quic_simple_test_server.h"
 #include "net/test/test_data_directory.h"
 
@@ -59,12 +62,23 @@ struct ResponseEntry {
 
 const char kPageWithHintedScriptPath[] = "/page_with_hinted_js.html";
 const char kPageWithHintedScriptBody[] = "<script src=\"/hinted.js\"></script>";
+
+const char kPageWithHintedCorsScriptPath[] = "/page_with_hinted_cors_js.html";
+const char kPageWithHintedCorsScriptBody[] =
+    "<script src=\"/hinted.js\" crossorigin></script>";
+
+const char kPageWithIframePath[] = "/page_with_iframe.html";
+const char kPageWithIframeBody[] =
+    "<iframe src=\"page_with_hinted_js.html\"></iframe>";
+
 const char kPageWithHintedModuleScriptPath[] =
     "/page_with_hinted_module_js.html";
 const char kPageWithHintedModuleScriptBody[] =
     "<script src=\"/hinted.js\" type=\"module\"></script>";
+
 const char kHintedScriptPath[] = "/hinted.js";
 const char kHintedScriptBody[] = "document.title = 'Done';";
+
 const char kHintedStylesheetPath[] = "/hinted.css";
 const char kHintedStylesheetBody[] = "/*empty*/";
 
@@ -89,6 +103,10 @@ class NavigationEarlyHintsTest : public ContentBrowserTest {
     mock_cert_verifier_.SetUpCommandLine(command_line);
     feature_list_.InitAndEnableFeature(
         features::kEarlyHintsPreloadForNavigation);
+    cross_origin_server_.RegisterRequestHandler(
+        base::BindRepeating(&NavigationEarlyHintsTest::HandleCrossOriginRequest,
+                            base::Unretained(this)));
+    ASSERT_TRUE(cross_origin_server_.Start());
     ContentBrowserTest::SetUpCommandLine(command_line);
   }
 
@@ -96,6 +114,10 @@ class NavigationEarlyHintsTest : public ContentBrowserTest {
     base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait;
     net::QuicSimpleTestServer::Shutdown();
     ContentBrowserTest::TearDown();
+  }
+
+  net::test_server::EmbeddedTestServer& cross_origin_server() {
+    return cross_origin_server_;
   }
 
  protected:
@@ -121,6 +143,12 @@ class NavigationEarlyHintsTest : public ContentBrowserTest {
     return HeaderField(
         "link",
         base::StringPrintf("<%s>; rel=preload; as=script", kHintedScriptPath));
+  }
+
+  HeaderField CreatePreloadLinkForCorsScript() {
+    return HeaderField(
+        "link", base::StringPrintf("<%s>; rel=preload; as=script; crossorigin",
+                                   kHintedScriptPath));
   }
 
   HeaderField CreateModulePreloadLink() {
@@ -160,6 +188,18 @@ class NavigationEarlyHintsTest : public ContentBrowserTest {
     ResponseEntry entry(kPageWithHintedScriptPath, status_code);
     entry.body = kPageWithHintedScriptBody;
     HeaderField link_header = CreatePreloadLinkForScript();
+    entry.AddEarlyHints({std::move(link_header)});
+
+    return entry;
+  }
+
+  ResponseEntry CreatePageEntryWithHintedCorsScript(
+      net::HttpStatusCode status_code) {
+    RegisterHintedScriptResource();
+
+    ResponseEntry entry(kPageWithHintedCorsScriptPath, status_code);
+    entry.body = kPageWithHintedCorsScriptBody;
+    HeaderField link_header = CreatePreloadLinkForCorsScript();
     entry.AddEarlyHints({std::move(link_header)});
 
     return entry;
@@ -206,10 +246,52 @@ class NavigationEarlyHintsTest : public ContentBrowserTest {
     return result;
   }
 
+  enum class FetchResult {
+    kFetched,
+    kBlocked,
+  };
+  FetchResult FetchScriptOnDocument(GURL src) {
+    EvalJsResult result = EvalJs(shell(), JsReplace(R"(
+      new Promise(resolve => {
+        const script = document.createElement("script");
+        script.src = $1;
+        script.onerror = () => resolve("blocked");
+        script.onload = () => resolve("fetched");
+        document.body.appendChild(script);
+      });
+    )",
+                                                    src));
+    return result.ExtractString() == "fetched" ? FetchResult::kFetched
+                                               : FetchResult::kBlocked;
+  }
+
  private:
+  std::unique_ptr<net::test_server::HttpResponse> HandleCrossOriginRequest(
+      const net::test_server::HttpRequest& request) {
+    GURL relative_url = request.base_url.Resolve(request.relative_url);
+    if (relative_url.path() != "/hinted.js")
+      return nullptr;
+
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+    response->set_code(net::HTTP_OK);
+    response->set_content_type("application/javascript");
+    response->set_content("/*empty*/");
+
+    std::string query = relative_url.query();
+    if (query == "corp-cross-origin") {
+      response->AddCustomHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    } else if (query == "corp-same-origin") {
+      response->AddCustomHeader("Cross-Origin-Resource-Policy", "same-origin");
+    }
+
+    return std::move(response);
+  }
+
   base::test::ScopedFeatureList feature_list_;
 
   ContentMockCertVerifier mock_cert_verifier_;
+
+  net::EmbeddedTestServer cross_origin_server_;
 };
 
 IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, Basic) {
@@ -218,6 +300,24 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, Basic) {
 
   EXPECT_TRUE(NavigateToURLAndWaitTitle(
       net::QuicSimpleTestServer::GetFileURL(kPageWithHintedScriptPath),
+      "Done"));
+  PreloadedResources preloads = WaitForPreloadedResources();
+  EXPECT_EQ(preloads.size(), 1UL);
+
+  GURL preloaded_url = net::QuicSimpleTestServer::GetFileURL(kHintedScriptPath);
+  auto it = preloads.find(preloaded_url);
+  ASSERT_TRUE(it != preloads.end());
+  ASSERT_FALSE(it->second.was_canceled);
+  ASSERT_TRUE(it->second.error_code.has_value());
+  EXPECT_EQ(it->second.error_code.value(), net::OK);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, CorsAttribute) {
+  ResponseEntry entry = CreatePageEntryWithHintedCorsScript(net::HTTP_OK);
+  RegisterResponse(entry);
+
+  EXPECT_TRUE(NavigateToURLAndWaitTitle(
+      net::QuicSimpleTestServer::GetFileURL(kPageWithHintedCorsScriptPath),
       "Done"));
   PreloadedResources preloads = WaitForPreloadedResources();
   EXPECT_EQ(preloads.size(), 1UL);
@@ -246,6 +346,34 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, ModulePreload) {
   ASSERT_FALSE(it->second.was_canceled);
   ASSERT_TRUE(it->second.error_code.has_value());
   EXPECT_EQ(it->second.error_code.value(), net::OK);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, DisallowPreloadFromIframe) {
+  ResponseEntry page_entry(kPageWithIframePath, net::HTTP_OK);
+  page_entry.body = kPageWithIframeBody;
+  RegisterResponse(page_entry);
+
+  ResponseEntry iframe_entry = CreatePageEntryWithHintedScript(net::HTTP_OK);
+  RegisterResponse(iframe_entry);
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), net::QuicSimpleTestServer::GetFileURL(kPageWithIframePath)));
+
+  // Find RenderFrameHost for the iframe.
+  std::vector<RenderFrameHost*> all_frames =
+      CollectAllRenderFrameHosts(shell()->web_contents());
+  ASSERT_EQ(all_frames.size(), 2UL);
+  ASSERT_TRUE(all_frames[1]->IsDescendantOf(all_frames[0]));
+  RenderFrameHostImpl* iframe_host =
+      static_cast<RenderFrameHostImpl*>(all_frames[1]);
+
+  EXPECT_TRUE(WaitForLoadStop(WebContents::FromRenderFrameHost(iframe_host)));
+  ASSERT_EQ(iframe_host->GetLastCommittedURL(),
+            net::QuicSimpleTestServer::GetFileURL(kPageWithHintedScriptPath));
+
+  // NavigationEarlyHintsManager should not be created for subframes. If it were
+  // created it should have been created before navigation commit.
+  EXPECT_EQ(iframe_host->early_hints_manager(), nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, NavigationServerError) {
@@ -316,6 +444,61 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, DuplicatePreloads) {
       net::QuicSimpleTestServer::GetFileURL(kHintedStylesheetPath);
   EXPECT_TRUE(preloads.contains(script_url));
   EXPECT_TRUE(preloads.contains(stylesheet_url));
+}
+
+const char kPageWithCrossOriginScriptPage[] =
+    "/page_with_cross_origin_script.html";
+
+IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, CORP_Pass) {
+  // The server response's is a script with
+  // `Cross-Origin-Resource-Policy: cross-origin`.
+  const GURL kCrossOriginScriptUrl =
+      cross_origin_server().GetURL("/hinted.js?corp-cross-origin");
+
+  ResponseEntry page_entry(kPageWithCrossOriginScriptPage, net::HTTP_OK);
+  HeaderField link_header = HeaderField(
+      "link", base::StringPrintf("<%s>; rel=preload; as=script",
+                                 kCrossOriginScriptUrl.spec().c_str()));
+  page_entry.AddEarlyHints({std::move(link_header)});
+  RegisterResponse(page_entry);
+
+  EXPECT_TRUE(NavigateToURL(shell(), net::QuicSimpleTestServer::GetFileURL(
+                                         kPageWithCrossOriginScriptPage)));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_EQ(FetchScriptOnDocument(kCrossOriginScriptUrl),
+            FetchResult::kFetched);
+
+  PreloadedResources preloads = WaitForPreloadedResources();
+  EXPECT_EQ(preloads.size(), 1UL);
+
+  auto it = preloads.find(kCrossOriginScriptUrl);
+  ASSERT_TRUE(it != preloads.end());
+  ASSERT_FALSE(it->second.was_canceled);
+  ASSERT_TRUE(it->second.error_code.has_value());
+  EXPECT_EQ(it->second.error_code.value(), net::OK);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, CORP_Blocked) {
+  // The server response's is a script with
+  // `Cross-Origin-Resource-Policy: same-origin`.
+  const GURL kCrossOriginScriptUrl =
+      cross_origin_server().GetURL("/hinted.js?corp-same-origin");
+
+  ResponseEntry page_entry(kPageWithCrossOriginScriptPage, net::HTTP_OK);
+  HeaderField link_header = HeaderField(
+      "link", base::StringPrintf("<%s>; rel=preload; as=script",
+                                 kCrossOriginScriptUrl.spec().c_str()));
+  page_entry.AddEarlyHints({std::move(link_header)});
+  RegisterResponse(page_entry);
+
+  EXPECT_TRUE(NavigateToURL(shell(), net::QuicSimpleTestServer::GetFileURL(
+                                         kPageWithCrossOriginScriptPage)));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // The script fetch should be blocked.
+  EXPECT_EQ(FetchScriptOnDocument(kCrossOriginScriptUrl),
+            FetchResult::kBlocked);
 }
 
 }  // namespace content

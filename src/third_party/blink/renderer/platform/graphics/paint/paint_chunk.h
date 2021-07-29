@@ -10,6 +10,7 @@
 
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/hit_test_data.h"
 #include "third_party/blink/renderer/platform/graphics/paint/layer_selection_data.h"
@@ -36,18 +37,20 @@ struct PLATFORM_EXPORT PaintChunk {
   PaintChunk(wtf_size_t begin,
              wtf_size_t end,
              const Id& id,
-             const PropertyTreeStateOrAlias& props)
+             const PropertyTreeStateOrAlias& props,
+             bool effectively_invisible = false)
       : begin_index(begin),
         end_index(end),
         background_color(Color::kTransparent),
         background_color_area(0u),
         id(id),
         properties(props),
-        known_to_be_opaque(false),
-        text_known_to_be_on_opaque_background(false),
+        text_known_to_be_on_opaque_background(true),
+        has_text(false),
         is_cacheable(id.client.IsCacheable()),
         client_is_just_created(id.client.IsJustCreated()),
-        is_moved_from_cached_subsequence(false) {}
+        is_moved_from_cached_subsequence(false),
+        effectively_invisible(effectively_invisible) {}
 
   // Move a paint chunk from a cached subsequence.
   PaintChunk(wtf_size_t begin, PaintChunk&& other)
@@ -61,13 +64,15 @@ struct PLATFORM_EXPORT PaintChunk {
         layer_selection_data(std::move(other.layer_selection_data)),
         bounds(other.bounds),
         drawable_bounds(other.drawable_bounds),
+        rect_known_to_be_opaque(other.rect_known_to_be_opaque),
         raster_effect_outset(other.raster_effect_outset),
-        known_to_be_opaque(other.known_to_be_opaque),
         text_known_to_be_on_opaque_background(
             other.text_known_to_be_on_opaque_background),
+        has_text(other.has_text),
         is_cacheable(other.is_cacheable),
         client_is_just_created(false),
-        is_moved_from_cached_subsequence(true) {
+        is_moved_from_cached_subsequence(true),
+        effectively_invisible(other.effectively_invisible) {
 #if DCHECK_IS_ON()
     DCHECK(other.id.client.IsAlive());
     DCHECK(!other.id.client.IsJustCreated());
@@ -155,21 +160,25 @@ struct PLATFORM_EXPORT PaintChunk {
   // chunk.
   IntRect drawable_bounds;
 
+  IntRect rect_known_to_be_opaque;
+
   // Some raster effects can exceed |bounds| in the rasterization space. This
   // is the maximum DisplayItemClient::VisualRectOutsetForRasterEffects() of
   // all clients of items in this chunk.
   RasterEffectOutset raster_effect_outset = RasterEffectOutset::kNone;
 
-  // True if the bounds are filled entirely with opaque contents.
-  bool known_to_be_opaque : 1;
-  // True if all text is known to be on top of an opaque background.
+  // True if all text is known to be on top of opaque backgrounds or there is
+  // not text. Though in theory the value doesn't matter when there is no text,
+  // being true can simplify code.
   bool text_known_to_be_on_opaque_background : 1;
+  bool has_text : 1;
 
   // End of derived data.
   // The following fields are put here to avoid memory gap.
   bool is_cacheable : 1;
   bool client_is_just_created : 1;
   bool is_moved_from_cached_subsequence : 1;
+  bool effectively_invisible : 1;
 };
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const PaintChunk&);

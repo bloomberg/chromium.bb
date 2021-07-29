@@ -300,12 +300,12 @@ TEST_F(PasswordGenerationFrameHelperTest, ProcessPasswordRequirements) {
     auto* field_suggestion = form_suggestion->add_field_suggestions();
     field_suggestion->set_field_signature(
         CalculateFieldSignatureForField(username).value());
-    field_suggestion->set_primary_type_prediction(9);
+    field_suggestion->add_predictions()->set_type(9);
 
     field_suggestion = form_suggestion->add_field_suggestions();
     field_suggestion->set_field_signature(
         CalculateFieldSignatureForField(password).value());
-    field_suggestion->set_primary_type_prediction(76);
+    field_suggestion->add_predictions()->set_type(76);
 
     if (test.has_field_requirements) {
       *form_suggestion->mutable_field_suggestions(1)
@@ -321,7 +321,7 @@ TEST_F(PasswordGenerationFrameHelperTest, ProcessPasswordRequirements) {
 
     autofill::FormStructure::ParseApiQueryResponse(
         response_string, forms, autofill::test::GetEncodedSignatures(forms),
-        nullptr);
+        /*form_interactions_ukm_logger=*/nullptr, /*log_manager=*/nullptr);
 
     GetGenerationHelper()->PrefetchSpec(origin.GetOrigin());
 

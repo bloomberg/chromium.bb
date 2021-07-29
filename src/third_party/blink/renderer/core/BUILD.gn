@@ -7,10 +7,10 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/toolchain.gni")
+import("//media/media_options.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/blink/renderer/bindings/bindings.gni")
-import("//third_party/blink/renderer/bindings/modules/v8/generated.gni")
 import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/config.gni")
@@ -62,11 +62,11 @@ import("//third_party/blink/renderer/core/svg/build.gni")
 import("//third_party/blink/renderer/core/timezone/build.gni")
 import("//third_party/blink/renderer/core/timing/build.gni")
 import("//third_party/blink/renderer/core/trustedtypes/build.gni")
+import("//third_party/blink/renderer/core/typed_arrays/build.gni")
 import("//third_party/blink/renderer/core/url/build.gni")
 import("//third_party/blink/renderer/core/workers/build.gni")
 import("//third_party/blink/renderer/core/xml/build.gni")
 import("//third_party/blink/renderer/core/xmlhttprequest/build.gni")
-import("//third_party/blink/renderer/modules/modules_idl_files.gni")
 import("//third_party/blink/renderer/platform/platform_generated.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -129,7 +129,6 @@ source_set("prerequisites") {
     "//skia",
     "//third_party/blink/public/mojom:color_scheme_mojo_bindings",
     "//third_party/blink/public/mojom:mojom_broadcastchannel_bindings_blink",
-    "//third_party/blink/renderer/bindings/core/v8:bindings_core_v8_generated",
     "//third_party/blink/renderer/bindings/core/v8:generated",
     "//third_party/blink/renderer/core/animation:buildflags",
     "//third_party/blink/renderer/core/inspector:generated",
@@ -155,12 +154,7 @@ source_set("prerequisites") {
     "//url",
     "//v8",
   ]
-  deps = [
-    "//third_party/blink/public:scaled_resources",
-
-    # FIXME: don't depend on bindings_modules http://crbug.com/358074
-    "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_v8_generated",
-  ]
+  deps = [ "//third_party/blink/public:scaled_resources" ]
 
   public_configs = [
     ":core_include_dirs",
@@ -179,6 +173,8 @@ component("core") {
     "core_initializer.cc",
     "core_initializer.h",
   ]
+
+  sources += blink_core_sources_bindings
 
   # If you create a new subdirectory 'foo', make 'foo/build.gni' to define
   # blink_core_sources_foo, and include it here. Add any dependencies in the
@@ -245,6 +241,7 @@ component("core") {
   sources += rebase_path(blink_core_sources_timezone, "", "timezone")
   sources += rebase_path(blink_core_sources_timing, "", "timing")
   sources += rebase_path(blink_core_sources_trustedtypes, "", "trustedtypes")
+  sources += rebase_path(blink_core_sources_typed_arrays, "", "typed_arrays")
   sources += rebase_path(blink_core_sources_url, "", "url")
   sources += rebase_path(blink_core_sources_workers, "", "workers")
   sources += rebase_path(blink_core_sources_xml, "", "xml")
@@ -253,6 +250,7 @@ component("core") {
 
   configs -= core_config_remove
   configs += core_config_add
+  configs += [ "//tools/v8_context_snapshot:use_v8_context_snapshot" ]
 
   public_deps = [
     ":core_generated",
@@ -263,11 +261,9 @@ component("core") {
     "//third_party/blink/public/mojom:mojom_broadcastchannel_bindings_blink",
     "//third_party/blink/public/mojom:mojom_core_blink",
     "//third_party/blink/renderer/bindings/core/v8",
-    "//third_party/blink/renderer/bindings/core/v8:bindings_core_v8_generated",
     "//third_party/blink/renderer/core/animation",
     "//third_party/blink/renderer/core/exported",
     "//third_party/blink/renderer/core/probe",
-    "//third_party/blink/renderer/core/typed_arrays",
     "//third_party/blink/renderer/core/xml:xpath_generated",
     "//third_party/blink/renderer/platform",
     "//third_party/blink/renderer/platform/wtf",
@@ -280,6 +276,7 @@ component("core") {
   ]
 
   deps = [
+    ":generated_settings_macros",
     "//build:chromeos_buildflags",
     "//components/paint_preview/common",
     "//components/performance_manager/public/mojom:mojom_blink",
@@ -300,8 +297,8 @@ component("core") {
     "//third_party/blink/public:image_resources_grit",
     "//third_party/blink/public:resources",
     "//third_party/blink/public/common",
+    "//third_party/blink/public/mojom:web_feature_mojo_bindings",
     "//third_party/blink/public/strings",
-    "//third_party/blink/renderer/core/typed_arrays:typed_arrays",
     "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type_blink",
     "//ui/base/dragdrop/mojom:mojom_blink",
@@ -419,6 +416,8 @@ source_set("testing") {
     "testing/internal_settings.h",
     "testing/internals.cc",
     "testing/internals.h",
+    "testing/internals_delete_all_cookies.cc",
+    "testing/internals_delete_all_cookies.h",
     "testing/intersection_observer_test_helper.h",
     "testing/mock_clipboard_host.cc",
     "testing/mock_clipboard_host.h",
@@ -432,6 +431,7 @@ source_set("testing") {
     "testing/null_execution_context.h",
     "testing/origin_trials_test.cc",
     "testing/origin_trials_test.h",
+    "testing/origin_trials_test_global.h",
     "testing/origin_trials_test_partial.h",
     "testing/record_test.cc",
     "testing/record_test.h",
@@ -458,7 +458,7 @@ source_set("testing") {
   public_deps = [ "//testing/gmock:gmock" ]
 }
 
-# core_bindings_generated ------------------------------------------------------
+# generate_event_interfaces ----------------------------------------------------
 
 generate_event_interfaces("core_event_interfaces") {
   sources = [
@@ -883,6 +883,11 @@ make_names("make_core_generated_performance_entry_names") {
   output_dir = blink_core_output_dir
 }
 
+make_names("make_core_generated_pointer_type_names") {
+  in_files = [ "events/pointer_type_names.json5" ]
+  output_dir = blink_core_output_dir
+}
+
 make_names("make_core_generated_securitypolicyviolation_disposition_names") {
   in_files = [ "events/securitypolicyviolation_disposition_names.json5" ]
   output_dir = blink_core_output_dir
@@ -1086,6 +1091,7 @@ targets_generating_sources = [
   ":make_core_generated_origin_trials",
   ":make_core_generated_performance_entry_names",
   ":make_core_generated_permissions_policy_helper",
+  ":make_core_generated_pointer_type_names",
   ":make_core_generated_securitypolicyviolation_disposition_names",
   ":make_core_generated_shadow_element_names",
   ":make_core_generated_style_property_shorthand",
@@ -1117,9 +1123,8 @@ if (is_component_build) {
 }
 
 target(core_generated_target_type, "core_generated") {
-  sources = bindings_core_v8_files
-
   # Add all sources generated by the targets above.
+  sources = []
   foreach(current, targets_generating_sources) {
     sources += get_target_outputs(current)
   }
@@ -1137,19 +1142,13 @@ target(core_generated_target_type, "core_generated") {
     ":prerequisites",
     "//gin",
     "//skia",
-    "//third_party/blink/renderer/bindings/core/v8:bindings_core_impl",
-    "//third_party/blink/renderer/bindings/core/v8:bindings_core_v8_generated",
+    "//third_party/blink/renderer/platform:make_platform_generated",
+    "//third_party/blink/renderer/platform/wtf",
     "//third_party/iccjpeg",
     "//third_party/libpng",
     "//third_party/libwebp",
     "//third_party/libxml",
     "//third_party/libxslt",
-
-    # FIXME: don't depend on bindings/modules http://crbug.com/358074
-    "//third_party/blink/renderer/bindings/modules:bindings_modules_generated",
-    "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_v8_generated",
-    "//third_party/blink/renderer/platform:make_platform_generated",
-    "//third_party/blink/renderer/platform/wtf",
     "//url",
     "//v8",
   ]
@@ -1157,10 +1156,7 @@ target(core_generated_target_type, "core_generated") {
   allow_circular_includes_from =
       [ "//third_party/blink/renderer/core/probe:probe" ]
 
-  configs += [
-    ":core_include_dirs",
-    "//tools/v8_context_snapshot:use_v8_context_snapshot",
-  ]
+  configs += [ ":core_include_dirs" ]
 
   cflags = []
   defines = []
@@ -1335,7 +1331,6 @@ source_set("unit_tests") {
     "layout/layout_box_test.cc",
     "layout/layout_embedded_content_test.cc",
     "layout/layout_flexible_box_test.cc",
-    "layout/layout_grid_test.cc",
     "layout/layout_image_test.cc",
     "layout/layout_inline_test.cc",
     "layout/layout_list_marker_test.cc",
@@ -1371,9 +1366,9 @@ source_set("unit_tests") {
     "layout/ng/flex/ng_flex_layout_algorithm_test.cc",
     "layout/ng/geometry/ng_box_strut_test.cc",
     "layout/ng/geometry/ng_static_position_test.cc",
-    "layout/ng/grid/ng_grid_child_iterator_test.cc",
     "layout/ng/grid/ng_grid_layout_algorithm_test.cc",
     "layout/ng/grid/ng_grid_track_collection_test.cc",
+    "layout/ng/inline/layout_ng_text_combine_test.cc",
     "layout/ng/inline/layout_ng_text_test.cc",
     "layout/ng/inline/ng_bidi_paragraph_test.cc",
     "layout/ng/inline/ng_caret_position_test.cc",
@@ -1387,6 +1382,7 @@ source_set("unit_tests") {
     "layout/ng/inline/ng_line_breaker_test.cc",
     "layout/ng/inline/ng_offset_mapping_test.cc",
     "layout/ng/inline/ng_physical_line_box_fragment_test.cc",
+    "layout/ng/layout_ng_fieldset_test.cc",
     "layout/ng/list/layout_ng_list_item_test.cc",
     "layout/ng/ng_absolute_utils_test.cc",
     "layout/ng/ng_base_layout_algorithm_test.cc",
@@ -1397,7 +1393,6 @@ source_set("unit_tests") {
     "layout/ng/ng_column_layout_algorithm_test.cc",
     "layout/ng/ng_constraint_space_builder_test.cc",
     "layout/ng/ng_fieldset_layout_algorithm_test.cc",
-    "layout/ng/ng_fragment_child_iterator_test.cc",
     "layout/ng/ng_fragmentation_test.cc",
     "layout/ng/ng_ink_overflow_test.cc",
     "layout/ng/ng_inline_layout_test.cc",
@@ -1423,9 +1418,9 @@ source_set("unit_tests") {
     "layout/svg/layout_svg_text_test.cc",
     "layout/text_autosizer_test.cc",
     "layout/visual_rect_mapping_test.cc",
-    "loader/address_space_feature_test.cc",
     "loader/alternate_signed_exchange_resource_info_test.cc",
     "loader/base_fetch_context_test.cc",
+    "loader/cookie_jar_unittest.cc",
     "loader/document_load_timing_test.cc",
     "loader/document_loader_test.cc",
     "loader/font_preload_manager_test.cc",
@@ -1536,6 +1531,7 @@ source_set("unit_tests") {
     "paint/paint_property_tree_update_tests.cc",
     "paint/paint_timing_test_helper.h",
     "paint/pre_paint_tree_walk_test.cc",
+    "paint/scrollable_area_painter_test.cc",
     "paint/svg_container_painter_test.cc",
     "paint/table_painter_test.cc",
     "paint/text_paint_timing_detector_test.cc",
@@ -1641,6 +1637,7 @@ source_set("unit_tests") {
     "//components/paint_preview/common:common",
     "//components/shared_highlighting/core/common",
     "//components/ukm:test_support",
+    "//content/test:test_support",
     "//mojo/public/cpp/system",
     "//mojo/public/cpp/test_support:test_utils",
     "//services/metrics/public/cpp:ukm_builders",
@@ -1668,6 +1665,22 @@ source_set("unit_tests") {
 
   if (use_aura) {
     sources += [ "scroll/scrollbar_theme_aura_test.cc" ]
+  }
+
+  if (media_use_ffmpeg || !is_android) {
+    sources += [ "exported/web_media_player_impl_unittest.cc" ]
+    data = [ "//media/test/data/" ]
+    deps += [
+      "//media",
+      "//media:test_support",
+      "//media/mojo/services",
+      "//third_party/blink/public:blink",
+      "//third_party/blink/public:test_support",
+      "//third_party/blink/public/common/tokens:tokens_headers",
+      "//third_party/blink/public/platform/media",
+      "//third_party/blink/renderer/platform/media",
+      "//ui/gfx/geometry",
+    ]
   }
 }
 

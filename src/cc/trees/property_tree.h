@@ -23,6 +23,7 @@
 #include "cc/paint/filter_operations.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/sticky_position_constraint.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
@@ -57,12 +58,7 @@ class CC_EXPORT PropertyTree {
  public:
   PropertyTree();
   PropertyTree(const PropertyTree& other) = delete;
-
-  // These C++ special member functions cannot be implicit inline because
-  // they are exported by CC_EXPORT. They will be instantiated in every
-  // compilation units that included this header, and compilation can fail
-  // because T may be incomplete.
-  virtual ~PropertyTree();
+  ~PropertyTree();
   PropertyTree<T>& operator=(const PropertyTree<T>&);
 
   // Property tree node starts from index 0. See equivalent constants in
@@ -78,11 +74,11 @@ class CC_EXPORT PropertyTree {
   int Insert(const T& tree_node, int parent_id);
 
   T* Node(int i) {
-    DCHECK(i < static_cast<int>(nodes_.size()));
+    CHECK_LT(i, static_cast<int>(nodes_.size()));
     return i > kInvalidNodeId ? &nodes_[i] : nullptr;
   }
   const T* Node(int i) const {
-    DCHECK(i < static_cast<int>(nodes_.size()));
+    CHECK_LT(i, static_cast<int>(nodes_.size()));
     return i > kInvalidNodeId ? &nodes_[i] : nullptr;
   }
 
@@ -95,7 +91,7 @@ class CC_EXPORT PropertyTree {
   void clear();
   size_t size() const { return nodes_.size(); }
 
-  virtual void set_needs_update(bool needs_update) {
+  void set_needs_update(bool needs_update) {
     needs_update_ = needs_update;
   }
   bool needs_update() const { return needs_update_; }
@@ -129,7 +125,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   // compilation units that included this header, and compilation can fail
   // because TransformCachedNodeData may be incomplete.
   TransformTree(const TransformTree&) = delete;
-  ~TransformTree() final;
+  ~TransformTree();
   TransformTree& operator=(const TransformTree&);
 
 #if DCHECK_IS_ON()
@@ -155,7 +151,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   void UpdateNodeOrAncestorsWillChangeTransform(TransformNode* node,
                                                 TransformNode* parent_node);
 
-  void set_needs_update(bool needs_update) final;
+  void set_needs_update(bool needs_update);
 
   // We store the page scale factor on the transform tree so that it can be
   // easily be retrieved and updated in UpdatePageScale.
@@ -288,7 +284,7 @@ class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {
 class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
  public:
   EffectTree();
-  ~EffectTree() final;
+  ~EffectTree();
 
   EffectTree& operator=(const EffectTree& from);
 
@@ -400,7 +396,7 @@ class ScrollCallbacks {
 class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
  public:
   ScrollTree();
-  ~ScrollTree() final;
+  ~ScrollTree();
 
   ScrollTree& operator=(const ScrollTree& from);
 
@@ -449,10 +445,12 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   // Collects deltas for scroll changes on the impl thread that need to be
   // reported to the main thread during the main frame. As such, should only be
   // called on the impl thread side PropertyTrees.
-  void CollectScrollDeltas(CompositorCommitData* commit_data,
-                           ElementId inner_viewport_scroll_element_id,
-                           bool use_fractional_deltas,
-                           const base::flat_set<ElementId>& snapped_elements);
+  void CollectScrollDeltas(
+      CompositorCommitData* commit_data,
+      ElementId inner_viewport_scroll_element_id,
+      bool use_fractional_deltas,
+      const base::flat_map<ElementId, TargetSnapAreaElementIds>&
+          snapped_elements);
 
   // Applies deltas sent in the previous main frame onto the impl thread state.
   // Should only be called on the impl thread side PropertyTrees.

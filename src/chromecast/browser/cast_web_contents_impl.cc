@@ -18,11 +18,14 @@
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_process.h"
+#include "chromecast/browser/cast_navigation_ui_data.h"
+#include "chromecast/browser/cast_permission_user_data.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/common/mojom/activity_url_filter.mojom.h"
 #include "chromecast/common/mojom/queryable_data_store.mojom.h"
 #include "chromecast/common/queryable_data.h"
 #include "chromecast/net/connectivity_checker.h"
+#include "components/cast/message_port/cast/message_port_cast.h"
 #include "components/media_control/mojom/media_playback_options.mojom.h"
 #include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
@@ -169,6 +172,9 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
     web_contents_->GetMutableRendererPrefs()
         ->webrtc_allow_legacy_tls_protocols = true;
   }
+
+  web_contents_->SetPageBaseBackgroundColor(chromecast::GetSwitchValueColor(
+      switches::kCastAppBackgroundColor, SK_ColorBLACK));
 }
 
 CastWebContentsImpl::~CastWebContentsImpl() {
@@ -225,6 +231,14 @@ void CastWebContentsImpl::AddRendererFeatures(
 
 void CastWebContentsImpl::LoadUrl(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (api_bindings_ && !bindings_received_) {
+    LOG(INFO) << "Will load URL: " << url.possibly_invalid_spec()
+              << " once bindings has been received.";
+    pending_load_url_ = url;
+    return;
+  }
+
   if (!web_contents_) {
     LOG(ERROR) << "Cannot load URL for deleted WebContents";
     return;
@@ -329,9 +343,22 @@ void CastWebContentsImpl::ClearRenderWidgetHostView() {
   }
 }
 
-on_load_script_injector::OnLoadScriptInjectorHost<std::string>*
-CastWebContentsImpl::script_injector() {
-  return &script_injector_;
+void CastWebContentsImpl::SetAppProperties(const std::string& session_id,
+                                           bool is_audio_app) {
+  if (!web_contents_)
+    return;
+  shell::CastNavigationUIData::SetAppPropertiesForWebContents(
+      web_contents_, session_id, is_audio_app);
+}
+
+void CastWebContentsImpl::SetCastPermissionUserData(const std::string& app_id) {
+  DCHECK(web_contents_);
+  new CastPermissionUserData(web_contents_, app_id);
+}
+
+void CastWebContentsImpl::AddBeforeLoadJavaScript(uint64_t id,
+                                                  base::StringPiece script) {
+  script_injector_.AddScriptForAllOrigins(id, std::string(script));
 }
 
 void CastWebContentsImpl::PostMessageToMainFrame(
@@ -344,14 +371,14 @@ void CastWebContentsImpl::PostMessageToMainFrame(
   data_utf16 = base::UTF8ToUTF16(data);
 
   // If origin is set as wildcard, no origin scoping would be applied.
-  constexpr char kWildcardOrigin[] = "*";
   absl::optional<std::u16string> target_origin_utf16;
+  constexpr char kWildcardOrigin[] = "*";
   if (target_origin != kWildcardOrigin)
     target_origin_utf16 = base::UTF8ToUTF16(target_origin);
 
   content::MessagePortProvider::PostMessageToFrame(
-      web_contents(), std::u16string(), target_origin_utf16, data_utf16,
-      std::move(ports));
+      web_contents()->GetPrimaryPage(), std::u16string(), target_origin_utf16,
+      data_utf16, std::move(ports));
 }
 
 void CastWebContentsImpl::ExecuteJavaScript(
@@ -364,6 +391,23 @@ void CastWebContentsImpl::ExecuteJavaScript(
 
   web_contents_->GetMainFrame()->ExecuteJavaScript(javascript,
                                                    std::move(callback));
+}
+
+void CastWebContentsImpl::ConnectToBindingsService(
+    mojo::PendingRemote<mojom::ApiBindings> api_bindings_remote) {
+  DCHECK(api_bindings_remote);
+
+  bindings_received_ = false;
+
+  named_message_port_connector_ =
+      std::make_unique<NamedMessagePortConnectorCast>(this);
+  named_message_port_connector_->RegisterPortHandler(base::BindRepeating(
+      &CastWebContentsImpl::OnPortConnected, base::Unretained(this)));
+
+  api_bindings_.Bind(std::move(api_bindings_remote));
+  // Fetch bindings and inject scripts into |script_injector_|.
+  api_bindings_->GetAll(base::BindOnce(&CastWebContentsImpl::OnBindingsReceived,
+                                       base::Unretained(this)));
 }
 
 void CastWebContentsImpl::AddObserver(CastWebContents::Observer* observer) {
@@ -536,6 +580,44 @@ CastWebContentsImpl::GetRendererFeatures() {
   return features;
 }
 
+void CastWebContentsImpl::OnBindingsReceived(
+    std::vector<chromecast::mojom::ApiBindingPtr> bindings) {
+  bindings_received_ = true;
+
+  if (bindings.empty()) {
+    LOG(ERROR) << "ApiBindings remote sent empty bindings. Stopping the page.";
+    Stop(net::ERR_UNEXPECTED);
+  } else {
+    constexpr uint64_t kBindingsIdStart = 0xFF0000;
+
+    // Enumerate and inject all scripts in |bindings|.
+    uint64_t bindings_id = kBindingsIdStart;
+    for (auto& entry : bindings) {
+      AddBeforeLoadJavaScript(bindings_id++, entry->script);
+    }
+  }
+
+  DVLOG(1) << "Bindings has been received. Start loading URL if requested.";
+  if (!pending_load_url_.is_empty()) {
+    auto gurl = std::move(pending_load_url_);
+    pending_load_url_ = GURL();
+    LoadUrl(gurl);
+  }
+}
+
+bool CastWebContentsImpl::OnPortConnected(
+    base::StringPiece port_name,
+    std::unique_ptr<cast_api_bindings::MessagePort> port) {
+  DCHECK(api_bindings_);
+
+  api_bindings_->Connect(
+      std::string(port_name),
+      cast_api_bindings::MessagePortCast::FromMessagePort(port.get())
+          ->TakePort()
+          .PassPort());
+  return true;
+}
+
 void CastWebContentsImpl::OnInterfaceRequestFromFrame(
     content::RenderFrameHost* /* render_frame_host */,
     const std::string& interface_name,
@@ -634,14 +716,17 @@ void CastWebContentsImpl::ReadyToCommitNavigation(
   // Skip injecting bindings scripts if |navigation_handle| is not
   // 'current' main frame navigation, e.g. another DidStartNavigation is
   // emitted. Also skip injecting for same document navigation and error page.
-  if (navigation_handle != active_navigation_ ||
-      navigation_handle->IsErrorPage()) {
-    return;
+  if (navigation_handle == active_navigation_ &&
+      !navigation_handle->IsErrorPage()) {
+    // Injects registered bindings script into the main frame.
+    script_injector_.InjectScriptsForURL(
+        navigation_handle->GetURL(), navigation_handle->GetRenderFrameHost());
   }
 
-  // Injects registered bindings script into the main frame.
-  script_injector_.InjectScriptsForURL(navigation_handle->GetURL(),
-                                       navigation_handle->GetRenderFrameHost());
+  // Notifies observers that the navigation of the main frame is ready.
+  for (Observer& observer : observer_list_) {
+    observer.MainFrameReadyToCommitNavigation(navigation_handle);
+  }
 }
 
 void CastWebContentsImpl::DidFinishNavigation(

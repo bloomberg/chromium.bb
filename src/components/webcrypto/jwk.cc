@@ -9,9 +9,9 @@
 #include <set>
 
 #include "base/base64url.h"
+#include "base/cxx17_backports.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "components/webcrypto/algorithms/util.h"
@@ -362,7 +362,8 @@ JwkWriter::JwkWriter(const std::string& algorithm,
                      const std::string& kty) {
   if (!algorithm.empty())
     dict_.SetString("alg", algorithm);
-  dict_.Set("key_ops", CreateJwkKeyOpsFromWebCryptoUsages(usages));
+  dict_.SetKey("key_ops", base::Value::FromUniquePtrValue(
+                              CreateJwkKeyOpsFromWebCryptoUsages(usages)));
   dict_.SetBoolean("ext", extractable);
   dict_.SetString("kty", kty);
 }

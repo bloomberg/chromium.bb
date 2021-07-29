@@ -6,16 +6,16 @@
 #include "base/run_loop.h"
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 #include "chrome/browser/sync/test/integration/feature_toggler.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +24,7 @@ namespace {
 
 class AutofillProfileDisabledChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit AutofillProfileDisabledChecker(syncer::ProfileSyncService* service)
+  explicit AutofillProfileDisabledChecker(syncer::SyncServiceImpl* service)
       : SingleClientStatusChangeChecker(service) {}
   ~AutofillProfileDisabledChecker() override = default;
 

@@ -52,7 +52,7 @@ static const AVCodecTag swf_audio_codec_tags[] = {
     { AV_CODEC_ID_ADPCM_SWF,  0x01 },
     { AV_CODEC_ID_MP3,        0x02 },
     { AV_CODEC_ID_PCM_S16LE,  0x03 },
-//  { AV_CODEC_ID_NELLYMOSER, 0x06 },
+    { AV_CODEC_ID_NELLYMOSER, 0x06 },
     { AV_CODEC_ID_NONE,          0 },
 };
 
@@ -204,7 +204,7 @@ static AVStream *create_new_audio_stream(AVFormatContext *s, int id, int info)
     }
     ast->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     ast->codecpar->codec_id   = ff_codec_get_id(swf_audio_codec_tags, info>>4 & 15);
-    ast->need_parsing = AVSTREAM_PARSE_FULL;
+    ast->internal->need_parsing = AVSTREAM_PARSE_FULL;
     sample_rate_code = info>>2 & 3;
     sample_size_code = info>>1 & 1;
     if (!sample_size_code && ast->codecpar->codec_id == AV_CODEC_ID_PCM_S16LE)
@@ -567,7 +567,7 @@ static av_cold int swf_read_close(AVFormatContext *avctx)
 }
 #endif
 
-AVInputFormat ff_swf_demuxer = {
+const AVInputFormat ff_swf_demuxer = {
     .name           = "swf",
     .long_name      = NULL_IF_CONFIG_SMALL("SWF (ShockWave Flash)"),
     .priv_data_size = sizeof(SWFDecContext),

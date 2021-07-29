@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {addEntries, ENTRIES, EntryType, RootPath, sendTestMessage, TestEntryInfo} from '../test_util.js';
+import {testcase} from '../testcase.js';
+
+import {expandTreeItem, mountCrostini, navigateWithDirectoryTree, remoteCall, setupAndWaitUntilReady} from './background.js';
+
 /**
  * Select My files in directory tree and wait for load.
  *
@@ -249,8 +254,7 @@ testcase.myFilesFolderRename = async () => {
   await remoteCall.waitForElement(appId, textInput);
 
   // Type new name.
-  await remoteCall.callRemoteTestUtil(
-      'inputText', appId, [textInput, 'new name']);
+  await remoteCall.inputText(appId, textInput, 'new name');
 
   // Send Enter key to the text input.
   const key3 = [textInput, 'Enter', false, false, false];

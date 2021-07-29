@@ -45,7 +45,7 @@ base::StringPiece DictionaryHashStoreContents::GetUMASuffix() const {
 }
 
 void DictionaryHashStoreContents::Reset() {
-  storage_->Remove(kPreferenceMACs, NULL);
+  storage_->RemovePath(kPreferenceMACs);
 }
 
 bool DictionaryHashStoreContents::GetMac(const std::string& path,
@@ -101,13 +101,13 @@ void DictionaryHashStoreContents::SetSplitMac(const std::string& path,
 void DictionaryHashStoreContents::ImportEntry(const std::string& path,
                                               const base::Value* in_value) {
   base::DictionaryValue* macs_dict = GetMutableContents(true);
-  macs_dict->Set(path, std::make_unique<base::Value>(in_value->Clone()));
+  macs_dict->SetPath(path, in_value->Clone());
 }
 
 bool DictionaryHashStoreContents::RemoveEntry(const std::string& path) {
   base::DictionaryValue* macs_dict = GetMutableContents(false);
   if (macs_dict)
-    return macs_dict->RemovePath(path, NULL);
+    return macs_dict->RemovePath(path);
 
   return false;
 }

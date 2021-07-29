@@ -33,18 +33,6 @@
 
 static const uint32_t monoblack_pal[16] = { 0x000000, 0xFFFFFF };
 
-static av_cold int pcx_encode_init(AVCodecContext *avctx)
-{
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-    avctx->coded_frame->pict_type = AV_PICTURE_TYPE_I;
-    avctx->coded_frame->key_frame = 1;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
-
-    return 0;
-}
-
 /**
  * PCX run-length encoder
  * @param dst output buffer
@@ -204,12 +192,11 @@ static int pcx_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     return 0;
 }
 
-AVCodec ff_pcx_encoder = {
+const AVCodec ff_pcx_encoder = {
     .name           = "pcx",
     .long_name      = NULL_IF_CONFIG_SMALL("PC Paintbrush PCX image"),
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_PCX,
-    .init           = pcx_encode_init,
     .encode2        = pcx_encode_frame,
     .pix_fmts       = (const enum AVPixelFormat[]){
         AV_PIX_FMT_RGB24,
@@ -218,4 +205,5 @@ AVCodec ff_pcx_encoder = {
         AV_PIX_FMT_MONOBLACK,
         AV_PIX_FMT_NONE
     },
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

@@ -118,7 +118,8 @@ class CefBrowserPlatformDelegate {
   virtual void WebContentsDestroyed(content::WebContents* web_contents);
 
   // See WebContentsDelegate documentation.
-  virtual bool ShouldTransferNavigation(bool is_main_frame_navigation);
+  virtual bool ShouldAllowRendererInitiatedCrossProcessNavigation(
+      bool is_main_frame_navigation);
 
   // Called after the RenderViewHost is created.
   virtual void RenderViewCreated(content::RenderViewHost* render_view_host);
@@ -356,7 +357,7 @@ class CefBrowserPlatformDelegate {
   virtual void StopFinding(bool clearSelection);
 
  protected:
-  // Allow deletion via scoped_ptr only.
+  // Allow deletion via std::unique_ptr only.
   friend std::default_delete<CefBrowserPlatformDelegate>;
 
   CefBrowserPlatformDelegate();

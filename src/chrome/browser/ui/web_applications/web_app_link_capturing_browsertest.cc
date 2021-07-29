@@ -19,7 +19,6 @@
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -27,6 +26,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/embedder_support/switches.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -68,6 +68,8 @@ void AwaitTabCount(Browser* browser, int tab_count) {
 
 namespace web_app {
 
+// Tests that links are captured correctly into an installed WebApp using the
+// 'tabbed' display mode, which allows the webapp window to have multiple tabs.
 class WebAppLinkCapturingBrowserTest : public WebAppNavigationBrowserTest {
  public:
   WebAppLinkCapturingBrowserTest() {
@@ -112,8 +114,8 @@ class WebAppLinkCapturingBrowserTest : public WebAppNavigationBrowserTest {
     chrome::CloseWindow(app_browser);
   }
 
-  WebAppProviderBase& provider() {
-    auto* provider = WebAppProviderBase::GetProviderBase(profile());
+  WebAppProvider& provider() {
+    auto* provider = WebAppProvider::Get(profile());
     DCHECK(provider);
     return *provider;
   }
@@ -190,9 +192,10 @@ class WebAppTabStripLinkCapturingBrowserTest
     : public WebAppLinkCapturingBrowserTest {
  public:
   WebAppTabStripLinkCapturingBrowserTest() {
-    features_.InitWithFeatures({features::kDesktopPWAsTabStrip,
-                                features::kDesktopPWAsTabStripLinkCapturing},
-                               {});
+    features_.InitWithFeatures(
+        {features::kDesktopPWAsTabStrip, features::kDesktopPWAsTabStripSettings,
+         features::kDesktopPWAsTabStripLinkCapturing},
+        {});
   }
 
   void InstallTestApp() {
@@ -206,6 +209,8 @@ class WebAppTabStripLinkCapturingBrowserTest
   base::test::ScopedFeatureList features_;
 };
 
+// First in scope navigation from about:blank gets captured and reparented into
+// the app window.
 IN_PROC_BROWSER_TEST_F(WebAppTabStripLinkCapturingBrowserTest,
                        InScopeNavigationsCaptured) {
   InstallTestApp();
@@ -605,8 +610,8 @@ IN_PROC_BROWSER_TEST_F(WebAppDeclarativeLinkCapturingOriginTrialBrowserTest,
      private:
       base::RunLoop run_loop_;
     } update_awaiter;
-    base::ScopedObservation<AppRegistrar, AppRegistrarObserver> observer_scope(
-        &update_awaiter);
+    base::ScopedObservation<WebAppRegistrar, AppRegistrarObserver>
+        observer_scope(&update_awaiter);
     observer_scope.Observe(&provider.registrar());
 
     serve_token = false;

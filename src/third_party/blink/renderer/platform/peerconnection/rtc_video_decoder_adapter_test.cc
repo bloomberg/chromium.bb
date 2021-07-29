@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/gmock_callback_support.h"
@@ -85,6 +84,8 @@ class DecodedImageCallback : public webrtc::DecodedImageCallback {
   DecodedImageCallback(
       base::RepeatingCallback<void(const webrtc::VideoFrame&)> callback)
       : callback_(callback) {}
+  DecodedImageCallback(const DecodedImageCallback&) = delete;
+  DecodedImageCallback& operator=(const DecodedImageCallback&) = delete;
 
   int32_t Decoded(webrtc::VideoFrame& decodedImage) override {
     callback_.Run(decodedImage);
@@ -95,14 +96,15 @@ class DecodedImageCallback : public webrtc::DecodedImageCallback {
 
  private:
   base::RepeatingCallback<void(const webrtc::VideoFrame&)> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(DecodedImageCallback);
 };
 
 }  // namespace
 
 class RTCVideoDecoderAdapterTest : public ::testing::Test {
  public:
+  RTCVideoDecoderAdapterTest(const RTCVideoDecoderAdapterTest&) = delete;
+  RTCVideoDecoderAdapterTest& operator=(const RTCVideoDecoderAdapterTest&) =
+      delete;
   RTCVideoDecoderAdapterTest()
       : media_thread_("Media Thread"),
         gpu_factories_(nullptr),
@@ -118,16 +120,14 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
         .WillByDefault(Return(media_thread_.task_runner()));
     EXPECT_CALL(gpu_factories_, GetTaskRunner()).Times(AtLeast(0));
 
-    ON_CALL(gpu_factories_, IsDecoderConfigSupported(_, _))
+    ON_CALL(gpu_factories_, IsDecoderConfigSupported(_))
         .WillByDefault(
             Return(media::GpuVideoAcceleratorFactories::Supported::kTrue));
-    EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_, _))
-        .Times(AtLeast(0));
+    EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_)).Times(AtLeast(0));
 
-    ON_CALL(gpu_factories_, CreateVideoDecoder(_, _, _))
+    ON_CALL(gpu_factories_, CreateVideoDecoder(_, _))
         .WillByDefault(
             [this](media::MediaLog* media_log,
-                   media::VideoDecoderImplementation impl,
                    const media::RequestOverlayInfoCB& request_overlay_info_cb) {
               // If gpu factories tries to get a second video decoder, for
               // testing purposes we will just return null.
@@ -135,7 +135,7 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
               // decoder is null.
               return std::move(owned_video_decoder_);
             });
-    EXPECT_CALL(gpu_factories_, CreateVideoDecoder(_, _, _)).Times(AtLeast(0));
+    EXPECT_CALL(gpu_factories_, CreateVideoDecoder(_, _)).Times(AtLeast(0));
   }
 
   ~RTCVideoDecoderAdapterTest() {
@@ -259,8 +259,6 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
   std::unique_ptr<StrictMock<MockVideoDecoder>> owned_video_decoder_;
   DecodedImageCallback decoded_image_callback_;
   media::VideoDecoder::OutputCB output_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderAdapterTest);
 };
 
 TEST_F(RTCVideoDecoderAdapterTest, Create_UnknownFormat) {
@@ -271,7 +269,7 @@ TEST_F(RTCVideoDecoderAdapterTest, Create_UnknownFormat) {
 }
 
 TEST_F(RTCVideoDecoderAdapterTest, Create_UnsupportedFormat) {
-  EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_, _))
+  EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_))
       .WillRepeatedly(
           Return(media::GpuVideoAcceleratorFactories::Supported::kFalse));
   rtc_video_decoder_adapter_ = RTCVideoDecoderAdapter::Create(

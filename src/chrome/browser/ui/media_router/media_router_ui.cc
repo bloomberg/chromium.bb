@@ -13,9 +13,9 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -964,12 +964,11 @@ void MediaRouterUI::UpdateModelHeader() {
 UIMediaSink MediaRouterUI::ConvertToUISink(const MediaSinkWithCastModes& sink,
                                            const MediaRoute* route,
                                            const absl::optional<Issue>& issue) {
-  UIMediaSink ui_sink;
+  UIMediaSink ui_sink{sink.sink.provider_id()};
   ui_sink.id = sink.sink.id();
   ui_sink.friendly_name = GetSinkFriendlyName(sink.sink);
   ui_sink.icon_type = sink.sink.icon_type();
   ui_sink.cast_modes = sink.cast_modes;
-  ui_sink.provider = sink.sink.provider_id();
 
   if (route) {
     ui_sink.status_text = base::UTF8ToUTF16(route->description());

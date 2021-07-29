@@ -73,7 +73,7 @@ class CORE_EXPORT SVGImage final : public Image {
   static bool IsInSVGImage(const Node*);
 
   bool IsSVGImage() const override { return true; }
-  IntSize Size() const override;
+  IntSize SizeWithConfig(SizeConfig) const override;
 
   void CheckLoaded() const;
   bool CurrentFrameHasSingleSecurityOrigin() const override;
@@ -147,14 +147,14 @@ class CORE_EXPORT SVGImage final : public Image {
     FloatSize CalculateResidualScale() const;
     float Zoom() const { return zoom_; }
     const FloatSize& ContainerSize() const { return container_size_; }
-    const LayoutSize& RoundedContainerSize() const {
+    const IntSize& RoundedContainerSize() const {
       return rounded_container_size_;
     }
     const KURL& Url() const { return url_; }
 
    private:
     const FloatSize container_size_;
-    const LayoutSize rounded_container_size_;
+    const IntSize rounded_container_size_;
     const float zoom_;
     const KURL& url_;
   };
@@ -174,12 +174,9 @@ class CORE_EXPORT SVGImage final : public Image {
                         const FloatRect& src_rect);
   void DrawPatternForContainer(const DrawInfo&,
                                GraphicsContext&,
-                               const FloatRect& src_rect,
-                               const FloatSize& tile_scale,
-                               const FloatPoint& phase,
-                               SkBlendMode composite_op,
+                               const cc::PaintFlags&,
                                const FloatRect& dst_rect,
-                               const FloatSize& repeat_spacing);
+                               const ImageTilingInfo&);
   void PopulatePaintRecordForCurrentFrameForContainer(const DrawInfo&,
                                                       PaintImageBuilder&);
 

@@ -8,16 +8,16 @@
 
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_image.h"
-#include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/public/cpp/holding_space/holding_space_test_api.h"
+#include "ash/public/cpp/holding_space/holding_space_util.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/unguessable_token.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
@@ -176,14 +176,15 @@ HoldingSpaceItem* HoldingSpaceBrowserTestBase::AddScreenRecordingFile() {
 HoldingSpaceItem* HoldingSpaceBrowserTestBase::AddItem(
     Profile* profile,
     HoldingSpaceItem::Type type,
-    const base::FilePath& file_path) {
+    const base::FilePath& file_path,
+    const HoldingSpaceProgress& progress) {
   auto item = HoldingSpaceItem::CreateFileBackedItem(
       type, file_path,
-      holding_space_util::ResolveFileSystemUrl(profile, file_path),
+      holding_space_util::ResolveFileSystemUrl(profile, file_path), progress,
       base::BindLambdaForTesting(
           [&](HoldingSpaceItem::Type type, const base::FilePath& path) {
             return std::make_unique<HoldingSpaceImage>(
-                HoldingSpaceImage::GetMaxSizeForType(type), path,
+                holding_space_util::GetMaxImageSizeForType(type), path,
                 /*async_bitmap_resolver=*/base::DoNothing());
           }));
 

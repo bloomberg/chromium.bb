@@ -38,7 +38,6 @@
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_observer.h"
 #include "chrome/browser/metrics/oom/out_of_memory_reporter.h"
-#include "chrome/browser/metrics/renderer_uptime_web_contents_observer.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_preconnect_client.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/optimization_guide/blink/blink_optimization_guide_web_contents_observer.h"
@@ -57,12 +56,14 @@
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/reputation/reputation_web_contents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
-#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/safe_browsing/trigger_creator.h"
 #include "chrome/browser/sessions/session_tab_helper_factory.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/connection_help_tab_helper.h"
+#include "chrome/browser/ssl/https_only_mode_tab_helper.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/subresource_filter/chrome_content_subresource_filter_throttle_manager_factory.h"
 #include "chrome/browser/subresource_redirect/subresource_redirect_observer.h"
@@ -109,6 +110,7 @@
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/safe_browsing/content/browser/safe_browsing_navigation_observer.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -125,12 +127,11 @@
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/banners/android/chrome_app_banner_manager_android.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
-#include "chrome/browser/ui/android/autofill_assistant/autofill_assistant_tab_helper.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_tab_modal_dialog_manager_delegate_android.h"
 #include "chrome/browser/video_tutorials/video_tutorial_tab_helper.h"
-#include "components/autofill_assistant/browser/features.h"
 #else
+#include "chrome/browser/accuracy_tips/accuracy_service_factory.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
@@ -140,6 +141,7 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/sync/browser_synced_tab_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "components/accuracy_tips/accuracy_web_contents_observer.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/zoom_controller.h"
@@ -147,7 +149,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/child_accounts/time_limits/web_time_navigation_observer.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_content_tab_helper.h"
+#include "chrome/browser/ash/policy/dlp/dlp_content_tab_helper.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder_tab_tracker.h"
 #endif
 
@@ -269,6 +271,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents, TopSitesFactory::GetForProfile(profile).get());
   HistoryTabHelper::CreateForWebContents(web_contents);
   HistoryClustersTabHelper::CreateForWebContents(web_contents);
+  HttpsOnlyModeTabHelper::CreateForWebContents(web_contents);
   webapps::InstallableManager::CreateForWebContents(web_contents);
   PrefetchProxyTabHelper::CreateForWebContents(web_contents);
   LiteVideoObserver::MaybeCreateForWebContents(web_contents);
@@ -278,8 +281,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     MediaEngagementService::CreateWebContentsObserver(web_contents);
   if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore))
     MediaHistoryContentsObserver::CreateForWebContents(web_contents);
-  metrics::RendererUptimeWebContentsObserver::CreateForWebContents(
-      web_contents);
   MixedContentSettingsTabHelper::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
   NavigationPredictorPreconnectClient::CreateForWebContents(web_contents);
@@ -316,7 +317,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   resource_coordinator::ResourceCoordinatorTabHelper::CreateForWebContents(
       web_contents);
   safe_browsing::SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
-      web_contents);
+      web_contents, HostContentSettingsMapFactory::GetForProfile(profile),
+      safe_browsing::SafeBrowsingNavigationObserverManagerFactory::
+          GetForBrowserContext(profile),
+      profile->GetPrefs(), g_browser_process->safe_browsing_service());
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(web_contents);
   safe_browsing::TriggerCreator::MaybeCreateTriggersForWebContents(
       profile, web_contents);
@@ -368,12 +372,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   }
   SearchGeolocationDisclosureTabHelper::CreateForWebContents(web_contents);
   video_tutorials::VideoTutorialTabHelper::CreateForWebContents(web_contents);
-  if (base::FeatureList::IsEnabled(
-          autofill_assistant::features::kAutofillAssistantWithTabHelper)) {
-    autofill_assistant::AutofillAssistantTabHelper::CreateForWebContents(
-        web_contents);
-  }
 #else
+  if (accuracy_tips::AccuracyWebContentsObserver::IsEnabled(web_contents)) {
+    accuracy_tips::AccuracyWebContentsObserver::CreateForWebContents(
+        web_contents, AccuracyServiceFactory::GetForProfile(profile));
+  }
   if (web_app::AreWebAppsUserInstallable(profile))
     webapps::AppBannerManagerDesktop::CreateForWebContents(web_contents);
   BookmarkTabHelper::CreateForWebContents(web_contents);
@@ -413,7 +416,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   app_list::CrOSActionRecorderTabTracker::CreateForWebContents(web_contents);
   ash::app_time::WebTimeNavigationObserver::MaybeCreateForWebContents(
       web_contents);
-  policy::DlpContentTabHelper::CreateForWebContents(web_contents);
+  policy::DlpContentTabHelper::MaybeCreateForWebContents(web_contents);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -430,7 +433,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(
-          features::kHappinessTrackingSurveysForDesktopDemo)) {
+          features::kHappinessTrackingSurveysForDesktopDemo) ||
+      base::FeatureList::IsEnabled(features::kTrustSafetySentimentSurvey)) {
     HatsHelper::CreateForWebContents(web_contents);
   }
 #endif

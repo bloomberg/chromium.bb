@@ -133,6 +133,7 @@ OpName %10 "tint_symbol_3"
 OpName %11 "tint_symbol_1"
 OpName %14 "frag_main"
 OpDecorate %1 Location 0
+OpDecorate %1 Flat
 OpDecorate %4 Location 0
 %3 = OpTypeInt 32 0
 %2 = OpTypePointer Input %3
@@ -196,11 +197,12 @@ TEST_F(BuilderTest, EntryPoint_SharedStruct) {
                  ast::DecorationList{Builtin(ast::Builtin::kPosition)}),
       });
 
-  auto* vert_retval = Construct(interface, 42.f, Construct(ty.vec4<f32>()));
-  Func("vert_main", ast::VariableList{}, interface, {Return(vert_retval)},
-       {Stage(ast::PipelineStage::kVertex)});
+  auto* vert_retval =
+      Construct(ty.Of(interface), 42.f, Construct(ty.vec4<f32>()));
+  Func("vert_main", ast::VariableList{}, ty.Of(interface),
+       {Return(vert_retval)}, {Stage(ast::PipelineStage::kVertex)});
 
-  auto* frag_inputs = Param("inputs", interface);
+  auto* frag_inputs = Param("inputs", ty.Of(interface));
   Func("frag_main", ast::VariableList{frag_inputs}, ty.f32(),
        {Return(MemberAccessor(Expr("inputs"), "value"))},
        {Stage(ast::PipelineStage::kFragment)},
@@ -289,6 +291,22 @@ OpFunctionEnd
 )");
 
   Validate(b);
+}
+
+TEST_F(BuilderTest, SampleIndex_SampleRateShadingCapability) {
+  Func("main",
+       {Param("sample_index", ty.u32(), {Builtin(ast::Builtin::kSampleIndex)})},
+       ty.void_(), {}, {Stage(ast::PipelineStage::kFragment)});
+
+  spirv::Builder& b = SanitizeAndBuild();
+
+  ASSERT_TRUE(b.Build()) << b.error();
+
+  // Make sure we generate the SampleRateShading capability.
+  EXPECT_EQ(DumpInstructions(b.capabilities()),
+            "OpCapability Shader\n"
+            "OpCapability SampleRateShading\n");
+  EXPECT_EQ(DumpInstructions(b.annots()), "OpDecorate %1 BuiltIn SampleId\n");
 }
 
 }  // namespace

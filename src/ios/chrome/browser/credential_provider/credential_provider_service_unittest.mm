@@ -14,9 +14,9 @@
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
-#import "ios/chrome/common/credential_provider/archivable_credential_store.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/credential_provider/credential.h"
+#import "ios/chrome/common/credential_provider/memory_credential_store.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/web/public/test/web_task_environment.h"
@@ -50,7 +50,7 @@ class CredentialProviderServiceTest : public PlatformTest {
     EXPECT_FALSE([user_defaults
         boolForKey:kUserDefaultsCredentialProviderFirstTimeSyncCompleted]);
 
-    credential_store_ = [[ArchivableCredentialStore alloc] initWithFileURL:nil];
+    credential_store_ = [[MemoryCredentialStore alloc] init];
 
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(
@@ -87,7 +87,7 @@ class CredentialProviderServiceTest : public PlatformTest {
   base::ScopedTempDir temp_dir_;
   web::WebTaskEnvironment task_environment_;
   scoped_refptr<PasswordStoreImpl> password_store_;
-  ArchivableCredentialStore* credential_store_;
+  id<CredentialStore> credential_store_;
   AuthenticationServiceFake* auth_service_;
   std::unique_ptr<CredentialProviderService> credential_provider_service_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
@@ -160,18 +160,20 @@ TEST_F(CredentialProviderServiceTest, AccountChange) {
   password_store_->AddLogin(form);
   task_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(auth_service_->GetAuthenticatedIdentity());
+  EXPECT_FALSE(
+      auth_service_->GetPrimaryIdentity(signin::ConsentLevel::kSignin));
   EXPECT_FALSE(credential_store_.credentials.firstObject.validationIdentifier);
 
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
   identity_service->AddManagedIdentities(@[ @"Name" ]);
   ChromeIdentity* identity =
-      identity_service->GetAllIdentitiesSortedForDisplay(nullptr).firstObject;
+      identity_service->GetAllIdentities(nullptr).firstObject;
   auth_service_->SignIn(identity);
 
-  ASSERT_TRUE(auth_service_->GetAuthenticatedIdentity());
-  ASSERT_TRUE(auth_service_->IsAuthenticatedIdentityManaged());
+  ASSERT_TRUE(auth_service_->GetPrimaryIdentity(signin::ConsentLevel::kSignin));
+  ASSERT_TRUE(
+      auth_service_->HasPrimaryIdentityManaged(signin::ConsentLevel::kSignin));
 
   CoreAccountInfo account = CoreAccountInfo();
   account.email = base::SysNSStringToUTF8(identity.userEmail);
@@ -185,9 +187,10 @@ TEST_F(CredentialProviderServiceTest, AccountChange) {
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForFileOperationTimeout, ^{
     base::RunLoop().RunUntilIdle();
-    return [auth_service_->GetAuthenticatedIdentity().gaiaID
-        isEqualToString:credential_store_.credentials.firstObject
-                            .validationIdentifier];
+    return
+        [auth_service_->GetPrimaryIdentity(signin::ConsentLevel::kSignin).gaiaID
+            isEqualToString:credential_store_.credentials.firstObject
+                                .validationIdentifier];
   }));
 
   auth_service_->SignOut(signin_metrics::SIGNOUT_TEST,
@@ -202,9 +205,10 @@ TEST_F(CredentialProviderServiceTest, AccountChange) {
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForFileOperationTimeout, ^{
     base::RunLoop().RunUntilIdle();
-    return ![auth_service_->GetAuthenticatedIdentity().gaiaID
-        isEqualToString:credential_store_.credentials.firstObject
-                            .validationIdentifier];
+    return !
+        [auth_service_->GetPrimaryIdentity(signin::ConsentLevel::kSignin).gaiaID
+            isEqualToString:credential_store_.credentials.firstObject
+                                .validationIdentifier];
   }));
 }
 

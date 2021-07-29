@@ -9,7 +9,6 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/feature_list.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -78,7 +77,10 @@ void ResourceCoordinatorTabHelper::DidFinishNavigation(
     return;
   }
 
-  if (navigation_handle->IsInMainFrame()) {
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (navigation_handle->IsInPrimaryMainFrame()) {
     ukm_source_id_ = ukm::ConvertToSourceId(
         navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
   }

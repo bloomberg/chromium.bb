@@ -4,14 +4,17 @@
 
 #include "base/files/file_util.h"
 #include "build/build_config.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/dump_accessibility_browsertest_base.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "ui/accessibility/platform/inspect/ax_script_instruction.h"
 
 namespace content {
 
 using ui::AXPropertyFilter;
+using ui::AXScriptInstruction;
 using ui::AXTreeFormatter;
 
 // See content/test/data/accessibility/readme.md for an overview.
@@ -35,20 +38,83 @@ class DumpAccessibilityScriptTest : public DumpAccessibilityTestBase {
     property_filters->push_back(AXPropertyFilter(filter, type));
   }
 
+  base::Value EvaluateScript(
+      AXTreeFormatter* formatter,
+      BrowserAccessibility* root,
+      const std::vector<AXScriptInstruction>& instructions,
+      size_t start_index,
+      size_t end_index) {
+    return base::Value(
+        formatter->EvaluateScript(root, instructions, start_index, end_index));
+  }
+
   std::vector<std::string> Dump(std::vector<std::string>& unused) override {
+    std::vector<std::string> dump;
     std::unique_ptr<AXTreeFormatter> formatter(CreateFormatter());
+    BrowserAccessibility* root = GetManager()->GetRoot();
 
-    // Set test provided property filters.
-    formatter->SetPropertyFilters(scenario_.property_filters,
-                                  AXTreeFormatter::kFiltersDefaultSet);
+    size_t start_index = 0;
+    size_t length = scenario_.script_instructions.size();
+    while (start_index < length) {
+      std::string wait_for;
+      size_t index = start_index;
+      for (; index < length; index++) {
+        if (scenario_.script_instructions[index].IsEvent()) {
+          wait_for = scenario_.script_instructions[index].AsEvent();
+          break;
+        }
+      }
 
-    // No accessible tree nodes, just run scripts.
-    formatter->SetNodeFilters({{"*", "*"}});
+      std::string actual_contents;
+      if (wait_for.empty()) {
+        actual_contents = formatter->EvaluateScript(
+            root, scenario_.script_instructions, start_index, index);
+      } else {
+        std::vector<std::string> run_until{wait_for};
+        auto pair = CaptureEvents(
+            base::BindOnce(&DumpAccessibilityScriptTest::EvaluateScript,
+                           base::Unretained(this), formatter.get(), root,
+                           scenario_.script_instructions, start_index, index),
+            run_until);
+        actual_contents = pair.first.GetString();
+        for (auto event : pair.second) {
+          if (base::StartsWith(event, wait_for)) {
+            actual_contents += event + '\n';
+          }
+        }
+      }
 
-    std::string actual_contents =
-        formatter->Format(GetRootAccessibilityNode(shell()->web_contents()));
-    return base::SplitString(actual_contents, "\n", base::KEEP_WHITESPACE,
-                             base::SPLIT_WANT_NONEMPTY);
+      auto chunk =
+          base::SplitString(actual_contents, "\n", base::KEEP_WHITESPACE,
+                            base::SPLIT_WANT_NONEMPTY);
+      dump.insert(dump.end(), chunk.begin(), chunk.end());
+
+      start_index = index + 1;
+    }
+    return dump;
+  }
+
+  void RunMacActionTest(const base::FilePath::CharType* file_path) {
+    base::FilePath test_path = GetTestFilePath("accessibility", "mac/action");
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
+    }
+    base::FilePath html_file = test_path.Append(base::FilePath(file_path));
+
+    RunTest(html_file, "accessibility/mac/action");
+  }
+
+  void RunMacSelectionTest(const base::FilePath::CharType* file_path) {
+    base::FilePath test_path =
+        GetTestFilePath("accessibility", "mac/selection");
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
+    }
+    base::FilePath html_file = test_path.Append(base::FilePath(file_path));
+
+    RunTest(html_file, "accessibility/mac/selection");
   }
 
   void RunMacTextMarkerTest(const base::FilePath::CharType* file_path) {
@@ -88,8 +154,39 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::Values(AXInspectFactory::kMac),
                          TestPassToString());
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXPressButton) {
+  RunMacActionTest(FILE_PATH_LITERAL("ax-press-button.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXSelectAllTextarea) {
+  RunMacSelectionTest(FILE_PATH_LITERAL("ax-selectall-textarea.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
+                       SetSelectionContenteditable) {
+  RunMacSelectionTest(FILE_PATH_LITERAL("set-selection-contenteditable.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
+                       AXNextWordEndTextMarkerForTextMarker) {
+  RunMacTextMarkerTest(
+      FILE_PATH_LITERAL("ax-next-word-end-text-marker-for-text-marker.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
+                       AXPreviousWordStartTextMarkerForTextMarker) {
+  RunMacTextMarkerTest(FILE_PATH_LITERAL(
+      "ax-previous-word-start-text-marker-for-text-marker.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXStartTextMarker) {
   RunMacTextMarkerTest(FILE_PATH_LITERAL("ax_start_text_marker.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
+                       AXTextMarkerRangeForUIElement) {
+  RunMacTextMarkerTest(
+      FILE_PATH_LITERAL("ax-text-marker-range-for-ui-element.html"));
 }
 
 #endif

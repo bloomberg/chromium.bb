@@ -7,10 +7,7 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node_filter.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_parse_from_string_options.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_union_document_documentfragment_string.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_union_document_documentfragment_string_trustedhtml.h"
-#include "third_party/blink/renderer/bindings/modules/v8/string_or_document_fragment_or_document.h"
-#include "third_party/blink/renderer/bindings/modules/v8/string_or_trusted_html_or_document_fragment_or_document.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_document_documentfragment.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_sanitizer_config.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
@@ -50,7 +47,8 @@ bool ConfigIsEmpty(const SanitizerConfig* config) {
   return !config ||
          (!config->hasDropElements() && !config->hasBlockElements() &&
           !config->hasAllowElements() && !config->hasDropAttributes() &&
-          !config->hasAllowAttributes() && !config->hasAllowCustomElements());
+          !config->hasAllowAttributes() && !config->hasAllowCustomElements() &&
+          !config->hasAllowComments());
 }
 
 SanitizerConfig* SanitizerConfigCopy(const SanitizerConfig* config) {
@@ -63,6 +61,9 @@ SanitizerConfig* SanitizerConfigCopy(const SanitizerConfig* config) {
   }
   if (config->hasAllowCustomElements()) {
     copy->setAllowCustomElements(config->allowCustomElements());
+  }
+  if (config->hasAllowComments()) {
+    copy->setAllowComments(config->allowComments());
   }
   if (config->hasAllowElements()) {
     copy->setAllowElements(config->allowElements());
@@ -84,18 +85,13 @@ SanitizerConfig* SanitizerConfigCopy(const SanitizerConfig* config) {
 Sanitizer::Sanitizer(ExecutionContext* execution_context,
                      const SanitizerConfig* config) {
   // The spec treats an absent config as the default. We'll handle this by
-  // normalizing this here to make sure the config_dictionary_ is nullptr
-  // in these cases, while the config_ will be a copy of the default config.
+  // checking for this an empty dictionary and representing it as nullptr.
   if (ConfigIsEmpty(config)) {
     config = nullptr;
-  }
-
-  config_ = SanitizerConfigImpl::From(config);
-  config_dictionary_ = SanitizerConfigCopy(config);
-  if (!config_dictionary_) {
     UseCounter::Count(execution_context,
                       WebFeature::kSanitizerAPIDefaultConfiguration);
   }
+  config_ = SanitizerConfigImpl::From(config);
 }
 
 Sanitizer::~Sanitizer() = default;
@@ -106,85 +102,78 @@ Sanitizer* Sanitizer::Create(ExecutionContext* execution_context,
   return MakeGarbageCollected<Sanitizer>(execution_context, config);
 }
 
-String Sanitizer::sanitizeToString(ScriptState* script_state,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                                   const V8SanitizerInput* input,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                                   StringOrDocumentFragmentOrDocument& input,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                                   ExceptionState& exception_state) {
-  return CreateMarkup(SanitizeImpl(script_state, input, exception_state),
-                      kChildrenOnly);
-}
-
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-DocumentFragment* Sanitizer::sanitize(
-    ScriptState* script_state,
-    const V8SanitizerInputWithTrustedHTML* input,
-    ExceptionState& exception_state) {
+DocumentFragment* Sanitizer::sanitize(ScriptState* script_state,
+                                      const V8SanitizerInput* input,
+                                      ExceptionState& exception_state) {
   V8SanitizerInput* new_input = nullptr;
   switch (input->GetContentType()) {
-    case V8SanitizerInputWithTrustedHTML::ContentType::kDocument:
+    case V8SanitizerInput::ContentType::kDocument:
       new_input =
           MakeGarbageCollected<V8SanitizerInput>(input->GetAsDocument());
       break;
-    case V8SanitizerInputWithTrustedHTML::ContentType::kDocumentFragment:
+    case V8SanitizerInput::ContentType::kDocumentFragment:
       new_input = MakeGarbageCollected<V8SanitizerInput>(
           input->GetAsDocumentFragment());
       break;
-    case V8SanitizerInputWithTrustedHTML::ContentType::kString: {
-      LocalDOMWindow* window = LocalDOMWindow::From(script_state);
-      if (!window) {
-        exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                          "Cannot find current DOM window.");
-        return nullptr;
-      }
-      new_input =
-          MakeGarbageCollected<V8SanitizerInput>(TrustedTypesCheckForHTML(
-              input->GetAsString(), window->GetExecutionContext(),
-              exception_state));
-      if (exception_state.HadException()) {
-        return nullptr;
-      }
-      break;
-    }
-    case V8SanitizerInputWithTrustedHTML::ContentType::kTrustedHTML:
-      new_input = MakeGarbageCollected<V8SanitizerInput>(
-          input->GetAsTrustedHTML()->toString());
-      break;
   }
-  return SanitizeImpl(script_state, new_input, exception_state);
-}
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-DocumentFragment* Sanitizer::sanitize(
-    ScriptState* script_state,
-    StringOrTrustedHTMLOrDocumentFragmentOrDocument& input,
-    ExceptionState& exception_state) {
-  StringOrDocumentFragmentOrDocument new_input;
-  if (input.IsString() || input.IsNull()) {
-    LocalDOMWindow* window = LocalDOMWindow::From(script_state);
-    if (!window) {
-      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                        "Cannot find current DOM window.");
-      return nullptr;
-    }
-    new_input.SetString(TrustedTypesCheckForHTML(
-        input.GetAsString(), window->GetExecutionContext(), exception_state));
-    if (exception_state.HadException()) {
-      return nullptr;
-    }
-  } else if (input.IsTrustedHTML()) {
-    new_input.SetString(input.GetAsTrustedHTML()->toString());
-  } else if (input.IsDocument()) {
-    new_input.SetDocument(input.GetAsDocument());
-  } else if (input.IsDocumentFragment()) {
-    new_input.SetDocumentFragment(input.GetAsDocumentFragment());
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
+  DocumentFragment* fragment =
+      PrepareFragment(window, script_state, new_input, exception_state);
+  if (exception_state.HadException()) {
+    return nullptr;
   }
-  return SanitizeImpl(script_state, new_input, exception_state);
+  DoSanitizing(fragment, window, exception_state);
+  return fragment;
 }
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+Element* Sanitizer::sanitizeFor(ScriptState* script_state,
+                                const String& local_name,
+                                const String& markup,
+                                ExceptionState& exception_state) {
+  if (baseline_drop_elements_.Contains(local_name.LowerASCII()))
+    return nullptr;
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
+  Document* inert_document = DocumentInit::Create()
+                                 .WithURL(window->Url())
+                                 .WithTypeFrom("text/html")
+                                 .WithExecutionContext(window)
+                                 .CreateDocument();
+  Element* element = inert_document->CreateElementForBinding(
+      AtomicString(local_name), exception_state);
+  if (exception_state.HadException()) {
+    exception_state.ClearException();
+    return nullptr;
+  }
+  element->setInnerHTML(markup, exception_state);
+  if (exception_state.HadException()) {
+    exception_state.ClearException();
+    return nullptr;
+  }
+  DoSanitizing(element, window, exception_state);
+  if (exception_state.HadException()) {
+    exception_state.ClearException();
+    return nullptr;
+  }
+  return element;
+}
+
+void Sanitizer::ElementSetHTML(ScriptState* script_state,
+                               Element& element,
+                               const String& markup,
+                               ExceptionState& exception_state) {
+  Element* new_element =
+      sanitizeFor(script_state, element.localName(), markup, exception_state);
+  if (exception_state.HadException())
+    return;
+  if (!new_element) {
+    exception_state.ThrowTypeError("setHTML not allowed on this element type.");
+    return;
+  }
+  element.RemoveChildren();
+  while (Node* to_be_moved = new_element->firstChild())
+    element.AppendChild(to_be_moved);
+}
+
 DocumentFragment* Sanitizer::PrepareFragment(LocalDOMWindow* window,
                                              ScriptState* script_state,
                                              const V8SanitizerInput* input,
@@ -211,162 +200,101 @@ DocumentFragment* Sanitizer::PrepareFragment(LocalDOMWindow* window,
       UseCounter::Count(window->GetExecutionContext(),
                         WebFeature::kSanitizerAPIFromFragment);
       return input->GetAsDocumentFragment();
-    case V8SanitizerInput::ContentType::kString: {
-      UseCounter::Count(window->GetExecutionContext(),
-                        WebFeature::kSanitizerAPIFromString);
-      Document* document =
-          window->document()
-              ? window->document()->implementation().createHTMLDocument()
-              : DOMParser::Create(script_state)
-                    ->parseFromString(
-                        "<!DOCTYPE html><html><body></body></html>",
-                        "text/html", ParseFromStringOptions::Create());
-      // TODO(https://crbug.com/1178774): Behavior difference need further
-      // investgate.
-      return document->createRange()->createContextualFragment(
-          input->GetAsString(), exception_state);
-    }
   }
   NOTREACHED();
   return nullptr;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-DocumentFragment* Sanitizer::PrepareFragment(
-    LocalDOMWindow* window,
-    ScriptState* script_state,
-    StringOrDocumentFragmentOrDocument& input,
-    ExceptionState& exception_state) {
-  DocumentFragment* fragment = nullptr;
 
-  if (!window) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Cannot find current DOM window.");
-    return nullptr;
-  }
-  if (input.IsDocumentFragment()) {
-    UseCounter::Count(window->GetExecutionContext(),
-                      WebFeature::kSanitizerAPIFromFragment);
-    fragment = input.GetAsDocumentFragment();
-  } else if (input.IsString() || input.IsNull()) {
-    UseCounter::Count(window->GetExecutionContext(),
-                      WebFeature::kSanitizerAPIFromString);
-
-    Document* document =
-        window->document()
-            ? window->document()->implementation().createHTMLDocument()
-            : DOMParser::Create(script_state)
-                  ->parseFromString("<!DOCTYPE html><html><body></body></html>",
-                                    "text/html",
-                                    ParseFromStringOptions::Create());
-    // TODO(https://crbug.com/1178774): Behavior difference need further
-    // investgate.
-    fragment = document->createRange()->createContextualFragment(
-        input.GetAsString(), exception_state);
-  } else if (input.IsDocument()) {
-    UseCounter::Count(window->GetExecutionContext(),
-                      WebFeature::kSanitizerAPIFromDocument);
-
-    fragment = input.GetAsDocument()->createDocumentFragment();
-    fragment->CloneChildNodesFrom(*(input.GetAsDocument()->body()),
-                                  CloneChildrenFlag::kClone);
-  } else {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Cannot find current DOM window.");
-    return nullptr;
-  }
-  return fragment;
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
-DocumentFragment* Sanitizer::DoSanitizing(DocumentFragment* fragment,
-                                          LocalDOMWindow* window,
-                                          ExceptionState& exception_state) {
+void Sanitizer::DoSanitizing(ContainerNode* fragment,
+                             LocalDOMWindow* window,
+                             ExceptionState& exception_state) {
   Node* node = fragment->firstChild();
 
   while (node) {
-    // Skip non-Element nodes.
-    if (node->getNodeType() != Node::NodeType::kElementNode) {
-      node = NodeTraversal::Next(*node, fragment);
-      continue;
-    }
+    switch (node->getNodeType()) {
+      case Node::NodeType::kElementNode: {
+        // TODO(crbug.com/1126936): Review the sanitising algorithm for
+        // non-HTMLs.
+        // 1. Let |name| be |element|'s tag name.
+        String name = node->nodeName().LowerASCII();
 
-    // TODO(crbug.com/1126936): Review the sanitising algorithm for non-HTMLs.
-    // 1. Let |name| be |element|'s tag name.
-    String name = node->nodeName().UpperASCII();
+        // 2. Detect whether current element is a custom element or not.
+        bool is_custom_element =
+            CustomElement::IsValidName(AtomicString(name.LowerASCII()), false);
 
-    // 2. Detect whether current element is a custom element or not.
-    bool is_custom_element =
-        CustomElement::IsValidName(AtomicString(name.LowerASCII()), false);
-
-    // 3. If |kind| is `regular` and if |name| is not contained in the
-    // default element allow list, then 'drop'
-    if (baseline_drop_elements_.Contains(name)) {
-      node = DropElement(node, fragment);
-      UseCounter::Count(window->GetExecutionContext(),
-                        WebFeature::kSanitizerAPIActionTaken);
-    } else if (is_custom_element && !config_.allow_custom_elements_) {
-      // 4. If |kind| is `custom` and if allow_custom_elements_ is unset or set
-      // to anything other than `true`, then 'drop'.
-      node = DropElement(node, fragment);
-      UseCounter::Count(window->GetExecutionContext(),
-                        WebFeature::kSanitizerAPIActionTaken);
-    } else if (!node->IsHTMLElement()) {
-      // Presently unspec-ed: If |node| is in a non-HTML namespace: Drop.
-      node = DropElement(node, fragment);
-      UseCounter::Count(window->GetExecutionContext(),
-                        WebFeature::kSanitizerAPIActionTaken);
-    } else if (config_.drop_elements_.Contains(name)) {
-      // 5. If |name| is in |config|'s [=element drop list=] then 'drop'.
-      node = DropElement(node, fragment);
-      UseCounter::Count(window->GetExecutionContext(),
-                        WebFeature::kSanitizerAPIActionTaken);
-    } else if (config_.block_elements_.Contains(name)) {
-      // 6. If |name| is in |config|'s [=element block list=] then 'block'.
-      node = BlockElement(node, fragment, exception_state);
-      UseCounter::Count(window->GetExecutionContext(),
-                        WebFeature::kSanitizerAPIActionTaken);
-    } else if (!config_.allow_elements_.Contains(name)) {
-      // 7. if |name| is not in |config|'s [=element allow list=] then 'block'.
-      node = BlockElement(node, fragment, exception_state);
-      UseCounter::Count(window->GetExecutionContext(),
-                        WebFeature::kSanitizerAPIActionTaken);
-    } else if (IsA<HTMLTemplateElement>(node)) {
-      // 8. If |element|'s [=element interface=] is {{HTMLTemplateElement}}
-      // Run the steps of the [=sanitize document fragment=] algorithm on
-      // |element|'s |content| attribute.
-      DoSanitizing(To<HTMLTemplateElement>(node)->content(), window,
-                   exception_state);
-      UseCounter::Count(window->GetExecutionContext(),
-                        WebFeature::kSanitizerAPIActionTaken);
-      node = KeepElement(node, fragment, name, window);
-    } else {
-      node = KeepElement(node, fragment, name, window);
+        // 3. If |kind| is `regular` and if |name| is not contained in the
+        // default element allow list, then 'drop'
+        if (baseline_drop_elements_.Contains(name)) {
+          node = DropElement(node, fragment);
+          UseCounter::Count(window->GetExecutionContext(),
+                            WebFeature::kSanitizerAPIActionTaken);
+        } else if (is_custom_element && !config_.allow_custom_elements_) {
+          // 4. If |kind| is `custom` and if allow_custom_elements_ is unset or
+          // set to anything other than `true`, then 'drop'.
+          node = DropElement(node, fragment);
+          UseCounter::Count(window->GetExecutionContext(),
+                            WebFeature::kSanitizerAPIActionTaken);
+        } else if (!node->IsHTMLElement()) {
+          // Presently unspec-ed: If |node| is in a non-HTML namespace: Drop.
+          node = DropElement(node, fragment);
+          UseCounter::Count(window->GetExecutionContext(),
+                            WebFeature::kSanitizerAPIActionTaken);
+        } else if (config_.drop_elements_.Contains(name)) {
+          // 5. If |name| is in |config|'s [=element drop list=] then 'drop'.
+          node = DropElement(node, fragment);
+          UseCounter::Count(window->GetExecutionContext(),
+                            WebFeature::kSanitizerAPIActionTaken);
+        } else if (config_.block_elements_.Contains(name)) {
+          // 6. If |name| is in |config|'s [=element block list=] then 'block'.
+          node = BlockElement(node, fragment, exception_state);
+          UseCounter::Count(window->GetExecutionContext(),
+                            WebFeature::kSanitizerAPIActionTaken);
+        } else if (!config_.allow_elements_.Contains(name)) {
+          // 7. if |name| is not in |config|'s [=element allow list=] then
+          // 'block'.
+          node = BlockElement(node, fragment, exception_state);
+          UseCounter::Count(window->GetExecutionContext(),
+                            WebFeature::kSanitizerAPIActionTaken);
+        } else if (IsA<HTMLTemplateElement>(node)) {
+          // 8. If |element|'s [=element interface=] is {{HTMLTemplateElement}}
+          // Run the steps of the [=sanitize document fragment=] algorithm on
+          // |element|'s |content| attribute.
+          DoSanitizing(To<HTMLTemplateElement>(node)->content(), window,
+                       exception_state);
+          UseCounter::Count(window->GetExecutionContext(),
+                            WebFeature::kSanitizerAPIActionTaken);
+          node = KeepElement(node, fragment, name, window);
+        } else {
+          node = KeepElement(node, fragment, name, window);
+        }
+        break;
+      }
+      case Node::NodeType::kTextNode:
+        // Text node: Keep (by skipping over it).
+        node = NodeTraversal::Next(*node, fragment);
+        break;
+      case Node::NodeType::kCommentNode:
+        // Comment: Drop (unless allowed by config).
+        node = config_.allow_comments_ ? NodeTraversal::Next(*node, fragment)
+                                       : DropElement(node, fragment);
+        break;
+      case Node::NodeType::kDocumentNode:
+      case Node::NodeType::kDocumentFragmentNode:
+        // Document & DocumentFragment: Drop (unless it's the root).
+        node = !node->parentNode() ? NodeTraversal::Next(*node, fragment)
+                                   : DropElement(node, fragment);
+        break;
+      default:
+        // Default: Drop anything not explicitly handled.
+        node = DropElement(node, fragment);
+        break;
     }
   }
-
-  return fragment;
-}
-
-DocumentFragment* Sanitizer::SanitizeImpl(ScriptState* script_state,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                                          const V8SanitizerInput* input,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                                          StringOrDocumentFragmentOrDocument&
-                                              input,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                                          ExceptionState& exception_state) {
-  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
-  DocumentFragment* fragment =
-      PrepareFragment(window, script_state, input, exception_state);
-  if (exception_state.HadException()) {
-    return nullptr;
-  }
-  return DoSanitizing(fragment, window, exception_state);
 }
 
 // If the current element needs to be dropped, remove current element entirely
 // and proceed to its next sibling.
-Node* Sanitizer::DropElement(Node* node, DocumentFragment* fragment) {
+Node* Sanitizer::DropElement(Node* node, ContainerNode* fragment) {
   Node* tmp = node;
   node = NodeTraversal::NextSkippingChildren(*node, fragment);
   tmp->remove();
@@ -376,17 +304,12 @@ Node* Sanitizer::DropElement(Node* node, DocumentFragment* fragment) {
 // If the current element should be blocked, append its children after current
 // node to parent node, remove current element and proceed to the next node.
 Node* Sanitizer::BlockElement(Node* node,
-                              DocumentFragment* fragment,
+                              ContainerNode* fragment,
                               ExceptionState& exception_state) {
-  Node* parent = node->parentNode();
+  ContainerNode* parent = node->parentNode();
   Node* next_sibling = node->nextSibling();
-  while (node->hasChildren()) {
-    Node* n = node->firstChild();
-    if (next_sibling) {
-      parent->insertBefore(n, next_sibling, exception_state);
-    } else {
-      parent->appendChild(n, exception_state);
-    }
+  while (Node* child = node->firstChild()) {
+    parent->InsertBefore(child, next_sibling, exception_state);
     if (exception_state.HadException()) {
       return nullptr;
     }
@@ -400,7 +323,7 @@ Node* Sanitizer::BlockElement(Node* node,
 // Remove any attributes to be dropped from the current element, and proceed to
 // the next node (preorder, depth-first traversal).
 Node* Sanitizer::KeepElement(Node* node,
-                             DocumentFragment* fragment,
+                             ContainerNode* fragment,
                              String& node_name,
                              LocalDOMWindow* window) {
   Element* element = To<Element>(node);
@@ -463,19 +386,16 @@ Node* Sanitizer::KeepElement(Node* node,
   return node;
 }
 
-SanitizerConfig* Sanitizer::config() const {
-  return SanitizerConfigCopy(config_dictionary_
-                                 ? config_dictionary_.Get()
-                                 : SanitizerConfigImpl::defaultConfig());
+SanitizerConfig* Sanitizer::getConfiguration() const {
+  return SanitizerConfigImpl::ToAPI(config_);
 }
 
-SanitizerConfig* Sanitizer::defaultConfig() {
-  return SanitizerConfigCopy(SanitizerConfigImpl::defaultConfig());
+SanitizerConfig* Sanitizer::getDefaultConfiguration() {
+  return SanitizerConfigCopy(SanitizerConfigImpl::DefaultConfig());
 }
 
 void Sanitizer::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
-  visitor->Trace(config_dictionary_);
 }
 
 }  // namespace blink

@@ -367,7 +367,7 @@ static av_cold void wmavoice_flush(AVCodecContext *ctx)
 static av_cold int wmavoice_decode_init(AVCodecContext *ctx)
 {
     static AVOnce init_static_once = AV_ONCE_INIT;
-    int n, flags, pitch_range, lsp16_flag;
+    int n, flags, pitch_range, lsp16_flag, ret;
     WMAVoiceContext *s = ctx->priv_data;
 
     ff_thread_once(&init_static_once, wmavoice_init_static_data);
@@ -395,10 +395,11 @@ static av_cold int wmavoice_decode_init(AVCodecContext *ctx)
     s->spillover_bitsize = 3 + av_ceil_log2(ctx->block_align);
     s->do_apf            =    flags & 0x1;
     if (s->do_apf) {
-        ff_rdft_init(&s->rdft,  7, DFT_R2C);
-        ff_rdft_init(&s->irdft, 7, IDFT_C2R);
-        ff_dct_init(&s->dct,  6, DCT_I);
-        ff_dct_init(&s->dst,  6, DST_I);
+        if ((ret = ff_rdft_init(&s->rdft,  7,  DFT_R2C)) < 0 ||
+            (ret = ff_rdft_init(&s->irdft, 7, IDFT_C2R)) < 0 ||
+            (ret = ff_dct_init (&s->dct,   6,    DCT_I)) < 0 ||
+            (ret = ff_dct_init (&s->dst,   6,    DST_I)) < 0)
+            return ret;
 
         ff_sine_window_init(s->cos, 256);
         memcpy(&s->sin[255], s->cos, 256 * sizeof(s->cos[0]));
@@ -1881,7 +1882,7 @@ static void copy_bits(PutBitContext *pb,
     rmn_bits = rmn_bytes = get_bits_left(gb);
     if (rmn_bits < nbits)
         return;
-    if (nbits > pb->size_in_bits - put_bits_count(pb))
+    if (nbits > put_bits_left(pb))
         return;
     rmn_bits &= 7; rmn_bytes >>= 3;
     if ((rmn_bits = FFMIN(rmn_bits, nbits)) > 0)
@@ -1996,7 +1997,7 @@ static av_cold int wmavoice_decode_end(AVCodecContext *ctx)
     return 0;
 }
 
-AVCodec ff_wmavoice_decoder = {
+const AVCodec ff_wmavoice_decoder = {
     .name             = "wmavoice",
     .long_name        = NULL_IF_CONFIG_SMALL("Windows Media Audio Voice"),
     .type             = AVMEDIA_TYPE_AUDIO,
@@ -2006,6 +2007,6 @@ AVCodec ff_wmavoice_decoder = {
     .close            = wmavoice_decode_end,
     .decode           = wmavoice_decode_packet,
     .capabilities     = AV_CODEC_CAP_SUBFRAMES | AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY,
-    .caps_internal    = FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
     .flush            = wmavoice_flush,
 };

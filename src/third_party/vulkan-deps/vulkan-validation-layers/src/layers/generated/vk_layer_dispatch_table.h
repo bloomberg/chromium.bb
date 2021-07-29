@@ -245,6 +245,10 @@ typedef struct VkLayerInstanceDispatchTable_ {
     // ---- VK_EXT_headless_surface extension commands
     PFN_vkCreateHeadlessSurfaceEXT CreateHeadlessSurfaceEXT;
 
+    // ---- VK_EXT_acquire_drm_display extension commands
+    PFN_vkAcquireDrmDisplayEXT AcquireDrmDisplayEXT;
+    PFN_vkGetDrmDisplayEXT GetDrmDisplayEXT;
+
     // ---- VK_NV_acquire_winrt_display extension commands
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     PFN_vkAcquireWinrtDisplayNV AcquireWinrtDisplayNV;
@@ -829,6 +833,9 @@ typedef struct VkLayerDispatchTable_ {
     PFN_vkGetSemaphoreZirconHandleFUCHSIA GetSemaphoreZirconHandleFUCHSIA;
 #endif // VK_USE_PLATFORM_FUCHSIA
 
+    // ---- VK_NV_external_memory_rdma extension commands
+    PFN_vkGetMemoryRemoteAddressNV GetMemoryRemoteAddressNV;
+
     // ---- VK_EXT_extended_dynamic_state2 extension commands
     PFN_vkCmdSetPatchControlPointsEXT CmdSetPatchControlPointsEXT;
     PFN_vkCmdSetRasterizerDiscardEnableEXT CmdSetRasterizerDiscardEnableEXT;
@@ -838,6 +845,10 @@ typedef struct VkLayerDispatchTable_ {
 
     // ---- VK_EXT_color_write_enable extension commands
     PFN_vkCmdSetColorWriteEnableEXT CmdSetColorWriteEnableEXT;
+
+    // ---- VK_EXT_multi_draw extension commands
+    PFN_vkCmdDrawMultiEXT CmdDrawMultiEXT;
+    PFN_vkCmdDrawMultiIndexedEXT CmdDrawMultiIndexedEXT;
 
     // ---- VK_KHR_acceleration_structure extension commands
     PFN_vkCreateAccelerationStructureKHR CreateAccelerationStructureKHR;

@@ -166,8 +166,8 @@ blink::CSPSourceListPtr ConvertToBlink(const CSPSourceListPtr& source_list) {
       source_list->allow_self, source_list->allow_star,
       source_list->allow_response_redirects, source_list->allow_inline,
       source_list->allow_eval, source_list->allow_wasm_eval,
-      source_list->allow_dynamic, source_list->allow_unsafe_hashes,
-      source_list->report_sample);
+      source_list->allow_wasm_unsafe_eval, source_list->allow_dynamic,
+      source_list->allow_unsafe_hashes, source_list->report_sample);
 }
 
 blink::ContentSecurityPolicyHeaderPtr ConvertToBlink(
@@ -252,7 +252,10 @@ blink::ParsedHeadersPtr ConvertToBlink(const ParsedHeadersPtr& in) {
           ? absl::make_optional(ConvertToBlink(in->critical_ch.value()))
           : absl::nullopt,
       in->xfo, ConvertToBlink(in->link_headers),
-      ConvertToBlink(in->timing_allow_origin), in->bfcache_opt_in_unload);
+      ConvertToBlink(in->timing_allow_origin), in->bfcache_opt_in_unload,
+      in->reporting_endpoints.has_value()
+          ? absl::make_optional(ConvertToBlink(in->reporting_endpoints.value()))
+          : absl::nullopt);
 }
 
 }  // namespace mojom

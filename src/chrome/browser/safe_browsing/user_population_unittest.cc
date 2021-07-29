@@ -7,12 +7,12 @@
 #include "base/feature_list.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/unified_consent/pref_names.h"
@@ -84,7 +84,7 @@ TEST(GetUserPopulationTest, PopulatesSync) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   syncer::TestSyncService* sync_service = static_cast<syncer::TestSyncService*>(
-      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      SyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           &profile, base::BindRepeating(&CreateTestSyncService)));
 
   {

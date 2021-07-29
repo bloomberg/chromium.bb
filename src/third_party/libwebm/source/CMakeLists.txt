@@ -8,6 +8,7 @@
 cmake_minimum_required(VERSION 3.2)
 project(LIBWEBM CXX)
 
+include(GNUInstallDirs)
 include("${CMAKE_CURRENT_SOURCE_DIR}/build/cxx_flags.cmake")
 
 if (NOT BUILD_SHARED_LIBS)
@@ -24,7 +25,8 @@ option(ENABLE_IWYU "Enables include-what-you-use support." OFF)
 option(ENABLE_WERROR "Enable warnings as errors." OFF)
 option(ENABLE_WEBM_PARSER "Enables new parser API." OFF)
 
-if(WIN32)
+if(WIN32 OR CYGWIN OR MSYS)
+  # Allow use of rand_r() / fdopen() and other POSIX functions.
   require_cxx_flag_nomsvc("-std=gnu++11")
 else()
   require_cxx_flag_nomsvc("-std=c++11")
@@ -119,7 +121,7 @@ set(vttdemux_sources
     "${LIBWEBM_SRC_DIR}/webvtt/webvttparser.cc"
     "${LIBWEBM_SRC_DIR}/webvtt/webvttparser.h")
 
-set(webm_parser_sources
+set(webm_parser_public_headers
     "${LIBWEBM_SRC_DIR}/webm_parser/include/webm/buffer_reader.h"
     "${LIBWEBM_SRC_DIR}/webm_parser/include/webm/callback.h"
     "${LIBWEBM_SRC_DIR}/webm_parser/include/webm/dom_types.h"
@@ -129,7 +131,10 @@ set(webm_parser_sources
     "${LIBWEBM_SRC_DIR}/webm_parser/include/webm/istream_reader.h"
     "${LIBWEBM_SRC_DIR}/webm_parser/include/webm/reader.h"
     "${LIBWEBM_SRC_DIR}/webm_parser/include/webm/status.h"
-    "${LIBWEBM_SRC_DIR}/webm_parser/include/webm/webm_parser.h"
+    "${LIBWEBM_SRC_DIR}/webm_parser/include/webm/webm_parser.h")
+
+set(webm_parser_sources
+    ${webm_parser_public_headers}
     "${LIBWEBM_SRC_DIR}/webm_parser/src/ancestory.cc"
     "${LIBWEBM_SRC_DIR}/webm_parser/src/ancestory.h"
     "${LIBWEBM_SRC_DIR}/webm_parser/src/audio_parser.h"
@@ -354,9 +359,17 @@ if (ENABLE_WEBM_PARSER)
   include_directories(webm_parser webm_parser/include)
   add_library(webm_parser OBJECT ${webm_parser_sources})
   target_sources(webm PUBLIC $<TARGET_OBJECTS:webm_parser>)
+  set_target_properties(webm PROPERTIES PUBLIC_HEADER
+                        "${webm_parser_public_headers}")
 
   add_executable(webm_parser_demo ${webm_parser_demo_sources})
   target_link_libraries(webm_parser_demo LINK_PUBLIC webm)
+
+  install(TARGETS webm
+          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+          PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/webm)
 endif ()
 
 if (ENABLE_WEBMTS)

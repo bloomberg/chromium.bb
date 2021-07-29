@@ -11,9 +11,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/back_forward_cache/back_forward_cache_disable.h"
 #include "components/site_engagement/content/site_engagement_service.h"
@@ -649,7 +650,7 @@ void AppBannerManager::DidActivatePortal(
 
 void AppBannerManager::DidUpdateWebManifestURL(
     content::RenderFrameHost* target_frame,
-    const absl::optional<GURL>& manifest_url) {
+    const GURL& manifest_url) {
   GURL url = validated_url_;
   switch (state_) {
     case State::INACTIVE:
@@ -665,7 +666,7 @@ void AppBannerManager::DidUpdateWebManifestURL(
       Terminate();
       FALLTHROUGH;
     case State::COMPLETE:
-      if (manifest_url.has_value()) {
+      if (!manifest_url.is_empty()) {
         // This call resets has_sufficient_engagement_data_. In order to
         // re-compute that, instead of calling RequestAppBanner, DidFinishLoad
         // is called. That method will re-fetch the engagement data and re-set

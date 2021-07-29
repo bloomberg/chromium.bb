@@ -33,6 +33,7 @@ class RuntimeApiTest : public ExtensionApiTest,
                        public testing::WithParamInterface<ContextType> {
  public:
   RuntimeApiTest() = default;
+  ~RuntimeApiTest() override = default;
   RuntimeApiTest(const RuntimeApiTest&) = delete;
   RuntimeApiTest& operator=(const RuntimeApiTest&) = delete;
 
@@ -43,7 +44,7 @@ class RuntimeApiTest : public ExtensionApiTest,
 
   bool RunTestWithParamOptions(const char* extension_name) {
     return RunExtensionTest(
-        {.name = extension_name},
+        extension_name, {},
         {.load_as_service_worker = GetParam() == ContextType::kServiceWorker});
   }
 };
@@ -64,8 +65,8 @@ IN_PROC_BROWSER_TEST_P(RuntimeApiTest, ChromeRuntimePrivileged) {
 // Tests the unprivileged components of chrome.runtime.
 IN_PROC_BROWSER_TEST_P(RuntimeApiTest, ChromeRuntimeUnprivileged) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(
-      LoadExtension(test_data_dir_.AppendASCII("runtime/content_script")));
+  ASSERT_TRUE(LoadExtensionWithParamOptions(
+      test_data_dir_.AppendASCII("runtime/content_script")));
 
   // The content script runs on this page.
   extensions::ResultCatcher catcher;
@@ -183,9 +184,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeGetPlatformInfo) {
 // Tests chrome.runtime.getPackageDirectory with an app.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        ChromeRuntimeGetPackageDirectoryEntryApp) {
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "api_test/runtime/get_package_directory/app",
-                        .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("api_test/runtime/get_package_directory/app",
+                               {.launch_as_platform_app = true}))
       << message_;
 }
 

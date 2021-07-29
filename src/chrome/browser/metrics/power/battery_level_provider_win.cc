@@ -142,7 +142,8 @@ class BatteryLevelProviderWin : public BatteryLevelProvider {
   // TaskRunner used to run blocking GetBatteryInterfaceList queries, sequenced
   // to avoid the performance cost of concurrent calls.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_{
-      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})};
+    base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})};
 };
 
 std::unique_ptr<BatteryLevelProvider> BatteryLevelProvider::Create() {
@@ -165,9 +166,9 @@ BatteryLevelProvider::BatteryInterface BatteryLevelProviderWin::GetInterface(
   if (!battery_information.has_value() || !battery_status.has_value())
     return BatteryInterface(true);
 
-  return BatteryInterface({battery_status->PowerState & BATTERY_POWER_ON_LINE,
-                           battery_status->Capacity,
-                           battery_information->FullChargedCapacity});
+  return BatteryInterface(
+      {!!(battery_status->PowerState & BATTERY_POWER_ON_LINE),
+       battery_status->Capacity, battery_information->FullChargedCapacity});
 }
 
 std::vector<BatteryLevelProvider::BatteryInterface>

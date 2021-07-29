@@ -29,12 +29,6 @@ void SetValidationDisable(CHECK_DISABLED &disable_data, const ValidationCheckDis
         case VALIDATION_CHECK_DISABLE_OBJECT_IN_USE:
             disable_data[object_in_use] = true;
             break;
-        case VALIDATION_CHECK_DISABLE_IDLE_DESCRIPTOR_SET:
-            disable_data[idle_descriptor_set] = true;
-            break;
-        case VALIDATION_CHECK_DISABLE_PUSH_CONSTANT_RANGE:
-            disable_data[push_constant_range] = true;
-            break;
         case VALIDATION_CHECK_DISABLE_QUERY_VALIDATION:
             disable_data[query_validation] = true;
             break;
@@ -66,6 +60,9 @@ void SetValidationFeatureDisable(CHECK_DISABLED &disable_data, const VkValidatio
             break;
         case VK_VALIDATION_FEATURE_DISABLE_UNIQUE_HANDLES_EXT:
             disable_data[handle_wrapping] = true;
+            break;
+        case VK_VALIDATION_FEATURE_DISABLE_SHADER_VALIDATION_CACHE_EXT:
+            disable_data[shader_validation_caching] = true;
             break;
         case VK_VALIDATION_FEATURE_DISABLE_ALL_EXT:
             // Set all disabled flags to true
@@ -288,7 +285,7 @@ const VkLayerSettingsEXT *FindSettingsInChain(const void *next) {
     const VkBaseOutStructure *current = reinterpret_cast<const VkBaseOutStructure *>(next);
     const VkLayerSettingsEXT *found = nullptr;
     while (current) {
-        if (static_cast<VkStructureType>(VK_STRUCTURE_TYPE_INSTANCE_LAYER_SETTINGS_EXT) == current->sType) {
+        if (VK_STRUCTURE_TYPE_INSTANCE_LAYER_SETTINGS_EXT == static_cast<uint32_t>(current->sType)) {
             found = reinterpret_cast<const VkLayerSettingsEXT *>(current);
             current = nullptr;
         } else {

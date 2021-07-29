@@ -13,6 +13,7 @@
 #include "base/android/jni_string.h"
 #include "base/strings/string_piece.h"
 #include "chrome/android/chrome_jni_headers/FeedStream_jni.h"
+#include "chrome/browser/android/feed/v2/feed_reliability_logging_bridge.h"
 #include "chrome/browser/android/feed/v2/feed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -33,25 +34,21 @@ namespace android {
 
 static jlong JNI_FeedStream_Init(JNIEnv* env,
                                  const JavaParamRef<jobject>& j_this,
-                                 jboolean is_for_you_stream) {
-  return reinterpret_cast<intptr_t>(new FeedStream(j_this, is_for_you_stream));
-}
-
-static base::android::ScopedJavaLocalRef<jintArray>
-JNI_FeedStream_GetExperimentIds(JNIEnv* env) {
-  auto* variations_ids_provider =
-      variations::VariationsIdsProvider::GetInstance();
-  DCHECK(variations_ids_provider != nullptr);
-
-  return base::android::ToJavaIntArray(
-      env, variations_ids_provider->GetVariationsVectorForWebPropertiesKeys());
+                                 jboolean is_for_you_stream,
+                                 jlong native_feed_reliability_logging_bridge) {
+  return reinterpret_cast<intptr_t>(
+      new FeedStream(j_this, is_for_you_stream,
+                     reinterpret_cast<FeedReliabilityLoggingBridge*>(
+                         native_feed_reliability_logging_bridge)));
 }
 
 FeedStream::FeedStream(const JavaRef<jobject>& j_this,
-                       jboolean is_for_you_stream)
+                       jboolean is_for_you_stream,
+                       FeedReliabilityLoggingBridge* reliability_logging_bridge)
     : ::feed::FeedStreamSurface(is_for_you_stream ? kForYouStream
                                                   : kWebFeedStream),
-      feed_stream_api_(nullptr) {
+      feed_stream_api_(nullptr),
+      reliability_logging_bridge_(reliability_logging_bridge) {
   java_ref_.Reset(j_this);
 
   FeedService* service = FeedServiceFactory::GetForBrowserContext(
@@ -64,6 +61,10 @@ FeedStream::FeedStream(const JavaRef<jobject>& j_this,
 FeedStream::~FeedStream() {
   if (feed_stream_api_)
     feed_stream_api_->DetachSurface(this);
+}
+
+ReliabilityLoggingBridge& FeedStream::GetReliabilityLoggingBridge() {
+  return *reliability_logging_bridge_;
 }
 
 void FeedStream::StreamUpdate(const feedui::StreamUpdate& stream_update) {
@@ -103,6 +104,16 @@ void FeedStream::LoadMore(JNIEnv* env,
                             ScopedJavaGlobalRef<jobject>(callback_obj)));
 }
 
+void FeedStream::ManualRefresh(JNIEnv* env,
+                               const JavaParamRef<jobject>& obj,
+                               const JavaParamRef<jobject>& callback_obj) {
+  if (!feed_stream_api_)
+    return;
+  feed_stream_api_->ManualRefresh(
+      *this, base::BindOnce(&base::android::RunBooleanCallbackAndroid,
+                            ScopedJavaGlobalRef<jobject>(callback_obj)));
+}
+
 void FeedStream::ProcessThereAndBackAgain(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -112,17 +123,6 @@ void FeedStream::ProcessThereAndBackAgain(
   std::string data_string;
   base::android::JavaByteArrayToString(env, data, &data_string);
   feed_stream_api_->ProcessThereAndBackAgain(data_string);
-}
-
-void FeedStream::ProcessViewAction(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jbyteArray>& data) {
-  if (!feed_stream_api_)
-    return;
-  std::string data_string;
-  base::android::JavaByteArrayToString(env, data, &data_string);
-  feed_stream_api_->ProcessViewAction(data_string);
 }
 
 int FeedStream::ExecuteEphemeralChange(JNIEnv* env,
@@ -175,13 +175,6 @@ bool FeedStream::IsActivityLoggingEnabled(JNIEnv* env,
          feed_stream_api_->IsActivityLoggingEnabled(GetStreamType());
 }
 
-base::android::ScopedJavaLocalRef<jstring> FeedStream::GetSessionId(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  return base::android::ConvertUTF8ToJavaString(
-      env, feed_stream_api_ ? feed_stream_api_->GetSessionId() : std::string());
-}
-
 void FeedStream::ReportOpenAction(JNIEnv* env,
                                   const JavaParamRef<jobject>& obj,
                                   const JavaParamRef<jobject>& j_url,
@@ -214,7 +207,7 @@ void FeedStream::ReportSliceViewed(JNIEnv* env,
   if (!feed_stream_api_)
     return;
   feed_stream_api_->ReportSliceViewed(
-      GetSurfaceId(), GetStreamType(),
+      FeedStreamSurface::GetSurfaceId(), GetStreamType(),
       base::android::ConvertJavaStringToUTF8(env, slice_id));
 }
 
@@ -223,7 +216,7 @@ void FeedStream::ReportFeedViewed(
     const base::android::JavaParamRef<jobject>& obj) {
   if (!feed_stream_api_)
     return;
-  feed_stream_api_->ReportFeedViewed(GetSurfaceId());
+  feed_stream_api_->ReportFeedViewed(FeedStreamSurface::GetSurfaceId());
 }
 
 void FeedStream::ReportPageLoaded(JNIEnv* env,
@@ -254,6 +247,17 @@ void FeedStream::ReportOtherUserAction(JNIEnv* env,
                                        int action_type) {
   feed_stream_api_->ReportOtherUserAction(
       GetStreamType(), static_cast<FeedUserActionType>(action_type));
+}
+
+int FeedStream::GetSurfaceId(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj) {
+  return FeedStreamSurface::GetSurfaceId().GetUnsafeValue();
+}
+
+jlong FeedStream::GetLastFetchTimeMs(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return feed_stream_api_->GetLastFetchTime(GetStreamType()).ToDoubleT() * 1000;
 }
 
 }  // namespace android

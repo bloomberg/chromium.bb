@@ -16,8 +16,6 @@
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
-#include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
@@ -69,6 +67,9 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
       base::OnceCallback<void(std::u16string title, GURL url)>;
   using ReadDataCallback = base::OnceCallback<void(std::string result)>;
 
+  Clipboard(const Clipboard&) = delete;
+  Clipboard& operator=(const Clipboard&) = delete;
+
   static bool IsSupportedClipboardBuffer(ClipboardBuffer buffer);
 
   // Sets the list of threads that are allowed to access the clipboard.
@@ -90,6 +91,8 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   // the main UI thread, but Windows has tricky semantics where there have to
   // be two clipboards: one that lives on the UI thread and one that lives on
   // the IO thread.
+  //
+  // The return value should not be cached.
   static Clipboard* GetForCurrentThread();
 
   // Removes and transfers ownership of the current thread's clipboard to the
@@ -117,6 +120,10 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   // Returns a sequence number which uniquely identifies clipboard state.
   // This can be used to version the data on the clipboard and determine
   // whether it has changed.
+  // TODO(https://crbug.com/1226356): Note that the sequence number uniquely
+  // identifies the clipboard state within this particular ui::Clipboard
+  // instance. It is not guaranteed to be unique across multiple / subsequent
+  // ui::Clipborad instances. Consider changing that.
   virtual uint64_t GetSequenceNumber(ClipboardBuffer buffer) const = 0;
 
   // Tests whether the clipboard contains a certain format.
@@ -328,22 +335,14 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   Clipboard();
   virtual ~Clipboard();
 
-  // Write a bunch of objects to the system clipboard. Copies are made of the
-  // contents of |objects|. Also, adds the source of the data to the clipboard,
-  // which can be used when we need to restrict the clipboard data between a set
-  // of confidential documents. The data source maybe passed as nullptr.
-  virtual void WritePortableRepresentations(
+  // Write platform & portable formats, in the order of their appearance in
+  // `platform_representations` & `ObjectMap`. Also, adds the source of the data
+  // to the clipboard, which can be used when we need to restrict the clipboard
+  // data between a set of confidential documents. The data source maybe passed
+  // as nullptr.
+  virtual void WritePortableAndPlatformRepresentations(
       ClipboardBuffer buffer,
       const ObjectMap& objects,
-      std::unique_ptr<DataTransferEndpoint> data_src) = 0;
-
-  // Write |platform_representations|, in the order of their appearance in
-  // |platform_representations|. Also, adds the source of the data to the
-  // clipboard, which can be used when we need to restrict the clipboard data
-  // between a set of confidential documents. The data source maybe passed as
-  // nullptr.
-  virtual void WritePlatformRepresentations(
-      ClipboardBuffer buffer,
       std::vector<Clipboard::PlatformRepresentation> platform_representations,
       std::unique_ptr<DataTransferEndpoint> data_src) = 0;
 
@@ -411,8 +410,6 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
 
   // Mutex that controls access to |g_clipboard_map|.
   static base::Lock& ClipboardMapLock();
-
-  DISALLOW_COPY_AND_ASSIGN(Clipboard);
 };
 
 }  // namespace ui

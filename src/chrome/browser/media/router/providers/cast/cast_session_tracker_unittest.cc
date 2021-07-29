@@ -22,6 +22,7 @@ using cast_channel::kReceiverNamespace;
 using testing::_;
 using testing::ByRef;
 using testing::Eq;
+using testing::NiceMock;
 
 namespace media_router {
 
@@ -111,12 +112,12 @@ class CastSessionTrackerTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 
   cast_channel::MockCastSocketService socket_service_;
-  cast_channel::MockCastMessageHandler message_handler_;
+  NiceMock<cast_channel::MockCastMessageHandler> message_handler_;
 
   TestMediaSinkService media_sink_service_;
   CastSessionTracker session_tracker_;
 
-  MockCastSessionObserver observer_;
+  NiceMock<MockCastSessionObserver> observer_;
 
   MediaSinkInternal sink_ = CreateCastSink(1);
   CastSession* session_;

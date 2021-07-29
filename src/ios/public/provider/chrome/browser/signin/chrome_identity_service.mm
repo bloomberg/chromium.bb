@@ -4,7 +4,10 @@
 
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/sys_string_conversions.h"
+#import "components/signin/internal/identity_manager/account_capabilities_constants.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_interaction_manager.h"
@@ -14,6 +17,116 @@
 #endif
 
 namespace ios {
+namespace {
+
+// Helper base class for functors.
+template <typename T>
+struct Functor {
+  Functor() = default;
+
+  Functor(const Functor&) = delete;
+  Functor& operator=(const Functor&) = delete;
+
+  ios::ChromeIdentityService::IdentityIteratorCallback Callback() {
+    // The callback is invoked synchronously and does not escape the scope
+    // in which the Functor is defined. Thus it is safe to use Unretained
+    // here.
+    return base::BindRepeating(&Functor::Run, base::Unretained(this));
+  }
+
+  ios::IdentityIteratorCallbackResult Run(ChromeIdentity* identity) {
+    // Filtering of the ChromeIdentity can be done here before calling
+    // the sub-class `Run()` method. This will ensure that all functor
+    // perform the same filtering (and thus consider exactly the same
+    // identities).
+    return static_cast<T*>(this)->Run(identity);
+  }
+};
+
+// Helper class used to implement HasIdentities().
+struct FunctorHasIdentities : Functor<FunctorHasIdentities> {
+  bool has_identities = false;
+
+  ios::IdentityIteratorCallbackResult Run(ChromeIdentity* identity) {
+    has_identities = true;
+    return ios::kIdentityIteratorInterruptIteration;
+  }
+};
+
+// Helper class used to implement GetIdentityWithGaiaID().
+struct FunctorLookupIdentityByGaiaID : Functor<FunctorLookupIdentityByGaiaID> {
+  NSString* lookup_gaia_id;
+  ChromeIdentity* identity;
+
+  FunctorLookupIdentityByGaiaID(NSString* gaia_id)
+      : lookup_gaia_id(gaia_id), identity(nil) {}
+
+  ios::IdentityIteratorCallbackResult Run(ChromeIdentity* identity) {
+    if ([lookup_gaia_id isEqualToString:identity.gaiaID]) {
+      this->identity = identity;
+      return ios::kIdentityIteratorInterruptIteration;
+    }
+    return ios::kIdentityIteratorContinueIteration;
+  }
+};
+
+// Helper class used to implement GetAllIdentities().
+struct FunctorCollectIdentities : Functor<FunctorCollectIdentities> {
+  NSMutableArray<ChromeIdentity*>* identities;
+
+  FunctorCollectIdentities() : identities([NSMutableArray array]) {}
+
+  ios::IdentityIteratorCallbackResult Run(ChromeIdentity* identity) {
+    [identities addObject:identity];
+    return ios::kIdentityIteratorContinueIteration;
+  }
+};
+
+// Helper struct for computing the result of fetching account capabilities.
+struct FetchCapabilitiesResult {
+  FetchCapabilitiesResult() = default;
+  ~FetchCapabilitiesResult() = default;
+
+  ChromeIdentityCapabilityResult capability_value;
+  signin_metrics::FetchAccountCapabilitiesFromSystemLibraryResult fetch_result;
+};
+
+// Computes the value of fetching account capabilities.
+FetchCapabilitiesResult ComputeFetchCapabilitiesResult(
+    NSNumber* capability_value,
+    NSError* error) {
+  FetchCapabilitiesResult result;
+  if (error) {
+    result.capability_value = ChromeIdentityCapabilityResult::kUnknown;
+    result.fetch_result = signin_metrics::
+        FetchAccountCapabilitiesFromSystemLibraryResult::kErrorGeneric;
+  } else if (!capability_value) {
+    result.capability_value = ChromeIdentityCapabilityResult::kUnknown;
+    result.fetch_result =
+        signin_metrics::FetchAccountCapabilitiesFromSystemLibraryResult::
+            kErrorMissingCapability;
+  } else {
+    int capability_value_int = capability_value.intValue;
+    switch (capability_value_int) {
+      case static_cast<int>(ChromeIdentityCapabilityResult::kFalse):
+      case static_cast<int>(ChromeIdentityCapabilityResult::kTrue):
+      case static_cast<int>(ChromeIdentityCapabilityResult::kUnknown):
+        result.capability_value =
+            static_cast<ChromeIdentityCapabilityResult>(capability_value_int);
+        result.fetch_result = signin_metrics::
+            FetchAccountCapabilitiesFromSystemLibraryResult::kSuccess;
+        break;
+      default:
+        result.capability_value = ChromeIdentityCapabilityResult::kUnknown;
+        result.fetch_result =
+            signin_metrics::FetchAccountCapabilitiesFromSystemLibraryResult::
+                kErrorUnexpectedValue;
+    }
+  }
+  return result;
+}
+
+}  // namespace
 
 ChromeIdentityService::ChromeIdentityService() {}
 
@@ -60,26 +173,33 @@ ChromeIdentityService::CreateChromeIdentityInteractionManager(
   return nil;
 }
 
+void ChromeIdentityService::IterateOverIdentities(IdentityIteratorCallback) {}
+
 bool ChromeIdentityService::IsValidIdentity(ChromeIdentity* identity) {
-  return false;
+  return GetIdentityWithGaiaID(base::SysNSStringToUTF8(identity.gaiaID)) != nil;
 }
 
 ChromeIdentity* ChromeIdentityService::GetIdentityWithGaiaID(
     const std::string& gaia_id) {
-  return nil;
+  // Do not iterate if the gaia ID is invalid.
+  if (gaia_id.empty())
+    return nil;
+
+  FunctorLookupIdentityByGaiaID helper(base::SysUTF8ToNSString(gaia_id));
+  IterateOverIdentities(helper.Callback());
+  return helper.identity;
 }
 
 bool ChromeIdentityService::HasIdentities() {
-  return false;
+  FunctorHasIdentities helper;
+  IterateOverIdentities(helper.Callback());
+  return helper.has_identities;
 }
 
 NSArray* ChromeIdentityService::GetAllIdentities(PrefService* pref_service) {
-  return nil;
-}
-
-NSArray* ChromeIdentityService::GetAllIdentitiesSortedForDisplay(
-    PrefService* pref_service) {
-  return nil;
+  FunctorCollectIdentities helper;
+  IterateOverIdentities(helper.Callback());
+  return [helper.identities copy];
 }
 
 void ChromeIdentityService::ForgetIdentity(ChromeIdentity* identity,
@@ -120,9 +240,29 @@ NSString* ChromeIdentityService::GetCachedHostedDomainForIdentity(
   return nil;
 }
 
-absl::optional<bool> ChromeIdentityService::IsSubjectToMinorModeRestrictions(
-    ChromeIdentity* identity) {
-  return absl::nullopt;
+void ChromeIdentityService::CanOfferExtendedSyncPromos(
+    ChromeIdentity* identity,
+    CapabilitiesCallback completion) {
+  NSString* canOfferExtendedChromeSyncPromos = [NSString
+      stringWithUTF8String:kCanOfferExtendedChromeSyncPromosCapabilityName];
+  base::TimeTicks fetch_start = base::TimeTicks::Now();
+  FetchCapabilities(
+      @[ canOfferExtendedChromeSyncPromos ], identity,
+      ^(NSDictionary<NSString*, NSNumber*>* capabilities, NSError* error) {
+        base::UmaHistogramTimes(
+            "Signin.AccountCapabilities.GetFromSystemLibraryDuration",
+            base::TimeTicks::Now() - fetch_start);
+
+        FetchCapabilitiesResult result = ComputeFetchCapabilitiesResult(
+            [capabilities objectForKey:canOfferExtendedChromeSyncPromos],
+            error);
+        base::UmaHistogramEnumeration(
+            "Signin.AccountCapabilities.GetFromSystemLibraryResult",
+            result.fetch_result);
+
+        if (completion)
+          completion(result.capability_value);
+      });
 }
 
 MDMDeviceStatus ChromeIdentityService::GetMDMDeviceStatus(
@@ -151,6 +291,13 @@ void ChromeIdentityService::RemoveObserver(Observer* observer) {
 
 bool ChromeIdentityService::IsInvalidGrantError(NSDictionary* user_info) {
   return false;
+}
+
+void ChromeIdentityService::FetchCapabilities(
+    NSArray* capabilities,
+    ChromeIdentity* identity,
+    ChromeIdentityCapabilitiesFetchCompletionBlock completion) {
+  // Implementation provided by subclass.
 }
 
 void ChromeIdentityService::FireIdentityListChanged(bool keychainReload) {

@@ -12,6 +12,7 @@
 #include "android_webview/browser/gfx/aw_gl_surface.h"
 #include "android_webview/browser/gfx/aw_render_thread_context_provider.h"
 #include "android_webview/browser/gfx/display_scheduler_webview.h"
+#include "android_webview/browser/gfx/display_webview.h"
 #include "android_webview/browser/gfx/gpu_service_webview.h"
 #include "android_webview/browser/gfx/overlay_processor_webview.h"
 #include "android_webview/browser/gfx/parent_compositor_draw_constraints.h"
@@ -25,7 +26,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
@@ -36,7 +36,6 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
-#include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/overlay_processor_stub.h"
@@ -81,6 +80,7 @@ class HardwareRendererViz::OnViz : public viz::DisplayClient {
                         ChildFrame* child_frame);
   void PostDrawOnViz(viz::FrameTimingDetailsMap* timing_details);
   void RemoveOverlaysOnViz();
+  void MarkExpectContextLossOnViz();
 
   OverlayProcessorWebView* overlay_processor() {
     return overlay_processor_webview_;
@@ -109,11 +109,12 @@ class HardwareRendererViz::OnViz : public viz::DisplayClient {
   const viz::FrameSinkId frame_sink_id_;
   viz::LocalSurfaceId root_local_surface_id_;
   std::unique_ptr<viz::BeginFrameSource> stub_begin_frame_source_;
-  std::unique_ptr<viz::Display> display_;
+  std::unique_ptr<DisplayWebView> display_;
 
   std::unique_ptr<viz::HitTestAggregator> hit_test_aggregator_;
   viz::SurfaceId child_surface_id_;
   const bool viz_frame_submission_;
+  bool expect_context_loss_ = false;
 
   // Initialized in ctor and never changes, so it's safe to access from both
   // threads. Can be null, if overlays are disabled.
@@ -139,32 +140,13 @@ HardwareRendererViz::OnViz::OnViz(
 
   stub_begin_frame_source_ = std::make_unique<viz::StubBeginFrameSource>();
 
-  std::unique_ptr<viz::OverlayProcessorInterface> overlay_processor;
-
-  if (features::IsAndroidSurfaceControlEnabled()) {
-    auto overlay_processor_webview =
-        std::make_unique<OverlayProcessorWebView>(display_controller.get());
-    overlay_processor_webview_ = overlay_processor_webview.get();
-    overlay_processor = std::move(overlay_processor_webview);
-  } else {
-    overlay_processor = std::make_unique<viz::OverlayProcessorStub>();
-  }
-
-  auto scheduler =
-      std::make_unique<DisplaySchedulerWebView>(without_gpu_.get());
-
-  // Android WebView has no overlay processor, and does not need to share
-  // gpu_task_scheduler, so it is passed in as nullptr.
-  // TODO(weiliangc): Android WebView should support overlays. Change initialize
-  // order to make this happen.
-  display_ = std::make_unique<viz::Display>(
-      nullptr /* shared_bitmap_manager */,
+  display_ = DisplayWebView::Create(
       output_surface_provider->renderer_settings(),
       output_surface_provider->debug_settings(), frame_sink_id_,
       std::move(display_controller), std::move(output_surface),
-      std::move(overlay_processor), std::move(scheduler),
-      nullptr /* current_task_runner */);
+      GetFrameSinkManager(), without_gpu_.get());
   display_->Initialize(this, GetFrameSinkManager()->surface_manager(), true);
+  overlay_processor_webview_ = display_->overlay_processor();
 
   display_->SetVisible(true);
   display_->DisableGPUAccessByDefault();
@@ -288,6 +270,11 @@ void HardwareRendererViz::OnViz::RemoveOverlaysOnViz() {
     overlay_processor_webview_->RemoveOverlays();
 }
 
+void HardwareRendererViz::OnViz::MarkExpectContextLossOnViz() {
+  DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
+  expect_context_loss_ = true;
+}
+
 viz::FrameSinkManagerImpl* HardwareRendererViz::OnViz::GetFrameSinkManager() {
   DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
   return VizCompositorThreadRunnerWebView::GetInstance()->GetFrameSinkManager();
@@ -295,8 +282,10 @@ viz::FrameSinkManagerImpl* HardwareRendererViz::OnViz::GetFrameSinkManager() {
 
 void HardwareRendererViz::OnViz::DisplayOutputSurfaceLost() {
   DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
-  // Android WebView does not handle context loss.
-  LOG(FATAL) << "Render thread context loss";
+  if (!expect_context_loss_) {
+    // Android WebView does not handle real context loss.
+    LOG(FATAL) << "Render thread context loss";
+  }
 }
 
 void HardwareRendererViz::OnViz::DisplayWillDrawAndSwap(
@@ -419,9 +408,10 @@ void HardwareRendererViz::DrawAndSwap(const HardwareRendererDrawParams& params,
       allow_surface_control;
 
   auto* overlay_processor = on_viz_->overlay_processor();
-  const bool overlays_enabled_by_hwui =
-      overlays_params.overlays_mode == OverlaysParams::Mode::Enabled;
-  if (overlays_enabled_by_hwui && overlay_processor) {
+  const bool can_use_overlays =
+      overlays_params.overlays_mode == OverlaysParams::Mode::Enabled &&
+      !output_surface_provider_.gl_surface()->IsDrawingToFBO();
+  if (can_use_overlays && overlay_processor) {
     DCHECK(overlays_params.get_surface_control);
     allow_surface_control.emplace(overlay_processor,
                                   overlays_params.get_surface_control);
@@ -431,7 +421,7 @@ void HardwareRendererViz::DrawAndSwap(const HardwareRendererDrawParams& params,
       base::BindOnce(&HardwareRendererViz::OnViz::DrawAndSwapOnViz,
                      base::Unretained(on_viz_.get()), viewport, clip, transform,
                      surface_id_, device_scale_factor_, params.color_space,
-                     overlays_enabled_by_hwui, child_frame_.get()));
+                     can_use_overlays, child_frame_.get()));
 
   MergeTransactionIfNeeded(overlays_params.merge_transaction);
 
@@ -470,9 +460,19 @@ void HardwareRendererViz::MergeTransactionIfNeeded(
     auto transaction = overlay_processor->TakeSurfaceTransactionOnRT();
     if (transaction) {
       DCHECK(merge_transaction);
-      merge_transaction(transaction->transaction());
+      merge_transaction(transaction->GetTransaction());
     }
   }
+}
+
+void HardwareRendererViz::AbandonContext() {
+  VizCompositorThreadRunnerWebView::GetInstance()->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&HardwareRendererViz::OnViz::MarkExpectContextLossOnViz,
+                     base::Unretained(on_viz_.get())));
+  output_surface_provider_.MarkExpectContextLoss();
+  output_surface_provider_.shared_context_state()->MarkContextLost(
+      gpu::error::ContextLostReason::kUnknown);
 }
 
 }  // namespace android_webview

@@ -12,7 +12,7 @@
 #include "base/observer_list_types.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
-#include "components/feed/core/v2/common_enums.h"
+#include "components/feed/core/v2/public/common_enums.h"
 #include "components/feed/core/v2/public/refresh_task_scheduler.h"
 #include "components/feed/core/v2/public/stream_type.h"
 #include "components/feed/core/v2/public/types.h"
@@ -82,6 +82,11 @@ class FeedApi {
   virtual void LoadMore(const FeedStreamSurface& surface,
                         base::OnceCallback<void(bool)> callback) = 0;
 
+  // Refresh the feed content by fetching the fresh content from the server.
+  // Calls |callback| when complete. If the fetch fails, the parameter is false.
+  virtual void ManualRefresh(const FeedStreamSurface& surface,
+                             base::OnceCallback<void(bool)> callback) = 0;
+
   // Request to fetch and image for use in the feed. Calls |callback|
   // with the network response when complete. The returned ImageFetchId can be
   // passed to CancelImageFetch() to cancel the request.
@@ -93,7 +98,7 @@ class FeedApi {
   // |id| doesn't match an active fetch, nothing happens.
   virtual void CancelImageFetch(ImageFetchId id) = 0;
 
-  virtual PersistentKeyValueStore* GetPersistentKeyValueStore() = 0;
+  virtual PersistentKeyValueStore& GetPersistentKeyValueStore() = 0;
 
   // Apply |operations| to the stream model. Does nothing if the model is not
   // yet loaded.
@@ -177,6 +182,8 @@ class FeedApi {
   // Forces to render a StreamUpdate on all subsequent surface attaches.
   virtual void SetForcedStreamUpdateForDebugging(
       const feedui::StreamUpdate& stream_update) = 0;
+  // Returns the time of the last successful content fetch.
+  virtual base::Time GetLastFetchTime(const StreamType& stream_type) = 0;
 };
 
 }  // namespace feed

@@ -7,12 +7,12 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
@@ -169,7 +169,7 @@ class TabDesktopMediaListTest : public testing::Test {
     // necessary. https://crbug.com/832879.
     TabStripModel* tab_strip_model = browser_->tab_strip_model();
     for (WebContents* contents : manually_added_web_contents_) {
-      tab_strip_model->DetachWebContentsAt(
+      tab_strip_model->DetachAndDeleteWebContentsAt(
           tab_strip_model->GetIndexOfWebContents(contents));
     }
     manually_added_web_contents_.clear();
@@ -266,7 +266,7 @@ TEST_F(TabDesktopMediaListTest, RemoveTab) {
   TabStripModel* tab_strip_model = browser_->tab_strip_model();
   ASSERT_TRUE(tab_strip_model);
   std::unique_ptr<WebContents> released_web_contents =
-      tab_strip_model->DetachWebContentsAt(kDefaultSourceCount - 1);
+      tab_strip_model->DetachWebContentsAtForInsertion(kDefaultSourceCount - 1);
   base::Erase(manually_added_web_contents_, released_web_contents.get());
 
   EXPECT_CALL(observer_, OnSourceRemoved(list_.get(), 0))

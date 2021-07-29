@@ -99,10 +99,6 @@ if(CONFIG_REALTIME_ONLY)
                    "${AOM_ROOT}/av1/common/warped_motion.h")
 endif()
 
-if(CONFIG_LPF_MASK)
-  list(APPEND AOM_AV1_COMMON_SOURCES "${AOM_ROOT}/av1/common/loopfiltermask.c")
-endif()
-
 list(APPEND AOM_AV1_DECODER_SOURCES
             "${AOM_ROOT}/av1/av1_dx_iface.c"
             "${AOM_ROOT}/av1/decoder/decodeframe.c"
@@ -170,6 +166,8 @@ list(APPEND AOM_AV1_ENCODER_SOURCES
             "${AOM_ROOT}/av1/encoder/ethread.h"
             "${AOM_ROOT}/av1/encoder/extend.c"
             "${AOM_ROOT}/av1/encoder/extend.h"
+            "${AOM_ROOT}/av1/encoder/external_partition.c"
+            "${AOM_ROOT}/av1/encoder/external_partition.h"
             "${AOM_ROOT}/av1/encoder/firstpass.c"
             "${AOM_ROOT}/av1/encoder/firstpass.h"
             "${AOM_ROOT}/av1/encoder/global_motion.c"

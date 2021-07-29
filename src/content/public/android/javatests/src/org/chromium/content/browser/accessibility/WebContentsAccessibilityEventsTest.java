@@ -66,6 +66,7 @@ public class WebContentsAccessibilityEventsTest {
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         mActivityTestRule.setupTestFramework();
         mActivityTestRule.setAccessibilityDelegate();
+        mActivityTestRule.sendReadyForTestSignal();
     }
 
     /**
@@ -79,6 +80,31 @@ public class WebContentsAccessibilityEventsTest {
      */
     private void performTest(String inputFile, String expectationFile) {
         performTestWithJavascriptMethod(inputFile, expectationFile, "go()");
+    }
+
+    /**
+     * Perform a single test which will:
+     *      1. Open the given HTML file
+     *      2. Execute the javascript method "go()"
+     *      3. Repeat above step a total of |count| times
+     *      4. Read expectations file and compare with results
+     *
+     * @param inputFile                     HTML test input file
+     * @param expectationFile               TXT expectations file
+     * @param count                         Number of times to run method.
+     */
+    private void performTestWithRepeatCounter(String inputFile, String expectationFile, int count) {
+        // Build page from given file and enable testing framework, set a tracker.
+        setupTestFromFile(BASE_FILE_PATH + inputFile);
+
+        // Execute method a given number of times.
+        for (int i = 0; i < count; i++) {
+            mActivityTestRule.executeJS("go()");
+        }
+
+        // Send an "end of test" signal, then check results.
+        mActivityTestRule.sendEndOfTestSignal();
+        assertResults(expectationFile);
     }
 
     /**
@@ -123,7 +149,9 @@ public class WebContentsAccessibilityEventsTest {
         String actualResults = getTrackerResults();
         Assert.assertNotNull(RESULTS_NULL, actualResults);
 
-        Assert.assertEquals(EVENTS_ERROR, expectedResults, actualResults);
+        Assert.assertEquals(EVENTS_ERROR + "\n\nExpected:\n" + expectedResults + "\n\nActual:\n"
+                        + actualResults + "\n\n",
+                expectedResults, actualResults);
     }
 
     /**
@@ -181,6 +209,13 @@ public class WebContentsAccessibilityEventsTest {
 
     @Test
     @SmallTest
+    public void test_addAlertWithRoleChange() {
+        performTest("add-alert-with-role-change.html",
+                "add-alert-with-role-change-expected-android.txt");
+    }
+
+    @Test
+    @SmallTest
     public void test_addChild() {
         performTest("add-child.html", EMPTY_EXPECTATIONS_FILE);
     }
@@ -189,6 +224,27 @@ public class WebContentsAccessibilityEventsTest {
     @SmallTest
     public void test_addChildOfBody() {
         performTest("add-child-of-body.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.P)
+    public void test_addDialog() {
+        performTest("add-dialog.html", "add-dialog-expected-android.txt");
+    }
+
+    @Test
+    @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.P)
+    public void test_addDialog_describedBy() {
+        performTest("add-dialog-described-by.html", "add-dialog-described-by-expected-android.txt");
+    }
+
+    @Test
+    @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.P)
+    public void test_addDialog_noInfo() {
+        performTest("add-dialog-no-info.html", "add-dialog-no-info-expected-android.txt");
     }
 
     @Test
@@ -213,6 +269,12 @@ public class WebContentsAccessibilityEventsTest {
     @SmallTest
     public void test_ariaAtomicChanged() {
         performTest("aria-atomic-changed.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
+    public void test_ariaAtomicChanged2() {
+        performTest("aria-atomic-changed2.html", EMPTY_EXPECTATIONS_FILE);
     }
 
     @Test
@@ -254,7 +316,8 @@ public class WebContentsAccessibilityEventsTest {
     @Test
     @SmallTest
     public void test_ariaComboboxExpand() {
-        performTest("aria-combo-box-expand.html", "aria-combo-box-expand-expected-android.txt");
+        performTestWithRepeatCounter(
+                "aria-combo-box-expand.html", "aria-combo-box-expand-expected-android.txt", 3);
     }
 
     @Test
@@ -417,6 +480,12 @@ public class WebContentsAccessibilityEventsTest {
 
     @Test
     @SmallTest
+    public void test_ariaRelevantChanged2() {
+        performTest("aria-relevant-changed2.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
     public void test_ariaRequiredChanged() {
         performTest("aria-required-changed.html", EMPTY_EXPECTATIONS_FILE);
     }
@@ -476,6 +545,24 @@ public class WebContentsAccessibilityEventsTest {
     @SmallTest
     public void test_ariaSpinbuttonValuetextChanged() {
         performTest("aria-spinbutton-valuetext-change.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
+    public void test_ariaTextboxChildrenChange() {
+        performTest("aria-textbox-children-change.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
+    public void test_ariaTextboxEditabilityChanges() {
+        performTest("aria-textbox-editability-changes.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
+    public void test_ariaTextboxWithFocusableChildren() {
+        performTest("aria-textbox-with-focusable-children.html", EMPTY_EXPECTATIONS_FILE);
     }
 
     @Test
@@ -749,8 +836,20 @@ public class WebContentsAccessibilityEventsTest {
 
     @Test
     @SmallTest
+    public void test_liveRegionOff() {
+        performTest("live-region-off.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
     public void test_liveRegionRemove() {
         performTest("live-region-remove.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
+    public void test_menuBarShowHideMenus() {
+        performTest("menubar-show-hide-menus.html", EMPTY_EXPECTATIONS_FILE);
     }
 
     @Test
@@ -880,6 +979,13 @@ public class WebContentsAccessibilityEventsTest {
     public void test_reportValidityInvalidField() {
         performTest("report-validity-invalid-field.html",
                 "report-validity-invalid-field-expected-android.txt");
+    }
+
+    @Test
+    @SmallTest
+    public void test_samePageLinkNavigation() {
+        performTest(
+                "same-page-link-navigation.html", "same-page-link-navigation-expected-android.txt");
     }
 
     @Test

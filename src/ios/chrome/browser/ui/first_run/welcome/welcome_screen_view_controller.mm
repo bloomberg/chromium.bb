@@ -4,13 +4,16 @@
 
 #import "ios/chrome/browser/ui/first_run/welcome/welcome_screen_view_controller.h"
 
+#import "components/policy/core/common/policy_loader_ios_constants.h"
+#import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/browser/ui/first_run/welcome/checkbox_button.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/first_run/welcome/tos_commands.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -25,26 +28,34 @@ constexpr CGFloat kDefaultMargin = 16;
 // URL for the terms of service text.
 NSString* const kTermsOfServiceUrl = @"internal://terms-of-service";
 
+NSString* const kEnterpriseIconImageName = @"enterprise_icon";
+
 }  // namespace
 
 @interface WelcomeScreenViewController () <UITextViewDelegate>
 
 @property(nonatomic, strong) CheckboxButton* metricsConsentButton;
 @property(nonatomic, strong) UITextView* termsOfServiceTextView;
+@property(nonatomic, weak) id<TOSCommands> TOSHandler;
 
 @end
 
 @implementation WelcomeScreenViewController
 @dynamic delegate;
 
+- (instancetype)initWithTOSHandler:(id<TOSCommands>)TOSHandler {
+  DCHECK(TOSHandler);
+  self = [super initWithNibName:nil bundle:nil];
+  if (self) {
+    _TOSHandler = TOSHandler;
+  }
+  return self;
+}
+
 - (void)viewDidLoad {
-  self.titleText =
-      IsIPadIdiom()
-          ? l10n_util::GetNSString(IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TITLE_IPAD)
-          : l10n_util::GetNSString(
-                IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TITLE_IPHONE);
-  self.subtitleText =
-      l10n_util::GetNSString(IDS_IOS_FIRST_RUN_WELCOME_SCREEN_SUBTITLE);
+  [self configureLabels];
+  self.view.accessibilityIdentifier =
+      first_run::kFirstRunWelcomeScreenAccessibilityIdentifier;
   self.bannerImage = [UIImage imageNamed:@"welcome_screen_banner"];
   self.isTallBanner = YES;
   self.scrollToEndMandatory = YES;
@@ -58,9 +69,6 @@ NSString* const kTermsOfServiceUrl = @"internal://terms-of-service";
   [self.specificContentView addSubview:self.termsOfServiceTextView];
 
   [NSLayoutConstraint activateConstraints:@[
-    [self.metricsConsentButton.topAnchor
-        constraintGreaterThanOrEqualToAnchor:self.specificContentView
-                                                 .topAnchor],
     [self.metricsConsentButton.centerXAnchor
         constraintEqualToAnchor:self.specificContentView.centerXAnchor],
     [self.metricsConsentButton.widthAnchor
@@ -77,6 +85,38 @@ NSString* const kTermsOfServiceUrl = @"internal://terms-of-service";
         constraintEqualToAnchor:self.specificContentView.bottomAnchor],
   ]];
 
+  if ([self isBrowserManaged]) {
+    UILabel* managedLabel = [self createManagedLabel];
+    UIImage* image = [UIImage imageNamed:kEnterpriseIconImageName];
+    UIImageView* imageView = [[UIImageView alloc] initWithImage:image];
+    imageView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.specificContentView addSubview:managedLabel];
+    [self.specificContentView addSubview:imageView];
+
+    [NSLayoutConstraint activateConstraints:@[
+      [managedLabel.topAnchor
+          constraintEqualToAnchor:self.specificContentView.topAnchor],
+      [managedLabel.centerXAnchor
+          constraintEqualToAnchor:self.specificContentView.centerXAnchor],
+      [managedLabel.widthAnchor
+          constraintLessThanOrEqualToAnchor:self.specificContentView
+                                                .widthAnchor],
+
+      [imageView.topAnchor constraintEqualToAnchor:managedLabel.bottomAnchor
+                                          constant:kDefaultMargin],
+      [imageView.centerXAnchor
+          constraintEqualToAnchor:self.specificContentView.centerXAnchor],
+
+      [self.metricsConsentButton.topAnchor
+          constraintGreaterThanOrEqualToAnchor:imageView.bottomAnchor
+                                      constant:kDefaultMargin],
+    ]];
+  } else {
+    [self.metricsConsentButton.topAnchor
+        constraintGreaterThanOrEqualToAnchor:self.specificContentView.topAnchor]
+        .active = YES;
+  }
+
   [super viewDidLoad];
 }
 
@@ -87,6 +127,40 @@ NSString* const kTermsOfServiceUrl = @"internal://terms-of-service";
 }
 
 #pragma mark - Private
+
+// Configures the text for the title and subtitle based on whether the browser
+// is managed or not.
+- (void)configureLabels {
+  if ([self isBrowserManaged]) {
+    self.titleText = l10n_util::GetNSString(
+        IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TITLE_ENTERPRISE);
+    self.subtitleText = l10n_util::GetNSString(
+        IDS_IOS_FIRST_RUN_WELCOME_SCREEN_SUBTITLE_ENTERPRISE);
+  } else {
+    self.titleText =
+        (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET)
+            ? l10n_util::GetNSString(
+                  IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TITLE_IPAD)
+            : l10n_util::GetNSString(
+                  IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TITLE_IPHONE);
+    self.subtitleText =
+        l10n_util::GetNSString(IDS_IOS_FIRST_RUN_WELCOME_SCREEN_SUBTITLE);
+  }
+}
+
+// Creates and configures the label for the disclaimer that the browser is
+// managed.
+- (UILabel*)createManagedLabel {
+  UILabel* label = [[UILabel alloc] init];
+  label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+  label.numberOfLines = 0;
+  label.text = l10n_util::GetNSString(IDS_IOS_FIRST_RUN_WELCOME_SCREEN_MANAGED);
+  label.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  label.textAlignment = NSTextAlignmentCenter;
+  label.translatesAutoresizingMaskIntoConstraints = NO;
+  label.adjustsFontForContentSizeCategory = YES;
+  return label;
+}
 
 // Creates and configures the UMA consent checkbox button.
 - (CheckboxButton*)createMetricsConsentButton {
@@ -140,8 +214,17 @@ NSString* const kTermsOfServiceUrl = @"internal://terms-of-service";
   return textView;
 }
 
+// Handler for when the metrics button gets tapped. Toggles the button's
+// selected state.
 - (void)didTapMetricsButton {
   self.metricsConsentButton.selected = !self.metricsConsentButton.selected;
+}
+
+// Returns whether the browser is managed based on the presence of policy data
+// in the app configuration.
+- (BOOL)isBrowserManaged {
+  return [[[NSUserDefaults standardUserDefaults]
+             dictionaryForKey:kPolicyLoaderIOSConfigurationKey] count] > 0;
 }
 
 #pragma mark - UITextViewDelegate
@@ -151,9 +234,9 @@ NSString* const kTermsOfServiceUrl = @"internal://terms-of-service";
                   inRange:(NSRange)characterRange
               interaction:(UITextItemInteraction)interaction {
   DCHECK(textView == self.termsOfServiceTextView);
-  [self.delegate didTapTOSLink];
+  [self.TOSHandler showTOSPage];
 
-  // The delegate is already handling the tap.
+  // The handler is already handling the tap.
   return NO;
 }
 

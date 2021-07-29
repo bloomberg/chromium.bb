@@ -17,12 +17,12 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
+#include "chrome/browser/ash/file_manager/file_tasks_notifier.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
+#include "chrome/browser/ash/smb_client/smb_service.h"
+#include "chrome/browser/ash/smb_client/smb_service_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
-#include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chrome/browser/chromeos/smb_client/smb_service.h"
-#include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -127,8 +127,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {
       break;
     }
     case file_manager::VOLUME_TYPE_PROVIDED: {
-      chromeos::file_system_provider::Service* service =
-          chromeos::file_system_provider::Service::Get(browser_context());
+      auto* service =
+          ash::file_system_provider::Service::Get(browser_context());
       DCHECK(service);
       // TODO(mtomasz): Pass a more detailed error than just a bool.
       if (!service->RequestUnmount(volume->provider_id(),
@@ -142,7 +142,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {
           volume->mount_path(), base::DoNothing());
       break;
     case file_manager::VOLUME_TYPE_SMB:
-      chromeos::smb_client::SmbServiceFactory::Get(profile)->UnmountSmbFs(
+      ash::smb_client::SmbServiceFactory::Get(profile)->UnmountSmbFs(
           volume->mount_path());
       break;
     default:

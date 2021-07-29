@@ -988,18 +988,19 @@ def _setup_process(host, worker_num, child):
 
 def _teardown_process(child):
     res = None
-    e = None
+    exc = None
     if child.teardown_fn:
         try:
             res = child.teardown_fn(child, child.context_after_setup)
         except Exception as e:
+            exc = e
             pass
 
     if child.cov:  # pragma: no cover
         child.cov.stop()
         child.cov.save()
 
-    return (child.worker_num, res, e)
+    return (child.worker_num, res, exc)
 
 
 def _run_one_test(child, test_input):
@@ -1039,6 +1040,12 @@ def _run_one_test(child, test_input):
         test_name_to_load = child.test_name_prefix + test_name
         try:
             suite = child.loader.loadTestsFromName(test_name_to_load)
+            # From Python 3.5, AttributeError will not be thrown when calling
+            # LoadTestsFromName. Instead, it adds error messages in the loader.
+            # As a result, the original handling cannot kick in properly. We
+            # now check the error message and throw exception as needed.
+            if hasattr(child.loader, 'errors') and child.loader.errors:
+                raise AttributeError(child.loader.errors)
         except Exception as e:
             ex_str = ('loadTestsFromName("%s") failed: %s\n%s\n' %
                       (test_name_to_load, e, traceback.format_exc()))
@@ -1097,10 +1104,21 @@ def _run_one_test(child, test_input):
                                     expected_results, child.has_expectations,
                                     art.artifacts)
     test_location = inspect.getsourcefile(test_case.__class__)
+    test_method = getattr(test_case, test_case._testMethodName)
+    # Test methods are often wrapped by decorators such as @mock. Try to get to
+    # the actual test method instead of the wrapper.
+    if hasattr(test_method, '__wrapped__'):
+      test_method = test_method.__wrapped__
+    # Some tests are generated and don't have valid line numbers. Such test
+    # methods also have a source location different from module location.
+    if inspect.getsourcefile(test_method) == test_location:
+      test_line = inspect.getsourcelines(test_method)[1]
+    else:
+      test_line = None
     result.result_sink_retcode =\
             child.result_sink_reporter.report_individual_test_result(
                 child.test_name_prefix, result, child.artifact_output_dir,
-                child.expectations, test_location)
+                child.expectations, test_location, test_line)
     return (result, should_retry_on_failure)
 
 

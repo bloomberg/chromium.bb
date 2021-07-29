@@ -15,7 +15,7 @@
 #include "chrome/browser/federated_learning/floc_id_provider.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/webui/federated_learning/floc_internals.mojom.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -50,6 +50,10 @@ class MockFlocIdProvider : public federated_learning::FlocIdProvider {
       const absl::optional<url::Origin>& top_frame_origin) const override {
     return blink::mojom::InterestCohort::New();
   }
+  MOCK_METHOD(federated_learning::mojom::WebUIFlocStatusPtr,
+              GetFlocStatusForWebUi,
+              (),
+              (const, override));
   MOCK_METHOD(void, MaybeRecordFlocToUkm, (ukm::SourceId), (override));
   MOCK_METHOD(base::Time, GetApproximateNextComputeTime, (), (const, override));
 };
@@ -161,7 +165,8 @@ class PrivacySandboxSettingsTest : public testing::Test {
     feature_list()->Reset();
     if (privacy_sandbox_available) {
       feature_list()->InitWithFeatures(
-          {features::kPrivacySandboxSettings, features::kConversionMeasurement,
+          {features::kPrivacySandboxSettings,
+           blink::features::kConversionMeasurement,
            blink::features::kInterestCohortAPIOriginTrial},
           {});
     } else {
@@ -198,7 +203,7 @@ class PrivacySandboxSettingsTest : public testing::Test {
 
 TEST_F(PrivacySandboxSettingsTest, PrivacySandboxSettingsFunctional) {
   feature_list()->InitWithFeatures(
-      {features::kConversionMeasurement,
+      {blink::features::kConversionMeasurement,
        blink::features::kInterestCohortAPIOriginTrial},
       {features::kPrivacySandboxSettings});
   EXPECT_FALSE(privacy_sandbox_settings()->PrivacySandboxSettingsFunctional());
@@ -206,7 +211,7 @@ TEST_F(PrivacySandboxSettingsTest, PrivacySandboxSettingsFunctional) {
 
   feature_list()->InitWithFeatures(
       {features::kPrivacySandboxSettings},
-      {features::kConversionMeasurement,
+      {blink::features::kConversionMeasurement,
        blink::features::kInterestCohortAPIOriginTrial});
   EXPECT_TRUE(privacy_sandbox_settings()->PrivacySandboxSettingsFunctional());
 }
@@ -937,8 +942,9 @@ TEST_F(PrivacySandboxSettingsTest, GetFlocIdForDisplay) {
       prefs::kPrivacySandboxFlocEnabled, true);
   profile()->GetTestingPrefService()->SetBoolean(
       prefs::kPrivacySandboxApisEnabled, true);
-  federated_learning::FlocId floc_id(123456, base::Time(), base::Time::Now(),
-                                     /*sorting_lsh_version=*/0);
+  federated_learning::FlocId floc_id = federated_learning::FlocId::CreateValid(
+      123456, base::Time(), base::Time::Now(),
+      /*sorting_lsh_version=*/0);
   floc_id.SaveToPrefs(profile()->GetTestingPrefService());
 
   EXPECT_EQ(std::u16string(u"123456"),
@@ -967,7 +973,9 @@ TEST_F(PrivacySandboxSettingsTest, GetFlocIdForDisplay) {
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_INVALID),
             privacy_sandbox_settings()->GetFlocIdForDisplay());
 
-  floc_id.InvalidateIdAndSaveToPrefs(profile()->GetTestingPrefService());
+  floc_id.UpdateStatusAndSaveToPrefs(
+      profile()->GetTestingPrefService(),
+      federated_learning::FlocId::Status::kInvalidReset);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_INVALID),
             privacy_sandbox_settings()->GetFlocIdForDisplay());
 }
@@ -1102,8 +1110,9 @@ TEST_F(PrivacySandboxSettingsTest, IsFlocIdResettable) {
   // whether the FLoC ID is currently valid.
   feature_list()->InitWithFeatures(
       {blink::features::kInterestCohortAPIOriginTrial}, {});
-  federated_learning::FlocId floc_id(123456, base::Time(), base::Time::Now(),
-                                     /*sorting_lsh_version=*/0);
+  federated_learning::FlocId floc_id = federated_learning::FlocId::CreateValid(
+      123456, base::Time(), base::Time::Now(),
+      /*sorting_lsh_version=*/0);
   floc_id.SaveToPrefs(profile()->GetTestingPrefService());
   profile()->GetTestingPrefService()->SetBoolean(
       prefs::kPrivacySandboxFlocEnabled, true);
@@ -1129,7 +1138,9 @@ TEST_F(PrivacySandboxSettingsTest, IsFlocIdResettable) {
       prefs::kPrivacySandboxFlocEnabled, false);
   EXPECT_FALSE(privacy_sandbox_settings()->IsFlocIdResettable());
 
-  floc_id.InvalidateIdAndSaveToPrefs(profile()->GetTestingPrefService());
+  floc_id.UpdateStatusAndSaveToPrefs(
+      profile()->GetTestingPrefService(),
+      federated_learning::FlocId::Status::kInvalidReset);
   profile()->GetTestingPrefService()->SetBoolean(
       prefs::kPrivacySandboxFlocEnabled, true);
   EXPECT_TRUE(privacy_sandbox_settings()->IsFlocIdResettable());
@@ -1487,7 +1498,8 @@ TEST_F(PrivacySandboxSettingsTest, DelayedReconciliationIdentityFailure) {
       prefs::kPrivacySandboxPreferencesReconciled));
 
   // An account becoming available should not result in reconciliation.
-  identity_test_env()->MakePrimaryAccountAvailable("test@test.com");
+  identity_test_env()->MakePrimaryAccountAvailable("test@test.com",
+                                                   signin::ConsentLevel::kSync);
 
   EXPECT_FALSE(profile()->GetTestingPrefService()->GetBoolean(
       prefs::kPrivacySandboxPreferencesReconciled));

@@ -8,7 +8,7 @@
 
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_graphstatedata.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "third_party/base/check.h"
 
@@ -17,18 +17,18 @@ void CFX_DrawUtils::DrawFocusRect(CFX_RenderDevice* render_device,
                                   const CFX_Matrix& user_to_device,
                                   const CFX_FloatRect& view_bounding_box) {
   DCHECK(render_device);
-  CFX_PathData path;
+  CFX_Path path;
   path.AppendPoint(CFX_PointF(view_bounding_box.left, view_bounding_box.top),
-                   FXPT_TYPE::MoveTo);
+                   CFX_Path::Point::Type::kMove);
   path.AppendPoint(CFX_PointF(view_bounding_box.left, view_bounding_box.bottom),
-                   FXPT_TYPE::LineTo);
+                   CFX_Path::Point::Type::kLine);
   path.AppendPoint(
       CFX_PointF(view_bounding_box.right, view_bounding_box.bottom),
-      FXPT_TYPE::LineTo);
+      CFX_Path::Point::Type::kLine);
   path.AppendPoint(CFX_PointF(view_bounding_box.right, view_bounding_box.top),
-                   FXPT_TYPE::LineTo);
+                   CFX_Path::Point::Type::kLine);
   path.AppendPoint(CFX_PointF(view_bounding_box.left, view_bounding_box.top),
-                   FXPT_TYPE::LineTo);
+                   CFX_Path::Point::Type::kLine);
 
   CFX_GraphStateData graph_state_data;
   graph_state_data.m_DashArray = {1.0f};

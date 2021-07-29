@@ -25,10 +25,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include "vulkan/vulkan.h"
+#include "base_node.h"
+#include "pipeline_state.h"
 #include <spirv/unified1/spirv.hpp>
 #include "spirv-tools/optimizer.hpp"
-#include "core_validation_types.h"
 
 // A forward iterator over spirv instructions. Provides easy access to len, opcode, and content words
 // without the caller needing to care too much about the physical SPIRV module layout.
@@ -101,13 +101,16 @@ struct decoration_set {
         nonwritable_bit = 1 << 9,
         builtin_bit = 1 << 10,
     };
+    static constexpr uint32_t kInvalidValue = std::numeric_limits<uint32_t>::max();
+
     uint32_t flags = 0;
-    uint32_t location = static_cast<uint32_t>(-1);
+    uint32_t location = kInvalidValue;
     uint32_t component = 0;
     uint32_t input_attachment_index = 0;
     uint32_t descriptor_set = 0;
     uint32_t binding = 0;
-    uint32_t builtin = static_cast<uint32_t>(-1);
+    uint32_t builtin = kInvalidValue;
+    uint32_t spec_const_id = kInvalidValue;
 
     void merge(decoration_set const &other);
 
@@ -168,6 +171,8 @@ struct SHADER_MODULE_STATE : public BASE_NODE {
     // trees, constant expressions, etc requires jumping all over the instruction stream.
     layer_data::unordered_map<unsigned, unsigned> def_index;
     layer_data::unordered_map<unsigned, decoration_set> decorations;
+    // <Specialization constant ID -> target ID> mapping
+    layer_data::unordered_map<uint32_t, uint32_t> spec_const_map;
     // Find all decoration instructions to prevent relooping module later - many checks need this info
     std::vector<spirv_inst_iter> decoration_inst;
     std::vector<spirv_inst_iter> member_decoration_inst;

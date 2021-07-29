@@ -179,27 +179,6 @@ std::unique_ptr<chromeos_camera::CameraAppHelperImpl> CreateCameraAppHelper(
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-// static
-void CameraAppUI::ConnectToCameraAppDeviceProvider(
-    content::RenderFrameHost* source,
-    mojo::PendingReceiver<cros::mojom::CameraAppDeviceProvider> receiver) {
-  auto provider =
-      CreateCameraAppDeviceProvider(source->GetLastCommittedOrigin(),
-                                    source->GetProcess()->GetBrowserContext());
-  mojo::MakeSelfOwnedReceiver(std::move(provider), std::move(receiver));
-}
-
-// static
-void CameraAppUI::ConnectToCameraAppHelper(
-    content::RenderFrameHost* source,
-    mojo::PendingReceiver<chromeos_camera::mojom::CameraAppHelper> receiver) {
-  auto* window = source->GetNativeView()->GetToplevelWindow();
-  auto helper = CreateCameraAppHelper(
-      /*camera_app_ui=*/nullptr, source->GetProcess()->GetBrowserContext(),
-      window);
-  mojo::MakeSelfOwnedReceiver(std::move(helper), std::move(receiver));
-}
-
 CameraAppUI::CameraAppUI(content::WebUI* web_ui,
                          std::unique_ptr<CameraAppUIDelegate> delegate)
     : ui::MojoWebUIController(web_ui), delegate_(std::move(delegate)) {
@@ -296,6 +275,11 @@ void CameraAppUI::DevToolsAgentHostDetached(
     return;
   }
   app_window_manager()->SetDevToolsEnabled(false);
+}
+
+bool CameraAppUI::IsJavascriptErrorReportingEnabled() {
+  // Since we proactively call CrashReportPrivate.reportError() in CCA now.
+  return false;
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(CameraAppUI)

@@ -111,17 +111,17 @@ class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
       DictionaryPrefUpdate update(pref_service_.get(),
                                   prefs::kAudioDevicesState);
       base::DictionaryValue* pref = update.Get();
-      std::unique_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-      state->SetBoolean("active", kPresetState.active);
-      state->SetBoolean("activate_by_user", kPresetState.activate_by_user);
-      pref->Set(preset_key, std::move(state));
+      base::DictionaryValue state;
+      state.SetBoolean("active", kPresetState.active);
+      state.SetBoolean("activate_by_user", kPresetState.activate_by_user);
+      pref->SetPath(preset_key, std::move(state));
     }
 
     {
       DictionaryPrefUpdate update(pref_service_.get(),
                                   prefs::kAudioDevicesVolumePercent);
       base::DictionaryValue* pref = update.Get();
-      pref->SetDouble(preset_key, kPresetState.sound_level);
+      pref->SetDoubleKey(preset_key, kPresetState.sound_level);
     }
 
     {
@@ -453,9 +453,9 @@ TEST_P(AudioDevicesPrefHandlerTest, TestSettingV2DeviceStateRemovesV1Entry) {
 }
 
 TEST_P(AudioDevicesPrefHandlerTest, InputNoiseCancellationPrefRegistered) {
-  EXPECT_FALSE(audio_pref_handler_->GetNoiseCancellationState());
-  audio_pref_handler_->SetNoiseCancellationState(true);
   EXPECT_TRUE(audio_pref_handler_->GetNoiseCancellationState());
+  audio_pref_handler_->SetNoiseCancellationState(false);
+  EXPECT_FALSE(audio_pref_handler_->GetNoiseCancellationState());
 }
 
 }  // namespace ash

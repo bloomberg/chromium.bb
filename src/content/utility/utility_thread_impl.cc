@@ -25,7 +25,6 @@
 #include "content/utility/services.h"
 #include "content/utility/utility_blink_platform_with_sandbox_support_impl.h"
 #include "content/utility/utility_service_factory.h"
-#include "ipc/ipc_sync_channel.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
@@ -45,8 +44,9 @@ class ServiceBinderImpl {
   void BindServiceInterface(mojo::GenericPendingReceiver* receiver) {
     // Set a crash key so utility process crash reports indicate which service
     // was running in the process.
-    static auto* service_name_crash_key = base::debug::AllocateCrashKeyString(
-        "service-name", base::debug::CrashKeySize::Size32);
+    static auto* const service_name_crash_key =
+        base::debug::AllocateCrashKeyString("service-name",
+                                            base::debug::CrashKeySize::Size32);
     const std::string& service_name = receiver->interface_name().value();
     base::debug::SetCrashKeyString(service_name_crash_key, service_name);
 
@@ -150,6 +150,7 @@ ChildThreadImpl::Options::ServiceBinder GetServiceBinder() {
 UtilityThreadImpl::UtilityThreadImpl(base::RepeatingClosure quit_closure)
     : ChildThreadImpl(std::move(quit_closure),
                       ChildThreadImpl::Options::Builder()
+                          .WithLegacyIPCChannel(false)
                           .ServiceBinder(GetServiceBinder())
                           .ExposesInterfacesToBrowser()
                           .Build()) {
@@ -159,6 +160,7 @@ UtilityThreadImpl::UtilityThreadImpl(base::RepeatingClosure quit_closure)
 UtilityThreadImpl::UtilityThreadImpl(const InProcessChildThreadParams& params)
     : ChildThreadImpl(base::DoNothing(),
                       ChildThreadImpl::Options::Builder()
+                          .WithLegacyIPCChannel(false)
                           .InBrowserProcess(params)
                           .ServiceBinder(GetServiceBinder())
                           .ExposesInterfacesToBrowser()
@@ -183,11 +185,11 @@ void UtilityThreadImpl::ReleaseProcess() {
     return;
   }
 
-  // Close the channel to cause the UtilityProcessHost to be deleted. We need to
-  // take a different code path than the multi-process case because that case
+  // Disconnect from the UtilityProcessHost to cause it to be deleted. We need
+  // to take a different code path than the multi-process case because that case
   // depends on the child process going away to close the channel, but that
   // can't happen when we're in single process mode.
-  channel()->Close();
+  DisconnectChildProcessHost();
 }
 
 void UtilityThreadImpl::EnsureBlinkInitialized() {
@@ -249,10 +251,6 @@ void UtilityThreadImpl::Init() {
   ExposeInterfacesToBrowser(std::move(binders));
 
   service_factory_ = std::make_unique<UtilityServiceFactory>();
-}
-
-bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
-  return GetContentClient()->utility()->OnMessageReceived(msg);
 }
 
 void UtilityThreadImpl::RunServiceDeprecated(

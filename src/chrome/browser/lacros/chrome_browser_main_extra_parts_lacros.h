@@ -10,11 +10,13 @@
 #include <memory>
 
 class AutomationManagerLacros;
+class BrowserServiceLacros;
 class DownloadControllerClientLacros;
 
 namespace crosapi {
 class TaskManagerLacros;
-}
+class WebPageInfoProviderLacros;
+}  // namespace crosapi
 
 // Browser initialization for Lacros.
 class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
@@ -32,11 +34,17 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
 
   std::unique_ptr<AutomationManagerLacros> automation_manager_;
 
+  // Handles browser action requests from ash-chrome.
+  std::unique_ptr<BrowserServiceLacros> browser_service_;
+
   // Handles task manager crosapi from ash for sending lacros tasks to ash.
   std::unique_ptr<crosapi::TaskManagerLacros> task_manager_provider_;
 
   // Sends lacros download information to ash.
   std::unique_ptr<DownloadControllerClientLacros> download_controller_client_;
+
+  // Handles tab property requests from ash.
+  std::unique_ptr<crosapi::WebPageInfoProviderLacros> web_page_info_provider_;
 };
 
 #endif  // CHROME_BROWSER_LACROS_CHROME_BROWSER_MAIN_EXTRA_PARTS_LACROS_H_

@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_save_manager_impl.h"
 
+#include "base/containers/cxx20_erase.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
@@ -252,14 +253,13 @@ void PasswordSaveManagerImpl::Update(
   SavePendingToStore(observed_form, parsed_submitted_form);
 }
 
-void PasswordSaveManagerImpl::Blocklist(
-    const PasswordStore::FormDigest& form_digest) {
+void PasswordSaveManagerImpl::Blocklist(const PasswordFormDigest& form_digest) {
   DCHECK(!client_->IsIncognito());
   form_saver_->Blocklist(form_digest);
 }
 
 void PasswordSaveManagerImpl::Unblocklist(
-    const PasswordStore::FormDigest& form_digest) {
+    const PasswordFormDigest& form_digest) {
   form_saver_->Unblocklist(form_digest);
 }
 
@@ -497,6 +497,9 @@ void PasswordSaveManagerImpl::UploadVotesAndMetrics(
       parsed_submitted_form.submission_event);
   metrics_recorder_->SetSubmissionIndicatorEvent(
       parsed_submitted_form.submission_event);
+  // Remember the final username value which the user accepted the prompt
+  // with in order to produce votes based on username edits.
+  votes_uploader_->set_saved_username(pending_credentials_.username_value);
 
   if (IsNewLogin()) {
     metrics_util::LogNewlySavedPasswordIsGenerated(
@@ -529,7 +532,7 @@ void PasswordSaveManagerImpl::UploadVotesAndMetrics(
   // Do not send votes if there was no observed form. Furthermore, don't send
   // votes on change password forms, since they were already sent in Update()
   // method.
-  if (observed_form && !parsed_submitted_form.IsPossibleChangePasswordForm()) {
+  if (observed_form && !parsed_submitted_form.HasNewPasswordElement()) {
     votes_uploader_->SendVoteOnCredentialsReuse(
         *observed_form, parsed_submitted_form, &pending_credentials_);
   }
@@ -537,6 +540,7 @@ void PasswordSaveManagerImpl::UploadVotesAndMetrics(
     votes_uploader_->UploadPasswordVote(
         parsed_submitted_form, parsed_submitted_form, autofill::NEW_PASSWORD,
         FormStructure(pending_credentials_.form_data).FormSignatureAsStr());
+    votes_uploader_->MaybeSendSingleUsernameVote();
   }
 
   if (pending_credentials_.times_used == 1) {

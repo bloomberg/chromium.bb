@@ -1,0 +1,13 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct Result {
+  /* 0x0000 */ float values[1];
+};
+
+constant uint width = 128u;
+kernel void tint_symbol(depth2d<float, access::sample> tint_symbol_2 [[texture(0)]], uint3 GlobalInvocationId [[thread_position_in_grid]], device Result& result [[buffer(1)]]) {
+  result.values[((GlobalInvocationId.y * width) + GlobalInvocationId.x)] = tint_symbol_2.read(uint2(int2(int(GlobalInvocationId.x), int(GlobalInvocationId.y))), 0);
+  return;
+}
+

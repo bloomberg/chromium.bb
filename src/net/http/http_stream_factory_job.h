@@ -34,6 +34,7 @@
 #include "net/spdy/spdy_session_key.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_config_service.h"
+#include "url/scheme_host_port.h"
 
 namespace net {
 
@@ -156,7 +157,7 @@ class HttpStreamFactory::Job
       const ProxyInfo& proxy_info,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
-      HostPortPair destination,
+      url::SchemeHostPort destination,
       GURL origin_url,
       NextProto alternative_protocol,
       quic::ParsedQuicVersion quic_version,
@@ -314,8 +315,7 @@ class HttpStreamFactory::Job
 
   // Called in Job constructor: should Job be forced to use QUIC.
   static bool ShouldForceQuic(HttpNetworkSession* session,
-                              const HostPortPair& destination,
-                              const GURL& origin_url,
+                              const url::SchemeHostPort& destination,
                               const ProxyInfo& proxy_info,
                               bool using_ssl);
 
@@ -340,8 +340,6 @@ class HttpStreamFactory::Job
   // code is simply returned.
   int ReconsiderProxyAfterError(int error);
 
-  ClientSocketPoolManager::SocketGroupType GetSocketGroup() const;
-
   void MaybeCopyConnectionAttemptsFromSocketOrHandle();
 
   // Returns true if the request should be throttled to allow for only one
@@ -363,7 +361,7 @@ class HttpStreamFactory::Job
 
   // The server we are trying to reach, could be that of the origin or of the
   // alternative service (after applying host mapping rules).
-  const HostPortPair destination_;
+  const url::SchemeHostPort destination_;
 
   // The origin url we're trying to reach. This url may be different from the
   // original request when host mapping rules are set-up.
@@ -483,7 +481,7 @@ class HttpStreamFactory::JobFactory {
       const ProxyInfo& proxy_info,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
-      HostPortPair destination,
+      url::SchemeHostPort destination,
       GURL origin_url,
       bool is_websocket,
       bool enable_ip_based_pooling,
@@ -498,7 +496,7 @@ class HttpStreamFactory::JobFactory {
       const ProxyInfo& proxy_info,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
-      HostPortPair destination,
+      url::SchemeHostPort destination,
       GURL origin_url,
       NextProto alternative_protocol,
       quic::ParsedQuicVersion quic_version,

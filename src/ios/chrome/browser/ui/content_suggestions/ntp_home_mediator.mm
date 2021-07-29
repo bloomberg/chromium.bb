@@ -11,7 +11,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/scoped_observer.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
@@ -50,6 +49,7 @@
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_wrapper_view_controller.h"
 #include "ios/chrome/browser/ui/ntp/metrics.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_feed_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
@@ -450,6 +450,10 @@ const char kNTPHelpURL[] =
   web_state_list->ActivateWebStateAt(index);
 }
 
+- (void)hideMostRecentTab {
+  [self.suggestionsMediator hideRecentTabTile];
+}
+
 #pragma mark - ContentSuggestionsGestureCommands
 
 - (void)openNewTabWithSuggestionsItem:(ContentSuggestionsItem*)item
@@ -635,9 +639,8 @@ const char kNTPHelpURL[] =
       recordAction:new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY];
   base::RecordAction(base::UserMetricsAction("MobileNTPMostVisited"));
 
-  // TODO(crbug.com/763946): Plumb generation time.
   RecordNTPTileClick(mostVisitedIndex, item.source, item.titleSource,
-                     item.attributes, base::Time(), GURL());
+                     item.attributes, GURL());
 }
 
 // Shows a snackbar with an action to undo the removal of the most visited item
@@ -678,7 +681,7 @@ const char kNTPHelpURL[] =
   // TODO(crbug.com/1114792): Create a protocol to stop having references to
   // both of these ViewControllers directly.
   UICollectionView* collectionView =
-      self.refactoredFeedVisible
+      [self.ntpFeedDelegate isNTPRefactoredAndFeedVisible]
           ? self.ntpViewController.discoverFeedWrapperViewController
                 .feedCollectionView
           : self.suggestionsViewController.collectionView;
@@ -714,13 +717,13 @@ const char kNTPHelpURL[] =
   CGFloat offset =
       item ? item->GetPageDisplayState().scroll_state().content_offset().y : 0;
   CGFloat minimumOffset =
-      [self isRefactoredFeedVisible]
+      [self.ntpFeedDelegate isNTPRefactoredAndFeedVisible]
           ? -self.ntpViewController.contentSuggestionsContentHeight
           : 0;
   // TODO(crbug.com/1114792): Create a protocol to stop having references to
   // both of these ViewControllers directly.
   if (offset > minimumOffset) {
-    if ([self isRefactoredFeedVisible]) {
+    if ([self.ntpFeedDelegate isNTPRefactoredAndFeedVisible]) {
       [self.ntpViewController setSavedContentOffset:offset];
     } else {
       [self.suggestionsViewController setContentOffset:offset];
@@ -733,14 +736,15 @@ const char kNTPHelpURL[] =
 - (void)updateAccountImage {
   UIImage* image;
   // Fetches user's identity from Authentication Service.
-  ChromeIdentity* identity = self.authService->GetAuthenticatedIdentity();
+  ChromeIdentity* identity =
+      self.authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   if (identity) {
     // Fetches user's avatar from Authentication Service. Use cached version if
     // one is available. If not, use the default avatar and initiate a fetch
     // in the background. When background fetch completes, all observers will
     // be notified to refresh the user's avatar.
     ios::ChromeIdentityService* identityService =
-        ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+        ios::GetChromeBrowserProvider().GetChromeIdentityService();
     image = identityService->GetCachedAvatarForIdentity(identity);
     if (!image) {
       image = [self defaultAvatar];
@@ -765,7 +769,7 @@ const char kNTPHelpURL[] =
 // in but avatar image is not available yet.
 - (UIImage*)defaultAvatar {
   return ios::GetChromeBrowserProvider()
-      ->GetSigninResourcesProvider()
+      .GetSigninResourcesProvider()
       ->GetDefaultAvatar();
 }
 

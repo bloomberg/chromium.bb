@@ -73,7 +73,8 @@ GPUBuffer* GPUBuffer::Create(GPUDevice* device,
   GPUBuffer* buffer = MakeGarbageCollected<GPUBuffer>(
       device, dawn_desc.size,
       device->GetProcs().deviceCreateBuffer(device->GetHandle(), &dawn_desc));
-  buffer->setLabel(webgpu_desc->label());
+  if (webgpu_desc->hasLabel())
+    buffer->setLabel(webgpu_desc->label());
   return buffer;
 }
 
@@ -198,7 +199,8 @@ DOMArrayBuffer* GPUBuffer::GetMappedRangeImpl(
   // This could eventually be upgrade to the max ArrayBuffer size instead of the
   // max TypedArray size. See crbug.com/951196
   if (range_size > v8::TypedArray::kMaxLength) {
-    exception_state.ThrowRangeError(
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kOperationError,
         "getMappedRange failed, size is too large for the implementation");
     return nullptr;
   }

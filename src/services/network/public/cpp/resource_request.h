@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/component_export.h"
+#include "base/debug/crash_logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -22,7 +23,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/accept_ch_frame_observer.mojom.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
-#include "services/network/public/mojom/cookie_access_observer.mojom.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom-forward.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
@@ -117,7 +118,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // consult the doc comment for |request_initiator| in url_request.mojom.
   absl::optional<url::Origin> request_initiator;
 
+  // TODO(https://crbug.com/1098410): Remove the `isolated_world_origin` field
+  // once Chrome Platform Apps are gone.
   absl::optional<url::Origin> isolated_world_origin;
+
   GURL referrer;
   net::ReferrerPolicy referrer_policy = net::ReferrerPolicy::NEVER_CLEAR;
   net::HttpRequestHeaders headers;
@@ -178,6 +182,26 @@ COMPONENT_EXPORT(NETWORK_CPP_BASE)
 net::ReferrerPolicy ReferrerPolicyForUrlRequest(
     mojom::ReferrerPolicy referrer_policy);
 
+namespace debug {
+
+class COMPONENT_EXPORT(NETWORK_CPP_BASE) ScopedResourceRequestCrashKeys {
+ public:
+  explicit ScopedResourceRequestCrashKeys(
+      const network::ResourceRequest& request);
+  ~ScopedResourceRequestCrashKeys();
+
+  ScopedResourceRequestCrashKeys(const ScopedResourceRequestCrashKeys&) =
+      delete;
+  ScopedResourceRequestCrashKeys& operator=(
+      const ScopedResourceRequestCrashKeys&) = delete;
+
+ private:
+  base::debug::ScopedCrashKeyString url_;
+  url::debug::ScopedOriginCrashKey request_initiator_;
+  base::debug::ScopedCrashKeyString resource_type_;
+};
+
+}  // namespace debug
 }  // namespace network
 
 #endif  // SERVICES_NETWORK_PUBLIC_CPP_RESOURCE_REQUEST_H_

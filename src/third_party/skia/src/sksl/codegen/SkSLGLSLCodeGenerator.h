@@ -64,17 +64,9 @@ public:
 protected:
     using Precedence = Operator::Precedence;
 
-    void write(const char* s);
+    void write(skstd::string_view s);
 
-    void writeLine();
-
-    void writeLine(const char* s);
-
-    void write(const String& s);
-
-    void write(StringFragment s);
-
-    void writeLine(const String& s);
+    void writeLine(skstd::string_view s = skstd::string_view());
 
     void finishLine();
 
@@ -88,9 +80,7 @@ protected:
 
     void writeType(const Type& type);
 
-    void writeExtension(const String& name);
-
-    void writeExtension(const String& name, bool require);
+    void writeExtension(skstd::string_view name, bool require = true);
 
     void writeInterfaceBlock(const InterfaceBlock& intf);
 
@@ -133,6 +123,8 @@ protected:
     void writeTransposeHack(const Expression& mat);
 
     void writeInverseSqrtHack(const Expression& x);
+
+    void writeMatrixComparisonWorkaround(const BinaryExpression& x);
 
     virtual void writeFunctionCall(const FunctionCall& c);
 
@@ -201,8 +193,8 @@ protected:
     bool fFoundExternalSamplerDecl = false;
     bool fFoundRectSamplerDecl = false;
     bool fFoundGSInvocations = false;
-    bool fSetupFragPositionGlobal = false;
-    bool fSetupFragPositionLocal = false;
+    bool fSetupClockwise = false;
+    bool fSetupFragPosition = false;
     bool fSetupFragCoordWorkaround = false;
     // if non-empty, replace all texture / texture2D / textureProj / etc. calls with this name
     String fTextureFunctionOverride;
@@ -226,7 +218,7 @@ protected:
         kTexture,
         kTranspose
     };
-    static std::unordered_map<StringFragment, FunctionClass>* fFunctionClasses;
+    static std::unordered_map<skstd::string_view, FunctionClass>* fFunctionClasses;
 
     using INHERITED = CodeGenerator;
 };

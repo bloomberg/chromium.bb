@@ -71,6 +71,7 @@
 
 using base::test::ios::WaitUntilConditionOrTimeout;
 using base::test::ios::kWaitForPageLoadTimeout;
+using base::test::ios::kWaitForJSCompletionTimeout;
 
 // Subclass of WKWebView to check that the observers are removed when the web
 // state is destroyed.
@@ -857,10 +858,13 @@ class CRWWebControllerPolicyDeciderTest : public CRWWebControllerTest {
     return policy_match;
   }
 
-  // Return an owned BrowserState in order to set off the record state.
-  BrowserState* GetBrowserState() override { return &browser_state_; }
+  std::unique_ptr<BrowserState> CreateBrowserState() override {
+    return std::make_unique<FakeBrowserState>();
+  }
 
-  FakeBrowserState browser_state_;
+  FakeBrowserState* GetFakeBrowserState() {
+    return static_cast<FakeBrowserState*>(GetBrowserState());
+  }
 };
 
 // Tests that App specific URLs in iframes are allowed if the main frame is App
@@ -880,7 +884,7 @@ TEST_F(CRWWebControllerPolicyDeciderTest,
 // Tests that URL is allowed in OffTheRecord mode when the
 // |kBlockUniversalLinksInOffTheRecordMode| feature is disabled.
 TEST_F(CRWWebControllerPolicyDeciderTest, AllowOffTheRecordNavigation) {
-  browser_state_.SetOffTheRecord(true);
+  GetFakeBrowserState()->SetOffTheRecord(true);
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
       web::features::kBlockUniversalLinksInOffTheRecordMode);
@@ -897,7 +901,7 @@ TEST_F(CRWWebControllerPolicyDeciderTest, AllowOffTheRecordNavigation) {
 // and the BLOCK_UNIVERSAL_LINKS_IN_OFF_THE_RECORD_MODE buildflag is set.
 TEST_F(CRWWebControllerPolicyDeciderTest,
        AllowOffTheRecordNavigationBlockUniversalLinks) {
-  browser_state_.SetOffTheRecord(true);
+  GetFakeBrowserState()->SetOffTheRecord(true);
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       web::features::kBlockUniversalLinksInOffTheRecordMode);
@@ -1158,9 +1162,12 @@ TEST_F(CRWWebControllerTitleTest, TitleChange) {
   ASSERT_EQ(0, observer.title_change_count());
 
   // Expect TitleWasSet callback after the page is loaded and due to WKWebView
-  // title change KVO.
+  // title change KVO. Title updates happen asynchronously, so wait until the
+  // title is updated.
   LoadHtml(@"<title>Title1</title>");
-  EXPECT_EQ("Title1", base::UTF16ToUTF8(web_state()->GetTitle()));
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return web_state()->GetTitle() == u"Title1";
+  }));
   EXPECT_EQ(2, observer.title_change_count());
 
   // Expect at least one more TitleWasSet callback after changing title via
@@ -1169,16 +1176,20 @@ TEST_F(CRWWebControllerTitleTest, TitleChange) {
   // TODO(crbug.com/696104): There should be only 2 calls of TitleWasSet.
   // Fix expecteation when WKWebView stops sending extra KVO calls.
   ExecuteJavaScript(@"window.document.title = 'Title2';");
-  EXPECT_EQ("Title2", base::UTF16ToUTF8(web_state()->GetTitle()));
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return web_state()->GetTitle() == u"Title2";
+  }));
   EXPECT_GE(observer.title_change_count(), 3);
 }
 
 // Tests that fragment change navigations use title from the previous page.
 TEST_F(CRWWebControllerTitleTest, FragmentChangeNavigationsUsePreviousTitle) {
   LoadHtml(@"<title>Title1</title>");
-  ASSERT_EQ("Title1", base::UTF16ToUTF8(web_state()->GetTitle()));
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return web_state()->GetTitle() == u"Title1";
+  }));
   ExecuteJavaScript(@"window.location.hash = '#1'");
-  EXPECT_EQ("Title1", base::UTF16ToUTF8(web_state()->GetTitle()));
+  EXPECT_EQ(u"Title1", web_state()->GetTitle());
 }
 
 // Test fixture for JavaScript execution.
@@ -1303,7 +1314,7 @@ class CRWWebControllerWebViewTest : public WebTestWithWebController {
  protected:
   void SetUp() override {
     WebTestWithWebController::SetUp();
-    FakeBrowserState browser_state;
+
     web_view_ = [[CRWFakeWKWebViewObserverCount alloc] init];
     CRWFakeWebViewContentView* webViewContentView =
         [[CRWFakeWebViewContentView alloc]

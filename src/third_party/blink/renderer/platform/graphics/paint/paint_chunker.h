@@ -6,10 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNKER_H_
 
 #include "base/dcheck_is_on.h"
-#include "base/macros.h"
 #include "cc/input/layer_selection_bound.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
@@ -28,6 +26,8 @@ class PLATFORM_EXPORT PaintChunker final {
 
  public:
   explicit PaintChunker(Vector<PaintChunk>& chunks) { ResetChunks(&chunks); }
+  PaintChunker(const PaintChunker&) = delete;
+  PaintChunker& operator=(const PaintChunker&) = delete;
 
   // Finishes current chunks if any, and makes it ready to create chunks into
   // the given vector if not null.
@@ -87,6 +87,13 @@ class PLATFORM_EXPORT PaintChunker final {
   // Returns true if a new chunk is created.
   bool EnsureChunk() { return EnsureCurrentChunk(*next_chunk_id_); }
 
+  bool CurrentEffectivelyInvisible() const {
+    return current_effectively_invisible_;
+  }
+  void SetCurrentEffectivelyInvisible(bool invisible) {
+    current_effectively_invisible_ = invisible;
+  }
+
  private:
   // Returns true if a new chunk is created.
   bool EnsureCurrentChunk(const PaintChunk::Id&);
@@ -106,20 +113,16 @@ class PLATFORM_EXPORT PaintChunker final {
   PropertyTreeStateOrAlias current_properties_ =
       PropertyTreeState::Uninitialized();
 
-  Region last_chunk_known_to_be_opaque_region_;
-  bool last_chunk_text_known_to_be_on_opaque_background_ = true;
-
   // True when an item forces a new chunk (e.g., foreign display items), and for
   // the item following a forced chunk. PaintController also forces new chunks
   // before and after subsequences by calling ForceNewChunk().
   bool will_force_new_chunk_ = true;
 
+  bool current_effectively_invisible_ = false;
   bool should_compute_contents_opaque_ = true;
 
   Color candidate_background_color_ = Color::kTransparent;
   float candidate_background_area_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintChunker);
 };
 
 }  // namespace blink

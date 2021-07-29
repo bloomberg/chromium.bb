@@ -33,11 +33,11 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "skia/ext/skia_matrix_44.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/skia/include/core/SkM44.h"
-#include "third_party/skia/include/core/SkMatrix44.h"
 
 namespace gfx {
 class Transform;
@@ -115,7 +115,7 @@ class PLATFORM_EXPORT TransformationMatrix {
     SetMatrix(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41,
               m42, m43, m44);
   }
-  explicit TransformationMatrix(const SkMatrix44& matrix) {
+  explicit TransformationMatrix(const skia::Matrix44& matrix) {
     SetMatrix(
         matrix.get(0, 0), matrix.get(1, 0), matrix.get(2, 0), matrix.get(3, 0),
         matrix.get(0, 1), matrix.get(1, 1), matrix.get(2, 1), matrix.get(3, 1),
@@ -444,6 +444,16 @@ class PLATFORM_EXPORT TransformationMatrix {
 
   bool IsIntegerTranslation() const;
 
+  bool IsInvalidMatrix() const {
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        if (std::isinf(matrix_[i][j]) || std::isnan(matrix_[i][j]))
+          return true;
+      }
+    }
+    return false;
+  }
+
   // Returns true if axis-aligned 2d rects will remain axis-aligned after being
   // transformed by this matrix.
   bool Preserves2dAxisAlignment() const;
@@ -463,7 +473,7 @@ class PLATFORM_EXPORT TransformationMatrix {
   typedef float FloatMatrix4[16];
   void ToColumnMajorFloatArray(FloatMatrix4& result) const;
 
-  static SkMatrix44 ToSkMatrix44(const TransformationMatrix&);
+  static skia::Matrix44 ToSkMatrix44(const TransformationMatrix&);
   static SkM44 ToSkM44(const TransformationMatrix&);
   static gfx::Transform ToTransform(const TransformationMatrix&);
 
@@ -472,33 +482,8 @@ class PLATFORM_EXPORT TransformationMatrix {
   String ToString(bool as_matrix = false) const;
 
  private:
-  // multiply passed 2D point by matrix (assume z=0)
-  void MultVecMatrix(double x, double y, double& dst_x, double& dst_y) const;
-  FloatPoint InternalMapPoint(const FloatPoint& source_point) const {
-    double result_x;
-    double result_y;
-    MultVecMatrix(source_point.X(), source_point.Y(), result_x, result_y);
-    return FloatPoint(static_cast<float>(result_x),
-                      static_cast<float>(result_y));
-  }
-
-  // multiply passed 3D point by matrix
-  void MultVecMatrix(double x,
-                     double y,
-                     double z,
-                     double& dst_x,
-                     double& dst_y,
-                     double& dst_z) const;
-  FloatPoint3D InternalMapPoint(const FloatPoint3D& source_point) const {
-    double result_x;
-    double result_y;
-    double result_z;
-    MultVecMatrix(source_point.X(), source_point.Y(), source_point.Z(),
-                  result_x, result_y, result_z);
-    return FloatPoint3D(static_cast<float>(result_x),
-                        static_cast<float>(result_y),
-                        static_cast<float>(result_z));
-  }
+  FloatPoint InternalMapPoint(const FloatPoint& source_point) const;
+  FloatPoint3D InternalMapPoint(const FloatPoint3D& source_point) const;
 
   void SetMatrix(const Matrix4& m) { memcpy(&matrix_, &m, sizeof(Matrix4)); }
 

@@ -9,6 +9,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/debug/activity_tracker.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -18,7 +19,6 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/pending_task.h"
 #include "base/process/process.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"

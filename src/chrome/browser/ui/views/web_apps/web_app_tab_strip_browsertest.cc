@@ -15,16 +15,16 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/background_color_change_waiter.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -44,7 +44,9 @@ class WebAppTabStripBrowserTest : public InProcessBrowserTest {
   ~WebAppTabStripBrowserTest() override = default;
 
   void SetUp() override {
-    features_.InitWithFeatures({features::kDesktopPWAsTabStrip}, {});
+    features_.InitWithFeatures({features::kDesktopPWAsTabStrip,
+                                features::kDesktopPWAsTabStripSettings},
+                               {});
     ASSERT_TRUE(embedded_test_server()->Start());
     InProcessBrowserTest::SetUp();
   }
@@ -80,7 +82,7 @@ class WebAppTabStripBrowserTest : public InProcessBrowserTest {
         TabActive::kActive, BrowserFrameActiveState::kActive);
   }
 
-  AppRegistrar& registrar() {
+  WebAppRegistrar& registrar() {
     return WebAppProvider::Get(browser()->profile())->registrar();
   }
 

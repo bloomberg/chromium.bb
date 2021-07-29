@@ -304,17 +304,17 @@ bool PresenterImageX11::Initialize(
     fds[i] = x11::RefCountedFD(vulkan_image->GetMemoryFd());
   x11::Dri3::PixmapFromBuffersRequest request = {
       .window = window,
-      .width = size.width(),
-      .height = size.height(),
-      .stride0 = layouts[0].rowPitch,
-      .offset0 = layouts[0].offset,
-      .stride1 = layouts[1].rowPitch,
-      .offset1 = layouts[1].offset,
-      .stride2 = layouts[2].rowPitch,
-      .offset2 = layouts[2].offset,
-      .stride3 = layouts[3].rowPitch,
-      .offset3 = layouts[3].offset,
-      .depth = depth,
+      .width = static_cast<uint16_t>(size.width()),
+      .height = static_cast<uint16_t>(size.height()),
+      .stride0 = static_cast<uint32_t>(layouts[0].rowPitch),
+      .offset0 = static_cast<uint32_t>(layouts[0].offset),
+      .stride1 = static_cast<uint32_t>(layouts[1].rowPitch),
+      .offset1 = static_cast<uint32_t>(layouts[1].offset),
+      .stride2 = static_cast<uint32_t>(layouts[2].rowPitch),
+      .offset2 = static_cast<uint32_t>(layouts[2].offset),
+      .stride3 = static_cast<uint32_t>(layouts[3].rowPitch),
+      .offset3 = static_cast<uint32_t>(layouts[3].offset),
+      .depth = static_cast<uint8_t>(depth),
       .bpp = 32,
       .modifier = vulkan_image->modifier(),
       .buffers = std::move(fds)};
@@ -573,9 +573,10 @@ bool OutputPresenterX11::Initialize() {
   auto geometry = connection->GetGeometry(window).Sync();
   depth_ = geometry->depth;
 
-  if (auto modifiers = dri3->GetSupportedModifiers(
-                               {static_cast<uint32_t>(window), depth_, 32})
-                           .Sync()) {
+  if (auto modifiers =
+          dri3->GetSupportedModifiers({static_cast<uint32_t>(window),
+                                       static_cast<uint8_t>(depth_), 32})
+              .Sync()) {
     if (!modifiers->window_modifiers.empty())
       modifier_vectors_.push_back(std::move(modifiers->window_modifiers));
     if (!modifiers->screen_modifiers.empty())
@@ -647,7 +648,6 @@ std::vector<std::unique_ptr<OutputPresenter::Image>>
 OutputPresenterX11::AllocateImages(gfx::ColorSpace color_space,
                                    gfx::Size image_size,
                                    size_t num_images) {
-  DCHECK_EQ(num_images, kNumberOfBuffers);
   auto window = static_cast<x11::Window>(dependency_->GetSurfaceHandle());
   std::vector<std::unique_ptr<Image>> images(num_images);
   for (size_t i = 0; i < num_images; ++i) {

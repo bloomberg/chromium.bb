@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/infobars/core/infobar_manager.h"
@@ -84,8 +84,9 @@ class PPAPITestBase : public InProcessBrowserTest {
     bool expecting_infobar_;
     bool should_accept_;
 
-    ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
-        infobar_observer_;
+    base::ScopedObservation<infobars::InfoBarManager,
+                            infobars::InfoBarManager::Observer>
+        infobar_observation_{this};
   };
 
   // Runs the test for a tab given the tab that's already navigated to the
@@ -127,6 +128,7 @@ class OutOfProcessPPAPITest : public PPAPITest {
   OutOfProcessPPAPITest();
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
+  void RunTest(const std::string& test_case) override;
   void RunTouchEventTest(const std::string& test_case);
 };
 

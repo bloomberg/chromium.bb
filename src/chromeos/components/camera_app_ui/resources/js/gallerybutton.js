@@ -126,10 +126,6 @@ export class GalleryButton {
     this.directory_ = null;
 
     this.button_.addEventListener('click', async () => {
-      // Check if the last picture serving as cover photo still exists before
-      // opening it in the gallery.
-      // TODO(yuli): Remove this workaround for unable watching changed-files.
-      await this.checkCover_();
       if (this.cover_ !== null) {
         await ChromeHelper.getInstance().openFileInGallery(
             this.cover_.file.name);
@@ -167,10 +163,16 @@ export class GalleryButton {
         cover !== null && cover.thumbnailUrl !== null ?
         `url("${cover.thumbnailUrl}")` :
         'none';
+
+    if (cover !== null) {
+      ChromeHelper.getInstance().monitorFileDeletion(file.name, () => {
+        this.checkCover_();
+      });
+    }
   }
 
   /**
-   * Checks validity of cover photo from download directory.
+   * Checks validity of cover photo from camera directory.
    * @private
    */
   async checkCover_() {
@@ -181,8 +183,7 @@ export class GalleryButton {
 
     // Checks existence of cached cover photo.
     if (this.cover_ !== null) {
-      const file = await dir.getFile(this.cover_.name);
-      if (file !== null) {
+      if (await dir.isExist(this.cover_.name)) {
         return;
       }
     }

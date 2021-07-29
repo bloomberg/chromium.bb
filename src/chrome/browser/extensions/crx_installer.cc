@@ -506,6 +506,28 @@ void CrxInstaller::ShouldComputeHashesOnUI(
       FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
+void CrxInstaller::GetContentVerifierKeyOnUI(
+    base::OnceCallback<void(ContentVerifierKey)> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ContentVerifierKey key = ExtensionSystem::Get(profile_)
+                               ->content_verifier()
+                               ->GetContentVerifierKey();
+  // Normally content verifier key is an std::span, so only a reference to the
+  // real key. Hence we have to make a copy before passing it to another thread.
+  std::vector<uint8_t> key_copy(key.begin(), key.end());
+  GetUnpackerTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(key_copy)));
+}
+
+void CrxInstaller::GetContentVerifierKey(
+    base::OnceCallback<void(ContentVerifierKey)> callback) {
+  if (!content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&CrxInstaller::GetContentVerifierKeyOnUI,
+                                    this, std::move(callback)))) {
+    NOTREACHED();
+  }
+}
+
 void CrxInstaller::ShouldComputeHashesForOffWebstoreExtension(
     scoped_refptr<const Extension> extension,
     base::OnceCallback<void(bool)> callback) {
@@ -804,7 +826,8 @@ void CrxInstaller::ConfirmInstall() {
   }
 }
 
-void CrxInstaller::OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
+void CrxInstaller::OnInstallPromptDone(
+    ExtensionInstallPrompt::DoneCallbackPayload payload) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If update_from_settings_page_ boolean is true, this functions is
@@ -813,7 +836,7 @@ void CrxInstaller::OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
   // ExtensionInstallPrompt::ShowDialog().
 
   ExtensionService* service = service_weak_.get();
-  switch (result) {
+  switch (payload.result) {
     case ExtensionInstallPrompt::Result::ACCEPTED:
       if (!service || service->browser_terminating())
         return;
@@ -836,16 +859,12 @@ void CrxInstaller::OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
       break;
     case ExtensionInstallPrompt::Result::USER_CANCELED:
       if (!update_from_settings_page_) {
-        ExtensionService::RecordPermissionMessagesHistogram(extension(),
-                                                            "InstallCancel");
         NotifyCrxInstallComplete(CrxInstallError(
             CrxInstallErrorType::OTHER, CrxInstallErrorDetail::USER_CANCELED));
       }
       break;
     case ExtensionInstallPrompt::Result::ABORTED:
       if (!update_from_settings_page_) {
-        ExtensionService::RecordPermissionMessagesHistogram(extension(),
-                                                            "InstallAbort");
         NotifyCrxInstallComplete(CrxInstallError(
             CrxInstallErrorType::OTHER, CrxInstallErrorDetail::USER_ABORTED));
       }

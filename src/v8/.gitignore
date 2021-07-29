@@ -52,6 +52,7 @@
 /test/benchmarks/data
 /test/fuzzer/wasm_corpus
 /test/fuzzer/wasm_corpus.tar.gz
+!/test/mjsunit/tools/*.log
 /test/mozilla/data
 /test/test262/data
 /test/test262/harness
@@ -105,4 +106,7 @@ turbo*.cfg
 turbo*.dot
 turbo*.json
 v8.ignition_dispatches_table.json
-
+bazel-bin
+bazel-out
+bazel-testlogs
+bazel-v8

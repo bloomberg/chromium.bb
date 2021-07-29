@@ -758,8 +758,7 @@ bool IsHostAllowedInIncognito(const GURL& url) {
   base::StringPiece host = url.host_piece();
   if (scheme == chrome::kChromeSearchScheme) {
     return host != chrome::kChromeUIThumbnailHost &&
-           host != chrome::kChromeUIThumbnailHost2 &&
-           host != chrome::kChromeUISuggestionsHost;
+           host != chrome::kChromeUIThumbnailHost2;
   }
 
   if (scheme != content::kChromeUIScheme)
@@ -792,9 +791,9 @@ bool IsHostAllowedInIncognito(const GURL& url) {
          host != chrome::kChromeUIBookmarksHost &&
          host != chrome::kChromeUIThumbnailHost &&
          host != chrome::kChromeUIThumbnailHost2 &&
-         host != chrome::kChromeUISuggestionsHost &&
          host != chrome::kChromeUIDevicesHost &&
-         host != chrome::kChromeUINewTabPageHost;
+         host != chrome::kChromeUINewTabPageHost &&
+         host != chrome::kChromeUINewTabPageThirdPartyHost;
 }
 
 bool IsURLAllowedInIncognito(const GURL& url,
@@ -807,6 +806,8 @@ bool IsURLAllowedInIncognito(const GURL& url,
     DCHECK_GT(stripped_spec.size(), strlen(content::kViewSourceScheme));
     stripped_spec.erase(0, strlen(content::kViewSourceScheme) + 1);
     GURL stripped_url(stripped_spec);
+    if (stripped_url.is_empty())
+      return true;
     return stripped_url.is_valid() &&
            IsURLAllowedInIncognito(stripped_url, browser_context);
   }

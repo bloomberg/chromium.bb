@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/services/app_service/public/cpp/app_update.h"
@@ -16,6 +15,7 @@
 #include "extensions/common/constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -31,7 +31,8 @@ enum class DefaultAppName {
   kCalculator = 10,
   kText = 11,
   kGetHelp = 12,
-  kGallery = 13,
+  // Gallery was replaced by MediaApp in M86 and deleted in M91.
+  kDeletedGalleryChromeApp = 13,
   kVideoPlayer = 14,
   kAudioPlayer = 15,
   kChromeCanvas = 16,
@@ -66,10 +67,11 @@ enum class DefaultAppName {
   kShortcutCustomizationApp = 44,
   kShimlessRMAApp = 45,
   kOsFeedbackApp = 46,
+  kA4 = 47,
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kOsFeedbackApp,
+  kMaxValue = kA4,
 };
 
 void RecordDefaultAppLaunch(DefaultAppName default_app_name,
@@ -208,16 +210,18 @@ namespace apps {
 
 void RecordAppLaunch(const std::string& app_id,
                      apps::mojom::LaunchSource launch_source) {
-  if (app_id == extension_misc::kCalculatorAppId) {
+  if (app_id == web_app::kA4AppId) {
+    RecordDefaultAppLaunch(DefaultAppName::kA4, launch_source);
+  } else if (app_id == extension_misc::kCalculatorAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kCalculator, launch_source);
   } else if (app_id == extension_misc::kTextEditorAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kText, launch_source);
-  } else if (app_id == file_manager::kGalleryAppId) {
-    RecordDefaultAppLaunch(DefaultAppName::kGallery, launch_source);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   } else if (app_id == file_manager::kVideoPlayerAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kVideoPlayer, launch_source);
   } else if (app_id == file_manager::kAudioPlayerAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kAudioPlayer, launch_source);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   } else if (app_id == web_app::kCanvasAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kChromeCanvas, launch_source);
   } else if (app_id == extension_misc::kCameraAppId) {
@@ -248,7 +252,8 @@ void RecordAppLaunch(const std::string& app_id,
   } else if (app_id == extension_misc::kGoogleKeepAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kKeep, launch_source);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  } else if (app_id == extension_misc::kGooglePhotosAppId) {
+  } else if (app_id == extension_misc::kGooglePhotosAppId ||
+             app_id == arc::kGooglePhotosAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kPhotos, launch_source);
   } else if (app_id == arc::kPlayBooksAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kPlayBooks, launch_source);

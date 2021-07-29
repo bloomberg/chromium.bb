@@ -292,7 +292,7 @@ TEST_F(
                 'Move through text by character test lnk ! mled';
 
             this.listenOnce(
-                input, chrome.automation.EventType.FOCUS, function() {
+                input, EventType.FOCUS, function() {
                   mockFeedback.call(moveByChar)
                       .expectSpeech('o')
                       .expectSpeech('Size 20')
@@ -1195,7 +1195,7 @@ TEST_F('ChromeVoxEditingTest', 'BackwardWordDelete', function() {
     </div>
   `,
       function(root) {
-        const input = root.find({attributes: {contentEditableRoot: true}});
+        const input = root.find({attributes: {nonAtomicTextFieldRoot: true}});
         this.listenOnce(input, 'focus', function() {
           mockFeedback.call(this.press(KeyCode.END, {ctrl: true}))
               .expectSpeech('test')
@@ -1610,12 +1610,12 @@ TEST_F('ChromeVoxEditingTest', 'MarkedContent', function() {
               'This is ', 'your', 'Comment', ' text.', 'Exited Comment.')
           .call(this.press(KeyCode.DOWN))
           .expectSpeech(
-              'This is ', 'Suggestion', 'Insertion', 'their', ' text.',
-              'Exited Insertion.', 'Exited Suggestion.')
+              'This is ', 'Suggest', 'Insert', 'their', ' text.',
+              'Exited Insert.', 'Exited Suggest.')
           .call(this.press(KeyCode.DOWN))
           .expectSpeech(
-              'This is ', 'Suggestion', 'Deletion', `everyone's`, ' text.',
-              'Exited Deletion.', 'Exited Suggestion.')
+              'This is ', 'Suggest', 'Delete', `everyone's`, ' text.',
+              'Exited Delete.', 'Exited Suggest.')
           .replay();
     });
     input.focus();
@@ -1639,9 +1639,108 @@ TEST_F('ChromeVoxEditingTest', 'NestedInsertionDeletion', function() {
     this.listenOnce(input, 'focus', function() {
       mockFeedback.call(this.press(KeyCode.DOWN))
           .expectSpeech(
-              'I ', 'Suggestion', 'Username', 'Insertion', 'was',
-              'Exited Insertion.', 'Deletion', 'am', ' typing',
-              'Exited Deletion.', 'Exited Suggestion.')
+              'I ', 'Suggest', 'Username', 'Insert', 'was', 'Exited Insert.',
+              'Delete', 'am', ' typing', 'Exited Delete.', 'Exited Suggest.')
+          .call(this.press(KeyCode.DOWN))
+          .expectSpeech('End')
+          .replay();
+    });
+    input.focus();
+  });
+});
+
+TEST_F('ChromeVoxEditingTest', 'MoveByCharSuggestions', function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
+    <div contenteditable="true" role="textbox">
+      <p>Start</p>
+      <span>I </span>
+      <span role="suggestion" aria-description="Username">
+        <span role="insertion">was</span>
+        <span role="deletion">am</span></span><span> typing</span>
+      <p>End</p>
+    </div>
+  `;
+  this.runWithLoadedTree(site, function(root) {
+    const input = root.find({role: RoleType.TEXT_FIELD});
+    this.listenOnce(input, EventType.FOCUS, function() {
+      mockFeedback
+          .call(this.press(KeyCode.DOWN))
+          // Move forward through line.
+          .call(this.press(KeyCode.RIGHT))
+          .expectSpeech(' ')
+          .call(this.press(KeyCode.RIGHT))
+          .expectSpeech('Suggest', 'Username', 'Insert', 'w')
+          .call(this.press(KeyCode.RIGHT))
+          .expectSpeech('a')
+          .call(this.press(KeyCode.RIGHT))
+          .expectSpeech('s')
+          .call(this.press(KeyCode.RIGHT))
+          .expectSpeech('Exited Insert.')
+          .call(this.press(KeyCode.RIGHT))
+          .expectSpeech('Delete', 'a')
+          .call(this.press(KeyCode.RIGHT))
+          .expectSpeech('m')
+          .call(this.press(KeyCode.RIGHT))
+          .expectSpeech('Exited Delete.', 'Exited Suggest.')
+          // Move backward through the same line.
+          .call(this.press(KeyCode.LEFT))
+          .expectSpeech('Suggest', 'Username', 'Delete', 'm')
+          .call(this.press(KeyCode.LEFT))
+          .expectSpeech('a')
+          .call(this.press(KeyCode.LEFT))
+          .expectSpeech('Exited Delete.')
+          .call(this.press(KeyCode.LEFT))
+          .expectSpeech('Insert', 's')
+          .call(this.press(KeyCode.LEFT))
+          .expectSpeech('a')
+          .call(this.press(KeyCode.LEFT))
+          .expectSpeech('w')
+          .call(this.press(KeyCode.LEFT))
+          .expectSpeech('Exited Insert.', 'Exited Suggest.')
+          .call(this.press(KeyCode.DOWN))
+          .expectSpeech('End')
+          .replay();
+    });
+    input.focus();
+  });
+});
+
+TEST_F('ChromeVoxEditingTest', 'MoveByWordSuggestions', function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
+    <div contenteditable="true" role="textbox">
+      <p>Start</p>
+      <span>I </span>
+      <span role="suggestion" aria-description="Username">
+        <span role="insertion">was</span>
+        <span role="deletion">am</span></span><span> typing</span>
+      <p>End</p>
+    </div>
+  `;
+  this.runWithLoadedTree(site, function(root) {
+    const input = root.find({role: RoleType.TEXT_FIELD});
+    this.listenOnce(input, EventType.FOCUS, function() {
+      mockFeedback
+          .call(this.press(KeyCode.DOWN))
+          // Move forward through line.
+          .call(this.press(KeyCode.RIGHT, {ctrl: true}))
+          .expectSpeech('I ')
+          .call(this.press(KeyCode.RIGHT, {ctrl: true}))
+          .expectSpeech(
+              'Suggest', 'Username', 'Insert', 'was', 'Exited Insert.',
+              'Delete', 'am')
+          .call(this.press(KeyCode.RIGHT, {ctrl: true}))
+          .expectSpeech(
+              'Exited Insert.', 'Delete', 'am', 'Exited Delete.',
+              'Exited Suggest.', ' typing')
+          // Move backward through line.
+          .call(this.press(KeyCode.LEFT, {ctrl: true}))
+          .expectSpeech('Suggest', 'Username', 'Delete', 'am')
+          .call(this.press(KeyCode.LEFT, {ctrl: true}))
+          .expectSpeech('Exited Delete.', 'Insert', 'was')
+          .call(this.press(KeyCode.LEFT, {ctrl: true}))
+          .expectSpeech('Exited Insert.', 'Exited Suggest.', 'I')
           .call(this.press(KeyCode.DOWN))
           .expectSpeech('End')
           .replay();
@@ -1705,12 +1804,118 @@ TEST_F(
   `;
       this.runWithLoadedTree(site, function(root) {
         const input = root.find({role: RoleType.TEXT_FIELD});
-        this.listenOnce(input, 'focus', function() {
+        this.listenOnce(input, EventType.FOCUS, function() {
           mockFeedback.call(this.press(KeyCode.DOWN))
               .expectSpeech('This is a test')
               .call(this.press(KeyCode.DOWN))
               .expectSpeech('End')
               .replay();
+        });
+        input.focus();
+      });
+    });
+
+TEST_F(
+    'ChromeVoxEditingTest', 'TextEditHandlerCreatesAutomationEditable',
+    function() {
+      const site = `
+    <input type="text"></input>
+  `;
+      this.runWithLoadedTree(site, function(root) {
+        const input = root.find({role: RoleType.TEXT_FIELD});
+        this.listenOnce(input, EventType.FOCUS, function() {
+          // The initial real input is a simple non-rich text field.
+          assertEquals(
+              'AutomationEditableText',
+              DesktopAutomationHandler.instance.textEditHandler.editableText_
+                  .constructor.name,
+              'Real text field was not a non-rich text.');
+
+          // Now, we will override some properties directly to
+          // ensure we don't depend on Blink's behaviors which can change based
+          // on style. We want to work directly with only the automation api
+          // itself to ensure we have full coverage.
+          let htmlAttributes = {};
+          let htmlTag = '';
+          let state = {};
+          Object.defineProperty(
+              input, 'htmlAttributes', {get: () => htmlAttributes});
+          Object.defineProperty(input, 'htmlTag', {get: () => htmlTag});
+          Object.defineProperty(input, 'state', {get: () => state});
+
+          // An invalid editable.
+          let didThrow = false;
+          let handler;
+          try {
+            handler = editing.TextEditHandler(input);
+          } catch (e) {
+            didThrow = true;
+          }
+          assertTrue(didThrow, 'Non-editable created editable handler.');
+
+          // A simple editable.
+          htmlAttributes = {};
+          htmlTag = '';
+          state = {editable: true};
+          handler = new editing.TextEditHandler(input);
+          assertEquals(
+              'AutomationEditableText', handler.editableText_.constructor.name,
+              'Incorrect backing object for simple editable.');
+
+          // A non-rich editable via multiline.
+          htmlAttributes = {};
+          htmlTag = '';
+          state = {editable: true, multiline: true};
+          handler = new editing.TextEditHandler(input);
+          assertEquals(
+              'AutomationEditableText', handler.editableText_.constructor.name,
+              'Incorrect object for multiline editable.');
+
+          // A rich editable via textarea tag.
+          htmlAttributes = {};
+          htmlTag = 'textarea';
+          state = {editable: true};
+          handler = new editing.TextEditHandler(input);
+          assertEquals(
+              'AutomationRichEditableText',
+              handler.editableText_.constructor.name,
+              'Incorrect object for textarea html tag.');
+
+          // A rich editable via state.
+          htmlAttributes = {};
+          htmlTag = '';
+          state = {editable: true, richlyEditable: true};
+          handler = new editing.TextEditHandler(input);
+          assertEquals(
+              'AutomationRichEditableText',
+              handler.editableText_.constructor.name,
+              'Incorrect object for richly editable state.');
+
+          // A rich editable via contenteditable. (aka <div contenteditable>).
+          htmlAttributes = {contenteditable: ''};
+          htmlTag = '';
+          state = {editable: true};
+          handler = new editing.TextEditHandler(input);
+          assertEquals(
+              'AutomationRichEditableText',
+              handler.editableText_.constructor.name,
+              'Incorrect object for content editable.');
+
+          // A rich editable via contenteditable. (aka <div
+          // contenteditable=true>).
+          htmlAttributes = {contenteditable: 'true'};
+          htmlTag = '';
+          state = {editable: true};
+          handler = new editing.TextEditHandler(input);
+          assertEquals(
+              'AutomationRichEditableText',
+              handler.editableText_.constructor.name,
+              'Incorrect object for content editable true.');
+
+          // Note that it is not possible to have <div
+          // contenteditable="someInvalidValue"> or <div contenteditable=false>
+          // and still have the div expose editable state, so we never check
+          // that.
         });
         input.focus();
       });

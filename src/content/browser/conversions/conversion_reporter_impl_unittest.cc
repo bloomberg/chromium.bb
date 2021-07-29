@@ -16,8 +16,8 @@
 #include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/conversions/conversion_test_utils.h"
 #include "content/browser/conversions/sent_report_info.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
@@ -35,7 +35,7 @@ ConversionReport GetReport(base::Time conversion_time,
   // Construct impressions with a null impression time as it is not used for
   // reporting.
   return ConversionReport(ImpressionBuilder(base::Time()).Build(),
-                          /*conversion_data=*/"", conversion_time, report_time,
+                          /*conversion_data=*/0, conversion_time, report_time,
                           /*conversion_id=*/conversion_id);
 }
 
@@ -44,9 +44,9 @@ class MockNetworkSender : public ConversionReporterImpl::NetworkSender {
  public:
   MockNetworkSender() = default;
 
-  void SendReport(ConversionReport* conversion_report,
+  void SendReport(const ConversionReport& conversion_report,
                   ReportSentCallback sent_callback) override {
-    last_sent_report_id_ = *conversion_report->conversion_id;
+    last_sent_report_id_ = *conversion_report.conversion_id;
     num_reports_sent_++;
     std::move(sent_callback).Run({.http_response_code = 200});
   }
@@ -73,7 +73,8 @@ class ConversionReporterImplTest : public testing::Test {
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         browser_context_(std::make_unique<TestBrowserContext>()),
         reporter_(std::make_unique<ConversionReporterImpl>(
-            browser_context_->GetDefaultStoragePartition(),
+            static_cast<StoragePartitionImpl*>(
+                browser_context_->GetDefaultStoragePartition()),
             task_environment_.GetMockClock())) {
     auto network_sender = std::make_unique<MockNetworkSender>();
     sender_ = network_sender.get();
@@ -177,7 +178,7 @@ TEST_F(ConversionReporterImplTest,
 
 TEST_F(ConversionReporterImplTest, ManyReportsAddedAtOnce_SentInOrder) {
   std::vector<ConversionReport> reports;
-  int64_t last_report_id = 0UL;
+  int64_t last_report_id = 0;
   for (int i = 1; i < 10; i++) {
     reports.push_back(GetReport(clock().Now(),
                                 clock().Now() + base::TimeDelta::FromMinutes(i),
@@ -283,7 +284,7 @@ TEST_F(ConversionReporterImplTest, EmbedderDisallowedContext_ReportNotSent) {
             .Build();
     std::vector<ConversionReport> reports{
         ConversionReport(std::move(impression),
-                         /*conversion_data=*/"", clock().Now(), clock().Now(),
+                         /*conversion_data=*/0, clock().Now(), clock().Now(),
                          /*conversion_id=*/1)};
     reporter_->AddReportsToQueue(
         std::move(reports),

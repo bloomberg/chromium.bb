@@ -54,12 +54,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records if CET (Control-flow Enforcement Technology / Hardware Enforced
     Shadow Stack) is enabled or if it has been disabled by IFEO. Reported only
-    if CetAvailable is true, once per browser session, on startup.
+    if CetAvailable is true, once per browser session, on startup. Note: This
+    was recorded incorrectly in M91.
   </summary>
 </histogram>
 
 <histogram name="Windows.ChromeDllPrefetchResult" enum="FilePrefetchResult"
-    expires_after="2021-10-04">
+    expires_after="2021-12-12">
   <owner>brucedawson@chromium.org</owner>
   <owner>jessemckenna@google.com</owner>
   <summary>
@@ -134,7 +135,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Windows.HasHighResolutionTimeTicks" enum="Boolean"
-    expires_after="2021-10-17">
+    expires_after="2021-12-19">
   <owner>brucedawson@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
@@ -155,7 +156,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Windows.HypervPresent" enum="BooleanEnabled"
-    expires_after="2021-10-04">
+    expires_after="2021-12-12">
   <owner>rkc@chromium.org</owner>
   <owner>rockot@chromium.org</owner>
   <summary>
@@ -343,7 +344,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Windows.ProcessorFamily" enum="ProcessorFamily"
-    expires_after="2021-10-04">
+    expires_after="2021-12-12">
   <owner>rkc@chromium.org</owner>
   <owner>rockot@chromium.org</owner>
   <summary>
@@ -355,7 +356,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Windows.ProcessorVirtualizationFirmwareEnabled"
-    enum="BooleanEnabled" expires_after="2021-10-04">
+    enum="BooleanEnabled" expires_after="2021-12-12">
   <owner>rkc@chromium.org</owner>
   <owner>rockot@chromium.org</owner>
   <summary>
@@ -365,7 +366,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Windows.ServiceStatus.SSP" units="WindowsServiceStatus"
-    expires_after="2021-10-04">
+    expires_after="2021-12-12">
   <owner>wfh@chromium.org</owner>
   <owner>ajgo@chromium.org</owner>
   <summary>

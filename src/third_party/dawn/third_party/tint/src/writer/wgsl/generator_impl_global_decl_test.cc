@@ -35,7 +35,7 @@ TEST_F(WgslGeneratorImplTest, Emit_GlobalDeclAfterFunction) {
   gen.increment_indent();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
-  EXPECT_EQ(gen.result(), R"(  [[stage(compute)]]
+  EXPECT_EQ(gen.result(), R"(  [[stage(compute), workgroup_size(1, 1, 1)]]
   fn test_function() {
     var a : f32;
   }
@@ -55,18 +55,19 @@ TEST_F(WgslGeneratorImplTest, Emit_GlobalsInterleaved) {
        },
        ast::DecorationList{});
 
-  Global("a1", ty.f32(), ast::StorageClass::kOutput);
+  Global("a1", ty.f32(), ast::StorageClass::kPrivate);
 
   auto* s1 = Structure("S1", {Member("a", ty.i32())});
 
   Func("main", ast::VariableList{}, ty.void_(),
        ast::StatementList{
-           Decl(Var("s0", s0)),
-           Decl(Var("s1", s1)),
+           Decl(Var("s0", ty.Of(s0))),
+           Decl(Var("s1", ty.Of(s1))),
            Assign("a1", Call("func")),
        },
        ast::DecorationList{
            Stage(ast::PipelineStage::kCompute),
+           WorkgroupSize(1),
        });
 
   GeneratorImpl& gen = Build();
@@ -84,13 +85,13 @@ TEST_F(WgslGeneratorImplTest, Emit_GlobalsInterleaved) {
     return a0;
   }
 
-  var<out> a1 : f32;
+  var<private> a1 : f32;
 
   struct S1 {
     a : i32;
   };
 
-  [[stage(compute)]]
+  [[stage(compute), workgroup_size(1)]]
   fn main() {
     var s0 : S0;
     var s1 : S1;
@@ -100,9 +101,11 @@ TEST_F(WgslGeneratorImplTest, Emit_GlobalsInterleaved) {
 }
 
 TEST_F(WgslGeneratorImplTest, Emit_Global_Sampler) {
-  Global("s", ty.sampler(ast::SamplerKind::kSampler), ast::StorageClass::kNone,
-         nullptr,
-         {create<ast::GroupDecoration>(0), create<ast::BindingDecoration>(0)});
+  Global("s", ty.sampler(ast::SamplerKind::kSampler),
+         ast::DecorationList{
+             create<ast::GroupDecoration>(0),
+             create<ast::BindingDecoration>(0),
+         });
 
   GeneratorImpl& gen = Build();
 
@@ -114,18 +117,19 @@ TEST_F(WgslGeneratorImplTest, Emit_Global_Sampler) {
 
 TEST_F(WgslGeneratorImplTest, Emit_Global_Texture) {
   auto* st = ty.sampled_texture(ast::TextureDimension::k1d, ty.f32());
-  Global("t", ty.access(ast::AccessControl::kReadOnly, st),
-         ast::StorageClass::kNone, nullptr,
-         {create<ast::GroupDecoration>(0), create<ast::BindingDecoration>(0)});
+  Global("t", st,
+         ast::DecorationList{
+             create<ast::GroupDecoration>(0),
+             create<ast::BindingDecoration>(0),
+         });
 
   GeneratorImpl& gen = Build();
 
   gen.increment_indent();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
-  EXPECT_EQ(
-      gen.result(),
-      "  [[group(0), binding(0)]] var t : [[access(read)]] texture_1d<f32>;\n");
+  EXPECT_EQ(gen.result(),
+            "  [[group(0), binding(0)]] var t : texture_1d<f32>;\n");
 }
 
 TEST_F(WgslGeneratorImplTest, Emit_OverridableConstants) {

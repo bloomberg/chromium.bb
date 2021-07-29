@@ -138,7 +138,7 @@ void OverlayProcessorUsingStrategy::SetFrameSequenceNumber(
 void OverlayProcessorUsingStrategy::ProcessForOverlays(
     DisplayResourceProvider* resource_provider,
     AggregatedRenderPassList* render_passes,
-    const SkMatrix44& output_color_matrix,
+    const skia::Matrix44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap& render_pass_filters,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
@@ -332,7 +332,7 @@ void OverlayProcessorUsingStrategy::AdjustOutputSurfaceOverlay(
 }
 
 bool OverlayProcessorUsingStrategy::AttemptWithStrategies(
-    const SkMatrix44& output_color_matrix,
+    const skia::Matrix44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
@@ -371,21 +371,25 @@ void OverlayProcessorUsingStrategy::SortProposedOverlayCandidatesPrioritized(
     }
   }
 
+  DBG_LOG("overlay.prioritization.num", "Frame seq: %d, ",
+          (int)frame_sequence_number_);
   // This loop fills in data for the heuristic sort and thresholds candidates.
   for (auto it = proposed_candidates->begin();
        it != proposed_candidates->end();) {
     auto key = ToProposeKey(*it);
     // If no tracking exists we create a new one here.
     auto& track_data = tracked_candidates[key];
-    auto display_area = it->candidate.display_rect.size().GetArea();
+    const auto display_area = it->candidate.display_rect.size().GetArea();
+    // The |force_update| case is where we have damage and a damage index but
+    // there are no changes in the |resource_id|. This is only known to occur
+    // for low latency surfaces (inking like in the google keeps application).
+    const bool force_update = it->candidate.overlay_damage_index !=
+                                  OverlayCandidate::kInvalidDamageIndex &&
+                              it->candidate.damage_area_estimate != 0;
     track_data.AddRecord(
         frame_sequence_number_,
         static_cast<float>(it->candidate.damage_area_estimate) / display_area,
-        it->candidate.resource_id, tracker_config_,
-        it->candidate.overlay_damage_index !=
-                OverlayCandidate::kInvalidDamageIndex ||
-            it->candidate.assume_damaged);
-
+        it->candidate.resource_id, tracker_config_, force_update);
     // Here a series of criteria are considered for wholesale rejection of a
     // candidate. The rational for rejection is usually power improvements but
     // this can indirectly reallocate limited overlay resources to another
@@ -445,7 +449,7 @@ void OverlayProcessorUsingStrategy::SortProposedOverlayCandidatesPrioritized(
 }
 
 bool OverlayProcessorUsingStrategy::AttemptWithStrategiesPrioritized(
-    const SkMatrix44& output_color_matrix,
+    const skia::Matrix44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,

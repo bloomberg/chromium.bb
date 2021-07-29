@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SECURE_CHANNEL_NEARBY_ENDPOINT_FINDER_H_
 #define CHROME_BROWSER_CHROMEOS_SECURE_CHANNEL_NEARBY_ENDPOINT_FINDER_H_
 
-#include "base/containers/flat_map.h"
 #include "base/unguessable_token.h"
 #include "chromeos/services/nearby/public/mojom/nearby_connections.mojom.h"
 
@@ -29,6 +28,7 @@ class NearbyEndpointFinder {
   // Attempts to find an endpoint for the device with the provided Bluetooth
   // address, which is expected to be a 6-byte MAC address.
   void FindEndpoint(const std::vector<uint8_t>& remote_device_bluetooth_address,
+                    const std::vector<uint8_t>& eid,
                     EndpointCallback success_callback,
                     base::OnceClosure failure_callback);
 
@@ -39,6 +39,8 @@ class NearbyEndpointFinder {
     return remote_device_bluetooth_address_;
   }
 
+  const std::vector<uint8_t>& eid() const { return eid_; }
+
   void NotifyEndpointFound(
       const std::string& endpoint_id,
       location::nearby::connections::mojom::DiscoveredEndpointInfoPtr info);
@@ -48,6 +50,7 @@ class NearbyEndpointFinder {
 
  private:
   std::vector<uint8_t> remote_device_bluetooth_address_;
+  std::vector<uint8_t> eid_;
   EndpointCallback success_callback_;
   base::OnceClosure failure_callback_;
 };

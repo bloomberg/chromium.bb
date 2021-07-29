@@ -10,7 +10,6 @@
 
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "ui/base/clipboard/clipboard.h"
 
 @class NSPasteboard;
@@ -18,11 +17,19 @@
 namespace ui {
 
 class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardMac : public Clipboard {
+ public:
+  ClipboardMac(const ClipboardMac&) = delete;
+  ClipboardMac& operator=(const ClipboardMac&) = delete;
+
  private:
-  FRIEND_TEST_ALL_PREFIXES(ClipboardMacTest, ReadImageRetina);
-  FRIEND_TEST_ALL_PREFIXES(ClipboardMacTest, ReadImageNonRetina);
-  FRIEND_TEST_ALL_PREFIXES(ClipboardMacTest, EmptyImage);
-  FRIEND_TEST_ALL_PREFIXES(ClipboardMacTest, PDFImage);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardMacTest, ReadImageRetina_Bitmap);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardMacTest, ReadImageNonRetina_Bitmap);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardMacTest, EmptyImage_Bitmap);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardMacTest, PDFImage_Bitmap);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardMacTest, ReadImageRetina_Png);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardMacTest, ReadImageNonRetina_Png);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardMacTest, EmptyImage_Png);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardMacTest, PDFImage_Png);
   friend class Clipboard;
 
   ClipboardMac();
@@ -81,12 +88,9 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardMac : public Clipboard {
   void ReadData(const ClipboardFormatType& format,
                 const DataTransferEndpoint* data_dst,
                 std::string* result) const override;
-  void WritePortableRepresentations(
+  void WritePortableAndPlatformRepresentations(
       ClipboardBuffer buffer,
       const ObjectMap& objects,
-      std::unique_ptr<DataTransferEndpoint> data_src) override;
-  void WritePlatformRepresentations(
-      ClipboardBuffer buffer,
       std::vector<Clipboard::PlatformRepresentation> platform_representations,
       std::unique_ptr<DataTransferEndpoint> data_src) override;
   void WriteText(const char* text_data, size_t text_len) override;
@@ -107,10 +111,10 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardMac : public Clipboard {
                  const char* data_data,
                  size_t data_len) override;
 
+  std::vector<uint8_t> ReadPngInternal(ClipboardBuffer buffer,
+                                       NSPasteboard* pasteboard) const;
   SkBitmap ReadImageInternal(ClipboardBuffer buffer,
                              NSPasteboard* pasteboard) const;
-
-  DISALLOW_COPY_AND_ASSIGN(ClipboardMac);
 };
 
 }  // namespace ui

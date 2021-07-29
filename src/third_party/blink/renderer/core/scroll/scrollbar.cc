@@ -130,6 +130,7 @@ int Scrollbar::Maximum() const {
 
 void Scrollbar::OffsetDidChange(mojom::blink::ScrollType scroll_type) {
   DCHECK(scrollable_area_);
+  pending_injected_delta_ = ScrollOffset();
 
   float position = ScrollableAreaCurrentPos();
   if (position == current_pos_)
@@ -377,7 +378,6 @@ bool Scrollbar::GestureEvent(const WebGestureEvent& evt,
           NOTREACHED();
           return true;
       }
-      break;
     case WebInputEvent::Type::kGestureScrollUpdate:
       switch (evt.SourceDevice()) {
         case WebGestureDevice::kSyntheticAutoscroll:
@@ -402,7 +402,6 @@ bool Scrollbar::GestureEvent(const WebGestureEvent& evt,
           NOTREACHED();
           return true;
       }
-      break;
     case WebInputEvent::Type::kGestureScrollEnd:
       // If we see a GSE targeted at the scrollbar, clear the state that
       // says we injected GestureScrollBegin, since we no longer need to inject
@@ -608,7 +607,8 @@ void Scrollbar::InjectGestureScrollUpdateForThumbMove(
   // Convert the target offset to the delta that will be injected as part of a
   // GestureScrollUpdate event.
   ScrollOffset current_offset =
-      scrollable_area_->GetScrollAnimator().CurrentOffset();
+      scrollable_area_->GetScrollAnimator().CurrentOffset() +
+      pending_injected_delta_;
   float desired_x = orientation_ == kHorizontalScrollbar
                         ? single_axis_target_offset
                         : current_offset.Width();
@@ -659,6 +659,7 @@ void Scrollbar::InjectScrollGesture(WebInputEvent::Type gesture_type,
                         granularity);
   }
 
+  pending_injected_delta_ += delta;
   scrollable_area_->InjectGestureScrollEvent(WebGestureDevice::kScrollbar,
                                              delta, granularity, gesture_type);
 
@@ -815,16 +816,14 @@ float Scrollbar::ScaleFromDIP() const {
 }
 
 float Scrollbar::EffectiveZoom() const {
-  if (::features::IsFormControlsRefreshEnabled() && style_source_ &&
-      style_source_->GetLayoutObject()) {
+  if (style_source_ && style_source_->GetLayoutObject()) {
     return style_source_->GetLayoutObject()->Style()->EffectiveZoom();
   }
   return 1.0;
 }
 
 bool Scrollbar::ContainerIsRightToLeft() const {
-  if (::features::IsFormControlsRefreshEnabled() && style_source_ &&
-      style_source_->GetLayoutObject()) {
+  if (style_source_ && style_source_->GetLayoutObject()) {
     TextDirection dir = style_source_->GetLayoutObject()->Style()->Direction();
     return IsRtl(dir);
   }

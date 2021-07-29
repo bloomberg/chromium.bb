@@ -164,12 +164,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/net/system_proxy_manager.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/attestation/interface.pb.h"
-#include "chromeos/dbus/constants/attestation_constants.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/constants/attestation_constants.h"  // nogncheck
+#include "chromeos/dbus/dbus_thread_manager.h"              // nogncheck
 #include "components/user_manager/user.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -889,9 +888,13 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
             .get();
 
     if (password_store) {
-      password_store->RemoveStatisticsByOriginAndTime(
-          nullable_filter, delete_begin_, delete_end_,
-          CreateTaskCompletionClosure(TracingDataType::kPasswordsStatistics));
+      password_manager::SmartBubbleStatsStore* stats_store =
+          password_store->GetSmartBubbleStatsStore();
+      if (stats_store) {
+        stats_store->RemoveStatisticsByOriginAndTime(
+            nullable_filter, delete_begin_, delete_end_,
+            CreateTaskCompletionClosure(TracingDataType::kPasswordsStatistics));
+      }
       password_store->RemoveFieldInfoByTime(
           delete_begin_, delete_end_,
           CreateTaskCompletionClosure(TracingDataType::kFieldInfo));

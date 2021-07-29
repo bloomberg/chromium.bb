@@ -7,9 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -50,11 +48,17 @@ class WakeUpBudgetPool;
 
 class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
  public:
-  // Interval between throttled wake ups, when intensive throttling is disabled.
+  // Interval between throttled wake ups, without intensive throttling.
   static constexpr base::TimeDelta kDefaultThrottledWakeUpInterval =
       base::TimeDelta::FromSeconds(1);
 
+  // Interval between throttled wake ups, with intensive throttling.
+  static constexpr base::TimeDelta kIntensiveThrottledWakeUpInterval =
+      base::TimeDelta::FromMinutes(1);
+
   PageSchedulerImpl(PageScheduler::Delegate*, AgentGroupSchedulerImpl&);
+  PageSchedulerImpl(const PageSchedulerImpl&) = delete;
+  PageSchedulerImpl& operator=(const PageSchedulerImpl&) = delete;
 
   ~PageSchedulerImpl() override;
 
@@ -63,7 +67,6 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   void SetPageVisible(bool page_visible) override;
   void SetPageFrozen(bool) override;
   void SetPageBackForwardCached(bool) override;
-  void OnFocusChanged(bool focused) override;
   void SetKeepActive(bool) override;
   bool IsMainFrameLocal() const override;
   void SetIsMainFrameLocal(bool is_local) override;
@@ -85,7 +88,6 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool VirtualTimeAllowedToAdvance() const override;
   void SetVirtualTimePolicy(VirtualTimePolicy) override;
   void SetInitialVirtualTime(base::Time time) override;
-  void SetInitialVirtualTimeOffset(base::TimeDelta offset) override;
   void GrantVirtualTimeBudget(
       base::TimeDelta budget,
       base::OnceClosure budget_exhausted_callback) override;
@@ -127,7 +129,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   void OnTraceLogEnabled();
 
-  bool IsPageFocused() const;
+  void OnFirstContentfulPaintInMainFrame();
 
   // Virtual for testing.
   virtual bool IsWaitingForMainFrameContentfulPaint() const;
@@ -150,6 +152,8 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // Note that selecting main frame doesn't work for OOPIFs where the main
   // frame it not a local one.
   FrameSchedulerImpl* SelectFrameForUkmAttribution();
+
+  bool ThrottleForegroundTimers() const { return throttle_foreground_timers_; }
 
   void WriteIntoTrace(perfetto::TracedValue context) const;
 
@@ -196,6 +200,9 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
    public:
     explicit PageLifecycleStateTracker(PageSchedulerImpl*, PageLifecycleState);
+    PageLifecycleStateTracker(const PageLifecycleStateTracker&) = delete;
+    PageLifecycleStateTracker& operator=(const PageLifecycleStateTracker&) =
+        delete;
     ~PageLifecycleStateTracker() = default;
 
     void SetPageLifecycleState(PageLifecycleState);
@@ -211,8 +218,6 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
     PageSchedulerImpl* page_scheduler_impl_;
     PageLifecycleState current_state_;
-
-    DISALLOW_COPY_AND_ASSIGN(PageLifecycleStateTracker);
   };
 
   void RegisterFrameSchedulerImpl(FrameSchedulerImpl* frame_scheduler);
@@ -232,22 +237,22 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // a part of foregrounding the page.
   void SetPageFrozenImpl(bool frozen, NotificationPolicy notification_policy);
 
-  // Adds or removes a |task_queue| from the WakeUpBudgetPool associated with
-  // |frame_origin_type|. When the FrameOriginType of a FrameScheduler changes,
-  // it should remove all its TaskQueues from their current WakeUpBudgetPool and
-  // add them back to the WakeUpBudgetPool appropriate for the new
-  // FrameOriginType.
+  // Adds or removes a |task_queue| from the WakeUpBudgetPool. When the
+  // FrameOriginType or visibility of a FrameScheduler changes, it should remove
+  // all its TaskQueues from their current WakeUpBudgetPool and add them back to
+  // the appropriate WakeUpBudgetPool.
   void AddQueueToWakeUpBudgetPool(MainThreadTaskQueue* task_queue,
                                   FrameOriginType frame_origin_type,
+                                  bool frame_visible,
                                   base::sequence_manager::LazyNow* lazy_now);
   void RemoveQueueFromWakeUpBudgetPool(
       MainThreadTaskQueue* task_queue,
-      FrameOriginType frame_origin_type,
       base::sequence_manager::LazyNow* lazy_now);
   // Returns the WakeUpBudgetPool to use for |task_queue| which belongs to a
-  // frame with |frame_origin_type|.
+  // frame with |frame_origin_type| and visibility |frame_visible|.
   WakeUpBudgetPool* GetWakeUpBudgetPool(MainThreadTaskQueue* task_queue,
-                                        FrameOriginType frame_origin_type);
+                                        FrameOriginType frame_origin_type,
+                                        bool frame_visible);
   // Initializes WakeUpBudgetPools, if not already initialized.
   void MaybeInitializeWakeUpBudgetPools(
       base::sequence_manager::LazyNow* lazy_now);
@@ -265,7 +270,8 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // Adjusts settings of budget pools depending on current state of the page.
   void UpdateCPUTimeBudgetPool(base::sequence_manager::LazyNow* lazy_now);
   void UpdateWakeUpBudgetPools(base::sequence_manager::LazyNow* lazy_now);
-  base::TimeDelta GetIntensiveWakeUpThrottlingDuration(bool is_same_origin);
+  base::TimeDelta GetIntensiveWakeUpThrottlingInterval(
+      bool is_same_origin) const;
 
   // Callback for marking page is silent after a delay since last audible
   // signal.
@@ -298,8 +304,12 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // Returns true if WakeUpBudgetPools were initialized.
   bool HasWakeUpBudgetPools() const;
 
+  // Notify frames to move their task queues to the appropriate
+  // WakeUpBudgetPool.
+  void MoveTaskQueuesToCorrectWakeUpBudgetPoolAndUpdate();
+
   // Returns all WakeUpBudgetPools owned by this PageSchedulerImpl.
-  static constexpr int kNumWakeUpBudgetPools = 3;
+  static constexpr int kNumWakeUpBudgetPools = 4;
   std::array<WakeUpBudgetPool*, kNumWakeUpBudgetPools> AllWakeUpBudgetPools();
 
   TraceableVariableController tracing_controller_;
@@ -319,22 +329,37 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool are_wake_ups_intensively_throttled_;
   bool keep_active_;
   bool had_recent_title_or_favicon_update_;
-  bool focused_;
   CPUTimeBudgetPool* cpu_time_budget_pool_ = nullptr;
 
   // Wake up budget pools for each throttling scenario:
   //
-  //                                  Same-origin frame    Cross-origin frame
-  // Normal throttling only           1                    1
-  // Normal and intensive throttling  2                    3
+  // For background pages:
+  //                                    Same-origin frame    Cross-origin frame
+  //   Normal throttling only           1                    1
+  //   Normal and intensive throttling  3                    4
   //
-  // 1: This pool allows 1-second aligned wake ups.
+  // For foreground pages:
+  //   Same-origin frame                1
+  //   Visible cross-origin frame       1
+  //   Hidden cross-origin frame        2
+  //
+  // Task queues attched to these pools will be updated when:
+  //    * Page background state changes
+  //    * Frame visibility changes
+  //    * Frame origin changes
+  //
+  // 1: This pool allows 1-second aligned wake ups when the page is backgrounded
+  //    or |foreground_timers_throttled_wake_up_interval_| aligned wake ups when
+  //    the page is foregrounded.
   WakeUpBudgetPool* normal_wake_up_budget_pool_ = nullptr;
-  // 2: This pool allows 1-second aligned wake ups if the page is not
+  // 2: This pool allows 1-second aligned wake ups for hidden frames in
+  //    foreground pages.
+  WakeUpBudgetPool* cross_origin_hidden_normal_wake_up_budget_pool_ = nullptr;
+  // 3: This pool allows 1-second aligned wake ups if the page is not
   //    intensively throttled of if there hasn't been a wake up in the last
   //    minute. Otherwise, it allows 1-minute aligned wake ups.
   WakeUpBudgetPool* same_origin_intensive_wake_up_budget_pool_ = nullptr;
-  // 3: This pool allows 1-second aligned wake ups if the page is not
+  // 4: This pool allows 1-second aligned wake ups if the page is not
   //    intensively throttled. Otherwise, it allows 1-minute aligned wake ups.
   //
   //    Unlike |same_origin_intensive_wake_up_budget_pool_|, this pool does not
@@ -360,14 +385,17 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // Delay after which a background page can be frozen if network is idle.
   const base::TimeDelta delay_for_background_and_network_idle_tab_freezing_;
 
+  // Whether foreground timers should be always throttled.
+  const bool throttle_foreground_timers_;
+  // Interval between throttled wake ups on a foreground page.
+  const base::TimeDelta foreground_timers_throttled_wake_up_interval_;
+
   bool is_stored_in_back_forward_cache_ = false;
   TaskHandle set_ipc_posted_handler_task_;
   base::TimeTicks stored_in_back_forward_cache_timestamp_;
 
   std::unique_ptr<PageLifecycleStateTracker> page_lifecycle_state_tracker_;
   base::WeakPtrFactory<PageSchedulerImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PageSchedulerImpl);
 };
 
 }  // namespace scheduler

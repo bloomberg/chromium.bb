@@ -103,6 +103,7 @@ source_set("browser_sources") {
     "client_hints.h",
     "client_hints_controller_delegate.h",
     "color_chooser.h",
+    "console_message.cc",
     "console_message.h",
     "contacts_picker_properties_requested.h",
     "content_browser_client.cc",
@@ -140,6 +141,7 @@ source_set("browser_sources") {
     "devtools_permission_overrides.cc",
     "devtools_permission_overrides.h",
     "devtools_socket_factory.h",
+    "document_service_base.h",
     "dom_storage_context.h",
     "download_item_utils.h",
     "download_manager.cc",
@@ -170,7 +172,6 @@ source_set("browser_sources") {
     "font_list_async.h",
     "frame_accept_header.cc",
     "frame_accept_header.h",
-    "frame_service_base.h",
     "generated_code_cache_settings.h",
     "global_request_id.cc",
     "global_request_id.h",
@@ -230,6 +231,7 @@ source_set("browser_sources") {
     "navigation_details.cc",
     "navigation_details.h",
     "navigation_entry.h",
+    "navigation_entry_restore_context.h",
     "navigation_handle.cc",
     "navigation_handle.h",
     "navigation_handle_timing.cc",
@@ -256,8 +258,10 @@ source_set("browser_sources") {
     "origin_policy_commands.h",
     "overlay_window.h",
     "overscroll_configuration.h",
+    "page.h",
     "page_navigator.cc",
     "page_navigator.h",
+    "page_user_data.h",
     "payment_app_provider.h",
     "payment_app_provider_util.h",
     "peak_gpu_memory_tracker.h",
@@ -288,6 +292,7 @@ source_set("browser_sources") {
     "render_document_host_user_data.cc",
     "render_document_host_user_data.h",
     "render_frame_host.h",
+    "render_frame_host_receiver_set.h",
     "render_frame_metadata_provider.h",
     "render_process_host.h",
     "render_process_host_creation_observer.h",
@@ -496,7 +501,7 @@ source_set("browser_sources") {
     "//content/browser",
   ]
 
-  if (is_chromeos_ash || is_android || is_win || is_chromecast || is_fuchsia) {
+  if (is_chromeos || is_android || is_win || is_chromecast || is_fuchsia) {
     defines = [ "ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION" ]
   }
 

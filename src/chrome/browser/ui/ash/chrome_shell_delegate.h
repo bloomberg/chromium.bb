@@ -30,6 +30,7 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   bool AllowDefaultTouchActions(gfx::NativeWindow window) override;
   bool ShouldWaitForTouchPressAck(gfx::NativeWindow window) override;
   bool IsTabDrag(const ui::OSExchangeData& drop_data) override;
+  int GetBrowserWebUITabStripHeight() override;
   aura::Window* CreateBrowserForTabDrop(
       aura::Window* source_window,
       const ui::OSExchangeData& drop_data) override;
@@ -52,6 +53,9 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   int GetUiDevToolsPort() const override;
   bool IsLoggingRedirectDisabled() const override;
   base::FilePath GetPrimaryUserDownloadsFolder() const override;
+  void OpenFeedbackPageForPersistentDesksBar() override;
+  std::unique_ptr<full_restore::AppLaunchInfo> GetAppLaunchDataForDeskTemplate(
+      aura::Window* window) const override;
 
   static void SetDisableLoggingRedirectForTesting(bool value);
   static void ResetDisableLoggingRedirectForTesting();

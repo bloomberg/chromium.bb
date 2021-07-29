@@ -7,13 +7,12 @@
 #include "base/mac/foundation_util.h"
 #import "base/metrics/user_metrics.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
-#import "components/signin/public/identity_manager/primary_account_mutator.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -54,10 +53,21 @@ using l10n_util::GetNSString;
     ActionSheetCoordinator* cancelConfirmationAlertCoordinator;
 // Manager for user's Google identities.
 @property(nonatomic, assign) signin::IdentityManager* identityManager;
-
+// State used to revert to if the user action is canceled during sign-in.
+@property(nonatomic, assign) IdentitySigninState signinStateForCancel;
 @end
 
 @implementation AdvancedSettingsSigninCoordinator
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
+                               signinState:(IdentitySigninState)signinState {
+  self = [super initWithBaseViewController:viewController browser:browser];
+  if (self) {
+    _signinStateForCancel = signinState;
+  }
+  return self;
+}
 
 #pragma mark - SigninCoordinator
 
@@ -66,7 +76,8 @@ using l10n_util::GetNSString;
   AuthenticationService* authenticationService =
       AuthenticationServiceFactory::GetForBrowserState(
           self.browser->GetBrowserState());
-  DCHECK(authenticationService->IsAuthenticated());
+  DCHECK(
+      authenticationService->HasPrimaryIdentity(signin::ConsentLevel::kSignin));
   self.identityManager = IdentityManagerFactory::GetForBrowserState(
       self.browser->GetBrowserState());
   self.advancedSettingsSigninNavigationController =
@@ -82,13 +93,13 @@ using l10n_util::GetNSString;
       SyncSetupServiceFactory::GetForBrowserState(
           self.browser->GetBrowserState());
   syncer::SyncService* syncService =
-      ProfileSyncServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
+      SyncServiceFactory::GetForBrowserState(self.browser->GetBrowserState());
   self.advancedSettingsSigninMediator = [[AdvancedSettingsSigninMediator alloc]
       initWithSyncSetupService:syncSetupService
          authenticationService:authenticationService
                    syncService:syncService
-                   prefService:self.browser->GetBrowserState()->GetPrefs()];
+                   prefService:self.browser->GetBrowserState()->GetPrefs()
+               identityManager:self.identityManager];
   self.advancedSettingsSigninNavigationController.presentationController
       .delegate = self;
 
@@ -105,13 +116,6 @@ using l10n_util::GetNSString;
   DCHECK(self.advancedSettingsSigninNavigationController);
   [self.syncSettingsCoordinator stop];
   self.syncSettingsCoordinator = nil;
-
-  if (base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency)) {
-    // Revokes all refresh tokens and alerts services of the signed-out state.
-    self.identityManager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
-        signin_metrics::ABORT_SIGNIN,
-        signin_metrics::SignoutDelete::kIgnoreMetric);
-  }
 
   switch (action) {
     case SigninCoordinatorInterruptActionNoDismiss:
@@ -212,7 +216,8 @@ using l10n_util::GetNSString;
   DCHECK(self.advancedSettingsSigninNavigationController);
   DCHECK(self.advancedSettingsSigninMediator);
   [self.advancedSettingsSigninMediator
-      saveUserPreferenceForSigninResult:signinResult];
+      saveUserPreferenceForSigninResult:signinResult
+                    originalSigninState:self.signinStateForCancel];
   self.advancedSettingsSigninNavigationController = nil;
   self.advancedSettingsSigninMediator = nil;
   [self.syncSettingsCoordinator stop];
@@ -226,7 +231,10 @@ using l10n_util::GetNSString;
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(
           self.browser->GetBrowserState());
-  ChromeIdentity* identity = authService->GetAuthenticatedIdentity();
+  ChromeIdentity* identity =
+      (signinResult == SigninCoordinatorResultSuccess)
+          ? authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin)
+          : nil;
   SigninCompletionInfo* completionInfo =
       [SigninCompletionInfo signinCompletionInfoWithIdentity:identity];
   [self runCompletionCallbackWithSigninResult:signinResult
@@ -300,6 +308,10 @@ using l10n_util::GetNSString;
   DCHECK_EQ(self.syncSettingsCoordinator, coordinator);
   [self.syncSettingsCoordinator stop];
   self.syncSettingsCoordinator = nil;
+}
+
+- (NSString*)manageSyncSettingsCoordinatorTitle {
+  return l10n_util::GetNSString(IDS_IOS_MANAGE_SYNC_SETTINGS_TITLE);
 }
 
 @end

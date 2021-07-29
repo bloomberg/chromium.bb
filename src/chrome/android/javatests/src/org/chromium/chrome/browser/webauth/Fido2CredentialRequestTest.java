@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webauth;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.ConditionVariable;
 import android.os.SystemClock;
@@ -23,7 +24,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
@@ -42,9 +42,6 @@ import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialParameters;
 import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialType;
-import org.chromium.chrome.browser.app.ChromeActivity;
-import org.chromium.chrome.browser.autofill.InternalAuthenticator;
-import org.chromium.chrome.browser.autofill.InternalAuthenticatorJni;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -54,6 +51,8 @@ import org.chromium.components.webauthn.Fido2ApiHandler;
 import org.chromium.components.webauthn.Fido2CredentialRequest;
 import org.chromium.components.webauthn.FidoErrorResponseCallback;
 import org.chromium.components.webauthn.GetAssertionResponseCallback;
+import org.chromium.components.webauthn.InternalAuthenticator;
+import org.chromium.components.webauthn.InternalAuthenticatorJni;
 import org.chromium.components.webauthn.IsUvpaaResponseCallback;
 import org.chromium.components.webauthn.MakeCredentialResponseCallback;
 import org.chromium.content_public.browser.RenderFrameHost;
@@ -63,11 +62,13 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -90,7 +91,7 @@ public class Fido2CredentialRequestTest {
     public final BlankCTATabInitialStateRule mInitialStateRule =
             new BlankCTATabInitialStateRule(sActivityTestRule, false);
     @Rule
-    public JniMocker mocker = new JniMocker();
+    public JniMocker mMocker = new JniMocker();
 
     private MockActivityWindowAndroid mWindowAndroid;
     private EmbeddedTestServer mTestServer;
@@ -105,6 +106,7 @@ public class Fido2CredentialRequestTest {
     private static final String FILLER_ERROR_MSG = "Error Error";
     private AuthenticatorCallback mCallback;
     private long mStartTimeMs;
+    private MockWebContents mMockWebContents;
 
     /**
      * This class constructs the parameters array that is used for testMakeCredential_with_param and
@@ -157,7 +159,7 @@ public class Fido2CredentialRequestTest {
     /**
      * Mock class for tests.
      */
-    private class MockActivityWindowAndroid extends ActivityWindowAndroid {
+    private static class MockActivityWindowAndroid extends ActivityWindowAndroid {
         private int mResultCode = Activity.RESULT_OK;
         private boolean mCancelableIntentSuccess = true;
         private Intent mResponseIntent;
@@ -166,20 +168,21 @@ public class Fido2CredentialRequestTest {
          * Constructor.
          * @param activity The app activity.
          */
-        public MockActivityWindowAndroid(ChromeActivity activity) {
-            super(activity);
+        public MockActivityWindowAndroid(Activity activity) {
+            super(activity, /* listenToActivityState= */ true,
+                    IntentRequestTracker.createFromActivity(activity));
         }
 
         /**
          * Mocks sending the intent to GmsCore.
          * @param intent Fido2PendingIntent provided by the GmsCore API.
          * @param callback The intent callback.
-         * @param contents The browser webcontents.
+         * @param errorId The id of the error.
          * @return success status of the call.
          */
         @Override
-        public int showCancelableIntent(Callback<Integer> intentTrigger,
-                WindowAndroid.IntentCallback callback, Integer errorId) {
+        public int showCancelableIntent(
+                PendingIntent intent, WindowAndroid.IntentCallback callback, Integer errorId) {
             // Bypass GmsCore and just call onIntentCompleted.
             if (mCancelableIntentSuccess) {
                 callback.onIntentCompleted(this, mResultCode, mResponseIntent);
@@ -365,6 +368,7 @@ public class Fido2CredentialRequestTest {
     private static class MockAuthenticatorRenderFrameHost extends MockRenderFrameHost {
         private GURL mLastUrl;
         private MockOrigin mLastOrigin;
+        private boolean mIsPaymentCredentialCreation;
 
         @Override
         public GURL getLastCommittedURL() {
@@ -381,6 +385,15 @@ public class Fido2CredentialRequestTest {
             mLastOrigin = new MockOrigin();
             mLastOrigin.setUrl(url.getSpec());
         }
+
+        @Override
+        public int performMakeCredentialWebAuthSecurityChecks(String relyingPartyId,
+                Origin effectiveOrigin, boolean isPaymentCredentialCreation) {
+            super.performMakeCredentialWebAuthSecurityChecks(
+                    relyingPartyId, effectiveOrigin, isPaymentCredentialCreation);
+            mIsPaymentCredentialCreation = isPaymentCredentialCreation;
+            return 0;
+        }
     }
 
     @Before
@@ -395,12 +408,13 @@ public class Fido2CredentialRequestTest {
         mFrameHost.setLastCommittedURL(new GURL(mUrl));
         mOrigin = mFrameHost.getLastCommittedOrigin();
         mRequest = new Fido2CredentialRequest();
-        mRequest.setWebContentsForTesting(new MockWebContents());
+        mMockWebContents = new MockWebContents();
+        mRequest.setWebContentsForTesting(mMockWebContents);
         Fido2ApiHandler.overrideInstanceForTesting(new MockFido2ApiHandler(mRequest));
 
         MockitoAnnotations.initMocks(this);
         mTestAuthenticatorImplJni = new TestAuthenticatorImplJni(mCallback);
-        mocker.mock(InternalAuthenticatorJni.TEST_HOOKS, mTestAuthenticatorImplJni);
+        mMocker.mock(InternalAuthenticatorJni.TEST_HOOKS, mTestAuthenticatorImplJni);
 
         mCreationOptions = Fido2ApiTestHelper.createDefaultMakeCredentialOptions();
         mRequestOptions = Fido2ApiTestHelper.createDefaultGetAssertionOptions();
@@ -690,7 +704,8 @@ public class Fido2CredentialRequestTest {
     @Test
     @SmallTest
     public void testInternalAuthenticatorMakeCredential_success() {
-        InternalAuthenticator authenticator = InternalAuthenticator.create(0, mFrameHost);
+        InternalAuthenticator authenticator = InternalAuthenticator.createForTesting(mFrameHost);
+        ;
         mWindowAndroid.setResponseIntent(Fido2ApiTestHelper.createSuccessfulMakeCredentialIntent());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mRequest.setWindowForTesting(mWindowAndroid);
@@ -706,7 +721,8 @@ public class Fido2CredentialRequestTest {
     @Test
     @SmallTest
     public void testInternalAuthenticatorMakeCredential_resultCanceled() {
-        InternalAuthenticator authenticator = InternalAuthenticator.create(0, mFrameHost);
+        InternalAuthenticator authenticator = InternalAuthenticator.createForTesting(mFrameHost);
+        ;
         mWindowAndroid.setResultCode(Activity.RESULT_CANCELED);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mRequest.setWindowForTesting(mWindowAndroid);
@@ -926,7 +942,8 @@ public class Fido2CredentialRequestTest {
     @Test
     @SmallTest
     public void testInternalAuthenticatorGetAssertionWithUvmRequestedWithUvmResponded_success() {
-        InternalAuthenticator authenticator = InternalAuthenticator.create(0, mFrameHost);
+        InternalAuthenticator authenticator = InternalAuthenticator.createForTesting(mFrameHost);
+        ;
         mWindowAndroid.setResponseIntent(
                 Fido2ApiTestHelper.createSuccessfulGetAssertionIntentWithUvm());
         mRequestOptions.userVerificationMethods = true;
@@ -944,7 +961,8 @@ public class Fido2CredentialRequestTest {
     @Test
     @SmallTest
     public void testInternalAuthenticatorGetAssertion_resultCanceled() {
-        InternalAuthenticator authenticator = InternalAuthenticator.create(0, mFrameHost);
+        InternalAuthenticator authenticator = InternalAuthenticator.createForTesting(mFrameHost);
+        ;
         mWindowAndroid.setResultCode(Activity.RESULT_CANCELED);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mRequest.setWindowForTesting(mWindowAndroid);
@@ -1047,6 +1065,23 @@ public class Fido2CredentialRequestTest {
         Assert.assertEquals(
                 mCallback.getStatus(), Integer.valueOf(AuthenticatorStatus.CREDENTIAL_EXCLUDED));
         Fido2ApiTestHelper.verifyRespondedBeforeTimeout(mStartTimeMs);
+    }
+
+    @Test
+    @SmallTest
+    public void testMakeCredential_isPaymentCredentialCreationPassedToFrameHost() {
+        mWindowAndroid.setResponseIntent(
+                Fido2ApiTestHelper.createErrorIntent(ErrorCode.INVALID_STATE_ERR,
+                        "One of the excluded credentials exists on the local device"));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mRequest.setWindowForTesting(mWindowAndroid));
+
+        mCreationOptions.isPaymentCredentialCreation = true;
+        Assert.assertFalse(mFrameHost.mIsPaymentCredentialCreation);
+        mRequest.handleMakeCredentialRequest(mCreationOptions, mFrameHost, mOrigin,
+                (responseStatus, response)
+                        -> mCallback.onRegisterResponse(responseStatus, response),
+                errorStatus -> mCallback.onError(errorStatus));
+        Assert.assertTrue(mFrameHost.mIsPaymentCredentialCreation);
     }
 
     @Test
@@ -1188,6 +1223,58 @@ public class Fido2CredentialRequestTest {
                 errorStatus -> mCallback.onError(errorStatus));
         mCallback.blockUntilCalled();
         Assert.assertEquals(mCallback.getStatus(), status);
+        Fido2ApiTestHelper.verifyRespondedBeforeTimeout(mStartTimeMs);
+    }
+
+    @Test
+    @SmallTest
+    public void testGetAssertion_securePaymentConfirmation_canReplaceClientDataJson() {
+        mWindowAndroid.setResponseIntent(
+                Fido2ApiTestHelper.createSuccessfulGetAssertionIntentWithUvm());
+        TestThreadUtils.runOnUiThreadBlocking(() -> mRequest.setWindowForTesting(mWindowAndroid));
+
+        Fido2ApiTestHelper.setSecurePaymentConfirmationV2Enabled(mMocker);
+        String clientDataJson = "520";
+        Fido2ApiTestHelper.mockClientDataJson(mMocker, clientDataJson);
+
+        mMockWebContents.setLastCommittedUrl(new GURL("https://www.chromium.org/pay"));
+
+        mRequestOptions.payment = Fido2ApiTestHelper.createPaymentOptions();
+        mRequestOptions.challenge = new byte[3];
+        mRequest.handleGetAssertionRequest(mRequestOptions, mFrameHost, mOrigin,
+                (responseStatus, response)
+                        -> mCallback.onSignResponse(responseStatus, response),
+                errorStatus -> mCallback.onError(errorStatus));
+        mCallback.blockUntilCalled();
+        Assert.assertEquals(mCallback.getStatus(), Integer.valueOf(AuthenticatorStatus.SUCCESS));
+        Assert.assertEquals(new String(mCallback.getGetAssertionResponse().info.clientDataJson,
+                                    StandardCharsets.UTF_8),
+                clientDataJson);
+        Fido2ApiTestHelper.verifyRespondedBeforeTimeout(mStartTimeMs);
+    }
+
+    @Test
+    @SmallTest
+    public void testGetAssertion_securePaymentConfirmation_clientDataJsonCannotBeEmpty() {
+        mWindowAndroid.setResponseIntent(
+                Fido2ApiTestHelper.createSuccessfulGetAssertionIntentWithUvm());
+        TestThreadUtils.runOnUiThreadBlocking(() -> mRequest.setWindowForTesting(mWindowAndroid));
+
+        Fido2ApiTestHelper.setSecurePaymentConfirmationV2Enabled(mMocker);
+        Fido2ApiTestHelper.mockClientDataJson(mMocker, null);
+
+        mMockWebContents.setLastCommittedUrl(new GURL("https://www.chromium.org/pay"));
+
+        mRequestOptions.payment = Fido2ApiTestHelper.createPaymentOptions();
+        mRequestOptions.challenge = new byte[3];
+        mRequest.handleGetAssertionRequest(mRequestOptions, mFrameHost, mOrigin,
+                (responseStatus, response)
+                        -> mCallback.onSignResponse(responseStatus, response),
+                errorStatus -> mCallback.onError(errorStatus));
+        mCallback.blockUntilCalled();
+        Assert.assertEquals(
+                Integer.valueOf(AuthenticatorStatus.NOT_ALLOWED_ERROR), mCallback.getStatus());
+        Assert.assertNull(mCallback.getGetAssertionResponse());
         Fido2ApiTestHelper.verifyRespondedBeforeTimeout(mStartTimeMs);
     }
 }

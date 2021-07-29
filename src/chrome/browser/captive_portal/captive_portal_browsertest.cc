@@ -21,7 +21,6 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -71,13 +70,17 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/http/http_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -278,7 +281,7 @@ void MultiNavigationObserver::Observe(
   content::NavigationController* controller =
       content::Source<content::NavigationController>(source).ptr();
   ++num_navigations_;
-  ++tab_navigation_map_[controller->GetWebContents()];
+  ++tab_navigation_map_[controller->DeprecatedGetWebContents()];
   if (waiting_for_navigation_ &&
       num_navigations_to_wait_for_ == num_navigations_) {
     waiting_for_navigation_ = false;
@@ -364,7 +367,7 @@ void FailLoadsAfterLoginObserver::Observe(
   ASSERT_EQ(type, content::NOTIFICATION_LOAD_STOP);
   content::NavigationController* controller =
       content::Source<content::NavigationController>(source).ptr();
-  WebContents* contents = controller->GetWebContents();
+  WebContents* contents = controller->DeprecatedGetWebContents();
 
   ASSERT_EQ(1u, tabs_needing_navigation_.count(contents));
   ASSERT_EQ(0u, tabs_navigated_to_final_destination_.count(contents));
@@ -2867,7 +2870,13 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
             GetInterstitialType(broken_tab_contents));
 }
 
-IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SecureDnsCaptivePortal) {
+// Fails on Windows only, mostly on Win7. http://crbug.com/170033
+#if defined(OS_WIN)
+#define MAYBE_SecureDnsCaptivePortal DISABLED_SecureDnsCaptivePortal
+#else
+#define MAYBE_SecureDnsCaptivePortal SecureDnsCaptivePortal
+#endif
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, MAYBE_SecureDnsCaptivePortal) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kDnsOverHttpsMode,
                          SecureDnsConfig::kModeSecure);
@@ -2902,10 +2911,17 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SecureDnsCaptivePortal) {
         1 /* expected_portal_checks */);
 }
 
+// Fails on Windows only, mostly on Win7. http://crbug.com/170033
+#if defined(OS_WIN)
+#define MAYBE_SecureDnsErrorTriggersCheck DISABLED_SecureDnsErrorTriggersCheck
+#else
+#define MAYBE_SecureDnsErrorTriggersCheck SecureDnsErrorTriggersCheck
+#endif
 // An HTTP load results in a secure DNS error, which triggers a captive portal
 // probe that fails. After logging in, the secure DNS error happens again,
 // triggering a captive portal probe that now succeeds.
-IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SecureDnsErrorTriggersCheck) {
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
+                       MAYBE_SecureDnsErrorTriggersCheck) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kDnsOverHttpsTemplates,
                          "https://bar.test/dns-query{?dns}");
@@ -2940,12 +2956,20 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SecureDnsErrorTriggersCheck) {
                   ->GetPageType() == content::PAGE_TYPE_ERROR);
 }
 
+// Fails on Windows only, mostly on Win7. http://crbug.com/170033
+#if defined(OS_WIN)
+#define MAYBE_SlowLoadSecureDnsErrorWithCaptivePortal \
+  DISABLED_SlowLoadSecureDnsErrorWithCaptivePortal
+#else
+#define MAYBE_SlowLoadSecureDnsErrorWithCaptivePortal \
+  SlowLoadSecureDnsErrorWithCaptivePortal
+#endif
 // An HTTPS load happens slowly. The reloader triggers a captive portal check,
 // which finds a captive portal. The HTTPS load finally completes with a secure
 // DNS error, which does not trigger another captive portal check. Only one
 // login tab should exist.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
-                       SlowLoadSecureDnsErrorWithCaptivePortal) {
+                       MAYBE_SlowLoadSecureDnsErrorWithCaptivePortal) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kDnsOverHttpsTemplates,
                          "https://bar.test/dns-query{?dns}");
@@ -3010,4 +3034,108 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
               content::PAGE_TYPE_NORMAL);
   EXPECT_EQ(2u, browser_list_->size());
   EXPECT_EQ(2, NumTabs());
+}
+
+class CaptivePortalForPrerenderingTest : public CaptivePortalBrowserTest {
+ public:
+  CaptivePortalForPrerenderingTest()
+      : prerender_helper_(base::BindRepeating(
+            &CaptivePortalForPrerenderingTest::GetWebContents,
+            base::Unretained(this))) {}
+  ~CaptivePortalForPrerenderingTest() override = default;
+
+  void SetUpOnMainThread() override {
+    CaptivePortalBrowserTest::SetUpOnMainThread();
+    prerender_helper_.SetUpOnMainThread(embedded_test_server());
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  void TearDownOnMainThread() override {
+    CaptivePortalBrowserTest::TearDownOnMainThread();
+  }
+
+  content::test::PrerenderTestHelper& prerender_helper() {
+    return prerender_helper_;
+  }
+
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  void SetState(captive_portal::CaptivePortalTabReloader::State state) {
+    captive_portal::CaptivePortalTabReloader* tab_reloader =
+        GetTabReloader(GetWebContents());
+    ASSERT_TRUE(tab_reloader);
+    tab_reloader->SetState(state);
+  }
+
+ private:
+  content::test::PrerenderTestHelper prerender_helper_;
+};
+
+// Test that CaptivePortalTabHelper doesn't allow navigating on non-primary
+// trees via Did[Start|Finish]Navigation.
+IN_PROC_BROWSER_TEST_F(CaptivePortalForPrerenderingTest,
+                       DontFireOnLoadStartDuringPrerendering) {
+  GURL initial_url = embedded_test_server()->GetURL("/empty.html");
+  GURL prerender_url = embedded_test_server()->GetURL("/title1.html");
+  ASSERT_NE(ui_test_utils::NavigateToURL(browser(), initial_url), nullptr);
+
+  // Sets CaptivePortalTabReloader's state to STATE_TIMER_RUNNING in order to
+  // check if the state is not changed during prerendering.
+  SetState(captive_portal::CaptivePortalTabReloader::STATE_TIMER_RUNNING);
+
+  prerender_helper().AddPrerender(prerender_url);
+
+  // Checks if the state is not changed during prerendering. This state will
+  // be set to STATE_NONE if CaptivePortalTabReloader::OnLoadStart() is called
+  // on non-SSL pages. Since the prerendering page is a non-SSL page, if
+  // OnLoadStart() was fired, this state would be STATE_NONE. The non-STATE_NONE
+  // state will prove that CaptivePortalTabHelper does not call OnLoadStart()
+  // during prerendering.
+  captive_portal::CaptivePortalTabReloader::State new_state =
+      GetStateOfTabReloader(GetWebContents());
+  EXPECT_EQ(captive_portal::CaptivePortalTabReloader::STATE_TIMER_RUNNING,
+            new_state);
+}
+
+// Test that CaptivePortalTabHelper does not support the redirect navigation on
+// non-primary trees.
+// Flaky. See https://crbug.com/1224288.
+IN_PROC_BROWSER_TEST_F(CaptivePortalForPrerenderingTest,
+                       DISABLED_DontFireOnRedirectDuringPrerendering) {
+  GURL initial_url = embedded_test_server()->GetURL("/empty.html");
+  GURL prerender_url = embedded_test_server()->GetURL("/title1.html");
+  ASSERT_NE(ui_test_utils::NavigateToURL(browser(), initial_url), nullptr);
+
+  // Use an HTTPS server for the top level page.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
+  ASSERT_TRUE(https_server.Start());
+
+  int host_id = prerender_helper().AddPrerender(prerender_url);
+  content::RenderFrameHost* prerender_render_frame_host =
+      prerender_helper().GetPrerenderedMainFrameHost(host_id);
+  EXPECT_NE(prerender_render_frame_host, nullptr);
+  prerender_helper().NavigatePrerenderedPage(
+      host_id, https_server.GetURL(CreateServerRedirect(prerender_url.spec())));
+  EXPECT_EQ(prerender_url, prerender_render_frame_host->GetLastCommittedURL());
+
+  // Only the primary main frame supports the redirect navigation. So, Crash
+  // should not occur when navigating the prerendered page with the redirect
+  // URL because CaptivePortalTabHelper::DidRedirectNavigation should not be
+  // called during prerendering.
+
+  // Set CaptivePortalTabReloader's state to STATE_TIMER_RUNNING to check if
+  // the state is changed after activating the prerendered page. The state
+  // should be STATE_NONE because CaptivePortalTabHelper will call OnRedirect()
+  // after activating.
+  SetState(captive_portal::CaptivePortalTabReloader::STATE_TIMER_RUNNING);
+  // Activate the prerendered page.
+  prerender_helper().NavigatePrimaryPage(
+      https_server.GetURL(CreateServerRedirect(prerender_url.spec())));
+  captive_portal::CaptivePortalTabReloader::State new_state =
+      GetStateOfTabReloader(GetWebContents());
+  EXPECT_EQ(captive_portal::CaptivePortalTabReloader::STATE_NONE, new_state);
 }

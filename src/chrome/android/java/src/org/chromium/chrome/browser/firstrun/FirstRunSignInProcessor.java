@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
@@ -19,7 +20,7 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
@@ -70,17 +71,22 @@ public final class FirstRunSignInProcessor {
             return;
         }
 
-        // TODO(https://crbug.com/795292): Move this to SigninFirstRunFragment.
-        Account account = AccountUtils.findAccountByName(
-                AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(), accountName);
-        if (account == null) {
-            setFirstRunFlowSignInComplete(true);
-            return;
-        }
+        // TODO(https://crbug.com/795292): Move this to SyncConsentFirstRunFragment.
+        AccountManagerFacadeProvider.getInstance().getAccounts().then(accounts -> {
+            Account account = AccountUtils.findAccountByName(accounts, accountName);
+            if (account == null) {
+                setFirstRunFlowSignInComplete(true);
+            } else {
+                signinAndEnableSync(account, activity);
+            }
+        });
+    }
 
+    private static void signinAndEnableSync(@NonNull Account account, Activity activity) {
         final boolean setUp = getFirstRunFlowSignInSetup();
-        signinManager.signinAndEnableSync(
-                SigninAccessPoint.START_PAGE, account, new SignInCallback() {
+        IdentityServicesProvider.get()
+                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .signinAndEnableSync(SigninAccessPoint.START_PAGE, account, new SignInCallback() {
                     @Override
                     public void onSignInComplete() {
                         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
@@ -89,7 +95,7 @@ public final class FirstRunSignInProcessor {
                         if (setUp) {
                             openSignInSettings(activity);
                         } else {
-                            ProfileSyncService.get().setFirstSetupComplete(
+                            SyncService.get().setFirstSetupComplete(
                                     SyncFirstSetupCompleteSource.BASIC_FLOW);
                         }
                         setFirstRunFlowSignInComplete(true);

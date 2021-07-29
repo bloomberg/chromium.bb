@@ -31,6 +31,144 @@ const AXTreeData& AXPlatformNodeDelegateBase::GetTreeData() const {
   return *empty_data;
 }
 
+ax::mojom::Role AXPlatformNodeDelegateBase::GetRole() const {
+  return GetData().role;
+}
+
+bool AXPlatformNodeDelegateBase::HasBoolAttribute(
+    ax::mojom::BoolAttribute attribute) const {
+  return GetData().HasBoolAttribute(attribute);
+}
+
+bool AXPlatformNodeDelegateBase::GetBoolAttribute(
+    ax::mojom::BoolAttribute attribute) const {
+  return GetData().GetBoolAttribute(attribute);
+}
+
+bool AXPlatformNodeDelegateBase::GetBoolAttribute(
+    ax::mojom::BoolAttribute attribute,
+    bool* value) const {
+  return GetData().GetBoolAttribute(attribute, value);
+}
+
+bool AXPlatformNodeDelegateBase::HasFloatAttribute(
+    ax::mojom::FloatAttribute attribute) const {
+  return GetData().HasFloatAttribute(attribute);
+}
+
+float AXPlatformNodeDelegateBase::GetFloatAttribute(
+    ax::mojom::FloatAttribute attribute) const {
+  return GetData().GetFloatAttribute(attribute);
+}
+
+bool AXPlatformNodeDelegateBase::GetFloatAttribute(
+    ax::mojom::FloatAttribute attribute,
+    float* value) const {
+  return GetData().GetFloatAttribute(attribute, value);
+}
+
+bool AXPlatformNodeDelegateBase::HasIntAttribute(
+    ax::mojom::IntAttribute attribute) const {
+  return GetData().HasIntAttribute(attribute);
+}
+
+int AXPlatformNodeDelegateBase::GetIntAttribute(
+    ax::mojom::IntAttribute attribute) const {
+  return GetData().GetIntAttribute(attribute);
+}
+
+bool AXPlatformNodeDelegateBase::GetIntAttribute(
+    ax::mojom::IntAttribute attribute,
+    int* value) const {
+  return GetData().GetIntAttribute(attribute, value);
+}
+
+bool AXPlatformNodeDelegateBase::HasStringAttribute(
+    ax::mojom::StringAttribute attribute) const {
+  return GetData().HasStringAttribute(attribute);
+}
+
+const std::string& AXPlatformNodeDelegateBase::GetStringAttribute(
+    ax::mojom::StringAttribute attribute) const {
+  return GetData().GetStringAttribute(attribute);
+}
+
+bool AXPlatformNodeDelegateBase::GetStringAttribute(
+    ax::mojom::StringAttribute attribute,
+    std::string* value) const {
+  return GetData().GetStringAttribute(attribute, value);
+}
+
+std::u16string AXPlatformNodeDelegateBase::GetString16Attribute(
+    ax::mojom::StringAttribute attribute) const {
+  return GetData().GetString16Attribute(attribute);
+}
+
+bool AXPlatformNodeDelegateBase::GetString16Attribute(
+    ax::mojom::StringAttribute attribute,
+    std::u16string* value) const {
+  return GetData().GetString16Attribute(attribute, value);
+}
+
+const std::string& AXPlatformNodeDelegateBase::GetInheritedStringAttribute(
+    ax::mojom::StringAttribute attribute) const {
+  NOTIMPLEMENTED();
+  return GetData().GetStringAttribute(attribute);
+}
+
+std::u16string AXPlatformNodeDelegateBase::GetInheritedString16Attribute(
+    ax::mojom::StringAttribute attribute) const {
+  NOTIMPLEMENTED();
+  return GetData().GetString16Attribute(attribute);
+}
+
+bool AXPlatformNodeDelegateBase::HasIntListAttribute(
+    ax::mojom::IntListAttribute attribute) const {
+  return GetData().HasIntListAttribute(attribute);
+}
+
+const std::vector<int32_t>& AXPlatformNodeDelegateBase::GetIntListAttribute(
+    ax::mojom::IntListAttribute attribute) const {
+  return GetData().GetIntListAttribute(attribute);
+}
+
+bool AXPlatformNodeDelegateBase::GetIntListAttribute(
+    ax::mojom::IntListAttribute attribute,
+    std::vector<int32_t>* value) const {
+  return GetData().GetIntListAttribute(attribute, value);
+}
+
+bool AXPlatformNodeDelegateBase::HasStringListAttribute(
+    ax::mojom::StringListAttribute attribute) const {
+  return GetData().HasStringListAttribute(attribute);
+}
+
+const std::vector<std::string>&
+AXPlatformNodeDelegateBase::GetStringListAttribute(
+    ax::mojom::StringListAttribute attribute) const {
+  return GetData().GetStringListAttribute(attribute);
+}
+
+bool AXPlatformNodeDelegateBase::GetStringListAttribute(
+    ax::mojom::StringListAttribute attribute,
+    std::vector<std::string>* value) const {
+  return GetData().GetStringListAttribute(attribute, value);
+}
+
+bool AXPlatformNodeDelegateBase::GetHtmlAttribute(const char* attribute,
+                                                  std::string* value) const {
+  return GetData().GetHtmlAttribute(attribute, value);
+}
+
+bool AXPlatformNodeDelegateBase::GetHtmlAttribute(const char* attribute,
+                                                  std::u16string* value) const {
+  return GetData().GetHtmlAttribute(attribute, value);
+}
+
+bool AXPlatformNodeDelegateBase::HasState(ax::mojom::State state) const {
+  return GetData().HasState(state);
+}
+
 std::u16string AXPlatformNodeDelegateBase::GetInnerText() const {
   // Unlike in web content The "kValue" attribute always takes precedence,
   // because we assume that users of this base class, such as Views controls,
@@ -47,7 +185,7 @@ std::u16string AXPlatformNodeDelegateBase::GetInnerText() const {
   // should not be needed. ChildAtIndex() and GetChildCount() are already
   // supposed to skip over nodes that are invisible or ignored, but
   // ViewAXPlatformNodeDelegate does not currently implement this behavior.
-  if (IsLeaf() && !GetData().IsInvisibleOrIgnored())
+  if (IsLeaf() && !IsInvisibleOrIgnored())
     return GetData().GetString16Attribute(ax::mojom::StringAttribute::kName);
 
   std::u16string inner_text;
@@ -80,11 +218,22 @@ std::u16string AXPlatformNodeDelegateBase::GetValueForControl() const {
 
 const AXTree::Selection AXPlatformNodeDelegateBase::GetUnignoredSelection()
     const {
-  return AXTree::Selection{-1, -1, -1, ax::mojom::TextAffinity::kDownstream};
+  NOTIMPLEMENTED();
+  return AXTree::Selection{false, -1, -1, ax::mojom::TextAffinity::kDownstream};
+}
+
+AXNodePosition::AXPositionInstance AXPlatformNodeDelegateBase::CreatePositionAt(
+    int offset,
+    ax::mojom::TextAffinity affinity) const {
+  NOTIMPLEMENTED();
+  return AXNodePosition::CreateNullPosition();
 }
 
 AXNodePosition::AXPositionInstance
-AXPlatformNodeDelegateBase::CreateTextPositionAt(int offset) const {
+AXPlatformNodeDelegateBase::CreateTextPositionAt(
+    int offset,
+    ax::mojom::TextAffinity affinity) const {
+  NOTIMPLEMENTED();
   return AXNodePosition::CreateNullPosition();
 }
 
@@ -164,8 +313,19 @@ bool AXPlatformNodeDelegateBase::IsFocused() const {
   return false;
 }
 
+bool AXPlatformNodeDelegateBase::IsIgnored() const {
+  // To avoid the situation where a screen reader user will not be able to
+  // access a focused node because it has accidentally been marked as ignored,
+  // we unignore any nodes that are focused. However, we don't need to check
+  // this here because subclasses should make sure that the ignored state is
+  // removed from all nodes that are currently focused. This condition will be
+  // enforced once we switch to using an AXTree of AXNodes in Views.
+  return GetData().role == ax::mojom::Role::kNone ||
+         GetData().HasState(ax::mojom::State::kIgnored);
+}
+
 bool AXPlatformNodeDelegateBase::IsInvisibleOrIgnored() const {
-  return false;
+  return IsIgnored() || GetData().IsInvisible();
 }
 
 bool AXPlatformNodeDelegateBase::IsToplevelBrowserWindow() {
@@ -191,12 +351,11 @@ AXPlatformNodeDelegateBase::GetLowestPlatformAncestor() const {
   AXPlatformNodeDelegateBase* current_delegate =
       const_cast<AXPlatformNodeDelegateBase*>(this);
   AXPlatformNodeDelegateBase* lowest_unignored_delegate = current_delegate;
-  if (lowest_unignored_delegate->IsInvisibleOrIgnored()) {
+  if (lowest_unignored_delegate->IsIgnored()) {
     lowest_unignored_delegate = static_cast<AXPlatformNodeDelegateBase*>(
         lowest_unignored_delegate->GetParentDelegate());
   }
-  DCHECK(!lowest_unignored_delegate ||
-         !lowest_unignored_delegate->IsInvisibleOrIgnored())
+  DCHECK(!lowest_unignored_delegate || !lowest_unignored_delegate->IsIgnored())
       << "`AXPlatformNodeDelegateBase::GetParentDelegate()` should return "
          "either an unignored object or nullptr.";
 

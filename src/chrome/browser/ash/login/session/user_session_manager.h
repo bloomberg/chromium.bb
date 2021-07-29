@@ -31,8 +31,6 @@
 #include "chrome/browser/ash/login/signin/token_handle_util.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/login/ui/input_events_blocker.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/net/secure_dns_manager.h"
 #include "chrome/browser/ash/release_notes/release_notes_notification.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -67,7 +65,7 @@ class User;
 }  // namespace user_manager
 
 namespace ash {
-
+class LoginDisplayHost;
 class OnboardingUserActivityCounter;
 
 namespace test {
@@ -92,6 +90,12 @@ class UserSessionStateObserver {
 
  protected:
   virtual ~UserSessionStateObserver();
+};
+
+class UserAuthenticatorObserver : public base::CheckedObserver {
+ public:
+  // Called when authentication is started.
+  virtual void OnAuthAttemptStarted() {}
 };
 
 // UserSessionManager is responsible for starting user session which includes:
@@ -278,6 +282,10 @@ class UserSessionManager
   void AddSessionStateObserver(ash::UserSessionStateObserver* observer);
   void RemoveSessionStateObserver(ash::UserSessionStateObserver* observer);
 
+  void AddUserAuthenticatorObserver(ash::UserAuthenticatorObserver* observer);
+  void RemoveUserAuthenticatorObserver(
+      ash::UserAuthenticatorObserver* observer);
+
   void ActiveUserChanged(user_manager::User* active_user) override;
 
   // Returns default IME state for user session.
@@ -350,11 +358,13 @@ class UserSessionManager
   // Shows U2F notification if necessary.
   void MaybeShowU2FNotification();
 
-  // Shows Help App notification if necessary.
-  void MaybeShowHelpAppNotification(Profile* profile);
+  // Shows Help App release notes notification, if a notification for the help
+  // app has not yet been shown in the current milestone.
+  void MaybeShowHelpAppReleaseNotesNotification(Profile* profile);
 
-  // Shows Help App discover notification if necessary. Must be called after
-  // MaybeShowHelpAppNotification() which constructs a notification controller.
+  // Shows Help App discover notification if the profile meets the criteria and
+  // if a notification for the help app has not yet been shown in the current
+  // milestone.
   void MaybeShowHelpAppDiscoverNotification(Profile* profile);
 
  protected:
@@ -486,7 +496,7 @@ class UserSessionManager
   void NotifyPendingUserSessionsRestoreFinished();
 
   // Callback invoked when Easy unlock key operations are finished.
-  void OnEasyUnlockKeyOpsFinished(const std::string& user_id, bool success);
+  void OnEasyUnlockKeyOpsFinished(const AccountId& account_id, bool success);
 
   // Callback invoked when child policy is ready and the session for child user
   // can be started.
@@ -587,6 +597,9 @@ class UserSessionManager
 
   base::ObserverList<ash::UserSessionStateObserver>::Unchecked
       session_state_observer_list_;
+
+  base::ObserverList<ash::UserAuthenticatorObserver>
+      authenticator_observer_list_;
 
   // Set of user_id for those users that we should restore authentication
   // session when notified about online state change.

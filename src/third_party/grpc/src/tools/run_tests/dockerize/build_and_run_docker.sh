@@ -29,17 +29,10 @@ cd -
 # DOCKER_RUN_SCRIPT - Script to run under docker (relative to grpc repo root)
 # OUTPUT_DIR - Directory that will be copied from inside docker after finishing.
 # DOCKERHUB_ORGANIZATION - If set, pull a prebuilt image from given dockerhub org.
-# DOCKER_BASE_IMAGE - If set, pull the latest base image.
 # $@ - Extra args to pass to docker run
 
 # Use image name based on Dockerfile location checksum
 DOCKER_IMAGE_NAME=$(basename "$DOCKERFILE_DIR"):$(sha1sum "$DOCKERFILE_DIR/Dockerfile" | cut -f1 -d\ )
-
-# Pull the base image to force an update
-if [ "$DOCKER_BASE_IMAGE" != "" ]
-then
-  time docker pull "$DOCKER_BASE_IMAGE"
-fi
 
 if [ "$DOCKERHUB_ORGANIZATION" != "" ]
 then
@@ -65,7 +58,12 @@ docker run \
   -e "KOKORO_BUILD_NUMBER=$KOKORO_BUILD_NUMBER" \
   -e "KOKORO_BUILD_URL=$KOKORO_BUILD_URL" \
   -e "KOKORO_JOB_NAME=$KOKORO_JOB_NAME" \
+  -e "KOKORO_ARTIFACTS_DIR=$KOKORO_ARTIFACTS_DIR" \
+  -e "GIT_ORIGIN_URL=$(git -C $git_root remote get-url origin)" \
+  -e "GIT_COMMIT_SHORT=$(git -C $git_root rev-parse --short HEAD)" \
+  -e "TESTGRID_EXCLUDE=$TESTGRID_EXCLUDE" \
   -v "$git_root:/var/local/jenkins/grpc:ro" \
+  -v "$KOKORO_ARTIFACTS_DIR:$KOKORO_ARTIFACTS_DIR" \
   -w /var/local/git/grpc \
   --name="$CONTAINER_NAME" \
   $EXTRA_DOCKER_ARGS \

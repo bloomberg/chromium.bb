@@ -18,12 +18,13 @@
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/string_pool_template.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
+#include "third_party/base/numerics/ranges.h"
 #include "third_party/base/numerics/safe_math.h"
 #include "third_party/base/span.h"
-#include "third_party/base/stl_util.h"
 
 template class fxcrt::StringDataTemplate<char>;
 template class fxcrt::StringViewTemplate<char>;
@@ -494,14 +495,11 @@ ByteString ByteString::Substr(size_t first, size_t count) const {
 }
 
 ByteString ByteString::First(size_t count) const {
-  if (count == 0 || !IsValidLength(count))
-    return ByteString();
   return Substr(0, count);
 }
 
 ByteString ByteString::Last(size_t count) const {
-  if (count == 0 || !IsValidLength(count))
-    return ByteString();
+  // Unsigned underflow is well-defined and out-of-range is handled by Substr().
   return Substr(GetLength() - count, count);
 }
 
@@ -777,26 +775,30 @@ std::ostream& operator<<(std::ostream& os, ByteStringView str) {
 
 }  // namespace fxcrt
 
-uint32_t FX_HashCode_GetA(ByteStringView str, bool bIgnoreCase) {
+uint32_t FX_HashCode_GetA(ByteStringView str) {
   uint32_t dwHashCode = 0;
-  if (bIgnoreCase) {
-    for (ByteStringView::UnsignedType c : str)
-      dwHashCode = 31 * dwHashCode + tolower(c);
-  } else {
-    for (ByteStringView::UnsignedType c : str)
-      dwHashCode = 31 * dwHashCode + c;
-  }
+  for (ByteStringView::UnsignedType c : str)
+    dwHashCode = 31 * dwHashCode + c;
   return dwHashCode;
 }
 
-uint32_t FX_HashCode_GetAsIfW(ByteStringView str, bool bIgnoreCase) {
+uint32_t FX_HashCode_GetLoweredA(ByteStringView str) {
   uint32_t dwHashCode = 0;
-  if (bIgnoreCase) {
-    for (ByteStringView::UnsignedType c : str)
-      dwHashCode = 1313 * dwHashCode + FXSYS_towlower(c);
-  } else {
-    for (ByteStringView::UnsignedType c : str)
-      dwHashCode = 1313 * dwHashCode + c;
-  }
+  for (ByteStringView::UnsignedType c : str)
+    dwHashCode = 31 * dwHashCode + tolower(c);
+  return dwHashCode;
+}
+
+uint32_t FX_HashCode_GetAsIfW(ByteStringView str) {
+  uint32_t dwHashCode = 0;
+  for (ByteStringView::UnsignedType c : str)
+    dwHashCode = 1313 * dwHashCode + c;
+  return dwHashCode;
+}
+
+uint32_t FX_HashCode_GetLoweredAsIfW(ByteStringView str) {
+  uint32_t dwHashCode = 0;
+  for (ByteStringView::UnsignedType c : str)
+    dwHashCode = 1313 * dwHashCode + FXSYS_towlower(c);
   return dwHashCode;
 }

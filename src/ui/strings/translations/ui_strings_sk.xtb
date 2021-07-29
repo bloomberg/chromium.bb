@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Kontroluje sa internetové pripojenie</translation>
 <translation id="2388990488038464401">Chcete zavolať na toto číslo z telefónu?</translation>
+<translation id="2435457462613246316">Zobraziť heslo</translation>
 <translation id="24452542372838207">Rozbaliť upozornenie</translation>
 <translation id="2445449901874883781">Použiť vysokú hustotu</translation>
 <translation id="2482878487686419369">Upozornenia</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{pred rokom}few{pred # rokmi}many{pred # rokom}other{pred # rokmi}}</translation>
 <translation id="2878511608894704031">Odstrániť všetko</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{o 1 d.}few{o # d.}many{o # d.}other{o # d.}}</translation>
+<translation id="2922712708897119705">Stĺpec <ph name="COLUMN_NAME" /> je zoradený v zostupnom poradí.</translation>
 <translation id="2931838996092594335">kliknutie</translation>
 <translation id="2981684127883932071">Zobrazujú sa návrhy</translation>
 <translation id="3036649622769666520">Otvoriť súbory</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Ponuka</translation>
 <translation id="3909791450649380159">&amp;Vystrihnúť</translation>
 <translation id="3990502903496589789">Pravý okraj</translation>
+<translation id="3994749195054421561">Stĺpec <ph name="COLUMN_NAME" /> je zoradený vo vzostupnom poradí.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 neprečítané upozornenie}few{# neprečítané upozornenia}many{# Unread Notifications}other{# neprečítaných upozornení}}</translation>
 <translation id="4202807286478387388">skok</translation>
 <translation id="4250229828105606438">Snímka obrazovky</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Odstrániť zo schránky</translation>
 <translation id="4316910396681052118">VŠETKY APLIKÁCIE</translation>
 <translation id="4491109536499578614">Obrázok</translation>
+<translation id="4565377596337484307">Skryť heslo</translation>
 <translation id="4588090240171750605">Rolovať doprava</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, hodnotenie hviezdičkami <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, odporúčanie aplikácie</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Stránka <ph name="SELECTED_PAGE" /> z <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Vymazať text vo vyhľadávacom poli</translation>
 <translation id="6040143037577758943">Zavrieť</translation>
+<translation id="6117103120090651229">Stredné tlačidlo</translation>
 <translation id="6119846243427417423">aktivovať</translation>
 <translation id="6129953537138746214">Medzera</translation>
 <translation id="6134259848159370930">Vyhľadávajte v zariadení, aplikáciách, nastaveniach a na internete.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Rozbaliť na všetky aplikácie</translation>
 <translation id="6165508094623778733">Ďalšie informácie</translation>
 <translation id="6166852626429024716">Vyhľadávajte v zariadení, aplikáciách, nastaveniach a na internete…</translation>
+<translation id="6237461503717005873">Je vybraný riadok <ph name="ROW_NAME" />.</translation>
 <translation id="6264365405983206840">Vybrať &amp;všetko</translation>
 <translation id="6351032674660237738">NÁVRHY APLIKÁCIÍ</translation>
 <translation id="6364916375976753737">Rolovať doľava</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Zostáva 1 minúta}few{Zostávajú # minúty}many{Zostáva # minúty}other{Zostáva # minút}}</translation>
 <translation id="7430878839542012341">Chcete odstrániť toto vyhľadávanie z histórie?</translation>
+<translation id="7437971918971306061">Stĺpec <ph name="COLUMN_NAME" /> nie je zoradený.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emodži</translation>
 <translation id="7620655452534002301">Odstránené.</translation>

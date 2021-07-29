@@ -185,60 +185,62 @@ class alignas(4) RenderPassDesc final
     {
         return mColorUnresolveAttachmentMask.test(colorIndexGL);
     }
-    bool hasDepthStencilResolveAttachment() const
-    {
-        return (mAttachmentFormats.back() & kResolveDepthStencilFlag) != 0;
-    }
-    bool hasDepthStencilUnresolveAttachment() const
-    {
-        return (mAttachmentFormats.back() & (kUnresolveDepthFlag | kUnresolveStencilFlag)) != 0;
-    }
-    bool hasDepthUnresolveAttachment() const
-    {
-        return (mAttachmentFormats.back() & kUnresolveDepthFlag) != 0;
-    }
-    bool hasStencilUnresolveAttachment() const
-    {
-        return (mAttachmentFormats.back() & kUnresolveStencilFlag) != 0;
-    }
+    bool hasDepthStencilResolveAttachment() const { return mResolveDepthStencil; }
+    bool hasDepthStencilUnresolveAttachment() const { return mUnresolveDepth || mUnresolveStencil; }
+    bool hasDepthUnresolveAttachment() const { return mUnresolveDepth; }
+    bool hasStencilUnresolveAttachment() const { return mUnresolveStencil; }
     gl::SrgbWriteControlMode getSRGBWriteControlMode() const
     {
-        return ((mAttachmentFormats.back() & kSrgbWriteControlFlag) != 0)
-                   ? gl::SrgbWriteControlMode::Linear
-                   : gl::SrgbWriteControlMode::Default;
+        return static_cast<gl::SrgbWriteControlMode>(mSrgbWriteControl);
     }
 
     // Get the number of attachments in the Vulkan render pass, i.e. after removing disabled
     // color attachments.
     size_t attachmentCount() const;
 
-    void setSamples(GLint samples);
+    void setSamples(GLint samples) { mSamples = static_cast<uint8_t>(samples); }
+    uint8_t samples() const { return mSamples; }
 
-    uint8_t samples() const { return 1u << mLogSamples; }
+    void setViewCount(GLsizei viewCount) { mViewCount = static_cast<uint8_t>(viewCount); }
+    uint8_t viewCount() const { return mViewCount; }
 
-    void setFramebufferFetchMode(bool hasFramebufferFetch);
+    void setFramebufferFetchMode(bool hasFramebufferFetch)
+    {
+        mHasFramebufferFetch = hasFramebufferFetch;
+    }
     bool getFramebufferFetchMode() const { return mHasFramebufferFetch; }
 
-    void updateRenderToTexture(bool isRenderToTexture);
-    bool isRenderToTexture() const { return (mAttachmentFormats.back() & kIsRenderToTexture) != 0; }
+    void updateRenderToTexture(bool isRenderToTexture) { mIsRenderToTexture = isRenderToTexture; }
+    bool isRenderToTexture() const { return mIsRenderToTexture; }
 
     angle::FormatID operator[](size_t index) const
     {
         ASSERT(index < gl::IMPLEMENTATION_MAX_DRAW_BUFFERS + 1);
-
-        uint8_t format = mAttachmentFormats[index];
-        if (index >= depthStencilAttachmentIndex())
-        {
-            format &= kDepthStencilFormatStorageMask;
-        }
-        return static_cast<angle::FormatID>(format);
+        return static_cast<angle::FormatID>(mAttachmentFormats[index]);
     }
 
   private:
-    // Store log(samples), to be able to store it in 3 bits.
-    uint8_t mLogSamples : 3;
-    uint8_t mColorAttachmentRange : 4;
+    uint8_t mSamples;
+    uint8_t mColorAttachmentRange;
+
+    // Multivew
+    uint8_t mViewCount;
+
+    // sRGB
+    uint8_t mSrgbWriteControl : 1;
+
+    // Framebuffer fetch
     uint8_t mHasFramebufferFetch : 1;
+
+    // Multisampled render to texture
+    uint8_t mIsRenderToTexture : 1;
+    uint8_t mResolveDepthStencil : 1;
+    uint8_t mUnresolveDepth : 1;
+    uint8_t mUnresolveStencil : 1;
+
+    // Available space for expansion.
+    uint8_t mPadding1 : 2;
+    uint8_t mPadding2;
 
     // Whether each color attachment has a corresponding resolve attachment.  Color resolve
     // attachments can be used to optimize resolve through glBlitFramebuffer() as well as support
@@ -275,27 +277,13 @@ class alignas(4) RenderPassDesc final
     //
     // The resolve attachments are packed after the non-resolve attachments.  They use the same
     // formats, so they are not specified in this array.
-    //
-    // The depth/stencil angle::FormatID values are in the range [1, 7], and therefore require only
-    // 3 bits to be stored.  As a result, the upper 5 bits of mAttachmentFormats.back() is free to
-    // use for other purposes.
     FramebufferNonResolveAttachmentArray<uint8_t> mAttachmentFormats;
-
-    // Depth/stencil format is stored in 3 bits.
-    static constexpr uint8_t kDepthStencilFormatStorageMask = 0x7;
-
-    // Flags stored in the upper 5 bits of mAttachmentFormats.back().
-    static constexpr uint8_t kIsRenderToTexture       = 0x80;
-    static constexpr uint8_t kResolveDepthStencilFlag = 0x40;
-    static constexpr uint8_t kUnresolveDepthFlag      = 0x20;
-    static constexpr uint8_t kUnresolveStencilFlag    = 0x10;
-    static constexpr uint8_t kSrgbWriteControlFlag    = 0x08;
 };
 
 bool operator==(const RenderPassDesc &lhs, const RenderPassDesc &rhs);
 
 constexpr size_t kRenderPassDescSize = sizeof(RenderPassDesc);
-static_assert(kRenderPassDescSize == 12, "Size check failed");
+static_assert(kRenderPassDescSize == 16, "Size check failed");
 
 struct PackedAttachmentOpsDesc final
 {
@@ -528,21 +516,11 @@ struct PackedInputAssemblyAndColorBlendStateInfo final
     PrimitiveState primitive;
 };
 
-struct PackedScissor final
-{
-    uint16_t x;
-    uint16_t y;
-    uint16_t width;
-    uint16_t height;
-};
-
 struct PackedExtent final
 {
     uint16_t width;
     uint16_t height;
 };
-// This is invalid value for PackedScissor.x. It is used to indicate scissor is a dynamic state
-constexpr int32_t kDynamicScissorSentinel = std::numeric_limits<decltype(PackedScissor::x)>::max();
 
 constexpr size_t kPackedInputAssemblyAndColorBlendStateSize =
     sizeof(PackedInputAssemblyAndColorBlendStateInfo);
@@ -550,8 +528,8 @@ static_assert(kPackedInputAssemblyAndColorBlendStateSize == 56, "Size check fail
 
 constexpr size_t kGraphicsPipelineDescSumOfSizes =
     kVertexInputAttributesSize + kRenderPassDescSize + kPackedRasterizationAndMultisampleStateSize +
-    kPackedDepthStencilStateSize + kPackedInputAssemblyAndColorBlendStateSize + sizeof(VkViewport) +
-    sizeof(PackedScissor) + sizeof(PackedExtent);
+    kPackedDepthStencilStateSize + kPackedInputAssemblyAndColorBlendStateSize +
+    sizeof(PackedExtent);
 
 // Number of dirty bits in the dirty bit set.
 constexpr size_t kGraphicsPipelineDirtyBitBytes = 4;
@@ -711,16 +689,6 @@ class GraphicsPipelineDesc final
     void updatePolygonOffset(GraphicsPipelineTransitionBits *transition,
                              const gl::RasterizerState &rasterState);
 
-    // Viewport and scissor.
-    void setViewport(const VkViewport &viewport);
-    void updateViewport(GraphicsPipelineTransitionBits *transition, const VkViewport &viewport);
-    void updateDepthRange(GraphicsPipelineTransitionBits *transition,
-                          float nearPlane,
-                          float farPlane);
-    void setDynamicScissor();
-    void setScissor(const VkRect2D &scissor);
-    void updateScissor(GraphicsPipelineTransitionBits *transition, const VkRect2D &scissor);
-
     // Tessellation
     void updatePatchVertices(GraphicsPipelineTransitionBits *transition, GLuint value);
 
@@ -751,10 +719,6 @@ class GraphicsPipelineDesc final
     PackedRasterizationAndMultisampleStateInfo mRasterizationAndMultisampleStateInfo;
     PackedDepthStencilStateInfo mDepthStencilStateInfo;
     PackedInputAssemblyAndColorBlendStateInfo mInputAssemblyAndColorBlendStateInfo;
-    VkViewport mViewport;
-    // The special value of .offset.x == INT_MIN for scissor implies dynamic scissor that needs to
-    // be set through vkCmdSetScissor.
-    PackedScissor mScissor;
     PackedExtent mDrawableSize;
 };
 
@@ -872,19 +836,21 @@ class SamplerDesc final
 {
   public:
     SamplerDesc();
-    SamplerDesc(const angle::FeaturesVk &featuresVk,
+    SamplerDesc(ContextVk *contextVk,
                 const gl::SamplerState &samplerState,
                 bool stencilMode,
-                uint64_t externalFormat);
+                uint64_t externalFormat,
+                angle::FormatID formatID);
     ~SamplerDesc();
 
     SamplerDesc(const SamplerDesc &other);
     SamplerDesc &operator=(const SamplerDesc &rhs);
 
-    void update(const angle::FeaturesVk &featuresVk,
+    void update(ContextVk *contextVk,
                 const gl::SamplerState &samplerState,
                 bool stencilMode,
-                uint64_t externalFormat);
+                uint64_t externalFormat,
+                angle::FormatID formatID);
     void reset();
     angle::Result init(ContextVk *contextVk, Sampler *sampler) const;
 
@@ -924,13 +890,19 @@ class SamplerDesc final
     // 3 bits for compare op. (8 possible values)
     uint16_t mCompareOp : 3;
 
-    // Border color and unnormalized coordinates implicitly set to contants.
+    uint16_t mPadding : 15;
 
-    // 48 extra bits reserved for future use.
-    uint16_t mReserved[3];
+    // Values from angle::ColorGeneric::Type. Float is 0 and others are 1.
+    uint16_t mBorderColorType : 1;
+
+    // 16*8 bits for BorderColor
+    angle::ColorF mBorderColor;
+
+    // 32 bits reserved for future use.
+    uint32_t mReserved;
 };
 
-static_assert(sizeof(SamplerDesc) == 32, "Unexpected SamplerDesc size");
+static_assert(sizeof(SamplerDesc) == 48, "Unexpected SamplerDesc size");
 
 // Disable warnings about struct padding.
 ANGLE_DISABLE_STRUCT_PADDING_WARNINGS
@@ -1035,15 +1007,38 @@ ANGLE_INLINE PipelineHelper::PipelineHelper(Pipeline &&pipeline) : mPipeline(std
 
 struct ImageSubresourceRange
 {
-    uint16_t level : 10;            // GL max is 1000 (fits in 10 bits).
-    uint16_t levelCount : 6;        // Max 63 levels (2 ** 6 - 1). If we need more, take from layer.
-    uint16_t layer : 13;            // Implementation max is 2048 (11 bits).
-    uint16_t singleLayer : 1;       // true/false only. Not possible to use sub-slices of levels.
-    uint16_t srgbDecodeMode : 1;    // Values from vk::SrgbDecodeMode.
-    uint16_t srgbOverrideMode : 1;  // Values from gl::SrgbOverride, either Default or SRGB.
+    // GL max is 1000 (fits in 10 bits).
+    uint32_t level : 10;
+    // Max 31 levels (2 ** 5 - 1). Can store levelCount-1 if we need to save another bit.
+    uint32_t levelCount : 5;
+    // Implementation max is 2048 (11 bits).
+    uint32_t layer : 12;
+    // One of vk::LayerMode values.  If 0, it means all layers.  Otherwise it's the count of layers
+    // which is usually 1, except for multiview in which case it can be up to
+    // gl::IMPLEMENTATION_MAX_2D_ARRAY_TEXTURE_LAYERS.
+    uint32_t layerMode : 3;
+    // Values from vk::SrgbDecodeMode.  Unused with draw views.
+    uint32_t srgbDecodeMode : 1;
+    // For read views: Values from gl::SrgbOverride, either Default or SRGB.
+    // For draw views: Values from gl::SrgbWriteControlMode.
+    uint32_t srgbMode : 1;
+
+    static_assert(gl::IMPLEMENTATION_MAX_TEXTURE_LEVELS < (1 << 5),
+                  "Not enough bits for level count");
+    static_assert(gl::IMPLEMENTATION_MAX_2D_ARRAY_TEXTURE_LAYERS <= (1 << 12),
+                  "Not enough bits for layer index");
+    static_assert(gl::IMPLEMENTATION_ANGLE_MULTIVIEW_MAX_VIEWS <= (1 << 3),
+                  "Not enough bits for layer count");
 };
 
 static_assert(sizeof(ImageSubresourceRange) == sizeof(uint32_t), "Size mismatch");
+
+inline bool operator==(const ImageSubresourceRange &a, const ImageSubresourceRange &b)
+{
+    return a.level == b.level && a.levelCount == b.levelCount && a.layer == b.layer &&
+           a.layerMode == b.layerMode && a.srgbDecodeMode == b.srgbDecodeMode &&
+           a.srgbMode == b.srgbMode;
+}
 
 constexpr ImageSubresourceRange kInvalidImageSubresourceRange = {0, 0, 0, 0, 0, 0};
 
@@ -1109,11 +1104,18 @@ class UniformsAndXfbDescriptorDesc
         mBufferSerials[kDefaultUniformBufferIndex] = bufferSerial;
         mBufferCount = std::max(mBufferCount, static_cast<uint32_t>(1));
     }
-    void updateTransformFeedbackBuffer(size_t xfbIndex, BufferSerial bufferSerial)
+    void updateTransformFeedbackBuffer(size_t xfbIndex,
+                                       BufferSerial bufferSerial,
+                                       VkDeviceSize bufferOffset)
     {
         uint32_t bufferIndex        = static_cast<uint32_t>(xfbIndex) + 1;
         mBufferSerials[bufferIndex] = bufferSerial;
-        mBufferCount                = std::max(mBufferCount, (bufferIndex + 1));
+
+        ASSERT(static_cast<uint64_t>(bufferOffset) <=
+               static_cast<uint64_t>(std::numeric_limits<uint32_t>::max()));
+        mXfbBufferOffsets[xfbIndex] = static_cast<uint32_t>(bufferOffset);
+
+        mBufferCount = std::max(mBufferCount, (bufferIndex + 1));
     }
     size_t hash() const;
     void reset();
@@ -1124,8 +1126,11 @@ class UniformsAndXfbDescriptorDesc
     uint32_t mBufferCount;
     // The array index 0 is used for default uniform buffer
     static constexpr size_t kDefaultUniformBufferIndex = 0;
-    static constexpr size_t kMaxBufferCount = 1 + gl::IMPLEMENTATION_MAX_TRANSFORM_FEEDBACK_BUFFERS;
+    static constexpr size_t kDefaultUniformBufferCount = 1;
+    static constexpr size_t kMaxBufferCount =
+        kDefaultUniformBufferCount + gl::IMPLEMENTATION_MAX_TRANSFORM_FEEDBACK_BUFFERS;
     std::array<BufferSerial, kMaxBufferCount> mBufferSerials;
+    std::array<uint32_t, gl::IMPLEMENTATION_MAX_TRANSFORM_FEEDBACK_BUFFERS> mXfbBufferOffsets;
 };
 
 class ShaderBuffersDescriptorDesc
@@ -1147,8 +1152,6 @@ class ShaderBuffersDescriptorDesc
         mPayload.push_back(bufferSerial.getValue());
     }
     ANGLE_INLINE void append32BitValue(uint32_t value) { mPayload.push_back(value); }
-
-    void append64BitValue(uint64_t value);
 
   private:
     // After a preliminary minimum size, use heap memory.
@@ -1190,6 +1193,7 @@ class FramebufferDesc
     {
         mSrgbWriteControlMode = static_cast<uint16_t>(mode);
     }
+    void updateIsMultiview(bool isMultiview) { mIsMultiview = isMultiview; }
     size_t hash() const;
 
     bool operator==(const FramebufferDesc &other) const;
@@ -1212,6 +1216,8 @@ class FramebufferDesc
     void updateLayerCount(uint32_t layerCount);
     uint32_t getLayerCount() const { return mLayerCount; }
     void updateFramebufferFetchMode(bool hasFramebufferFetch);
+
+    bool isMultiview() const { return mIsMultiview; }
 
     void updateRenderToTexture(bool isRenderToTexture);
 
@@ -1237,7 +1243,9 @@ class FramebufferDesc
 
     // Whether this is a multisampled-render-to-single-sampled framebuffer.  Only used when using
     // VK_EXT_multisampled_render_to_single_sampled.  Only one bit is used and the rest is padding.
-    uint16_t mIsRenderToTexture : 16 - kMaxFramebufferNonResolveAttachments;
+    uint16_t mIsRenderToTexture : 15 - kMaxFramebufferNonResolveAttachments;
+
+    uint16_t mIsMultiview : 1;
 
     FramebufferAttachmentArray<ImageOrBufferViewSubresourceSerial> mSerials;
 };
@@ -1327,6 +1335,15 @@ template <>
 struct hash<rx::vk::PipelineLayoutDesc>
 {
     size_t operator()(const rx::vk::PipelineLayoutDesc &key) const { return key.hash(); }
+};
+
+template <>
+struct hash<rx::vk::ImageSubresourceRange>
+{
+    size_t operator()(const rx::vk::ImageSubresourceRange &key) const
+    {
+        return *reinterpret_cast<const uint32_t *>(&key);
+    }
 };
 
 template <>

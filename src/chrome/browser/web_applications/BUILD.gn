@@ -13,21 +13,32 @@ group("web_app_test_group") {
 
 source_set("web_applications") {
   sources = [
+    "app_shortcut_manager.cc",
     "daily_metrics_helper.cc",
     "daily_metrics_helper.h",
     "extension_status_utils.h",
+    "externally_installed_web_app_prefs.cc",
     "externally_managed_app_install_task.cc",
     "externally_managed_app_install_task.h",
+    "externally_managed_app_manager.cc",
     "externally_managed_app_manager_impl.cc",
     "externally_managed_app_manager_impl.h",
     "externally_managed_app_registration_task.cc",
     "externally_managed_app_registration_task.h",
+    "file_handler_manager.cc",
+    "file_handlers_permission_helper.cc",
+    "file_handlers_permission_helper.h",
     "file_utils_wrapper.cc",
     "file_utils_wrapper.h",
+    "install_finalizer.cc",
+    "install_manager.cc",
+    "isolation_prefs_utils.cc",
+    "isolation_prefs_utils.h",
     "manifest_update_manager.cc",
     "manifest_update_manager.h",
     "manifest_update_task.cc",
     "manifest_update_task.h",
+    "os_integration_manager.cc",
     "policy/web_app_policy_manager.cc",
     "policy/web_app_policy_manager.h",
     "policy/web_app_policy_manager_observer.h",
@@ -35,10 +46,14 @@ source_set("web_applications") {
     "preinstalled_web_app_manager.h",
     "preinstalled_web_app_utils.cc",
     "preinstalled_web_app_utils.h",
+    "protocol_handler_manager.cc",
     "system_web_apps/system_web_app_background_task.cc",
     "system_web_apps/system_web_app_background_task.h",
+    "system_web_apps/system_web_app_delegate.cc",
+    "system_web_apps/system_web_app_delegate.h",
     "system_web_apps/system_web_app_manager.cc",
     "system_web_apps/system_web_app_manager.h",
+    "url_handler_manager.cc",
     "web_app.cc",
     "web_app.h",
     "web_app_database.cc",
@@ -47,6 +62,7 @@ source_set("web_applications") {
     "web_app_database_factory.h",
     "web_app_file_handler_manager.cc",
     "web_app_file_handler_manager.h",
+    "web_app_helpers.cc",
     "web_app_icon_manager.cc",
     "web_app_icon_manager.h",
     "web_app_install_finalizer.cc",
@@ -78,7 +94,17 @@ source_set("web_applications") {
     "web_app_sync_install_delegate.h",
     "web_app_tab_helper.cc",
     "web_app_tab_helper.h",
+    "web_app_utils.cc",
   ]
+
+  if (is_linux) {
+    # Desktop linux, doesn't count ChromeOS.
+    sources += [ "web_app_file_handler_registration_linux.cc" ]
+  }
+
+  if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
+    sources += [ "url_handler_manager_impl.cc" ]
+  }
 
   # web_applications must not depend on //chrome/browser/extensions and //extensions
   deps = [
@@ -90,6 +116,9 @@ source_set("web_applications") {
     "//chrome/browser/web_applications/preinstalled_web_apps",
     "//chrome/common",
     "//components/content_settings/core/browser",
+
+    # TODO(crbug.com/1225132): Clean up this legacy crx dependency.
+    "//components/crx_file",
     "//components/device_event_log",
     "//components/keep_alive_registry:keep_alive_registry",
     "//components/keyed_service/content",
@@ -97,22 +126,26 @@ source_set("web_applications") {
     "//components/pref_registry",
     "//components/services/app_service/public/cpp:app_url_handling",
     "//components/services/app_service/public/cpp:protocol_handling",
+    "//components/site_engagement/content",
     "//components/sync",
     "//components/user_manager",
     "//components/webapps/browser",
     "//content/public/browser",
     "//services/metrics/public/cpp:ukm_builders",
+    "//services/preferences/public/cpp",
     "//skia",
     "//ui/base/idle",
+    "//ui/events/devices:devices",
   ]
 
   if (is_chromeos_ash) {
     deps += [
-      "//ash/components/os_feedback_ui",
       "//ash/constants",
-      "//ash/content/shimless_rma",
-      "//ash/content/shortcut_customization_ui",
       "//ash/public/cpp",
+      "//ash/webui/file_manager:file_manager_ui",
+      "//ash/webui/os_feedback_ui",
+      "//ash/webui/shimless_rma",
+      "//ash/webui/shortcut_customization_ui",
       "//chromeos/components/camera_app_ui",
       "//chromeos/components/connectivity_diagnostics",
       "//chromeos/components/eche_app_ui",
@@ -125,10 +158,7 @@ source_set("web_applications") {
     ]
 
     if (!is_official_build) {
-      deps += [
-        "//chromeos/components/file_manager:file_manager_ui",
-        "//chromeos/components/sample_system_web_app_ui",
-      ]
+      deps += [ "//chromeos/components/sample_system_web_app_ui" ]
     }
   }
 
@@ -162,13 +192,22 @@ source_set("web_applications_test_support_minimal") {
     "//chrome/browser/profiles:profile",
     "//chrome/browser/web_applications",
     "//chrome/browser/web_applications/components",
+    "//chrome/common:buildflags",
     "//chrome/common:chrome_features",
     "//chrome/common:non_code_constants",
     "//components/keyed_service/content",
+    "//components/services/app_service/public/cpp:app_url_handling",
     "//components/webapps/browser",
     "//content/public/browser",
     "//url",
   ]
+  if (is_chromeos_ash) {
+    sources += [
+      "test/with_crosapi_param.cc",
+      "test/with_crosapi_param.h",
+    ]
+    deps += [ "//ash/constants" ]
+  }
 }
 
 # This test_support library doesn't use extensions.
@@ -190,16 +229,12 @@ source_set("web_applications_test_support") {
     "test/fake_url_handler_manager.h",
     "test/fake_web_app_origin_association_manager.cc",
     "test/fake_web_app_origin_association_manager.h",
-    "test/test_app_registrar.cc",
-    "test/test_app_registrar.h",
     "test/test_app_registry_controller.cc",
     "test/test_app_registry_controller.h",
     "test/test_data_retriever.cc",
     "test/test_data_retriever.h",
     "test/test_externally_managed_app_manager.cc",
     "test/test_externally_managed_app_manager.h",
-    "test/test_externally_managed_app_manager_impl.cc",
-    "test/test_externally_managed_app_manager_impl.h",
     "test/test_file_handler_manager.cc",
     "test/test_file_handler_manager.h",
     "test/test_file_utils.cc",
@@ -258,6 +293,7 @@ source_set("web_applications_unit_tests") {
   sources = [
     "daily_metrics_helper_unittest.cc",
     "externally_managed_app_manager_impl_unittest.cc",
+    "isolation_prefs_utils_unittest.cc",
     "manifest_update_task_unittest.cc",
     "preinstalled_web_app_manager_unittest.cc",
     "preinstalled_web_app_utils_unittest.cc",
@@ -351,6 +387,7 @@ source_set("web_applications_browser_tests") {
     "//extensions/browser:test_support",
     "//ui/base/idle:idle",
     "//ui/base/idle:test_support",
+    "//ui/events/devices:test_support",
   ]
 
   if (is_chromeos_ash) {
@@ -381,5 +418,26 @@ group("browser_tests") {
     ":web_app_test_group",
     ":web_applications_browser_tests",
     "//chrome/browser/web_applications/components:browser_tests",
+  ]
+}
+
+source_set("interactive_ui_tests") {
+  testonly = true
+
+  sources = [ "web_app_notifications_interactive_uitest.cc" ]
+
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+  deps = [
+    ":web_applications",
+    ":web_applications_test_support",
+    "//chrome/app:command_ids",
+    "//chrome/test:test_support",
+    "//chrome/test:test_support_ui",
+    "//components/permissions:permissions",
+    "//components/webapps/browser",
+    "//ui/base/idle:idle",
+    "//ui/base/idle:test_support",
+    "//ui/events/devices:test_support",
   ]
 }

@@ -13,6 +13,7 @@
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -287,6 +288,13 @@ void GrantPermissionToActivate(aura::Window* window, base::TimeDelta timeout) {
       new Permission(Permission::Capability::kActivate, timeout));
 }
 
+void GrantPermissionToActivateIndefinitely(aura::Window* window) {
+  // Activation is the only permission, so just set the property. The window
+  // owns the Permission object.
+  window->SetProperty(kPermissionKey,
+                      new Permission(Permission::Capability::kActivate));
+}
+
 void RevokePermissionToActivate(aura::Window* window) {
   // Activation is the only permission, so just clear the property.
   window->ClearProperty(kPermissionKey);
@@ -358,6 +366,14 @@ bool ConsumedByIme(aura::Window* window, const ui::KeyEvent& event) {
   }
 
   return false;
+}
+
+void SetSkipImeProcessingToDescendentSurfaces(aura::Window* window,
+                                              bool value) {
+  if (Surface::AsSurface(window))
+    window->SetProperty(aura::client::kSkipImeProcessing, value);
+  for (aura::Window* child : window->children())
+    SetSkipImeProcessingToDescendentSurfaces(child, value);
 }
 
 }  // namespace exo

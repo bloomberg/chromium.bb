@@ -9,6 +9,13 @@
 
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_progress.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_ruby_as_block.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_ruby_base.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_ruby_run.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_ruby_text.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -16,6 +23,9 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/svg/layout_ng_svg_text.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_caption.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell_legacy.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -114,6 +124,9 @@ RecalcLayoutOverflowResult LayoutNGMixin<Base>::RecalcLayoutOverflow() {
       // changed, or if we are marked as dirty.
       if (should_recalculate_layout_overflow) {
         const PhysicalRect old_layout_overflow = fragment.LayoutOverflow();
+#if DCHECK_IS_ON()
+        NGPhysicalBoxFragment::AllowPostLayoutScope allow_post_layout_scope;
+#endif
         const PhysicalRect new_layout_overflow =
             NGLayoutOverflowCalculator::RecalculateLayoutOverflowForFragment(
                 fragment);
@@ -152,12 +165,32 @@ RecalcLayoutOverflowResult LayoutNGMixin<Base>::RecalcLayoutOverflow() {
   return {layout_overflow_changed, rebuild_fragment_tree};
 }
 
+static void RecalcFragmentLayoutOverflow(RecalcLayoutOverflowResult& result,
+                                         const NGPhysicalFragment& fragment) {
+  for (const auto& child : fragment.PostLayoutChildren()) {
+    if (child->GetLayoutObject()) {
+      if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(child.get())) {
+        if (LayoutBox* owner_box = box->MutableOwnerLayoutBox())
+          result.Unite(owner_box->RecalcLayoutOverflow());
+      }
+    } else {
+      // We enter this branch when the |child| is a fragmentainer.
+      RecalcFragmentLayoutOverflow(result, *child.get());
+    }
+  }
+}
+
 template <typename Base>
 RecalcLayoutOverflowResult LayoutNGMixin<Base>::RecalcChildLayoutOverflow() {
   DCHECK(RuntimeEnabledFeatures::LayoutNGLayoutOverflowRecalcEnabled());
   DCHECK(Base::ChildNeedsLayoutOverflowRecalc());
   Base::ClearChildNeedsLayoutOverflowRecalc();
 
+#if DCHECK_IS_ON()
+  // We use PostLayout methods to navigate the fragment tree and reach the
+  // corresponding LayoutObjects, so we need to use AllowPostLayoutScope here.
+  NGPhysicalBoxFragment::AllowPostLayoutScope allow_post_layout_scope;
+#endif
   RecalcLayoutOverflowResult result;
   for (auto& layout_result : Base::layout_results_) {
     const auto& fragment =
@@ -174,12 +207,7 @@ RecalcLayoutOverflowResult LayoutNGMixin<Base>::RecalcChildLayoutOverflow() {
       }
     }
 
-    for (const auto& child : fragment.PostLayoutChildren()) {
-      if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(child.get())) {
-        if (box->GetLayoutObject()->IsBox())
-          result.Unite(box->MutableOwnerLayoutBox()->RecalcLayoutOverflow());
-      }
-    }
+    RecalcFragmentLayoutOverflow(result, fragment);
   }
 
   return result;

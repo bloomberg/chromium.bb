@@ -14,13 +14,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_policy_builder.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/policy/server_backed_device_state.h"
+#include "chrome/browser/chromeos/policy/server_backed_state/server_backed_device_state.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -179,7 +178,7 @@ void DeviceDisablingManagerOOBETest::SetDeviceDisabled(bool disabled) {
   if (disabled) {
     dict->SetString(policy::kDeviceStateMode, policy::kDeviceStateModeDisabled);
   } else {
-    dict->Remove(policy::kDeviceStateMode, nullptr);
+    dict->RemoveKey(policy::kDeviceStateMode);
   }
   dict->SetString(policy::kDeviceStateManagementDomain, kEnrollmentDomain);
   dict->SetString(policy::kDeviceStateDisabledMessage, kDisabledMessage1);

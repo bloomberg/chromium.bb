@@ -10,12 +10,7 @@
 #include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_ref_count.h"
 #include "base/allocator/partition_allocator/random.h"
-#include "base/partition_alloc_buildflags.h"
 #include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
 
 // Prefetch *x into memory.
 #if defined(__clang__) || defined(COMPILER_GCC)
@@ -31,12 +26,6 @@ namespace internal {
 // boringssl/src/crypto/mem.c. (Copying and pasting is bad, but //base can't
 // depend on //third_party, and this is small enough.)
 ALWAYS_INLINE void SecureMemset(void* ptr, uint8_t value, size_t size) {
-#if defined(OS_WIN)
-  if (value == 0) {
-    SecureZeroMemory(ptr, size);
-    return;
-  }
-#endif  // defined(OS_WIN)
   memset(ptr, value, size);
 
   // As best as we can tell, this is sufficient to break any optimisations that

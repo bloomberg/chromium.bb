@@ -119,13 +119,15 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
 
   // PlatformWindowDelegate:
   void OnClosed() override;
-  void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
+  void OnWindowStateChanged(ui::PlatformWindowState old_state,
+                            ui::PlatformWindowState new_state) override;
   void OnCloseRequest() override;
   void OnWillDestroyAcceleratedWidget() override;
   void OnActivationChanged(bool active) override;
   absl::optional<gfx::Size> GetMinimumSizeForWindow() override;
   absl::optional<gfx::Size> GetMaximumSizeForWindow() override;
   SkPath GetWindowMaskForWindowShapeInPixels() override;
+  absl::optional<ui::MenuType> GetMenuType() override;
 
   // ui::WorkspaceExtensionDelegate:
   void OnWorkspaceChanged() override;
@@ -139,8 +141,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   DesktopNativeWidgetAura* desktop_native_widget_aura() {
     return desktop_native_widget_aura_;
   }
-
-  ui::PlatformWindowState window_show_state() { return old_state_; }
 
   // These are not general purpose methods and must be used with care. Please
   // make sure you understand the rounding direction before using.
@@ -179,11 +179,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   // children who we're responsible for closing when we CloseNow().
   DesktopWindowTreeHostPlatform* window_parent_ = nullptr;
   std::set<DesktopWindowTreeHostPlatform*> window_children_;
-
-  // Keep track of PlatformWindow state so that we would react correctly and set
-  // visibility only if the window was minimized or was unminimized from the
-  // normal state.
-  ui::PlatformWindowState old_state_ = ui::PlatformWindowState::kUnknown;
 
   // Used for tab dragging in move loop requests.
   WindowMoveClientPlatform window_move_client_;

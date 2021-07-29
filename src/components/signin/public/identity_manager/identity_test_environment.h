@@ -115,11 +115,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver,
   // in the firing of the IdentityManager and PrimaryAccountManager callbacks
   // for signin success. Blocks until the primary account is set. Returns the
   // CoreAccountInfo of the newly-set account.
-  CoreAccountInfo SetPrimaryAccount(const std::string& email);
-
-  // As above, but adds an "unconsented" primary account. See ./README.md for
-  // the distinction between primary and unconsented primary accounts.
-  CoreAccountInfo SetUnconsentedPrimaryAccount(const std::string& email);
+  CoreAccountInfo SetPrimaryAccount(const std::string& email,
+                                    ConsentLevel consent_level);
 
   // Sets a refresh token for the primary account (which must already be set).
   // Before updating the refresh token, blocks until refresh tokens are loaded.
@@ -145,14 +142,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver,
   // IdentityManager and PrimaryAccountManager callbacks for signin success. On
   // all platforms, this method blocks until the primary account is available.
   // Returns the AccountInfo of the newly-available account.
-  AccountInfo MakePrimaryAccountAvailable(const std::string& email);
-
-  // Like MakeAccountAvailable(), but adds an "unconsented" primary account. See
-  // ./README.md for the distinction between primary account and unconsented
-  // primary account.
-  // TODO(crbug.com/1046746): Rename/Refactor |*PrimaryAccount*| functions to
-  // take |ConsentLevel| instead.
-  AccountInfo MakeUnconsentedPrimaryAccountAvailable(const std::string& email);
+  AccountInfo MakePrimaryAccountAvailable(const std::string& email,
+                                          ConsentLevel consent_level);
 
   // Combination of MakeAccountAvailable() and SetCookieAccounts() for a single
   // account. It makes an account available for the given email address, and

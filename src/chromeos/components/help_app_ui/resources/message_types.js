@@ -11,7 +11,7 @@
  * Enum for message types.
  * @enum {string}
  */
-const Message = {
+export const Message = {
   OPEN_FEEDBACK_DIALOG: 'open-feedback-dialog',
   SHOW_PARENTAL_CONTROLS: 'show-parental-controls',
   ADD_OR_UPDATE_SEARCH_INDEX: 'add-or-update-search-index',
@@ -19,5 +19,7 @@ const Message = {
   FIND_IN_SEARCH_INDEX: 'find-in-search-index',
   CLOSE_BACKGROUND_PAGE: 'close-background-page',
   UPDATE_LAUNCHER_SEARCH_INDEX: 'update-launcher-search-index',
-  MAYBE_SHOW_DISCOVER_NOTIFICATION: 'maybe-show-discover-notification'
+  MAYBE_SHOW_DISCOVER_NOTIFICATION: 'maybe-show-discover-notification',
+  MAYBE_SHOW_RELEASE_NOTES_NOTIFICATION:
+      'maybe-show-release-notes-notification',
 };

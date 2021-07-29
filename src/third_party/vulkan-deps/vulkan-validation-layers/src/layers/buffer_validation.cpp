@@ -41,6 +41,7 @@
 #include "shader_validation.h"
 #include "descriptor_sets.h"
 #include "buffer_validation.h"
+#include "sync_utils.h"
 #include "sync_vuid_maps.h"
 
 // All VUID from copy_bufferimage_to_imagebuffer_common.txt
@@ -171,8 +172,8 @@ static const char *GetBufferImageCopyCommandVUID(std::string id, bool image_to_b
     // clang-format on
 
     uint8_t index = 0;
-    index |= (image_to_buffer) ? 0x1 : 0;
-    index |= (copy2) ? 0x2 : 0;
+    index |= uint8_t((image_to_buffer) ? 0x1 : 0);
+    index |= uint8_t((copy2) ? 0x2 : 0);
     return copy_imagebuffer_vuid.at(id).at(index);
 }
 
@@ -197,160 +198,34 @@ static VkImageSubresourceRange RangeFromLayers(const VkImageSubresourceLayers &s
     return subresource_range;
 }
 
-static VkImageSubresourceRange MakeImageFullRange(const VkImageCreateInfo &create_info) {
-    const auto format = create_info.format;
-    VkImageSubresourceRange init_range{0, 0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS};
-
-#ifdef VK_USE_PLATFORM_ANDROID_KHR
-    const VkExternalFormatANDROID *external_format_android = LvlFindInChain<VkExternalFormatANDROID>(&create_info);
-    bool is_external_format_conversion = (external_format_android != nullptr && external_format_android->externalFormat != 0);
-#else
-    bool is_external_format_conversion = false;
-#endif
-
-    if (FormatIsColor(format) || FormatIsMultiplane(format) || is_external_format_conversion) {
-        init_range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;  // Normalization will expand this for multiplane
-    } else {
-        init_range.aspectMask =
-            (FormatHasDepth(format) ? VK_IMAGE_ASPECT_DEPTH_BIT : 0) | (FormatHasStencil(format) ? VK_IMAGE_ASPECT_STENCIL_BIT : 0);
-    }
-    return NormalizeSubresourceRange(create_info, init_range);
-}
-
-IMAGE_STATE::IMAGE_STATE(VkDevice dev, VkImage img, const VkImageCreateInfo *pCreateInfo)
-    : BINDABLE(img, kVulkanObjectTypeImage),
-      safe_create_info(pCreateInfo),
-      createInfo(*safe_create_info.ptr()),
-      valid(false),
-      acquired(false),
-      shared_presentable(false),
-      layout_locked(false),
-      get_sparse_reqs_called(false),
-      sparse_metadata_required(false),
-      sparse_metadata_bound(false),
-      has_ahb_format(false),
-      is_swapchain_image(false),
-      ahb_format(0),
-      full_range{MakeImageFullRange(createInfo)},
-      create_from_swapchain(VK_NULL_HANDLE),
-      bind_swapchain(VK_NULL_HANDLE),
-      bind_swapchain_imageIndex(0),
-      range_encoder(full_range),
-      disjoint(false),
-      plane0_memory_requirements_checked(false),
-      plane1_memory_requirements_checked(false),
-      plane2_memory_requirements_checked(false),
-      subresource_encoder(full_range),
-      fragment_encoder(nullptr),
-      store_device_as_workaround(dev),  // TODO REMOVE WHEN encoder can be const
-      swapchain_fake_address(0U),
-      sparse_requirements{} {
-    if ((createInfo.sharingMode == VK_SHARING_MODE_CONCURRENT) && (createInfo.queueFamilyIndexCount > 0)) {
-        uint32_t *queue_family_indices = new uint32_t[createInfo.queueFamilyIndexCount];
-        for (uint32_t i = 0; i < createInfo.queueFamilyIndexCount; i++) {
-            queue_family_indices[i] = pCreateInfo->pQueueFamilyIndices[i];
-        }
-        createInfo.pQueueFamilyIndices = queue_family_indices;
-    }
-
-    if (createInfo.flags & VK_IMAGE_CREATE_SPARSE_BINDING_BIT) {
-        sparse = true;
-    }
-
-    auto *external_memory_info = LvlFindInChain<VkExternalMemoryImageCreateInfo>(pCreateInfo->pNext);
-    if (external_memory_info) {
-        external_memory_handle = external_memory_info->handleTypes;
-    }
-}
-
-bool IMAGE_STATE::IsCreateInfoEqual(const VkImageCreateInfo &other_createInfo) const {
-    bool is_equal = (createInfo.sType == other_createInfo.sType) && (createInfo.flags == other_createInfo.flags);
-    is_equal = is_equal && IsImageTypeEqual(other_createInfo) && IsFormatEqual(other_createInfo);
-    is_equal = is_equal && IsMipLevelsEqual(other_createInfo) && IsArrayLayersEqual(other_createInfo);
-    is_equal = is_equal && IsUsageEqual(other_createInfo) && IsInitialLayoutEqual(other_createInfo);
-    is_equal = is_equal && IsExtentEqual(other_createInfo) && IsTilingEqual(other_createInfo);
-    is_equal = is_equal && IsSamplesEqual(other_createInfo) && IsSharingModeEqual(other_createInfo);
-    return is_equal &&
-           ((createInfo.sharingMode == VK_SHARING_MODE_CONCURRENT) ? IsQueueFamilyIndicesEqual(other_createInfo) : true);
-}
-
-// Check image compatibility rules for VK_NV_dedicated_allocation_image_aliasing
-bool IMAGE_STATE::IsCreateInfoDedicatedAllocationImageAliasingCompatible(const VkImageCreateInfo &other_createInfo) const {
-    bool is_compatible = (createInfo.sType == other_createInfo.sType) && (createInfo.flags == other_createInfo.flags);
-    is_compatible = is_compatible && IsImageTypeEqual(other_createInfo) && IsFormatEqual(other_createInfo);
-    is_compatible = is_compatible && IsMipLevelsEqual(other_createInfo);
-    is_compatible = is_compatible && IsUsageEqual(other_createInfo) && IsInitialLayoutEqual(other_createInfo);
-    is_compatible = is_compatible && IsSamplesEqual(other_createInfo) && IsSharingModeEqual(other_createInfo);
-    is_compatible = is_compatible &&
-                    ((createInfo.sharingMode == VK_SHARING_MODE_CONCURRENT) ? IsQueueFamilyIndicesEqual(other_createInfo) : true);
-    is_compatible = is_compatible && IsTilingEqual(other_createInfo);
-
-    is_compatible = is_compatible && createInfo.extent.width <= other_createInfo.extent.width &&
-                    createInfo.extent.height <= other_createInfo.extent.height &&
-                    createInfo.extent.depth <= other_createInfo.extent.depth &&
-                    createInfo.arrayLayers <= other_createInfo.arrayLayers;
-    return is_compatible;
-}
-
-bool IMAGE_STATE::IsCompatibleAliasing(IMAGE_STATE *other_image_state) const {
-    if (!is_swapchain_image && !other_image_state->is_swapchain_image &&
-        !(createInfo.flags & other_image_state->createInfo.flags & VK_IMAGE_CREATE_ALIAS_BIT)) {
-        return false;
-    }
-    if ((create_from_swapchain == VK_NULL_HANDLE) && binding.mem_state &&
-        (binding.mem_state == other_image_state->binding.mem_state) && (binding.offset == other_image_state->binding.offset) &&
-        IsCreateInfoEqual(other_image_state->createInfo)) {
-        return true;
-    }
-    if ((bind_swapchain == other_image_state->bind_swapchain) && (bind_swapchain != VK_NULL_HANDLE)) {
-        return true;
-    }
-    return false;
-}
-
-IMAGE_VIEW_STATE::IMAGE_VIEW_STATE(const std::shared_ptr<IMAGE_STATE> &im, VkImageView iv, const VkImageViewCreateInfo *ci)
-    : BASE_NODE(iv, kVulkanObjectTypeImageView),
-      create_info(*ci),
-      normalized_subresource_range(NormalizeSubresourceRange(*im, ci->subresourceRange)),
-      range_generator(im->subresource_encoder, normalized_subresource_range),
-      samplerConversion(VK_NULL_HANDLE),
-      image_state(im) {
-    auto *conversion_info = LvlFindInChain<VkSamplerYcbcrConversionInfo>(create_info.pNext);
-    if (conversion_info) samplerConversion = conversion_info->conversion;
-    if (image_state) {
-        // A light normalization of the createInfo range
-        auto &sub_res_range = create_info.subresourceRange;
-        sub_res_range.levelCount = ResolveRemainingLevels(&sub_res_range, image_state->createInfo.mipLevels);
-        sub_res_range.layerCount = ResolveRemainingLayers(&sub_res_range, image_state->createInfo.arrayLayers);
-
-        // Cache a full normalization (for "full image/whole image" comparisons)
-        // normalized_subresource_range = NormalizeSubresourceRange(*image_state, ci->subresourceRange);
-        samples = image_state->createInfo.samples;
-
-        if (image_state->has_ahb_format) {
-            // When the image has a external format the views format must be VK_FORMAT_UNDEFINED and it is required to use a sampler
-            // Ycbcr conversion. Thus we can't extract any meaningful information from the format parameter. As a Sampler Ycbcr
-            // conversion must be used the shader type is always float.
-            descriptor_format_bits = DESCRIPTOR_REQ_COMPONENT_TYPE_FLOAT;
-        } else {
-            descriptor_format_bits = DescriptorRequirementsBitsFromFormat(create_info.format);
-        }
-        image_state->AddParent(this);
-    }
-}
-
-static VkImageLayout NormalizeImageLayout(VkImageLayout layout, VkImageLayout non_normal, VkImageLayout normal) {
-    return (layout == non_normal) ? normal : layout;
-}
-
 static VkImageLayout NormalizeDepthImageLayout(VkImageLayout layout) {
-    return NormalizeImageLayout(layout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
-                                VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL);
+    switch (layout) {
+        case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+        case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
+            return VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL;
+
+        case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+        case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
+            return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+
+        default:
+            return layout;
+    }
 }
 
 static VkImageLayout NormalizeStencilImageLayout(VkImageLayout layout) {
-    return NormalizeImageLayout(layout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
-                                VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL);
+    switch (layout) {
+        case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+        case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
+            return VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL;
+
+        case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+        case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
+            return VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL;
+
+        default:
+            return layout;
+    }
 }
 
 static VkImageLayout NormalizeSynchronization2Layout(const VkImageAspectFlags aspect_mask, VkImageLayout layout) {
@@ -385,8 +260,12 @@ static bool ImageLayoutMatches(const VkImageAspectFlags aspect_mask, VkImageLayo
         b = NormalizeSynchronization2Layout(aspect_mask, b);
         matches = (a == b);
         if (!matches) {
-            // Relaxed rules when referencing *only* the depth or stencil aspects
-            if (aspect_mask == VK_IMAGE_ASPECT_DEPTH_BIT) {
+            // Relaxed rules when referencing *only* the depth or stencil aspects.
+            // When accessing both, normalize layouts for aspects separately.
+            if (aspect_mask == (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT)) {
+                matches = NormalizeDepthImageLayout(a) == NormalizeDepthImageLayout(b) &&
+                          NormalizeStencilImageLayout(a) == NormalizeStencilImageLayout(b);
+            } else if (aspect_mask == VK_IMAGE_ASPECT_DEPTH_BIT) {
                 matches = NormalizeDepthImageLayout(a) == NormalizeDepthImageLayout(b);
             } else if (aspect_mask == VK_IMAGE_ASPECT_STENCIL_BIT) {
                 matches = NormalizeStencilImageLayout(a) == NormalizeStencilImageLayout(b);
@@ -498,7 +377,7 @@ bool CoreChecks::FindLayouts(const IMAGE_STATE &image_state, std::vector<VkImage
 void CoreChecks::SetImageLayout(CMD_BUFFER_STATE *cb_node, const IMAGE_STATE &image_state,
                                 const VkImageSubresourceRange &image_subresource_range, VkImageLayout layout,
                                 VkImageLayout expected_layout) {
-    auto *subresource_map = GetImageSubresourceLayoutMap(cb_node, image_state);
+    auto *subresource_map = cb_node->GetImageSubresourceLayoutMap(image_state);
     assert(subresource_map);  // the non-const getter must return a valid pointer
     if (subresource_map->SetSubresourceRangeLayout(*cb_node, image_subresource_range, layout, expected_layout)) {
         cb_node->image_layout_change_count++;  // Change the version of this data to force revalidation
@@ -506,7 +385,7 @@ void CoreChecks::SetImageLayout(CMD_BUFFER_STATE *cb_node, const IMAGE_STATE &im
     for (const auto *alias_state : image_state.aliasing_images) {
         assert(alias_state);
         // The map state of the aliases should all be in sync, so no need to check the return value
-        subresource_map = GetImageSubresourceLayoutMap(cb_node, *alias_state);
+        subresource_map = cb_node->GetImageSubresourceLayoutMap(*alias_state);
         assert(subresource_map);
         subresource_map->SetSubresourceRangeLayout(*cb_node, image_subresource_range, layout, expected_layout);
     }
@@ -518,11 +397,11 @@ void CoreChecks::SetImageViewInitialLayout(CMD_BUFFER_STATE *cb_node, const IMAG
         return;
     }
     IMAGE_STATE *image_state = view_state.image_state.get();
-    auto *subresource_map = GetImageSubresourceLayoutMap(cb_node, *image_state);
+    auto *subresource_map = cb_node->GetImageSubresourceLayoutMap(*image_state);
     subresource_map->SetSubresourceRangeInitialLayout(*cb_node, layout, view_state);
     for (const auto *alias_state : image_state->aliasing_images) {
         assert(alias_state);
-        subresource_map = GetImageSubresourceLayoutMap(cb_node, *alias_state);
+        subresource_map = cb_node->GetImageSubresourceLayoutMap(*alias_state);
         subresource_map->SetSubresourceRangeInitialLayout(*cb_node, layout, view_state);
     }
 }
@@ -530,14 +409,14 @@ void CoreChecks::SetImageViewInitialLayout(CMD_BUFFER_STATE *cb_node, const IMAG
 // Set the initial image layout for a passed non-normalized subresource range
 void CoreChecks::SetImageInitialLayout(CMD_BUFFER_STATE *cb_node, const IMAGE_STATE &image_state,
                                        const VkImageSubresourceRange &range, VkImageLayout layout) {
-    auto *subresource_map = GetImageSubresourceLayoutMap(cb_node, image_state);
+    auto *subresource_map = cb_node->GetImageSubresourceLayoutMap(image_state);
     assert(subresource_map);
-    subresource_map->SetSubresourceRangeInitialLayout(*cb_node, NormalizeSubresourceRange(image_state, range), layout);
+    subresource_map->SetSubresourceRangeInitialLayout(*cb_node, image_state.NormalizeSubresourceRange(range), layout);
     for (const auto *alias_state : image_state.aliasing_images) {
         assert(alias_state);
-        subresource_map = GetImageSubresourceLayoutMap(cb_node, *alias_state);
+        subresource_map = cb_node->GetImageSubresourceLayoutMap(*alias_state);
         assert(subresource_map);
-        subresource_map->SetSubresourceRangeInitialLayout(*cb_node, NormalizeSubresourceRange(*alias_state, range), layout);
+        subresource_map->SetSubresourceRangeInitialLayout(*cb_node, alias_state->NormalizeSubresourceRange(range), layout);
     }
 }
 
@@ -772,37 +651,56 @@ bool CoreChecks::VerifyFramebufferAndRenderPassLayouts(RenderPassCreateVersion r
                 attachment_stencil_initial_layout = attachment_description_stencil_layout->stencilInitialLayout;
             }
 
-            // Cast pCB to const because we don't want to create entries that don't exist here (in case the key changes to something
-            // in common with the non-const version.)
-            const ImageSubresourceLayoutMap *subresource_map = (attachment_initial_layout != VK_IMAGE_LAYOUT_UNDEFINED)
-                                                                   ? GetImageSubresourceLayoutMap(const_p_cb, image)
-                                                                   : nullptr;
+            const ImageSubresourceLayoutMap *subresource_map = nullptr;
+            bool has_queried_map = false;
+            bool subres_skip = false;
 
-            if (subresource_map) {  // If no layout information for image yet, will be checked at QueueSubmit time
-                LayoutUseCheckAndMessage layout_check(subresource_map);
-                bool subres_skip = false;
-                auto pos = subresource_map->Find(view_state->normalized_subresource_range);
-                // IncrementInterval skips over all the subresources that have the same state as we just checked, incrementing to
-                // the next "constant value" range
-                for (; !(pos.AtEnd()) && !subres_skip; pos.IncrementInterval()) {
-                    const VkImageSubresource &subres = pos->subresource;
-
-                    // Allow for differing depth and stencil layouts
-                    VkImageLayout check_layout = attachment_initial_layout;
-                    if (subres.aspectMask & VK_IMAGE_ASPECT_STENCIL_BIT) check_layout = attachment_stencil_initial_layout;
-
-                    if (!layout_check.Check(subres, check_layout, pos->current_layout, pos->initial_layout)) {
-                        subres_skip |= LogError(
-                            device, kVUID_Core_DrawState_InvalidRenderpass,
-                            "You cannot start a render pass using attachment %u where the render pass initial layout is %s "
-                            "and the %s layout of the attachment is %s. The layouts must match, or the render "
-                            "pass initial layout for the attachment must be VK_IMAGE_LAYOUT_UNDEFINED",
-                            i, string_VkImageLayout(check_layout), layout_check.message, string_VkImageLayout(layout_check.layout));
-                    }
+            for (uint32_t aspect_index = 0; aspect_index < 32; aspect_index++) {
+                VkImageAspectFlags test_aspect = 1u << aspect_index;
+                if ((view_state->normalized_subresource_range.aspectMask & test_aspect) == 0) {
+                    continue;
                 }
 
-                skip |= subres_skip;
+                // Allow for differing depth and stencil layouts
+                VkImageLayout check_layout = attachment_initial_layout;
+                if (test_aspect == VK_IMAGE_ASPECT_STENCIL_BIT) {
+                    check_layout = attachment_stencil_initial_layout;
+                }
+
+                if (check_layout != VK_IMAGE_LAYOUT_UNDEFINED) {  // If no layout information for image yet, will be checked at QueueSubmit time
+                    if (!has_queried_map) {
+                        // Cast pCB to const because we don't want to create entries that don't exist here (in case the key changes to something
+                        // in common with the non-const version.)
+                        // The lookup is expensive, so cache it.
+                        subresource_map = const_p_cb->GetImageSubresourceLayoutMap(image);
+                        has_queried_map = true;
+                    }
+
+                    if (subresource_map) {
+                        auto normalized_range = view_state->normalized_subresource_range;
+                        normalized_range.aspectMask = test_aspect;
+                        auto pos = subresource_map->Find(normalized_range);
+                        LayoutUseCheckAndMessage layout_check(subresource_map, test_aspect);
+
+                        // IncrementInterval skips over all the subresources that have the same state as we just checked, incrementing to the next "constant value" range
+                        for (; !(pos.AtEnd()) && !subres_skip; pos.IncrementInterval()) {
+                            const VkImageSubresource &subres = pos->subresource;
+
+                            if (!layout_check.Check(subres, check_layout, pos->current_layout, pos->initial_layout)) {
+                                subres_skip |= LogError(
+                                    device, kVUID_Core_DrawState_InvalidRenderpass,
+                                    "You cannot start a render pass using attachment %u where the render pass initial layout is %s "
+                                    "and the %s layout of the attachment is %s. The layouts must match, or the render "
+                                    "pass initial layout for the attachment must be VK_IMAGE_LAYOUT_UNDEFINED",
+                                    i, string_VkImageLayout(check_layout), layout_check.message,
+                                    string_VkImageLayout(layout_check.layout));
+                            }
+                        }
+                    }
+                }
             }
+
+            skip |= subres_skip;
 
             ValidateRenderPassLayoutAgainstFramebufferImageUsage(rp_version, attachment_initial_layout, image, image_view,
                                                                  framebuffer, render_pass, i, "initial layout");
@@ -1111,30 +1009,42 @@ bool CoreChecks::ValidateBarriersToImages(const Location &outer_loc, const CMD_B
                 }
             }
 
-            const auto *subresource_map = GetImageSubresourceLayoutMap(cb_state, img_barrier.image);
+            const auto *subresource_map = cb_state->GetImageSubresourceLayoutMap(img_barrier.image);
             if (img_barrier.oldLayout == VK_IMAGE_LAYOUT_UNDEFINED) {
                 // TODO: Set memory invalid which is in mem_tracker currently
                 // Not sure if this needs to be in the ForRange traversal, pulling it out as it is currently invariant with
                 // subresource.
             } else if (subresource_map && !QueueFamilyIsExternal(img_barrier.srcQueueFamilyIndex)) {
                 bool subres_skip = false;
-                LayoutUseCheckAndMessage layout_check(subresource_map);
-                VkImageSubresourceRange normalized_isr = NormalizeSubresourceRange(*image_state, img_barrier.subresourceRange);
-                // IncrementInterval skips over all the subresources that have the same state as we just checked, incrementing to
-                // the next "constant value" range
-                for (auto pos = subresource_map->Find(normalized_isr); !(pos.AtEnd()) && !subres_skip; pos.IncrementInterval()) {
-                    const auto &value = *pos;
-                    auto old_layout =
-                        NormalizeSynchronization2Layout(img_barrier.subresourceRange.aspectMask, img_barrier.oldLayout);
-                    if (!layout_check.Check(value.subresource, old_layout, value.current_layout, value.initial_layout)) {
-                        const auto &vuid = GetImageBarrierVUID(loc, ImageError::kConflictingLayout);
-                        subres_skip = LogError(cb_state->commandBuffer(), vuid,
-                                               "%s %s cannot transition the layout of aspect=%d level=%d layer=%d from %s when the "
-                                               "%s layout is %s.",
-                                               loc.Message().c_str(), report_data->FormatHandle(img_barrier.image).c_str(),
-                                               value.subresource.aspectMask, value.subresource.mipLevel,
-                                               value.subresource.arrayLayer, string_VkImageLayout(img_barrier.oldLayout),
-                                               layout_check.message, string_VkImageLayout(layout_check.layout));
+
+                // Validate aspects in isolation.
+                // This is required when handling separate depth-stencil layouts.
+                for (uint32_t aspect_index = 0; aspect_index < 32; aspect_index++) {
+                    VkImageAspectFlags test_aspect = 1u << aspect_index;
+                    if ((img_barrier.subresourceRange.aspectMask & test_aspect) == 0) {
+                        continue;
+                    }
+
+                    LayoutUseCheckAndMessage layout_check(subresource_map, test_aspect);
+                    auto normalized_isr = image_state->NormalizeSubresourceRange(img_barrier.subresourceRange);
+                    normalized_isr.aspectMask = test_aspect;
+
+                    // IncrementInterval skips over all the subresources that have the same state as we just checked, incrementing to the next "constant value" range
+                    for (auto pos = subresource_map->Find(normalized_isr); !(pos.AtEnd()) && !subres_skip; pos.IncrementInterval()) {
+                        const auto &value = *pos;
+                        auto old_layout =
+                            NormalizeSynchronization2Layout(test_aspect, img_barrier.oldLayout);
+                        if (!layout_check.Check(value.subresource, old_layout, value.current_layout, value.initial_layout)) {
+                            const auto &vuid = GetImageBarrierVUID(loc, ImageError::kConflictingLayout);
+                            subres_skip =
+                                LogError(cb_state->commandBuffer(), vuid,
+                                         "%s %s cannot transition the layout of aspect=%d level=%d layer=%d from %s when the "
+                                         "%s layout is %s.",
+                                         loc.Message().c_str(), report_data->FormatHandle(img_barrier.image).c_str(),
+                                         value.subresource.aspectMask, value.subresource.mipLevel, value.subresource.arrayLayer,
+                                         string_VkImageLayout(img_barrier.oldLayout), layout_check.message,
+                                         string_VkImageLayout(layout_check.layout));
+                        }
                     }
                 }
                 skip |= subres_skip;
@@ -1185,22 +1095,19 @@ template <typename Barrier, typename TransferBarrier>
 bool CoreChecks::ValidateQFOTransferBarrierUniqueness(const Location &loc, const CMD_BUFFER_STATE *cb_state, const Barrier &barrier,
                                                       const QFOTransferBarrierSets<TransferBarrier> &barrier_sets) const {
     bool skip = false;
-    auto pool = cb_state->command_pool.get();
     const char *handle_name = TransferBarrier::HandleName();
     const char *transfer_type = nullptr;
     if (!IsTransferOp(barrier)) {
         return skip;
     }
     const TransferBarrier *barrier_record = nullptr;
-    if (TempIsReleaseOp<Barrier, true /* Assume IsTransfer */>(pool, barrier) &&
-        !QueueFamilyIsExternal(barrier.dstQueueFamilyIndex)) {
+    if (cb_state->IsReleaseOp(barrier) && !QueueFamilyIsExternal(barrier.dstQueueFamilyIndex)) {
         const auto found = barrier_sets.release.find(barrier);
         if (found != barrier_sets.release.cend()) {
             barrier_record = &(*found);
             transfer_type = "releasing";
         }
-    } else if (IsAcquireOp<Barrier, true /*Assume IsTransfer */>(pool, barrier) &&
-               !QueueFamilyIsExternal(barrier.srcQueueFamilyIndex)) {
+    } else if (cb_state->IsAcquireOp(barrier) && !QueueFamilyIsExternal(barrier.srcQueueFamilyIndex)) {
         const auto found = barrier_sets.acquire.find(barrier);
         if (found != barrier_sets.acquire.cend()) {
             barrier_record = &(*found);
@@ -1253,13 +1160,10 @@ const BUFFER_STATE *BarrierHandleState(const ValidationStateTracker &device_stat
 template <typename Barrier, typename TransferBarrier>
 void CoreChecks::RecordBarrierValidationInfo(const Location &loc, CMD_BUFFER_STATE *cb_state, const Barrier &barrier,
                                              QFOTransferBarrierSets<TransferBarrier> &barrier_sets) {
-    auto pool = cb_state->command_pool.get();
     if (IsTransferOp(barrier)) {
-        if (TempIsReleaseOp<Barrier, true /* Assume IsTransfer*/>(pool, barrier) &&
-            !QueueFamilyIsExternal(barrier.dstQueueFamilyIndex)) {
+        if (cb_state->IsReleaseOp(barrier) && !QueueFamilyIsExternal(barrier.dstQueueFamilyIndex)) {
             barrier_sets.release.emplace(barrier);
-        } else if (IsAcquireOp<Barrier, true /*Assume IsTransfer */>(pool, barrier) &&
-                   !QueueFamilyIsExternal(barrier.srcQueueFamilyIndex)) {
+        } else if (cb_state->IsAcquireOp(barrier) && !QueueFamilyIsExternal(barrier.srcQueueFamilyIndex)) {
             barrier_sets.acquire.emplace(barrier);
         }
     }
@@ -1287,51 +1191,6 @@ void CoreChecks::RecordBarrierValidationInfo(const Location &loc, CMD_BUFFER_STA
         }
     }
 }
-
-// Check if all barriers are of a given operation type.
-template <typename Barrier, typename OpCheck>
-bool AllTransferOp(const COMMAND_POOL_STATE *pool, OpCheck &op_check, uint32_t count, const Barrier *barriers) {
-    if (!pool) return false;
-
-    for (uint32_t b = 0; b < count; b++) {
-        if (!op_check(pool, barriers[b])) return false;
-    }
-    return true;
-}
-
-// Look at the barriers to see if we they are all release or all acquire, the result impacts queue properties validation
-template <typename BufBarrier, typename ImgBarrier>
-BarrierOperationsType CoreChecks::ComputeBarrierOperationsType(const CMD_BUFFER_STATE *cb_state, uint32_t buffer_barrier_count,
-                                                               const BufBarrier *buffer_barriers, uint32_t image_barrier_count,
-                                                               const ImgBarrier *image_barriers) const {
-    auto pool = cb_state->command_pool.get();
-    BarrierOperationsType op_type = kGeneral;
-
-    // Look at the barrier details only if they exist
-    // Note: AllTransferOp returns true for count == 0
-    if ((buffer_barrier_count + image_barrier_count) != 0) {
-        if (AllTransferOp(pool, TempIsReleaseOp<BufBarrier>, buffer_barrier_count, buffer_barriers) &&
-            AllTransferOp(pool, TempIsReleaseOp<ImgBarrier>, image_barrier_count, image_barriers)) {
-            op_type = kAllRelease;
-        } else if (AllTransferOp(pool, IsAcquireOp<BufBarrier>, buffer_barrier_count, buffer_barriers) &&
-                   AllTransferOp(pool, IsAcquireOp<ImgBarrier>, image_barrier_count, image_barriers)) {
-            op_type = kAllAcquire;
-        }
-    }
-
-    return op_type;
-}
-// explictly instantiate so these can be used in core_validation.cpp
-template BarrierOperationsType CoreChecks::ComputeBarrierOperationsType(const CMD_BUFFER_STATE *cb_state,
-                                                                        uint32_t buffer_barrier_count,
-                                                                        const VkBufferMemoryBarrier *buffer_barriers,
-                                                                        uint32_t image_barrier_count,
-                                                                        const VkImageMemoryBarrier *image_barriers) const;
-template BarrierOperationsType CoreChecks::ComputeBarrierOperationsType(const CMD_BUFFER_STATE *cb_state,
-                                                                        uint32_t buffer_barrier_count,
-                                                                        const VkBufferMemoryBarrier2KHR *buffer_barriers,
-                                                                        uint32_t image_barrier_count,
-                                                                        const VkImageMemoryBarrier2KHR *image_barriers) const;
 
 // Verify image barrier image state and that the image is consistent with FB image
 template <typename ImgBarrier>
@@ -1517,7 +1376,7 @@ bool CoreChecks::ValidateQueuedQFOTransferBarriers(
     const CMD_BUFFER_STATE *cb_state, QFOTransferCBScoreboards<TransferBarrier> *scoreboards,
     const GlobalQFOTransferBarrierMap<TransferBarrier> &global_release_barriers) const {
     bool skip = false;
-    const auto &cb_barriers = GetQFOBarrierSets(cb_state, TransferBarrier());
+    const auto &cb_barriers = cb_state->GetQFOBarrierSets(TransferBarrier());
     const char *barrier_name = TransferBarrier::BarrierName();
     const char *handle_name = TransferBarrier::HandleName();
     // No release should have an extant duplicate (WARNING)
@@ -1612,7 +1471,7 @@ void CoreChecks::TransitionImageLayouts(CMD_BUFFER_STATE *cb_state, uint32_t bar
     // However, we still need to record initial layout for the "initial layout" validation
     for (uint32_t i = 0; i < barrier_count; i++) {
         const auto &mem_barrier = barriers[i];
-        const bool is_release_op = IsReleaseOp(cb_state, mem_barrier);
+        const bool is_release_op = cb_state->IsReleaseOp(mem_barrier);
         auto *image_state = GetImageState(mem_barrier.image);
         if (image_state) {
             RecordTransitionImageLayout(cb_state, image_state, mem_barrier, is_release_op);
@@ -1635,7 +1494,7 @@ void CoreChecks::RecordTransitionImageLayout(CMD_BUFFER_STATE *cb_state, const I
             return;
         }
     }
-    VkImageSubresourceRange normalized_isr = NormalizeSubresourceRange(*image_state, mem_barrier.subresourceRange);
+    auto normalized_isr = image_state->NormalizeSubresourceRange(mem_barrier.subresourceRange);
     const auto &image_create_info = image_state->createInfo;
 
     // Special case for 3D images with VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT flag bit, where <extent.depth> and
@@ -1671,7 +1530,7 @@ bool CoreChecks::VerifyImageLayout(const CMD_BUFFER_STATE *cb_node, const IMAGE_
     const auto image = image_state->image();
     bool skip = false;
 
-    const auto *subresource_map = GetImageSubresourceLayoutMap(cb_node, image);
+    const auto *subresource_map = cb_node->GetImageSubresourceLayoutMap(image);
     if (subresource_map) {
         bool subres_skip = false;
         LayoutUseCheckAndMessage layout_check(subresource_map, aspect_mask);
@@ -1847,10 +1706,10 @@ bool CoreChecks::ValidateCreateImageViewANDROID(const VkImageViewCreateInfo *cre
         uint64_t external_format = 0;
         const VkSamplerYcbcrConversionInfo *ycbcr_conv_info = LvlFindInChain<VkSamplerYcbcrConversionInfo>(create_info->pNext);
         if (ycbcr_conv_info != nullptr) {
-            VkSamplerYcbcrConversion conv_handle = ycbcr_conv_info->conversion;
-            if (ycbcr_conversion_ahb_fmt_map.find(conv_handle) != ycbcr_conversion_ahb_fmt_map.end()) {
+            auto ycbcr_state = GetSamplerYcbcrConversionState(ycbcr_conv_info->conversion);
+            if (ycbcr_state) {
                 conv_found = true;
-                external_format = ycbcr_conversion_ahb_fmt_map.at(conv_handle);
+                external_format = ycbcr_state->external_format;
             }
         }
         if ((!conv_found) || (external_format != image_state->ahb_format)) {
@@ -1882,7 +1741,7 @@ bool CoreChecks::ValidateGetImageSubresourceLayoutANDROID(const VkImage image) c
 
     const IMAGE_STATE *image_state = GetImageState(image);
     if (image_state != nullptr) {
-        if (image_state->external_ahb && (0 == image_state->GetBoundMemory().size())) {
+        if (image_state->IsExternalAHB() && (0 == image_state->GetBoundMemory().size())) {
             skip |= LogError(image, "VUID-vkGetImageSubresourceLayout-image-01895",
                              "vkGetImageSubresourceLayout(): Attempt to query layout from an image created with "
                              "VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID handleType which has not yet been "
@@ -2310,8 +2169,7 @@ bool CoreChecks::PreCallValidateDestroyImage(VkDevice device, VkImage image, con
     bool skip = false;
     if (image_state) {
         if (image_state->is_swapchain_image) {
-            // TODO - Add VUID when headers are upstreamed
-            skip |= LogError(device, "UNASSIGNED-vkDestroyImage-image",
+            skip |= LogError(device, "VUID-vkDestroyImage-image-04882",
                              "vkDestroyImage(): %s is a presentable image and it is controlled by the implementation and is "
                              "destroyed with vkDestroySwapchainKHR.",
                              report_data->FormatHandle(image_state->image()).c_str());
@@ -2392,11 +2250,11 @@ bool CoreChecks::VerifyClearImageLayout(const CMD_BUFFER_STATE *cb_node, const I
     }
 
     // Cast to const to prevent creation at validate time.
-    const auto *subresource_map = GetImageSubresourceLayoutMap(cb_node, image_state->image());
+    const auto *subresource_map = cb_node->GetImageSubresourceLayoutMap(image_state->image());
     if (subresource_map) {
         bool subres_skip = false;
         LayoutUseCheckAndMessage layout_check(subresource_map);
-        VkImageSubresourceRange normalized_isr = NormalizeSubresourceRange(*image_state, range);
+        auto normalized_isr = image_state->NormalizeSubresourceRange(range);
         // IncrementInterval skips over all the subresources that have the same state as we just checked, incrementing to
         // the next "constant value" range
         for (auto pos = subresource_map->Find(normalized_isr); !(pos.AtEnd()) && !subres_skip; pos.IncrementInterval()) {
@@ -2824,7 +2682,7 @@ bool CoreChecks::ValidateCopyBufferImageTransferGranularityRequirements(const CM
     bool skip = false;
     VkExtent3D granularity = GetScaledItg(cb_node, img);
     skip |= CheckItgOffset(cb_node, &region->imageOffset, &granularity, i, function, "imageOffset", vuid);
-    VkExtent3D subresource_extent = GetImageSubresourceExtent(img, &region->imageSubresource);
+    VkExtent3D subresource_extent = img->GetSubresourceExtent(region->imageSubresource);
     skip |= CheckItgExtent(cb_node, &region->imageExtent, &region->imageOffset, &granularity, &subresource_extent,
                            img->createInfo.imageType, i, function, "imageExtent", vuid);
     return skip;
@@ -2844,7 +2702,7 @@ bool CoreChecks::ValidateCopyImageTransferGranularityRequirements(const CMD_BUFF
     VkExtent3D granularity = GetScaledItg(cb_node, src_img);
     vuid = is_2khr ? "VUID-VkCopyImageInfo2KHR-srcOffset-01783" : "VUID-vkCmdCopyImage-srcOffset-01783";
     skip |= CheckItgOffset(cb_node, &region->srcOffset, &granularity, i, function, "srcOffset", vuid);
-    VkExtent3D subresource_extent = GetImageSubresourceExtent(src_img, &region->srcSubresource);
+    VkExtent3D subresource_extent = src_img->GetSubresourceExtent(region->srcSubresource);
     const VkExtent3D extent = region->extent;
     vuid = is_2khr ? "VUID-VkCopyImageInfo2KHR-srcOffset-01783" : "VUID-vkCmdCopyImage-srcOffset-01783";
     skip |= CheckItgExtent(cb_node, &extent, &region->srcOffset, &granularity, &subresource_extent, src_img->createInfo.imageType,
@@ -2857,7 +2715,7 @@ bool CoreChecks::ValidateCopyImageTransferGranularityRequirements(const CMD_BUFF
     // Adjust dest extent, if necessary
     const VkExtent3D dest_effective_extent =
         GetAdjustedDestImageExtent(src_img->createInfo.format, dst_img->createInfo.format, extent);
-    subresource_extent = GetImageSubresourceExtent(dst_img, &region->dstSubresource);
+    subresource_extent = dst_img->GetSubresourceExtent(region->dstSubresource);
     vuid = is_2khr ? "VUID-VkCopyImageInfo2KHR-dstOffset-01784" : "VUID-vkCmdCopyImage-dstOffset-01784";
     skip |= CheckItgExtent(cb_node, &dest_effective_extent, &region->dstOffset, &granularity, &subresource_extent,
                            dst_img->createInfo.imageType, i, function, "extent", vuid);
@@ -2936,7 +2794,7 @@ bool CoreChecks::ValidateImageCopyData(const uint32_t regionCount, const ImageCo
                                  func_name, i, region.srcOffset.x, region.srcOffset.y, block_size.width, block_size.height);
             }
 
-            const VkExtent3D mip_extent = GetImageSubresourceExtent(src_state, &(region.srcSubresource));
+            const VkExtent3D mip_extent = src_state->GetSubresourceExtent(region.srcSubresource);
             if ((SafeModulo(src_copy_extent.width, block_size.width) != 0) &&
                 (src_copy_extent.width + region.srcOffset.x != mip_extent.width)) {
                 vuid = is_2khr ? "VUID-VkCopyImageInfo2KHR-srcImage-01728" : "VUID-vkCmdCopyImage-srcImage-01728";
@@ -3049,7 +2907,7 @@ bool CoreChecks::ValidateImageCopyData(const uint32_t regionCount, const ImageCo
                                  func_name, i, region.dstOffset.x, region.dstOffset.y, block_size.width, block_size.height);
             }
 
-            const VkExtent3D mip_extent = GetImageSubresourceExtent(dst_state, &(region.dstSubresource));
+            const VkExtent3D mip_extent = dst_state->GetSubresourceExtent(region.dstSubresource);
             if ((SafeModulo(dst_copy_extent.width, block_size.width) != 0) &&
                 (dst_copy_extent.width + region.dstOffset.x != mip_extent.width)) {
                 vuid = is_2khr ? "VUID-VkCopyImageInfo2KHR-dstImage-01732" : "VUID-vkCmdCopyImage-dstImage-01732";
@@ -3264,7 +3122,7 @@ bool CoreChecks::ValidateCmdCopyImage(VkCommandBuffer commandBuffer, VkImage src
         }
 
         // Each dimension offset + extent limits must fall with image subresource extent
-        VkExtent3D subresource_extent = GetImageSubresourceExtent(src_image_state, &(region.srcSubresource));
+        VkExtent3D subresource_extent = src_image_state->GetSubresourceExtent(region.srcSubresource);
         if (slice_override) src_copy_extent.depth = depth_slices;
         uint32_t extent_check = ExceedsBounds(&(region.srcOffset), &src_copy_extent, &subresource_extent);
         if (extent_check & kXBit) {
@@ -3291,7 +3149,7 @@ bool CoreChecks::ValidateCmdCopyImage(VkCommandBuffer commandBuffer, VkImage src
         }
 
         // Adjust dest extent if necessary
-        subresource_extent = GetImageSubresourceExtent(dst_image_state, &(region.dstSubresource));
+        subresource_extent = dst_image_state->GetSubresourceExtent(region.dstSubresource);
         if (slice_override) dst_copy_extent.depth = depth_slices;
 
         extent_check = ExceedsBounds(&(region.dstOffset), &dst_copy_extent, &subresource_extent);
@@ -3931,7 +3789,7 @@ bool CoreChecks::ValidateCmdResolveImage(VkCommandBuffer commandBuffer, VkImage 
             }
 
             // Each srcImage dimension offset + extent limits must fall with image subresource extent
-            VkExtent3D subresource_extent = GetImageSubresourceExtent(src_image_state, &src_subresource);
+            VkExtent3D subresource_extent = src_image_state->GetSubresourceExtent(src_subresource);
             // MipLevel bound is checked already and adding extra errors with a "subresource extent of zero" is confusing to
             // developer
             if (src_subresource.mipLevel < src_image_state->createInfo.mipLevels) {
@@ -3971,7 +3829,7 @@ bool CoreChecks::ValidateCmdResolveImage(VkCommandBuffer commandBuffer, VkImage 
             }
 
             // Each dstImage dimension offset + extent limits must fall with image subresource extent
-            subresource_extent = GetImageSubresourceExtent(dst_image_state, &dst_subresource);
+            subresource_extent = dst_image_state->GetSubresourceExtent(dst_subresource);
             // MipLevel bound is checked already and adding extra errors with a "subresource extent of zero" is confusing to
             // developer
             if (dst_subresource.mipLevel < dst_image_state->createInfo.mipLevels) {
@@ -4276,7 +4134,7 @@ bool CoreChecks::ValidateCmdBlitImage(VkCommandBuffer commandBuffer, VkImage src
             }
 
             // Validate source image offsets
-            VkExtent3D src_extent = GetImageSubresourceExtent(src_image_state, &(rgn.srcSubresource));
+            VkExtent3D src_extent = src_image_state->GetSubresourceExtent(rgn.srcSubresource);
             if (VK_IMAGE_TYPE_1D == src_type) {
                 if ((0 != rgn.srcOffsets[0].y) || (1 != rgn.srcOffsets[1].y)) {
                     vuid = is_2khr ? "VUID-VkBlitImageInfo2KHR-srcImage-00245" : "VUID-vkCmdBlitImage-srcImage-00245";
@@ -4329,7 +4187,7 @@ bool CoreChecks::ValidateCmdBlitImage(VkCommandBuffer commandBuffer, VkImage src
             }
 
             // Validate dest image offsets
-            VkExtent3D dst_extent = GetImageSubresourceExtent(dst_image_state, &(rgn.dstSubresource));
+            VkExtent3D dst_extent = dst_image_state->GetSubresourceExtent(rgn.dstSubresource);
             if (VK_IMAGE_TYPE_1D == dst_type) {
                 if ((0 != rgn.dstOffsets[0].y) || (1 != rgn.dstOffsets[1].y)) {
                     vuid = is_2khr ? "VUID-VkBlitImageInfo2KHR-dstImage-00250" : "VUID-vkCmdBlitImage-dstImage-00250";
@@ -4525,10 +4383,8 @@ bool CoreChecks::ValidateCmdBufImageLayouts(const CMD_BUFFER_STATE *pCB, const G
             if (initial_layout == VK_IMAGE_LAYOUT_UNDEFINED) {
                 // TODO: Set memory invalid which is in mem_tracker currently
             } else if (image_layout != initial_layout) {
-                // Need to look up the inital layout *state* to get a bit more information
-                const auto *initial_layout_state = subres_map->GetSubresourceInitialLayoutState(pos->first.begin);
-                assert(initial_layout_state);  // There's no way we should have an initial layout without matching state...
-                bool matches = ImageLayoutMatches(initial_layout_state->aspect_mask, image_layout, initial_layout);
+                const auto aspect_mask = image_state->subresource_encoder.Decode(intersected_range.begin).aspectMask;
+                bool matches = ImageLayoutMatches(aspect_mask, image_layout, initial_layout);
                 if (!matches) {
                     // We can report all the errors for the intersected range directly
                     for (auto index : sparse_container::range_view<decltype(intersected_range)>(intersected_range)) {
@@ -5027,7 +4883,7 @@ bool CoreChecks::ValidateImageAspectMask(VkImage image, VkFormat format, VkImage
 bool CoreChecks::ValidateImageSubresourceRange(const uint32_t image_mip_count, const uint32_t image_layer_count,
                                                const VkImageSubresourceRange &subresourceRange, const char *cmd_name,
                                                const char *param_name, const char *image_layer_count_var_name, const VkImage image,
-                                               SubresourceRangeErrorCodes errorCodes) const {
+                                               const SubresourceRangeErrorCodes &errorCodes) const {
     bool skip = false;
 
     // Validate mip levels
@@ -5095,7 +4951,7 @@ bool CoreChecks::ValidateCreateImageViewSubresourceRange(const IMAGE_STATE *imag
 
     if (is_3_d_to_2_d_map) {
         const auto layers = LayersFromRange(subresourceRange);
-        const auto extent = GetImageSubresourceExtent(image_state, &layers);
+        const auto extent = image_state->GetSubresourceExtent(layers);
         image_layer_count = extent.depth;
     } else {
         image_layer_count = image_state->createInfo.arrayLayers;
@@ -5440,20 +5296,17 @@ bool CoreChecks::ValidateBarriers(const Location &outer_loc, const CMD_BUFFER_ST
                                   const VkBufferMemoryBarrier *pBufferMemBarriers, uint32_t imageMemBarrierCount,
                                   const VkImageMemoryBarrier *pImageMemBarriers) const {
     bool skip = false;
-    auto queue_flags = GetQueueFlags(*cb_state);
     LogObjectList objects(cb_state->commandBuffer());
-    auto op_type =
-        ComputeBarrierOperationsType(cb_state, bufferBarrierCount, pBufferMemBarriers, imageMemBarrierCount, pImageMemBarriers);
 
     for (uint32_t i = 0; i < memBarrierCount; ++i) {
         const auto &mem_barrier = pMemBarriers[i];
         auto loc = outer_loc.dot(Struct::VkMemoryBarrier, Field::pMemoryBarriers, i);
-        skip |= ValidateMemoryBarrier(objects, loc, op_type, queue_flags, mem_barrier, src_stage_mask, dst_stage_mask);
+        skip |= ValidateMemoryBarrier(objects, loc, cb_state, mem_barrier, src_stage_mask, dst_stage_mask);
     }
     for (uint32_t i = 0; i < imageMemBarrierCount; ++i) {
         const auto &mem_barrier = pImageMemBarriers[i];
         auto loc = outer_loc.dot(Struct::VkImageMemoryBarrier, Field::pImageMemoryBarriers, i);
-        skip |= ValidateMemoryBarrier(objects, loc, op_type, queue_flags, mem_barrier, src_stage_mask, dst_stage_mask);
+        skip |= ValidateMemoryBarrier(objects, loc, cb_state, mem_barrier, src_stage_mask, dst_stage_mask);
         skip |= ValidateImageBarrier(objects, loc, cb_state, mem_barrier);
     }
     {
@@ -5463,30 +5316,29 @@ bool CoreChecks::ValidateBarriers(const Location &outer_loc, const CMD_BUFFER_ST
     for (uint32_t i = 0; i < bufferBarrierCount; ++i) {
         const auto &mem_barrier = pBufferMemBarriers[i];
         auto loc = outer_loc.dot(Struct::VkBufferMemoryBarrier, Field::pMemoryBarriers, i);
-        skip |= ValidateMemoryBarrier(objects, loc, op_type, queue_flags, mem_barrier, src_stage_mask, dst_stage_mask);
+        skip |= ValidateMemoryBarrier(objects, loc, cb_state, mem_barrier, src_stage_mask, dst_stage_mask);
         skip |= ValidateBufferBarrier(objects, loc, cb_state, mem_barrier);
     }
     return skip;
 }
 
 bool CoreChecks::ValidateDependencyInfo(const LogObjectList &objects, const Location &outer_loc, const CMD_BUFFER_STATE *cb_state,
-                                        BarrierOperationsType op_type, const VkDependencyInfoKHR *dep_info) const {
+                                        const VkDependencyInfoKHR *dep_info) const {
     bool skip = false;
 
     if (cb_state->activeRenderPass) {
         skip |= ValidateRenderPassPipelineBarriers(outer_loc, cb_state, dep_info);
         if (skip) return true;  // Early return to avoid redundant errors from below calls
     }
-    auto queue_flags = GetQueueFlags(*cb_state);
     for (uint32_t i = 0; i < dep_info->memoryBarrierCount; ++i) {
         const auto &mem_barrier = dep_info->pMemoryBarriers[i];
         auto loc = outer_loc.dot(Struct::VkMemoryBarrier2KHR, Field::pMemoryBarriers, i);
-        skip |= ValidateMemoryBarrier(objects, loc, op_type, queue_flags, mem_barrier);
+        skip |= ValidateMemoryBarrier(objects, loc, cb_state, mem_barrier);
     }
     for (uint32_t i = 0; i < dep_info->imageMemoryBarrierCount; ++i) {
         const auto &mem_barrier = dep_info->pImageMemoryBarriers[i];
         auto loc = outer_loc.dot(Struct::VkImageMemoryBarrier2KHR, Field::pImageMemoryBarriers, i);
-        skip |= ValidateMemoryBarrier(objects, loc, op_type, queue_flags, mem_barrier);
+        skip |= ValidateMemoryBarrier(objects, loc, cb_state, mem_barrier);
         skip |= ValidateImageBarrier(objects, loc, cb_state, mem_barrier);
     }
     {
@@ -5497,80 +5349,111 @@ bool CoreChecks::ValidateDependencyInfo(const LogObjectList &objects, const Loca
     for (uint32_t i = 0; i < dep_info->bufferMemoryBarrierCount; ++i) {
         const auto &mem_barrier = dep_info->pBufferMemoryBarriers[i];
         auto loc = outer_loc.dot(Struct::VkBufferMemoryBarrier2KHR, Field::pBufferMemoryBarriers, i);
-        skip |= ValidateMemoryBarrier(objects, loc, op_type, queue_flags, mem_barrier);
+        skip |= ValidateMemoryBarrier(objects, loc, cb_state, mem_barrier);
         skip |= ValidateBufferBarrier(objects, loc, cb_state, mem_barrier);
     }
 
     return skip;
 }
 
+// template to check all original barrier structures
 template <typename Barrier>
-bool CoreChecks::ValidateMemoryBarrier(const LogObjectList &objects, const Location &loc, BarrierOperationsType op_type,
-                                       VkQueueFlags queue_flags, const Barrier &barrier, VkPipelineStageFlags src_stage_mask,
+bool CoreChecks::ValidateMemoryBarrier(const LogObjectList &objects, const Location &loc, const CMD_BUFFER_STATE *cb_state,
+                                       const Barrier &barrier, VkPipelineStageFlags src_stage_mask,
                                        VkPipelineStageFlags dst_stage_mask) const {
     bool skip = false;
-    if (op_type == kAllRelease || op_type == kGeneral) {
+    assert(cb_state);
+    auto queue_flags = cb_state->GetQueueFlags();
+
+    if (!cb_state->IsAcquireOp(barrier)) {
         skip |= ValidateAccessMask(objects, loc.dot(Field::srcAccessMask), queue_flags, barrier.srcAccessMask, src_stage_mask);
     }
-    if (op_type == kAllAcquire || op_type == kGeneral) {
+    if (!cb_state->IsReleaseOp(barrier)) {
         skip |= ValidateAccessMask(objects, loc.dot(Field::dstAccessMask), queue_flags, barrier.dstAccessMask, dst_stage_mask);
     }
     return skip;
 }
 
+// template to check all synchronization2 barrier structures
 template <typename Barrier>
-bool CoreChecks::ValidateMemoryBarrier(const LogObjectList &objects, const Location &loc, BarrierOperationsType op_type,
-                                       VkQueueFlags queue_flags, const Barrier &barrier) const {
+bool CoreChecks::ValidateMemoryBarrier(const LogObjectList &objects, const Location &loc, const CMD_BUFFER_STATE *cb_state,
+                                       const Barrier &barrier) const {
     bool skip = false;
-    if (op_type == kAllRelease || op_type == kGeneral) {
-        skip |= ValidatePipelineStage(objects, loc.dot(Field::srcStageMask), queue_flags, barrier.srcStageMask);
+    assert(cb_state);
+    auto queue_flags = cb_state->GetQueueFlags();
+
+    skip |= ValidatePipelineStage(objects, loc.dot(Field::srcStageMask), queue_flags, barrier.srcStageMask);
+    if (!cb_state->IsAcquireOp(barrier)) {
         skip |=
             ValidateAccessMask(objects, loc.dot(Field::srcAccessMask), queue_flags, barrier.srcAccessMask, barrier.srcStageMask);
     }
-    if (op_type == kAllAcquire || op_type == kGeneral) {
-        skip |= ValidatePipelineStage(objects, loc.dot(Field::dstStageMask), queue_flags, barrier.dstStageMask);
+
+    skip |= ValidatePipelineStage(objects, loc.dot(Field::dstStageMask), queue_flags, barrier.dstStageMask);
+    if (!cb_state->IsReleaseOp(barrier)) {
         skip |=
             ValidateAccessMask(objects, loc.dot(Field::dstAccessMask), queue_flags, barrier.dstAccessMask, barrier.dstStageMask);
     }
     return skip;
 }
 
-bool CoreChecks::ValidateSubpassBarrier(const LogObjectList &objects, const Location &loc, VkQueueFlags queue_flags,
-                                        const VkSubpassDependency2 &barrier) const {
-    bool skip = false;
-    const auto *mem_barrier = LvlFindInChain<VkMemoryBarrier2KHR>(barrier.pNext);
-    if (mem_barrier) {
-        if (enabled_features.synchronization2_features.synchronization2) {
-            if (barrier.srcAccessMask != 0) {
-                skip |= LogError(objects, "UNASSIGNED-CoreChecks-VkSubpassDependency2-srcAccessMask",
-                                 "%s is non-zero when a VkMemoryBarrier2KHR is present in pNext.",
-                                 loc.dot(Field::srcAccessMask).Message().c_str());
-            }
-            if (barrier.dstAccessMask != 0) {
-                skip |= LogError(objects, "UNASSIGNED-CoreChecks-VkSubpassDependency2-dstAccessMask",
-                                 "%s dstAccessMask is non-zero when a VkMemoryBarrier2KHR is present in pNext.",
-                                 loc.dot(Field::dstAccessMask).Message().c_str());
-            }
-            if (barrier.srcStageMask != 0 || barrier.dstStageMask != 0) {
-                skip |= LogError(objects, "UNASSIGNED-CoreChecks-VkSubpassDependency2-srcStageMask",
-                                 "%s srcStageMask is non-zero when a VkMemoryBarrier2KHR is present in pNext.",
-                                 loc.dot(Field::srcStageMask).Message().c_str());
-            }
-            if (barrier.dstStageMask != 0) {
-                skip |= LogError(objects, "UNASSIGNED-CoreChecks-VkSubpassDependency2-dstStageMask",
-                                 "%s dstStageMask is non-zero when a VkMemoryBarrier2KHR is present in pNext.",
-                                 loc.dot(Field::dstStageMask).Message().c_str());
-            }
+// VkSubpassDependency validation happens when vkCreateRenderPass() is called.
+// Dependencies between subpasses can only use pipeline stages compatible with VK_QUEUE_GRAPHICS_BIT,
+// for external subpasses we don't have a yet command buffer so we have to assume all of them are valid.
+static inline VkQueueFlags SubpassToQueueFlags(uint32_t subpass) {
+    return subpass == VK_SUBPASS_EXTERNAL ? sync_utils::kAllQueueTypes : static_cast<VkQueueFlags>(VK_QUEUE_GRAPHICS_BIT);
+}
 
-            skip |= CoreChecks::ValidateMemoryBarrier(objects, loc.dot(Field::pNext), kGeneral, queue_flags, *mem_barrier);
-            return skip;
-        } else {
+bool CoreChecks::ValidateSubpassDependency(const LogObjectList &objects, const Location &in_loc,
+                                           const VkSubpassDependency2 &dependency) const {
+    bool skip = false;
+    Location loc = in_loc;
+    VkMemoryBarrier2KHR converted_barrier;
+    const auto *mem_barrier = LvlFindInChain<VkMemoryBarrier2KHR>(dependency.pNext);
+
+    if (mem_barrier && enabled_features.synchronization2_features.synchronization2) {
+        if (dependency.srcAccessMask != 0) {
+            skip |= LogError(objects, "UNASSIGNED-CoreChecks-VkSubpassDependency2-srcAccessMask",
+                             "%s is non-zero when a VkMemoryBarrier2KHR is present in pNext.",
+                             loc.dot(Field::srcAccessMask).Message().c_str());
+        }
+        if (dependency.dstAccessMask != 0) {
+            skip |= LogError(objects, "UNASSIGNED-CoreChecks-VkSubpassDependency2-dstAccessMask",
+                             "%s dstAccessMask is non-zero when a VkMemoryBarrier2KHR is present in pNext.",
+                             loc.dot(Field::dstAccessMask).Message().c_str());
+        }
+        if (dependency.srcStageMask != 0) {
+            skip |= LogError(objects, "UNASSIGNED-CoreChecks-VkSubpassDependency2-srcStageMask",
+                             "%s srcStageMask is non-zero when a VkMemoryBarrier2KHR is present in pNext.",
+                             loc.dot(Field::srcStageMask).Message().c_str());
+        }
+        if (dependency.dstStageMask != 0) {
+            skip |= LogError(objects, "UNASSIGNED-CoreChecks-VkSubpassDependency2-dstStageMask",
+                             "%s dstStageMask is non-zero when a VkMemoryBarrier2KHR is present in pNext.",
+                             loc.dot(Field::dstStageMask).Message().c_str());
+        }
+        loc = in_loc.dot(Field::pNext);
+        converted_barrier = *mem_barrier;
+    } else {
+        if (mem_barrier) {
             skip |= LogError(objects, "UNASSIGNED-CoreChecks-VkSubpassDependency2-pNext",
                              "%s a VkMemoryBarrier2KHR is present in pNext but synchronization2 is not enabled.",
                              loc.Message().c_str());
         }
+        // use the subpass dependency flags, upconverted into wider synchronization2 fields.
+        converted_barrier.srcStageMask = dependency.srcStageMask;
+        converted_barrier.dstStageMask = dependency.dstStageMask;
+        converted_barrier.srcAccessMask = dependency.srcAccessMask;
+        converted_barrier.dstAccessMask = dependency.dstAccessMask;
     }
-    skip |= CoreChecks::ValidateMemoryBarrier(objects, loc, kGeneral, queue_flags, barrier);
+    auto src_queue_flags = SubpassToQueueFlags(dependency.srcSubpass);
+    skip |= ValidatePipelineStage(objects, loc.dot(Field::srcStageMask), src_queue_flags, converted_barrier.srcStageMask);
+    skip |= ValidateAccessMask(objects, loc.dot(Field::srcAccessMask), src_queue_flags, converted_barrier.srcAccessMask,
+                               converted_barrier.srcStageMask);
+
+    auto dst_queue_flags = SubpassToQueueFlags(dependency.dstSubpass);
+    skip |= ValidatePipelineStage(objects, loc.dot(Field::dstStageMask), dst_queue_flags, converted_barrier.dstStageMask);
+    skip |= ValidateAccessMask(objects, loc.dot(Field::dstAccessMask), dst_queue_flags, converted_barrier.dstAccessMask,
+                               converted_barrier.dstStageMask);
     return skip;
 }
 
@@ -6173,6 +6056,17 @@ bool CoreChecks::PreCallValidateDestroyBuffer(VkDevice device, VkBuffer buffer, 
     return skip;
 }
 
+void CoreChecks::PreCallRecordDestroyBuffer(VkDevice device, VkBuffer buffer, const VkAllocationCallbacks *pAllocator) {
+    const auto buffer_state = Get<BUFFER_STATE>(buffer);
+    if (buffer_state) {
+        auto itr = buffer_address_map_.find(buffer_state->deviceAddress);
+        if (itr != buffer_address_map_.end()) {
+            buffer_address_map_.erase(itr);
+        }
+    }
+    StateTracker::PreCallRecordDestroyBuffer(device, buffer, pAllocator);
+}
+
 bool CoreChecks::PreCallValidateDestroyBufferView(VkDevice device, VkBufferView bufferView,
                                                   const VkAllocationCallbacks *pAllocator) const {
     auto buffer_view_state = GetBufferViewState(bufferView);
@@ -6300,7 +6194,7 @@ bool CoreChecks::ValidateBufferImageCopyData(const CMD_BUFFER_STATE *cb_node, ui
         }
 
         // Calculate adjusted image extent, accounting for multiplane image factors
-        VkExtent3D adjusted_image_extent = GetImageSubresourceExtent(image_state, &pRegions[i].imageSubresource);
+        VkExtent3D adjusted_image_extent = image_state->GetSubresourceExtent(pRegions[i].imageSubresource);
         // imageOffset.x and (imageExtent.width + imageOffset.x) must both be >= 0 and <= image subresource width
         if ((pRegions[i].imageOffset.x < 0) || (pRegions[i].imageOffset.x > static_cast<int32_t>(adjusted_image_extent.width)) ||
             ((pRegions[i].imageOffset.x + static_cast<int32_t>(pRegions[i].imageExtent.width)) >
@@ -6359,7 +6253,7 @@ bool CoreChecks::ValidateBufferImageCopyData(const CMD_BUFFER_STATE *cb_node, ui
             if (SafeModulo(pRegions[i].bufferRowLength, block_size.width) != 0) {
                 skip |=
                     LogError(image_state->image(), GetBufferImageCopyCommandVUID("00203", image_to_buffer, is_2khr),
-                             "%s: pRegion[%d] bufferRowLength (%d) must be a multiple of the compressed image's texel width (%d)..",
+                             "%s: pRegion[%d] bufferRowLength (%d) must be a multiple of the compressed image's texel width (%d).",
                              function, i, pRegions[i].bufferRowLength, block_size.width);
             }
 
@@ -6367,7 +6261,7 @@ bool CoreChecks::ValidateBufferImageCopyData(const CMD_BUFFER_STATE *cb_node, ui
             if (SafeModulo(pRegions[i].bufferImageHeight, block_size.height) != 0) {
                 skip |= LogError(
                     image_state->image(), GetBufferImageCopyCommandVUID("00204", image_to_buffer, is_2khr),
-                    "%s: pRegion[%d] bufferImageHeight (%d) must be a multiple of the compressed image's texel height (%d)..",
+                    "%s: pRegion[%d] bufferImageHeight (%d) must be a multiple of the compressed image's texel height (%d).",
                     function, i, pRegions[i].bufferImageHeight, block_size.height);
             }
 
@@ -6377,7 +6271,7 @@ bool CoreChecks::ValidateBufferImageCopyData(const CMD_BUFFER_STATE *cb_node, ui
                 (SafeModulo(pRegions[i].imageOffset.z, block_size.depth) != 0)) {
                 skip |= LogError(image_state->image(), GetBufferImageCopyCommandVUID("00205", image_to_buffer, is_2khr),
                                  "%s: pRegion[%d] imageOffset(x,y) (%d, %d) must be multiples of the compressed image's texel "
-                                 "width & height (%d, %d)..",
+                                 "width & height (%d, %d).",
                                  function, i, pRegions[i].imageOffset.x, pRegions[i].imageOffset.y, block_size.width,
                                  block_size.height);
             }
@@ -6387,17 +6281,17 @@ bool CoreChecks::ValidateBufferImageCopyData(const CMD_BUFFER_STATE *cb_node, ui
             if (SafeModulo(bufferOffset, block_size_in_bytes) != 0) {
                 skip |= LogError(image_state->image(), GetBufferImageCopyCommandVUID("00206", image_to_buffer, is_2khr),
                                  "%s: pRegion[%d] bufferOffset (0x%" PRIxLEAST64
-                                 ") must be a multiple of the compressed image's texel block size (%" PRIu32 ")..",
+                                 ") must be a multiple of the compressed image's texel block size (%" PRIu32 ").",
                                  function, i, bufferOffset, block_size_in_bytes);
             }
 
             // imageExtent width must be a multiple of block width, or extent+offset width must equal subresource width
-            VkExtent3D mip_extent = GetImageSubresourceExtent(image_state, &(pRegions[i].imageSubresource));
+            VkExtent3D mip_extent = image_state->GetSubresourceExtent(pRegions[i].imageSubresource);
             if ((SafeModulo(pRegions[i].imageExtent.width, block_size.width) != 0) &&
                 (pRegions[i].imageExtent.width + pRegions[i].imageOffset.x != mip_extent.width)) {
                 skip |= LogError(image_state->image(), GetBufferImageCopyCommandVUID("00207", image_to_buffer, is_2khr),
                                  "%s: pRegion[%d] extent width (%d) must be a multiple of the compressed texture block width "
-                                 "(%d), or when added to offset.x (%d) must equal the image subresource width (%d)..",
+                                 "(%d), or when added to offset.x (%d) must equal the image subresource width (%d).",
                                  function, i, pRegions[i].imageExtent.width, block_size.width, pRegions[i].imageOffset.x,
                                  mip_extent.width);
             }
@@ -6407,7 +6301,7 @@ bool CoreChecks::ValidateBufferImageCopyData(const CMD_BUFFER_STATE *cb_node, ui
                 (pRegions[i].imageExtent.height + pRegions[i].imageOffset.y != mip_extent.height)) {
                 skip |= LogError(image_state->image(), GetBufferImageCopyCommandVUID("00208", image_to_buffer, is_2khr),
                                  "%s: pRegion[%d] extent height (%d) must be a multiple of the compressed texture block height "
-                                 "(%d), or when added to offset.y (%d) must equal the image subresource height (%d)..",
+                                 "(%d), or when added to offset.y (%d) must equal the image subresource height (%d).",
                                  function, i, pRegions[i].imageExtent.height, block_size.height, pRegions[i].imageOffset.y,
                                  mip_extent.height);
             }
@@ -6417,7 +6311,7 @@ bool CoreChecks::ValidateBufferImageCopyData(const CMD_BUFFER_STATE *cb_node, ui
                 (pRegions[i].imageExtent.depth + pRegions[i].imageOffset.z != mip_extent.depth)) {
                 skip |= LogError(image_state->image(), GetBufferImageCopyCommandVUID("00209", image_to_buffer, is_2khr),
                                  "%s: pRegion[%d] extent width (%d) must be a multiple of the compressed texture block depth "
-                                 "(%d), or when added to offset.z (%d) must equal the image subresource depth (%d)..",
+                                 "(%d), or when added to offset.z (%d) must equal the image subresource depth (%d).",
                                  function, i, pRegions[i].imageExtent.depth, block_size.depth, pRegions[i].imageOffset.z,
                                  mip_extent.depth);
             }
@@ -6493,7 +6387,7 @@ bool CoreChecks::ValidateImageBounds(const IMAGE_STATE *image_state, const uint3
                                extent.height, extent.depth);
         }
 
-        VkExtent3D image_extent = GetImageSubresourceExtent(image_state, &(pRegions[i].imageSubresource));
+        VkExtent3D image_extent = image_state->GetSubresourceExtent(pRegions[i].imageSubresource);
 
         // If we're using a compressed format, valid extent is rounded up to multiple of block size (per 18.1)
         if (FormatIsCompressed(image_info->format) || FormatIsSinglePlane_422(image_state->createInfo.format)) {
@@ -6510,7 +6404,7 @@ bool CoreChecks::ValidateImageBounds(const IMAGE_STATE *image_state, const uint3
         }
 
         if (0 != ExceedsBounds(&offset, &extent, &image_extent)) {
-            skip |= LogError(image_state->image(), msg_code, "%s: pRegion[%d] exceeds image bounds..", func_name, i);
+            skip |= LogError(image_state->image(), msg_code, "%s: pRegion[%d] exceeds image bounds.", func_name, i);
         }
     }
 
@@ -6530,7 +6424,7 @@ bool CoreChecks::ValidateBufferBounds(const IMAGE_STATE *image_state, const BUFF
             GetBufferSizeFromCopyImage(pRegions[i], image_state->createInfo.format) + pRegions[i].bufferOffset;
         if (buffer_size < max_buffer_offset) {
             skip |=
-                LogError(device, msg_code, "%s: pRegion[%d] exceeds buffer size of %" PRIu64 " bytes..", func_name, i, buffer_size);
+                LogError(device, msg_code, "%s: pRegion[%d] exceeds buffer size of %" PRIu64 " bytes.", func_name, i, buffer_size);
         }
     }
 

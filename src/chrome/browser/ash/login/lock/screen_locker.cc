@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "ash/components/audio/sounds.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/login_types.h"
@@ -75,10 +74,10 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
-using base::UserMetricsAction;
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+using ::base::UserMetricsAction;
 
 // Returns true if fingerprint authentication is available for `user`.
 bool IsFingerprintAvailableForUser(const user_manager::User* user) {
@@ -212,7 +211,7 @@ void ScreenLocker::Init() {
 
   // Create and display lock screen.
   CHECK(LoginScreenClientImpl::HasInstance());
-  ash::LoginScreen::Get()->ShowLockScreen();
+  LoginScreen::Get()->ShowLockScreen();
   views_screen_locker_->Init();
 
   content::NotificationService::current()->Notify(
@@ -316,7 +315,7 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
   weak_factory_.InvalidateWeakPtrs();
 
   VLOG(1) << "Hiding the lock screen.";
-  chromeos::ScreenLocker::Hide();
+  ScreenLocker::Hide();
 }
 
 void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
@@ -337,12 +336,12 @@ void ScreenLocker::ReenableAuthForUser(const AccountId& account_id) {
   CHECK(user) << "Invalid user - cannot enable authentication.";
 
   users_with_temporarily_disabled_auth_.erase(account_id);
-  ash::LoginScreen::Get()->GetModel()->EnableAuthForUser(account_id);
+  LoginScreen::Get()->GetModel()->EnableAuthForUser(account_id);
 }
 
 void ScreenLocker::TemporarilyDisableAuthForUser(
     const AccountId& account_id,
-    const ash::AuthDisabledData& auth_disabled_data) {
+    const AuthDisabledData& auth_disabled_data) {
   if (IsAuthTemporarilyDisabledForUser(account_id))
     return;
 
@@ -350,8 +349,8 @@ void ScreenLocker::TemporarilyDisableAuthForUser(
   CHECK(user) << "Invalid user - cannot disable authentication.";
 
   users_with_temporarily_disabled_auth_.insert(account_id);
-  ash::LoginScreen::Get()->GetModel()->DisableAuthForUser(account_id,
-                                                          auth_disabled_data);
+  LoginScreen::Get()->GetModel()->DisableAuthForUser(account_id,
+                                                     auth_disabled_data);
 }
 
 void ScreenLocker::Authenticate(const UserContext& user_context,
@@ -508,8 +507,7 @@ const user_manager::User* ScreenLocker::FindUnlockUser(
 
 void ScreenLocker::OnStartLockCallback(bool locked) {
   // Happens in tests that exit with a pending lock. In real lock failure,
-  // ash::LockStateController would cause the current user session to be
-  // terminated.
+  // LockStateController would cause the current user session to be terminated.
   if (!locked)
     return;
 
@@ -672,7 +670,7 @@ void ScreenLocker::SaveSyncPasswordHash(const UserContext& user_context) {
       user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
   if (!user || !user->is_active())
     return;
-  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  auto* profile = ProfileHelper::Get()->GetProfileByUser(user);
   if (profile)
     login::SaveSyncPasswordDataToProfile(user_context, profile);
 }
@@ -715,11 +713,6 @@ ScreenLocker::~ScreenLocker() {
   ClearErrors();
 
   screen_locker_ = nullptr;
-  bool state = false;
-  VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      content::Source<ScreenLocker>(this), content::Details<bool>(&state));
 
   VLOG(1) << "Calling session manager's HandleLockScreenDismissed D-Bus method";
   SessionManagerClient::Get()->NotifyLockScreenDismissed();
@@ -736,11 +729,6 @@ void ScreenLocker::ScreenLockReady() {
           << " second(s)";
   UMA_HISTOGRAM_TIMES("ScreenLocker.ScreenLockTime", delta);
 
-  bool state = true;
-  VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      content::Source<ScreenLocker>(this), content::Details<bool>(&state));
   VLOG(1) << "Calling session manager's HandleLockScreenShown D-Bus method";
   SessionManagerClient::Get()->NotifyLockScreenShown();
 
@@ -827,7 +815,7 @@ void ScreenLocker::OnAuthScanDone(
   }
   quick_unlock_storage->fingerprint_storage()->RecordFingerprintUnlockResult(
       quick_unlock::FingerprintUnlockResult::kSuccess);
-  ash::LoginScreen::Get()->GetModel()->NotifyFingerprintAuthResult(
+  LoginScreen::Get()->GetModel()->NotifyFingerprintAuthResult(
       primary_user->GetAccountId(), true /*success*/);
   VLOG(1) << "Fingerprint unlock is successful.";
   OnAuthSuccess(user_context);
@@ -846,7 +834,7 @@ void ScreenLocker::ActiveUserChanged(user_manager::User* active_user) {
 void ScreenLocker::OnFingerprintAuthFailure(const user_manager::User& user) {
   UMA_HISTOGRAM_ENUMERATION("ScreenLocker.AuthenticationFailure",
                             unlock_attempt_type_, UnlockType::AUTH_COUNT);
-  ash::LoginScreen::Get()->GetModel()->NotifyFingerprintAuthResult(
+  LoginScreen::Get()->GetModel()->NotifyFingerprintAuthResult(
       user.GetAccountId(), false /*success*/);
 
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
@@ -857,8 +845,8 @@ void ScreenLocker::OnFingerprintAuthFailure(const user_manager::User& user) {
     if (quick_unlock_storage->fingerprint_storage()->ExceededUnlockAttempts()) {
       VLOG(1) << "Fingerprint unlock is disabled because it reached maximum"
               << " unlock attempt.";
-      ash::LoginScreen::Get()->GetModel()->SetFingerprintState(
-          user.GetAccountId(), ash::FingerprintState::DISABLED_FROM_ATTEMPTS);
+      LoginScreen::Get()->GetModel()->SetFingerprintState(
+          user.GetAccountId(), FingerprintState::DISABLED_FROM_ATTEMPTS);
       delegate_->ShowErrorMessage(IDS_LOGIN_ERROR_FINGERPRINT_MAX_ATTEMPT,
                                   HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
     }
@@ -904,8 +892,8 @@ void ScreenLocker::MaybeDisablePinAndFingerprintFromTimeout(
       if (quick_unlock_storage->fingerprint_storage()
               ->IsFingerprintAvailable()) {
         VLOG(1) << "Require strong auth to make fingerprint unlock available.";
-        ash::LoginScreen::Get()->GetModel()->SetFingerprintState(
-            account_id, ash::FingerprintState::DISABLED_FROM_TIMEOUT);
+        LoginScreen::Get()->GetModel()->SetFingerprintState(
+            account_id, FingerprintState::DISABLED_FROM_TIMEOUT);
         fp_service_->EndCurrentAuthSession(base::BindOnce([](bool success) {
           if (success)
             return;
@@ -918,8 +906,8 @@ void ScreenLocker::MaybeDisablePinAndFingerprintFromTimeout(
 
 void ScreenLocker::OnPinCanAuthenticate(const AccountId& account_id,
                                         bool can_authenticate) {
-  ash::LoginScreen::Get()->GetModel()->SetPinEnabledForUser(account_id,
-                                                            can_authenticate);
+  LoginScreen::Get()->GetModel()->SetPinEnabledForUser(account_id,
+                                                       can_authenticate);
 }
 
-}  // namespace chromeos
+}  // namespace ash

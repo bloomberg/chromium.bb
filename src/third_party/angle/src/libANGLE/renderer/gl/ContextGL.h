@@ -269,6 +269,10 @@ class ContextGL : public ContextImpl
     void setNeedsFlushBeforeDeleteTextures();
     void flushIfNecessaryBeforeDeleteTextures();
 
+    void markWorkSubmitted();
+
+    const gl::Debug &getDebug() const { return mState.getDebug(); }
+
   private:
     angle::Result setDrawArraysState(const gl::Context *context,
                                      GLint first,

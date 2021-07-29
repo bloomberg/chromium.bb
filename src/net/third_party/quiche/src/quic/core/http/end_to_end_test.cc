@@ -363,7 +363,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
 
   bool Initialize() {
     if (enable_web_transport_) {
-      SetQuicReloadableFlag(quic_h3_datagram, true);
       memory_cache_backend_.set_enable_webtransport(true);
     }
 
@@ -3882,7 +3881,7 @@ TEST_P(EndToEndTest, BadPacketHeaderFlags) {
   SendSynchronousFooRequestAndCheckResponse();
 
   // Packet with invalid public flags.
-  char packet[] = {
+  uint8_t packet[] = {
       // invalid public flags
       0xFF,
       // connection_id
@@ -3905,7 +3904,7 @@ TEST_P(EndToEndTest, BadPacketHeaderFlags) {
       0x00,
   };
   client_writer_->WritePacket(
-      &packet[0], sizeof(packet),
+      reinterpret_cast<const char*>(packet), sizeof(packet),
       client_->client()->network_helper()->GetLatestClientAddress().host(),
       server_address_, nullptr);
 
@@ -4739,20 +4738,15 @@ TEST_P(EndToEndTest, SendMessages) {
   ASSERT_LT(0, client_session->GetCurrentLargestMessagePayload());
 
   std::string message_string(kMaxOutgoingPacketSize, 'a');
-  absl::string_view message_buffer(message_string);
   QuicRandom* random =
       QuicConnectionPeer::GetHelper(client_connection)->GetRandomGenerator();
-  QuicMemSliceStorage storage(nullptr, 0, nullptr, 0);
   {
     QuicConnection::ScopedPacketFlusher flusher(client_session->connection());
     // Verify the largest message gets successfully sent.
     EXPECT_EQ(MessageResult(MESSAGE_STATUS_SUCCESS, 1),
-              client_session->SendMessage(MakeSpan(
-                  client_connection->helper()->GetStreamSendBufferAllocator(),
-                  absl::string_view(
-                      message_buffer.data(),
-                      client_session->GetCurrentLargestMessagePayload()),
-                  &storage)));
+              client_session->SendMessage(MemSliceFromString(absl::string_view(
+                  message_string.data(),
+                  client_session->GetCurrentLargestMessagePayload()))));
     // Send more messages with size (0, largest_payload] until connection is
     // write blocked.
     const int kTestMaxNumberOfMessages = 100;
@@ -4761,9 +4755,8 @@ TEST_P(EndToEndTest, SendMessages) {
           random->RandUint64() %
               client_session->GetGuaranteedLargestMessagePayload() +
           1;
-      MessageResult result = client_session->SendMessage(MakeSpan(
-          client_connection->helper()->GetStreamSendBufferAllocator(),
-          absl::string_view(message_buffer.data(), message_length), &storage));
+      MessageResult result = client_session->SendMessage(MemSliceFromString(
+          absl::string_view(message_string.data(), message_length)));
       if (result.status == MESSAGE_STATUS_BLOCKED) {
         // Connection is write blocked.
         break;
@@ -4775,12 +4768,9 @@ TEST_P(EndToEndTest, SendMessages) {
   client_->WaitForDelayedAcks();
   EXPECT_EQ(MESSAGE_STATUS_TOO_LARGE,
             client_session
-                ->SendMessage(MakeSpan(
-                    client_connection->helper()->GetStreamSendBufferAllocator(),
-                    absl::string_view(
-                        message_buffer.data(),
-                        client_session->GetCurrentLargestMessagePayload() + 1),
-                    &storage))
+                ->SendMessage(MemSliceFromString(absl::string_view(
+                    message_string.data(),
+                    client_session->GetCurrentLargestMessagePayload() + 1)))
                 .status);
   EXPECT_THAT(client_->connection_error(), IsQuicNoError());
 }
@@ -5698,6 +5688,18 @@ TEST_P(EndToEndTest, ChaosProtectionWithMultiPacketChlo) {
   SendSynchronousFooRequestAndCheckResponse();
 }
 
+TEST_P(EndToEndTest, PermuteTlsExtensions) {
+  if (!version_.UsesTls()) {
+    ASSERT_TRUE(Initialize());
+    return;
+  }
+  // Enable TLS extension permutation and perform an HTTP request.
+  client_config_.SetClientConnectionOptions(QuicTagVector{kBPTE});
+  ASSERT_TRUE(Initialize());
+  EXPECT_TRUE(GetClientSession()->permutes_tls_extensions());
+  SendSynchronousFooRequestAndCheckResponse();
+}
+
 TEST_P(EndToEndTest, KeyUpdateInitiatedByClient) {
   if (!version_.UsesTls()) {
     // Key Update is only supported in TLS handshake.
@@ -6043,6 +6045,7 @@ TEST_P(EndToEndTest, WebTransportSessionSetup) {
 
   WebTransportHttp3* web_transport =
       CreateWebTransportSession("/echo", /*wait_for_server_response=*/true);
+  ASSERT_NE(web_transport, nullptr);
 
   server_thread_->Pause();
   QuicSpdySession* server_session = GetServerSession();
@@ -6064,6 +6067,7 @@ TEST_P(EndToEndTest, WebTransportSessionWithLoss) {
 
   WebTransportHttp3* web_transport =
       CreateWebTransportSession("/echo", /*wait_for_server_response=*/true);
+  ASSERT_NE(web_transport, nullptr);
 
   server_thread_->Pause();
   QuicSpdySession* server_session = GetServerSession();

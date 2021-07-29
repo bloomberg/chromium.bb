@@ -6,11 +6,23 @@
 
 #include <memory>
 
-#include "ash/public/cpp/window_properties.h"
+#include "ash/public/cpp/toast_data.h"
+#include "ash/public/cpp/toast_manager.h"
 #include "base/callback_forward.h"
+#include "base/callback_helpers.h"
+#include "base/stl_util.h"
 #include "components/arc/compat_mode/arc_resize_lock_pref_delegate.h"
+#include "components/arc/compat_mode/arc_window_property_util.h"
+#include "components/arc/compat_mode/metrics.h"
 #include "components/arc/compat_mode/resize_confirmation_dialog_view.h"
-#include "ui/aura/window.h"
+#include "components/exo/shell_surface_base.h"
+#include "components/exo/shell_surface_util.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/views/widget/widget.h"
 
 namespace arc {
@@ -19,78 +31,178 @@ namespace {
 
 constexpr gfx::Size kPortraitPhoneDp(412, 732);
 constexpr gfx::Size kLandscapeTabletDp(1064, 600);
+constexpr int kDisplayEdgeOffsetDp = 32;
 
 using ResizeCallback = base::OnceCallback<void(views::Widget*)>;
+
+gfx::Size GetPossibleSizeInWorkArea(views::Widget* widget,
+                                    const gfx::Size& preferred_size) {
+  auto size = gfx::SizeF(preferred_size);
+  const float preferred_aspect_ratio = size.width() / size.height();
+
+  auto workarea = widget->GetWorkAreaBoundsInScreen();
+
+  // Shrink workarea with the edge offset.
+  workarea.Inset(gfx::Insets(kDisplayEdgeOffsetDp));
+
+  // Limit |size| to |workarea| but keep the aspect ratio.
+  if (size.width() > workarea.width()) {
+    size.set_width(workarea.width());
+    size.set_height(workarea.width() / preferred_aspect_ratio);
+  }
+  if (size.height() > workarea.height()) {
+    size.set_width(workarea.height() * preferred_aspect_ratio);
+    size.set_height(workarea.height());
+  }
+
+  const auto* shell_surface_base =
+      exo::GetShellSurfaceBaseForWindow(widget->GetNativeWindow());
+  // |shell_surface_base| can be null in unittests.
+  if (shell_surface_base)
+    size.SetToMax(gfx::SizeF(shell_surface_base->GetMinimumSize()));
+
+  return gfx::ToFlooredSize(size);
+}
 
 void ResizeToPhone(views::Widget* widget) {
   if (widget->IsMaximized())
     widget->Restore();
-  widget->CenterWindow(kPortraitPhoneDp);
+  widget->CenterWindow(GetPossibleSizeInWorkArea(widget, kPortraitPhoneDp));
+
+  RecordResizeLockAction(ResizeLockActionType::ResizeToPhone);
 }
 
 void ResizeToTablet(views::Widget* widget) {
   if (widget->IsMaximized())
     widget->Restore();
+
+  // We here don't shrink the preferred size according to the available workarea
+  // bounds like ResizeToPhone, because we'd like to let Android decide if the
+  // ResizeToTablet operation fallbacks to the window state change operation.
   widget->CenterWindow(kLandscapeTabletDp);
+
+  RecordResizeLockAction(ResizeLockActionType::ResizeToTablet);
 }
 
-void ResizeToDesktop(views::Widget* widget) {
-  widget->Maximize();
+void TurnOnResizeLock(views::Widget* widget,
+                      ArcResizeLockPrefDelegate* pref_delegate) {
+  const auto app_id = GetAppId(widget);
+  if (app_id && pref_delegate->GetResizeLockState(*app_id) !=
+                    mojom::ArcResizeLockState::ON) {
+    pref_delegate->SetResizeLockState(*app_id, mojom::ArcResizeLockState::ON);
+
+    RecordResizeLockAction(ResizeLockActionType::TurnOnResizeLock);
+  }
 }
 
-void ProceedResizeWithConfirmationIfNeeded(
+void TurnOffResizeLock(views::Widget* target_widget,
+                       ArcResizeLockPrefDelegate* pref_delegate) {
+  const auto app_id = GetAppId(target_widget);
+  if (!app_id || pref_delegate->GetResizeLockState(*app_id) ==
+                     mojom::ArcResizeLockState::OFF) {
+    return;
+  }
+
+  pref_delegate->SetResizeLockState(*app_id, mojom::ArcResizeLockState::OFF);
+
+  RecordResizeLockAction(ResizeLockActionType::TurnOffResizeLock);
+
+  auto* const toast_manager = ash::ToastManager::Get();
+  // |toast_manager| can be null in some unittests.
+  if (!toast_manager)
+    return;
+
+  constexpr char kTurnOffResizeLockToastId[] =
+      "arc.compat_mode.turn_off_resize_lock";
+  constexpr int kToastDurationMs = 3500;
+  toast_manager->Cancel(kTurnOffResizeLockToastId);
+  ash::ToastData toast(
+      kTurnOffResizeLockToastId,
+      l10n_util::GetStringUTF16(IDS_ARC_COMPAT_MODE_DISABLE_RESIZE_LOCK_TOAST),
+      kToastDurationMs,
+      /*dismiss_text=*/absl::nullopt,
+      /*visible_on_lock_screen=*/false);
+  toast_manager->Show(toast);
+}
+
+void TurnOffResizeLockWithConfirmationIfNeeded(
     views::Widget* target_widget,
-    ArcResizeLockPrefDelegate* pref_delegate,
-    ResizeCallback resize_callback) {
-  const auto* app_id =
-      target_widget->GetNativeWindow()->GetProperty(ash::kAppIDKey);
+    ArcResizeLockPrefDelegate* pref_delegate) {
+  const auto app_id = GetAppId(target_widget);
   if (app_id && !pref_delegate->GetResizeLockNeedsConfirmation(*app_id)) {
     // The user has already agreed not to show the dialog again.
-    std::move(resize_callback).Run(target_widget);
+    TurnOffResizeLock(target_widget, pref_delegate);
     return;
   }
 
   // Set target app window as parent so that the dialog will be destroyed
   // together when the app window is destroyed (e.g. app crashed).
-  ShowResizeConfirmationDialog(
+  ResizeConfirmationDialogView::Show(
       /*parent=*/target_widget->GetNativeWindow(),
       base::BindOnce(
           [](views::Widget* widget, ArcResizeLockPrefDelegate* delegate,
-             ResizeCallback callback, bool accepted, bool do_not_ask_again) {
+             bool accepted, bool do_not_ask_again) {
             if (accepted) {
-              const auto* app_id =
-                  widget->GetNativeWindow()->GetProperty(ash::kAppIDKey);
+              const auto app_id = GetAppId(widget);
               if (do_not_ask_again && app_id)
                 delegate->SetResizeLockNeedsConfirmation(*app_id, false);
 
-              std::move(callback).Run(widget);
+              TurnOffResizeLock(widget, delegate);
             }
           },
-          base::Unretained(target_widget), base::Unretained(pref_delegate),
-          std::move(resize_callback)));
+          base::Unretained(target_widget), base::Unretained(pref_delegate)));
 }
 
 }  // namespace
 
-void ResizeToPhoneWithConfirmationIfNeeded(
-    views::Widget* widget,
-    ArcResizeLockPrefDelegate* pref_delegate) {
-  ProceedResizeWithConfirmationIfNeeded(widget, pref_delegate,
-                                        base::BindOnce(&ResizeToPhone));
+void ResizeLockToPhone(views::Widget* widget,
+                       ArcResizeLockPrefDelegate* pref_delegate) {
+  ResizeToPhone(widget);
+  TurnOnResizeLock(widget, pref_delegate);
 }
 
-void ResizeToTabletWithConfirmationIfNeeded(
-    views::Widget* widget,
-    ArcResizeLockPrefDelegate* pref_delegate) {
-  ProceedResizeWithConfirmationIfNeeded(widget, pref_delegate,
-                                        base::BindOnce(&ResizeToTablet));
+void ResizeLockToTablet(views::Widget* widget,
+                        ArcResizeLockPrefDelegate* pref_delegate) {
+  ResizeToTablet(widget);
+  TurnOnResizeLock(widget, pref_delegate);
 }
 
-void ResizeToDesktopWithConfirmationIfNeeded(
+void EnableResizingWithConfirmationIfNeeded(
     views::Widget* widget,
     ArcResizeLockPrefDelegate* pref_delegate) {
-  ProceedResizeWithConfirmationIfNeeded(widget, pref_delegate,
-                                        base::BindOnce(&ResizeToDesktop));
+  TurnOffResizeLockWithConfirmationIfNeeded(widget, pref_delegate);
+}
+
+absl::optional<ResizeCompatMode> PredictCurrentMode(
+    views::Widget* widget,
+    ArcResizeLockPrefDelegate* pref_delegate) {
+  const int width = widget->GetWindowBoundsInScreen().width();
+  const int height = widget->GetWindowBoundsInScreen().height();
+  const auto app_id = GetAppId(widget);
+  // We don't use the exact size here to predict tablet or phone size because
+  // the window size might be bigger than it due to the ARC app-side minimum
+  // size constraints.
+  if (!app_id)
+    return absl::nullopt;
+  const auto resize_lock_state = pref_delegate->GetResizeLockState(*app_id);
+  if (resize_lock_state != mojom::ArcResizeLockState::ON &&
+      resize_lock_state != mojom::ArcResizeLockState::FULLY_LOCKED) {
+    return ResizeCompatMode::kResizable;
+  }
+  if (width < height)
+    return ResizeCompatMode::kPhone;
+  if (width > height)
+    return ResizeCompatMode::kTablet;
+  return absl::nullopt;
+}
+
+bool ShouldShowSplashScreenDialog(ArcResizeLockPrefDelegate* pref_delegate) {
+  int show_count = pref_delegate->GetShowSplashScreenDialogCount();
+  if (show_count == 0)
+    return false;
+
+  pref_delegate->SetShowSplashScreenDialogCount(--show_count);
+  return true;
 }
 
 }  // namespace arc

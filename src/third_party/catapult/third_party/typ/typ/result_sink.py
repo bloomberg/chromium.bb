@@ -27,6 +27,7 @@ import sys
 
 import requests
 
+from typ import host as typ_host
 from typ import json_results
 from typ import expectations_parser
 
@@ -44,24 +45,24 @@ STDERR_KEY = 'typ_stderr'
 
 
 class ResultSinkReporter(object):
-    def __init__(self, host, disable=False):
+    def __init__(self, host=None, disable=False):
         """Class for interacting with ResultDB's ResultSink.
 
         Args:
-            host: A host.Host or host_fake.FakeHost instance.
+            host: A typ_host.Host or host_fake.FakeHost instance.
             disable: Whether to explicitly disable ResultSink integration.
         """
-        self._host = host
+        self.host = host or typ_host.Host()
         self._sink = None
         self._chromium_src_dir = None
         if disable:
             return
 
-        luci_context_file = self._host.getenv('LUCI_CONTEXT')
+        luci_context_file = self.host.getenv('LUCI_CONTEXT')
         if not luci_context_file:
             return
         self._sink = json.loads(
-                self._host.read_text_file(luci_context_file)).get('result_sink')
+                self.host.read_text_file(luci_context_file)).get('result_sink')
         if not self._sink:
             return
 
@@ -80,7 +81,7 @@ class ResultSinkReporter(object):
 
     def report_individual_test_result(
             self, test_name_prefix, result, artifact_output_dir, expectations,
-            test_file_location):
+            test_file_location, test_file_line=None):
         """Reports typ results for a single test to ResultSink.
 
         Inputs are typically similar to what is passed to
@@ -100,6 +101,8 @@ class ResultSinkReporter(object):
                     None if one is not available.
             test_file_location: A string containing the path to the file
                     containing the test.
+            test_file_line: An int indicating the source file line number
+                    containing the test.
 
         Returns:
             0 if the result was reported successfully or ResultDB is not
@@ -114,12 +117,12 @@ class ResultSinkReporter(object):
         raw_typ_expected_results = (
                 expectations.expectations_for(result.name).raw_results
                 if expectations
-                else [expectations_parser.RESULT_TAGS[
-                        json_results.ResultType.Pass]])
+                else [expectations_parser.RESULT_TAGS[t]
+                      for t in result.expected])
         result_is_expected = result.actual in result.expected
 
         tag_list = [
-            ('test_name', test_id),
+            ('test_name', result.name),
         ]
         for expectation in result.expected:
             tag_list.append(('typ_expectation', expectation))
@@ -136,8 +139,8 @@ class ResultSinkReporter(object):
         if original_artifacts:
             assert artifact_output_dir
             if not os.path.isabs(artifact_output_dir):
-                artifact_output_dir = self._host.join(
-                        self._host.getcwd(), artifact_output_dir)
+                artifact_output_dir = self.host.join(
+                        self.host.getcwd(), artifact_output_dir)
 
         for artifact_name, artifact_filepaths in original_artifacts.items():
             # The typ artifact implementation supports multiple artifacts for
@@ -145,34 +148,39 @@ class ResultSinkReporter(object):
             if len(artifact_filepaths) > 1:
                 for index, filepath in enumerate(artifact_filepaths):
                     artifacts[artifact_name + '-file%d' % index] = {
-                        'filePath': self._host.join(
+                        'filePath': self.host.join(
                                 artifact_output_dir, filepath),
                     }
             else:
                 artifacts[artifact_name] = {
-                    'filePath': self._host.join(
+                    'filePath': self.host.join(
                             artifact_output_dir, artifact_filepaths[0]),
                 }
 
         artifacts[STDOUT_KEY] = {
-            'contents': base64.b64encode(result.out.encode('utf-8'))
+            'contents': (base64.b64encode(
+                             result.out.encode('utf-8')).decode('utf-8'))
         }
         artifacts[STDERR_KEY] = {
-            'contents': base64.b64encode(result.err.encode('utf-8'))
+            'contents': (base64.b64encode(
+                             result.err.encode('utf-8')).decode('utf-8'))
         }
         html_summary = ('<p><text-artifact artifact-id="%s"/></p>'
                         '<p><text-artifact artifact-id="%s"/></p>' % (
                             STDOUT_KEY, STDERR_KEY))
 
         test_location_in_repo = self._convert_path_to_repo_path(
-            test_file_location)
+            os.path.normpath(test_file_location))
         test_metadata = {
             'name': test_id,
             'location': {
                 'repo': 'https://chromium.googlesource.com/chromium/src',
-                'fileName': test_location_in_repo
+                'fileName': test_location_in_repo,
             },
         }
+
+        if test_file_line is not None:
+            test_metadata['location'].update({'line': test_file_line})
 
         return self._report_result(
                 test_id, result.actual, result_is_expected, artifacts,
@@ -241,16 +249,16 @@ class ResultSinkReporter(object):
         chromium_src_dir = self._get_chromium_src_dir()
         assert chromium_src_dir in filepath
         repo_location = filepath.replace(chromium_src_dir, '//', 1)
-        repo_location = repo_location.replace(self._host.sep, '/')
+        repo_location = repo_location.replace(self.host.sep, '/')
         return repo_location
 
     def _get_chromium_src_dir(self):
         if not self._chromium_src_dir:
-          src_dir = self._host.abspath(
-                  self._host.join(self._host.dirname(__file__),
+          src_dir = self.host.abspath(
+                  self.host.join(self.host.dirname(__file__),
                                   '..', '..', '..', '..', '..'))
-          if not src_dir.endswith(self._host.sep):
-              src_dir += self._host.sep
+          if not src_dir.endswith(self.host.sep):
+              src_dir += self.host.sep
           self._chromium_src_dir = src_dir
         return self._chromium_src_dir
 
@@ -277,7 +285,9 @@ def _create_json_test_result(
         A dict containing the provided data in a format that is ingestable by
         ResultSink.
     """
-    assert status in VALID_STATUSES
+    if status not in VALID_STATUSES:
+        raise ValueError('Status %r is not in the VALID_STATUSES list' % status)
+
     # This is based off the protobuf in
     # https://source.chromium.org/chromium/infra/infra/+/master:go/src/go.chromium.org/luci/resultdb/sink/proto/v1/test_result.proto
     test_result = {

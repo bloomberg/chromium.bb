@@ -14,7 +14,7 @@
 
 #include "compiler/translator/HashNames.h"
 #include "compiler/translator/ImmutableString.h"
-#include "compiler/translator/Operator.h"
+#include "compiler/translator/Operator_autogen.h"
 #include "compiler/translator/Types.h"
 
 // If overflow happens, clamp the value to UINT_MIN or UINT_MAX.
@@ -81,6 +81,7 @@ bool IsOutputGLSL(ShShaderOutput output);
 bool IsOutputHLSL(ShShaderOutput output);
 bool IsOutputVulkan(ShShaderOutput output);
 bool IsOutputMetal(ShShaderOutput output);
+bool IsOutputMetalDirect(ShShaderOutput output);
 
 bool IsInShaderStorageBlock(TIntermTyped *node);
 

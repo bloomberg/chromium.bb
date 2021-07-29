@@ -14,6 +14,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_util.h"
+#include "media/base/video_aspect_ratio.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_util.h"
 #include "media/formats/mp4/box_definitions.h"
@@ -491,16 +492,25 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
   gfx::Rect visible_rect(codec_context->width, codec_context->height);
   gfx::Size coded_size = visible_rect.size();
 
-  AVRational aspect_ratio = {1, 1};
-  if (stream->sample_aspect_ratio.num)
-    aspect_ratio = stream->sample_aspect_ratio;
-  else if (codec_context->sample_aspect_ratio.num)
-    aspect_ratio = codec_context->sample_aspect_ratio;
+  // In some cases a container may have a DAR but no PAR, but FFmpeg translates
+  // everything to PAR. It is possible to get the render width and height, but I
+  // didn't find a way to determine whether that should be preferred to the PAR.
+  VideoAspectRatio aspect_ratio;
+  if (stream->sample_aspect_ratio.num) {
+    aspect_ratio = VideoAspectRatio::PAR(stream->sample_aspect_ratio.num,
+                                         stream->sample_aspect_ratio.den);
+  } else if (codec_context->sample_aspect_ratio.num) {
+    aspect_ratio =
+        VideoAspectRatio::PAR(codec_context->sample_aspect_ratio.num,
+                              codec_context->sample_aspect_ratio.den);
+  }
+
+  // Used to guess color space and to create the config. The first use should
+  // probably change to coded size, and the second should be removed as part of
+  // crbug.com/1214061.
+  gfx::Size natural_size = aspect_ratio.GetNaturalSize(visible_rect);
 
   VideoCodec codec = CodecIDToVideoCodec(codec_context->codec_id);
-
-  gfx::Size natural_size =
-      GetNaturalSize(visible_rect.size(), aspect_ratio.num, aspect_ratio.den);
 
   // Without the ffmpeg decoder configured, libavformat is unable to get the
   // profile, format, or coded size. So choose sensible defaults and let
@@ -649,6 +659,8 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
                      color_space, VideoTransformation(video_rotation),
                      coded_size, visible_rect, natural_size, extra_data,
                      GetEncryptionScheme(stream));
+  // Set the aspect ratio explicitly since our version hasn't been rounded.
+  config->set_aspect_ratio(aspect_ratio);
 
   if (stream->nb_side_data) {
     for (int i = 0; i < stream->nb_side_data; ++i) {
@@ -660,22 +672,22 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
       AVMasteringDisplayMetadata* metadata =
           reinterpret_cast<AVMasteringDisplayMetadata*>(side_data.data);
       if (metadata->has_primaries) {
-        hdr_metadata.mastering_metadata.primary_r =
+        hdr_metadata.color_volume_metadata.primary_r =
             gfx::PointF(av_q2d(metadata->display_primaries[0][0]),
                         av_q2d(metadata->display_primaries[0][1]));
-        hdr_metadata.mastering_metadata.primary_g =
+        hdr_metadata.color_volume_metadata.primary_g =
             gfx::PointF(av_q2d(metadata->display_primaries[1][0]),
                         av_q2d(metadata->display_primaries[1][1]));
-        hdr_metadata.mastering_metadata.primary_b =
+        hdr_metadata.color_volume_metadata.primary_b =
             gfx::PointF(av_q2d(metadata->display_primaries[2][0]),
                         av_q2d(metadata->display_primaries[2][1]));
-        hdr_metadata.mastering_metadata.white_point = gfx::PointF(
+        hdr_metadata.color_volume_metadata.white_point = gfx::PointF(
             av_q2d(metadata->white_point[0]), av_q2d(metadata->white_point[1]));
       }
       if (metadata->has_luminance) {
-        hdr_metadata.mastering_metadata.luminance_max =
+        hdr_metadata.color_volume_metadata.luminance_max =
             av_q2d(metadata->max_luminance);
-        hdr_metadata.mastering_metadata.luminance_min =
+        hdr_metadata.color_volume_metadata.luminance_min =
             av_q2d(metadata->min_luminance);
       }
       config->set_hdr_metadata(hdr_metadata);

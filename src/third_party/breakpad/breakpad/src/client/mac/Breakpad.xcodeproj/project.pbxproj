@@ -149,6 +149,22 @@
 		D2F9A53F121383A1002747C1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
 		D2F9A541121383A1002747C1 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D2F9A41512131EF0002747C1 /* libgtest.a */; };
 		D2F9A553121383DC002747C1 /* crash_generation_server_test.cc in Sources */ = {isa = PBXBuildFile; fileRef = D2F9A4CE121336F7002747C1 /* crash_generation_server_test.cc */; };
+		EB9CF8B924F01E1D00F9B6D1 /* encoding_util.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CF89F24F01E1D00F9B6D1 /* encoding_util.m */; };
+		EB9CF8BA24F01E1D00F9B6D1 /* minidump_upload.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CF8AD24F01E1D00F9B6D1 /* minidump_upload.m */; };
+		EB9CF8BB24F01E1D00F9B6D1 /* encoding_util.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9CF8AE24F01E1D00F9B6D1 /* encoding_util.h */; };
+		EB9CF8BC24F01E1D00F9B6D1 /* HTTPSimplePostRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9CF8AF24F01E1D00F9B6D1 /* HTTPSimplePostRequest.h */; };
+		EB9CF8BD24F01E1D00F9B6D1 /* HTTPRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9CF8B024F01E1D00F9B6D1 /* HTTPRequest.h */; };
+		EB9CF8BE24F01E1D00F9B6D1 /* HTTPPutRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CF8B124F01E1D00F9B6D1 /* HTTPPutRequest.m */; };
+		EB9CF8BF24F01E1D00F9B6D1 /* HTTPRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CF8B224F01E1D00F9B6D1 /* HTTPRequest.m */; };
+		EB9CF8C024F01E1D00F9B6D1 /* SymbolCollectorClient.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CF8B324F01E1D00F9B6D1 /* SymbolCollectorClient.m */; };
+		EB9CF8C124F01E1D00F9B6D1 /* HTTPGetRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9CF8B424F01E1D00F9B6D1 /* HTTPGetRequest.h */; };
+		EB9CF8C224F01E1D00F9B6D1 /* HTTPGetRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CF8B524F01E1D00F9B6D1 /* HTTPGetRequest.m */; };
+		EB9CF8C324F01E1D00F9B6D1 /* HTTPSimplePostRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CF8B624F01E1D00F9B6D1 /* HTTPSimplePostRequest.m */; };
+		EB9CF8C424F01E1D00F9B6D1 /* SymbolCollectorClient.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9CF8B724F01E1D00F9B6D1 /* SymbolCollectorClient.h */; };
+		EB9CF8C524F01E1D00F9B6D1 /* HTTPPutRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9CF8B824F01E1D00F9B6D1 /* HTTPPutRequest.h */; };
+		EB9CF8C624F01F1100F9B6D1 /* HTTPRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CF8B224F01E1D00F9B6D1 /* HTTPRequest.m */; };
+		EB9CF8C724F01F7600F9B6D1 /* encoding_util.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9CF89F24F01E1D00F9B6D1 /* encoding_util.m */; };
+		EB9CF8C824F01FB900F9B6D1 /* HTTPMultipartUpload.m in Sources */ = {isa = PBXBuildFile; fileRef = F92C53770ECCE635009BE4BA /* HTTPMultipartUpload.m */; };
 		F4DAB1DD19F1027100A5A838 /* launch_reporter.cc in Sources */ = {isa = PBXBuildFile; fileRef = F4DAB1DB19F1027100A5A838 /* launch_reporter.cc */; };
 		F4DAB1DE19F1027100A5A838 /* launch_reporter.h in Headers */ = {isa = PBXBuildFile; fileRef = F4DAB1DC19F1027100A5A838 /* launch_reporter.h */; };
 		F4F916B619F10FFC00B83BE4 /* launch_reporter.cc in Sources */ = {isa = PBXBuildFile; fileRef = F4DAB1DB19F1027100A5A838 /* launch_reporter.cc */; };
@@ -634,6 +650,19 @@
 		DE43468E11C72971004F095F /* sl */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = sl; path = sender/sl.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DE43468F11C72973004F095F /* sv */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = sv; path = sender/sv.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DE43469011C72976004F095F /* tr */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = tr; path = sender/tr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		EB9CF89F24F01E1D00F9B6D1 /* encoding_util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = encoding_util.m; path = ../../common/mac/encoding_util.m; sourceTree = "<group>"; };
+		EB9CF8AD24F01E1D00F9B6D1 /* minidump_upload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = minidump_upload.m; path = ../../common/mac/minidump_upload.m; sourceTree = "<group>"; };
+		EB9CF8AE24F01E1D00F9B6D1 /* encoding_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = encoding_util.h; path = ../../common/mac/encoding_util.h; sourceTree = "<group>"; };
+		EB9CF8AF24F01E1D00F9B6D1 /* HTTPSimplePostRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HTTPSimplePostRequest.h; path = ../../common/mac/HTTPSimplePostRequest.h; sourceTree = "<group>"; };
+		EB9CF8B024F01E1D00F9B6D1 /* HTTPRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HTTPRequest.h; path = ../../common/mac/HTTPRequest.h; sourceTree = "<group>"; };
+		EB9CF8B124F01E1D00F9B6D1 /* HTTPPutRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HTTPPutRequest.m; path = ../../common/mac/HTTPPutRequest.m; sourceTree = "<group>"; };
+		EB9CF8B224F01E1D00F9B6D1 /* HTTPRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HTTPRequest.m; path = ../../common/mac/HTTPRequest.m; sourceTree = "<group>"; };
+		EB9CF8B324F01E1D00F9B6D1 /* SymbolCollectorClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SymbolCollectorClient.m; path = ../../common/mac/SymbolCollectorClient.m; sourceTree = "<group>"; };
+		EB9CF8B424F01E1D00F9B6D1 /* HTTPGetRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HTTPGetRequest.h; path = ../../common/mac/HTTPGetRequest.h; sourceTree = "<group>"; };
+		EB9CF8B524F01E1D00F9B6D1 /* HTTPGetRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HTTPGetRequest.m; path = ../../common/mac/HTTPGetRequest.m; sourceTree = "<group>"; };
+		EB9CF8B624F01E1D00F9B6D1 /* HTTPSimplePostRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HTTPSimplePostRequest.m; path = ../../common/mac/HTTPSimplePostRequest.m; sourceTree = "<group>"; };
+		EB9CF8B724F01E1D00F9B6D1 /* SymbolCollectorClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SymbolCollectorClient.h; path = ../../common/mac/SymbolCollectorClient.h; sourceTree = "<group>"; };
+		EB9CF8B824F01E1D00F9B6D1 /* HTTPPutRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HTTPPutRequest.h; path = ../../common/mac/HTTPPutRequest.h; sourceTree = "<group>"; };
 		F4DAB1DB19F1027100A5A838 /* launch_reporter.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = launch_reporter.cc; path = ../../common/mac/launch_reporter.cc; sourceTree = SOURCE_ROOT; };
 		F4DAB1DC19F1027100A5A838 /* launch_reporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = launch_reporter.h; path = ../../common/mac/launch_reporter.h; sourceTree = SOURCE_ROOT; };
 		F91AF5CF0FD60393009D8BE2 /* BreakpadFramework_Test.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = BreakpadFramework_Test.mm; path = tests/BreakpadFramework_Test.mm; sourceTree = "<group>"; };
@@ -959,6 +988,19 @@
 		F92C53840ECCE68D009BE4BA /* mac */ = {
 			isa = PBXGroup;
 			children = (
+				EB9CF8AE24F01E1D00F9B6D1 /* encoding_util.h */,
+				EB9CF89F24F01E1D00F9B6D1 /* encoding_util.m */,
+				EB9CF8B424F01E1D00F9B6D1 /* HTTPGetRequest.h */,
+				EB9CF8B524F01E1D00F9B6D1 /* HTTPGetRequest.m */,
+				EB9CF8B824F01E1D00F9B6D1 /* HTTPPutRequest.h */,
+				EB9CF8B124F01E1D00F9B6D1 /* HTTPPutRequest.m */,
+				EB9CF8B024F01E1D00F9B6D1 /* HTTPRequest.h */,
+				EB9CF8B224F01E1D00F9B6D1 /* HTTPRequest.m */,
+				EB9CF8AF24F01E1D00F9B6D1 /* HTTPSimplePostRequest.h */,
+				EB9CF8B624F01E1D00F9B6D1 /* HTTPSimplePostRequest.m */,
+				EB9CF8AD24F01E1D00F9B6D1 /* minidump_upload.m */,
+				EB9CF8B724F01E1D00F9B6D1 /* SymbolCollectorClient.h */,
+				EB9CF8B324F01E1D00F9B6D1 /* SymbolCollectorClient.m */,
 				162F64F0161C577500CD68D5 /* arch_utilities.cc */,
 				162F64F1161C577500CD68D5 /* arch_utilities.h */,
 				8B31007011F0CD3C00FCF3E4 /* GTMDefines.h */,
@@ -1155,13 +1197,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				F92C55D00ECD0064009BE4BA /* Breakpad.h in Headers */,
+				EB9CF8BC24F01E1D00F9B6D1 /* HTTPSimplePostRequest.h in Headers */,
+				EB9CF8BB24F01E1D00F9B6D1 /* encoding_util.h in Headers */,
 				F92C56330ECD0DF1009BE4BA /* OnDemandServer.h in Headers */,
+				EB9CF8BD24F01E1D00F9B6D1 /* HTTPRequest.h in Headers */,
 				D2F9A4C9121336C7002747C1 /* client_info.h in Headers */,
+				EB9CF8C524F01E1D00F9B6D1 /* HTTPPutRequest.h in Headers */,
 				D2F9A4CA121336C7002747C1 /* crash_generation_client.h in Headers */,
 				D2F9A4CC121336C7002747C1 /* crash_generation_server.h in Headers */,
 				163201D61443019E00C4DBF5 /* ConfigFile.h in Headers */,
+				EB9CF8C424F01E1D00F9B6D1 /* SymbolCollectorClient.h in Headers */,
 				16C7C918147D45AE00776EAD /* BreakpadDefines.h in Headers */,
 				421BC5BD21110C0300B8042E /* convert_old_arm64_context.h in Headers */,
+				EB9CF8C124F01E1D00F9B6D1 /* HTTPGetRequest.h in Headers */,
 				162F64F3161C577500CD68D5 /* arch_utilities.h in Headers */,
 				F4DAB1DE19F1027100A5A838 /* launch_reporter.h in Headers */,
 				1EEEB6241720829E00F7E689 /* simple_string_dictionary.h in Headers */,
@@ -1684,8 +1732,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EB9CF8C824F01FB900F9B6D1 /* HTTPMultipartUpload.m in Sources */,
+				EB9CF8C224F01E1D00F9B6D1 /* HTTPGetRequest.m in Sources */,
 				F92C565F0ECD116B009BE4BA /* protected_memory_allocator.cc in Sources */,
+				EB9CF8BA24F01E1D00F9B6D1 /* minidump_upload.m in Sources */,
 				F92C56630ECD1179009BE4BA /* exception_handler.cc in Sources */,
+				EB9CF8BE24F01E1D00F9B6D1 /* HTTPPutRequest.m in Sources */,
 				F92C55D10ECD0064009BE4BA /* Breakpad.mm in Sources */,
 				F4DAB1DD19F1027100A5A838 /* launch_reporter.cc in Sources */,
 				F92C56340ECD0DF1009BE4BA /* OnDemandServer.mm in Sources */,
@@ -1694,6 +1746,10 @@
 				163201D71443019E00C4DBF5 /* ConfigFile.mm in Sources */,
 				162F64F2161C577500CD68D5 /* arch_utilities.cc in Sources */,
 				1EEEB6231720829E00F7E689 /* simple_string_dictionary.cc in Sources */,
+				EB9CF8C324F01E1D00F9B6D1 /* HTTPSimplePostRequest.m in Sources */,
+				EB9CF8B924F01E1D00F9B6D1 /* encoding_util.m in Sources */,
+				EB9CF8BF24F01E1D00F9B6D1 /* HTTPRequest.m in Sources */,
+				EB9CF8C024F01E1D00F9B6D1 /* SymbolCollectorClient.m in Sources */,
 				421BC5BC21110C0300B8042E /* convert_old_arm64_context.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1800,6 +1856,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EB9CF8C724F01F7600F9B6D1 /* encoding_util.m in Sources */,
+				EB9CF8C624F01F1100F9B6D1 /* HTTPRequest.m in Sources */,
 				F9C44EA20EF09F93003AEBAA /* HTTPMultipartUpload.m in Sources */,
 				F92C56A90ECE04C5009BE4BA /* crash_report_sender.m in Sources */,
 				F9C44EE90EF0A3C1003AEBAA /* GTMLogger.m in Sources */,

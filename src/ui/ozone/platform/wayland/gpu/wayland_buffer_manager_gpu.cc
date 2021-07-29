@@ -166,11 +166,10 @@ void WaylandBufferManagerGpu::CreateDmabufBasedBuffer(
                      buffer_id));
 }
 
-void WaylandBufferManagerGpu::CreateShmBasedBuffer(
-    base::ScopedFD shm_fd,
-    size_t length,
-    gfx::Size size,
-    uint32_t buffer_id) {
+void WaylandBufferManagerGpu::CreateShmBasedBuffer(base::ScopedFD shm_fd,
+                                                   size_t length,
+                                                   gfx::Size size,
+                                                   uint32_t buffer_id) {
   if (!remote_host_) {
     LOG(ERROR) << "Interface is not bound. Can't request "
                   "WaylandBufferManagerHost to create/commit/destroy buffers.";

@@ -9,7 +9,7 @@ import android.content.Context;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.metrics.WebApkUma;
+import org.chromium.chrome.browser.browserservices.metrics.WebApkUmaRecorder;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -41,7 +41,7 @@ public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
 
     @Override
     public void onDidFinishNavigation(final Tab tab, NavigationHandle navigation) {
-        if (!navigation.isInMainFrame()) return;
+        if (!navigation.isInPrimaryMainFrame()) return;
 
         switch (navigation.errorCode()) {
             case NetError.OK:
@@ -61,7 +61,7 @@ public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
                 }
                 break;
         }
-        WebApkUma.recordNetworkErrorWhenLaunch(-navigation.errorCode());
+        WebApkUmaRecorder.recordNetworkErrorWhenLaunch(-navigation.errorCode());
     }
 
     private void onNetworkChanged(Tab tab) {

@@ -42,8 +42,10 @@ import {Events as NetworkManagerEvents, NetworkManager} from './NetworkManager.j
 import type {NetworkRequest} from './NetworkRequest.js'; // eslint-disable-line no-unused-vars
 import {Resource} from './Resource.js';
 import {ExecutionContext, RuntimeModel} from './RuntimeModel.js';
-import type {Target} from './SDKModel.js';
-import {Capability, SDKModel, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';
+import {Capability} from './Target.js';
+import {SDKModel} from './SDKModel.js';
+import {TargetManager} from './TargetManager.js';
 import {SecurityOriginManager} from './SecurityOriginManager.js';
 
 export class ResourceTreeModel extends SDKModel {
@@ -201,17 +203,21 @@ export class ResourceTreeModel extends SDKModel {
         return;
       }
     }
-    if (type) {
-      frame.backForwardCacheDetails.restoredFromCache = type === Protocol.Page.NavigationType.BackForwardCacheRestore;
-    }
 
     this.dispatchEventToListeners(Events.FrameWillNavigate, frame);
     frame._navigate(framePayload);
+    if (type) {
+      frame.backForwardCacheDetails.restoredFromCache = type === Protocol.Page.NavigationType.BackForwardCacheRestore;
+    }
     this.dispatchEventToListeners(Events.FrameNavigated, frame);
 
     if (frame.isMainFrame()) {
       this.processPendingBackForwardCacheNotUsedEvents(frame);
       this.dispatchEventToListeners(Events.MainFrameNavigated, frame);
+      const networkManager = this.target().model(NetworkManager);
+      if (networkManager) {
+        networkManager.clearRequests();
+      }
     }
 
     // Fill frame with retained resources (the ones loaded using new loader).
@@ -377,6 +383,10 @@ export class ResourceTreeModel extends SDKModel {
       return;
     }
     this._pendingReloadOptions = null;
+    const networkManager = this.target().model(NetworkManager);
+    if (networkManager) {
+      networkManager.clearRequests();
+    }
     this.dispatchEventToListeners(Events.WillReloadPage);
     this._agent.invoke_reload({ignoreCache, scriptToEvaluateOnLoad});
   }
@@ -512,7 +522,7 @@ export class ResourceTreeModel extends SDKModel {
 
   onBackForwardCacheNotUsed(event: Protocol.Page.BackForwardCacheNotUsedEvent): void {
     if (this.mainFrame && this.mainFrame.id === event.frameId && this.mainFrame.loaderId === event.loaderId) {
-      this.mainFrame.backForwardCacheDetails.restoredFromCache = false;
+      this.mainFrame.setBackForwardCacheDetails(event);
       this.dispatchEventToListeners(Events.BackForwardCacheDetailsUpdated, this.mainFrame);
     } else {
       this.pendingBackForwardCacheNotUsedEvents.add(event);
@@ -525,7 +535,7 @@ export class ResourceTreeModel extends SDKModel {
     }
     for (const event of this.pendingBackForwardCacheNotUsedEvents) {
       if (frame.id === event.frameId && frame.loaderId === event.loaderId) {
-        frame.backForwardCacheDetails.restoredFromCache = false;
+        frame.setBackForwardCacheDetails(event);
         this.pendingBackForwardCacheNotUsedEvents.delete(event);
         // No need to dispatch the `BackForwardCacheDetailsUpdated` event here,
         // as this method call is followed by a `MainFrameNavigated` event.
@@ -570,15 +580,19 @@ export class ResourceTreeFrame {
   _securityOrigin: string|null;
   _mimeType: string|null;
   _unreachableUrl: string;
-  _adFrameType: Protocol.Page.AdFrameType;
+  _adFrameStatus?: Protocol.Page.AdFrameStatus;
   _secureContextType: Protocol.Page.SecureContextType|null;
   _crossOriginIsolatedContextType: Protocol.Page.CrossOriginIsolatedContextType|null;
   _gatedAPIFeatures: Protocol.Page.GatedAPIFeatures[]|null;
+  private originTrials: Protocol.Page.OriginTrial[]|null;
   private creationStackTrace: Protocol.Runtime.StackTrace|null;
   private creationStackTraceTarget: Target|null;
   _childFrames: Set<ResourceTreeFrame>;
   _resourcesMap: Map<string, Resource>;
-  backForwardCacheDetails: {restoredFromCache: boolean|undefined} = {restoredFromCache: undefined};
+  backForwardCacheDetails: {
+    restoredFromCache: boolean|undefined,
+    explanations: Protocol.Page.BackForwardCacheNotRestoredExplanation[],
+  } = {restoredFromCache: undefined, explanations: []};
 
   constructor(
       model: ResourceTreeModel, parentFrame: ResourceTreeFrame|null, frameId: string, payload: Protocol.Page.Frame|null,
@@ -595,10 +609,11 @@ export class ResourceTreeFrame {
     this._securityOrigin = payload && payload.securityOrigin;
     this._mimeType = payload && payload.mimeType;
     this._unreachableUrl = (payload && payload.unreachableUrl) || '';
-    this._adFrameType = (payload && payload.adFrameType) || Protocol.Page.AdFrameType.None;
+    this._adFrameStatus = payload?.adFrameStatus;
     this._secureContextType = payload && payload.secureContextType;
     this._crossOriginIsolatedContextType = payload && payload.crossOriginIsolatedContextType;
     this._gatedAPIFeatures = payload && payload.gatedAPIFeatures;
+    this.originTrials = (payload && payload.originTrials) || null;
 
     this.creationStackTrace = creationStackTrace;
     this.creationStackTraceTarget = null;
@@ -632,6 +647,10 @@ export class ResourceTreeFrame {
     return this._gatedAPIFeatures;
   }
 
+  getOriginTrials(): Protocol.Page.OriginTrial[]|null {
+    return this.originTrials;
+  }
+
   getCreationStackTraceData():
       {creationStackTrace: Protocol.Runtime.StackTrace|null, creationStackTraceTarget: Target} {
     return {
@@ -648,10 +667,12 @@ export class ResourceTreeFrame {
     this._securityOrigin = framePayload.securityOrigin;
     this._mimeType = framePayload.mimeType;
     this._unreachableUrl = framePayload.unreachableUrl || '';
-    this._adFrameType = framePayload.adFrameType || Protocol.Page.AdFrameType.None;
+    this._adFrameStatus = framePayload?.adFrameStatus;
     this._secureContextType = framePayload.secureContextType;
     this._crossOriginIsolatedContextType = framePayload.crossOriginIsolatedContextType;
     this._gatedAPIFeatures = framePayload.gatedAPIFeatures;
+    this.backForwardCacheDetails = {restoredFromCache: undefined, explanations: []};
+    this.originTrials = framePayload.originTrials || null;
 
     const mainResource = this._resourcesMap.get(this._url);
     this._resourcesMap.clear();
@@ -694,7 +715,11 @@ export class ResourceTreeFrame {
   }
 
   adFrameType(): Protocol.Page.AdFrameType {
-    return this._adFrameType;
+    return this._adFrameStatus?.adFrameType || Protocol.Page.AdFrameType.None;
+  }
+
+  adFrameStatus(): Protocol.Page.AdFrameStatus|undefined {
+    return this._adFrameStatus;
   }
 
   get childFrames(): ResourceTreeFrame[] {
@@ -907,6 +932,11 @@ export class ResourceTreeFrame {
       void {
     this.creationStackTrace = creationStackTraceData.creationStackTrace;
     this.creationStackTraceTarget = creationStackTraceData.creationStackTraceTarget;
+  }
+
+  setBackForwardCacheDetails(event: Protocol.Page.BackForwardCacheNotUsedEvent): void {
+    this.backForwardCacheDetails.restoredFromCache = false;
+    this.backForwardCacheDetails.explanations = event.notRestoredExplanations;
   }
 }
 

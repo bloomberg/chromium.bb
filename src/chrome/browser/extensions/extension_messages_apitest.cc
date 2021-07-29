@@ -10,13 +10,13 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -96,7 +96,7 @@ class MessageSender : public content::NotificationObserver {
       GURL event_url) {
     auto event =
         std::make_unique<Event>(events::TEST_ON_MESSAGE, "test.onMessage",
-                                event_args->TakeList(), profile);
+                                std::move(*event_args).TakeList(), profile);
     event->event_url = event_url;
     return event;
   }
@@ -171,16 +171,16 @@ IN_PROC_BROWSER_TEST_F(MessagingApiTest, MessagingExternal) {
   ASSERT_TRUE(LoadExtension(
       shared_test_data_dir().AppendASCII("messaging").AppendASCII("receiver")));
 
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "messaging/connect_external", .use_extensions_root_dir = true}))
+  ASSERT_TRUE(RunExtensionTest("messaging/connect_external",
+                               {.use_extensions_root_dir = true}))
       << message_;
 }
 
 // Tests that a content script can exchange messages with a tab even if there is
 // no background page.
 IN_PROC_BROWSER_TEST_F(MessagingApiTest, MessagingNoBackground) {
-  ASSERT_TRUE(RunExtensionTest({.name = "messaging/connect_nobackground",
-                                .page_url = "page_in_main_frame.html"}))
+  ASSERT_TRUE(RunExtensionTest("messaging/connect_nobackground",
+                               {.page_url = "page_in_main_frame.html"}))
       << message_;
 }
 

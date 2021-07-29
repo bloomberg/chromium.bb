@@ -54,18 +54,6 @@ void ObservableWebView::DidFinishLoad(
     delegate_->OnWebContentsFinishedLoad();
 }
 
-void ObservableWebView::ResourceLoadComplete(
-    content::RenderFrameHost* render_frame_host,
-    const content::GlobalRequestID& request_id,
-    const blink::mojom::ResourceLoadInfo& resource_load_info) {
-  // Only listen to the main frame.
-  if (render_frame_host->GetParent())
-    return;
-
-  if (delegate_)
-    delegate_->OnMainFrameResourceLoadComplete(resource_load_info);
-}
-
 void ObservableWebView::ResetDelegate() {
   delegate_ = nullptr;
 }
@@ -109,6 +97,15 @@ content::WebContents* WebDialogView::web_contents() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, views::View implementation:
+
+void WebDialogView::AddedToWidget() {
+  gfx::RoundedCornersF corner_radii(
+      delegate_ && delegate_->GetWebDialogFrameKind() ==
+                       WebDialogDelegate::FrameKind::kDialog
+          ? GetCornerRadius()
+          : 0);
+  web_view_->holder()->SetCornerRadii(corner_radii);
+}
 
 gfx::Size WebDialogView::CalculatePreferredSize() const {
   gfx::Size out;

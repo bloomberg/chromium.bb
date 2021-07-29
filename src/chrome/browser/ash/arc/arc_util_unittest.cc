@@ -23,7 +23,6 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
@@ -735,11 +734,11 @@ TEST_F(ChromeArcUtilTest, ArcUnmanagedToManagedTransition_FeatureOn) {
       arc::kEnableUnmanagedToManagedTransitionFeature);
 
   profile()->GetPrefs()->SetInteger(
-      arc::prefs::kArcSupervisionTransition,
-      static_cast<int>(arc::ArcSupervisionTransition::UNMANAGED_TO_MANAGED));
+      arc::prefs::kArcManagementTransition,
+      static_cast<int>(arc::ArcManagementTransition::UNMANAGED_TO_MANAGED));
 
-  EXPECT_EQ(GetSupervisionTransition(profile()),
-            arc::ArcSupervisionTransition::UNMANAGED_TO_MANAGED);
+  EXPECT_EQ(GetManagementTransition(profile()),
+            arc::ArcManagementTransition::UNMANAGED_TO_MANAGED);
 }
 
 TEST_F(ChromeArcUtilTest, ArcUnmanagedToManagedTransition_FeatureOff) {
@@ -748,11 +747,11 @@ TEST_F(ChromeArcUtilTest, ArcUnmanagedToManagedTransition_FeatureOff) {
       arc::kEnableUnmanagedToManagedTransitionFeature);
 
   profile()->GetPrefs()->SetInteger(
-      arc::prefs::kArcSupervisionTransition,
-      static_cast<int>(arc::ArcSupervisionTransition::UNMANAGED_TO_MANAGED));
+      arc::prefs::kArcManagementTransition,
+      static_cast<int>(arc::ArcManagementTransition::UNMANAGED_TO_MANAGED));
 
-  EXPECT_EQ(GetSupervisionTransition(profile()),
-            arc::ArcSupervisionTransition::NO_TRANSITION);
+  EXPECT_EQ(GetManagementTransition(profile()),
+            arc::ArcManagementTransition::NO_TRANSITION);
 }
 
 class ArcOobeTest : public ChromeArcUtilTest {
@@ -772,11 +771,10 @@ class ArcOobeTest : public ChromeArcUtilTest {
 
  protected:
   void CreateLoginDisplayHost() {
-    fake_login_display_host_ =
-        std::make_unique<chromeos::FakeLoginDisplayHost>();
+    fake_login_display_host_ = std::make_unique<ash::FakeLoginDisplayHost>();
   }
 
-  chromeos::FakeLoginDisplayHost* login_display_host() {
+  ash::FakeLoginDisplayHost* login_display_host() {
     return fake_login_display_host_.get();
   }
 
@@ -784,7 +782,7 @@ class ArcOobeTest : public ChromeArcUtilTest {
 
  private:
   std::unique_ptr<chromeos::OobeConfiguration> oobe_configuration_;
-  std::unique_ptr<chromeos::FakeLoginDisplayHost> fake_login_display_host_;
+  std::unique_ptr<ash::FakeLoginDisplayHost> fake_login_display_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcOobeTest);
 };

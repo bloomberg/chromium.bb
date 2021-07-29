@@ -18,9 +18,9 @@
   const targets = SDK.targetManager.targets();
   for (const target of targets) {
     const agentNames =
-        Object.keys(target._agents)
+        Array.from(target.agents.keys())
             .filter(function(agentName) {
-              const agent = target._agents[agentName];
+              const agent = target.agents.get(agentName);
               return agent['enable'] && agent['disable'] &&
                   agentName !== 'ServiceWorker' && agentName !== 'Security' &&
                   agentName !== 'Inspector' &&
@@ -31,19 +31,15 @@
             .sort();
 
     async function disableAgent(agentName) {
-      const agent = target._agents[agentName];
+      const agent = target.agents.get(agentName);
       const response = await agent.invoke_disable({});
-      printResult(
-          agentName, 'disable',
-          response[ProtocolClient.InspectorBackend.ProtocolError]);
+      printResult(agentName, 'disable', response.getError());
     }
 
     async function enableAgent(agentName) {
-      const agent = target._agents[agentName];
+      const agent = target.agents.get(agentName);
       const response = await agent.invoke_enable({});
-      printResult(
-          agentName, 'enable',
-          response[ProtocolClient.InspectorBackend.ProtocolError]);
+      printResult(agentName, 'enable', response.getError());
     }
 
     for (const agentName of agentNames)

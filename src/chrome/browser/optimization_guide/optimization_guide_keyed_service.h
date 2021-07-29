@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/optimization_guide/content/browser/optimization_guide_decider.h"
@@ -40,6 +39,7 @@ class TopHostProvider;
 
 class GURL;
 class OptimizationGuideHintsManager;
+class OptimizationGuideNavigationData;
 
 // Keyed service that can be used to get information received from the remote
 // Optimization Guide Service. For regular profiles, this will do the work to
@@ -102,6 +102,11 @@ class OptimizationGuideKeyedService
       optimization_guide::proto::OptimizationTarget optimization_target,
       const absl::optional<optimization_guide::proto::Any>& model_metadata,
       const base::FilePath& file_path);
+
+  // Returns the OptimizationGuideNavigationData for |navigation_handle|. Will
+  // return nullptr if one cannot be created for it for any reason.
+  static OptimizationGuideNavigationData* GetNavigationDataFromNavigationHandle(
+      content::NavigationHandle* navigation_handle);
 
  private:
   friend class ChromeBrowsingDataRemoverDelegate;

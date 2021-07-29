@@ -6,7 +6,7 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "include/base/cef_bind.h"
+#include "include/base/cef_callback.h"
 #include "include/cef_app.h"
 #include "include/cef_application_mac.h"
 #include "tests/cefclient/browser/browser_window_osr_mac.h"
@@ -86,7 +86,7 @@ class RootWindowMacImpl
 
   // RootWindow methods.
   void Init(RootWindow::Delegate* delegate,
-            const RootWindowConfig& config,
+            std::unique_ptr<RootWindowConfig> config,
             const CefBrowserSettings& settings);
   void InitAsPopup(RootWindow::Delegate* delegate,
                    bool with_controls,
@@ -126,7 +126,7 @@ class RootWindowMacImpl
   bool with_extension_;
   bool is_popup_;
   CefRect start_rect_;
-  scoped_ptr<BrowserWindow> browser_window_;
+  std::unique_ptr<BrowserWindow> browser_window_;
   bool initialized_;
 
   // Main window.
@@ -170,25 +170,25 @@ RootWindowMacImpl::~RootWindowMacImpl() {
 }
 
 void RootWindowMacImpl::Init(RootWindow::Delegate* delegate,
-                             const RootWindowConfig& config,
+                             std::unique_ptr<RootWindowConfig> config,
                              const CefBrowserSettings& settings) {
   DCHECK(!initialized_);
 
-  with_controls_ = config.with_controls;
-  with_osr_ = config.with_osr;
-  with_extension_ = config.with_extension;
-  start_rect_ = config.bounds;
+  with_controls_ = config->with_controls;
+  with_osr_ = config->with_osr;
+  with_extension_ = config->with_extension;
+  start_rect_ = config->bounds;
 
-  CreateBrowserWindow(config.url);
+  CreateBrowserWindow(config->url);
 
   initialized_ = true;
 
   // Create the native root window on the main thread.
   if (CURRENTLY_ON_MAIN_THREAD()) {
-    CreateRootWindow(settings, config.initially_hidden);
+    CreateRootWindow(settings, config->initially_hidden);
   } else {
-    MAIN_POST_CLOSURE(base::Bind(&RootWindowMacImpl::CreateRootWindow, this,
-                                 settings, config.initially_hidden));
+    MAIN_POST_CLOSURE(base::BindOnce(&RootWindowMacImpl::CreateRootWindow, this,
+                                     settings, config->initially_hidden));
   }
 }
 
@@ -328,7 +328,7 @@ CefRefPtr<CefBrowser> RootWindowMacImpl::GetBrowser() const {
 
   if (browser_window_)
     return browser_window_->GetBrowser();
-  return NULL;
+  return nullptr;
 }
 
 ClientWindowHandle RootWindowMacImpl::GetWindowHandle() const {
@@ -487,7 +487,7 @@ void RootWindowMacImpl::CreateRootWindow(const CefBrowserSettings& settings,
     // Create the browser window.
     browser_window_->CreateBrowser(
         CAST_NSVIEW_TO_CEF_WINDOW_HANDLE(contentView),
-        CefRect(0, 0, width, height), settings, NULL,
+        CefRect(0, 0, width, height), settings, nullptr,
         root_window_.delegate_->GetRequestContext(&root_window_));
   } else {
     // With popups we already have a browser window. Parent the browser window
@@ -564,7 +564,7 @@ void RootWindowMacImpl::OnSetFullscreen(bool fullscreen) {
 
   CefRefPtr<CefBrowser> browser = GetBrowser();
   if (browser) {
-    scoped_ptr<window_test::WindowTestRunnerMac> test_runner(
+    std::unique_ptr<window_test::WindowTestRunnerMac> test_runner(
         new window_test::WindowTestRunnerMac());
     if (fullscreen)
       test_runner->Maximize(browser);
@@ -644,11 +644,11 @@ RootWindow::Delegate* RootWindowMac::delegate() const {
 }
 
 void RootWindowMac::Init(RootWindow::Delegate* delegate,
-                         const RootWindowConfig& config,
+                         std::unique_ptr<RootWindowConfig> config,
                          const CefBrowserSettings& settings) {
   DCHECK(delegate);
   delegate_ = delegate;
-  impl_->Init(delegate, config, settings);
+  impl_->Init(delegate, std::move(config), settings);
 }
 
 void RootWindowMac::InitAsPopup(RootWindow::Delegate* delegate,

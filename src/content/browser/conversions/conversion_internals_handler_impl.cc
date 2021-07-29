@@ -11,7 +11,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/circular_deque.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/conversions/conversion_manager_impl.h"
 #include "content/browser/conversions/conversion_report.h"
@@ -51,10 +50,7 @@ void ForwardImpressionsToWebUI(
         impression.conversion_origin(), impression.reporting_origin(),
         impression.impression_time().ToJsTime(),
         impression.expiry_time().ToJsTime(),
-        SourceTypeToMojoType(impression.source_type()),
-        // Convert priority to a string, an int64_t would potentially run into
-        // Number.MAX_SAFE_INTEGER if sent as a numeric type.
-        base::NumberToString(impression.priority())));
+        SourceTypeToMojoType(impression.source_type()), impression.priority()));
   }
 
   std::move(web_ui_callback).Run(std::move(web_ui_impressions));
@@ -94,8 +90,11 @@ void ConversionInternalsHandlerImpl::IsMeasurementEnabled(
   content::WebContents* contents = web_ui_->GetWebContents();
   bool measurement_enabled =
       manager_provider_->GetManager(contents) &&
-      GetContentClient()->browser()->IsConversionMeasurementAllowed(
-          contents->GetBrowserContext());
+      GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
+          contents->GetBrowserContext(),
+          ContentBrowserClient::ConversionMeasurementOperation::kAny,
+          /*impression_origin=*/nullptr, /*conversion_origin=*/nullptr,
+          /*reporting_origin=*/nullptr);
   bool debug_mode = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kConversionsDebugMode);
   std::move(callback).Run(measurement_enabled, debug_mode);

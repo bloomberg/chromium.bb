@@ -401,8 +401,11 @@ void URLRequestJob::NotifySSLCertificateError(int net_error,
   request_->NotifySSLCertificateError(net_error, ssl_info, fatal);
 }
 
-bool URLRequestJob::CanGetCookies() const {
-  return request_->CanGetCookies();
+void URLRequestJob::AnnotateAndMoveUserBlockedCookies(
+    CookieAccessResultList& maybe_included_cookies,
+    CookieAccessResultList& excluded_cookies) const {
+  request_->AnnotateAndMoveUserBlockedCookies(maybe_included_cookies,
+                                              excluded_cookies);
 }
 
 bool URLRequestJob::CanSetCookie(const net::CanonicalCookie& cookie,
@@ -482,6 +485,8 @@ void URLRequestJob::NotifyHeadersComplete() {
   }
 
   if (NeedsAuth()) {
+    request_->net_log().AddEvent(
+        NetLogEventType::URL_REQUEST_JOB_NOTIFY_HEADERS_COMPLETE_NEEDS_AUTH);
     std::unique_ptr<AuthChallengeInfo> auth_info = GetAuthChallengeInfo();
     // Need to check for a NULL auth_info because the server may have failed
     // to send a challenge with the 401 response.

@@ -9,8 +9,8 @@
 #include <string>
 #include <utility>
 
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -147,7 +147,6 @@ constexpr const char* GetEventLatencyDispatchToCompositorBreakdownName(
           NOTREACHED();
           return nullptr;
       }
-      break;
     case EventMetrics::DispatchStage::kRendererMainFinished:
       switch (compositor_stage) {
         case CompositorFrameReporter::StageType::
@@ -171,7 +170,6 @@ constexpr const char* GetEventLatencyDispatchToCompositorBreakdownName(
           NOTREACHED();
           return nullptr;
       }
-      break;
     default:
       NOTREACHED();
       return nullptr;
@@ -1272,6 +1270,12 @@ bool CompositorFrameReporter::IsDroppedFrameAffectingSmoothness() const {
   // etc.).
   if (TestReportType(FrameReportType::kDroppedFrame)) {
     return smooth_thread_ != SmoothThread::kSmoothNone;
+  }
+
+  // If the frame includes new main-thread update, even if it's for an earlier
+  // begin-frame, then do not count it as a dropped frame affecting smoothness.
+  if (is_accompanied_by_main_thread_update_) {
+    return false;
   }
 
   // If the frame was shown, but included only partial updates, then it hurt

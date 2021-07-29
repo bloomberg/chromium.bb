@@ -1,12 +1,12 @@
 // Implements the standalone test runner (see also: /standalone/index.html).
 
-import { DefaultTestFileLoader } from '../framework/file_loader.js';
-import { Logger } from '../framework/logging/logger.js';
-import { LiveTestCaseResult } from '../framework/logging/result.js';
-import { parseQuery } from '../framework/query/parseQuery.js';
-import { TestQueryLevel } from '../framework/query/query.js';
-import { TestTreeNode, TestSubtree, TestTreeLeaf } from '../framework/tree.js';
-import { assert } from '../framework/util/util.js';
+import { DefaultTestFileLoader } from '../internal/file_loader.js';
+import { Logger } from '../internal/logging/logger.js';
+import { LiveTestCaseResult } from '../internal/logging/result.js';
+import { parseQuery } from '../internal/query/parseQuery.js';
+import { TestQueryLevel } from '../internal/query/query.js';
+import { TestTreeNode, TestSubtree, TestTreeLeaf } from '../internal/tree.js';
+import { assert, ErrorWithExtra } from '../util/util.js';
 
 import { optionEnabled } from './helper/options.js';
 import { TestWorker } from './helper/test_worker.js';
@@ -21,7 +21,8 @@ let haveSomeResults = false;
 const runnow = optionEnabled('runnow');
 const debug = optionEnabled('debug');
 
-const logger = new Logger(debug);
+Logger.globalDebugMode = debug;
+const logger = new Logger();
 
 const worker = optionEnabled('worker') ? new TestWorker(debug) : undefined;
 
@@ -112,8 +113,7 @@ function makeCaseHTML(t: TestTreeLeaf): VisualizedSubtree {
               .attr('title', 'Log stack to console')
               .appendTo(caselog)
               .on('click', () => {
-                /* eslint-disable-next-line no-console */
-                console.log(l);
+                consoleLogError(l);
               });
             $('<pre>').addClass('testcaselogtext').appendTo(caselog).text(l.toJSON());
           }
@@ -192,6 +192,18 @@ function makeSubtreeChildrenHTML(
   return { runSubtree: runMySubtree, generateSubtreeHTML: generateMyHTML };
 }
 
+function consoleLogError(e: Error | ErrorWithExtra | undefined) {
+  if (e === undefined) return;
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  (globalThis as any)._stack = e;
+  /* eslint-disable-next-line no-console */
+  console.log('_stack =', e);
+  if ('extra' in e && e.extra !== undefined) {
+    /* eslint-disable-next-line no-console */
+    console.log('_stack.extra =', e.extra);
+  }
+}
+
 function makeTreeNodeHeaderHTML(
   n: TestTreeNode,
   runSubtree: RunSubtree,
@@ -242,8 +254,7 @@ function makeTreeNodeHeaderHTML(
       .attr('title', 'Log test creation stack to console')
       .appendTo(header)
       .on('click', () => {
-        /* eslint-disable-next-line no-console */
-        console.log(n.testCreationStack);
+        consoleLogError(n.testCreationStack);
       });
   }
   const nodetitle = $('<div>').addClass('nodetitle').appendTo(header);

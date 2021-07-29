@@ -53,6 +53,7 @@
 #include "libavcodec/h264_ps.h"
 #include "libavcodec/golomb.h"
 #include "libavcodec/internal.h"
+#include "libavcodec/packet_internal.h"
 #include "avformat.h"
 #include "avio_internal.h"
 #include "internal.h"
@@ -60,8 +61,8 @@
 #include "mxf.h"
 #include "config.h"
 
-extern AVOutputFormat ff_mxf_d10_muxer;
-extern AVOutputFormat ff_mxf_opatom_muxer;
+extern const AVOutputFormat ff_mxf_d10_muxer;
+extern const AVOutputFormat ff_mxf_opatom_muxer;
 
 #define EDIT_UNITS_PER_BODY 250
 #define KAG_SIZE 512
@@ -3104,9 +3105,9 @@ static int mxf_interleave_get_packet(AVFormatContext *s, AVPacket *out, AVPacket
         stream_count += !!s->streams[i]->internal->last_in_packet_buffer;
 
     if (stream_count && (s->nb_streams == stream_count || flush)) {
-        AVPacketList *pktl = s->internal->packet_buffer;
+        PacketList *pktl = s->internal->packet_buffer;
         if (s->nb_streams != stream_count) {
-            AVPacketList *last = NULL;
+            PacketList *last = NULL;
             // find last packet in edit unit
             while (pktl) {
                 if (!stream_count || pktl->pkt.stream_index == 0)
@@ -3120,7 +3121,7 @@ static int mxf_interleave_get_packet(AVFormatContext *s, AVPacket *out, AVPacket
             }
             // purge packet queue
             while (pktl) {
-                AVPacketList *next = pktl->next;
+                PacketList *next = pktl->next;
                 av_packet_unref(&pktl->pkt);
                 av_freep(&pktl);
                 pktl = next;
@@ -3238,7 +3239,7 @@ static const AVClass mxf_opatom_muxer_class = {
     .version        = LIBAVUTIL_VERSION_INT,
 };
 
-AVOutputFormat ff_mxf_muxer = {
+const AVOutputFormat ff_mxf_muxer = {
     .name              = "mxf",
     .long_name         = NULL_IF_CONFIG_SMALL("MXF (Material eXchange Format)"),
     .mime_type         = "application/mxf",
@@ -3255,7 +3256,7 @@ AVOutputFormat ff_mxf_muxer = {
     .priv_class        = &mxf_muxer_class,
 };
 
-AVOutputFormat ff_mxf_d10_muxer = {
+const AVOutputFormat ff_mxf_d10_muxer = {
     .name              = "mxf_d10",
     .long_name         = NULL_IF_CONFIG_SMALL("MXF (Material eXchange Format) D-10 Mapping"),
     .mime_type         = "application/mxf",
@@ -3271,7 +3272,7 @@ AVOutputFormat ff_mxf_d10_muxer = {
     .priv_class        = &mxf_d10_muxer_class,
 };
 
-AVOutputFormat ff_mxf_opatom_muxer = {
+const AVOutputFormat ff_mxf_opatom_muxer = {
     .name              = "mxf_opatom",
     .long_name         = NULL_IF_CONFIG_SMALL("MXF (Material eXchange Format) Operational Pattern Atom"),
     .mime_type         = "application/mxf",

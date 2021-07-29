@@ -349,7 +349,7 @@ static AOM_INLINE void collect_mv_stats_tile(MV_STATS *mv_stats,
 }
 
 void av1_collect_mv_stats(AV1_COMP *cpi, int current_q) {
-  MV_STATS *mv_stats = &cpi->mv_stats;
+  MV_STATS *mv_stats = &cpi->ppi->mv_stats;
   const AV1_COMMON *cm = &cpi->common;
   const int tile_cols = cm->tiles.cols;
   const int tile_rows = cm->tiles.rows;
@@ -420,8 +420,8 @@ void av1_pick_and_set_high_precision_mv(AV1_COMP *cpi, int qindex) {
   }
 #if !CONFIG_REALTIME_ONLY
   else if (cpi->sf.hl_sf.high_precision_mv_usage == LAST_MV_DATA &&
-           av1_frame_allows_smart_mv(cpi) && cpi->mv_stats.valid) {
-    use_hp = get_smart_mv_prec(cpi, &cpi->mv_stats, qindex);
+           av1_frame_allows_smart_mv(cpi) && cpi->ppi->mv_stats.valid) {
+    use_hp = get_smart_mv_prec(cpi, &cpi->ppi->mv_stats, qindex);
   }
 #endif  // !CONFIG_REALTIME_ONLY
 

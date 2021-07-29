@@ -2414,7 +2414,7 @@ TEST_F(VkLayerTest, GetSwapchainImageAndTryDestroy) {
     images.resize(image_count, VK_NULL_HANDLE);
     ASSERT_VK_SUCCESS(vk::GetSwapchainImagesKHR(device(), m_swapchain, &image_count, images.data()));
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-vkDestroyImage-image");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkDestroyImage-image-04882");
     vk::DestroyImage(device(), images.at(0), nullptr);
     m_errorMonitor->VerifyFound();
 
@@ -4229,14 +4229,14 @@ TEST_F(VkLayerTest, BufferViewInUseDestroyedSignaled) {
     VkResult err = vk::CreateBufferView(m_device->device(), &bvci, NULL, &view);
     ASSERT_VK_SUCCESS(err);
 
-    char const *fsSource =
-        "#version 450\n"
-        "\n"
-        "layout(set=0, binding=0, r32f) uniform readonly imageBuffer s;\n"
-        "layout(location=0) out vec4 x;\n"
-        "void main(){\n"
-        "   x = imageLoad(s, 0);\n"
-        "}\n";
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(set=0, binding=0, r32f) uniform readonly imageBuffer s;
+        layout(location=0) out vec4 x;
+        void main(){
+           x = imageLoad(s, 0);
+        }
+    )glsl";
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
 
     CreatePipelineHelper pipe(*this);
@@ -9703,6 +9703,12 @@ TEST_F(VkLayerTest, InvalidSemaphoreCounterType) {
 
 TEST_F(VkLayerTest, ImageDrmFormatModifer) {
     TEST_DESCRIPTION("General testing of VK_EXT_image_drm_format_modifier");
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
@@ -9710,9 +9716,20 @@ TEST_F(VkLayerTest, ImageDrmFormatModifer) {
         printf("%s Test not supported by MockICD, skipping tests\n", kSkipPrefix);
         return;
     }
+    bool idfm_extensions = DeviceExtensionSupported(gpu(), nullptr, VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME);
+    idfm_extensions = idfm_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
+    idfm_extensions = idfm_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
+    idfm_extensions = idfm_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
+    idfm_extensions = idfm_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+    idfm_extensions = idfm_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
 
-    if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME)) {
+    if (idfm_extensions) {
         m_device_extension_names.push_back(VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
     } else {
         printf("%s Extension %s not supported by device; skipped.\n", kSkipPrefix, VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME);
         return;
@@ -9786,6 +9803,14 @@ TEST_F(VkLayerTest, ImageDrmFormatModifer) {
     vk::CreateImage(device(), &image_info, nullptr, &image);
     m_errorMonitor->VerifyFound();
 
+    auto drm_format_modifier = LvlInitStruct<VkPhysicalDeviceImageDrmFormatModifierInfoEXT>();
+    drm_format_modifier.drmFormatModifier = dummy_modifiers[1];
+    image_format_info.pNext = &drm_format_modifier;
+    VkResult result = vk::GetPhysicalDeviceImageFormatProperties2(m_device->phy().handle(), &image_format_info, &image_format_prop);
+    if (result == VK_ERROR_FORMAT_NOT_SUPPORTED) {
+        printf("Format VK_FORMAT_R8G8B8A8_UNORM not supported with format modifiers, Skipping the remaining tests.\n");
+        return;
+    }
     // Postive check if only 1
     image_info.pNext = (void *)&drm_format_mod_list;
     m_errorMonitor->ExpectSuccess();
@@ -10847,6 +10872,19 @@ TEST_F(VkLayerTest, ValidateCmdBuildAccelerationStructuresKHR) {
         invalid_build_info_khr.ppGeometries = &invalid_build_info_khr.pGeometries;
         m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkAccelerationStructureBuildGeometryInfoKHR-pGeometries-03788");
         vkCmdBuildAccelerationStructuresKHR(m_commandBuffer->handle(), 1, &invalid_build_info_khr, &pBuildRangeInfos);
+        m_errorMonitor->VerifyFound();
+    }
+
+    // Buffer is missing VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR usage flag
+    {
+        VkBufferObj bad_usage_buffer;
+        bad_usage_buffer.init(*m_device, 1024, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                              VK_BUFFER_USAGE_RAY_TRACING_BIT_NV);
+        VkBufferDeviceAddressInfo addr_info = {VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO, nullptr, bad_usage_buffer.handle()};
+        auto addr = vkGetBufferDeviceAddressKHR(m_device->handle(), &addr_info);
+        pGeometry[0].geometry.triangles.vertexData.deviceAddress = addr;
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBuildAccelerationStructuresKHR-geometry-03673");
+        vkCmdBuildAccelerationStructuresKHR(m_commandBuffer->handle(), 1, &build_info_khr, &pBuildRangeInfos);
         m_errorMonitor->VerifyFound();
     }
     delete[] pGeometry;

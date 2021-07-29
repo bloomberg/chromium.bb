@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/sek.</translation>
 <translation id="2353636109065292463">Verið er að athuga nettenginguna</translation>
 <translation id="2388990488038464401">Viltu hringja í þetta númer úr símanum þínum?</translation>
+<translation id="2435457462613246316">Sýna aðgangsorð</translation>
 <translation id="24452542372838207">Stækka tilkynningu</translation>
 <translation id="2445449901874883781">Nota mikinn þéttleika</translation>
 <translation id="2482878487686419369">Tilkynningar</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{Fyrir einu ári}one{Fyrir # ári}other{Fyrir # árum}}</translation>
 <translation id="2878511608894704031">Eyða öllu</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{eftir einn dag}one{eftir # dag}other{eftir # daga}}</translation>
+<translation id="2922712708897119705">Dálknum <ph name="COLUMN_NAME" /> raðað í lækkandi röð.</translation>
 <translation id="2931838996092594335">smella</translation>
 <translation id="2981684127883932071">Birtir tillögur</translation>
 <translation id="3036649622769666520">Opna skrár</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Valmynd</translation>
 <translation id="3909791450649380159">Klippa</translation>
 <translation id="3990502903496589789">Hægri brún</translation>
+<translation id="3994749195054421561">Dálknum <ph name="COLUMN_NAME" /> raðað í hækkandi röð.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{Ein ólesin tilkynning}one{# ólesin tilkynning}other{# ólesnar tilkynningar}}</translation>
 <translation id="4202807286478387388">stökk</translation>
 <translation id="4250229828105606438">Skjámynd</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Fjarlægja af klippiborði</translation>
 <translation id="4316910396681052118">ÖLL FORRIT</translation>
 <translation id="4491109536499578614">Mynd</translation>
+<translation id="4565377596337484307">Fela aðgangsorð</translation>
 <translation id="4588090240171750605">Fletta til hægri</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, stjörnur: <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, tillaga að forriti</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Síða <ph name="SELECTED_PAGE" /> af <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Hreinsa texta leitarreitsins</translation>
 <translation id="6040143037577758943">Loka</translation>
+<translation id="6117103120090651229">Miðhnappur</translation>
 <translation id="6119846243427417423">virkja</translation>
 <translation id="6129953537138746214">Bil</translation>
 <translation id="6134259848159370930">Leitaðu í tækinu þínu, forritum, stillingum og á netinu.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Fara í öll forrit</translation>
 <translation id="6165508094623778733">Frekari upplýsingar</translation>
 <translation id="6166852626429024716">Leitaðu í tækinu þínu, forritum, stillingum, á vefnum...</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> er valin.</translation>
 <translation id="6264365405983206840">Velja &amp;allt</translation>
 <translation id="6351032674660237738">TILLÖGUR AÐ FORRITUM</translation>
 <translation id="6364916375976753737">Fletta til vinstri</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 mínúta eftir}one{# mínúta eftir}other{# mínútur eftir}}</translation>
 <translation id="7430878839542012341">Eyða þessari leit úr ferlinum?</translation>
+<translation id="7437971918971306061">Dálknum <ph name="COLUMN_NAME" /> óraðað.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7620655452534002301">Fjarlægt.</translation>

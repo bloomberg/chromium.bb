@@ -24,6 +24,7 @@
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/large_blob.h"
+#include "device/fido/make_credential_request_handler.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
@@ -31,6 +32,7 @@ namespace device {
 struct CtapGetAssertionRequest;
 struct CtapGetAssertionOptions;
 struct CtapMakeCredentialRequest;
+struct MakeCredentialOptions;
 
 namespace pin {
 struct RetriesResponse;
@@ -85,7 +87,23 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   // call is received, |callback| is invoked. Below MakeCredential() and
   // GetAssertion() must only called after |callback| is invoked.
   virtual void InitializeAuthenticator(base::OnceClosure callback) = 0;
+
+  // ExcludeAppIdCredentialsBeforeMakeCredential allows a device to probe for
+  // credential IDs from a request that used the appidExclude extension. This
+  // assumes that |MakeCredential| will be called afterwards with the same
+  // request. I.e. this function may do nothing if it believes that it can
+  // better handle the exclusion during |MakeCredential|.
+  //
+  // The optional bool is an unused response value as all the information is
+  // contained in the response code, which will be |kCtap2ErrCredentialExcluded|
+  // if an excluded credential is found. (An optional<void> is an error.)
+  virtual void ExcludeAppIdCredentialsBeforeMakeCredential(
+      CtapMakeCredentialRequest request,
+      MakeCredentialOptions options,
+      base::OnceCallback<void(CtapDeviceResponseCode, absl::optional<bool>)>);
+
   virtual void MakeCredential(CtapMakeCredentialRequest request,
+                              MakeCredentialOptions options,
                               MakeCredentialCallback callback) = 0;
   virtual void GetAssertion(CtapGetAssertionRequest request,
                             CtapGetAssertionOptions options,

@@ -86,7 +86,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox implements
 
   constructor() {
     super(true);
-    this.registerRequiredCSS('panels/settings/frameworkIgnoreListSettingsTab.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/settings/frameworkIgnoreListSettingsTab.css');
 
     const header = this.contentElement.createChild('div', 'header');
     header.textContent = i18nString(UIStrings.frameworkIgnoreList);
@@ -104,7 +104,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox implements
 
     this._list = new UI.ListWidget.ListWidget(this);
     this._list.element.classList.add('ignore-list');
-    this._list.registerRequiredCSS('panels/settings/frameworkIgnoreListSettingsTab.css', {enableLegacyPatching: false});
+    this._list.registerRequiredCSS('panels/settings/frameworkIgnoreListSettingsTab.css');
 
     const placeholder = document.createElement('div');
     placeholder.classList.add('ignore-list-empty');
@@ -216,7 +216,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox implements
 
     function patternValidator(
         this: FrameworkIgnoreListSettingsTab, item: Common.Settings.RegExpSettingItem, index: number,
-        input: HTMLInputElement|HTMLSelectElement): UI.ListWidget.ValidatorResult {
+        input: UI.ListWidget.EditorControl): UI.ListWidget.ValidatorResult {
       const pattern = input.value.trim();
       const patterns = this._setting.getAsArray();
 
@@ -243,7 +243,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox implements
 
     function behaviorValidator(
         _item: Common.Settings.RegExpSettingItem, _index: number,
-        _input: HTMLInputElement|HTMLSelectElement): UI.ListWidget.ValidatorResult {
+        _input: UI.ListWidget.EditorControl): UI.ListWidget.ValidatorResult {
       return {valid: true, errorMessage: undefined};
     }
   }

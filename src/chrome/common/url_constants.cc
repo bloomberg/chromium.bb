@@ -29,9 +29,6 @@ const char kCastCloudServicesHelpURL[] =
 const char kCastNoDestinationFoundURL[] =
     "https://support.google.com/chromecast/?p=no_cast_destination";
 
-const char kChooserBluetoothOverviewURL[] =
-    "https://support.google.com/chrome?p=bluetooth";
-
 const char kChooserHidOverviewUrl[] =
     "https://support.google.com/chrome?p=webhid";
 
@@ -183,7 +180,7 @@ const char kMixedContentDownloadBlockingLearnMoreUrl[] =
     "https://support.google.com/chrome/?p=mixed_content_downloads";
 
 const char kMyActivityUrlInClearBrowsingData[] =
-    "https://myactivity.google.com/myactivity/?utm_source=chrome_cbd";
+    "https://myactivity.google.com/myactivity?utm_source=chrome_cbd";
 
 const char kOmniboxLearnMoreURL[] =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -278,6 +275,12 @@ const char kSyncGoogleDashboardURL[] =
 
 const char kSyncLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_sign_in";
+
+#if !defined(OS_ANDROID)
+const char kSyncTrustedVaultOptInURL[] =
+    "https://passwords.google.com/encryption/enroll?"
+    "utm_source=chrome&utm_medium=desktop&utm_campaign=encryption_enroll";
+#endif
 
 const char kUpgradeHelpCenterBaseURL[] =
     "https://support.google.com/installer/?product="

@@ -13,6 +13,10 @@ component("full_restore") {
     "arc_read_handler.h",
     "arc_save_handler.cc",
     "arc_save_handler.h",
+    "desk_template_read_handler.cc",
+    "desk_template_read_handler.h",
+    "features.cc",
+    "features.h",
     "full_restore_file_handler.cc",
     "full_restore_file_handler.h",
     "full_restore_info.cc",
@@ -32,10 +36,11 @@ component("full_restore") {
   defines = [ "IS_FULL_RESTORE_IMPL" ]
 
   public_deps = [
-    "//ash/public/cpp",
+    "//ash/constants",
     "//base",
     "//chromeos/ui/base:base",
     "//components/account_id:account_id",
+    "//components/services/app_service/public/cpp:app_update",
     "//components/services/app_service/public/cpp:intents",
     "//components/services/app_service/public/mojom",
     "//components/sessions:session_id",

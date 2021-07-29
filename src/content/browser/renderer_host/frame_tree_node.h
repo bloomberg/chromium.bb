@@ -21,11 +21,13 @@
 #include "content/browser/renderer_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_replication_state.mojom-forward.h"
+#include "third_party/blink/public/mojom/frame/tree_scope_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
 
@@ -78,13 +80,14 @@ class CONTENT_EXPORT FrameTreeNode {
   FrameTreeNode(
       FrameTree* frame_tree,
       RenderFrameHostImpl* parent,
-      blink::mojom::TreeScopeType scope,
+      blink::mojom::TreeScopeType tree_scope_type,
       const std::string& name,
       const std::string& unique_name,
       bool is_created_by_script,
       const base::UnguessableToken& devtools_frame_token,
       const blink::mojom::FrameOwnerProperties& frame_owner_properties,
-      blink::mojom::FrameOwnerElementType owner_type);
+      blink::mojom::FrameOwnerElementType owner_type,
+      const blink::FramePolicy& frame_owner);
 
   ~FrameTreeNode();
 
@@ -166,8 +169,26 @@ class CONTENT_EXPORT FrameTreeNode {
   // has_committed_real_load accordingly.
   void SetCurrentURL(const GURL& url);
 
-  // Returns true iff SetCurrentURL has been called with a non-blank URL.
+  // Returns true if SetCurrentURL has been called with a non-blank URL.
+  // TODO(https://crbug.com/1215096): Migrate most usage of
+  // has_committed_real_load() to call
+  // is_on_initial_empty_document_or_subsequent_empty_documents() instead.
   bool has_committed_real_load() const { return has_committed_real_load_; }
+
+  // Returns true if SetCurrentURL has been called with a non-blank URL or
+  // if the current document's input stream has been opened with
+  // document.open(). For more details, see the definition of
+  // `is_on_initial_empty_document_or_subsequent_empty_documents_`.
+  bool is_on_initial_empty_document_or_subsequent_empty_documents() const {
+    return is_on_initial_empty_document_or_subsequent_empty_documents_;
+  }
+
+  // Sets `is_on_initial_empty_document_or_subsequent_empty_documents_` to
+  // false. Must only be called after the current document's input stream has
+  // been opened with document.open().
+  void DidOpenDocumentInputStream() {
+    is_on_initial_empty_document_or_subsequent_empty_documents_ = false;
+  }
 
   // Returns whether the frame's owner element in the parent document is
   // collapsed, that is, removed from the layout as if it did not exist, as per
@@ -263,6 +284,11 @@ class CONTENT_EXPORT FrameTreeNode {
       network::mojom::ContentSecurityPolicyPtr parsed_csp_attribute) {
     csp_attribute_ = std::move(parsed_csp_attribute);
   }
+
+  // Reflects the 'anonymous' attribute of the corresponding iframe html
+  // element.
+  bool anonymous() const { return anonymous_; }
+  void set_anonymous(bool anonymous) { anonymous_ = anonymous; }
 
   bool HasSameOrigin(const FrameTreeNode& node) const {
     return replication_state_->origin.IsSameOriginWith(
@@ -422,7 +448,11 @@ class CONTENT_EXPORT FrameTreeNode {
     return frame_owner_element_type_;
   }
 
-  void SetAdFrameType(blink::mojom::AdFrameType ad_frame_type);
+  blink::mojom::TreeScopeType tree_scope_type() const {
+    return tree_scope_type_;
+  }
+
+  void SetIsAdSubframe(bool is_ad_subframe);
 
   // The initial popup URL for new window opened using:
   // `window.open(initial_popup_url)`.
@@ -455,6 +485,20 @@ class CONTENT_EXPORT FrameTreeNode {
   // Returns true the node is navigating, i.e. it has an associated
   // NavigationRequest.
   bool HasNavigation();
+
+  // Fenced frames (meta-bug crbug.com/1111084):
+  // Returns false if fenced frames are disabled. Returns true if the feature is
+  // enabled and if |this| is a fenced frame. Returns false for
+  // iframes embedded in a fenced frame. To clarify: for the MPArch
+  // implementation this only returns true if |this| is the actual
+  // root node of the inner FrameTree and not the proxy FrameTreeNode in the
+  // outer FrameTree.
+  bool IsFencedFrame() const;
+
+  // Returns false if fenced frames are disabled. Returns true if the
+  // feature is enabled and if |this| or any of its ancestor nodes is a
+  // fenced frame.
+  bool IsInFencedFrameTree() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessPermissionsPolicyBrowserTest,
@@ -530,16 +574,42 @@ class CONTENT_EXPORT FrameTreeNode {
   // Please refer to {Get,Set}PopupCreatorOrigin() documentation.
   url::Origin popup_creator_origin_;
 
-  // Whether this frame has committed any real load, replacing its initial
-  // about:blank page.
+  // Returns true iff SetCurrentURL has been called with a non-blank URL.
+  // TODO(https://crbug.com/1215096): Migrate all current usage of this to
+  // use `is_on_initial_empty_document_or_subsequent_empty_documents_` instead.
   bool has_committed_real_load_ = false;
+
+  // Whether this frame is still on the initial about:blank document or any
+  // subsequent about:blank documents committed after the initial about:blank
+  // document. This will be false if either of these has happened:
+  // - SetCurrentUrl() has been called with a non about:blank URL.
+  // - The document's input stream has been opened with document.open().
+  // See:
+  // https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#opening-the-input-stream:is-initial-about:blank
+  // TODO(https://crbug.com/1215096): Make this false after non-initial
+  // about:blank commits as well, making this only track whether the current
+  // document is the initial empty document or not. Currently we are still
+  // preserving most of the old behavior of `has_committed_real_load_` (except
+  // for the document.open() bit here) due to our current handling of initial
+  // empty document for session history and navigation (where we treat the
+  // the initial about:blank document and subsequent about:blank documents the
+  // same way).
+  bool is_on_initial_empty_document_or_subsequent_empty_documents_ = true;
 
   // Whether the frame's owner element in the parent document is collapsed.
   bool is_collapsed_ = false;
 
-  // The type of frame owner for this frame, if any.
+  // The type of frame owner for this frame. This is only relevant for non-main
+  // frames.
   const blink::mojom::FrameOwnerElementType frame_owner_element_type_ =
       blink::mojom::FrameOwnerElementType::kNone;
+
+  // The tree scope type of frame owner element, i.e. whether the element is in
+  // the document tree (https://dom.spec.whatwg.org/#document-trees) or the
+  // shadow tree (https://dom.spec.whatwg.org/#shadow-trees). This is only
+  // relevant for non-main frames.
+  const blink::mojom::TreeScopeType tree_scope_type_ =
+      blink::mojom::TreeScopeType::kDocument;
 
   // Track information that needs to be replicated to processes that have
   // proxies for this frame.
@@ -577,6 +647,10 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Contains the current parsed value of the 'csp' attribute of this frame.
   network::mojom::ContentSecurityPolicyPtr csp_attribute_;
+
+  // Reflects the 'anonymous' attribute of the corresponding iframe html
+  // element.
+  bool anonymous_ = false;
 
   // Owns an ongoing NavigationRequest until it is ready to commit. It will then
   // be reset and a RenderFrameHost will be responsible for the navigation.

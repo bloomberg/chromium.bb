@@ -5,7 +5,9 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -33,6 +35,7 @@
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "url/url_constants.h"
 
@@ -801,6 +804,120 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest,
   EXPECT_FALSE(root->HasTransientUserActivation());
 }
 
+class FencedFrameTreeBrowserTest : public FrameTreeBrowserTest {
+ public:
+  FencedFrameTreeBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kFencedFrames,
+        {{"implementation_type", "shadow_dom"}});
+    // TODO(crbug.com/1123606): Parametrize this class to run for MPArch version
+    // as well, once the supporting code lands.
+  }
+
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  net::EmbeddedTestServer https_server_;
+};
+
+// Tests that the fenced frame gets navigated to an actual url given a urn:uuid.
+IN_PROC_BROWSER_TEST_F(FencedFrameTreeBrowserTest,
+                       CheckFencedFrameNavigationWithUUID) {
+  GURL main_url(embedded_test_server()->GetURL("/hello.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  {
+    EXPECT_TRUE(ExecJs(root,
+                       "var f = document.createElement('fencedframe');"
+                       "document.body.appendChild(f);"));
+  }
+  EXPECT_EQ(1U, root->child_count());
+
+  EXPECT_TRUE(root->child_at(0)->IsFencedFrame());
+  EXPECT_TRUE(root->child_at(0)->IsInFencedFrameTree());
+
+  https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL https_url(https_server()->GetURL("a.test", "/title1.html"));
+  FencedFrameURLMapping& url_mapping =
+      root->current_frame_host()->GetPage().fenced_frame_urls_map();
+  GURL urn_uuid = url_mapping.AddFencedFrameURL(https_url);
+  EXPECT_TRUE(urn_uuid.is_valid());
+
+  std::string navigate_urn_script = JsReplace("f.src = $1;", urn_uuid.spec());
+
+  {
+    TestFrameNavigationObserver observer(root->child_at(0));
+    EXPECT_EQ(urn_uuid.spec(), EvalJs(root, navigate_urn_script));
+    observer.Wait();
+  }
+
+  EXPECT_EQ(https_url,
+            root->child_at(0)->current_frame_host()->GetLastCommittedURL());
+  EXPECT_EQ(url::Origin::Create(https_url),
+            root->child_at(0)->current_frame_host()->GetLastCommittedOrigin());
+
+  // Parent will still see the src as the urn_uuid and not the mapped url.
+  EXPECT_EQ(urn_uuid.spec(), EvalJs(root, "f.src"));
+
+  // The parent will not be able to access window.frames[0] as fenced frames are
+  // not visible via frames[].
+  EXPECT_FALSE(ExecJs(root, "window.frames[0].location"));
+  EXPECT_EQ(0, EvalJs(root, "window.frames.length"));
+}
+
+// Tests when a frame is considered a fenced frame or being inside a fenced
+// frame tree.
+IN_PROC_BROWSER_TEST_F(FencedFrameTreeBrowserTest, CheckIsFencedFrame) {
+  GURL main_url(embedded_test_server()->GetURL("/hello.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_TRUE(ExecJs(root,
+                     "var f = document.createElement('fencedframe');"
+                     "document.body.appendChild(f);"));
+  EXPECT_EQ(1U, root->child_count());
+  EXPECT_TRUE(root->child_at(0)->IsFencedFrame());
+  EXPECT_TRUE(root->child_at(0)->IsInFencedFrameTree());
+
+  // Add an iframe.
+  EXPECT_TRUE(ExecJs(root,
+                     "var f = document.createElement('iframe');"
+                     "document.body.appendChild(f);"));
+  EXPECT_EQ(2U, root->child_count());
+  EXPECT_FALSE(root->child_at(1)->IsFencedFrame());
+  EXPECT_FALSE(root->child_at(1)->IsInFencedFrameTree());
+
+  // Add a nested iframe inside the fenced frame.
+  EXPECT_TRUE(ExecJs(root->child_at(0),
+                     "var f = document.createElement('iframe');"
+                     "document.body.appendChild(f);"));
+  EXPECT_EQ(1U, root->child_at(0)->child_count());
+  EXPECT_FALSE(root->child_at(0)->child_at(0)->IsFencedFrame());
+  EXPECT_TRUE(root->child_at(0)->child_at(0)->IsInFencedFrameTree());
+
+  // Add a nested fenced frame.
+  EXPECT_TRUE(ExecJs(root->child_at(0),
+                     "var f = document.createElement('fencedframe');"
+                     "document.body.appendChild(f);"));
+  EXPECT_EQ(2U, root->child_at(0)->child_count());
+  EXPECT_TRUE(root->child_at(0)->child_at(1)->IsFencedFrame());
+  EXPECT_TRUE(root->child_at(0)->child_at(1)->IsInFencedFrameTree());
+}
+
 class CrossProcessFrameTreeBrowserTest : public ContentBrowserTest {
  public:
   CrossProcessFrameTreeBrowserTest() = default;
@@ -1306,6 +1423,56 @@ IN_PROC_BROWSER_TEST_F(IsolateIcelandFrameTreeBrowserTest,
                                kExpectedSiteURL.c_str(),
                                kExpectedSubframeSiteURL.c_str()),
             DepictFrameTree(*root));
+}
+
+class FrameTreeAnonymousIframeBrowserTest : public FrameTreeBrowserTest {
+ public:
+  FrameTreeAnonymousIframeBrowserTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "AnonymousIframe");
+  }
+};
+
+// Tests the mojo propagation of the 'anonymous' attribute to the browser.
+IN_PROC_BROWSER_TEST_F(FrameTreeAnonymousIframeBrowserTest,
+                       AttributeIsPropagatedToBrowser) {
+  GURL main_url(embedded_test_server()->GetURL("/hello.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Not setting the attribute => the iframe is not anonymous.
+  EXPECT_TRUE(ExecJs(root,
+                     "var f = document.createElement('iframe');"
+                     "document.body.appendChild(f);"));
+  EXPECT_EQ(1U, root->child_count());
+  EXPECT_FALSE(root->child_at(0)->anonymous());
+
+  // Setting the attribute on the iframe element makes the iframe anonymous.
+  EXPECT_TRUE(ExecJs(root,
+                     "var d = document.createElement('div');"
+                     "d.innerHTML = '<iframe anonymous></iframe>';"
+                     "document.body.appendChild(d);"));
+  EXPECT_EQ(2U, root->child_count());
+  EXPECT_TRUE(root->child_at(1)->anonymous());
+
+  // Setting the attribute via javascript works.
+  EXPECT_TRUE(ExecJs(root,
+                     "var g = document.createElement('iframe');"
+                     "g.anonymous = true;"
+                     "document.body.appendChild(g);"));
+  EXPECT_EQ(3U, root->child_count());
+  EXPECT_TRUE(root->child_at(2)->anonymous());
+
+  EXPECT_TRUE(ExecJs(root, "g.anonymous = false;"));
+  EXPECT_FALSE(root->child_at(2)->anonymous());
+
+  EXPECT_TRUE(ExecJs(root, "g.anonymous = true;"));
+  EXPECT_TRUE(root->child_at(2)->anonymous());
 }
 
 }  // namespace content

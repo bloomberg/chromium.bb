@@ -17,13 +17,13 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/login/help_app_launcher.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system/system_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/termination_notification.h"
@@ -97,6 +97,8 @@ ash::UpdateSeverity GetUpdateSeverity(ash::UpdateType update_type,
       return ash::UpdateSeverity::kLow;
     case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
       return ash::UpdateSeverity::kElevated;
+    case UpgradeDetector::UPGRADE_ANNOYANCE_GRACE:
+      return ash::UpdateSeverity::kGrace;
     case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
       return ash::UpdateSeverity::kHigh;
     case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:

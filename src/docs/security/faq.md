@@ -637,6 +637,20 @@ specific:
      strong guarantees about only Chrome being able to access its storage. See
      [Issue 520437](https://crbug.com/520437) to follow this migration.
 
+<a name="TOC-If-theres-a-way-to-see-stored-passwords-without-entering-a-password--is-this-a-security-bug-"></a>
+## If there's a way to see stored passwords without entering a password, is this a security bug?
+
+No. If an attacker has control of your login on your device, they can get to
+your passwords by inspecting Chrome disk files or memory. (See
+[why aren't physically-local attacks in Chrome's threat
+model](#TOC-Why-aren-t-physically-local-attacks-in-Chrome-s-threat-model-)).
+
+On some platforms we ask for a password before revealing stored passwords,
+but this is not considered a robust defense. It’s historically to stop
+users inadvertently revealing their passwords on screen, for example if
+they’re screen sharing. We don’t do this on all platforms because we consider
+such risks greater on some than on others.
+
 <a name="TOC-I-found-a-phishing-or-malware-site-not-blocked-by-Safe-Browsing.-Is-this-a-security-vulnerability-"></a>
 ## I found a phishing or malware site not blocked by Safe Browsing. Is this a security vulnerability?
 
@@ -663,6 +677,11 @@ vulnerability in the relevant feature, not Safe Browsing itself.
 See our dedicated [Service Worker Security
 FAQ](https://chromium.googlesource.com/chromium/src/+/main/docs/security/service-worker-security-faq.md).
 
+<a name="TOC-What-is-the-security-story-for-Extensions-"></a>
+## What is the security story for Extensions?
+
+See our dedicated [Extensions Security FAQ](https://chromium.googlesource.com/chromium/src/+/main/extensions/docs/security_faq.md).
+
 <a name="TOC-What-about-URL-spoofs-using-Internationalized-Domain-Names-IDN-"></a>
 ## What about URL spoofs using Internationalized Domain Names (IDN)?
 
@@ -678,30 +697,7 @@ describes Chrome's IDN policy in detail.
 <a name="TOC-Chrome-silently-syncs-extensions-across-devices.-Is-this-a-security-vulnerability-"></a>
 ## Chrome silently syncs extensions across devices. Is this a security vulnerability?
 
-If an attacker has access to one of a victim's devices, the attacker can install
-an extension which will be synced to the victim's other sync-enabled
-devices. Similarly, an attacker who phishes a victim's Google credentials can
-sign in to Chrome as the victim and install an extension, which will be synced
-to the victim's other sync-enabled devices. Sync thereby enables an attacker to
-elevate phished credentials or physical access to persistent access on all of a
-victim's sync-enabled devices.
-
-To mitigate this issue, Chrome only syncs extensions that have been installed
-from the Chrome Web Store. Extensions in the Chrome Web Store are monitored for
-abusive behavior.
-
-In the future, we may pursue further mitigations. However, because an attacker
-must already have the victim's Google credentials and/or [physical access to a
-device](#TOC-Why-aren-t-physically-local-attacks-in-Chrome-s-threat-model-), we
-don't consider this attack a security vulnerability.
-
-We **do** consider it a vulnerability if an attacker can get an extension to
-sync to a victim's device without either of the above preconditions. For
-example, we consider it a vulnerability if an attacker could craft a request to
-Google's sync servers that causes an extension to be installed to a user's
-device, or if an attacker could entice a victim to visit a webpage that causes
-an extension to be installed on their device(s). Please report such bugs via
-https://bugs.chromium.org/p/chromium/issues/entry?template=Security+Bug.
+This topic has been moved to the [Extensions Security FAQ](https://chromium.googlesource.com/chromium/src/+/main/extensions/docs/security_faq.md).
 
 <a name="TOC-Are-PDF-files-static-content-in-Chromium-"></a>
 ## Are PDF files static content in Chromium?

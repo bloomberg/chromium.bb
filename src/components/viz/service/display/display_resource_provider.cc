@@ -9,13 +9,13 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/numerics/safe_math.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gl/trace_util.h"
 
 namespace viz {
@@ -149,6 +149,10 @@ int DisplayResourceProvider::GetChildId(ResourceId id) {
 
 bool DisplayResourceProvider::IsResourceSoftwareBacked(ResourceId id) {
   return GetResource(id)->transferable.is_software;
+}
+
+const gfx::Size DisplayResourceProvider::GetResourceBackedSize(ResourceId id) {
+  return GetResource(id)->transferable.size;
 }
 
 gfx::BufferFormat DisplayResourceProvider::GetBufferFormat(ResourceId id) {

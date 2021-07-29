@@ -58,14 +58,15 @@ class DroppedFrameCounterTestBase : public LayerTreeTest {
     // in slower machines, slower builds such as asan/tsan builds, etc.), since
     // the test does not strictly control both threads and deadlines. Therefore,
     // it is not possible to check for strict equality here.
-    EXPECT_LE(expect_.min_dropped_main, dropped_main_);
-    EXPECT_LE(expect_.min_dropped_compositor, dropped_compositor_);
+    EXPECT_LE(expect_.min_partial, partial_);
+    EXPECT_LE(expect_.min_dropped, dropped_);
     EXPECT_LE(expect_.min_dropped_smoothness, dropped_smoothness_);
   }
 
   // Compositor thread function overrides:
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     if (TestEnded())
       return;
 
@@ -112,8 +113,8 @@ class DroppedFrameCounterTestBase : public LayerTreeTest {
     DCHECK(dropped_frame_counter);
 
     total_frames_ = dropped_frame_counter->total_frames();
-    dropped_main_ = dropped_frame_counter->total_main_dropped();
-    dropped_compositor_ = dropped_frame_counter->total_compositor_dropped();
+    partial_ = dropped_frame_counter->total_partial();
+    dropped_ = dropped_frame_counter->total_dropped();
     dropped_smoothness_ = dropped_frame_counter->total_smoothness_dropped();
     EndTest();
   }
@@ -168,8 +169,8 @@ class DroppedFrameCounterTestBase : public LayerTreeTest {
   // remains unchanged after that. So it is safe to read these fields from
   // either threads.
   struct TestExpectation {
-    uint32_t min_dropped_main = 0;
-    uint32_t min_dropped_compositor = 0;
+    uint32_t min_partial = 0;
+    uint32_t min_dropped = 0;
     uint32_t min_dropped_smoothness = 0;
   } expect_;
 
@@ -193,8 +194,8 @@ class DroppedFrameCounterTestBase : public LayerTreeTest {
   // of frames have been processed. These fields are subsequently compared
   // against the expectation after the test ends.
   uint32_t total_frames_ = 0;
-  uint32_t dropped_main_ = 0;
-  uint32_t dropped_compositor_ = 0;
+  uint32_t partial_ = 0;
+  uint32_t dropped_ = 0;
   uint32_t dropped_smoothness_ = 0;
 
   bool skip_main_thread_next_frame_ = false;
@@ -208,8 +209,8 @@ class DroppedFrameCounterNoDropTest : public DroppedFrameCounterTestBase {
     config_.animation_frames = 28;
     config_.should_register_main_thread_animation = false;
 
-    expect_.min_dropped_main = 0;
-    expect_.min_dropped_compositor = 0;
+    expect_.min_partial = 0;
+    expect_.min_dropped = 0;
     expect_.min_dropped_smoothness = 0;
   }
 };
@@ -226,7 +227,7 @@ class DroppedFrameCounterMainDropsNoSmoothness
     config_.should_drop_main_every = 5;
     config_.should_register_main_thread_animation = false;
 
-    expect_.min_dropped_main = 5;
+    expect_.min_partial = 5;
     expect_.min_dropped_smoothness = 0;
   }
 };
@@ -244,7 +245,7 @@ class DroppedFrameCounterMainDropsSmoothnessTest
     config_.should_drop_main_every = 5;
     config_.should_register_main_thread_animation = true;
 
-    expect_.min_dropped_main = 5;
+    expect_.min_partial = 5;
     expect_.min_dropped_smoothness = 5;
   }
 };
@@ -496,6 +497,50 @@ TEST_F(DroppedFrameCounterTest, Percentile95WithIdleFramesThenHide) {
 
   EXPECT_EQ(histogram->GetPercentDroppedFramePercentile(0.96), 0u);
   EXPECT_GT(histogram->GetPercentDroppedFramePercentile(0.97), 0u);
+}
+
+// Tests that when ResetPendingFrames updates the sliding window, that the max
+// PercentDroppedFrames is also updated accordingly. (https://crbug.com/1225307)
+TEST_F(DroppedFrameCounterTest,
+       ResetPendingFramesUpdatesMaxPercentDroppedFrames) {
+  // This tests a scenario where gaps in frame production lead to having
+  // leftover frames in the sliding window for calculations of
+  // ResetPendingFrames.
+  //
+  // Testing for when those frames are sufficient to change the current maximum
+  // PercentDroppedFrames.
+  //
+  // This has been first seen in GpuCrash_InfoForDualHardwareGpus which forces
+  // a GPU crash. Introducing long periods of idle while the Renderer waits for
+  // a new GPU Process. (https://crbug.com/1164647)
+
+  // Set an interval that rounds up nicely with 1 second.
+  constexpr auto kInterval = base::TimeDelta::FromMilliseconds(10);
+  constexpr size_t kFps = base::TimeDelta::FromSeconds(1) / kInterval;
+  SetInterval(kInterval);
+
+  // One good frame
+  SimulateFrameSequence({false}, 1);
+  // Advance 1s so that when we process the first window, we go from having
+  // enough frames in the interval, to no longer having enough.
+  AdvancetimeByIntervals(kFps);
+
+  // The first frame should fill up the sliding window. It isn't dropped, so
+  // there should be 0 dropped frames. This will pop the first reported frame.
+  // The second frame is dropped, however we are now tracking less frames than
+  // the 1s window. So we won't use it in calculations yet.
+  SimulateFrameSequence({false, true}, 1);
+  EXPECT_EQ(dropped_frame_counter_.sliding_window_max_percent_dropped(), 0u);
+
+  // Advance 1s so that we will attempt to update the window when resetting the
+  // pending frames. The pending dropped frame above should be calculated here,
+  // and both the max and 95th percentile should be updated.
+  AdvancetimeByIntervals(kFps);
+  dropped_frame_counter_.ResetPendingFrames(GetNextFrameTime());
+
+  EXPECT_EQ(dropped_frame_counter_.sliding_window_max_percent_dropped(),
+            dropped_frame_counter_.SlidingWindow95PercentilePercentDropped());
+  EXPECT_GT(dropped_frame_counter_.sliding_window_max_percent_dropped(), 0u);
 }
 
 }  // namespace

@@ -123,6 +123,11 @@ int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
 //   `txb_entropy_ctx`, which `mb` points to, may be modified by this function.
 void av1_dropout_qcoeff(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
                         TX_TYPE tx_type, int qindex);
+// Same as above, with the number of zeroes needed before/after a coeff to drop
+// it explicitly passed in, instead of being derived from qindex.
+void av1_dropout_qcoeff_num(MACROBLOCK *mb, int plane, int block,
+                            TX_SIZE tx_size, TX_TYPE tx_type,
+                            int dropout_num_before, int dropout_num_after);
 
 void av1_subtract_block(BitDepthInfo bd_info, int rows, int cols, int16_t *diff,
                         ptrdiff_t diff_stride, const uint8_t *src8,

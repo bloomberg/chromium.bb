@@ -13,6 +13,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/views/border.h"
 #include "ui/views/layout/layout_manager.h"
 
 namespace ash {
@@ -112,9 +113,9 @@ void HUDTabButton::PaintButtonContents(gfx::Canvas* canvas) {
                      (float)kTabOverlayCornerRadius) /
                M_PI;
 
-  const int kCircleSize = kTabOverlayCornerRadius * 2;
-  const int right_edge = width();
-  const int bottom_edge = height();
+  constexpr SkScalar kCircleSize = kTabOverlayCornerRadius * 2;
+  const SkScalar right_edge = width();
+  const SkScalar bottom_edge = height();
 
   SkPath path;
 

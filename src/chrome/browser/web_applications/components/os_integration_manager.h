@@ -13,7 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece_forward.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/protocol_handler_manager.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/web_applications/components/web_app_run_on_os_login.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -32,6 +32,7 @@ class WebContents;
 
 namespace web_app {
 
+class WebAppRegistrar;
 class AppIconManager;
 class TestOsIntegrationManager;
 class WebAppUiManager;
@@ -78,7 +79,7 @@ class OsIntegrationManager {
       std::unique_ptr<UrlHandlerManager> url_handler_manager);
   virtual ~OsIntegrationManager();
 
-  void SetSubsystems(AppRegistrar* registrar,
+  void SetSubsystems(WebAppRegistrar* registrar,
                      WebAppUiManager* ui_manager,
                      AppIconManager* icon_manager);
 
@@ -276,7 +277,7 @@ class OsIntegrationManager {
       std::unique_ptr<ShortcutInfo> info);
 
   Profile* const profile_;
-  AppRegistrar* registrar_ = nullptr;
+  WebAppRegistrar* registrar_ = nullptr;
   WebAppUiManager* ui_manager_ = nullptr;
 
   std::unique_ptr<AppShortcutManager> shortcut_manager_;

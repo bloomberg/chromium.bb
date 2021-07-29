@@ -4,11 +4,11 @@
 
 #include "ash/login/ui/lock_screen_media_controls_view.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/login/ui/fake_login_detachable_base_model.h"
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/media_controls_header_view.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -439,8 +439,8 @@ TEST_F(LockScreenMediaControlsViewTest, ProgressBarVisibility) {
   EXPECT_FALSE(progress_view()->GetVisible());
 
   media_session::MediaPosition media_position(
-      1 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
-      base::TimeDelta::FromSeconds(300) /* position */);
+      /*playback_rate=*/1, /*duration=*/base::TimeDelta::FromSeconds(600),
+      /*position=*/base::TimeDelta::FromSeconds(300), /*end_of_media=*/false);
 
   // Simulate position changing.
   media_controls_view_->MediaSessionPositionChanged(media_position);
@@ -944,8 +944,8 @@ TEST_F(LockScreenMediaControlsViewTest, SeekToClick) {
   EXPECT_EQ(0, media_controller()->seek_to_count());
 
   media_session::MediaPosition media_position(
-      1 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
-      base::TimeDelta::FromSeconds(100) /* position */);
+      /*playback_rate=*/1, /*duration=*/base::TimeDelta::FromSeconds(600),
+      /*position=*/base::TimeDelta::FromSeconds(100), /*end_of_media=*/false);
 
   // Simulate initial position change.
   media_controls_view_->MediaSessionPositionChanged(media_position);
@@ -975,8 +975,8 @@ TEST_F(LockScreenMediaControlsViewTest, SeekToTouch) {
   EXPECT_EQ(0, media_controller()->seek_to_count());
 
   media_session::MediaPosition media_position(
-      1 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
-      base::TimeDelta::FromSeconds(100) /* position */);
+      /*playback_rate=*/1, /*duration=*/base::TimeDelta::FromSeconds(600),
+      /*position=*/base::TimeDelta::FromSeconds(100), /*end_of_media=*/false);
 
   // Simulate initial position change.
   media_controls_view_->MediaSessionPositionChanged(media_position);

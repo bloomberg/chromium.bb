@@ -37,6 +37,8 @@ class ProfilePickerHandler : public content::WebUIMessageHandler,
  private:
   friend class ProfilePickerHandlerTest;
   friend class ProfilePickerCreationFlowBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(ProfilePickerCreationFlowBrowserTest,
+                           CloseBrowserBeforeCreatingNewProfile);
   FRIEND_TEST_ALL_PREFIXES(
       ProfilePickerIntegratedEnterpriseCreationFlowBrowserTest,
       CreateSignedInProfileSigninAlreadyExists_ConfirmSwitch);
@@ -113,7 +115,7 @@ class ProfilePickerHandler : public content::WebUIMessageHandler,
   void SetProfilesOrder(const std::vector<ProfileAttributesEntry*>& entries);
 
   // Returns the list of profiles in the same order as when the picker
-  // was first shown. Guest profile is not included here.
+  // was first shown.
   std::vector<ProfileAttributesEntry*> GetProfileAttributes();
 
   // Creation time of the handler, to measure performance on startup. Only set

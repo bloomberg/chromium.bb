@@ -15,6 +15,9 @@ namespace history_clusters {
 
 // Returns the remote model debug endpoint used to cluster visits into memories.
 // Returns an empty GURL() when the remote model debug endpoint is disabled.
+// Note, the on-device backend (enabled by default) takes precedence over the
+// remote model endpoint. The on-device backend has to be separately disabled
+// to access the remote model endpoint.
 GURL RemoteModelEndpoint();
 
 // Returns the experiment name to pass through to the remote model debug
@@ -22,12 +25,6 @@ GURL RemoteModelEndpoint();
 // this client should just use be returned the default clustering or if the
 // remote model debug endpoint is disabled.
 extern const base::FeatureParam<std::string> kRemoteModelEndpointExperimentName;
-
-// If enabled, completed visits context annotations are persisted to the history
-// DB and read back when clustering. If disabled, completed visit context
-// annotations are kept in-memory and used these in-memory visits are used when
-// clustering.
-extern const base::FeatureParam<bool> kPersistContextAnnotationsInHistoryDb;
 
 // The max number of visits to use for each clustering iteration. When using the
 // remote model, this limits the number of visits sent.  Only applies when using
@@ -47,6 +44,11 @@ extern const base::FeatureParam<int> kMaxDaysToCluster;
 // new clusters without persisting them.
 extern const base::FeatureParam<bool> kPersistClustersInHistoryDb;
 
+// Enables the on-device clustering backend. Enabled by default, since this is
+// the production mode of the whole feature. The backend is only in official
+// builds, so it won't work in unofficial builds.
+extern const base::FeatureParam<bool> kUseOnDeviceClusteringBackend;
+
 // Features
 
 // Enables the Chrome Memories history clustering feature.
@@ -58,6 +60,15 @@ extern const base::Feature kDebug;
 // Enables using a remote model endpoint for Memories clustering for debugging
 // purposes. This should not be ever enabled in production.
 extern const base::Feature kRemoteModelForDebugging;
+
+// Enables persisting context annotations in the History DB. They are always
+// calculated anyways. This just enables storing them. This is expected to be
+// enabled for all users shortly. This just provides a killswitch.
+
+// This flag is to enable us to turn on persisting context annotations WITHOUT
+// exposing the Memories UI in general. If EITHER this flag or `kMemories` is
+// enabled, users will have context annotations persisted into their History DB.
+extern const base::Feature kPersistContextAnnotationsInHistoryDb;
 
 }  // namespace history_clusters
 

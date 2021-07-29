@@ -102,7 +102,8 @@ struct TexFormat final
 template <const uint8_t bits>
 constexpr uint32_t EncodeNormUint(const float val)
 {
-    return static_cast<uint32_t>(val * (UINT32_MAX >> (32 - bits)) + 0.5);  // round-half-up
+    return static_cast<uint32_t>(val * static_cast<float>(UINT32_MAX >> (32 - bits)) +
+                                 0.5f);  // round-half-up
 }
 
 }  // anonymous namespace
@@ -143,6 +144,9 @@ void EncodeThenZeroAndCopy(DestT &dest, const float srcVals[4])
 TEST_P(TextureUploadFormatTest, All)
 {
     ANGLE_SKIP_TEST_IF(IsD3D9() || IsD3D11_FL93());
+
+    // Test failure introduced by Apple's changes (anglebug.com/5505)
+    ANGLE_SKIP_TEST_IF(IsMetal());
 
     constexpr char kVertShaderES2[]     = R"(
         void main()

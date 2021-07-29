@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -1122,6 +1123,19 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
       std::make_unique<CapabilityWin>(best_match_video_capability);
 
   is_started_ = true;
+
+  base::UmaHistogramEnumeration(
+      "Media.VideoCapture.Win.Device.InternalPixelFormat",
+      best_match_video_capability.source_pixel_format,
+      media::VideoPixelFormat::PIXEL_FORMAT_MAX);
+  base::UmaHistogramEnumeration(
+      "Media.VideoCapture.Win.Device.CapturePixelFormat",
+      best_match_video_capability.supported_format.pixel_format,
+      media::VideoPixelFormat::PIXEL_FORMAT_MAX);
+  base::UmaHistogramEnumeration(
+      "Media.VideoCapture.Win.Device.RequestedPixelFormat",
+      params.requested_format.pixel_format,
+      media::VideoPixelFormat::PIXEL_FORMAT_MAX);
 }
 
 void VideoCaptureDeviceMFWin::StopAndDeAllocate() {
@@ -1716,9 +1730,11 @@ void VideoCaptureDeviceMFWin::OnEvent(IMFMediaEvent* media_event) {
     capture_initialize_.Signal();
   }
 
-  if (FAILED(hr))
+  if (FAILED(hr)) {
+    base::UmaHistogramSparse("Media.VideoCapture.Win.ErrorEvent", hr);
     OnError(VideoCaptureError::kWinMediaFoundationGetMediaEventStatusFailed,
             FROM_HERE, hr);
+  }
 }
 
 void VideoCaptureDeviceMFWin::OnError(VideoCaptureError error,

@@ -76,8 +76,8 @@ class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {
   PersonalDataLoadedObserverMock() {}
   ~PersonalDataLoadedObserverMock() override {}
 
-  MOCK_METHOD0(OnPersonalDataChanged, void());
-  MOCK_METHOD0(OnPersonalDataFinishedProfileTasks, void());
+  MOCK_METHOD(void, OnPersonalDataChanged, (), (override));
+  MOCK_METHOD(void, OnPersonalDataFinishedProfileTasks, (), (override));
 };
 
 template <typename T>
@@ -128,6 +128,7 @@ class FormDataImporterTestBase {
         /*client_profile_validator=*/nullptr,
         /*history_service=*/nullptr,
         /*strike_database=*/nullptr,
+        /*image_fetcher=*/nullptr,
         /*is_off_the_record=*/(user_mode == USER_MODE_INCOGNITO));
     personal_data_manager_->AddObserver(&personal_data_observer_);
     personal_data_manager_->OnSyncServiceInitialized(nullptr);
@@ -2295,16 +2296,11 @@ TEST_P(FormDataImporterTest, ImportCreditCard_MonthSelectInvalidText) {
                         "Feb (2)", "2999");
   // Add option values and contents to the expiration month field.
   ASSERT_EQ(u"exp_month", form.fields[2].name);
-  std::vector<std::u16string> values;
-  values.push_back(u"1");
-  values.push_back(u"2");
-  values.push_back(u"3");
-  std::vector<std::u16string> contents;
-  contents.push_back(u"Jan (1)");
-  contents.push_back(u"Feb (2)");
-  contents.push_back(u"Mar (3)");
-  form.fields[2].option_values = values;
-  form.fields[2].option_contents = contents;
+  form.fields[2].options = {
+      {.value = u"1", .content = u"Jan (1)"},
+      {.value = u"2", .content = u"Feb (2)"},
+      {.value = u"3", .content = u"Mar (3)"},
+  };
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr, nullptr);
@@ -3158,6 +3154,33 @@ TEST_P(FormDataImporterTest,
   ASSERT_FALSE(imported_credit_card);
   // |imported_credit_card_record_type_| should be NO_CARD because no valid card
   // was successfully imported from the form.
+  ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
+              FormDataImporter::ImportedCreditCardRecordType::NO_CARD);
+}
+
+// Ensures that |imported_credit_card_record_type_| is set correctly.
+TEST_P(FormDataImporterTest,
+       ImportFormData_ImportCreditCardRecordType_NoCard_VirtualCard) {
+  // Simulate a form submission using a credit card that is known as a virtual
+  // card.
+  FormData form;
+  form.url = GURL("https://wwww.foo.com");
+  AddFullCreditCardForm(&form, "Biggie Smalls", "4111 1111 1111 1111", "01",
+                        "2999");
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_data_importer_->CacheFetchedVirtualCard(u"1111");
+  std::unique_ptr<CreditCard> imported_credit_card;
+  absl::optional<std::string> imported_upi_id;
+
+  EXPECT_FALSE(form_data_importer_->ImportFormData(
+      form_structure, /*profile_autofill_enabled=*/true,
+      /*credit_card_autofill_enabled=*/true,
+      /*should_return_local_card=*/true, &imported_credit_card,
+      &imported_upi_id));
+  ASSERT_FALSE(imported_credit_card);
+  // |imported_credit_card_record_type_| should be NO_CARD because the card
+  // imported from the form was a virtual card.
   ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
               FormDataImporter::ImportedCreditCardRecordType::NO_CARD);
 }

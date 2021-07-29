@@ -86,10 +86,10 @@ const linkHandlers = new Map<string, LinkHandler>();
 
 let linkHandlerSettingInstance: Common.Settings.Setting<string>;
 
-export class Linkifier implements SDK.SDKModel.Observer {
+export class Linkifier implements SDK.TargetManager.Observer {
   _maxLength: number;
-  _anchorsByTarget: Map<SDK.SDKModel.Target, Element[]>;
-  _locationPoolByTarget: Map<SDK.SDKModel.Target, Bindings.LiveLocation.LiveLocationPool>;
+  _anchorsByTarget: Map<SDK.Target.Target, Element[]>;
+  _locationPoolByTarget: Map<SDK.Target.Target, Bindings.LiveLocation.LiveLocationPool>;
   _onLiveLocationUpdate: (() => void)|undefined;
   _useLinkDecorator: boolean;
 
@@ -102,7 +102,7 @@ export class Linkifier implements SDK.SDKModel.Observer {
     this._onLiveLocationUpdate = onLiveLocationUpdate;
     this._useLinkDecorator = Boolean(useLinkDecorator);
     instances.add(this);
-    SDK.SDKModel.TargetManager.instance().observeTargets(this);
+    SDK.TargetManager.TargetManager.instance().observeTargets(this);
   }
 
   static setLinkDecorator(linkDecorator: LinkDecorator): void {
@@ -162,12 +162,12 @@ export class Linkifier implements SDK.SDKModel.Observer {
     }
   }
 
-  targetAdded(target: SDK.SDKModel.Target): void {
+  targetAdded(target: SDK.Target.Target): void {
     this._anchorsByTarget.set(target, []);
     this._locationPoolByTarget.set(target, new Bindings.LiveLocation.LiveLocationPool());
   }
 
-  targetRemoved(target: SDK.SDKModel.Target): void {
+  targetRemoved(target: SDK.Target.Target): void {
     const locationPool = this._locationPoolByTarget.get(target);
     this._locationPoolByTarget.delete(target);
     if (!locationPool) {
@@ -202,7 +202,7 @@ export class Linkifier implements SDK.SDKModel.Observer {
   }
 
   maybeLinkifyScriptLocation(
-      target: SDK.SDKModel.Target|null, scriptId: string|null, sourceURL: string, lineNumber: number|undefined,
+      target: SDK.Target.Target|null, scriptId: string|null, sourceURL: string, lineNumber: number|undefined,
       options?: LinkifyOptions): HTMLElement|null {
     let fallbackAnchor: HTMLElement|null = null;
     const linkifyURLOptions = {
@@ -290,7 +290,7 @@ export class Linkifier implements SDK.SDKModel.Observer {
   }
 
   linkifyScriptLocation(
-      target: SDK.SDKModel.Target|null, scriptId: string|null, sourceURL: string, lineNumber: number|undefined,
+      target: SDK.Target.Target|null, scriptId: string|null, sourceURL: string, lineNumber: number|undefined,
       options?: LinkifyOptions): HTMLElement {
     const scriptLink = this.maybeLinkifyScriptLocation(target, scriptId, sourceURL, lineNumber, options);
     const linkifyURLOptions = {
@@ -319,7 +319,7 @@ export class Linkifier implements SDK.SDKModel.Observer {
   }
 
   maybeLinkifyConsoleCallFrame(
-      target: SDK.SDKModel.Target|null, callFrame: Protocol.Runtime.CallFrame, options?: LinkifyOptions): HTMLElement
+      target: SDK.Target.Target|null, callFrame: Protocol.Runtime.CallFrame, options?: LinkifyOptions): HTMLElement
       |null {
     const linkifyOptions = {
       columnNumber: callFrame.columnNumber,
@@ -331,7 +331,7 @@ export class Linkifier implements SDK.SDKModel.Observer {
         target, callFrame.scriptId, callFrame.url, callFrame.lineNumber, linkifyOptions);
   }
 
-  linkifyStackTraceTopFrame(target: SDK.SDKModel.Target, stackTrace: Protocol.Runtime.StackTrace, classes?: string):
+  linkifyStackTraceTopFrame(target: SDK.Target.Target, stackTrace: Protocol.Runtime.StackTrace, classes?: string):
       HTMLElement {
     console.assert(Boolean(stackTrace.callFrames) && Boolean(stackTrace.callFrames.length));
 
@@ -441,7 +441,7 @@ export class Linkifier implements SDK.SDKModel.Observer {
     for (const target of [...this._anchorsByTarget.keys()]) {
       this.targetRemoved(target);
     }
-    SDK.SDKModel.TargetManager.instance().unobserveTargets(this);
+    SDK.TargetManager.TargetManager.instance().unobserveTargets(this);
     instances.delete(this);
   }
 
@@ -529,7 +529,7 @@ export class Linkifier implements SDK.SDKModel.Observer {
     const maxLength = options.maxLength || UI.UIUtils.MaxLengthForDisplayedURLs;
     const bypassURLTrimming = options.bypassURLTrimming;
     if (!url || url.trim().toLowerCase().startsWith('javascript:')) {
-      const element = (document.createElement('span') as HTMLElement);
+      const element = document.createElement('span');
       if (className) {
         element.className = className;
       }
@@ -587,7 +587,7 @@ export class Linkifier implements SDK.SDKModel.Observer {
       bypassURLTrimming: undefined,
     };
     const {maxLength, title, href, preventClick, tabStop, bypassURLTrimming} = options;
-    const link = (document.createElement('span') as HTMLElement);
+    const link = document.createElement('span');
     if (className) {
       link.className = className;
     }

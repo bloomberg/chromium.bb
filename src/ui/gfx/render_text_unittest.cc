@@ -12,12 +12,12 @@
 #include <memory>
 #include <numeric>
 
+#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -31,6 +31,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkFontStyle.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/canvas.h"
@@ -3155,6 +3156,68 @@ TEST_F(RenderTextTest, MoveCursor_UpDown_Newline) {
                                         SELECTION_CARET, &expected_range);
 }
 
+TEST_F(RenderTextTest, MoveCursor_UpDown_EmptyLines) {
+  SetGlyphWidth(5);
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(u"one\n\ntwo three");
+  render_text->SetDisplayRect(Rect(45, 1000));
+  render_text->SetMultiline(true);
+  EXPECT_EQ(3U, render_text->GetNumLines());
+
+  std::vector<Range> expected_range;
+
+  // Test up/down cursor movement at the start of the line.
+  render_text->SelectRange(Range(0));
+  expected_range.push_back(Range(4));
+  expected_range.push_back(Range(5));
+  expected_range.push_back(Range(14));
+  RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK,
+                                        CURSOR_DOWN, SELECTION_NONE,
+                                        &expected_range);
+
+  render_text->SelectRange(Range(5));
+  expected_range.push_back(Range(4));
+  expected_range.push_back(Range(0));
+  expected_range.push_back(Range(0));
+  RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK, CURSOR_UP,
+                                        SELECTION_NONE, &expected_range);
+
+  // Test up/down movement at the end of the line.
+  render_text->SelectRange(Range(3));
+  expected_range.push_back(Range(4));
+  // TODO(crbug.com/1163587): This should actually be |8|, since |9| is the
+  // beginning of the next line. This assert is left in for now to allow testing
+  // the next expected position, which correctly ends up at |14|.
+  expected_range.push_back(Range(9));
+  expected_range.push_back(Range(14));
+  RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK,
+                                        CURSOR_DOWN, SELECTION_NONE,
+                                        &expected_range);
+
+  render_text->SelectRange(Range(14));
+  expected_range.push_back(Range(4));
+  expected_range.push_back(Range(3));
+  expected_range.push_back(Range(0));
+  RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK, CURSOR_UP,
+                                        SELECTION_NONE, &expected_range);
+
+  // Test up/down movement somewhere in the middle of the line.
+  render_text->SelectRange(Range(2));
+  expected_range.push_back(Range(4));
+  expected_range.push_back(Range(7));
+  expected_range.push_back(Range(14));
+  RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK,
+                                        CURSOR_DOWN, SELECTION_NONE,
+                                        &expected_range);
+
+  render_text->SelectRange(Range(7));
+  expected_range.push_back(Range(4));
+  expected_range.push_back(Range(2));
+  expected_range.push_back(Range(0));
+  RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK, CURSOR_UP,
+                                        SELECTION_NONE, &expected_range);
+}
+
 TEST_F(RenderTextTest, MoveCursor_UpDown_Cache) {
   SetGlyphWidth(5);
   RenderText* render_text = GetRenderText();
@@ -3337,7 +3400,7 @@ TEST_F(RenderTextTest, MoveCursor_UpDown_Scroll) {
   line_height =
       render_text->GetLineSizeF(render_text->selection_model()).height();
   int offset_y = test_api()->display_offset().y();
-  for (size_t i = kLineSize - 2; i != size_t{-1}; --i) {
+  for (size_t i = kLineSize - 2; i != static_cast<size_t>(-1); --i) {
     SCOPED_TRACE(base::StringPrintf("Testing line [%" PRIuS "]", i));
     render_text->MoveCursor(CHARACTER_BREAK, CURSOR_UP, SELECTION_NONE);
     ASSERT_EQ(Range(i * 2), render_text->selection());
@@ -6146,7 +6209,7 @@ TEST_F(RenderTextTest, Multiline_GetLineContainingCaret) {
 
       // GetCursorBounds should be in the same line as GetLineContainingCaret.
       Rect bounds = render_text->GetCursorBounds(sample.caret, true);
-      EXPECT_EQ(int{sample.line_num},
+      EXPECT_EQ(static_cast<int>(sample.line_num),
                 GetLineContainingYCoord(bounds.origin().y() + 1));
     }
   }
@@ -6211,6 +6274,26 @@ TEST_F(RenderTextTest, AppleSpecificPrivateUseCharacterReplacement) {
 #else
   EXPECT_EQ(u"\ufffd", render_text->GetDisplayText());
 #endif
+}
+
+TEST_F(RenderTextTest, MicrosoftSpecificPrivateUseCharacterReplacement) {
+  const char16_t* allowed_codepoints[] = {
+      u"\uF093", u"\uF094", u"\uF095", u"\uF096", u"\uF108",
+      u"\uF109", u"\uF10A", u"\uF10B", u"\uF10C", u"\uF10D",
+      u"\uF10E", u"\uEECA", u"\uEDE3"};
+  for (auto* codepoint : allowed_codepoints) {
+    RenderText* render_text = GetRenderText();
+    render_text->SetText(codepoint);
+#if defined(OS_WIN)
+    if (base::win::GetVersion() >= base::win::Version::WIN10) {
+      EXPECT_EQ(codepoint, render_text->GetDisplayText());
+    } else {
+      EXPECT_EQ(u"\uFFFD", render_text->GetDisplayText());
+    }
+#else
+    EXPECT_EQ(u"\uFFFD", render_text->GetDisplayText());
+#endif
+  }
 }
 
 TEST_F(RenderTextTest, InvalidSurrogateCharacterReplacement) {

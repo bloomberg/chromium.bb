@@ -30,6 +30,15 @@ source_set("hardware_keyboarr_support") {
   deps = [ "//base/test:test_support" ]
 }
 
+source_set("open_url_context") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "open_url_context.h",
+    "open_url_context.mm",
+  ]
+}
+
 source_set("block_swizzler") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -129,6 +138,7 @@ bundle_data("http_server_bundle_data") {
     "data/http_server_files/readonly_form.html",
     "data/http_server_files/redchair.usdz",
     "data/http_server_files/redirect_refresh.html",
+    "data/http_server_files/sample.mobileconfig",
     "data/http_server_files/simple_login_form.html",
     "data/http_server_files/simple_signup_form.html",
     "data/http_server_files/single_page_wide.pdf",

@@ -71,6 +71,7 @@
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -80,6 +81,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
@@ -914,7 +916,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NonHtmlMainResource) {
       << "Recorded metrics: " << GetRecordedPageLoadMetricNames();
 }
 
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NonHttpOrHttpsUrl) {
+// TODO(crbug.com/1223288): Test flakes on Chrome OS.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#define MAYBE_NonHttpOrHttpsUrl DISABLED_NonHttpOrHttpsUrl
+#else
+#define MAYBE_NonHttpOrHttpsUrl NonHttpOrHttpsUrl
+#endif
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, MAYBE_NonHttpOrHttpsUrl) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
@@ -1642,6 +1650,16 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        UseCounterUkmFeaturesLogged) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
+  // Ensure that the previous page won't be stored in the back/forward cache, so
+  // that the histogram will be recorded when the previous page is unloaded.
+  // TODO(https://crbug.com/1229122): Investigate if this needs further fix.
+  browser()
+      ->tab_strip_model()
+      ->GetActiveWebContents()
+      ->GetController()
+      .GetBackForwardCache()
+      .DisableForTesting(content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   auto waiter = CreatePageLoadMetricsTestWaiter();
   waiter->AddPageExpectation(TimingField::kLoadEvent);
   GURL url = embedded_test_server()->GetURL(
@@ -1682,6 +1700,16 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
+
+  // Ensure that the previous page won't be stored in the back/forward cache, so
+  // that the histogram will be recorded when the previous page is unloaded.
+  // TODO(https://crbug.com/1229122): Investigate if this needs further fix.
+  browser()
+      ->tab_strip_model()
+      ->GetActiveWebContents()
+      ->GetController()
+      .GetBackForwardCache()
+      .DisableForTesting(content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
   waiter->AddPageExpectation(TimingField::kLoadEvent);
@@ -1913,6 +1941,73 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   histogram_tester_->ExpectBucketCount(
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       UseCounterPermissionsPolicyUsageInMainFrame) {
+  auto test_feature = static_cast<blink::UseCounterFeature::EnumValue>(
+      blink::mojom::PermissionsPolicyFeature::kFullscreen);
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddUseCounterFeatureExpectation({
+      blink::mojom::UseCounterFeatureType::kPermissionsPolicyViolationEnforce,
+      test_feature,
+  });
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/use_counter_features.html"));
+  waiter->Wait();
+  NavigateToUntrackedUrl();
+
+  histogram_tester_->ExpectBucketCount(
+      internal::kPermissionsPolicyViolationHistogramName, test_feature, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       UseCounterPermissionsPolicyUsageInIframe) {
+  auto test_feature = static_cast<blink::UseCounterFeature::EnumValue>(
+      blink::mojom::PermissionsPolicyFeature::kFullscreen);
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddUseCounterFeatureExpectation({
+      blink::mojom::UseCounterFeatureType::kPermissionsPolicyViolationEnforce,
+      test_feature,
+  });
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/use_counter_features_in_iframe.html"));
+  waiter->Wait();
+  NavigateToUntrackedUrl();
+
+  histogram_tester_->ExpectBucketCount(
+      internal::kPermissionsPolicyViolationHistogramName, test_feature, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       UseCounterPermissionsPolicyUsageInIframes) {
+  auto test_feature = static_cast<blink::UseCounterFeature::EnumValue>(
+      blink::mojom::PermissionsPolicyFeature::kFullscreen);
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddUseCounterFeatureExpectation({
+      blink::mojom::UseCounterFeatureType::kPermissionsPolicyViolationEnforce,
+      test_feature,
+  });
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "/page_load_metrics/use_counter_features_in_iframes.html"));
+  waiter->Wait();
+  NavigateToUntrackedUrl();
+
+  histogram_tester_->ExpectBucketCount(
+      internal::kPermissionsPolicyViolationHistogramName, test_feature, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, LoadingMetrics) {
@@ -3054,8 +3149,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, FirstInputDelayFromClick) {
                                       1);
 }
 
+// Flaky on all platforms: https://crbug.com/1211028.
 // Tests that a portal activation records metrics.
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PortalActivation) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DISABLED_PortalActivation) {
   // We only record metrics for portals when the time is consistent across
   // processes.
   if (!base::TimeTicks::IsConsistentAcrossProcesses())
@@ -3491,7 +3587,9 @@ class NavigationPageLoadMetricsBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_P(NavigationPageLoadMetricsBrowserTest, FirstInputDelay) {
+// Flaky. See https://crbug.com/1224268.
+IN_PROC_BROWSER_TEST_P(NavigationPageLoadMetricsBrowserTest,
+                       DISABLED_FirstInputDelay) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -3556,3 +3654,76 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     NavigationPageLoadMetricsBrowserTest,
     testing::ValuesIn(NavigationPageLoadMetricsBrowserTestTestValues()));
+
+class PrerenderPageLoadMetricsBrowserTest : public PageLoadMetricsBrowserTest {
+ public:
+  PrerenderPageLoadMetricsBrowserTest()
+      : prerender_helper_(base::BindRepeating(
+            &PrerenderPageLoadMetricsBrowserTest::web_contents,
+            base::Unretained(this))) {
+    feature_list_.InitAndEnableFeature(blink::features::kPrerender2);
+  }
+
+  void SetUpOnMainThread() override {
+    prerender_helper_.SetUpOnMainThread(embedded_test_server());
+    PageLoadMetricsBrowserTest::SetUpOnMainThread();
+  }
+
+ protected:
+  content::test::PrerenderTestHelper prerender_helper_;
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PrerenderPageLoadMetricsBrowserTest, PrerenderEvent) {
+  using page_load_metrics::internal::kPageLoadPrerender2Event;
+  using page_load_metrics::internal::PageLoadPrerenderEvent;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to an initial page.
+  auto initial_url = embedded_test_server()->GetURL("/empty.html");
+  ui_test_utils::NavigateToURL(browser(), initial_url);
+
+  histogram_tester_->ExpectBucketCount(
+      kPageLoadPrerender2Event,
+      PageLoadPrerenderEvent::kNavigationInPrerenderedMainFrame, 0);
+  histogram_tester_->ExpectBucketCount(
+      kPageLoadPrerender2Event,
+      PageLoadPrerenderEvent::kPrerenderActivationNavigation, 0);
+
+  histogram_tester_->ExpectBucketCount(
+      page_load_metrics::internal::kPageLoadStartedInForeground, true, 1);
+  histogram_tester_->ExpectBucketCount(
+      page_load_metrics::internal::kPageLoadStartedInForeground, false, 0);
+
+  // Start a prerender.
+  GURL prerender_url = embedded_test_server()->GetURL("/title2.html");
+  prerender_helper_.AddPrerender(prerender_url);
+
+  histogram_tester_->ExpectBucketCount(
+      kPageLoadPrerender2Event,
+      PageLoadPrerenderEvent::kNavigationInPrerenderedMainFrame, 1);
+  histogram_tester_->ExpectBucketCount(
+      kPageLoadPrerender2Event,
+      PageLoadPrerenderEvent::kPrerenderActivationNavigation, 0);
+
+  histogram_tester_->ExpectBucketCount(
+      page_load_metrics::internal::kPageLoadStartedInForeground, true, 1);
+  histogram_tester_->ExpectBucketCount(
+      page_load_metrics::internal::kPageLoadStartedInForeground, false, 1);
+
+  // Activate.
+  prerender_helper_.NavigatePrimaryPage(prerender_url);
+
+  histogram_tester_->ExpectBucketCount(
+      kPageLoadPrerender2Event,
+      PageLoadPrerenderEvent::kNavigationInPrerenderedMainFrame, 1);
+  histogram_tester_->ExpectBucketCount(
+      kPageLoadPrerender2Event,
+      PageLoadPrerenderEvent::kPrerenderActivationNavigation, 1);
+
+  histogram_tester_->ExpectBucketCount(
+      page_load_metrics::internal::kPageLoadStartedInForeground, true, 1);
+  histogram_tester_->ExpectBucketCount(
+      page_load_metrics::internal::kPageLoadStartedInForeground, false, 1);
+}

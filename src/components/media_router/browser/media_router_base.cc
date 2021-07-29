@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using blink::mojom::PresentationConnectionState;
@@ -177,7 +176,7 @@ base::Value MediaRouterBase::GetState() const {
 }
 
 void MediaRouterBase::GetProviderState(
-    MediaRouteProviderId provider_id,
+    mojom::MediaRouteProviderId provider_id,
     mojom::MediaRouteProvider::GetStateCallback callback) const {
   NOTREACHED() << "Should not invoke MediaRouterBase::GetProviderState()";
   std::move(callback).Run(mojom::ProviderStatePtr());

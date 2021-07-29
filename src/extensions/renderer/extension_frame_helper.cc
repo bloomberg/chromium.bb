@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "content/public/renderer/render_frame.h"
@@ -44,6 +45,9 @@ base::LazyInstance<std::set<const ExtensionFrameHelper*>>::DestructorAtExit
 
 // Returns true if the render frame corresponding with |frame_helper| matches
 // the given criteria.
+//
+// We deliberately do not access any methods that require a v8::Context or
+// ScriptContext.  See also comment below.
 bool RenderFrameMatches(const ExtensionFrameHelper* frame_helper,
                         mojom::ViewType match_view_type,
                         int match_window_id,
@@ -74,7 +78,16 @@ bool RenderFrameMatches(const ExtensionFrameHelper* frame_helper,
       frame_helper->tab_id() != match_tab_id)
     return false;
 
-  return true;
+  // Returning handles to frames that haven't created a script context yet
+  // can result in the caller "forcing" a script context (by accessing
+  // properties on the window object). This, in turn, can cause the script
+  // context to be initialized prematurely, with invalid values (e.g., the
+  // inability to retrieve a valid URL from the frame). That then leads to
+  // the ScriptContext being misclassified.
+  // Don't return any frames until they have a valid ScriptContext to limit
+  // the chances for bindings to prematurely initialize these contexts.
+  // This fixes https://crbug.com/1021014.
+  return frame_helper->did_create_script_context();
 }
 
 // Runs every callback in |callbacks_to_be_run_and_cleared| while |frame_helper|
@@ -471,6 +484,31 @@ void ExtensionFrameHelper::MessageInvoke(const std::string& extension_id,
 
 void ExtensionFrameHelper::ExecuteCode(mojom::ExecuteCodeParamsPtr param,
                                        ExecuteCodeCallback callback) {
+  // Sanity checks.
+  if (param->injection->is_css()) {
+    if (param->injection->get_css()->sources.empty()) {
+      mojo::ReportBadMessage("At least one CSS source must be specified.");
+      return;
+    }
+
+    if (param->injection->get_css()->operation ==
+            mojom::CSSInjection::Operation::kRemove &&
+        !base::ranges::all_of(param->injection->get_css()->sources,
+                              [](const mojom::CSSSourcePtr& source) {
+                                return source->key.has_value();
+                              })) {
+      mojo::ReportBadMessage(
+          "An injection key must be specified for CSS removal.");
+      return;
+    }
+  } else {
+    DCHECK(param->injection->is_js());  // Enforced by mojo.
+    if (param->injection->get_js()->sources.empty()) {
+      mojo::ReportBadMessage("At least one JS source must be specified.");
+      return;
+    }
+  }
+
   extension_dispatcher_->ExecuteCode(std::move(param), std::move(callback),
                                      render_frame());
 }
@@ -498,7 +536,6 @@ void ExtensionFrameHelper::AppWindowClosed(bool send_onclosed) {
 
 void ExtensionFrameHelper::SetSpatialNavigationEnabled(bool enabled) {
   render_frame()
-      ->GetRenderView()
       ->GetWebView()
       ->GetSettings()
       ->SetSpatialNavigationEnabled(enabled);

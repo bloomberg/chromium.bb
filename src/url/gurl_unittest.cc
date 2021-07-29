@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -561,7 +561,7 @@ TEST(GURLTest, ClearFragmentOnDataUrl) {
   GURL url(" data: one ? two # three ");
 
   // By default the trailing whitespace will have been stripped.
-  EXPECT_EQ("data: one ? two # three", url.spec());
+  EXPECT_EQ("data: one ? two #%20three", url.spec());
   GURL::Replacements repl;
   repl.ClearRef();
   GURL url_no_ref = url.ReplaceComponents(repl);

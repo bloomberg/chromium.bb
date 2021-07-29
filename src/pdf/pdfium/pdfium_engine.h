@@ -26,8 +26,6 @@
 #include "pdf/pdfium/pdfium_page.h"
 #include "pdf/pdfium/pdfium_print.h"
 #include "pdf/pdfium/pdfium_range.h"
-#include "ppapi/c/private/ppp_pdf.h"
-#include "ppapi/cpp/dev/buffer_dev.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
@@ -80,6 +78,9 @@ class PDFiumEngine : public PDFEngine,
   // HandleDocumentLoad().
   void SetDocumentLoaderForTesting(std::unique_ptr<DocumentLoader> loader);
 
+  // Returns the FontMappingMode set during PDFium SDK initialization.
+  static FontMappingMode GetFontMappingMode();
+
   // PDFEngine:
   bool New(const char* url, const char* headers) override;
   void PageOffsetUpdated(const gfx::Vector2d& page_offset) override;
@@ -94,13 +95,10 @@ class PDFiumEngine : public PDFEngine,
   void PostPaint() override;
   bool HandleDocumentLoad(std::unique_ptr<UrlLoader> loader) override;
   bool HandleInputEvent(const blink::WebInputEvent& event) override;
-  uint32_t QuerySupportedPrintOutputFormats() override;
   void PrintBegin() override;
-  pp::Resource PrintPages(
-      const PP_PrintPageNumberRange_Dev* page_ranges,
-      uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings,
-      const PP_PdfPrintSettings_Dev& pdf_print_settings) override;
+  std::vector<uint8_t> PrintPages(
+      const std::vector<int>& page_numbers,
+      const blink::WebPrintParams& print_params) override;
   void PrintEnd() override;
   void StartFind(const std::string& text, bool case_sensitive) override;
   bool SelectFindResult(bool forward) override;
@@ -160,7 +158,7 @@ class PDFiumEngine : public PDFEngine,
       uint32_t text_run_count) override;
   bool GetPrintScaling() override;
   int GetCopiesToPrint() override;
-  int GetDuplexType() override;
+  printing::mojom::DuplexMode GetDuplexMode() override;
   absl::optional<gfx::Size> GetUniformPageSizePoints() override;
   void AppendBlankPages(size_t num_pages) override;
   void AppendPage(PDFEngine* engine, int index) override;
@@ -175,7 +173,7 @@ class PDFiumEngine : public PDFEngine,
                     uint32_t* selection_end_char_index) override;
   void KillFormFocus() override;
   void UpdateFocus(bool has_focus) override;
-  PP_PrivateAccessibilityFocusInfo GetFocusInfo() override;
+  AccessibilityFocusInfo GetFocusInfo() override;
   uint32_t GetLoadedByteSize() override;
   bool ReadLoadedBytes(uint32_t length, void* buffer) override;
   void RequestThumbnail(int page_index,
@@ -183,7 +181,6 @@ class PDFiumEngine : public PDFEngine,
                         SendThumbnailCallback send_callback) override;
 
   // DocumentLoader::Client:
-  pp::Instance* GetPluginInstance() override;
   std::unique_ptr<URLLoaderWrapper> CreateURLLoader() override;
   void OnPendingRequestComplete() override;
   void OnNewDataReceived() override;
@@ -413,19 +410,13 @@ class PDFiumEngine : public PDFEngine,
 
   bool ExtendSelection(int page_index, int char_index);
 
-  pp::Buffer_Dev PrintPagesAsRasterPdf(
-      const PP_PrintPageNumberRange_Dev* page_ranges,
-      uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings,
-      const PP_PdfPrintSettings_Dev& pdf_print_settings);
+  std::vector<uint8_t> PrintPagesAsRasterPdf(
+      const std::vector<int>& page_numbers,
+      const blink::WebPrintParams& print_params);
 
-  pp::Buffer_Dev PrintPagesAsPdf(
-      const PP_PrintPageNumberRange_Dev* page_ranges,
-      uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings,
-      const PP_PdfPrintSettings_Dev& pdf_print_settings);
-
-  pp::Buffer_Dev ConvertPdfToBufferDev(const std::vector<uint8_t>& pdf_data);
+  std::vector<uint8_t> PrintPagesAsPdf(
+      const std::vector<int>& page_numbers,
+      const blink::WebPrintParams& print_params);
 
   // Checks if `page` has selected text in a form element. If so, sets that as
   // the plugin's text selection.
@@ -640,6 +631,10 @@ class PDFiumEngine : public PDFEngine,
   void UpdateLinkUnderCursor(const std::string& target_url);
   void SetLinkUnderCursorForAnnotation(FPDF_ANNOTATION annot, int page_index);
 
+  // Keeps track of the most recently used plugin instance.
+  // TODO(crbug.com/702993): Remove when PPAPI is gone.
+  void SetLastInstance();
+
   PDFEngine::Client* const client_;
 
   // The current document layout.
@@ -779,9 +774,6 @@ class PDFiumEngine : public PDFEngine,
 
   // Whether to render PDF annotations.
   bool render_annots_ = true;
-
-  // The link currently under the cursor.
-  std::string link_under_cursor_;
 
   // Pending progressive paints.
   class ProgressivePaint {

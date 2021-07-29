@@ -11,8 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/session/session_controller.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -48,6 +48,15 @@
 #include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/ash/login/users/supervised_user_manager_impl.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/external_data/handlers/crostini_ansible_playbook_external_data_handler.h"
+#include "chrome/browser/ash/policy/external_data/handlers/print_servers_external_data_handler.h"
+#include "chrome/browser/ash/policy/external_data/handlers/printers_external_data_handler.h"
+#include "chrome/browser/ash/policy/external_data/handlers/user_avatar_image_external_data_handler.h"
+#include "chrome/browser/ash/policy/external_data/handlers/wallpaper_image_external_data_handler.h"
+#include "chrome/browser/ash/policy/networking/device_network_configuration_updater.h"
+#include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
+#include "chrome/browser/ash/policy/networking/user_network_configuration_updater.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/system/timezone_resolver_manager.h"
@@ -58,15 +67,6 @@
 #include "chrome/browser/chromeos/extensions/active_tab_permission_granter_delegate_chromeos.h"
 #include "chrome/browser/chromeos/extensions/extension_tab_util_delegate_chromeos.h"
 #include "chrome/browser/chromeos/extensions/permissions_updater_delegate_chromeos.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
-#include "chrome/browser/chromeos/policy/external_data_handlers/crostini_ansible_playbook_external_data_handler.h"
-#include "chrome/browser/chromeos/policy/external_data_handlers/print_servers_external_data_handler.h"
-#include "chrome/browser/chromeos/policy/external_data_handlers/printers_external_data_handler.h"
-#include "chrome/browser/chromeos/policy/external_data_handlers/user_avatar_image_external_data_handler.h"
-#include "chrome/browser/chromeos/policy/external_data_handlers/wallpaper_image_external_data_handler.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
-#include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
@@ -658,7 +658,8 @@ bool ChromeUserManagerImpl::AreEphemeralUsersEnabled() const {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   return GetEphemeralUsersEnabled() &&
-         (connector->IsEnterpriseManaged() || GetOwnerAccountId().is_valid());
+         (connector->IsDeviceEnterpriseManaged() ||
+          GetOwnerAccountId().is_valid());
 }
 
 void ChromeUserManagerImpl::OnUserRemoved(const AccountId& account_id) {
@@ -676,7 +677,7 @@ PrefService* ChromeUserManagerImpl::GetLocalState() const {
 bool ChromeUserManagerImpl::IsEnterpriseManaged() const {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->IsEnterpriseManaged();
+  return connector->IsDeviceEnterpriseManaged();
 }
 
 void ChromeUserManagerImpl::LoadDeviceLocalAccounts(
@@ -755,7 +756,7 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
   if (GetEphemeralUsersEnabled() && !IsUserLoggedIn()) {
     ListPrefUpdate prefs_users_update(GetLocalState(),
                                       user_manager::kRegularUsersPref);
-    prefs_users_update->Clear();
+    prefs_users_update->ClearList();
     for (user_manager::UserList::iterator it = users_.begin();
          it != users_.end();) {
       const AccountId account_id = (*it)->GetAccountId();
@@ -1013,7 +1014,7 @@ bool ChromeUserManagerImpl::UpdateAndCleanUpDeviceLocalAccounts(
   // us to clean up associated data if they disappear from policy.
   ListPrefUpdate prefs_device_local_accounts_update(
       GetLocalState(), kDeviceLocalAccountsWithSavedData);
-  prefs_device_local_accounts_update->Clear();
+  prefs_device_local_accounts_update->ClearList();
   for (const auto& account : device_local_accounts)
     prefs_device_local_accounts_update->AppendString(account.user_id);
 
@@ -1162,7 +1163,6 @@ bool ChromeUserManagerImpl::IsUserAllowed(
     const user_manager::User& user) const {
   DCHECK(user.GetType() == user_manager::USER_TYPE_REGULAR ||
          user.GetType() == user_manager::USER_TYPE_GUEST ||
-         user.GetType() == user_manager::USER_TYPE_SUPERVISED_DEPRECATED ||
          user.GetType() == user_manager::USER_TYPE_CHILD);
 
   return chrome_user_manager_util::IsUserAllowed(
@@ -1317,8 +1317,9 @@ void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
 
 void ChromeUserManagerImpl::RemoveReportingUser(const AccountId& account_id) {
   ListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
-  users_update->Remove(
-      base::Value(FullyCanonicalize(account_id.GetUserEmail())), NULL);
+  users_update->EraseListIter(
+      std::find(users_update->GetList().begin(), users_update->GetList().end(),
+                base::Value(FullyCanonicalize(account_id.GetUserEmail()))));
 }
 
 const AccountId& ChromeUserManagerImpl::GetGuestAccountId() const {

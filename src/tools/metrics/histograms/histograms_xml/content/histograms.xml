@@ -194,21 +194,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.DefaultAutoplaySetting" enum="ContentSetting"
-    expires_after="2021-10-24">
+    expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default autoplay setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultCookiesSetting" enum="ContentSetting"
-    expires_after="2021-10-25">
+    expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default cookies setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultIdleDetectionSetting"
-    enum="ContentSetting" expires_after="2021-06-19">
+    enum="ContentSetting" expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -217,42 +217,42 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.DefaultImagesSetting" enum="ContentSetting"
-    expires_after="2021-06-19">
+    expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default image setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultJavaScriptSetting"
-    enum="ContentSetting" expires_after="2021-10-25">
+    enum="ContentSetting" expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default JavaScript setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultLocationSetting" enum="ContentSetting"
-    expires_after="2021-10-25">
+    expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default location setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultMediaStreamCameraSetting"
-    enum="ContentSetting" expires_after="2021-06-19">
+    enum="ContentSetting" expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default camera setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultMediaStreamMicSetting"
-    enum="ContentSetting" expires_after="2021-06-19">
+    enum="ContentSetting" expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default microphone setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultMIDISysExSetting" enum="ContentSetting"
-    expires_after="2021-06-19">
+    expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -262,7 +262,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.DefaultNotificationsSetting"
-    enum="ContentSetting" expires_after="2021-06-19">
+    enum="ContentSetting" expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default notification setting at profile open.</summary>
@@ -279,35 +279,35 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.DefaultPopupsSetting" enum="ContentSetting"
-    expires_after="2021-06-19">
+    expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default popups setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultSoundSetting" enum="ContentSetting"
-    expires_after="2021-06-19">
+    expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default sound setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultSubresourceFilterSetting"
-    enum="ContentSetting" expires_after="2021-08-22">
+    enum="ContentSetting" expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default subresource filter setting at profile open</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultUsbGuardSetting" enum="ContentSetting"
-    expires_after="2021-06-19">
+    expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default permission setting for WebUSB at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultWebBluetoothGuardSetting"
-    enum="ContentSetting" expires_after="2021-06-19">
+    enum="ContentSetting" expires_after="2022-06-19">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -421,7 +421,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.NumberOfExceptions" units="units"
-    expires_after="2021-09-19">
+    expires_after="2021-11-21">
   <owner>battre@chromium.org</owner>
   <summary>
     The number of user defined hostname patterns for content settings at browser
@@ -508,7 +508,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.Popups" enum="ContentSettingPopupAction"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>charleszhao@chromium.org</owner>
   <owner>lazzzis@google.com</owner>
   <owner>src/components/blocked_content/OWNERS</owner>
@@ -585,7 +585,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.Popups.StrongBlockerActions"
-    enum="StrongPopupBlockerAction" expires_after="2021-10-17">
+    enum="StrongPopupBlockerAction" expires_after="2021-12-19">
   <owner>csharrison@chromium.org</owner>
   <summary>
     Counts of various events related to the strong popup blocker (aka abusive
@@ -882,40 +882,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="ContentSuggestions.Feed.LoadStreamStatus.BackgroundRefresh"
-    enum="FeedLoadStreamStatus" expires_after="2022-03-01">
-  <owner>harringtond@chromium.org</owner>
-  <owner>carlosk@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    Status of loading new feed data in the background. Feed v2 only.
-  </summary>
-</histogram>
-
-<histogram name="ContentSuggestions.Feed.LoadStreamStatus.Initial"
-    enum="FeedLoadStreamStatus" expires_after="2022-03-01">
-  <owner>harringtond@chromium.org</owner>
-  <owner>carlosk@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    Status of loading the initial Feed stream, which happens when a feed surface
-    is shown. Feed v2 only.
-  </summary>
-</histogram>
-
-<histogram name="ContentSuggestions.Feed.LoadStreamStatus.InitialFromStore"
-    enum="FeedLoadStreamStatus" expires_after="2022-03-01">
-  <owner>harringtond@chromium.org</owner>
-  <owner>carlosk@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    This is the store-specific status for the initial load of the Feed stream.
-    This is provided along with ContentSuggestions.Feed.LoadStreamStatus.Initial
-    because store errors can be shadowed by fallback to network fetch. Feed v2
-    only.
-  </summary>
-</histogram>
-
 <histogram name="ContentSuggestions.Feed.LoadStreamStatus.LoadMore"
     enum="FeedLoadStreamStatus" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
@@ -946,8 +912,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
-    The amount of time fetching articles takes, regardless of success. This
-    includes the time it takes to get an auth token for signed in users.
+    The duration of a network request made by the Feed component. Recorded when
+    each network request is completed. This includes the time it takes to get an
+    auth token for signed in users.
   </summary>
 </histogram>
 
@@ -1047,7 +1014,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.NoticeCardFulfilled2" enum="Boolean"
-    expires_after="2021-10-17">
+    expires_after="2021-12-19">
   <owner>vincb@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1309,15 +1276,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ContentSuggestions.Feed.UploadVisibilityLog" enum="Boolean"
+    expires_after="2022-06-01">
+  <owner>freedjm@google.com</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: Reports whether the visibility log was uploaded successfully.
+  </summary>
+</histogram>
+
 <histogram name="ContentSuggestions.Feed.UserActions" enum="FeedUserActionType"
     expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
-    Counts of user actions within the feed surface (Feed v2 only). Recorded
-    whenever a user has taken an explicit action in the Feed. e.g. (Open a Card,
-    Hide the Feed, etc.)
+    Counts of Feed user actions. e.g. (Open a Card, Hide the Feed, etc.).
+    Recorded when the user takes an explicit action related to the Feed.
   </summary>
 </histogram>
 
@@ -1351,59 +1326,66 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>feed@chromium.org</owner>
   <summary>
     Time between the UI requesting additional stream content and the content
-    being provided within 15 seconds.
+    being provided within 15 seconds. Providing content entails showing either a
+    cached or newly fetched Feed card.
   </summary>
 </histogram>
 
-<histogram name="ContentSuggestions.Feed.UserJourney.OpenCard.Failure"
+<histogram name="ContentSuggestions.Feed.UserJourney.{Surface}.Failure"
     enum="Boolean" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
-    Reported when a user taps on a Feed card unless the page is not loaded
+    Reported when a user taps on a {Surface} card and the page is not loaded
     successfully within 20 seconds.
   </summary>
+  <token key="Surface">
+    <variant name="OpenCard" summary="For-You Feed"/>
+    <variant name="OpenCard.WebFeed" summary="Web Feed"/>
+  </token>
 </histogram>
 
-<histogram name="ContentSuggestions.Feed.UserJourney.OpenCard.SuccessDuration"
+<histogram name="ContentSuggestions.Feed.UserJourney.{Surface}.SuccessDuration"
     units="ms" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
-    The time between a user tapping on a Feed card and the page finishes loading
-    successfully. Only reported when loading takes less than 20 seconds.
+    The time between a user tapping on a {Surface} card and the page finishes
+    loading successfully. Only reported when loading takes less than 20 seconds.
   </summary>
+  <token key="Surface">
+    <variant name="OpenCard" summary="For-You Feed"/>
+    <variant name="OpenCard.WebFeed" summary="Web Feed"/>
+  </token>
 </histogram>
 
-<histogram name="ContentSuggestions.Feed.UserJourney.OpenFeed.FailureDuration"
+<histogram
+    name="ContentSuggestions.Feed.UserJourney.{Surface}.{Status}Duration"
     units="ms" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
-    The time between a Feed surface opening and failing to provide the user
-    content. This is reported when either the surface is closed or a timeout of
-    15 seconds expires.
+    The time between a {Surface} opening and either providing user content, or
+    failing to provide content. Providing content entails showing either a
+    cached or newly fetched Feed card within 15 seconds. Success is reported
+    upon view of the card. Failure is reported when either the surface is closed
+    or a timeout of 15 seconds expires.
   </summary>
-</histogram>
-
-<histogram name="ContentSuggestions.Feed.UserJourney.OpenFeed.SuccessDuration"
-    units="ms" expires_after="2022-03-01">
-  <owner>harringtond@chromium.org</owner>
-  <owner>carlosk@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    The time between a Feed surface opening and the user viewing the first
-    content. If this takes more than 15 seconds,
-    ContentSuggestions.Feed.UserJourney.OpenFeed.FailureDuration is reported
-    instead.
-  </summary>
+  <token key="Surface">
+    <variant name="OpenFeed" summary="For-You Feed"/>
+    <variant name="OpenFeed.WebFeed" summary="Web Feed"/>
+  </token>
+  <token key="Status">
+    <variant name="Failure" summary="Failure"/>
+    <variant name="Success" summary="Success"/>
+  </token>
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.VisitDuration" units="ms"
-    expires_after="2021-11-07">
+    expires_after="2022-01-09">
   <owner>harringtond@chromium.org</owner>
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1488,6 +1470,28 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ContentSuggestions.Feed.WebFeed.FollowByIdResult"
+    units="index" expires_after="2022-07-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: The result of following a WebFeed when the Web Feed ID is known.
+    Reported when the follow is attempted, once per request. Triggered by a
+    user's request to follow a Web Feed.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.WebFeed.FollowUriResult"
+    enum="WebFeedSubscriptionRequestStatus" expires_after="2022-07-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: The result of following a WebFeed when the Web Feed ID is NOT
+    known. Reported when the follow is attempted, once per request. Triggered by
+    a user's request to follow a Web Feed.
+  </summary>
+</histogram>
+
 <histogram name="ContentSuggestions.Feed.WebFeed.Opened" units="index"
     expires_after="never">
 <!-- expires-never: key feature metric.  We will need the Opened
@@ -1506,6 +1510,33 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ContentSuggestions.Feed.WebFeed.RefreshRecommendedFeeds"
+    enum="WebFeedRefreshStatus" expires_after="2022-07-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: Reports the status of attempting to refresh the list of recommended
+    Web Feeds from the server. The refresh occurrs periodically when the
+    information is stale.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.WebFeed.RefreshSubscribedFeeds.{Kind}"
+    enum="WebFeedRefreshStatus" expires_after="2022-07-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: Reports the status of attempting to refresh the list of subscribed
+    Web Feeds from the server. {Kind}
+  </summary>
+  <token key="Kind">
+    <variant name="Force"
+        summary="Refresh is forced to fetch the most up to date list."/>
+    <variant name="Stale"
+        summary="Refresh is triggered because stored subscriptions are stale."/>
+  </token>
+</histogram>
+
 <histogram name="ContentSuggestions.Feed.WebFeed.Shown" units="index"
     expires_after="never">
 <!-- expires-never: key feature metric.  We will need the Shown
@@ -1522,6 +1553,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     This tracked position can be different from the position observed by the
     user, e.g. when the user dismissed some suggestions from the list or
     requested more that got inserted in the middle of the feed.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.WebFeed.UnfollowResult"
+    enum="WebFeedSubscriptionRequestStatus" expires_after="2022-07-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: The result of attempting to unfollow a WebFeed. Reported when the
+    unfollow is attempted, once per request. Triggered by a user's request to
+    unfollow a Web Feed.
   </summary>
 </histogram>
 
@@ -1636,6 +1678,101 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     opening a feed article into its own tab. SCROLLED and INTERACTED are
     reported for every occurrence, thus we could end up with more scrolled and
     interected than ENGAGED or ENGAGED_SIMPLE samples.
+  </summary>
+  <token key="FeedType">
+    <variant name="Feed" summary="For-You Feed"/>
+    <variant name="Feed.WebFeed" summary="Web Feed"/>
+  </token>
+</histogram>
+
+<histogram name="ContentSuggestions.{FeedType}.LoadedCardCount" units="index"
+    expires_after="2022-07-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: Reports the total number of cards when the {FeedType} data is
+    successfully loaded to be presented to the user. Reported after an initial
+    load. Not reported after a NextPage request. When loading data from local
+    storage, previously fetched NextPage cards are counted though.
+  </summary>
+  <token key="FeedType">
+    <variant name="Feed" summary="For-You Feed"/>
+    <variant name="Feed.WebFeed" summary="Web Feed"/>
+  </token>
+</histogram>
+
+<histogram
+    name="ContentSuggestions.{FeedType}.LoadStreamStatus.BackgroundRefresh"
+    enum="FeedLoadStreamStatus" expires_after="2022-03-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: Status of loading new {FeedType} data in the background. Reported
+    any time Chrome attempts to fetch fresh Feed content in the background. This
+    is either due to a background fetch schedule, or when fetching the Web-Feed
+    while the For-You feed is active.
+  </summary>
+  <token key="FeedType">
+    <variant name="Feed" summary="For-You Feed"/>
+    <variant name="Feed.WebFeed" summary="Web Feed"/>
+  </token>
+</histogram>
+
+<histogram name="ContentSuggestions.{FeedType}.LoadStreamStatus.Initial"
+    enum="FeedLoadStreamStatus" expires_after="2022-03-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: Status of loading the initial {FeedType} stream, which happens when
+    the {FeedType} surface is shown. Feed v2 only.
+  </summary>
+  <token key="FeedType">
+    <variant name="Feed" summary="For-You Feed"/>
+    <variant name="Feed.WebFeed" summary="Web Feed"/>
+  </token>
+</histogram>
+
+<histogram
+    name="ContentSuggestions.{FeedType}.LoadStreamStatus.InitialFromStore"
+    enum="FeedLoadStreamStatus" expires_after="2022-03-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: The status of loading the Feed from the local store. Reported when
+    loading the Feed for display. Recorded at the same time as
+    ContentSuggestions.{FeedType}.LoadStreamStatus.Initial to differentiate
+    between store errors and network fetch results.
+  </summary>
+  <token key="FeedType">
+    <variant name="Feed" summary="For-You Feed"/>
+    <variant name="Feed.WebFeed" summary="Web Feed"/>
+  </token>
+</histogram>
+
+<histogram name="ContentSuggestions.{FeedType}.LoadStreamStatus.ManualRefresh"
+    enum="FeedLoadStreamStatus" expires_after="2022-07-01">
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: status of pulling-to-refresh the {FeedType} stream per the user
+    request. Reported when the refresh completes.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.{FeedType}.ReachedEndOfFeed" units="index"
+    expires_after="2022-07-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: Reports the number of cards in the {FeedType}. Reported when the
+    last card of the {FeedType} is shown. Note that this is reported even if the
+    Feed is attempting to load additional content (LoadMore), as long as the
+    last card is 2/3rds shown before additional content loads. In this case,
+    this histogram can be reported multiple times without leaving the Feed
+    surface.
   </summary>
   <token key="FeedType">
     <variant name="Feed" summary="For-You Feed"/>

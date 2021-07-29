@@ -23,10 +23,10 @@
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_app_model_builder.h"
@@ -36,15 +36,15 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/page_break_app_item.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_id_constants.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -148,7 +148,7 @@ sync_pb::AppListSpecifics::AppListItemType GetAppListItemType(
 void RemoveSyncItemFromLocalStorage(Profile* profile,
                                     const std::string& item_id) {
   DictionaryPrefUpdate(profile->GetPrefs(), prefs::kAppListLocalState)
-      ->Remove(item_id, nullptr);
+      ->RemoveKey(item_id);
 }
 
 void UpdateSyncItemInLocalStorage(
@@ -444,9 +444,9 @@ void AppListSyncableService::BuildModel() {
   // Install default page brakes for tablet form factor devices here as
   // these devices do not have app list sync turned on.
   if (chromeos::switches::IsTabletFormFactor() && profile_->IsNewProfile()) {
-    DCHECK(!ProfileSyncServiceFactory::GetForProfile(profile_)
-                ->GetActiveDataTypes()
-                .Has(syncer::APP_LIST));
+    DCHECK(
+        !SyncServiceFactory::GetForProfile(profile_)->GetActiveDataTypes().Has(
+            syncer::APP_LIST));
     // Create call back to create the default page break items at later time so
     // that default page break items are not removed by
     // |PruneRedundantPageBreakItems|
@@ -719,6 +719,9 @@ void AppListSyncableService::SetPinPosition(
 
 void AppListSyncableService::AddOrUpdateFromSyncItem(
     const ChromeAppListItem* app_item) {
+  for (auto& observer : observer_list_)
+    observer.OnAddOrUpdateFromSyncItemForTest();
+
   // Do not create a sync item for the OEM folder here, do that in
   // ResolveFolderPositions once the position has been resolved.
   if (app_item->id() == ash::kOemFolderId)
@@ -1327,7 +1330,7 @@ bool AppListSyncableService::AppIsOem(const std::string& id) {
   if (arc_prefs && arc_prefs->IsOem(id))
     return true;
 
-  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile_);
+  auto* provider = web_app::WebAppProvider::Get(profile_);
   if (provider && provider->registrar().WasInstalledByOem(id))
     return true;
 

@@ -7,9 +7,9 @@
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
+#include "chrome/browser/ash/policy/affiliation/affiliation_test_helper.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
@@ -76,7 +76,7 @@ void ForceInstalledAffiliatedExtensionApiTest::SetUpOnMainThread() {
   // policy::AffiliationTestHelper::PreLoginUser() in the PRE_ test.
   const base::ListValue* users =
       g_browser_process->local_state()->GetList("LoggedInUsers");
-  if (!users->empty()) {
+  if (!users->GetList().empty()) {
     policy::AffiliationTestHelper::LoginUser(affiliation_mixin_.account_id());
   }
 

@@ -7,8 +7,8 @@
 #include <map>
 #include <utility>
 
+#include "base/containers/cxx20_erase.h"
 #include "base/numerics/ranges.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -148,11 +148,22 @@ const AXTree::Selection TestAXNodeWrapper::GetUnignoredSelection() const {
   return tree_->GetUnignoredSelection();
 }
 
+AXNodePosition::AXPositionInstance TestAXNodeWrapper::CreatePositionAt(
+    int offset,
+    ax::mojom::TextAffinity affinity) const {
+  if (node_->IsLeaf()) {
+    return ui::AXNodePosition::CreateTextPosition(
+        GetTreeData().tree_id, node_->id(), offset, affinity);
+  }
+  return ui::AXNodePosition::CreateTreePosition(GetTreeData().tree_id,
+                                                node_->id(), offset);
+}
+
 AXNodePosition::AXPositionInstance TestAXNodeWrapper::CreateTextPositionAt(
-    int offset) const {
-  return ui::AXNodePosition::CreateTextPosition(
-      GetTreeData().tree_id, node_->id(), offset,
-      ax::mojom::TextAffinity::kDownstream);
+    int offset,
+    ax::mojom::TextAffinity affinity) const {
+  return ui::AXNodePosition::CreateTextPosition(GetTreeData().tree_id,
+                                                node_->id(), offset, affinity);
 }
 
 gfx::NativeViewAccessible TestAXNodeWrapper::GetNativeViewAccessible() {
@@ -223,13 +234,13 @@ gfx::Rect TestAXNodeWrapper::GetInnerTextRangeBoundsRect(
       // kInlineTextBox and kStaticText.
       // For test purposes, assume node with kStaticText always has a single
       // child with role kInlineTextBox.
-      if (GetData().role == ax::mojom::Role::kInlineTextBox) {
+      if (GetRole() == ax::mojom::Role::kInlineTextBox) {
         bounds = GetInlineTextRect(start_offset, end_offset);
-      } else if (GetData().role == ax::mojom::Role::kStaticText &&
+      } else if (GetRole() == ax::mojom::Role::kStaticText &&
                  InternalChildCount() > 0) {
         TestAXNodeWrapper* child = InternalGetChild(0);
         if (child != nullptr &&
-            child->GetData().role == ax::mojom::Role::kInlineTextBox) {
+            child->GetRole() == ax::mojom::Role::kInlineTextBox) {
           bounds = child->GetInlineTextRect(start_offset, end_offset);
         }
       }
@@ -365,7 +376,7 @@ AXPlatformNode* TestAXNodeWrapper::GetFromTreeIDAndNodeID(
 }
 
 int TestAXNodeWrapper::GetIndexInParent() {
-  return node_ ? int{node_->GetUnignoredIndexInParent()} : -1;
+  return node_ ? static_cast<int>(node_->GetUnignoredIndexInParent()) : -1;
 }
 
 void TestAXNodeWrapper::ReplaceIntAttribute(int32_t node_id,
@@ -444,7 +455,7 @@ void TestAXNodeWrapper::ReplaceTreeDataTextSelection(int32_t anchor_node_id,
   new_tree_data.sel_focus_object_id = focus_node_id;
   new_tree_data.sel_focus_offset = focus_offset;
 
-  tree_->UpdateData(new_tree_data);
+  tree_->UpdateDataForTesting(new_tree_data);
 }
 
 bool TestAXNodeWrapper::IsTable() const {
@@ -569,14 +580,10 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
       g_offset = gfx::Vector2d(data.target_point.x(), data.target_point.y());
       return true;
     case ax::mojom::Action::kSetScrollOffset: {
-      int scroll_x_min =
-          GetData().GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
-      int scroll_x_max =
-          GetData().GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
-      int scroll_y_min =
-          GetData().GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
-      int scroll_y_max =
-          GetData().GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
+      int scroll_x_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
+      int scroll_x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
+      int scroll_y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
+      int scroll_y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
       int scroll_x =
           base::ClampToRange(data.target_point.x(), scroll_x_min, scroll_x_max);
       int scroll_y =
@@ -599,16 +606,15 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
       // could result in a selected state change. In which case, the element's
       // selected state no longer comes from focus action, so we should set
       // |kSelectedFromFocus| to false.
-      if (GetData().HasBoolAttribute(
-              ax::mojom::BoolAttribute::kSelectedFromFocus))
+      if (HasBoolAttribute(ax::mojom::BoolAttribute::kSelectedFromFocus))
         ReplaceBoolAttribute(ax::mojom::BoolAttribute::kSelectedFromFocus,
                              false);
 
-      switch (GetData().role) {
+      switch (GetRole()) {
         case ax::mojom::Role::kListBoxOption:
         case ax::mojom::Role::kCell: {
           bool current_value =
-              GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+              GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
           ReplaceBoolAttribute(ax::mojom::BoolAttribute::kSelected,
                                !current_value);
           break;
@@ -637,7 +643,7 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
       if (GetData().IsRangeValueSupported()) {
         ReplaceFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
                               std::stof(data.value));
-      } else if (GetData().role == ax::mojom::Role::kTextField) {
+      } else if (GetRole() == ax::mojom::Role::kTextField) {
         ReplaceStringAttribute(ax::mojom::StringAttribute::kValue, data.value);
       }
       return true;
@@ -659,9 +665,9 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
 
       // The platform has select follows focus behavior:
       // https://www.w3.org/TR/wai-aria-practices-1.1/#kbd_selection_follows_focus
-      // For test purpose, we support select follows focus for all elements, and
-      // not just single-selection container elements.
-      if (SupportsSelected(GetData().role)) {
+      // For test purposes, we support select follows focus for all elements,
+      // and not just single-selection container elements.
+      if (IsSelectSupported(GetRole())) {
         ReplaceBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
         ReplaceBoolAttribute(ax::mojom::BoolAttribute::kSelectedFromFocus,
                              true);
@@ -685,8 +691,7 @@ std::u16string TestAXNodeWrapper::GetLocalizedRoleDescriptionForUnlabeledImage()
 }
 
 std::u16string TestAXNodeWrapper::GetLocalizedStringForLandmarkType() const {
-  const AXNodeData& data = GetData();
-  switch (data.role) {
+  switch (GetRole()) {
     case ax::mojom::Role::kBanner:
     case ax::mojom::Role::kHeader:
       return u"banner";
@@ -700,7 +705,7 @@ std::u16string TestAXNodeWrapper::GetLocalizedStringForLandmarkType() const {
 
     case ax::mojom::Role::kRegion:
     case ax::mojom::Role::kSection:
-      if (data.HasStringAttribute(ax::mojom::StringAttribute::kName))
+      if (HasStringAttribute(ax::mojom::StringAttribute::kName))
         return u"region";
       FALLTHROUGH;
 
@@ -710,9 +715,7 @@ std::u16string TestAXNodeWrapper::GetLocalizedStringForLandmarkType() const {
 }
 
 std::u16string TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
-  const AXNodeData& data = GetData();
-
-  switch (data.role) {
+  switch (GetRole()) {
     case ax::mojom::Role::kArticle:
       return u"article";
 
@@ -736,8 +739,8 @@ std::u16string TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
 
     case ax::mojom::Role::kDateTime: {
       std::string input_type;
-      if (data.GetStringAttribute(ax::mojom::StringAttribute::kInputType,
-                                  &input_type)) {
+      if (GetStringAttribute(ax::mojom::StringAttribute::kInputType,
+                             &input_type)) {
         if (input_type == "datetime-local") {
           return u"local date and time picker";
         } else if (input_type == "week") {
@@ -783,7 +786,7 @@ std::u16string TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
       return u"search box";
 
     case ax::mojom::Role::kSection: {
-      if (data.HasStringAttribute(ax::mojom::StringAttribute::kName))
+      if (HasStringAttribute(ax::mojom::StringAttribute::kName))
         return u"section";
 
       return {};
@@ -797,8 +800,8 @@ std::u16string TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
 
     case ax::mojom::Role::kTextField: {
       std::string input_type;
-      if (data.GetStringAttribute(ax::mojom::StringAttribute::kInputType,
-                                  &input_type)) {
+      if (GetStringAttribute(ax::mojom::StringAttribute::kInputType,
+                             &input_type)) {
         if (input_type == "email") {
           return u"email";
         } else if (input_type == "tel") {
@@ -846,7 +849,7 @@ std::u16string TestAXNodeWrapper::GetStyleNameAttributeAsLocalizedString()
     const {
   AXNode* current_node = node_;
   while (current_node) {
-    if (current_node->data().role == ax::mojom::Role::kMark)
+    if (current_node->GetRole() == ax::mojom::Role::kMark)
       return u"mark";
     current_node = current_node->parent();
   }
@@ -865,7 +868,7 @@ bool TestAXNodeWrapper::HasVisibleCaretOrSelection() const {
     return false;
 
   // Selection or caret will be visible in a focused editable area.
-  if (GetData().HasState(ax::mojom::State::kEditable)) {
+  if (HasState(ax::mojom::State::kEditable)) {
     return GetData().IsAtomicTextField() ? focus_object == node_
                                          : focus_object->IsDescendantOf(node_);
   }
@@ -934,13 +937,14 @@ gfx::RectF TestAXNodeWrapper::GetLocation() const {
 }
 
 int TestAXNodeWrapper::InternalChildCount() const {
-  return int{node_->GetUnignoredChildCount()};
+  return static_cast<int>(node_->GetUnignoredChildCount());
 }
 
 TestAXNodeWrapper* TestAXNodeWrapper::InternalGetChild(int index) const {
   CHECK_GE(index, 0);
   CHECK_LT(index, InternalChildCount());
-  return GetOrCreate(tree_, node_->GetUnignoredChildAtIndex(size_t{index}));
+  return GetOrCreate(
+      tree_, node_->GetUnignoredChildAtIndex(static_cast<size_t>(index)));
 }
 
 // Recursive helper function for GetUIADescendants. Aggregates all of the
@@ -974,7 +978,7 @@ bool TestAXNodeWrapper::ShouldHideChildrenForUIA(const AXNode* node) {
   if (!node)
     return false;
 
-  auto role = node->data().role;
+  auto role = node->GetRole();
 
   if (ui::HasPresentationalChildren(role))
     return true;
@@ -991,13 +995,13 @@ bool TestAXNodeWrapper::ShouldHideChildrenForUIA(const AXNode* node) {
 gfx::RectF TestAXNodeWrapper::GetInlineTextRect(const int start_offset,
                                                 const int end_offset) const {
   DCHECK(start_offset >= 0 && end_offset >= 0 && start_offset <= end_offset);
-  const std::vector<int32_t>& character_offsets = GetData().GetIntListAttribute(
-      ax::mojom::IntListAttribute::kCharacterOffsets);
+  const std::vector<int32_t>& character_offsets =
+      GetIntListAttribute(ax::mojom::IntListAttribute::kCharacterOffsets);
   gfx::RectF location = GetLocation();
   gfx::RectF bounds;
 
   switch (static_cast<ax::mojom::WritingDirection>(
-      GetData().GetIntAttribute(ax::mojom::IntAttribute::kTextDirection))) {
+      GetIntAttribute(ax::mojom::IntAttribute::kTextDirection))) {
     // Currently only kNone and kLtr are supported text direction.
     case ax::mojom::WritingDirection::kNone:
     case ax::mojom::WritingDirection::kLtr: {

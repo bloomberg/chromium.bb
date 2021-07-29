@@ -63,6 +63,13 @@ class SkSurface_Base;
 class SkTextBlob;
 class SkVertices;
 
+// This declaration must match the one in SkDeferredDisplayList.h
+#if SK_SUPPORT_GPU
+class GrRenderTargetProxy;
+#else
+using GrRenderTargetProxy = SkRefCnt;
+#endif
+
 /** \class SkCanvas
     SkCanvas provides an interface for drawing, and how the drawing is clipped and transformed.
     SkCanvas contains a stack of SkMatrix and clip values.
@@ -2019,7 +2026,7 @@ public:
         to draw, if present. For each entry in the array, SkRect tex locates sprite in
         atlas, and SkRSXform xform transforms it into destination space.
 
-        xform, text, and colors if present, must contain count entries.
+        xform, tex, and colors if present, must contain count entries.
         Optional colors are applied for each sprite using SkBlendMode mode, treating
         sprite as source and colors as destination.
         Optional cullRect is a conservative bounds of all transformed sprites.
@@ -2264,17 +2271,7 @@ protected:
 
     virtual void onDiscard();
 
-    // Clip rectangle bounds. Called internally by saveLayer.
-    // returns false if the entire rectangle is entirely clipped out
-    // If non-NULL, The imageFilter parameter will be used to expand the clip
-    // and offscreen bounds for any margin required by the filter DAG.
-    bool clipRectBounds(const SkRect* bounds, SkIRect* intersection,
-                        const SkImageFilter* imageFilter = nullptr);
-
 private:
-    static void DrawDeviceWithFilter(SkBaseDevice* src, const SkImageFilter* filter,
-                                     SkBaseDevice* dst, const SkIPoint& dstOrigin,
-                                     const SkMatrix& ctm);
 
     enum ShaderOverrideOpacity {
         kNone_ShaderOverrideOpacity,        //!< there is no overriding shader (bitmap or image)
@@ -2298,6 +2295,7 @@ private:
     // operations should route to this device.
     SkBaseDevice* topDevice() const;
     virtual GrSurfaceDrawContext* topDeviceSurfaceDrawContext();
+    virtual GrRenderTargetProxy* topDeviceTargetProxy();
 
     class MCRec;
 
@@ -2387,13 +2385,30 @@ private:
     void internalDrawPaint(const SkPaint& paint);
     void internalSaveLayer(const SaveLayerRec&, SaveLayerStrategy);
     void internalSaveBehind(const SkRect*);
-    void internalDrawDevice(SkBaseDevice*, const SkSamplingOptions&, const SkPaint*);
 
     void internalConcat44(const SkM44&);
 
     // shared by save() and saveLayer()
     void internalSave();
     void internalRestore();
+
+    enum class DeviceCompatibleWithFilter : bool {
+        // Check the src device's local-to-device matrix for compatibility with the filter, and if
+        // it is not compatible, introduce an intermediate image and transformation that allows the
+        // filter to be evaluated on the modified src content.
+        kUnknown = false,
+        // Assume that the src device's local-to-device matrix is compatible with the filter.
+        kYes     = true
+    };
+    /**
+     * Filters the contents of 'src' and draws the result into 'dst'. The filter is evaluated
+     * relative to the current canvas matrix, and src is drawn to dst using their relative transform
+     * 'paint' is applied after the filter and must not have a mask or image filter of its own.
+     * A null 'filter' behaves as if the identity filter were used.
+     */
+    void internalDrawDeviceWithFilter(SkBaseDevice* src, SkBaseDevice* dst,
+                                      const SkImageFilter* filter, const SkPaint& paint,
+                                      DeviceCompatibleWithFilter compat);
 
     /*
      *  Returns true if drawing the specified rect (or all if it is null) with the specified

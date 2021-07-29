@@ -57,6 +57,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/tab_test_util.h"
+#import "ios/chrome/test/app/window_test_util.h"
 #import "ios/testing/earl_grey/earl_grey_app.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -141,6 +142,12 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return grey_allOf(
       grey_accessibilityID([NSString stringWithFormat:@"%d", windowNumber]),
       grey_kindOfClass([UIWindow class]), nil);
+}
+
++ (id<GREYMatcher>)blockerWindowWithNumber:(int)windowNumber {
+  return grey_allOf(grey_accessibilityID([NSString
+                        stringWithFormat:@"blocker-%d", windowNumber]),
+                    grey_kindOfClass([UIWindow class]), nil);
 }
 
 + (id<GREYMatcher>)buttonWithAccessibilityLabel:(NSString*)label {
@@ -427,10 +434,8 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
       buttonWithAccessibilityLabelID:(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)];
 }
 
-+ (id<GREYMatcher>)openLinkInIncognitoButtonWithUseNewString:
-    (BOOL)useNewString {
-  int stringId = useNewString ? IDS_IOS_OPEN_IN_INCOGNITO_ACTION_TITLE
-                              : IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB;
++ (id<GREYMatcher>)openLinkInIncognitoButton {
+  int stringId = IDS_IOS_OPEN_IN_INCOGNITO_ACTION_TITLE;
   return [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:(stringId)];
 }
 
@@ -743,18 +748,22 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return grey_kindOfClass(NSClassFromString(@"UICalloutBarButton"));
 }
 
-+ (id<GREYMatcher>)systemSelectionCalloutCopyButton {
-  return grey_allOf(grey_accessibilityLabel(@"Copy"),
-                    [self systemSelectionCallout], nil);
-}
-
 + (id<GREYMatcher>)systemSelectionCalloutLinkToTextButton {
   return grey_allOf(grey_accessibilityLabel(
                         l10n_util::GetNSString(IDS_IOS_SHARE_LINK_TO_TEXT)),
                     [self systemSelectionCallout], nil);
 }
 
-+ (id<GREYMatcher>)copyActivityButton API_AVAILABLE(ios(13)) {
++ (id<GREYMatcher>)systemSelectionCalloutCopyButton {
+  return grey_allOf(grey_accessibilityLabel(@"Copy"),
+                    [self systemSelectionCallout], nil);
+}
+
++ (id<GREYMatcher>)systemSelectionCalloutOverflowButton {
+  return grey_accessibilityID(@"show.next.items.menu.button");
+}
+
++ (id<GREYMatcher>)copyActivityButton {
   id<GREYMatcher> copyStaticText = [ChromeMatchersAppInterface
       staticTextWithAccessibilityLabel:l10n_util::GetNSString(
                                            IDS_IOS_SHARE_MENU_COPY)];
@@ -763,15 +772,13 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
       grey_ancestor(grey_kindOfClassName(@"UIActivityActionGroupCell")), nil);
 }
 
-+ (id<GREYMatcher>)copyLinkButtonWithUseNewString:(BOOL)useNewString {
-  int stringId = useNewString ? IDS_IOS_COPY_LINK_ACTION_TITLE
-                              : IDS_IOS_CONTENT_CONTEXT_COPY;
++ (id<GREYMatcher>)copyLinkButton {
+  int stringId = IDS_IOS_COPY_LINK_ACTION_TITLE;
   return [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:stringId];
 }
 
-+ (id<GREYMatcher>)editButtonWithUseNewString:(BOOL)useNewString {
-  int stringId = useNewString ? IDS_IOS_EDIT_ACTION_TITLE
-                              : IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT;
++ (id<GREYMatcher>)editButton {
+  int stringId = IDS_IOS_EDIT_ACTION_TITLE;
   return [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:stringId];
 }
 
@@ -825,6 +832,12 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 
 + (id<GREYMatcher>)webStateScrollViewMatcher {
   return web::WebViewScrollView(chrome_test_util::GetCurrentWebState());
+}
+
++ (id<GREYMatcher>)webStateScrollViewMatcherInWindowWithNumber:
+    (int)windowNumber {
+  return web::WebViewScrollView(
+      chrome_test_util::GetCurrentWebStateForWindowWithNumber(windowNumber));
 }
 
 + (id<GREYMatcher>)historyClearBrowsingDataButton {
@@ -1115,6 +1128,27 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return grey_allOf(
       [self buttonWithAccessibilityLabelID:IDS_IOS_USE_SUGGESTED_PASSWORD],
       grey_interactable(), nullptr);
+}
+
+#pragma mark - Tab Grid Edit Mode
++ (id<GREYMatcher>)tabGridEditButton {
+  return grey_allOf(grey_accessibilityID(kTabGridEditButtonIdentifier),
+                    grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridEditAddToButton {
+  return grey_allOf(grey_accessibilityID(kTabGridEditAddToButtonIdentifier),
+                    grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridEditCloseTabsButton {
+  return grey_allOf(grey_accessibilityID(kTabGridEditCloseTabsButtonIdentifier),
+                    grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridEditSelectAllButton {
+  return grey_allOf(grey_accessibilityID(kTabGridEditSelectAllButtonIdentifier),
+                    grey_sufficientlyVisible(), nil);
 }
 
 @end

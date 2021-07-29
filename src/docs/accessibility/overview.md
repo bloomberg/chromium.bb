@@ -215,6 +215,14 @@ Automation Inspector Chrome extension).
   - macOS: Accessibility Inspector
   - Windows: Inspect, AViewer, accProbe (and many others)
 
+### Supported Platforms and APIs
+
+* Windows: IAccessible (also known as Microsoft Active Accessibility or MSAA),
+  IAccessible2, [UI Automation](uiautomation.md). Chromium also supports
+  [mapping between IAccessible2 and UI Automation nodes](ia2_to_uia.md).
+* Mac: NSAccessibility
+* Linux: ATK
+* Android: [AccessibilityNodeInfo and AccessibilityNodeProvider](android.md)
 
 ## Chromium's multi-process architecture
 
@@ -510,9 +518,9 @@ which is renderer-side code, and in JavaScript by the [automation API]. The API
 is defined by [automation.idl], which must be kept synchronized with
 [ax_enums.mojom].
 
-[ax.mojom.AXActionData]: https://source.chromium.org/chromium/chromium/src/+/master:ui/accessibility/mojom/ax_action_data.mojom;l=13
-[ax.mojom.RenderAccessibilityHost::HandleAXEvents()]: https://source.chromium.org/chromium/chromium/src/+/master:content/common/render_accessibility.mojom;l=47
-[ax.mojom.RenderAccessibility.PerformAction()]: https://source.chromium.org/chromium/chromium/src/+/master:content/common/render_accessibility.mojom;l=86
+[ax.mojom.AXActionData]: https://source.chromium.org/chromium/chromium/src/+/main:ui/accessibility/mojom/ax_action_data.mojom;l=13
+[ax.mojom.RenderAccessibilityHost::HandleAXEvents()]: https://source.chromium.org/chromium/chromium/src/+/main:content/common/render_accessibility.mojom;l=47
+[ax.mojom.RenderAccessibility.PerformAction()]: https://source.chromium.org/chromium/chromium/src/+/main:content/common/render_accessibility.mojom;l=86
 [AutomationInternalCustomBindings]: https://cs.chromium.org/chromium/src/extensions/renderer/api/automation/automation_internal_custom_bindings.h
 [AXContentNodeData]: https://cs.chromium.org/chromium/src/content/common/ax_content_node_data.h
 [AXLayoutObject]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/accessibility/ax_layout_object.h
@@ -530,7 +538,7 @@ is defined by [automation.idl], which must be kept synchronized with
 [ViewAccessibility]: https://cs.chromium.org/chromium/src/ui/views/accessibility/view_accessibility.h
 [Node]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/dom/node.h
 [RenderAccessibilityImpl]: https://cs.chromium.org/chromium/src/content/renderer/accessibility/render_accessibility_impl.h
-[RenderAccessibilityManager]: https://source.chromium.org/chromium/chromium/src/+/master:content/renderer/accessibility/render_accessibility_manager.h
+[RenderAccessibilityManager]: https://source.chromium.org/chromium/chromium/src/+/main:content/renderer/accessibility/render_accessibility_manager.h
 [RenderFrameHostImpl]: https://cs.chromium.org/chromium/src/content/browser/renderer_host/render_frame_host_impl.h
 [ui::AXNodeData]: https://cs.chromium.org/chromium/src/ui/accessibility/ax_node_data.h
 [WebAXObject]: https://cs.chromium.org/chromium/src/third_party/blink/public/web/web_ax_object.h

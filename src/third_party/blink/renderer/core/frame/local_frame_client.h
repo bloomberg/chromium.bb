@@ -81,6 +81,7 @@ namespace blink {
 
 class AssociatedInterfaceProvider;
 class DocumentLoader;
+class HTMLFencedFrameElement;
 class HTMLFormElement;
 class HTMLFrameOwnerElement;
 class HTMLMediaElement;
@@ -134,6 +135,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                                bool is_synchronously_committed,
                                                bool is_history_api_navigation,
                                                bool is_client_redirect) {}
+  virtual void DispatchDidOpenDocumentInputStream(const KURL&) {}
   virtual void DispatchDidReceiveTitle(const String&) = 0;
   virtual void DispatchDidCommitLoad(
       HistoryItem* item,
@@ -197,11 +199,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   virtual void DidObserveLayoutShift(double score, bool after_input_or_scroll) {
   }
-
-  // Reports input timestamps for segmenting layout shifts by users inputs to
-  // create Session window.
-  virtual void DidObserveInputForLayoutShiftTracking(
-      base::TimeTicks timestamp) {}
 
   // Reports the number of LayoutBlock creation, and LayoutObject::UpdateLayout
   // calls. All values are deltas since the last calls of this function.
@@ -267,6 +264,10 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Adopting the predecessor allows a page to keep it alive and embed it as a
   // portal, allowing instantaneous back and forward activations.
   virtual RemoteFrame* AdoptPortal(HTMLPortalElement* portal) = 0;
+
+  // Creates a remote fenced frame hosted by an MPArch frame tree for the
+  // |HTMLFencedFrameElement|.
+  virtual RemoteFrame* CreateFencedFrame(HTMLFencedFrameElement*) = 0;
 
   // Whether or not plugin creation should fail if the HTMLPlugInElement isn't
   // in the DOM after plugin initialization.

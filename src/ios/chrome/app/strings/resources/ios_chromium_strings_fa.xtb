@@ -6,10 +6,12 @@
 <translation id="1257458525759135959">‏برای ذخیره کردن تصاویر، روی «تنظیمات» ضربه بزنید و به Chromium اجازه دهید آن‌ها را به عکس‌ها اضافه کند</translation>
 <translation id="1289216811211435351">‏رفتن به Chromium</translation>
 <translation id="1361748954329991663">‏نسخه Chromium قدیمی است. اگر به‌روزرسانی‌ای در <ph name="BEGIN_LINK" />فروشگاه برنامه<ph name="END_LINK" /> دردسترس نیست، احتمالاً دستگاهتان نسخه‌های جدید Chromium را دیگر پشتیبانی نمی‌کند.</translation>
+<translation id="1370204544543370355">‏برای اینکه بیشترین بهره را از Chromium ببرید، با «حساب Google» به سیستم Chromium وارد شوید</translation>
 <translation id="1431818719585918472">‏اجازه دهید Chromium «برگه‌های ناشناس» را قفل کند.</translation>
 <translation id="1472013873724362412">‏حساب شما در Chromium کار نمی‌کند. لطفاً با سرپرست دامنه‌تان تماس بگیرید یا از یک حساب Google معمولی برای ثبت ورود استفاده کنید.</translation>
 <translation id="1507010443238049608">‏کمک به بهبود ویژگی‌ها و عملکرد Chromium</translation>
 <translation id="1531155317299575425">‏برای ورود به سیستم Chromium درخواست نشان می‌دهد.</translation>
+<translation id="1584569488888892906">‏Chromium ساده، ایمن، و سریع‌تر از همیشه است</translation>
 <translation id="1617663976202781617">‏داده‌های مربوط به همگام‌سازی Chromium</translation>
 <translation id="1736662517232558588">‏داده‌های Chromium پاک شد</translation>
 <translation id="1838412507805038478">‏Chromium تأیید کرد که <ph name="ISSUER" /> گواهینامه این وب‌سایت را صادر کرده است.</translation>
@@ -17,7 +19,6 @@
 <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="2006345422933397527">‏Chromium موفق نشد به‌روزرسانی‌ها را بررسی کند. اتصال اینترنت را بررسی کنید.</translation>
 <translation id="2054703085270098503">‏با Chromium ایمن بمانید</translation>
-<translation id="2075400798887076382">‏از اینجا، به برگه‌هایی که دررایانه‌تان باز کرده‌اید دسترسی داشته باشید. کافی است Chromium را در رایانه‌تان باز کنید، به منو بروید و «...Sign in to Chromium» (ورود به سیستم Chromium) را انتخاب کنید.</translation>
 <translation id="2168108852149185974">‏برخی از افزونه‌ها باعث خرابی Chromium می‌شود. لطفاً آن‌ها را حذف نصب کنید:</translation>
 <translation id="2178608107313874732">‏Chromium اکنون نمی‌تواند از دوربین استفاده کند</translation>
 <translation id="2195025571279539885">‏می‌خواهید دفعه دیگر Chromium پیشنهاد ترجمه صفحات <ph name="LANGUAGE_NAME" /> را از این سایت بدهد؟</translation>
@@ -42,10 +43,8 @@
 <translation id="4585809515399340748">‏اکنون می‌توانید با ضربه زدن روی پیوندهای موجود در پیام‌ها، اسناد، و دیگر برنامه‌ها، از Chromium استفاده کنید.</translation>
 <translation id="4681781466797808448">‏روشن کردن اسکنر Chromium</translation>
 <translation id="4736424910885271643">‏<ph name="HOSTED_DOMAIN" /> حسابتان را مدیریت می‌کند، درنتیجه داده‌های Chromium شما از این دستگاه پاک خواهد شد</translation>
-<translation id="4787850887676698916">‏برگه‌هایی که در دستگاه‌های دیگر در Chromium باز کرده‌اید، در اینجا نشان داده می‌شوند.</translation>
 <translation id="4806326830773390517">‏با ارسال آمار کاربرد و گزارش‌های خرابی برای Google، به بهبود Chromium کمک کنید</translation>
 <translation id="4828317641996116749">‏Chromium نتوانست همه گذرواژه‌ها را بررسی کند. بعداً دوباره امتحان کنید.</translation>
-<translation id="4852878756222711218">‏برای استفاده بهتر از Chromium، با «حساب Google» خودتان به سیستم وارد شوید</translation>
 <translation id="4985291216379576555">‏آفلاین هستید، Chromium نمی‌تواند به‌روزرسانی‌ها را بررسی کند</translation>
 <translation id="4999538639245140991">‏ازآنجایی‌که درحال خارج شدن از حسابی هستید که <ph name="SIGNOUT_MANAGED_DOMAIN" /> آن را مدیریت می‌کند، داده‌های Chromium شما از این دستگاه حذف خواهد شد. داده‌هایتان در حساب Google شما باقی می‌ماند.</translation>
 <translation id="5171868502429358653">‏ورود به سیستم Chromium</translation>
@@ -55,6 +54,7 @@
 <translation id="5521125884468363740">‏در همه دستگاه‌هایی که در آن‌ها از Chromium استفاده می‌کنید، به سیستم وارد شوید و همگام‌سازی را روشن کنید تا بتوانید برگه‌هایتان را ببینید</translation>
 <translation id="5573014823074921752">‏نکته Chromium. برای دیدن گزینه‌های بیشتر برگه، دکمه «نمایش برگه‌ها» را در نوارابزار (واقع در پایین یا بالای صفحه) لمس کنید و نگه دارید.</translation>
 <translation id="5700709190537129682">‏Chromium نمی‌تواند گذرواژه‌هایتان را بررسی کند</translation>
+<translation id="5715349567881822785">‏با Chromium کارهای بیشتری انجام دهید</translation>
 <translation id="5742135483959137648">‏استفاده از Chromium برای باز کردن پیوندها</translation>
 <translation id="5777187867430702742">‏صفحه Chromium</translation>
 <translation id="5862307444128926510">‏به Chromium خوش آمدید</translation>
@@ -69,6 +69,7 @@
 <translation id="632825460376924298">‏مجاز کردن ورود به سیستم Chromium</translation>
 <translation id="6337530241089703714">‏انتخاب کنید داده‌های Chromium شما از این دستگاه پاک شود یا نگه داشته شود</translation>
 <translation id="6424492062988593837">‏Chromium بهتر شده است! نسخه جدید آن در دسترس است.</translation>
+<translation id="6752854822223394465">‏سازمانتان درحال راه‌اندازی Chromium است…</translation>
 <translation id="6820823224820483452">‏Chromium نمی‌تواند همه گذرواژه‌هایتان را بررسی کند. فردا دوباره امتحان کنید.</translation>
 <translation id="6827294685447036764">‏اگر به Chromium اجازه دهید به مکانتان دسترسی داشته باشد، آن را برای هر سایتی که شما مجاز بدانید ارسال خواهد کرد. وقتی سایت‌ها اطلاعاتی محلی (مثل اخبار یا فروشگاه‌های اطراف) برای نمایش به شما داشته باشند، ممکن است برای دسترسی به مکانتان درخواست دهند.</translation>
 <translation id="7018284295775193585">‏Chromium به‌روزرسانی نمی‌شود</translation>

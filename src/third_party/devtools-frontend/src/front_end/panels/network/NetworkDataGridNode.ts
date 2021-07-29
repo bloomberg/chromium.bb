@@ -47,14 +47,15 @@ import * as Protocol from '../../generated/protocol.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-import {Tabs as NetworkItemViewTabs} from './NetworkItemView.js';
-
 import type {NetworkTimeCalculator} from './NetworkTimeCalculator.js'; // eslint-disable-line no-unused-vars
+
+import {imageNameForResourceType} from './utils/utils.js';
 
 const UIStrings = {
   /**
@@ -131,6 +132,15 @@ const UIStrings = {
   */
   pendingq: '(pending)',
   /**
+  * @description Status text in the Network panel that indicates a network request state is not known.
+  */
+  unknown: '(unknown)',
+  /**
+  * @description Tooltip providing details on why the request has unknown status.
+  */
+  unknownExplanation:
+      'The request status cannot be shown here because the page that issued it unloaded while the request was in flight. You can use chrome://net-export to capture a network log and see all request details.',
+  /**
   * @description Text in Network Data Grid Node of the Network panel. Noun, short for a 'HTTP server
   * push'.
   */
@@ -183,6 +193,11 @@ const UIStrings = {
   */
   servedFromSignedHttpExchange: 'Served from Signed HTTP Exchange, resource size: {PH1}',
   /**
+  *@description Cell title in Network Data Grid Node of the Network panel. Indicates that the response came from preloaded web bundle. See https://web.dev/web-bundles/
+  *@example {4 B} PH1
+  */
+  servedFromWebBundle: 'Served from Web Bundle, resource size: {PH1}',
+  /**
   *@description Text of a DOM element in Network Data Grid Node of the Network panel
   */
   prefetchCache: '(prefetch cache)',
@@ -208,6 +223,19 @@ const UIStrings = {
   *@description Text describing the depth of a top level node in the network datagrid
   */
   level: 'level 1',
+  /**
+  *@description Text in Network Data Grid Node of the Network panel
+  */
+  webBundleError: 'Web Bundle error',
+  /**
+  *@description Alternative text for the web bundle inner request icon in Network Data Grid Node of the Network panel
+  * Indicates that the response came from preloaded web bundle. See https://web.dev/web-bundles/
+  */
+  webBundleInnerRequest: 'Served from Web Bundle',
+  /**
+  *@description Text in Network Data Grid Node of the Network panel
+  */
+  webBundle: '(Web Bundle)',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/NetworkDataGridNode.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -1000,7 +1028,7 @@ export class NetworkRequestNode extends NetworkNode {
     }
     // Ensure element is created.
     this.element();
-    const domChanges: Object[] = [];
+    const domChanges: UI.UIUtils.HighlightChange[] = [];
     const matchInfo = this._nameCell.textContent.match(regexp);
     if (matchInfo) {
       UI.UIUtils.highlightSearchResult(this._nameCell, matchInfo.index || 0, matchInfo[0].length, domChanges);
@@ -1013,9 +1041,20 @@ export class NetworkRequestNode extends NetworkNode {
   }
 
   _isFailed(): boolean {
+    if (this._request.failed && !this._request.statusCode) {
+      return true;
+    }
+    if (this._request.statusCode >= 400) {
+      return true;
+    }
     const signedExchangeInfo = this._request.signedExchangeInfo();
-    return (this._request.failed && !this._request.statusCode) || (this._request.statusCode >= 400) ||
-        (signedExchangeInfo !== null && Boolean(signedExchangeInfo.errors));
+    if (signedExchangeInfo !== null && Boolean(signedExchangeInfo.errors)) {
+      return true;
+    }
+    if (this._request.webBundleInfo()?.errorMessage || this._request.webBundleInnerRequestInfo()?.errorMessage) {
+      return true;
+    }
+    return false;
   }
 
   _renderPrimaryCell(cell: HTMLElement, columnId: string, text?: string): void {
@@ -1039,19 +1078,39 @@ export class NetworkRequestNode extends NetworkNode {
         this._request.populateImageSource((previewImage as HTMLImageElement));
 
         iconElement = document.createElement('div');
-        iconElement.classList.add('icon');
+        iconElement.classList.add('image');
         iconElement.appendChild(previewImage);
       } else {
         iconElement = document.createElement('img');
-        iconElement.classList.add('icon');
         iconElement.alt = this._request.resourceType().title();
+        iconElement.src =
+            new URL(`../../Images/${imageNameForResourceType(this._request.resourceType())}.svg`, import.meta.url)
+                .toString();
       }
-      iconElement.classList.add(this._request.resourceType().name());
+      iconElement.classList.add('icon');
 
       cell.appendChild(iconElement);
     }
 
     if (columnId === 'name') {
+      const webBundleInnerRequestInfo = this._request.webBundleInnerRequestInfo();
+      if (webBundleInnerRequestInfo) {
+        const secondIconElement = document.createElement('img');
+        secondIconElement.classList.add('icon');
+        secondIconElement.alt = i18nString(UIStrings.webBundleInnerRequest);
+        secondIconElement.src = 'Images/ic_file_webbundle_inner_request.svg';
+        new URL('../../Images/ic_file_webbundle_inner_request.svg', import.meta.url).toString();
+
+        const networkManager = SDK.NetworkManager.NetworkManager.forRequest(this._request);
+        if (webBundleInnerRequestInfo.bundleRequestId && networkManager) {
+          cell.appendChild(Components.Linkifier.Linkifier.linkifyRevealable(
+              new NetworkForward.NetworkRequestId.NetworkRequestId(
+                  webBundleInnerRequestInfo.bundleRequestId, networkManager),
+              secondIconElement));
+        } else {
+          cell.appendChild(secondIconElement);
+        }
+      }
       const name = Platform.StringUtilities.trimMiddle(this._request.name(), 100);
       const networkManager = SDK.NetworkManager.NetworkManager.forRequest(this._request);
       UI.UIUtils.createTextChild(cell, networkManager ? networkManager.target().decorateLabel(name) : name);
@@ -1068,7 +1127,11 @@ export class NetworkRequestNode extends NetworkNode {
         'network-dim-cell', !this._isFailed() && (this._request.cached() || !this._request.statusCode));
 
     const corsErrorStatus = this._request.corsErrorStatus();
-    if (this._request.failed && !this._request.canceled && !this._request.wasBlocked() && !corsErrorStatus) {
+    const webBundleErrorMessage =
+        this._request.webBundleInfo()?.errorMessage || this._request.webBundleInnerRequestInfo()?.errorMessage;
+    if (webBundleErrorMessage) {
+      this._setTextAndTitle(cell, i18nString(UIStrings.webBundleError), webBundleErrorMessage);
+    } else if (this._request.failed && !this._request.canceled && !this._request.wasBlocked() && !corsErrorStatus) {
       const failText = i18nString(UIStrings.failed);
       if (this._request.localizedFailDescription) {
         UI.UIUtils.createTextChild(cell, failText);
@@ -1138,7 +1201,7 @@ export class NetworkRequestNode extends NetworkNode {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (this.parentView() as any).dispatchEventToListeners(Events.RequestActivated, {
                 showPanel: true,
-                tab: NetworkItemViewTabs.Headers,
+                tab: NetworkForward.UIRequestLocation.UIRequestTabs.Headers,
               });
             });
       } else {
@@ -1150,6 +1213,8 @@ export class NetworkRequestNode extends NetworkNode {
           i18nString(UIStrings.crossoriginResourceSharingErrorS, {PH1: corsErrorStatus.corsError}));
     } else if (this._request.finished) {
       this._setTextAndTitle(cell, i18nString(UIStrings.finished));
+    } else if (this._request.preserved) {
+      this._setTextAndTitle(cell, i18nString(UIStrings.unknown), i18nString(UIStrings.unknownExplanation));
     } else {
       this._setTextAndTitle(cell, i18nString(UIStrings.pendingq));
     }
@@ -1231,9 +1296,11 @@ export class NetworkRequestNode extends NetworkNode {
         cell.appendChild(document.createTextNode(i18nString(UIStrings.preflight)));
         if (initiator.initiatorRequest) {
           const icon = UI.Icon.Icon.create('mediumicon-network-panel');
-          cell.appendChild(Components.Linkifier.Linkifier.linkifyRevealable(
+          const link = Components.Linkifier.Linkifier.linkifyRevealable(
               initiator.initiatorRequest, icon, undefined, i18nString(UIStrings.selectTheRequestThatTriggered),
-              'trailing-link-icon'));
+              'trailing-link-icon');
+          UI.ARIAUtils.setAccessibleName(link, i18nString(UIStrings.selectTheRequestThatTriggered));
+          cell.appendChild(link);
         }
         break;
       }
@@ -1267,6 +1334,10 @@ export class NetworkRequestNode extends NetworkNode {
       UI.UIUtils.createTextChild(cell, i18n.i18n.lockedString('(signed-exchange)'));
       UI.Tooltip.Tooltip.install(cell, i18nString(UIStrings.servedFromSignedHttpExchange, {PH1: resourceSize}));
       cell.classList.add('network-dim-cell');
+    } else if (this._request.webBundleInnerRequestInfo()) {
+      UI.UIUtils.createTextChild(cell, i18nString(UIStrings.webBundle));
+      UI.Tooltip.Tooltip.install(cell, i18nString(UIStrings.servedFromWebBundle, {PH1: resourceSize}));
+      cell.classList.add('network-dim-cell');
     } else if (this._request.fromPrefetchCache()) {
       UI.UIUtils.createTextChild(cell, i18nString(UIStrings.prefetchCache));
       UI.Tooltip.Tooltip.install(cell, i18nString(UIStrings.servedFromPrefetchCacheResource, {PH1: resourceSize}));
@@ -1285,8 +1356,10 @@ export class NetworkRequestNode extends NetworkNode {
 
   _renderTimeCell(cell: HTMLElement): void {
     if (this._request.duration > 0) {
-      this._setTextAndTitle(cell, Number.secondsToString(this._request.duration));
-      this._appendSubtitle(cell, Number.secondsToString(this._request.latency));
+      this._setTextAndTitle(cell, i18n.i18n.secondsToString(this._request.duration));
+      this._appendSubtitle(cell, i18n.i18n.secondsToString(this._request.latency));
+    } else if (this._request.preserved) {
+      this._setTextAndTitle(cell, i18nString(UIStrings.unknown), i18nString(UIStrings.unknownExplanation));
     } else {
       cell.classList.add('network-dim-cell');
       this._setTextAndTitle(cell, i18nString(UIStrings.pending));

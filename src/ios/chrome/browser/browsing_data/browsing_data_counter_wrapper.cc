@@ -13,6 +13,7 @@
 #include "components/browsing_data/core/counters/passwords_counter.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -21,7 +22,7 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 
 namespace {
@@ -37,7 +38,7 @@ CreateCounterForBrowserStateAndPref(ChromeBrowserState* browser_state,
             browser_state, ServiceAccessType::EXPLICIT_ACCESS),
         base::BindRepeating(&ios::WebHistoryServiceFactory::GetForBrowserState,
                             base::Unretained(browser_state)),
-        ProfileSyncServiceFactory::GetForBrowserState(browser_state));
+        SyncServiceFactory::GetForBrowserState(browser_state));
   }
 
   if (pref_name == browsing_data::prefs::kDeleteCache) {
@@ -49,14 +50,14 @@ CreateCounterForBrowserStateAndPref(ChromeBrowserState* browser_state,
         IOSChromePasswordStoreFactory::GetForBrowserState(
             browser_state, ServiceAccessType::EXPLICIT_ACCESS),
         /*account_store=*/nullptr,
-        ProfileSyncServiceFactory::GetForBrowserState(browser_state));
+        SyncServiceFactory::GetForBrowserState(browser_state));
   }
 
   if (pref_name == browsing_data::prefs::kDeleteFormData) {
     return std::make_unique<browsing_data::AutofillCounter>(
         ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
             browser_state, ServiceAccessType::EXPLICIT_ACCESS),
-        ProfileSyncServiceFactory::GetForBrowserState(browser_state));
+        SyncServiceFactory::GetForBrowserState(browser_state));
   }
 
   return nullptr;

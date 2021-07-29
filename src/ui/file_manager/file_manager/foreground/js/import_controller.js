@@ -2,32 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview
- * @suppress {uselessCode} Temporary suppress because of the line exporting.
- */
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
+import {getRequiredElement, queryRequiredElement} from 'chrome://resources/js/util.m.js';
 
-// clang-format off
-// #import {importer} from '../../common/js/importer_common.m.js';
-// #import {CommandHandlerDeps} from '../../externs/command_handler_deps.m.js';
-// #import {VolumeInfo} from '../../externs/volume_info.m.js';
-// #import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
-// #import {mediaImportInterfaces} from '../../externs/background/media_import_handler.m.js';
-// #import {mediaScannerInterfaces} from '../../externs/background/media_scanner.m.js';
-// #import {FileSelectionHandler} from './file_selection.m.js';
-// #import {util, strf, str} from '../../common/js/util.m.js';
-// #import {queryRequiredElement, getRequiredElement} from 'chrome://resources/js/util.m.js';
-// #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-// #import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
-// #import {metrics} from '../../common/js/metrics.m.js';
-// #import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-// clang-format on
+import {importer} from '../../common/js/importer_common.js';
+import {metrics} from '../../common/js/metrics.js';
+import {str, strf, util} from '../../common/js/util.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {mediaImportInterfaces} from '../../externs/background/media_import_handler.js';
+import {mediaScannerInterfaces} from '../../externs/background/media_scanner.js';
+import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
+import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
+import {VolumeInfo} from '../../externs/volume_info.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
 
-
-// Namespace
-// eslint-disable-next-line
-/* #ignore */ var importer = importer || {};
+import {FileSelectionHandler} from './file_selection.js';
 
 /** @private @enum {string} */
 importer.ActivityState = {
@@ -155,7 +145,7 @@ importer.ImportController = class {
     if (this.activeImport_) {
       this.activeImport_.task.requestCancel();
       this.finalizeActiveImport_();
-      metrics.recordBoolean('ImportController.DeviceYanked');
+      metrics.recordBoolean('ImportController.DeviceYanked', true);
     }
     this.scanManager_.reset();
     this.checkState_();
@@ -319,7 +309,7 @@ importer.ImportController = class {
     if (this.activeImport_) {
       this.activeImport_.task.requestCancel();
       this.finalizeActiveImport_();
-      metrics.recordBoolean('ImportController.ImportCancelled');
+      metrics.recordBoolean('ImportController.ImportCancelled', true);
     }
 
     this.scanManager_.reset();
@@ -670,7 +660,7 @@ importer.RuntimeCommandWidget = class {
     // Use a timeout of 400 ms.
     window.setTimeout(() => {
       if (!fired) {
-        cr.dispatchSimpleEvent(element, 'transitionend', true);
+        dispatchSimpleEvent(element, 'transitionend', true);
       }
     }, timeout);
   }
@@ -1326,5 +1316,4 @@ importer.RuntimeControllerEnvironment = class {
   }
 };
 
-// eslint-disable-next-line semi,no-extra-semi
-/* #export */ {importer};
+export {importer};

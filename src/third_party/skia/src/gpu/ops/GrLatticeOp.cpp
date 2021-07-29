@@ -166,7 +166,7 @@ public:
 
     const char* name() const override { return "NonAALatticeOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
         func(fView.proxy(), GrMipmapped::kNo);
         if (fProgramInfo) {
             fProgramInfo->visitFPProxies(func);
@@ -197,8 +197,9 @@ private:
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&& appliedClip,
-                             const GrXferProcessor::DstProxyView& dstProxyView,
+                             const GrDstProxyView& dstProxyView,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override {
 
@@ -218,7 +219,7 @@ private:
                                                                    &GrUserStencilSettings::kUnused);
     }
 
-    void onPrepareDraws(Target* target) override {
+    void onPrepareDraws(GrMeshDrawTarget* target) override {
         if (!fProgramInfo) {
             this->createProgramInfo(target);
             if (!fProgramInfo) {

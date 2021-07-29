@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/autofill/autofill_gstatic_reader.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/autofill/payments/autofill_error_dialog_controller_impl.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
@@ -24,10 +25,9 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/autofill/android/save_address_profile_flow_manager.h"
+#include "chrome/browser/autofill/android/save_update_address_profile_flow_manager.h"
 #include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_name_fix_flow_controller_impl.h"
 #else  // !OS_ANDROID
@@ -150,8 +150,10 @@ class ChromeAutofillClient
   void HideAutofillPopup(PopupHidingReason reason) override;
   void ShowOfferNotificationIfApplicable(
       const AutofillOfferData* offer) override;
-  void OnVirtualCardFetched(const CreditCard* card,
-                            const std::u16string& cvc) override;
+  void OnVirtualCardDataAvailable(const CreditCard* credit_card,
+                                  const std::u16string& cvc,
+                                  const gfx::Image& card_image) override;
+  void ShowVirtualCardErrorDialog(bool is_permanent_error) override;
   bool IsAutofillAssistantShowing() override;
   bool IsAutocompleteEnabled() override;
   void PropagateAutofillPredictions(
@@ -190,14 +192,12 @@ class ChromeAutofillClient
   explicit ChromeAutofillClient(content::WebContents* web_contents);
 
   Profile* GetProfile() const;
-  absl::optional<AccountInfo> GetAccountInfo();
   bool IsMultipleAccountUser();
   std::u16string GetAccountHolderName();
 
   std::unique_ptr<payments::PaymentsClient> payments_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
-  CardUnmaskPromptControllerImpl unmask_controller_;
   std::unique_ptr<LogManager> log_manager_;
   // If set to true, the popup will stay open regardless of external changes on
   // the test machine, that may normally cause the popup to be hidden
@@ -206,8 +206,10 @@ class ChromeAutofillClient
   CardExpirationDateFixFlowControllerImpl
       card_expiration_date_fix_flow_controller_;
   CardNameFixFlowControllerImpl card_name_fix_flow_controller_;
-  SaveAddressProfileFlowManager save_address_profile_flow_manager_;
+  SaveUpdateAddressProfileFlowManager save_update_address_profile_flow_manager_;
 #endif
+  CardUnmaskPromptControllerImpl unmask_controller_;
+  AutofillErrorDialogControllerImpl autofill_error_dialog_controller_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

@@ -38,6 +38,7 @@
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/GrTextureProxyPriv.h"
 #include "src/gpu/GrYUVATextureProxies.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/gl/GrGLTexture.h"
 
 #include <cstddef>
@@ -704,6 +705,7 @@ sk_sp<SkImage> SkImage::MakeFromAHardwareBufferWithData(GrDirectContext* dContex
         return nullptr;
     }
 
+
     GrBackendFormat backendFormat = GrAHardwareBufferUtils::GetBackendFormat(dContext,
                                                                              hardwareBuffer,
                                                                              bufferDesc.format,
@@ -717,11 +719,14 @@ sk_sp<SkImage> SkImage::MakeFromAHardwareBufferWithData(GrDirectContext* dContex
     GrAHardwareBufferUtils::UpdateImageProc updateImageProc = nullptr;
     GrAHardwareBufferUtils::TexImageCtx deleteImageCtx = nullptr;
 
+    const bool isRenderable = SkToBool(bufferDesc.usage & AHARDWAREBUFFER_USAGE_GPU_FRAMEBUFFER);
+
     GrBackendTexture backendTexture =
             GrAHardwareBufferUtils::MakeBackendTexture(dContext, hardwareBuffer,
                                                        bufferDesc.width, bufferDesc.height,
                                                        &deleteImageProc, &updateImageProc,
-                                                       &deleteImageCtx, false, backendFormat, true);
+                                                       &deleteImageCtx, false, backendFormat,
+                                                       isRenderable);
     if (!backendTexture.isValid()) {
         return nullptr;
     }

@@ -17,12 +17,12 @@
 #include "base/callback_helpers.h"
 #include "base/containers/stack.h"
 #include "base/json/json_reader.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/prerender/prerender_host_registry.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -835,7 +835,7 @@ void DisableForRenderFrameHostForTesting(
       render_frame_host, RenderFrameHostDisabledForTestingReason());
 }
 
-void DisableForRenderFrameHostForTesting(content::GlobalFrameRoutingId id) {
+void DisableForRenderFrameHostForTesting(content::GlobalRenderFrameHostId id) {
   content::BackForwardCache::DisableForRenderFrameHost(
       id, RenderFrameHostDisabledForTestingReason());
 }
@@ -844,6 +844,67 @@ void UserAgentInjector::DidStartNavigation(
     NavigationHandle* navigation_handle) {
   web_contents()->SetUserAgentOverride(user_agent_override_, false);
   navigation_handle->SetIsOverridingUserAgent(is_overriding_user_agent_);
+}
+
+RenderFrameHostImplWrapper::RenderFrameHostImplWrapper(RenderFrameHost* rfh)
+    : RenderFrameHostWrapper(rfh) {}
+
+RenderFrameHostImpl* RenderFrameHostImplWrapper::get() const {
+  return static_cast<RenderFrameHostImpl*>(RenderFrameHostWrapper::get());
+}
+
+RenderFrameHostImpl& RenderFrameHostImplWrapper::operator*() const {
+  DCHECK(get());
+  return *get();
+}
+
+RenderFrameHostImpl* RenderFrameHostImplWrapper::operator->() const {
+  DCHECK(get());
+  return get();
+}
+
+InactiveRenderFrameHostDeletionObserver::
+    InactiveRenderFrameHostDeletionObserver(WebContents* content)
+    : WebContentsObserver(content) {}
+
+InactiveRenderFrameHostDeletionObserver::
+    ~InactiveRenderFrameHostDeletionObserver() = default;
+
+void InactiveRenderFrameHostDeletionObserver::Wait() {
+  // Some RenderFrameHost may remain in the BackForwardCache and or as
+  // prerendered pages. Trigger deletion for them asynchronously.
+  static_cast<WebContentsImpl*>(web_contents())
+      ->GetController()
+      .GetBackForwardCache()
+      .Flush();
+  if (blink::features::IsPrerender2Enabled()) {
+    static_cast<WebContentsImpl*>(web_contents())
+        ->GetPrerenderHostRegistry()
+        ->CancelAllHostsForTesting();
+  }
+
+  for (RenderFrameHost* rfh : CollectAllRenderFrameHosts(web_contents())) {
+    // Keep track of all currently inactive RenderFrameHosts so that we can wait
+    // for all of them to be deleted.
+    if (!rfh->IsActive() && rfh->IsRenderFrameLive())
+      inactive_rfhs_.insert(rfh);
+  }
+  loop_ = std::make_unique<base::RunLoop>();
+  CheckCondition();
+  loop_->Run();
+}
+
+void InactiveRenderFrameHostDeletionObserver::RenderFrameDeleted(
+    RenderFrameHost* rfh) {
+  if (inactive_rfhs_.count(rfh) == 0)
+    return;
+  inactive_rfhs_.erase(rfh);
+  CheckCondition();
+}
+
+void InactiveRenderFrameHostDeletionObserver::CheckCondition() {
+  if (loop_ && inactive_rfhs_.empty())
+    loop_->Quit();
 }
 
 }  // namespace content

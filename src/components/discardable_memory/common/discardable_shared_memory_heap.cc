@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bits.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/memory/aligned_memory.h"
@@ -17,7 +18,6 @@
 #include "base/memory/page_size.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
 
@@ -201,7 +201,7 @@ void DiscardableSharedMemoryHeap::MergeIntoFreeListsClean(
   DCHECK(span->shared_memory_);
 
   if (base::FeatureList::IsEnabled(kReleaseDiscardableFreeListPages)) {
-    SCOPED_UMA_HISTOGRAM_SHORT_TIMER("Memory.Discardable.FreeListReleaseTime");
+    SCOPED_UMA_HISTOGRAM_TIMER_MICROS("Memory.Discardable.FreeListReleaseTime");
     // Release as much memory as possible before putting it into the freelists
     // in order to reduce their size. Getting this memory back is still much
     // cheaper than an IPC, while also saving us space in the freelists.

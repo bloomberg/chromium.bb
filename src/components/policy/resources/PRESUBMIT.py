@@ -9,12 +9,14 @@ import sys
 from xml.dom import minidom
 from xml.parsers import expat
 
+USE_PYTHON3 = True
+
 def _GetPolicyTemplates(template_path):
   # Read list of policies in the template. eval() is used instead of a JSON
   # parser because policy_templates.json is not quite JSON, and uses some
   # python features such as #-comments and '''strings'''. policy_templates.json
   # is actually maintained as a python dictionary.
-  with open(template_path) as f:
+  with open(template_path, encoding='utf-8') as f:
     template_data = eval(f.read(), {})
   policies = [ policy
                for policy in template_data['policy_definitions']
@@ -58,7 +60,7 @@ def _CheckPolicyTemplatesSyntax(input_api, output_api):
       try:
         version_path = input_api.os_path.join(root, 'chrome', 'VERSION')
         with open(version_path, "rb") as f:
-          current_version = int(f.readline().split("=")[1])
+          current_version = int(f.readline().split(b"=")[1])
           print ('Checking policies against current version: ' +
             current_version)
       except:
@@ -84,7 +86,8 @@ def _CheckPolicyTestCases(input_api, output_api, policies):
        'chrome', 'test', 'data', 'policy', 'policy_test_cases.json')
   policy_test_cases_file = input_api.os_path.join(
       root, test_cases_depot_path)
-  test_names = input_api.json.load(open(policy_test_cases_file)).keys()
+  with open(policy_test_cases_file, encoding='utf-8') as f:
+    test_names = input_api.json.load(f).keys()
   tested_policies = frozenset(name.partition('.')[0]
                               for name in test_names
                               if name[:2] != '--')
@@ -118,7 +121,7 @@ def _CheckPolicyHistograms(input_api, output_api, policies):
   root = input_api.change.RepositoryRoot()
   histograms = input_api.os_path.join(
       root, 'tools', 'metrics', 'histograms', 'enums.xml')
-  with open(histograms) as f:
+  with open(histograms, encoding='utf-8') as f:
     tree = minidom.parseString(f.read())
   enums = (tree.getElementsByTagName('histogram-configuration')[0]
                .getElementsByTagName('enums')[0]
@@ -158,7 +161,7 @@ def _CheckPolicyAtomicGroupsHistograms(input_api, output_api, atomic_groups):
   root = input_api.change.RepositoryRoot()
   histograms = input_api.os_path.join(
       root, 'tools', 'metrics', 'histograms', 'enums.xml')
-  with open(histograms) as f:
+  with open(histograms, encoding='utf-8') as f:
     tree = minidom.parseString(f.read())
   enums = (tree.getElementsByTagName('histogram-configuration')[0]
                .getElementsByTagName('enums')[0]
@@ -196,7 +199,7 @@ def _CheckPolicyAtomicGroupsHistograms(input_api, output_api, atomic_groups):
   return results
 
 def _CheckMissingPlaceholders(input_api, output_api, template_path):
-  with open(template_path) as f:
+  with open(template_path, encoding='utf-8') as f:
     template_data = eval(f.read(), {})
 
   results = []
@@ -235,7 +238,7 @@ def _CommonChecks(input_api, output_api):
   syntax_check_path = input_api.os_path.join(
       root, 'components', 'policy', 'tools',
       'syntax_check_policy_template_json.py')
-  affected_files = input_api.AffectedFiles()
+  affected_files = input_api.change.AffectedFiles()
 
   results.extend(_CheckMissingPlaceholders(input_api, output_api,
       template_path))

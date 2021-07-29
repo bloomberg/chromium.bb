@@ -13,6 +13,7 @@
 #include "components/autofill_assistant/browser/trigger_scripts/trigger_script_coordinator.h"
 #include "components/autofill_assistant/browser/website_login_manager.h"
 #include "components/version_info/version_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
 
@@ -37,9 +38,9 @@ class StarterPlatformDelegate {
       std::unique_ptr<TriggerContext> trigger_context,
       const absl::optional<TriggerScriptProto>& trigger_script) = 0;
   // Returns whether a regular script is currently running.
-  virtual bool IsRegularScriptRunning() const;
+  virtual bool IsRegularScriptRunning() const = 0;
   // Returns whether a regular script is currently showing UI to the user.
-  virtual bool IsRegularScriptVisible() const;
+  virtual bool IsRegularScriptVisible() const = 0;
 
   // Access to the login manager.
   virtual WebsiteLoginManager* GetWebsiteLoginManager() const = 0;

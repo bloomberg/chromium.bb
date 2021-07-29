@@ -63,8 +63,6 @@ sync_pb::SyncEnums_PageTransition ToSyncPageTransition(
     case ui::PAGE_TRANSITION_FROM_ADDRESS_BAR:
     case ui::PAGE_TRANSITION_HOME_PAGE:
     case ui::PAGE_TRANSITION_FROM_API:
-    case ui::PAGE_TRANSITION_FROM_API_2:
-    case ui::PAGE_TRANSITION_FROM_API_3:
     case ui::PAGE_TRANSITION_CHAIN_START:
     case ui::PAGE_TRANSITION_CHAIN_END:
     case ui::PAGE_TRANSITION_CLIENT_REDIRECT:
@@ -247,11 +245,6 @@ sync_pb::TabNavigation SessionNavigationToSyncData(
   sync_data.set_password_state(
       static_cast<sync_pb::TabNavigation_PasswordState>(
           navigation.password_state()));
-
-  for (const std::string& content_pack_category :
-       navigation.content_pack_categories()) {
-    sync_data.add_content_pack_categories(content_pack_category);
-  }
 
   // Copy all redirect chain entries except the last URL (which should match
   // the virtual_url).

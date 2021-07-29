@@ -37,6 +37,7 @@
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/browser/web_contents.h"
 #include "media/audio/audio_device_description.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -285,7 +286,7 @@ void CastMirroringServiceHost::GetNetworkContext(
       g_browser_process->system_network_context_manager()
           ->CreateDefaultNetworkContextParams();
   network_context_params->context_name = "mirroring";
-  content::GetNetworkService()->CreateNetworkContext(
+  content::CreateNetworkContextInNetworkService(
       std::move(receiver), std::move(network_context_params));
 }
 

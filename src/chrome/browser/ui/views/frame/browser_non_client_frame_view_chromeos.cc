@@ -44,7 +44,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/display/screen.h"
+#include "ui/base/models/image_model.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
@@ -109,8 +109,6 @@ BrowserNonClientFrameViewChromeOS::BrowserNonClientFrameViewChromeOS(
 }
 
 BrowserNonClientFrameViewChromeOS::~BrowserNonClientFrameViewChromeOS() {
-  display::Screen::GetScreen()->RemoveObserver(this);
-
   ImmersiveModeController* immersive_controller =
       browser_view()->immersive_mode_controller();
   if (immersive_controller)
@@ -144,7 +142,7 @@ void BrowserNonClientFrameViewChromeOS::Init() {
         chromeos::kBlockedForAssistantSnapshotKey, true);
   }
 
-  display::Screen::GetScreen()->AddObserver(this);
+  display_observer_.emplace(this);
 
   if (frame()->ShouldDrawFrameHeader())
     frame_header_ = CreateFrameHeader();
@@ -268,10 +266,14 @@ int BrowserNonClientFrameViewChromeOS::NonClientHitTest(
     const gfx::Point& point) {
   int hit_test = chromeos::FrameBorderNonClientHitTest(this, point);
 
-  // When the window is restored we want a large click target above the tabs
-  // to drag the window, so redirect clicks in the tab's shadow to caption.
+  // When the window is restored (and not in tablet split-view mode) we want a
+  // large click target above the tabs to drag the window, so redirect clicks in
+  // the tab's shadow to caption.
   if (hit_test == HTCLIENT && !frame()->IsMaximized() &&
-      !frame()->IsFullscreen()) {
+      !frame()->IsFullscreen() &&
+      !chromeos::TabletState::Get()->InTabletMode()) {
+    // TODO(crbug.com/1213133): Tab Strip hit calculation and bounds logic
+    // should reside in the TabStrip class.
     gfx::Point client_point(point);
     View::ConvertPointToTarget(this, frame()->client_view(), &client_point);
     gfx::Rect tabstrip_shadow_bounds(browser_view()->tabstrip()->bounds());
@@ -518,9 +520,9 @@ bool BrowserNonClientFrameViewChromeOS::ShouldTabIconViewAnimate() const {
   return current_tab && current_tab->IsLoading();
 }
 
-gfx::ImageSkia BrowserNonClientFrameViewChromeOS::GetFaviconForTabIconView() {
+ui::ImageModel BrowserNonClientFrameViewChromeOS::GetFaviconForTabIconView() {
   views::WidgetDelegate* delegate = frame()->widget_delegate();
-  return delegate ? delegate->GetWindowIcon() : gfx::ImageSkia();
+  return delegate ? delegate->GetWindowIcon() : ui::ImageModel();
 }
 
 void BrowserNonClientFrameViewChromeOS::OnWindowDestroying(
@@ -781,7 +783,8 @@ void BrowserNonClientFrameViewChromeOS::OnUpdateFrameColor() {
     inactive_color = GetFrameColor(BrowserFrameActiveState::kInactive);
   } else if (browser_view()->GetIsWebAppType()) {
     active_color = browser_view()->browser()->app_controller()->GetThemeColor();
-  } else if (!browser_view()->browser()->deprecated_is_app()) {
+  } else if (!browser_view()->browser()->is_type_app() &&
+             !browser_view()->browser()->is_type_app_popup()) {
     // TODO(crbug.com/836128): Remove when System Web Apps flag is removed, as
     // the above web-app branch will render the theme color.
     active_color = SK_ColorWHITE;

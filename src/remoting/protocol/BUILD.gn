@@ -6,6 +6,14 @@ import("//build/config/features.gni")
 import("//media/media_options.gni")
 import("//remoting/remoting_options.gni")
 
+static_library("errors") {
+  sources = [
+    "errors.cc",
+    "errors.h",
+  ]
+  deps = [ "//remoting/base:base" ]
+}
+
 static_library("protocol") {
   sources = [
     "audio_decode_scheduler.cc",
@@ -58,8 +66,6 @@ static_library("protocol") {
     "datagram_channel_factory.h",
     "display_size.cc",
     "display_size.h",
-    "errors.cc",
-    "errors.h",
     "file_transfer_helpers.cc",
     "file_transfer_helpers.h",
     "frame_consumer.h",
@@ -199,16 +205,12 @@ static_library("protocol") {
     "webrtc_connection_to_host.h",
     "webrtc_data_stream_adapter.cc",
     "webrtc_data_stream_adapter.h",
-    "webrtc_dummy_video_encoder.cc",
-    "webrtc_dummy_video_encoder.h",
     "webrtc_event_log_data.cc",
     "webrtc_event_log_data.h",
     "webrtc_transport.cc",
     "webrtc_transport.h",
     "webrtc_video_renderer_adapter.cc",
     "webrtc_video_renderer_adapter.h",
-    "webrtc_video_track_source.cc",
-    "webrtc_video_track_source.h",
   ]
 
   configs += [
@@ -218,6 +220,7 @@ static_library("protocol") {
   ]
 
   public_deps = [
+    ":errors",
     ":session_config",
     "//remoting/proto",
     "//third_party/webrtc_overrides:webrtc_component",
@@ -231,6 +234,7 @@ static_library("protocol") {
     "//jingle:webrtc_glue",
     "//net",
     "//remoting/base",
+    "//remoting/base:authorization",
     "//remoting/codec:decoder",
     "//remoting/proto/remoting/v1:network_traversal_proto",
     "//remoting/signaling",
@@ -270,6 +274,8 @@ static_library("protocol") {
       "webrtc_audio_stream.h",
       "webrtc_connection_to_client.cc",
       "webrtc_connection_to_client.h",
+      "webrtc_dummy_video_encoder.cc",
+      "webrtc_dummy_video_encoder.h",
       "webrtc_frame_scheduler.h",
       "webrtc_frame_scheduler_simple.cc",
       "webrtc_frame_scheduler_simple.h",
@@ -279,9 +285,15 @@ static_library("protocol") {
       "webrtc_video_frame_adapter.h",
       "webrtc_video_stream.cc",
       "webrtc_video_stream.h",
+      "webrtc_video_track_source.cc",
+      "webrtc_video_track_source.h",
     ]
 
-    deps += [ "//remoting/codec:encoder" ]
+    deps += [
+      "//media:media",
+      "//media:shared_memory_support",
+      "//remoting/codec:encoder",
+    ]
   }
 }
 
@@ -378,7 +390,6 @@ source_set("unit_tests") {
     "negotiating_authenticator_unittest.cc",
     "pairing_registry_unittest.cc",
     "port_range_unittest.cc",
-    "ppapi_module_stub.cc",
     "pseudotcp_adapter_unittest.cc",
     "remoting_ice_config_request_unittest.cc",
     "sdp_message_unittest.cc",
@@ -389,7 +400,6 @@ source_set("unit_tests") {
     "v2_authenticator_unittest.cc",
     "validating_authenticator_unittest.cc",
     "webrtc_event_log_data_unittest.cc",
-    "webrtc_transport_unittest.cc",
   ]
 
   if (enable_remoting_host) {
@@ -400,6 +410,7 @@ source_set("unit_tests") {
       "video_frame_pump_unittest.cc",
       "webrtc_audio_source_adapter_unittest.cc",
       "webrtc_frame_scheduler_unittest.cc",
+      "webrtc_transport_unittest.cc",
       "webrtc_video_encoder_wrapper_unittest.cc",
       "webrtc_video_frame_adapter_unittest.cc",
       "webrtc_video_track_source_unittest.cc",

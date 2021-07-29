@@ -11,9 +11,8 @@ namespace remoting {
 namespace protocol {
 
 // The UI implementations maintain corresponding definitions of this
-// enumeration in webapp/base/js/error.js, webapp/base/js/chromoting_event.js,
-// android/java/src/org/chromium/chromoting/jni/ConnectionListener.java and
-// remoting/protocol/errors.cc.
+// enumeration in remoting/protocol/errors.cc and
+// android/java/src/org/chromium/chromoting/jni/ConnectionListener.java
 // Be sure to update these locations if you make any changes to the ordering.
 enum ErrorCode {
   OK = 0,
@@ -32,7 +31,9 @@ enum ErrorCode {
   ELEVATION_ERROR,
   HOST_CERTIFICATE_ERROR,
   HOST_REGISTRATION_ERROR,
-  ERROR_CODE_MAX = UNKNOWN_ERROR,
+  EXISTING_ADMIN_SESSION,
+  AUTHZ_POLICY_CHECK_FAILED,
+  ERROR_CODE_MAX = AUTHZ_POLICY_CHECK_FAILED,
 };
 
 bool ParseErrorCode(const std::string& name, ErrorCode* result);

@@ -47,7 +47,6 @@
 <translation id="2718390899429598676">Untuk keselamatan tambahan, Chromium akan menyulitkan data anda.</translation>
 <translation id="2770231113462710648">Tukar penyemak imbas lalai kepada:</translation>
 <translation id="2799223571221894425">Lancarkan semula</translation>
-<translation id="2816712596130903444">Pisahkan profil Chromium?</translation>
 <translation id="2837693172913560447">Tindakan ini akan membuat profil Chromium baharu untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="2847479871509788944">Alih keluar daripada Chromium...</translation>
 <translation id="2885378588091291677">Pengurus Tugas</translation>
@@ -71,20 +70,22 @@
 <translation id="328888136576916638">Kunci API Google tiada. Sesetengah fungsi Chromium akan dilumpuhkan.</translation>
 <translation id="3296368748942286671">Terus menjalankan apl latar belakang apabila Chromium ditutup</translation>
 <translation id="331951419404882060">OS Chromium tidak dapat menyegerakkan data anda disebabkan oleh ralat melog masuk.</translation>
+<translation id="3349211344363550267">Chromium mengesyorkan agar anda tidak memuat turun atau membuka fail ini</translation>
 <translation id="3350761136195634146">Profil Chromium dengan akaun ini telah pun wujud</translation>
 <translation id="3406848076815591792">Tukar kepada profil Chromium yang sedia ada?</translation>
 <translation id="3430503420100763906">Dengan profil Chromium anda dapat mengasingkan semua bahan Chromium anda. Buat profil untuk rakan dan keluarga atau asingkan antara bahan kerja dengan bahan untuk keseronokan.</translation>
+<translation id="3433271666494956603">Pemasangan Chromium OS sedang dijalankan</translation>
 <translation id="347328004046849135">Chromium akan memberitahu anda apabila anda log masuk menggunakan kata laluan yang terjejas</translation>
 <translation id="3474745554856756813">Tindakan ini akan memadamkan <ph name="ITEMS_COUNT" /> item daripada peranti ini. Untuk mendapatkan kembali data anda kemudian, log masuk ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="3497319089134299931"><ph name="SHORTCUT" /> boleh digunakan untuk beralih antara profil Chromium</translation>
 <translation id="3509308970982693815">Sila tutup semua tetingkap Chromium dan cuba lagi.</translation>
 <translation id="3575459661164320785">Terdapat perisian yang berbahaya pada komputer anda. Chromium boleh mengalih keluar perisian tersebut, memulihkan tetapan anda dan melumpuhkan sambungan supaya penyemak imbas anda dapat berfungsi seperti biasa semula.</translation>
+<translation id="3610776674893128619">Padamkan Pemacu Keras &amp; Pasang Chromium OS</translation>
 <translation id="3639635944603682591">Data semakan imbas orang ini akan dipadamkan daripada peranti ini. Untuk memulihkan data itu, log masuk ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Kemas kini baharu tersedia untuk Chromium dan akan digunakan sebaik sahaja anda melancarkan semula Chromium.}=1{Kemas kini baharu tersedia untuk Chromium dan akan digunakan sebaik sahaja anda melancarkan semula Chromium. Tetingkap Inkognito anda tidak dapat dibuka semula.}other{Kemas kini baharu tersedia untuk Chromium dan akan digunakan sebaik sahaja anda melancarkan semula Chromium. # tetingkap Inkognito anda tidak dapat dibuka semula.}}</translation>
 <translation id="3651803019964686660">Untuk menghantar nombor daripada <ph name="ORIGIN" /> ke telefon Android anda, log masuk ke Chromium pada kedua-dua peranti.</translation>
 <translation id="3685209450716071127">Chromium tidak dapat menyemak kata laluan anda. Cuba periksa sambungan Internet anda.</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Pentadbir anda meminta anda melancarkan semula Chromium untuk menggunakan kemas kini ini}=1{Pentadbir anda meminta anda melancarkan semula Chromium untuk menggunakan kemas kini ini. Tetingkap Inkognito anda tidak dapat dibuka semula.}other{Pentadbir anda meminta anda melancarkan semula Chromium untuk menggunakan kemas kini ini. # tetingkap Inkognito anda tidak dapat dibuka semula.}}</translation>
-<translation id="371088601698879021">OS Chromium boleh memulihkan apl &amp; halaman anda pada bila-bila masa selepas but semula tanpa bertanya setiap kali.</translation>
 <translation id="3713809861844741608">Buka pautan dalam &amp;tab Chromium baharu</translation>
 <translation id="3728336900324680424">Chromium akan mengakses Drive anda untuk membuat cadangan dalam bar alamat</translation>
 <translation id="378917192836375108">Chromium membolehkan anda mengklik nombor telefon pada web dan menghubunginya dengan Skype!</translation>
@@ -102,6 +103,7 @@
 <translation id="4264410486868823224"><ph name="MANAGER" /> menghendaki anda membaca dan menerima Syarat Perkhidmatan berikut sebelum menggunakan peranti ini. Syarat ini tidak memperluas, mengubah suai atau mengehadkan Syarat OS Chromium.</translation>
 <translation id="4271805377592243930">Dapatkan bantuan berkenaan Chromium</translation>
 <translation id="4285930937574705105">Pemasangan gagal disebabkan ralat yang tidak dinyatakan. Jika Chromium sedang dijalankan, sila tutup dan cuba semula.</translation>
+<translation id="429583012151745428">Pemasangan sedang dijalankan. Jangan matikan peranti. Pemasangan tidak mengambil masa lebih daripada dua puluh minit. Mesin akan dimatikan secara automatik selepas pemasangan.</translation>
 <translation id="4407044323746248786">Keluar daripada Chromium juga?</translation>
 <translation id="4415566066719264597">Benarkan Chromium Dijalankan dalam Latar Belakang</translation>
 <translation id="4423735387467980091">Sesuaikan dan kawal Chromium</translation>
@@ -137,7 +139,6 @@
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
 <translation id="5479196819031988440">OS Chromium tidak boleh membuka halaman ini.</translation>
 <translation id="5480860683791598150">Chromium memerlukan akses kepada lokasi anda untuk berkongsi lokasi dengan tapak ini</translation>
-<translation id="5481338274774984070">Chromium mengesyorkan agar anda tidak memuat turun atau membuka fail ini.</translation>
 <translation id="549669000822060376">Sila tunggu sementara Chromium memasang kemas kini sistem terkini.</translation>
 <translation id="5496810170689441661">Chromium cuba mengedit kata laluan. Taip kata laluan Windows anda untuk membenarkan tindakan ini.</translation>
 <translation id="5527463683072221100">Buka PDF dalam Chromium</translation>
@@ -162,6 +163,15 @@
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> berbahaya, jadi Chromium telah menyekat fail itu.</translation>
 <translation id="6134968993075716475">Penyemakan Imbas Selamat dimatikan. Chromium mengesyorkan agar ciri ini dihidupkan.</translation>
 <translation id="6145820983052037069">Anda boleh beralih antara profil Chromium di sini</translation>
+<translation id="61577490437262925"><ph name="BEGIN_PARAGRAPH1" />Kami sudah bersedia untuk memasang Chromium OS! Sebaik sahaja anda meneruskan:
+          <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />Fail, data dan sistem pengendalian semasa anda akan dipadamkan.
+          <ph name="LIST_ITEM" />Chromium OS akan dipasang.
+          <ph name="LIST_ITEM" />Peranti anda akan dimatikan sebaik sahaja pemasangan selesai.
+          <ph name="END_LIST" />
+          <ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />Satu peringatan terakhir: pemasangan akan memadamkan seluruh pemacu keras anda. Sila pastikan anda telah menyandarkan sebarang data yang penting bagi anda.<ph name="END_PARAGRAPH2" />
+          <ph name="BEGIN_PARAGRAPH3" />Sebaik sahaja dimulakan, pemasangan tidak boleh dibatalkan.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="6183079672144801177">Pastikan anda telah log masuk ke Chromium pada <ph name="TARGET_DEVICE_NAME" /> anda, kemudian cuba hantar lagi.</translation>
 <translation id="6212496753309875659">Komputer ini telah mempunyai versi Chromium yang lebih baharu. Jika perisian tidak berfungsi, sila nyahpasang Chromium dan cuba lagi.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium akan dilancarkan semula sekarang}=1{Chromium akan dilancarkan semula dalam masa sesaat}other{Chromium akan dilancarkan semula dalam masa # saat}}</translation>
@@ -179,6 +189,7 @@
 <translation id="6434250628340475518">Sistem OS Chromium</translation>
 <translation id="6455857529632101747">Selamat datang ke profil Chromium</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium akan dimulakan semula dalam 1 saat}other{Chromium akan dimulakan semula dalam # saat}}</translation>
+<translation id="646620589868199210">Sedia untuk memasang Chromium OS</translation>
 <translation id="6475912303565314141">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chromium.</translation>
 <translation id="6510925080656968729">Nyahpasang Chromium</translation>
 <translation id="6542839706527980775">Setiap profil menyimpan maklumat Chromium profil itu sendiri seperti penanda halaman, sejarah, kata laluan dan pelbagai lagi</translation>
@@ -193,6 +204,7 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="6734291798041940871">Chromium telah dipasang untuk semua pengguna pada komputer anda.</translation>
 <translation id="673636774878526923">Untuk mengakses bahan Chromium anda pada semua peranti anda, log masuk, kemudian hidupkan penyegerakan.</translation>
 <translation id="6774082503108938489">Ibu/bapa anda telah mematikan "Kebenaran untuk tapak web, apl dan sambungan" untuk Chromium. Tindakan mendayakan <ph name="EXTENSION_TYPE_PARAMETER" /> ini tidak dibenarkan.</translation>
+<translation id="6827182711503025204">Pemasangan Chromium OS akan menulis ganti semua data pada peranti anda.</translation>
 <translation id="6847869444787758381">Chromium akan memberitahu anda sekiranya kata laluan anda terjejas</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (disalin ke Chromium)</translation>
@@ -227,6 +239,10 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
       tetapan OS Chromium anda<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium menggunakan kamera dan mikrofon anda.</translation>
 <translation id="7617377681829253106">Chromium kini lebih baik</translation>
+<translation id="7627575518938382525"><ph name="BEGIN_PARAGRAPH1" />Sebelum kita bermula, sila pastikan anda mempunyai sandaran data anda yang terkini. Pemasangan Chromium OS akan menulis ganti semua data pada pemacu keras anda.<ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />Google tidak bertanggungjawab atas sebarang kehilangan data dan tidak menjamin bahawa Chromium OS akan berfungsi pada model yang tidak diperakui. Sila lawati [TBD] untuk mengetahui lebih lanjut tentang model yang diperakui.<ph name="END_PARAGRAPH2" />
+          <ph name="BEGIN_PARAGRAPH3" />Ketahui lebih lanjut tentang pemasangan Chromium OS dan pemadaman data: [TBD URL]<ph name="END_PARAGRAPH3" />
+          <ph name="BEGIN_PARAGRAPH4" />Jika anda sudah bersedia untuk meneruskan, klik “Pasang Chromium OS” dan kami akan membimbing anda melalui proses pemasangan dalam beberapa langkah mudah sahaja. Anda akan diberikan satu peluang lagi untuk mengesahkan pemasangan sebelum kami membuat perubahan pada komputer anda.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="7686590090926151193">Chromium bukan penyemak imbas lalai anda</translation>
 <translation id="7689606757190482937">Segerakkan dan peribadikan Chromium pada semua peranti anda</translation>
 <translation id="7729447699958282447">Chromium tidak dapat menyegerakkan data anda kerana Segerak tidak tersedia untuk domain anda.</translation>
@@ -237,7 +253,6 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="7857220146454061152">Untuk mendapatkan kemaskinian Chromium yang akan datang, anda memerlukan OS X 10.11 atau yang lebih baharu. Komputer ini menggunakan OS X 10.10.</translation>
 <translation id="7867198900892795913">Chromium tidak dapat mengemas kini kepada versi terkini, maka anda terlepas ciri baharu dan penyelesaian keselamatan.</translation>
 <translation id="7898472181347242998">Untuk melihat sama ada peranti anda telah dikemas kini, pergi ke <ph name="LINK_BEGIN" />Tetapan OS Chromium<ph name="LINK_END" /></translation>
-<translation id="7907774600618164274">OS Chromium tidak dimatikan dengan betul.</translation>
 <translation id="7937630085815544518">Anda telah log masuk ke Chromium sebagai <ph name="USER_EMAIL_ADDRESS" />. Sila gunakan akaun yang sama untuk log masuk lagi.</translation>
 <translation id="7975919845073681630">Ini adalah pemasangan kedua Chromium dan tidak boleh dijadikan penyemak imbas lalai anda.</translation>
 <translation id="8013436988911883588">Sebaik sahaja Chromium mendapat akses, tapak web akan dapat meminta akses daripada anda.</translation>
@@ -270,7 +285,6 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="8974095189086268230">Chromium OS berjaya dilaksanakan dengan adanya <ph name="BEGIN_LINK_CROS_OSS" />perisian sumber terbuka<ph name="END_LINK_CROS_OSS" /> tambahan.</translation>
 <translation id="8986207147630327271">Anda menambahkan profil kerja pada penyemak imbas ini dan memberi pentadbir anda kawalan terhadap profil kerja sahaja.</translation>
 <translation id="9019929317751753759">Untuk menjadikan Chromium lebih selamat, kami melumpuhkan sambungan berikut yang tidak disenaraikan dalam  <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa pengetahuan anda.</translation>
-<translation id="9047197236183657400">Alihkan akaun ke profil Chromium baharu?</translation>
 <translation id="9089354809943900324">Chromium sudah usang</translation>
 <translation id="9093206154853821181">{0,plural, =1{Chromium akan dilancarkan semula dalam masa sejam}other{Chromium akan dilancarkan semula dalam masa # jam}}</translation>
 <translation id="91086099826398415">Buka Pautan dalam &amp;tab Chromium Baharu</translation>

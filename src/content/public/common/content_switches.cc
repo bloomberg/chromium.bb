@@ -67,6 +67,9 @@ const char kDisable3DAPIs[]                 = "disable-3d-apis";
 // Disable gpu-accelerated 2d canvas.
 const char kDisableAccelerated2dCanvas[]    = "disable-accelerated-2d-canvas";
 
+// Enable in-progress canvas 2d API methods BeginLayer and EndLayer.
+const char kEnableCanvas2DLayers[] = "canvas-2d-layers";
+
 // Enable in-progress canvas 2d API features.
 const char kEnableNewCanvas2DAPI[] = "new-canvas-2d-api";
 
@@ -445,6 +448,11 @@ const char kEnableVtune[]                   = "enable-vtune-support";
 // Removal of this deprecated API is blocked on crbug.com/937369.
 const char kEnableWebAuthDeprecatedMojoTestingApi[] =
     "enable-web-auth-deprecated-mojo-testing-api";
+
+// Enables WebGL developer extensions which are not generally exposed
+// to the web platform.
+const char kEnableWebGLDeveloperExtensions[] =
+    "enable-webgl-developer-extensions";
 
 // Enables WebGL extensions not yet approved by the community.
 const char kEnableWebGLDraftExtensions[] = "enable-webgl-draft-extensions";
@@ -878,9 +886,6 @@ const char kEnableWebRtcSrtpAesGcm[] = "enable-webrtc-srtp-aes-gcm";
 const char kEnableWebRtcSrtpEncryptedHeaders[] =
     "enable-webrtc-srtp-encrypted-headers";
 
-// Enables Origin header in Stun messages for WebRTC.
-const char kEnableWebRtcStunOrigin[]        = "enable-webrtc-stun-origin";
-
 // Enforce IP Permission check. TODO(guoweis): Remove this once the feature is
 // not under finch and becomes the default.
 const char kEnforceWebRtcIPPermissionCheck[] =
@@ -931,12 +936,6 @@ const char kDisableAcceleratedVideoDecode[] =
 // Disable Media Session API
 const char kDisableMediaSessionAPI[] = "disable-media-session-api";
 
-// Disable overscroll edge effects like those found in Android views.
-const char kDisableOverscrollEdgeEffect[]   = "disable-overscroll-edge-effect";
-
-// Disable the pull-to-refresh effect when vertically overscrolling content.
-const char kDisablePullToRefreshEffect[]   = "disable-pull-to-refresh-effect";
-
 // Disable the locking feature of the screen orientation API.
 const char kDisableScreenOrientationLock[]  = "disable-screen-orientation-lock";
 
@@ -971,10 +970,6 @@ const char kRendererWaitForJavaDebugger[] = "renderer-wait-for-java-debugger";
 // Disables debug crash dumps for OOPR.
 const char kDisableOoprDebugCrashDump[] = "disable-oopr-debug-crash-dump";
 #endif
-
-// Enable the experimental Accessibility Object Model APIs in development.
-const char kEnableAccessibilityObjectModel[] =
-    "enable-accessibility-object-model";
 
 // Enable the aggressive flushing of DOM Storage to minimize data loss.
 const char kEnableAggressiveDOMStorageFlushing[] =

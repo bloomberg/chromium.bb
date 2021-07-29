@@ -7,7 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-* Update svt-av1: v0.8.7
+* Mandate ispe and disallow zero width or height (#640).
+* Re-map libavif speed 7-10 to libaom speed 7-9 (#682)
+*  Refer to https://aomedia-review.googlesource.com/c/aom/+/140624
+*  If you were using libaom with the following avif speed setting:
+*   - speed 0-6: no change is needed
+*   - speed 7:   change to speed 6 for the same results
+*   - speed 8-9: re-test and re-adjust speed according to your app needs
+
+## [0.9.2] - 2021-06-23
+
+### Added
+* avifenc, avifdec: Allow "-j all" to automatically use all of the cores on the machine (#670)
+
+### Changed
+* Refactor imir implementation to match HEIF Draft Amendment 2 (#665)
+* Merge avifCodec's open call with its getNextImage call to avoid codec init during parse, and simplify the codec API (#637)
+* Update aom.cmd: v3.1.1 (#674)
+* Update svt-av1: v0.8.7 (#627)
+* Make tests/compare.h and tests/testcase.h C++ safe (#678)
+* Print width and height as %ux%u instead of %u/%u (#676)
+* Allocate codec->internal->svt_config statically (#675)
+* Cleanup related to avifDiagnosticsClearError() (#673)
+* Cleanup avifutil.h comment to match libavif style (#671)
+* Fix the clang -Wunused-macros warning (#672)
+* Check for int32_t overflows in 'clap' code (#663)
+* Have avifdec print chroma sample position for 420 (#666)
+* Enable CMake configs in VCPKG mode (#659)
+* Avoid multiplying widthN and heightN by 2 (#662)
+* Correct AVIF_PIXEL_FORMAT_NONE handling logic (#654)
+* Cast extent->offset (a uint64_t) to size_t safely (#660)
+* Disallow negative clap width or height (#656)
+* Check for int32_t cast and unsigned add overflows (#655)
+* Some straightforward changes to clapFraction code (#653)
+* Fix box name of avifParseChunkOffsetBox (#652)
+* No need to pass diag to functions that have 'data' (#651)
+* Simplify the assertion in avifROStreamStart() (#650)
+* Don't clear error in avifEncoderSetCodecSpecificOp (#648)
+* Simplify avifCodecConfigurationBoxGetFormat (#646)
+* Print the fraction in "not an integer" messages (#641)
+* Fix a typo in the diagnostic context for 'ipco' (#644)
+* Remove const from non-pointer function parameters (#634)
+* Declare the param of avifDumpDiagnostics as const (#633)
+* Adjust gdk-pixbuf loader for new API change (#668)
+* Fix gdk-pixbuf loader install path (#615)
 
 ## [0.9.1] - 2021-05-19
 
@@ -627,7 +670,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Constants `AVIF_VERSION`, `AVIF_VERSION_MAJOR`, `AVIF_VERSION_MINOR`, `AVIF_VERSION_PATCH`
 - `avifVersion()` function
 
-[Unreleased]: https://github.com/AOMediaCodec/libavif/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/AOMediaCodec/libavif/compare/v0.9.2...HEAD
+[0.9.2]: https://github.com/AOMediaCodec/libavif/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/AOMediaCodec/libavif/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/AOMediaCodec/libavif/compare/v0.8.4...v0.9.0
 [0.8.4]: https://github.com/AOMediaCodec/libavif/compare/v0.8.3...v0.8.4

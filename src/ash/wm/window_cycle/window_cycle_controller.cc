@@ -6,13 +6,13 @@
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/events/event_rewriter_controller_impl.h"
 #include "ash/metrics/task_switch_metrics_recorder.h"
 #include "ash/metrics/task_switch_source.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/accelerators.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -22,11 +22,13 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_cycle/window_cycle_event_filter.h"
 #include "ash/wm/window_cycle/window_cycle_list.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -225,11 +227,17 @@ void WindowCycleController::StartFling(float velocity_x) {
 }
 
 void WindowCycleController::StartCycling() {
+  Shell* shell = Shell::Get();
+
   // Close the wallpaper preview if it is open to prevent visual glitches where
   // the window view item for the preview is transparent
   // (http://crbug.com/895265).
-  Shell::Get()->wallpaper_controller()->MaybeClosePreviewWallpaper();
-  Shell::Get()->event_rewriter_controller()->SetAltDownRemappingEnabled(false);
+  shell->wallpaper_controller()->MaybeClosePreviewWallpaper();
+  shell->event_rewriter_controller()->SetAltDownRemappingEnabled(false);
+
+  // End overview as the window cycle list takes over window switching.
+  shell->overview_controller()->EndOverview(
+      OverviewEndAction::kStartedWindowCycle);
 
   WindowCycleController::WindowList window_list = CreateWindowList();
   SaveCurrentActiveDeskAndWindow(window_list);

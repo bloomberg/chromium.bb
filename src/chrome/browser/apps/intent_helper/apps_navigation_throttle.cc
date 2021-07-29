@@ -18,12 +18,11 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_context.h"
@@ -167,8 +166,7 @@ AppsNavigationThrottle::CaptureWebAppScopeNavigations(
 
   Profile* const profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  web_app::WebAppProviderBase* provider =
-      web_app::WebAppProviderBase::GetProviderBase(profile);
+  web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile);
   if (!provider)
     return absl::nullopt;
 
@@ -182,7 +180,7 @@ AppsNavigationThrottle::CaptureWebAppScopeNavigations(
   // This will be removed once we phase out kDesktopPWAsTabStripLinkCapturing in
   // favor of kWebAppEnableLinkCapturing.
   bool app_in_tabbed_mode =
-      provider->registrar().IsInExperimentalTabbedWindowMode(*app_id);
+      provider->registrar().IsTabbedWindowModeEnabled(*app_id);
   bool tabbed_link_capturing =
       base::FeatureList::IsEnabled(features::kDesktopPWAsTabStripLinkCapturing);
   bool web_apps_integrated_into_intent_handling =
@@ -196,8 +194,7 @@ AppsNavigationThrottle::CaptureWebAppScopeNavigations(
     return absl::nullopt;
   }
 
-  auto* tab_helper =
-      web_app::WebAppTabHelperBase::FromWebContents(web_contents);
+  auto* tab_helper = web_app::WebAppTabHelper::FromWebContents(web_contents);
   if (tab_helper && tab_helper->GetAppId() == *app_id) {
     // Already in app scope, do not alter window state while using the app.
     return absl::nullopt;

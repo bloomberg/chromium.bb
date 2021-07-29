@@ -24,6 +24,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/shell/app/shell_crash_reporter_client.h"
 #include "content/shell/browser/shell_content_browser_client.h"
+#include "content/shell/browser/shell_paths.h"
 #include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/gpu/shell_content_gpu_client.h"
@@ -181,6 +182,12 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   }
 #endif
 
+  RegisterShellPathProvider();
+
+  return false;
+}
+
+bool ShellMainDelegate::ShouldCreateFeatureList() {
   return false;
 }
 
@@ -194,7 +201,7 @@ void ShellMainDelegate::PreSandboxStartup() {
 
 // Disable platform crash handling and initialize the crash reporter, if
 // requested.
-// TODO(crbug.com/753619): Implement crash reporter integration for Fuchsia.
+// TODO(crbug.com/1226159): Implement crash reporter integration for Fuchsia.
 #if !defined(OS_FUCHSIA)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
@@ -303,11 +310,14 @@ void ShellMainDelegate::InitializeResourceBundle() {
     global_descriptors->Set(kShellPakDescriptor, pak_fd, pak_region);
   }
   DCHECK_GE(pak_fd, 0);
-  // This is clearly wrong. See crbug.com/330930
-  ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(base::File(pak_fd),
-                                                          pak_region);
+  // TODO(crbug.com/330930): A better way to prevent fdsan error from a double
+  // close is to refactor GlobalDescriptors.{Get,MaybeGet} to return
+  // "const base::File&" rather than fd itself.
+  base::File android_pak_file(pak_fd);
+  ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
+      android_pak_file.Duplicate(), pak_region);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
-      base::File(pak_fd), pak_region, ui::SCALE_FACTOR_100P);
+      std::move(android_pak_file), pak_region, ui::SCALE_FACTOR_100P);
 #elif defined(OS_MAC)
   ui::ResourceBundle::InitSharedInstanceWithPakPath(GetResourcesPakFilePath());
 #else
@@ -323,6 +333,11 @@ void ShellMainDelegate::PreBrowserMain() {
 #if defined(OS_MAC)
   RegisterShellCrApp();
 #endif
+}
+
+void ShellMainDelegate::PostEarlyInitialization(bool is_running_tests) {
+  // Apply field trial testing configuration.
+  browser_client_->CreateFeatureListAndFieldTrials();
 }
 
 ContentClient* ShellMainDelegate::CreateContentClient() {

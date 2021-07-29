@@ -59,6 +59,8 @@
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
 		CF6D547D1F9E6FFE00E95174 /* long_string_dictionary.cc in Sources */ = {isa = PBXBuildFile; fileRef = CF6D547C1F9E6FFE00E95174 /* long_string_dictionary.cc */; };
 		CF706DC11F7C6EFB002C54C7 /* long_string_dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = CF706DC01F7C6EFB002C54C7 /* long_string_dictionary.h */; };
+		E69213D8265202570071B04F /* HTTPRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = E69213D6265202570071B04F /* HTTPRequest.h */; };
+		E69213D9265202570071B04F /* HTTPRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = E69213D7265202570071B04F /* HTTPRequest.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -116,6 +118,8 @@
 		CF6D547C1F9E6FFE00E95174 /* long_string_dictionary.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = long_string_dictionary.cc; sourceTree = "<group>"; };
 		CF706DC01F7C6EFB002C54C7 /* long_string_dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = long_string_dictionary.h; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libBreakpad.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libBreakpad.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E69213D6265202570071B04F /* HTTPRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPRequest.h; sourceTree = "<group>"; };
+		E69213D7265202570071B04F /* HTTPRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPRequest.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -289,6 +293,8 @@
 			children = (
 				16C7CC88147D4A4300776EAD /* GTMLogger.h */,
 				16C7CC89147D4A4300776EAD /* GTMLogger.m */,
+				E69213D6265202570071B04F /* HTTPRequest.h */,
+				E69213D7265202570071B04F /* HTTPRequest.m */,
 				16C7CC8A147D4A4300776EAD /* HTTPMultipartUpload.h */,
 				16C7CC8B147D4A4300776EAD /* HTTPMultipartUpload.m */,
 				16C7CC93147D4A4300776EAD /* file_id.cc */,
@@ -335,6 +341,7 @@
 				16C7CE1A147D4A4300776EAD /* minidump_file_writer.h in Headers */,
 				16C7CE41147D4A4300776EAD /* convert_UTF.h in Headers */,
 				16C7CE78147D4A4300776EAD /* GTMLogger.h in Headers */,
+				E69213D8265202570071B04F /* HTTPRequest.h in Headers */,
 				16C7CE7A147D4A4300776EAD /* HTTPMultipartUpload.h in Headers */,
 				16C7CE84147D4A4300776EAD /* file_id.h in Headers */,
 				16C7CE86147D4A4300776EAD /* macho_id.h in Headers */,
@@ -416,6 +423,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				16C7CCCD147D4A4300776EAD /* Breakpad.mm in Sources */,
+				E69213D9265202570071B04F /* HTTPRequest.m in Sources */,
 				16C7CDE9147D4A4300776EAD /* ConfigFile.mm in Sources */,
 				16C7CDF5147D4A4300776EAD /* breakpad_nlist_64.cc in Sources */,
 				16C7CDF7147D4A4300776EAD /* dynamic_images.cc in Sources */,

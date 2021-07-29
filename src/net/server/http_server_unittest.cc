@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -16,6 +17,7 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -24,7 +26,6 @@
 #include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

@@ -821,8 +821,8 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
 
         ctx->img.fb_priv = output_frame_buf->raw_frame_buffer.priv;
         img = &ctx->img;
-        img->temporal_id = cm->temporal_layer_id;
-        img->spatial_id = cm->spatial_layer_id;
+        img->temporal_id = output_frame_buf->temporal_id;
+        img->spatial_id = output_frame_buf->spatial_id;
         if (pbi->skip_film_grain) grain_params->apply_grain = 0;
         aom_image_t *res =
             add_grain_if_needed(ctx, img, &ctx->image_with_grain, grain_params);

@@ -292,11 +292,18 @@ void ArcDataSnapshotdManager::Snapshot::Sync() {
   local_state_->Set(arc::prefs::kArcSnapshotInfo, std::move(dict));
 }
 
+void ArcDataSnapshotdManager::Snapshot::Sync(base::OnceClosure callback) {
+  Sync();
+  local_state_->CommitPendingWrite(std::move(callback), base::DoNothing());
+}
+
 void ArcDataSnapshotdManager::Snapshot::ClearSnapshot(bool last) {
   std::unique_ptr<SnapshotInfo>* snapshot =
       (last ? &last_snapshot_ : &previous_snapshot_);
-  snapshot->reset();
-  Sync();
+  if (snapshot) {
+    snapshot->reset();
+    Sync();
+  }
 }
 
 void ArcDataSnapshotdManager::Snapshot::StartNewSnapshot() {
@@ -812,10 +819,10 @@ void ArcDataSnapshotdManager::OnKeyPairGenerated(bool success) {
     LOG(ERROR) << "Key pair generation failed. Abort snapshot creation.";
 
     snapshot_.set_blocked_ui_mode(false);
-    snapshot_.Sync();
-
     DCHECK(!attempt_user_exit_callback_.is_null());
-    EnsureDaemonStopped(std::move(attempt_user_exit_callback_));
+    snapshot_.Sync(base::BindOnce(&ArcDataSnapshotdManager::EnsureDaemonStopped,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  std::move(attempt_user_exit_callback_)));
   }
 }
 
@@ -896,10 +903,11 @@ void ArcDataSnapshotdManager::OnSnapshotTaken(bool success) {
     LOG(ERROR) << "Failed to take ARC data directory snapshot.";
 
   snapshot_.set_blocked_ui_mode(false);
-  snapshot_.Sync();
-
   DCHECK(!attempt_user_exit_callback_.is_null());
-  EnsureDaemonStopped(std::move(attempt_user_exit_callback_));
+
+  snapshot_.Sync(base::BindOnce(&ArcDataSnapshotdManager::EnsureDaemonStopped,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                std::move(attempt_user_exit_callback_)));
 }
 
 void ArcDataSnapshotdManager::OnSnapshotLoaded(base::OnceClosure callback,
@@ -908,6 +916,10 @@ void ArcDataSnapshotdManager::OnSnapshotLoaded(base::OnceClosure callback,
   if (!success) {
     LOG(ERROR) << "Failed to load ARC data directory snapshot.";
     state_ = State::kNone;
+
+    snapshot_.ClearSnapshot(false /* last */);
+    snapshot_.ClearSnapshot(true /* last */);
+
     std::move(callback).Run();
     return;
   }
@@ -915,9 +927,8 @@ void ArcDataSnapshotdManager::OnSnapshotLoaded(base::OnceClosure callback,
           << " snapshot";
   state_ = State::kRunning;
   // Clear last snapshot if the previous one was loaded.
-  if (!last && snapshot_.last_snapshot()) {
+  if (!last) {
     snapshot_.ClearSnapshot(true /* last */);
-    snapshot_.Sync();
   }
   EnsureDaemonStopped(base::DoNothing());
 
@@ -964,7 +975,9 @@ void ArcDataSnapshotdManager::OnUiClosed() {
       LOG(ERROR) << "Received a signal from UI when not in blocked UI mode.";
       break;
   }
-  StopDaemon(std::move(attempt_user_exit_callback_));
+  snapshot_.Sync(base::BindOnce(&ArcDataSnapshotdManager::StopDaemon,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                std::move(attempt_user_exit_callback_)));
 }
 
 std::vector<std::string> ArcDataSnapshotdManager::GetStartEnvVars() {

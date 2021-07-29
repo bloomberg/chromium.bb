@@ -36,7 +36,6 @@
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "components/services/storage/public/cpp/filesystem/filesystem_impl.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "components/services/storage/public/mojom/filesystem/directory.mojom.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/storage_service.mojom.h"
@@ -63,6 +62,7 @@
 #include "content/browser/native_io/native_io_context_impl.h"
 #include "content/browser/network_context_client_base_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
+#include "content/browser/prerender/prerender_host_registry.h"
 #include "content/browser/quota/quota_context.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/service_sandbox_type.h"
@@ -72,7 +72,6 @@
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl_private_key_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/navigation_params.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -118,6 +117,7 @@
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
@@ -154,19 +154,19 @@ mojo::Remote<storage::mojom::StorageService>& GetStorageServiceRemoteStorage() {
   // NOTE: This use of sequence-local storage is only to ensure that the Remote
   // only lives as long as the UI-thread sequence, since the UI-thread sequence
   // may be torn down and reinitialized e.g. between unit tests.
-  static base::NoDestructor<base::SequenceLocalStorageSlot<
-      mojo::Remote<storage::mojom::StorageService>>>
+  static base::SequenceLocalStorageSlot<
+      mojo::Remote<storage::mojom::StorageService>>
       remote_slot;
-  return remote_slot->GetOrCreateValue();
+  return remote_slot.GetOrCreateValue();
 }
 
 void RunInProcessStorageService(
     mojo::PendingReceiver<storage::mojom::StorageService> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  static base::NoDestructor<base::SequenceLocalStorageSlot<
-      std::unique_ptr<storage::StorageServiceImpl>>>
+  static base::SequenceLocalStorageSlot<
+      std::unique_ptr<storage::StorageServiceImpl>>
       service_storage_slot;
-  service_storage_slot->GetOrCreateValue() =
+  service_storage_slot.GetOrCreateValue() =
       std::make_unique<storage::StorageServiceImpl>(std::move(receiver),
                                                     /*io_task_runner=*/nullptr);
 }
@@ -262,16 +262,16 @@ void CheckQuotaManagedDataDeletionStatus(size_t* deletion_task_count,
   }
 }
 
-void OnQuotaManagedOriginDeleted(const url::Origin& origin,
-                                 blink::mojom::StorageType type,
-                                 size_t* deletion_task_count,
-                                 base::OnceClosure callback,
-                                 blink::mojom::QuotaStatusCode status) {
+void OnQuotaManagedStorageKeyDeleted(const blink::StorageKey& storage_key,
+                                     blink::mojom::StorageType type,
+                                     size_t* deletion_task_count,
+                                     base::OnceClosure callback,
+                                     blink::mojom::QuotaStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(*deletion_task_count, 0u);
   if (status != blink::mojom::QuotaStatusCode::kOk) {
     DLOG(ERROR) << "Couldn't remove data of type " << static_cast<int>(type)
-                << " for origin " << origin
+                << " for storage key " << storage_key.GetDebugString()
                 << ". Status: " << static_cast<int>(status);
   }
 
@@ -627,6 +627,15 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
   std::unique_ptr<SSLClientAuthHandler> ssl_client_auth_handler_;
 };
 
+void CallCancelRequest(
+    mojo::PendingRemote<network::mojom::ClientCertificateResponder>
+        client_cert_responder_remote) {
+  DCHECK(client_cert_responder_remote);
+  mojo::Remote<network::mojom::ClientCertificateResponder>
+      client_cert_responder(std::move(client_cert_responder_remote));
+  client_cert_responder->CancelRequest();
+}
+
 void OnCertificateRequestedContinuation(
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
     mojo::PendingRemote<network::mojom::ClientCertificateResponder>
@@ -637,10 +646,7 @@ void OnCertificateRequestedContinuation(
     web_contents = web_contents_getter.Run();
 
   if (!web_contents) {
-    DCHECK(client_cert_responder_remote);
-    mojo::Remote<network::mojom::ClientCertificateResponder>
-        client_cert_responder(std::move(client_cert_responder_remote));
-    client_cert_responder->CancelRequest();
+    CallCancelRequest(std::move(client_cert_responder_remote));
     return;
   }
 
@@ -857,14 +863,14 @@ class StoragePartitionImpl::QuotaManagedDataDeletionHelper {
       StoragePartition::OriginMatcherFunction origin_matcher,
       bool perform_storage_cleanup);
 
-  void ClearOriginsOnIOThread(
+  void ClearStorageKeysOnIOThread(
       storage::QuotaManager* quota_manager,
       const scoped_refptr<storage::SpecialStoragePolicy>&
           special_storage_policy,
       StoragePartition::OriginMatcherFunction origin_matcher,
       bool perform_storage_cleanup,
       base::OnceClosure callback,
-      const std::set<url::Origin>& origins,
+      const std::set<blink::StorageKey>& storage_keys,
       blink::mojom::StorageType quota_storage_type);
 
  private:
@@ -1012,9 +1018,9 @@ class StoragePartitionImpl::ServiceWorkerCookieAccessObserver
   static void OnServiceWorkerCookiesAccessedOnCoreThread(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       network::mojom::CookieAccessDetailsPtr details) {
-    std::vector<GlobalFrameRoutingId> destinations =
+    std::vector<GlobalRenderFrameHostId> destinations =
         *service_worker_context->GetWindowClientFrameRoutingIds(
-            storage::StorageKey(url::Origin::Create(details->url)));
+            blink::StorageKey(url::Origin::Create(details->url)));
     if (destinations.empty())
       return;
     RunOrPostTaskOnThread(
@@ -1024,9 +1030,9 @@ class StoragePartitionImpl::ServiceWorkerCookieAccessObserver
   }
 
   static void ReportCookiesAccessedOnUI(
-      std::vector<GlobalFrameRoutingId> destinations,
+      std::vector<GlobalRenderFrameHostId> destinations,
       network::mojom::CookieAccessDetailsPtr details) {
-    for (GlobalFrameRoutingId frame_id : destinations) {
+    for (GlobalRenderFrameHostId frame_id : destinations) {
       if (RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(frame_id)) {
         rfh->OnCookiesAccessed(mojo::Clone(details));
       }
@@ -1066,10 +1072,13 @@ StoragePartitionImpl::~StoragePartitionImpl() {
     shared_url_loader_factory_for_browser_process_with_corb_->Shutdown();
   }
 
-  if (GetDatabaseTracker()) {
-    GetDatabaseTracker()->task_runner()->PostTask(
+  scoped_refptr<storage::DatabaseTracker> database_tracker(
+      GetDatabaseTracker());
+  if (database_tracker) {
+    storage::DatabaseTracker* database_tracker_ptr = database_tracker.get();
+    database_tracker_ptr->task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&storage::DatabaseTracker::Shutdown,
-                                  GetDatabaseTracker()));
+                                  std::move(database_tracker)));
   }
 
   if (GetFileSystemContext())
@@ -1150,14 +1159,16 @@ void StoragePartitionImpl::Initialize(
     // base::Unretained is safe to use because the BrowserContext is guaranteed
     // to outlive QuotaManager. This is because BrowserContext outlives this
     // StoragePartitionImpl, which destroys the QuotaManager on teardown.
-    base::RepeatingCallback<void(const url::Origin)>
+    base::RepeatingCallback<void(const blink::StorageKey)>
         send_notification_function = base::BindRepeating(
-            [](StorageNotificationService* service, const url::Origin origin) {
+            [](StorageNotificationService* service,
+               const blink::StorageKey storage_key) {
               GetUIThreadTaskRunner({})->PostTask(
                   FROM_HERE,
                   base::BindOnce(&StorageNotificationService::
                                      MaybeShowStoragePressureNotification,
-                                 base::Unretained(service), std::move(origin)));
+                                 base::Unretained(service),
+                                 std::move(storage_key.origin())));
             },
             base::Unretained(storage_notification_service));
 
@@ -1166,13 +1177,12 @@ void StoragePartitionImpl::Initialize(
 
   // Each consumer is responsible for registering its QuotaClient during
   // its construction.
-  filesystem_context_ =
-      CreateFileSystemContext(browser_context_, partition_path_, is_in_memory_,
-                              quota_manager_proxy.get());
+  filesystem_context_ = CreateFileSystemContext(
+      browser_context_, partition_path_, is_in_memory_, quota_manager_proxy);
 
-  database_tracker_ = base::MakeRefCounted<storage::DatabaseTracker>(
+  database_tracker_ = storage::DatabaseTracker::Create(
       partition_path_, is_in_memory_,
-      browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy.get());
+      browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy);
 
   dom_storage_context_ = DOMStorageContextWrapper::Create(
       this, browser_context_->GetSpecialStoragePolicy());
@@ -1242,7 +1252,7 @@ void StoragePartitionImpl::Initialize(
       browser_context_, service_worker_context_);
 
   background_fetch_context_ = base::MakeRefCounted<BackgroundFetchContext>(
-      browser_context_, this, service_worker_context_, quota_manager_proxy,
+      weak_factory_.GetWeakPtr(), service_worker_context_, quota_manager_proxy,
       devtools_background_services_context_);
 
   background_sync_context_ = base::MakeRefCounted<BackgroundSyncContextImpl>();
@@ -1262,8 +1272,7 @@ void StoragePartitionImpl::Initialize(
 
   service_worker_context_->Init(path, quota_manager_proxy.get(),
                                 browser_context_->GetSpecialStoragePolicy(),
-                                blob_context.get(),
-                                url_loader_factory_getter_.get());
+                                blob_context.get());
 
   BlobRegistryWrapper* fallback_blob_registry =
       fallback_for_blob_urls ? fallback_for_blob_urls->GetBlobRegistry()
@@ -1286,7 +1295,7 @@ void StoragePartitionImpl::Initialize(
 
   // The Conversion Measurement API is not available in Incognito mode.
   if (!is_in_memory_ &&
-      base::FeatureList::IsEnabled(features::kConversionMeasurement)) {
+      base::FeatureList::IsEnabled(blink::features::kConversionMeasurement)) {
     conversion_manager_ = std::make_unique<ConversionManagerImpl>(
         this, path, special_storage_policy_);
   }
@@ -1597,7 +1606,7 @@ FontAccessManagerImpl* StoragePartitionImpl::GetFontAccessManager() {
   return font_access_manager_.get();
 }
 
-InterestGroupManager* StoragePartitionImpl::GetInterestGroupStorage() {
+InterestGroupManager* StoragePartitionImpl::GetInterestGroupManager() {
   DCHECK(initialized_);
   return interest_group_manager_.get();
 }
@@ -1722,24 +1731,71 @@ void StoragePartitionImpl::OnCertificateRequested(
   base::RepeatingCallback<WebContents*(void)> web_contents_getter;
   int process_id = url_loader_network_observers_.current_context().process_id;
   int routing_id = url_loader_network_observers_.current_context().routing_id;
-  // Use |window_id| if it's provided.
-  if (window_id) {
-    DCHECK_EQ(process_id, network::mojom::kBrowserProcessId);
-    DCHECK_EQ(routing_id, RenderFrameHost::kNoFrameTreeNodeId);
-    if (service_worker_context_->context()) {
-      auto* container_host =
-          service_worker_context_->context()->GetContainerHostByWindowId(
-              *window_id);
-      if (container_host) {
-        int frame_tree_node_id = container_host->frame_tree_node_id();
-        web_contents_getter = base::BindRepeating(
-            &WebContents::FromFrameTreeNodeId, frame_tree_node_id);
+
+  // Checks for prerendering state and cancels the certificate request and
+  // prerendering for prerendered frame tree. Prerendering should be cancelled
+  // because chrome may show a dialog for choosing a cert, and it's unsuitable
+  // for a hidden page.
+  // Then, determines the destination WebContents that the certificate request
+  // should be sent to.
+  if (process_id == network::mojom::kBrowserProcessId) {
+    // Route via `frame_tree_node_id`.
+    int frame_tree_node_id = RenderFrameHost::kNoFrameTreeNodeId;
+    if (window_id) {
+      // Use `window_id` if it is provided. This observer is created for service
+      // workers.
+      DCHECK_EQ(routing_id, RenderFrameHost::kNoFrameTreeNodeId);
+      if (service_worker_context_->context()) {
+        auto* container_host =
+            service_worker_context_->context()->GetContainerHostByWindowId(
+                *window_id);
+        if (container_host) {
+          // TODO(https://crbug.com/1223838): Use RenderFrameHost instead of
+          // FrameTreeNode when possible.
+          frame_tree_node_id = container_host->frame_tree_node_id();
+        }
       }
+    } else {
+      // This observer is created for NavigationRequest. See
+      // `CreateURLLoaderNetworkObserverForNavigationRequest()`.
+      frame_tree_node_id = routing_id;
     }
+    auto* frame_tree_node = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+    if (frame_tree_node && frame_tree_node->frame_tree()->is_prerendering()) {
+      // If this request is for prerendering, cancel the prerendering and the
+      // request.
+      CallCancelRequest(std::move(cert_responder));
+      auto* web_contents = WebContentsImpl::FromFrameTreeNode(frame_tree_node);
+      web_contents->GetPrerenderHostRegistry()->CancelHost(
+          frame_tree_node_id, PrerenderHost::FinalStatus::kClientCertRequested);
+      return;
+    }
+    web_contents_getter = base::BindRepeating(&WebContents::FromFrameTreeNodeId,
+                                              frame_tree_node_id);
   } else {
+    // Route via `process_id` and `routing_id`, which can identify
+    // RenderFrameHostImpl instances.
+    DCHECK(!window_id);
+
+    // This observer is for Frame, see
+    // `CreateURLLoaderNetworkObserverForFrame()`.
+    auto* render_frame_host_impl =
+        RenderFrameHostImpl::FromID(process_id, routing_id);
+    if (render_frame_host_impl &&
+        render_frame_host_impl->lifecycle_state() ==
+            RenderFrameHostImpl::LifecycleStateImpl::kPrerendering) {
+      // If this request is for prerendering, cancel the prerendering and the
+      // request.
+      CallCancelRequest(std::move(cert_responder));
+      render_frame_host_impl->CancelPrerendering(
+          PrerenderHost::FinalStatus::kClientCertRequested);
+      return;
+    }
+
     web_contents_getter =
         base::BindRepeating(GetWebContents, process_id, routing_id);
   }
+
   OnCertificateRequestedContinuation(cert_info, std::move(cert_responder),
                                      std::move(web_contents_getter));
 }
@@ -2034,57 +2090,60 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
 
   if (quota_storage_remove_mask_ & QUOTA_MANAGED_STORAGE_MASK_PERSISTENT) {
     IncrementTaskCountOnIO();
-    // Ask the QuotaManager for all origins with persistent quota modified
+    // Ask the QuotaManager for all storage keys with persistent quota modified
     // within the user-specified timeframe, and deal with the resulting set in
     // ClearQuotaManagedOriginsOnIOThread().
-    quota_manager->GetOriginsModifiedBetween(
+    quota_manager->GetStorageKeysModifiedBetween(
         blink::mojom::StorageType::kPersistent, begin, end,
-        base::BindOnce(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
-                       base::Unretained(this), base::RetainedRef(quota_manager),
-                       special_storage_policy, origin_matcher,
-                       perform_storage_cleanup, decrement_callback));
+        base::BindOnce(
+            &QuotaManagedDataDeletionHelper::ClearStorageKeysOnIOThread,
+            base::Unretained(this), base::RetainedRef(quota_manager),
+            special_storage_policy, origin_matcher, perform_storage_cleanup,
+            decrement_callback));
   }
 
   // Do the same for temporary quota.
   if (quota_storage_remove_mask_ & QUOTA_MANAGED_STORAGE_MASK_TEMPORARY) {
     IncrementTaskCountOnIO();
-    quota_manager->GetOriginsModifiedBetween(
+    quota_manager->GetStorageKeysModifiedBetween(
         blink::mojom::StorageType::kTemporary, begin, end,
-        base::BindOnce(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
-                       base::Unretained(this), base::RetainedRef(quota_manager),
-                       special_storage_policy, origin_matcher,
-                       perform_storage_cleanup, decrement_callback));
+        base::BindOnce(
+            &QuotaManagedDataDeletionHelper::ClearStorageKeysOnIOThread,
+            base::Unretained(this), base::RetainedRef(quota_manager),
+            special_storage_policy, origin_matcher, perform_storage_cleanup,
+            decrement_callback));
   }
 
   // Do the same for syncable quota.
   if (quota_storage_remove_mask_ & QUOTA_MANAGED_STORAGE_MASK_SYNCABLE) {
     IncrementTaskCountOnIO();
-    quota_manager->GetOriginsModifiedBetween(
+    quota_manager->GetStorageKeysModifiedBetween(
         blink::mojom::StorageType::kSyncable, begin, end,
-        base::BindOnce(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
-                       base::Unretained(this), base::RetainedRef(quota_manager),
-                       special_storage_policy, std::move(origin_matcher),
-                       perform_storage_cleanup, decrement_callback));
+        base::BindOnce(
+            &QuotaManagedDataDeletionHelper::ClearStorageKeysOnIOThread,
+            base::Unretained(this), base::RetainedRef(quota_manager),
+            special_storage_policy, std::move(origin_matcher),
+            perform_storage_cleanup, decrement_callback));
   }
 
   DecrementTaskCountOnIO();
 }
 
 void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
-    ClearOriginsOnIOThread(
+    ClearStorageKeysOnIOThread(
         storage::QuotaManager* quota_manager,
         const scoped_refptr<storage::SpecialStoragePolicy>&
             special_storage_policy,
         StoragePartition::OriginMatcherFunction origin_matcher,
         bool perform_storage_cleanup,
         base::OnceClosure callback,
-        const std::set<url::Origin>& origins,
+        const std::set<blink::StorageKey>& storage_keys,
         blink::mojom::StorageType quota_storage_type) {
   // The QuotaManager manages all storage other than cookies, LocalStorage,
   // and SessionStorage. This loop wipes out most HTML5 storage for the given
-  // origins.
+  // storage keys.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (origins.empty()) {
+  if (storage_keys.empty()) {
     std::move(callback).Run();
     return;
   }
@@ -2104,13 +2163,13 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
 
   size_t* deletion_task_count = new size_t(0u);
   (*deletion_task_count)++;
-  for (const auto& origin : origins) {
+  for (const auto& storage_key : storage_keys) {
     // TODO(mkwst): Clean this up, it's slow. http://crbug.com/130746
-    if (storage_origin_.has_value() && origin != *storage_origin_)
+    if (storage_origin_.has_value() && storage_key.origin() != *storage_origin_)
       continue;
 
-    if (origin_matcher &&
-        !origin_matcher.Run(origin, special_storage_policy.get())) {
+    if (origin_matcher && !origin_matcher.Run(storage_key.origin(),
+                                              special_storage_policy.get())) {
       continue;
     }
 
@@ -2118,10 +2177,11 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
     done_callback = std::move(split_callback.first);
 
     (*deletion_task_count)++;
-    quota_manager->DeleteOriginData(
-        origin, quota_storage_type, quota_client_types,
-        base::BindOnce(&OnQuotaManagedOriginDeleted, origin, quota_storage_type,
-                       deletion_task_count, std::move(split_callback.second)));
+    quota_manager->DeleteStorageKeyData(
+        storage_key, quota_storage_type, quota_client_types,
+        base::BindOnce(&OnQuotaManagedStorageKeyDeleted, storage_key,
+                       quota_storage_type, deletion_task_count,
+                       std::move(split_callback.second)));
   }
   (*deletion_task_count)--;
 
@@ -2426,10 +2486,18 @@ void StoragePartitionImpl::WaitForCodeCacheShutdownForTesting() {
     // enabled features on a sequenced worker pool which could race
     // between ScopedFeatureList destruction.
     base::RunLoop loop;
-    generated_code_cache_context_->generated_js_code_cache()->GetBackend(
-        base::BindOnce([](base::OnceClosure quit,
-                          disk_cache::Backend*) { std::move(quit).Run(); },
-                       loop.QuitClosure()));
+    GeneratedCodeCacheContext::RunOrPostTask(
+        generated_code_cache_context_, FROM_HERE,
+        base::BindOnce(
+            [](scoped_refptr<GeneratedCodeCacheContext> context,
+               base::OnceClosure quit) {
+              context->generated_js_code_cache()->GetBackend(base::BindOnce(
+                  [](base::OnceClosure quit, disk_cache::Backend*) {
+                    std::move(quit).Run();
+                  },
+                  std::move(quit)));
+            },
+            generated_code_cache_context_, loop.QuitClosure()));
     loop.Run();
     generated_code_cache_context_->Shutdown();
   }
@@ -2573,7 +2641,7 @@ void StoragePartitionImpl::InitNetworkContext() {
   cors_exempt_header_list_ = context_params->cors_exempt_header_list;
 
   network_context_.reset();
-  GetNetworkService()->CreateNetworkContext(
+  CreateNetworkContextInNetworkService(
       network_context_.BindNewPipeAndPassReceiver(), std::move(context_params));
   DCHECK(network_context_);
 

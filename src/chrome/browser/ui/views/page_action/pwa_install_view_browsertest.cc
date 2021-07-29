@@ -51,7 +51,7 @@
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "components/arc/arc_util.h"
+#include "components/arc/test/arc_util_test_support.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -92,6 +92,8 @@ void PwaInstallIconChangeWaiter::VerifyIconVisibility(views::View* iconView,
 
 }  // namespace
 
+// Tests various cases that effect the visibility of the install icon in the
+// omnibox.
 class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   PwaInstallViewBrowserTest()
@@ -678,7 +680,8 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, PwaIntallIphIgnored) {
   // shown once in an user session.
   web_app::RecordInstallIphIgnored(
       profile()->GetPrefs(),
-      web_app::GenerateAppIdFromURL(app_banner_manager_->GetManifestStartUrl()),
+      web_app::GenerateAppId(/*manifest_id=*/absl::nullopt,
+                             app_banner_manager_->GetManifestStartUrl()),
       base::Time::Now());
   bool installable = OpenTab(app_url).installable;
   ASSERT_TRUE(installable);

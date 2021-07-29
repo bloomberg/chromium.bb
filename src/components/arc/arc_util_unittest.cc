@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/app_types.h"
+#include "ash/constants/app_types.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -24,6 +24,7 @@
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/test/arc_util_test_support.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -369,7 +370,6 @@ TEST_F(ArcUtilTest, IsArcAllowedForUser) {
       {user_manager::USER_TYPE_REGULAR, true},
       {user_manager::USER_TYPE_GUEST, false},
       {user_manager::USER_TYPE_PUBLIC_ACCOUNT, true},
-      {user_manager::USER_TYPE_SUPERVISED_DEPRECATED, false},
       {user_manager::USER_TYPE_KIOSK_APP, false},
       {user_manager::USER_TYPE_CHILD, true},
       {user_manager::USER_TYPE_ARC_KIOSK_APP, true},
@@ -527,6 +527,54 @@ TEST_F(ArcUtilTest, ConfigureUpstartJobs_StartFail) {
                        }));
   run_loop()->Run();
   EXPECT_FALSE(result);
+}
+
+TEST_F(ArcUtilTest, GetArcWindowTaskId) {
+  std::unique_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(100, nullptr));
+
+  exo::SetShellApplicationId(window.get(), "org.chromium.arc.100");
+
+  {
+    auto task_id = GetWindowTaskId(window.get());
+    EXPECT_TRUE(task_id.has_value());
+    EXPECT_EQ(task_id.value(), 100);
+  }
+
+  {
+    auto session_id = GetWindowSessionId(window.get());
+    EXPECT_FALSE(session_id.has_value());
+  }
+
+  {
+    auto task_or_session_id = GetWindowTaskOrSessionId(window.get());
+    EXPECT_TRUE(task_or_session_id.has_value());
+    EXPECT_EQ(task_or_session_id.value(), 100);
+  }
+}
+
+TEST_F(ArcUtilTest, GetArcWindowSessionId) {
+  std::unique_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(200, nullptr));
+
+  exo::SetShellApplicationId(window.get(), "org.chromium.arc.session.200");
+
+  {
+    auto task_id = GetWindowTaskId(window.get());
+    EXPECT_FALSE(task_id.has_value());
+  }
+
+  {
+    auto session_id = GetWindowSessionId(window.get());
+    EXPECT_TRUE(session_id.has_value());
+    EXPECT_EQ(session_id.value(), 200);
+  }
+
+  {
+    auto task_or_session_id = GetWindowTaskOrSessionId(window.get());
+    EXPECT_TRUE(task_or_session_id.has_value());
+    EXPECT_EQ(task_or_session_id.value(), 200);
+  }
 }
 
 }  // namespace

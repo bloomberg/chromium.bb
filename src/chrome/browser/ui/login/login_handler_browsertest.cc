@@ -41,6 +41,7 @@
 #include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/slow_http_response.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/auth.h"
@@ -48,6 +49,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -2411,4 +2413,57 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest, BasicAuthWithServiceWorker) {
   }
 }
 
+class LoginPromptPrerenderBrowserTest : public LoginPromptBrowserTest {
+ public:
+  LoginPromptPrerenderBrowserTest()
+      : prerender_helper_(base::BindRepeating(
+            &LoginPromptPrerenderBrowserTest::GetWebContents,
+            base::Unretained(this))) {}
+  ~LoginPromptPrerenderBrowserTest() override = default;
+  LoginPromptPrerenderBrowserTest(const LoginPromptPrerenderBrowserTest&) =
+      delete;
+  LoginPromptPrerenderBrowserTest& operator=(
+      const LoginPromptPrerenderBrowserTest&) = delete;
+
+  void SetUp() override { LoginPromptBrowserTest::SetUp(); }
+
+  void SetUpOnMainThread() override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+    LoginPromptBrowserTest::SetUpOnMainThread();
+  }
+
+  content::test::PrerenderTestHelper& prerender_helper() {
+    return prerender_helper_;
+  }
+
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+ private:
+  content::test::PrerenderTestHelper prerender_helper_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    LoginPromptPrerenderBrowserTest,
+    ::testing::Values(SplitAuthCacheByNetworkIsolationKey::kFalse,
+                      SplitAuthCacheByNetworkIsolationKey::kTrue));
+
+IN_PROC_BROWSER_TEST_P(LoginPromptPrerenderBrowserTest,
+                       TestBasicAuthDisabledOnPrerendering) {
+  GURL initial_url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), initial_url);
+
+  NavigationController* controller = &GetWebContents()->GetController();
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+
+  GURL prerender_url = embedded_test_server()->GetURL(kAuthBasicPage);
+  prerender_helper().AddPrerenderAsync(prerender_url);
+  prerender_helper().WaitForPrerenderLoadCompletion(prerender_url);
+  int host_id = prerender_helper().GetHostForUrl(prerender_url);
+  EXPECT_EQ(host_id, content::RenderFrameHost::kNoFrameTreeNodeId);
+  EXPECT_EQ(0, observer.auth_needed_count());
+}
 }  // namespace

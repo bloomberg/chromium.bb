@@ -13,7 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "build/build_config.h"
 #include "components/variations/client_filterable_state.h"
+#include "components/variations/metrics.h"
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/seed_response.h"
 #include "components/variations/service/ui_string_overrider.h"
@@ -49,8 +51,7 @@ class VariationsFieldTrialCreator {
  public:
   // Caller is responsible for ensuring that objects passed to the constructor
   // stay valid for the lifetime of this object.
-  VariationsFieldTrialCreator(PrefService* local_state,
-                              VariationsServiceClient* client,
+  VariationsFieldTrialCreator(VariationsServiceClient* client,
                               std::unique_ptr<VariationsSeedStore> seed_store,
                               const UIStringOverrider& ui_string_overrider);
   virtual ~VariationsFieldTrialCreator();
@@ -147,10 +148,11 @@ class VariationsFieldTrialCreator {
                 std::string* base64_signature) WARN_UNUSED_RESULT;
 
   // Loads the safe seed from the variations store into |seed| and updates any
-  // relevant fields in |client_state|. If the load succeeds, records metrics
-  // about the loaded seed. Returns whether the load succeeded.
-  bool LoadSafeSeed(VariationsSeed* seed,
-                    ClientFilterableState* client_state) WARN_UNUSED_RESULT;
+  // relevant |client_state| fields. If the load succeeds, records metrics about
+  // the loaded seed. Returns the result of loading the seed.
+  LoadSeedResult LoadSafeSeed(VariationsSeed* seed,
+                              ClientFilterableState* client_state)
+      WARN_UNUSED_RESULT;
 
   // Creates field trials based on the variations seed loaded from local state.
   // If there is a problem loading the seed data, all trials specified by the
@@ -173,6 +175,14 @@ class VariationsFieldTrialCreator {
 
   // Get the platform we're running on, respecting OverrideVariationsPlatform().
   Study::Platform GetPlatform();
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // On channels that support the ExtendedVariationsSafeMode experiment, (a)
+  // assigns the client to an experiment group and (b) applies group-specific
+  // behavior. Does nothing if the channel does not support the experiment.
+  void MaybeExtendVariationsSafeMode(
+      metrics::MetricsStateManager* metrics_state_manager) const;
+#endif
 
   PrefService* local_state() { return seed_store_->local_state(); }
   const PrefService* local_state() const { return seed_store_->local_state(); }

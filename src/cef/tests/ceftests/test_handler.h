@@ -8,11 +8,11 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "include/base/cef_bind.h"
-#include "include/base/cef_scoped_ptr.h"
+#include "include/base/cef_callback.h"
 #include "include/cef_browser.h"
 #include "include/cef_client.h"
 #include "include/cef_frame.h"
@@ -116,12 +116,13 @@ class TestHandler : public CefClient,
     // be executed only if TestHandler::DestroyTest has not yet been called.
     // For example:
     //    GetUIThreadHelper()->PostTask(
-    //        base::Bind(&TestHandler::DoSomething, base::Unretained(this)));
-    void PostTask(const base::Closure& task);
-    void PostDelayedTask(const base::Closure& task, int delay_ms);
+    //        base::BindOnce(&TestHandler::DoSomething,
+    //        base::Unretained(this)));
+    void PostTask(base::OnceClosure task);
+    void PostDelayedTask(base::OnceClosure task, int delay_ms);
 
    private:
-    void TaskHelper(const base::Closure& task);
+    void TaskHelper(base::OnceClosure task);
 
     // Must be the last member.
     base::WeakPtrFactory<UIThreadHelper> weak_ptr_factory_;
@@ -293,7 +294,7 @@ class TestHandler : public CefClient,
   bool destroy_test_expected_;
   bool destroy_test_called_;
 
-  scoped_ptr<UIThreadHelper> ui_thread_helper_;
+  std::unique_ptr<UIThreadHelper> ui_thread_helper_;
 
   // Used to track the number of currently existing browser windows.
   static int browser_count_;

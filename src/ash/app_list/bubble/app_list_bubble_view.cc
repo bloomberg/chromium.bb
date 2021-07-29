@@ -4,23 +4,31 @@
 
 #include "ash/app_list/bubble/app_list_bubble_view.h"
 
+#include <algorithm>
 #include <memory>
 
-#include "ash/app_list/bubble/bubble_apps_page.h"
-#include "ash/app_list/bubble/bubble_assistant_page.h"
-#include "ash/app_list/bubble/bubble_search_page.h"
+#include "ash/app_list/bubble/app_list_bubble_apps_page.h"
+#include "ash/app_list/bubble/app_list_bubble_assistant_page.h"
+#include "ash/app_list/bubble/app_list_bubble_search_page.h"
+#include "ash/app_list/views/search_box_view.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/system/tray/tray_constants.h"
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/i18n/rtl.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 
 using views::BoxLayout;
@@ -29,20 +37,40 @@ using views::BubbleBorder;
 namespace ash {
 namespace {
 
+constexpr int kDefaultHeight = 688;
+constexpr int kDefaultWidth = 544;
+
+// Space between the AppListBubbleView and the top of the screen should be at
+// least this value plus the shelf height.
+constexpr int kExtraTopOfScreenSpacing = 16;
+
+gfx::Rect GetWorkAreaForBubble(aura::Window* root_window) {
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
+  gfx::Rect work_area = display.work_area();
+
+  // Subtract the shelf's bounds from the work area, since the shelf should
+  // always be shown with the app list bubble. This is done because the work
+  // area includes the area under the shelf when the shelf is set to auto-hide.
+  work_area.Subtract(Shelf::ForWindow(root_window)->GetIdealBounds());
+
+  return work_area;
+}
+
 // Returns the point on the screen to which the bubble is anchored.
 gfx::Point GetAnchorPointInScreen(aura::Window* root_window,
                                   ShelfAlignment shelf_alignment) {
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
+  gfx::Rect work_area = GetWorkAreaForBubble(root_window);
+
   switch (shelf_alignment) {
     case ShelfAlignment::kBottom:
     case ShelfAlignment::kBottomLocked:
-      return base::i18n::IsRTL() ? display.work_area().bottom_right()
-                                 : display.work_area().bottom_left();
+      return base::i18n::IsRTL() ? work_area.bottom_right()
+                                 : work_area.bottom_left();
     case ShelfAlignment::kLeft:
-      return display.work_area().origin();
+      return work_area.origin();
     case ShelfAlignment::kRight:
-      return display.work_area().top_right();
+      return work_area.top_right();
   }
 }
 
@@ -63,8 +91,11 @@ BubbleBorder::Arrow GetArrowCorner(ShelfAlignment shelf_alignment) {
 
 }  // namespace
 
-AppListBubbleView::AppListBubbleView(aura::Window* root_window,
-                                     ShelfAlignment shelf_alignment) {
+AppListBubbleView::AppListBubbleView(AppListViewDelegate* view_delegate,
+                                     aura::Window* root_window,
+                                     ShelfAlignment shelf_alignment)
+    : view_delegate_(view_delegate) {
+  DCHECK(view_delegate);
   DCHECK(root_window);
   // The bubble is anchored to a screen corner point, but the API takes a rect.
   SetAnchorRect(gfx::Rect(GetAnchorPointInScreen(root_window, shelf_alignment),
@@ -75,42 +106,122 @@ AppListBubbleView::AppListBubbleView(aura::Window* root_window,
   set_parent_window(
       Shell::GetContainer(root_window, kShellWindowId_AppListContainer));
 
+  // Match the system tray bubble radius.
+  set_corner_radius(kUnifiedTrayCornerRadius);
+
+  // Remove the default margins so the content fills the bubble.
+  set_margins(gfx::Insets());
+
+  // TODO(https://crbug.com/1218229): Add background blur. See TrayBubbleView
+  // and BubbleBorder.
+  set_color(AshColorProvider::Get()->GetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kOpaque));
+
+  // Arrow left/right and up/down triggers the same focus movement as
+  // tab/shift+tab.
+  SetEnableArrowKeyTraversal(true);
+
   auto* layout = SetLayoutManager(
       std::make_unique<BoxLayout>(BoxLayout::Orientation::kVertical));
   layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStretch);
 
-  // TODO(https://crbug.com/1204551): Replace with real search box.
-  auto* textfield = AddChildView(std::make_unique<views::Textfield>());
-  SetInitiallyFocusedView(textfield);
+  search_box_view_ = AddChildView(std::make_unique<SearchBoxView>(
+      /*delegate=*/this, view_delegate, /*app_list_view=*/nullptr));
+  // Show the assistant button until the user types text.
+  search_box_view_->set_show_close_button_when_active(false);
+  search_box_view_->Init();
 
-  // TODO(https://crbug.com/1204551): Remove when search box is hooked up.
-  AddChildView(std::make_unique<views::MdTextButton>(
-      base::BindRepeating(&AppListBubbleView::FlipPage, base::Unretained(this)),
-      u"Flip page"));
+  // NOTE: Passing drag and drop host from a specific shelf instance assumes
+  // that the `apps_page_` will not get reused for showing the app list in
+  // another root window.
+  apps_page_ = AddChildView(std::make_unique<AppListBubbleAppsPage>(
+      view_delegate, Shelf::ForWindow(root_window)
+                         ->shelf_widget()
+                         ->GetDragAndDropHostForAppList()));
 
-  apps_page_ = AddChildView(std::make_unique<BubbleAppsPage>());
-
-  search_page_ = AddChildView(std::make_unique<BubbleSearchPage>());
+  search_page_ = AddChildView(std::make_unique<AppListBubbleSearchPage>(
+      view_delegate, search_box_view_));
   search_page_->SetVisible(false);
 
-  assistant_page_ = AddChildView(std::make_unique<BubbleAssistantPage>());
+  assistant_page_ = AddChildView(std::make_unique<AppListBubbleAssistantPage>(
+      view_delegate->GetAssistantViewDelegate()));
   assistant_page_->SetVisible(false);
 }
 
 AppListBubbleView::~AppListBubbleView() = default;
 
-gfx::Size AppListBubbleView::CalculatePreferredSize() const {
-  constexpr gfx::Size kDefaultSizeDips(600, 550);
-  // TODO(https://crbug.com/1210522): Adjust size based on screen resolution.
-  return kDefaultSizeDips;
+void AppListBubbleView::FocusSearchBox() {
+  DCHECK(GetWidget());
+  search_box_view_->SetSearchBoxActive(true, /*event_type=*/ui::ET_UNKNOWN);
 }
 
-void AppListBubbleView::FlipPage() {
-  ++visible_page_;
-  visible_page_ %= 3;
-  apps_page_->SetVisible(visible_page_ == 0);
-  search_page_->SetVisible(visible_page_ == 1);
-  assistant_page_->SetVisible(visible_page_ == 2);
+gfx::Size AppListBubbleView::CalculatePreferredSize() const {
+  int height = kDefaultHeight - margins().height();
+  int width = kDefaultWidth - margins().width();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          GetWidget()->GetNativeWindow());
+  gfx::Rect work_area = GetWorkAreaForBubble(GetWidget()->GetNativeWindow());
+
+  if (display.bounds().height() < 800) {
+    height = work_area.height() - margins().height() -
+             ShelfConfig::Get()->shelf_size() - kExtraTopOfScreenSpacing;
+  } else if (display.bounds().height() > 1200) {
+    // Calculate the height required to fit the contents of the AppListBubble
+    // with no scrolling.
+    int height_to_fit_all_apps =
+        apps_page_->scroll_view()->contents()->bounds().height() +
+        search_box_view_->GetPreferredSize().height();
+
+    int max_height =
+        (work_area.height() - margins().height() -
+         ShelfConfig::Get()->shelf_size() + kExtraTopOfScreenSpacing) /
+        2;
+
+    height =
+        base::ClampToRange(height_to_fit_all_apps,
+                           kDefaultHeight - margins().height(), max_height);
+  }
+
+  return gfx::Size(width, height);
+}
+
+void AppListBubbleView::QueryChanged(SearchBoxViewBase* sender) {
+  DCHECK_EQ(sender, search_box_view_);
+  // TODO(https://crbug.com/1204551): Animated transitions.
+  const bool has_search = search_box_view_->HasSearch();
+  apps_page_->SetVisible(!has_search);
+  search_page_->SetVisible(has_search);
+  assistant_page_->SetVisible(false);
+
+  // Ask the controller to start the search.
+  std::u16string query = view_delegate_->GetSearchModel()->search_box()->text();
+  view_delegate_->StartSearch(query);
+}
+
+void AppListBubbleView::AssistantButtonPressed() {
+  // The assistant has its own text input field.
+  search_box_view_->SetVisible(false);
+
+  apps_page_->SetVisible(false);
+  search_page_->SetVisible(false);
+  assistant_page_->SetVisible(true);
+  assistant_page_->RequestFocus();
+}
+
+void AppListBubbleView::CloseButtonPressed() {
+  // Activate and focus the search box.
+  search_box_view_->SetSearchBoxActive(true, /*event_type=*/ui::ET_UNKNOWN);
+  search_box_view_->ClearSearch();
+}
+
+void AppListBubbleView::OnSearchBoxKeyEvent(ui::KeyEvent* event) {
+  // Nothing to do. Search box starts focused, and FocusManager handles arrow
+  // key traversal from there.
+}
+
+bool AppListBubbleView::CanSelectSearchResults() {
+  return search_page_->GetVisible() && search_page_->CanSelectSearchResults();
 }
 
 }  // namespace ash

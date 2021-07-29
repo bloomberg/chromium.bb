@@ -48,8 +48,8 @@ public:
                              GrGLSLColorSpaceXformHelper* colorXformHelper = nullptr);
 
     /** Does the work of appendTextureLookup and blends the result by dst, treating the texture
-        lookup a the src input to the blend. The dst is assumed to be half4 and the result is always
-        a half4. If dst is nullptr we use half4(1) as the blend dst. */
+        lookup as the src input to the blend. The dst is assumed to be half4 and the result is
+        always a half4. If dst is nullptr we use half4(1) as the blend dst. */
     void appendTextureLookupAndBlend(const char* dst,
                                      SkBlendMode,
                                      SamplerHandle,
@@ -280,7 +280,6 @@ protected:
     // Counter for generating unique scratch variable names in a shader.
     int fTmpVariableCounter;
 
-    friend class GrCCCoverageProcessor; // to access code().
     friend class GrGLSLProgramBuilder;
     friend class GrGLProgramBuilder;
     friend class GrD3DPipelineStateBuilder;

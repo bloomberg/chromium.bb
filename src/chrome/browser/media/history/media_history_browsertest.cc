@@ -12,6 +12,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/media/history/media_history_contents_observer.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/media_session.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/prerender_test_util.h"
@@ -825,6 +827,12 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
                        MAYBE_RecordWatchtime_AudioVideo) {
   auto* browser = CreateBrowserFromParam();
 
+  // The test assumes the previous page gets deleted after navigation, which
+  // will trigger the recording. Disable back-forward cache to ensure that it
+  // doesn't get preserved in the cache.
+  content::DisableBackForwardCacheForTesting(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
   // Start a page and wait for significant playback so we record watchtime.
   EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
   EXPECT_TRUE(WaitForSignificantPlayback(browser));
@@ -895,6 +903,12 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, RecordWatchtime_AudioOnly) {
   auto* browser = CreateBrowserFromParam();
+  // The test assumes the previous page gets deleted after navigation, which
+  // will trigger the recording. Disable back-forward cache to ensure that it
+  // doesn't get preserved in the cache.
+  content::DisableBackForwardCacheForTesting(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // Start a page and wait for significant playback so we record watchtime.
   EXPECT_TRUE(SetupPageAndStartPlayingAudioOnly(browser, GetTestURL()));
@@ -959,6 +973,12 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, RecordWatchtime_AudioOnly) {
 
 IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, RecordWatchtime_VideoOnly) {
   auto* browser = CreateBrowserFromParam();
+  // The test assumes the previous page gets deleted after navigation, which
+  // will trigger the recording. Disable back-forward cache to ensure that it
+  // doesn't get preserved in the cache.
+  content::DisableBackForwardCacheForTesting(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // Start a page and wait for significant playback so we record watchtime.
   EXPECT_TRUE(SetupPageAndStartPlayingVideoOnly(browser, GetTestURL()));
@@ -1080,8 +1100,15 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
   EXPECT_TRUE(sessions.empty());
 }
 
+// TODO(crbug.com/1086828): Test is flaky on Linux and Windows.
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_DoNotRecordWatchtime_Background \
+  DISABLED_DoNotRecordWatchtime_Background
+#else
+#define MAYBE_DoNotRecordWatchtime_Background DoNotRecordWatchtime_Background
+#endif
 IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
-                       DoNotRecordWatchtime_Background) {
+                       MAYBE_DoNotRecordWatchtime_Background) {
   auto* browser = CreateBrowserFromParam();
   auto* service = GetMediaHistoryService(browser);
 
@@ -1167,48 +1194,16 @@ IN_PROC_BROWSER_TEST_F(MediaHistoryForPrerenderBrowserTest,
                        KeepRecordingMediaSession) {
   // Start a page and wait for significant playback so we record watchtime.
   ASSERT_TRUE(SetupPageAndStartPlaying(browser(), GetTestURL()));
-  EXPECT_TRUE(SetMediaMetadata(browser()));
-
-  media_session::MediaMetadata expected_metadata = GetExpectedMetadata();
-
-  {
-    media_session::test::MockMediaSessionMojoObserver observer(
-        *GetMediaSession(browser()));
-    observer.WaitForState(
-        media_session::mojom::MediaSessionInfo::SessionState::kActive);
-    observer.WaitForExpectedMetadata(expected_metadata);
-  }
   EXPECT_TRUE(WaitForSignificantPlayback(browser()));
 
   GURL prerender_url = embedded_test_server()->GetURL("/title1.html");
 
   // We should not fetch the URL while prerendering.
-  prerender_helper_.AddPrerenderWithTestUtilJS(prerender_url);
+  prerender_helper_.AddPrerender(prerender_url);
 
-  EXPECT_TRUE(SetMediaMetadataWithArtwork(browser()));
-  auto expected_artwork = GetExpectedArtwork();
-  {
-    media_session::test::MockMediaSessionMojoObserver observer(
-        *GetMediaSession(browser()));
-    observer.WaitForExpectedImagesOfType(
-        media_session::mojom::MediaSessionImageType::kArtwork,
-        expected_artwork);
-  }
-
-  SimulateNavigationToCommit(browser());
-
-  // Verify the session in the database.
-  auto sessions = GetPlaybackSessionsSync(GetMediaHistoryService(browser()), 1);
-
-  EXPECT_EQ(1u, sessions.size());
-  EXPECT_EQ(GetTestURL(), sessions[0]->url);
-  EXPECT_EQ(kTestClipDuration, sessions[0]->duration);
-  EXPECT_LT(base::TimeDelta(), sessions[0]->position);
-  EXPECT_EQ(expected_metadata.title, sessions[0]->metadata.title);
-  EXPECT_EQ(expected_metadata.artist, sessions[0]->metadata.artist);
-  EXPECT_EQ(expected_metadata.album, sessions[0]->metadata.album);
-  EXPECT_EQ(expected_metadata.source_title, sessions[0]->metadata.source_title);
-  EXPECT_EQ(expected_artwork, sessions[0]->artwork);
+  auto* observer =
+      MediaHistoryContentsObserver::FromWebContents(web_contents());
+  EXPECT_EQ(GetTestURL(), observer->GetCurrentUrlForTesting());
 }
 
 }  // namespace media_history

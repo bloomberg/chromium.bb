@@ -1,21 +1,25 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// Next MinVersion: 7
 
 module crosapi.mojom;
 
 import "chromeos/crosapi/mojom/app_service_types.mojom";
 
 // Interacts with the app service. Implemented in ash-chrome.
+// This is a generic app-publisher interface that is used by the implementation
+// for both Web Apps and Chrome Apps in Lacros.
 [Stable, Uuid="238dd8e0-480e-49f4-a3a0-28e610ef7119"]
 interface AppPublisher {
-  // Publish a stream of web apps from lacros-chrome.
+  // Publish a stream of apps from lacros-chrome.
   // |deltas| holds a sparse data structure that includes the update App data
   // from the existing app state in app service.
   OnApps@0(array<App> deltas);
 
   // Lacros exposes an AppController interface to Ash. This allows Ash to
-  // launch, or otherwise interact with Web Apps that run in Lacros.
+  // launch, or otherwise interact with Apps that run in Lacros.
   [MinVersion=1]
   RegisterAppController@1(pending_remote<AppController> controller);
 
@@ -40,4 +44,52 @@ interface AppController {
       UninstallSource uninstall_source,
       bool clear_site_data,
       bool report_abuse);
+
+  // Pauses an app to stop the current running app, and apply the icon effect
+  // to indicate the app is paused.
+  // Pause a paused app will make the app stay paused, and pause an app
+  // that is not currently running will only change the icon to paused
+  // indication and make the app in pause state when the app is launched the
+  // next time.
+  [MinVersion=3]
+  PauseApp@2(string app_id);
+
+  // Unpauses an app, and recover the icon effect for the app to indicate
+  // the app is no longer paused.
+  // Unpause an unpaused app will make the app stay unpaused, and unpause
+  // an app that is not currently running will only change the icon back to
+  // normal state and make the app in normal state when the app is launched
+  // the next time.
+  [MinVersion=3]
+  UnpauseApp@3(string app_id);
+
+  // Returns the context menu items for an app with |app_id| to show in app
+  // list and shelf. This interface only returns menu items that needs to be
+  // populated in lacros-chrome (e.g. app-specific shortcuts).
+  [MinVersion=4]
+  GetMenuModel@4(string app_id) => (MenuItems menu_items);
+
+  // Load icon for an app with |app_id| from lacros-chrome.
+  // |icon_key|  contains the arguments for an app icon, see
+  // apps::mojom::IconKey for more details. |icon_type| represent the icon
+  // format requested (e.g. compressed, uncompressed. etc). |size_hint_in_dip|
+  // is a hint of how big the icon should be.  All these fields are necessary
+  // to fill to get the required icon.
+  // There should always be a return value for this method. If there is an
+  // error during the loading, the return value should be a default IconValue
+  // struct, with IconType = kUnknow to indicate it's an error case. If loading
+  // succeeded, the size of the returning icon is expected to be as close as
+  // possible with the |size_hint_in_dip| set in the interface, but may not be
+  // exactly same.
+  [MinVersion=5]
+  LoadIcon@5(
+    string app_id,
+    IconKey icon_key,
+    IconType icon_type,
+    int32 size_hint_in_dip) => (IconValue icon_value);
+
+  // Opens the app platform settings page for the app with |app_id|.
+  // e.g. for web app, it opens the Chrome site settings page for the app.
+  [MinVersion=6]
+  OpenNativeSettings@6(string app_id);
 };

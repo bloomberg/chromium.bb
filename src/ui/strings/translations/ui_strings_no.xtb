@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB per sek</translation>
 <translation id="2353636109065292463">Sjekker internettilkoblingen din</translation>
 <translation id="2388990488038464401">Vil du ringe dette nummeret fra telefonen?</translation>
+<translation id="2435457462613246316">Vis passord</translation>
 <translation id="24452542372838207">Vis varselet</translation>
 <translation id="2445449901874883781">Bruk høy tetthet</translation>
 <translation id="2482878487686419369">Varsler</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{for 1 år siden}other{for # år siden}}</translation>
 <translation id="2878511608894704031">Slett alle</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{om 1 d}other{om # d}}</translation>
+<translation id="2922712708897119705">Kolonnen <ph name="COLUMN_NAME" /> er sortert i synkende rekkefølge.</translation>
 <translation id="2931838996092594335">klikk</translation>
 <translation id="2981684127883932071">Viser forslag</translation>
 <translation id="3036649622769666520">Åpne filer</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3909791450649380159">Klipp u&amp;t</translation>
 <translation id="3990502903496589789">Høyre kant</translation>
+<translation id="3994749195054421561">Kolonnen <ph name="COLUMN_NAME" /> er sortert i stigende rekkefølge.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 ulest varsel}other{# uleste varsler}}</translation>
 <translation id="4202807286478387388">hopp</translation>
 <translation id="4250229828105606438">Skjermdump</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Fjern fra utklippstavlen.</translation>
 <translation id="4316910396681052118">ALLE APPER</translation>
 <translation id="4491109536499578614">Bilde</translation>
+<translation id="4565377596337484307">Skjul passord</translation>
 <translation id="4588090240171750605">Rull mot høyre</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" /> – stjernerangering <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" /> – appanbefaling</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Side <ph name="SELECTED_PAGE" /> av <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Fjern teksten i søkefeltet</translation>
 <translation id="6040143037577758943">Lukk</translation>
+<translation id="6117103120090651229">Midtknapp</translation>
 <translation id="6119846243427417423">aktiver</translation>
 <translation id="6129953537138746214">Mellomrom</translation>
 <translation id="6134259848159370930">Søk på enheten, i apper, i innstillinger og på nettet.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Vis alle apper</translation>
 <translation id="6165508094623778733">Finn ut mer</translation>
 <translation id="6166852626429024716">Søk på enheten, i apper, i innstillinger og på nettet.</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> er valgt.</translation>
 <translation id="6264365405983206840">Velg &amp;alle</translation>
 <translation id="6351032674660237738">APPFORSLAG</translation>
 <translation id="6364916375976753737">Rull mot venstre</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minutt igjen}other{# minutter igjen}}</translation>
 <translation id="7430878839542012341">Vil du slette dette søket fra loggen?</translation>
+<translation id="7437971918971306061">Kolonnen <ph name="COLUMN_NAME" /> er nå usortert.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7620655452534002301">Fjernet.</translation>

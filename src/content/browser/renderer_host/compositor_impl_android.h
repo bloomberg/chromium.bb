@@ -13,11 +13,11 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "cc/paint/element_id.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
@@ -116,7 +116,7 @@ class CONTENT_EXPORT CompositorImpl
   void DidUpdateLayers() override;
   void BeginMainFrame(const viz::BeginFrameArgs& args) override;
   void OnDeferMainFrameUpdatesChanged(bool) override {}
-  void OnDeferCommitsChanged(bool) override {}
+  void OnDeferCommitsChanged(bool, cc::PaintHoldingReason) override {}
   void BeginMainFrameNotExpectedSoon() override {}
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override {}
   void UpdateLayerTreeHost() override;
@@ -273,6 +273,10 @@ class CONTENT_EXPORT CompositorImpl
   base::TimeTicks latest_frame_time_;
 
   uint32_t pending_readbacks_ = 0u;
+
+  // Listen to display density change events and update painted device scale
+  // factor accordingly.
+  display::ScopedDisplayObserver display_observer_{this};
 
   base::WeakPtrFactory<CompositorImpl> weak_factory_{this};
 

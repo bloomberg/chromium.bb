@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">S'està comprovant la connexió a Internet</translation>
 <translation id="2388990488038464401">Vols trucar a aquest número des del telèfon?</translation>
+<translation id="2435457462613246316">Mostra la contrasenya</translation>
 <translation id="24452542372838207">Desplega la notificació</translation>
 <translation id="2445449901874883781">Utilitza una densitat alta</translation>
 <translation id="2482878487686419369">Notificacions</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{Fa 1 any}other{Fa # anys}}</translation>
 <translation id="2878511608894704031">Suprimeix-ho tot</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{d'aquí a 1 d}other{d'aquí a # d}}</translation>
+<translation id="2922712708897119705">La columna <ph name="COLUMN_NAME" /> es mostra en ordre descendent.</translation>
 <translation id="2931838996092594335">fer clic</translation>
 <translation id="2981684127883932071">S'estan mostrant suggeriments</translation>
 <translation id="3036649622769666520">Obre fitxers</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3909791450649380159">Re&amp;talla</translation>
 <translation id="3990502903496589789">Extrem dret</translation>
+<translation id="3994749195054421561">La columna <ph name="COLUMN_NAME" /> es mostra en ordre ascendent.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 notificació no llegida}other{# notificacions no llegides}}</translation>
 <translation id="4202807286478387388">salta</translation>
 <translation id="4250229828105606438">Captura de pantalla</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Suprimeix del porta-retalls.</translation>
 <translation id="4316910396681052118">TOTES LES APLICACIONS</translation>
 <translation id="4491109536499578614">Imatge</translation>
+<translation id="4565377596337484307">Oculta la contrasenya</translation>
 <translation id="4588090240171750605">Desplaçament a la dreta</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />; puntuació en estrelles: <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, recomanació d'aplicació</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Pàgina <ph name="SELECTED_PAGE" /> de <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Esborra el text del quadre de cerca</translation>
 <translation id="6040143037577758943">Tanca</translation>
+<translation id="6117103120090651229">Botó central</translation>
 <translation id="6119846243427417423">activa</translation>
 <translation id="6129953537138746214">Espai</translation>
 <translation id="6134259848159370930">Cerca al dispositiu, en aplicacions, a la configuració i al web.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Amplia a totes les aplicacions</translation>
 <translation id="6165508094623778733">Més informació</translation>
 <translation id="6166852626429024716">Cerca al dispositiu, en aplicacions, a la configuració i al web...</translation>
+<translation id="6237461503717005873">S'ha seleccionat <ph name="ROW_NAME" />.</translation>
 <translation id="6264365405983206840">Selecciona-ho &amp;tot</translation>
 <translation id="6351032674660237738">SUGGERIMENTS D'APLICACIONS</translation>
 <translation id="6364916375976753737">Desplaçament a l'esquerra</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">: <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut restant}other{# minuts restants}}</translation>
 <translation id="7430878839542012341">Vols suprimir aquesta cerca de l'historial?</translation>
+<translation id="7437971918971306061">La columna <ph name="COLUMN_NAME" /> es mostra sense ordenar.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emojis</translation>
 <translation id="7620655452534002301">S'ha suprimit.</translation>

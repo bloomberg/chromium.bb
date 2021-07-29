@@ -5,13 +5,18 @@
 
 <resources>
     <!-- Card styles -->
-    <style name="Card">
-        <item name="android:background">@drawable/hairline_border_card_background</item>
-    </style>
     <style name="CardTransparentForDark">
-        <item name="android:background">@drawable/hairline_border_card_dark_transparent_bg</item>
+        <item name="android:background">@drawable/incognito_card_bg</item>
     </style>
 
+    <style name="MaterialCardStyle" parent="Widget.MaterialComponents.CardView">
+        <item name="shapeAppearance">@style/MaterialCardShape</item>
+        <item name="cardElevation">@dimen/default_elevation_1</item>
+    </style>
+
+    <style name="MaterialCardShape" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerSize">@dimen/card_rounded_corner_radius</item>
+    </style>
 
     <style name="ListActionButton" parent="@style/TextButton">
         <item name="android:minHeight">48dp</item>

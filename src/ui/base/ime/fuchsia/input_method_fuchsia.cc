@@ -17,15 +17,19 @@
 
 namespace ui {
 
-InputMethodFuchsia::InputMethodFuchsia(internal::InputMethodDelegate* delegate,
+InputMethodFuchsia::InputMethodFuchsia(bool enable_virtual_keyboard,
+                                       internal::InputMethodDelegate* delegate,
                                        fuchsia::ui::views::ViewRef view_ref)
-    : InputMethodBase(delegate),
-      virtual_keyboard_controller_(std::move(view_ref), this) {}
+    : InputMethodBase(delegate) {
+  if (enable_virtual_keyboard)
+    virtual_keyboard_controller_.emplace(std::move(view_ref), this);
+}
 
 InputMethodFuchsia::~InputMethodFuchsia() {}
 
 VirtualKeyboardController* InputMethodFuchsia::GetVirtualKeyboardController() {
-  return &virtual_keyboard_controller_;
+  return virtual_keyboard_controller_ ? &virtual_keyboard_controller_.value()
+                                      : nullptr;
 }
 
 ui::EventDispatchDetails InputMethodFuchsia::DispatchKeyEvent(
@@ -50,15 +54,24 @@ ui::EventDispatchDetails InputMethodFuchsia::DispatchKeyEvent(
 }
 
 void InputMethodFuchsia::CancelComposition(const TextInputClient* client) {
-  // FIDL asynchronicity makes it impossible to know whether a recent
-  // visibility update might be in flight, so always call Dismiss.
-  virtual_keyboard_controller_.DismissVirtualKeyboard();
+  if (virtual_keyboard_controller_) {
+    // FIDL asynchronicity makes it impossible to know whether a recent
+    // visibility update might be in flight, so always call Dismiss.
+    virtual_keyboard_controller_->DismissVirtualKeyboard();
+  }
 }
 
 void InputMethodFuchsia::OnTextInputTypeChanged(const TextInputClient* client) {
   InputMethodBase::OnTextInputTypeChanged(client);
 
-  virtual_keyboard_controller_.UpdateTextType();
+  if (!virtual_keyboard_controller_)
+    return;
+
+  if (IsTextInputTypeNone()) {
+    virtual_keyboard_controller_->DismissVirtualKeyboard();
+  } else {
+    virtual_keyboard_controller_->UpdateTextType();
+  }
 }
 
 void InputMethodFuchsia::OnCaretBoundsChanged(const TextInputClient* client) {}

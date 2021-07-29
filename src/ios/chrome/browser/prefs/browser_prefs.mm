@@ -10,8 +10,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
-#include "components/feed/core/common/pref_names.h"
-#include "components/feed/core/shared_prefs/pref_names.h"
+#include "components/feed/core/v2/public/ios/pref_names.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #import "components/handoff/handoff_manager.h"
 #include "components/history/core/common/pref_names.h"
@@ -46,11 +45,11 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_locale_settings.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/driver/glue/sync_transport_data_prefs.h"
 #include "components/sync_device_info/device_info_prefs.h"
 #include "components/sync_sessions/session_sync_prefs.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
-#include "components/ukm/ios/features.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "components/update_client/update_client.h"
 #include "components/variations/service/variations_service.h"
@@ -63,13 +62,17 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prerender/prerender_pref.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
+#include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #import "ios/chrome/browser/ui/first_run/location_permissions_field_trial.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_constants.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_features.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -101,19 +104,23 @@ const char kInvalidatorSavedInvalidations[] = "invalidator.saved_invalidations";
 // Deprecated 9/2020
 const char kPasswordManagerOnboardingState[] =
     "profile.password_manager_onboarding_state";
-
 const char kWasOnboardingFeatureCheckedBefore[] =
     "profile.was_pwm_onboarding_feature_checked_before";
+
+// Deprecated 12/2020
+const char kDomainsWithCookiePref[] = "signin.domains_with_cookie";
 
 // Deprecated 03/2021
 const char kOmniboxGeolocationAuthorizationState[] =
     "ios.omnibox.geolocation_authorization_state";
 const char kOmniboxGeolocationLastAuthorizationAlertVersion[] =
     "ios.omnibox.geolocation_last_authorization_alert_version";
-}
 
-// Deprecated 12/2020
-const char kDomainsWithCookiePref[] = "signin.domains_with_cookie";
+// Deprecated 07/2021
+const char kMetricsReportingWifiOnly[] =
+    "ios.user_experience_metrics.wifi_only";
+
+}
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   BrowserStateInfoCache::RegisterPrefs(registry);
@@ -129,6 +136,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   location_permissions_field_trial::RegisterLocalStatePrefs(registry);
+  fre_field_trial::RegisterLocalStatePrefs(registry);
   component_updater::AutofillStatesComponentInstallerPolicy::RegisterPrefs(
       registry);
 
@@ -150,10 +158,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
                                 false);
   registry->RegisterBooleanPref(prefs::kLastSessionExitedCleanly, true);
-  if (!base::FeatureList::IsEnabled(kUmaCellular)) {
-    registry->RegisterBooleanPref(prefs::kMetricsReportingWifiOnly, true);
-  }
-
+  registry->RegisterBooleanPref(kMetricsReportingWifiOnly, true);
   registry->RegisterBooleanPref(kGCMChannelStatus, true);
   registry->RegisterIntegerPref(kGCMChannelPollIntervalSeconds, 0);
   registry->RegisterInt64Pref(kGCMChannelLastCheckTime, 0);
@@ -177,8 +182,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   autofill::prefs::RegisterProfilePrefs(registry);
   dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
-  feed::prefs::RegisterFeedSharedProfilePrefs(registry);
-  feed::RegisterProfilePrefs(registry);
+  ios_feed::RegisterProfilePrefs(registry);
   FirstRun::RegisterProfilePrefs(registry);
   FontSizeTabHelper::RegisterBrowserStatePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
@@ -205,6 +209,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(registry);
   syncer::SyncPrefs::RegisterProfilePrefs(registry);
+  syncer::SyncTransportDataPrefs::RegisterProfilePrefs(registry);
   TemplateURLPrepopulateData::RegisterProfilePrefs(registry);
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
   unified_consent::UnifiedConsentService::RegisterPrefs(registry);
@@ -214,8 +219,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   [BookmarkMediator registerBrowserStatePrefs:registry];
   [BookmarkPathCache registerBrowserStatePrefs:registry];
   [ContentSuggestionsMediator registerBrowserStatePrefs:registry];
-  [SigninPromoViewMediator registerBrowserStatePrefs:registry];
   [HandoffManager registerBrowserStatePrefs:registry];
+  [SigninCoordinator registerBrowserStatePrefs:registry];
+  [SigninPromoViewMediator registerBrowserStatePrefs:registry];
 
   registry->RegisterBooleanPref(prefs::kDataSaverEnabled, false);
   registry->RegisterBooleanPref(
@@ -262,6 +268,10 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(kPasswordManagerOnboardingState, 0);
   registry->RegisterBooleanPref(kWasOnboardingFeatureCheckedBefore, false);
   registry->RegisterDictionaryPref(kDomainsWithCookiePref);
+
+  if (IsReadingListMessagesEnabled()) {
+    registry->RegisterBooleanPref(kPrefReadingListMessagesNeverShow, false);
+  }
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -279,6 +289,9 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
   // Added 2021/03.
   prefs->ClearPref(kOmniboxGeolocationAuthorizationState);
   prefs->ClearPref(kOmniboxGeolocationLastAuthorizationAlertVersion);
+
+  // Added 7/2021
+  prefs->ClearPref(kMetricsReportingWifiOnly);
 }
 
 // This method should be periodically pruned of year+ old migrations.

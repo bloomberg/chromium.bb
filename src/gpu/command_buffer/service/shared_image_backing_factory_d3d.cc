@@ -80,6 +80,20 @@ DXGI_FORMAT GetDXGIFormat(gfx::BufferFormat buffer_format) {
   }
 }
 
+// Formats supported by CreateSharedImage(GMB) and CreateSharedImageVideoPlanes.
+DXGI_FORMAT GetDXGITypelessFormat(gfx::BufferFormat buffer_format) {
+  switch (buffer_format) {
+    case gfx::BufferFormat::RGBA_8888:
+      return DXGI_FORMAT_R8G8B8A8_TYPELESS;
+    case gfx::BufferFormat::BGRA_8888:
+      return DXGI_FORMAT_B8G8R8A8_TYPELESS;
+    case gfx::BufferFormat::RGBA_F16:
+      return DXGI_FORMAT_R16G16B16A16_TYPELESS;
+    default:
+      return DXGI_FORMAT_UNKNOWN;
+  }
+}
+
 Microsoft::WRL::ComPtr<ID3D11Texture2D> ValidateAndOpenSharedHandle(
     Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     const gfx::GpuMemoryBufferHandle& handle,
@@ -90,7 +104,8 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> ValidateAndOpenSharedHandle(
     return nullptr;
   }
 
-  if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, format)) {
+  if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(
+          size, format, gfx::BufferPlane::DEFAULT)) {
     DLOG(ERROR) << "Invalid image size " << size.ToString() << " for "
                 << gfx::BufferFormatToString(format);
     return nullptr;
@@ -123,7 +138,8 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> ValidateAndOpenSharedHandle(
     return nullptr;
   }
 
-  if (desc.Format != GetDXGIFormat(format)) {
+  if ((desc.Format != GetDXGIFormat(format)) &&
+      (desc.Format != GetDXGITypelessFormat(format))) {
     DLOG(ERROR) << "Format must match texture being opened";
     return nullptr;
   }
@@ -422,6 +438,30 @@ SharedImageBackingFactoryD3D::CreateSharedImageVideoPlanes(
 bool SharedImageBackingFactoryD3D::CanImportGpuMemoryBuffer(
     gfx::GpuMemoryBufferType memory_buffer_type) {
   return (memory_buffer_type == gfx::DXGI_SHARED_HANDLE);
+}
+
+bool SharedImageBackingFactoryD3D::IsSupported(
+    uint32_t usage,
+    viz::ResourceFormat format,
+    bool thread_safe,
+    gfx::GpuMemoryBufferType gmb_type,
+    GrContextType gr_context_type,
+    bool* allow_legacy_mailbox,
+    bool is_pixel_used) {
+  if (is_pixel_used) {
+    return false;
+  }
+  if (gmb_type != gfx::EMPTY_BUFFER && !CanImportGpuMemoryBuffer(gmb_type)) {
+    return false;
+  }
+  // TODO(crbug.com/969114): Not all shared image factory implementations
+  // support concurrent read/write usage.
+  if (usage & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE) {
+    return false;
+  }
+
+  *allow_legacy_mailbox = false;
+  return true;
 }
 
 }  // namespace gpu

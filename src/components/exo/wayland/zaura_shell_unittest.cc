@@ -25,6 +25,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -45,6 +46,9 @@ class TestAuraSurface : public AuraSurface {
   float last_sent_occlusion_fraction() const {
     return last_sent_occlusion_fraction_;
   }
+  aura::Window::OcclusionState last_sent_occlusion_state() const {
+    return last_sent_occlusion_state_;
+  }
   int num_occlusion_updates() const { return num_occlusion_updates_; }
 
  protected:
@@ -53,8 +57,15 @@ class TestAuraSurface : public AuraSurface {
     num_occlusion_updates_++;
   }
 
+  void SendOcclusionState(
+      const aura::Window::OcclusionState occlusion_state) override {
+    last_sent_occlusion_state_ = occlusion_state;
+  }
+
  private:
   float last_sent_occlusion_fraction_ = -1.0f;
+  aura::Window::OcclusionState last_sent_occlusion_state_ =
+      aura::Window::OcclusionState::UNKNOWN;
   int num_occlusion_updates_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestAuraSurface);
@@ -91,6 +102,12 @@ class MockSurfaceDelegate : public SurfaceDelegate {
   MOCK_METHOD(void, UnsetSnap, (), (override));
   MOCK_METHOD(void, SetCanGoBack, (), (override));
   MOCK_METHOD(void, UnsetCanGoBack, (), (override));
+  MOCK_METHOD(void, SetPip, (), (override));
+  MOCK_METHOD(void, UnsetPip, (), (override));
+  MOCK_METHOD(void,
+              SetAspectRatio,
+              (const gfx::SizeF& aspect_ratio),
+              (override));
 };
 
 }  // namespace
@@ -176,6 +193,8 @@ TEST_F(ZAuraSurfaceTest, OcclusionTrackingStartsAfterCommit) {
   surface().OnWindowOcclusionChanged();
 
   EXPECT_EQ(-1.0f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::UNKNOWN,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(0, aura_surface().num_occlusion_updates());
   EXPECT_FALSE(surface().IsTrackingOcclusion());
 
@@ -184,6 +203,8 @@ TEST_F(ZAuraSurfaceTest, OcclusionTrackingStartsAfterCommit) {
   surface().Commit();
 
   EXPECT_EQ(0.2f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(1, aura_surface().num_occlusion_updates());
   EXPECT_TRUE(surface().IsTrackingOcclusion());
 }
@@ -192,6 +213,8 @@ TEST_F(ZAuraSurfaceTest,
        LosingActivationWithNoAnimatingWindowsSendsCorrectOcclusionFraction) {
   surface().Commit();
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(1, aura_surface().num_occlusion_updates());
   ::wm::ActivateWindow(parent_widget().GetNativeWindow());
 
@@ -202,6 +225,8 @@ TEST_F(ZAuraSurfaceTest,
   widget->Show();
   EXPECT_EQ(0.2f, occlusion_fraction_on_activation_loss());
   EXPECT_EQ(0.2f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(2, aura_surface().num_occlusion_updates());
 }
 
@@ -209,6 +234,8 @@ TEST_F(ZAuraSurfaceTest,
        LosingActivationWithAnimatingWindowsSendsTargetOcclusionFraction) {
   surface().Commit();
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(1, aura_surface().num_occlusion_updates());
   ::wm::ActivateWindow(parent_widget().GetNativeWindow());
 
@@ -238,6 +265,8 @@ TEST_F(ZAuraSurfaceTest,
   widget->Show();
   EXPECT_EQ(0.2f, occlusion_fraction_on_activation_loss());
   EXPECT_EQ(0.2f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(2, aura_surface().num_occlusion_updates());
 
   // Explicitly stop animation because threaded animation may have started
@@ -251,6 +280,8 @@ TEST_F(ZAuraSurfaceTest,
   // Expect the occlusion tracker to send an update after the animation
   // finishes.
   EXPECT_EQ(0.2f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(3, aura_surface().num_occlusion_updates());
 }
 
@@ -258,6 +289,8 @@ TEST_F(ZAuraSurfaceTest,
        LosingActivationByTriggeringTheLockScreenDoesNotSendOccludedFraction) {
   surface().Commit();
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
   EXPECT_EQ(1, aura_surface().num_occlusion_updates());
   ::wm::ActivateWindow(parent_widget().GetNativeWindow());
 
@@ -286,6 +319,8 @@ TEST_F(ZAuraSurfaceTest,
             ash::window_util::GetActiveWindow());
   EXPECT_EQ(0.0f, occlusion_fraction_on_activation_loss());
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
 }
 
 TEST_F(ZAuraSurfaceTest, OcclusionIncludesOffScreenArea) {
@@ -303,6 +338,8 @@ TEST_F(ZAuraSurfaceTest, OcclusionIncludesOffScreenArea) {
   surface().OnWindowOcclusionChanged();
 
   EXPECT_EQ(0.75f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
 }
 
 TEST_F(ZAuraSurfaceTest, ZeroSizeWindowSendsZeroOcclusionFraction) {
@@ -311,6 +348,8 @@ TEST_F(ZAuraSurfaceTest, ZeroSizeWindowSendsZeroOcclusionFraction) {
   surface().Commit();
   surface().OnWindowOcclusionChanged();
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(aura::Window::OcclusionState::VISIBLE,
+            aura_surface().last_sent_occlusion_state());
 }
 
 TEST_F(ZAuraSurfaceTest, CanSetFullscreenModeToPlain) {

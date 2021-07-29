@@ -25,12 +25,13 @@
 
 #include <bitset>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
+#include "third_party/blink/renderer/core/css/css_pending_system_font_value.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_value_pool.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
@@ -474,6 +475,8 @@ String StylePropertySerializer::SerializeShorthand(
       return GetShorthandValue(borderInlineStartShorthand());
     case CSSPropertyID::kBorderInlineEnd:
       return GetShorthandValue(borderInlineEndShorthand());
+    case CSSPropertyID::kContainer:
+      return ContainerValue();
     case CSSPropertyID::kOutline:
       return GetShorthandValue(outlineShorthand());
     case CSSPropertyID::kBorderColor:
@@ -671,6 +674,33 @@ bool StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
   return true;
 }
 
+String StylePropertySerializer::ContainerValue() const {
+  CHECK_EQ(containerShorthand().length(), 2u);
+  CHECK_EQ(containerShorthand().properties()[0],
+           &GetCSSPropertyContainerType());
+  CHECK_EQ(containerShorthand().properties()[1],
+           &GetCSSPropertyContainerName());
+
+  CSSValueList* list = CSSValueList::CreateSlashSeparated();
+
+  const CSSValue* type =
+      property_set_.GetPropertyCSSValue(GetCSSPropertyContainerType());
+  const CSSValue* name =
+      property_set_.GetPropertyCSSValue(GetCSSPropertyContainerName());
+
+  DCHECK(type);
+  DCHECK(name);
+
+  list->Append(*type);
+
+  if (!(IsA<CSSIdentifierValue>(name) &&
+        To<CSSIdentifierValue>(*name).GetValueID() == CSSValueID::kNone)) {
+    list->Append(*name);
+  }
+
+  return list->CssText();
+}
+
 String StylePropertySerializer::FontValue() const {
   int font_size_property_index =
       property_set_.FindPropertyIndex(GetCSSPropertyFontSize());
@@ -729,6 +759,26 @@ String StylePropertySerializer::FontValue() const {
        east_asian_identifier_value->GetValueID() != CSSValueID::kNormal) ||
       east_asian_value->IsValueList())
     return g_empty_string;
+
+  const StylePropertyShorthand& shorthand = fontShorthand();
+  const CSSProperty** longhands = shorthand.properties();
+  unsigned length = shorthand.length();
+  const CSSValue* first = property_set_.GetPropertyCSSValue(*longhands[0]);
+  if (const auto* system_font =
+          DynamicTo<cssvalue::CSSPendingSystemFontValue>(first)) {
+    for (unsigned i = 1; i < length; i++) {
+      const CSSValue* value = property_set_.GetPropertyCSSValue(*longhands[i]);
+      if (!DataEquivalent(first, value))
+        return g_empty_string;
+    }
+    return getValueName(system_font->SystemFontId());
+  } else {
+    for (unsigned i = 1; i < length; i++) {
+      const CSSValue* value = property_set_.GetPropertyCSSValue(*longhands[i]);
+      if (value->IsPendingSystemFontValue())
+        return g_empty_string;
+    }
+  }
 
   StringBuilder result;
   AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontStyle(), result);

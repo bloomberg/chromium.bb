@@ -221,7 +221,7 @@ void JsonPrefStore::SetValue(const std::string& key,
   base::Value* old_value = nullptr;
   prefs_->Get(key, &old_value);
   if (!old_value || *value != *old_value) {
-    prefs_->Set(key, std::move(value));
+    prefs_->SetPath(key, std::move(*value));
     ReportValueChanged(key, flags);
   }
 }
@@ -235,7 +235,7 @@ void JsonPrefStore::SetValueSilently(const std::string& key,
   base::Value* old_value = nullptr;
   prefs_->Get(key, &old_value);
   if (!old_value || *value != *old_value) {
-    prefs_->Set(key, std::move(value));
+    prefs_->SetPath(key, std::move(*value));
     ScheduleWrite(flags);
   }
 }
@@ -243,7 +243,7 @@ void JsonPrefStore::SetValueSilently(const std::string& key,
 void JsonPrefStore::RemoveValue(const std::string& key, uint32_t flags) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (prefs_->RemovePath(key, nullptr))
+  if (prefs_->RemovePath(key))
     ReportValueChanged(key, flags);
 }
 
@@ -251,7 +251,7 @@ void JsonPrefStore::RemoveValueSilently(const std::string& key,
                                         uint32_t flags) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  prefs_->RemovePath(key, nullptr);
+  prefs_->RemovePath(key);
   ScheduleWrite(flags);
 }
 
@@ -318,6 +318,28 @@ void JsonPrefStore::CommitPendingWrite(
   if (reply_callback) {
     file_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
                                         std::move(reply_callback));
+  }
+}
+
+void JsonPrefStore::CommitPendingWriteSynchronously() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Schedule a write for any lossy writes that are outstanding to ensure that
+  // they get flushed when this function is called.
+  SchedulePendingLossyWrites();
+  if (!writer_.HasPendingWrite() || read_only_)
+    return;
+
+  const base::FilePath path = writer_.path();
+  std::string data;
+  if (!SerializeData(&data)) {
+    DVLOG(1) << "Failed to serialize data to be saved in " << path.value();
+    return;
+  }
+
+  const std::string suffix = GetHistogramSuffix(path);
+  if (!base::ImportantFileWriter::WriteFileAtomically(path, data, suffix)) {
+    DVLOG(1) << "Could not write " << suffix << " into " << path.value();
   }
 }
 

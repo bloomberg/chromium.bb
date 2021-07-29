@@ -58,7 +58,7 @@ using autofill::FooterCommand;
 using autofill::UserInfo;
 using autofill::mojom::FocusedFieldType;
 using password_manager::CredentialCache;
-using password_manager::PasswordStore;
+using password_manager::PasswordStoreInterface;
 using password_manager::UiCredential;
 using BlocklistedStatus =
     password_manager::OriginCredentialStore::BlocklistedStatus;
@@ -435,10 +435,10 @@ void PasswordAccessoryControllerImpl::ChangeCurrentOriginSavePasswordsStatus(
     return;
 
   const GURL origin_as_gurl = origin.GetURL();
-  password_manager::PasswordStore::FormDigest form_digest(
+  password_manager::PasswordFormDigest form_digest(
       password_manager::PasswordForm::Scheme::kHtml,
       password_manager::GetSignonRealm(origin_as_gurl), origin_as_gurl);
-  password_manager::PasswordStore* store =
+  password_manager::PasswordStoreInterface* store =
       password_client_->GetProfilePasswordStore();
   if (saving_enabled) {
     store->Unblocklist(form_digest, base::NullCallback());
@@ -525,9 +525,7 @@ bool PasswordAccessoryControllerImpl::ShouldTriggerBiometricReauth(
 
   scoped_refptr<password_manager::BiometricAuthenticator> authenticator =
       password_client_->GetBiometricAuthenticator();
-  return authenticator &&
-         authenticator->CanAuthenticate() ==
-             password_manager::BiometricsAvailability::kAvailable;
+  return password_manager_util::CanUseBiometricAuth(authenticator.get());
 }
 
 void PasswordAccessoryControllerImpl::OnReauthCompleted(

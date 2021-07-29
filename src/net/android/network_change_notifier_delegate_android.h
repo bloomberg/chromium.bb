@@ -6,7 +6,6 @@
 #define NET_ANDROID_NETWORK_CHANGE_NOTIFIER_DELEGATE_ANDROID_H_
 
 #include <map>
-#include <string>
 
 #include "base/android/jni_android.h"
 #include "base/memory/ref_counted.h"
@@ -127,9 +126,6 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
 
   // Can only be called from the main (Java) thread.
   NetworkChangeNotifier::ConnectionSubtype GetCurrentConnectionSubtype() const;
-
-  // Is the current process bound to a specific network?
-  bool IsProcessBoundToNetwork();
 
   // Returns true if NetworkCallback failed to register, indicating that
   // network-specific callbacks will not be issued.

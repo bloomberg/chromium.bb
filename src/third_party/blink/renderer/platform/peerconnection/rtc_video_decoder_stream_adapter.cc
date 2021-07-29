@@ -8,6 +8,7 @@
 #include <functional>
 #include <utility>
 
+#include "base/atomic_ref_count.h"
 #include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/feature_list.h"
@@ -17,7 +18,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -32,6 +32,7 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_video_decoder_adapter.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_video_decoder_fallback_recorder.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/webrtc/webrtc_video_frame_adapter.h"
@@ -74,36 +75,15 @@ constexpr int32_t kMaxPendingBuffers = 8;
 // never completed, or (c) we're hopelessly behind.
 constexpr int32_t kAbsoluteMaxPendingBuffers = 32;
 
-// Map webrtc::SdpVideoFormat to a guess for media::VideoCodecProfile.
-media::VideoCodecProfile GuessVideoCodecProfile(
-    const webrtc::SdpVideoFormat& format) {
-  const webrtc::VideoCodecType video_codec_type =
-      webrtc::PayloadStringToCodecType(format.name);
-  switch (video_codec_type) {
-    case webrtc::kVideoCodecAV1:
-      return media::AV1PROFILE_PROFILE_MAIN;
-    case webrtc::kVideoCodecVP8:
-      return media::VP8PROFILE_ANY;
-    case webrtc::kVideoCodecVP9: {
-      const webrtc::VP9Profile vp9_profile =
-          webrtc::ParseSdpForVP9Profile(format.parameters)
-              .value_or(webrtc::VP9Profile::kProfile0);
-      switch (vp9_profile) {
-        case webrtc::VP9Profile::kProfile2:
-          return media::VP9PROFILE_PROFILE2;
-        case webrtc::VP9Profile::kProfile1:
-          return media::VP9PROFILE_PROFILE1;
-        case webrtc::VP9Profile::kProfile0:
-        default:
-          return media::VP9PROFILE_PROFILE0;
-      }
-      return media::VP9PROFILE_PROFILE0;
-    }
-    case webrtc::kVideoCodecH264:
-      return media::H264PROFILE_BASELINE;
-    default:
-      return media::VIDEO_CODEC_PROFILE_UNKNOWN;
-  }
+// Name we'll report for hardware decoders.
+constexpr const char* kExternalDecoderName = "ExternalDecoder";
+
+// Number of RTCVideoDecoder instances right now that have started decoding.
+std::atomic_int* GetDecoderCounter() {
+  static std::atomic_int s_counter(0);
+  // Note that this will init only in the first call in the ctor, so it's still
+  // single threaded.
+  return &s_counter;
 }
 
 void RecordInitializationLatency(base::TimeDelta latency) {
@@ -112,6 +92,9 @@ void RecordInitializationLatency(base::TimeDelta latency) {
 }
 
 }  // namespace
+
+// static
+constexpr gfx::Size RTCVideoDecoderStreamAdapter::kMinResolution;
 
 // DemuxerStream implementation that forwards DecoderBuffer from some other
 // source (i.e., VideoDecoder::Decode).
@@ -243,7 +226,7 @@ RTCVideoDecoderStreamAdapter::Create(
   // TODO(sandersd): Predict size from level.
   media::VideoDecoderConfig config(
       WebRtcToMediaVideoCodec(webrtc::PayloadStringToCodecType(format.name)),
-      GuessVideoCodecProfile(format),
+      WebRtcVideoFormatToMediaVideoCodecProfile(format),
       media::VideoDecoderConfig::AlphaMode::kIsOpaque, media::VideoColorSpace(),
       media::kNoTransformation, kDefaultSize, gfx::Rect(kDefaultSize),
       kDefaultSize, media::EmptyExtraData(),
@@ -277,7 +260,10 @@ RTCVideoDecoderStreamAdapter::RTCVideoDecoderStreamAdapter(
       config_(config),
       max_pending_buffer_count_(kAbsoluteMaxPendingBuffers) {
   DVLOG(1) << __func__;
-  decoder_info_.implementation_name = "unknown";
+  // Default to hw-accelerated decoder, in case something checks before decoding
+  // a frame.  It's unclear what we should report in the long run, but for now,
+  // it's better to report hardware since that's all we support anyway.
+  decoder_info_.implementation_name = kExternalDecoderName;
   decoder_info_.is_hardware_accelerated = false;
   DETACH_FROM_SEQUENCE(decoding_sequence_checker_);
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -286,6 +272,9 @@ RTCVideoDecoderStreamAdapter::RTCVideoDecoderStreamAdapter(
 RTCVideoDecoderStreamAdapter::~RTCVideoDecoderStreamAdapter() {
   DVLOG(1) << __func__;
   DCHECK(media_task_runner_->RunsTasksInCurrentSequence());
+
+  if (have_started_decoding_)
+    --(*GetDecoderCounter());
 }
 
 void RTCVideoDecoderStreamAdapter::InitializeSync(
@@ -321,6 +310,8 @@ int32_t RTCVideoDecoderStreamAdapter::InitDecode(
 
   base::AutoLock auto_lock(lock_);
   init_decode_complete_ = true;
+  current_resolution_ =
+      gfx::Size(codec_settings->width, codec_settings->height);
   AttemptLogInitializationState_Locked();
   return has_error_ ? WEBRTC_VIDEO_CODEC_UNINITIALIZED : WEBRTC_VIDEO_CODEC_OK;
 }
@@ -340,11 +331,13 @@ void RTCVideoDecoderStreamAdapter::AttemptLogInitializationState_Locked() {
 
   logged_init_status_ = true;
 
-  UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoDecoderInitDecodeSuccess", !has_error_);
+  base::UmaHistogramBoolean("Media.RTCVideoDecoderInitDecodeSuccess",
+                            !has_error_);
   if (!has_error_) {
-    UMA_HISTOGRAM_ENUMERATION("Media.RTCVideoDecoderProfile",
-                              GuessVideoCodecProfile(format_),
-                              media::VIDEO_CODEC_PROFILE_MAX + 1);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Media.RTCVideoDecoderProfile",
+        WebRtcVideoFormatToMediaVideoCodecProfile(format_),
+        media::VIDEO_CODEC_PROFILE_MAX + 1);
   }
 }
 
@@ -355,23 +348,48 @@ int32_t RTCVideoDecoderStreamAdapter::Decode(
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
 
-  // Hardware VP9 decoders don't handle more than one spatial layer. Fall back
-  // to software decoding. See https://crbug.com/webrtc/9304.
-  if (video_codec_type_ == webrtc::kVideoCodecVP9 &&
-      input_image.SpatialIndex().value_or(0) > 0) {
-#if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
-    if (!base::FeatureList::IsEnabled(media::kVp9kSVCHWDecoding)) {
-      DLOG(ERROR) << __func__ << " multiple spatial layers.";
-      RecordRTCVideoDecoderFallbackReason(
-          config_.codec(), RTCVideoDecoderFallbackReason::kSpatialLayers);
+  // If this is the first decode, then increment the count of working decoders.
+  if (!have_started_decoding_) {
+    have_started_decoding_ = true;
+    ++(*GetDecoderCounter());
+  }
+
+#if defined(OS_ANDROID) && !BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
+  const bool has_software_fallback =
+      video_codec_type_ != webrtc::kVideoCodecH264;
+#else
+  const bool has_software_fallback = true;
+#endif
+
+  // Don't allow hardware decode for small videos if there are too many
+  // decoder instances.  This includes the case where our resolution drops while
+  // too many decoders exist.  When DecoderStream supports software decoders,
+  // this should be moved to DecoderSelector.
+  {
+    base::AutoLock auto_lock(lock_);
+    if (has_software_fallback &&
+        current_resolution_.GetArea() < kMinResolution.GetArea() &&
+        GetDecoderCounter()->load() > kMaxDecoderInstances) {
+      // Decrement the count and clear the flag, so that other decoders don't
+      // fall back also.
+      have_started_decoding_ = false;
+      --(*GetDecoderCounter());
       return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
     }
-#else
+  }
+
+  // Fall back to software decoding if there's no support for VP9 spatial
+  // layers. See https://crbug.com/webrtc/9304.
+  // TODO(chromium:1187565): Update RTCVideoDecoderFactory::QueryCodecSupport()
+  // if RTCVideoDecoderStream is changed to handle SW decoding and not return
+  // WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE.
+  if (video_codec_type_ == webrtc::kVideoCodecVP9 &&
+      input_image.SpatialIndex().value_or(0) > 0 &&
+      !RTCVideoDecoderAdapter::Vp9HwSupportForSpatialLayers()) {
     DLOG(ERROR) << __func__ << " multiple spatial layers.";
     RecordRTCVideoDecoderFallbackReason(
         config_.codec(), RTCVideoDecoderFallbackReason::kSpatialLayers);
     return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
-#endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
   if (missing_frames) {
@@ -449,12 +467,6 @@ int32_t RTCVideoDecoderStreamAdapter::Decode(
       // drop any other non-key frame.
       key_frame_required_ = true;
 
-#if defined(OS_ANDROID) && !BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-      const bool has_software_fallback =
-          video_codec_type_ != webrtc::kVideoCodecH264;
-#else
-      const bool has_software_fallback = true;
-#endif
       // If we hit the absolute limit, then give up.
       if (has_software_fallback &&
           pending_buffer_count_ >= kAbsoluteMaxPendingBuffers) {
@@ -665,7 +677,8 @@ void RTCVideoDecoderStreamAdapter::OnFrameReady(
   webrtc::VideoFrame rtc_frame =
       webrtc::VideoFrame::Builder()
           .set_video_frame_buffer(
-              CreateWebRtcVideoFrameAdapter(std::move(frame)))
+              new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
+                  std::move(frame)))
           .set_timestamp_rtp(static_cast<uint32_t>(timestamp.InMicroseconds()))
           .set_timestamp_us(0)
           .set_rotation(webrtc::kVideoRotation_0)
@@ -680,6 +693,10 @@ void RTCVideoDecoderStreamAdapter::OnFrameReady(
                             base::TimeTicks::Now() - *start_time_);
     start_time_.reset();
   }
+
+  // Update `current_resolution_`, in case it's changed.  This lets us fall back
+  // to software, or avoid doing so, if we're over the decoder limit.
+  current_resolution_ = gfx::Size(rtc_frame.width(), rtc_frame.height());
 
   // Try to read the next output, if any, regardless if this succeeded.
   AttemptRead_Locked();
@@ -810,7 +827,7 @@ void RTCVideoDecoderStreamAdapter::OnDecoderChanged(
   decoder_info_.is_hardware_accelerated = decoder->IsPlatformDecoder();
   decoder_info_.implementation_name =
       decoder->IsPlatformDecoder()
-          ? "ExternalDecoder"
+          ? kExternalDecoderName
           : media::GetDecoderName(decoder->GetDecoderType()) +
                 " (DecoderStream)";
 }

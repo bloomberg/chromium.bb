@@ -27,8 +27,9 @@ bool IsImageFromGpuMemoryBufferFormatSupported(
 }
 
 bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,
-                                              gfx::BufferFormat format) {
-  switch (format) {
+                                              gfx::BufferFormat format,
+                                              gfx::BufferPlane plane) {
+  switch (GetPlaneBufferFormat(plane, format)) {
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
@@ -45,12 +46,19 @@ bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::P010:
+#if defined(OS_CHROMEOS)
+      // Allow odd size for CrOS.
+      // TODO(https://crbug.com/1208788, https://crbug.com/1224781): Merge this
+      // with the path that uses gfx::AllowOddHeightMultiPlanarBuffers.
+      return true;
+#else
       // U and V planes are subsampled by a factor of 2.
       if (size.width() % 2)
         return false;
       if (size.height() % 2 && !gfx::AllowOddHeightMultiPlanarBuffers())
         return false;
       return true;
+#endif  // defined(OS_CHROMEOS)
   }
 
   NOTREACHED();
@@ -64,14 +72,11 @@ GPU_EXPORT bool IsPlaneValidForGpuMemoryBufferFormat(gfx::BufferPlane plane,
       return plane == gfx::BufferPlane::DEFAULT ||
              plane == gfx::BufferPlane::Y || plane == gfx::BufferPlane::U ||
              plane == gfx::BufferPlane::V;
-      break;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return plane == gfx::BufferPlane::DEFAULT ||
              plane == gfx::BufferPlane::Y || plane == gfx::BufferPlane::UV;
-      break;
     default:
       return plane == gfx::BufferPlane::DEFAULT;
-      break;
   }
   NOTREACHED();
   return false;

@@ -64,6 +64,8 @@ SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
       return kSampleFormatS32;
     case ::media::kSampleFormatF32:
       return kSampleFormatF32;
+    case ::media::kSampleFormatPlanarU8:
+      return kSampleFormatPlanarU8;
     case ::media::kSampleFormatPlanarS16:
       return kSampleFormatPlanarS16;
     case ::media::kSampleFormatPlanarF32:
@@ -89,6 +91,8 @@ SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
       return ::media::kSampleFormatS32;
     case kSampleFormatF32:
       return ::media::kSampleFormatF32;
+    case kSampleFormatPlanarU8:
+      return ::media::kSampleFormatPlanarU8;
     case kSampleFormatPlanarS16:
       return ::media::kSampleFormatPlanarS16;
     case kSampleFormatPlanarF32:
@@ -340,8 +344,8 @@ VideoConfig DecoderConfigAdapter::ToCastVideoConfig(
     video_config.hdr_metadata.max_frame_average_light_level =
         hdr_metadata->max_frame_average_light_level;
 
-    const auto& mm1 = hdr_metadata->mastering_metadata;
-    auto& mm2 = video_config.hdr_metadata.mastering_metadata;
+    const auto& mm1 = hdr_metadata->color_volume_metadata;
+    auto& mm2 = video_config.hdr_metadata.color_volume_metadata;
     mm2.primary_r_chromaticity_x = mm1.primary_r.x();
     mm2.primary_r_chromaticity_y = mm1.primary_r.y();
     mm2.primary_g_chromaticity_x = mm1.primary_g.x();

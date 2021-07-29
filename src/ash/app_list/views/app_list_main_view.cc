@@ -6,18 +6,23 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "ash/app_list/app_list_metrics.h"
+#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/expand_arrow_view.h"
+#include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
@@ -84,6 +89,8 @@ void AppListMainView::AddContentsViews() {
   contents_view_ = AddChildView(std::move(contents_view));
 
   search_box_view_->set_contents_view(contents_view_);
+  search_box_view_->SetResultSelectionController(
+      contents_view_->search_result_page_view()->result_selection_controller());
 }
 
 void AppListMainView::ShowAppListWhenReady() {
@@ -142,7 +149,7 @@ void AppListMainView::Layout() {
 
 void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
   // TODO(jennyz): Activate the folder via AppListModel notification.
-  if (item->GetItemType() == AppListFolderItem::kItemType) {
+  if (IsFolderItem(item)) {
     contents_view_->ShowFolderContent(static_cast<AppListFolderItem*>(item));
     UMA_HISTOGRAM_ENUMERATION("Apps.AppListFolderOpened",
                               kFullscreenAppListFolders, kMaxFolderOpened);
@@ -164,12 +171,6 @@ void AppListMainView::CancelDragInActiveFolder() {
       ->app_list_folder_view()
       ->items_grid_view()
       ->EndDrag(true);
-}
-
-void AppListMainView::OnResultInstalled(SearchResult* result) {
-  // Clears the search to show the apps grid. The last installed app
-  // should be highlighted and made visible already.
-  search_box_view_->ClearSearch();
 }
 
 // AppListModelObserver overrides:
@@ -225,6 +226,39 @@ void AppListMainView::SearchBoxFocusChanged(SearchBoxViewBase* sender) {
   first_result_view->SetSelected(false, absl::nullopt);
 }
 
+void AppListMainView::OnSearchBoxKeyEvent(ui::KeyEvent* event) {
+  app_list_view_->RedirectKeyEventToSearchBox(event);
+
+  if (!IsUnhandledUpDownKeyEvent(*event))
+    return;
+
+  // Handles arrow key events from the search box while the search box is
+  // inactive. This covers both folder traversal and apps grid traversal. Search
+  // result traversal is handled in |HandleKeyEvent|
+  AppListPage* page =
+      contents_view_->GetPageView(contents_view_->GetActivePageIndex());
+  views::View* arrow_view = contents_view_->expand_arrow_view();
+  views::View* next_view = nullptr;
+
+  if (event->key_code() == ui::VKEY_UP) {
+    if (arrow_view && arrow_view->IsFocusable())
+      next_view = arrow_view;
+    else
+      next_view = page->GetLastFocusableView();
+  } else {
+    next_view = page->GetFirstFocusableView();
+  }
+
+  if (next_view)
+    next_view->RequestFocus();
+  event->SetHandled();
+}
+
+bool AppListMainView::CanSelectSearchResults() {
+  // If there's a result, keyboard selection is allowed.
+  return !!contents_view_->search_result_page_view()->first_result_view();
+}
+
 void AppListMainView::AssistantButtonPressed() {
   delegate_->StartAssistant();
 }
@@ -232,6 +266,12 @@ void AppListMainView::AssistantButtonPressed() {
 void AppListMainView::BackButtonPressed() {
   if (!contents_view_->Back())
     app_list_view_->Dismiss();
+}
+
+void AppListMainView::CloseButtonPressed() {
+  // Deactivate the search box.
+  search_box_view_->SetSearchBoxActive(false, ui::ET_UNKNOWN);
+  search_box_view_->ClearSearch();
 }
 
 }  // namespace ash

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -122,9 +123,10 @@ apps::mojom::OptionalBool GetBoolValueFromDict(
 absl::optional<GURL> GetGurlValueFromDict(const base::DictionaryValue& dict,
                                           const std::string& key_name);
 
-// Gets std::vector<::GURL> from base::DictionaryValue, e.g. { "file_urls":
-// "/abc, /a" } returns std::vector<::GURL>{"/abc, /a"}.
-absl::optional<std::vector<::GURL>> GetFileUrlsFromDict(
+// Gets std::vector<IntentFilePtr> from base::DictionaryValue, e.g. {
+// "file_urls": "/abc, /a" } returns
+// std::vector<apps::mojom::IntentFilePtr>{"/abc", "/a"}.
+absl::optional<std::vector<apps::mojom::IntentFilePtr>> GetFilesFromDict(
     const base::DictionaryValue& dict,
     const std::string& key_name);
 

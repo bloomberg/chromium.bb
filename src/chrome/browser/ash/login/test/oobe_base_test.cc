@@ -8,7 +8,6 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -22,10 +21,10 @@
 #include "chrome/browser/ash/login/test/test_condition_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host_webui.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -244,7 +243,7 @@ test::JSChecker OobeBaseTest::SigninFrameJS() {
 OobeScreenId OobeBaseTest::GetFirstSigninScreen() {
   bool isEnterpriseManaged = !g_browser_process->platform_part()
                                   ->browser_policy_connector_chromeos()
-                                  ->IsEnterpriseManaged();
+                                  ->IsDeviceEnterpriseManaged();
   return isEnterpriseManaged ? UserCreationView::kScreenId
                              : GaiaView::kScreenId;
 }

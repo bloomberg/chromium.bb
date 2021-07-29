@@ -221,9 +221,8 @@ void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
 
   // Disable compositing on tooltips as a workaround for
   // https://crbug.com/442111.
-  CreateCompositor(viz::FrameSinkId(),
-                   params.force_software_compositing ||
-                       params.type == Widget::InitParams::TYPE_TOOLTIP);
+  CreateCompositor(params.force_software_compositing ||
+                   params.type == Widget::InitParams::TYPE_TOOLTIP);
 
   WindowTreeHost::OnAcceleratedWidgetAvailable();
   InitHost();
@@ -748,8 +747,9 @@ void DesktopWindowTreeHostPlatform::OnClosed() {
 }
 
 void DesktopWindowTreeHostPlatform::OnWindowStateChanged(
+    ui::PlatformWindowState old_state,
     ui::PlatformWindowState new_state) {
-  bool was_minimized = old_state_ == ui::PlatformWindowState::kMinimized;
+  bool was_minimized = old_state == ui::PlatformWindowState::kMinimized;
   bool is_minimized = new_state == ui::PlatformWindowState::kMinimized;
 
   // Propagate minimization/restore to compositor to avoid drawing 'blank'
@@ -764,8 +764,6 @@ void DesktopWindowTreeHostPlatform::OnWindowStateChanged(
       SetVisible(true);
     }
   }
-
-  old_state_ = new_state;
 
   // Now that we have different window properties, we may need to relayout the
   // window. (The windows code doesn't need this because their window change is
@@ -808,6 +806,10 @@ SkPath DesktopWindowTreeHostPlatform::GetWindowMaskForWindowShapeInPixels() {
   if (!window_mask.isEmpty())
     window_mask.transform(SkMatrix(GetRootTransform().matrix()));
   return window_mask;
+}
+
+absl::optional<ui::MenuType> DesktopWindowTreeHostPlatform::GetMenuType() {
+  return GetContentWindow()->GetProperty(aura::client::kMenuType);
 }
 
 void DesktopWindowTreeHostPlatform::OnWorkspaceChanged() {

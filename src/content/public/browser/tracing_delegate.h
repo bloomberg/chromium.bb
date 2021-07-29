@@ -6,7 +6,6 @@
 #define CONTENT_PUBLIC_BROWSER_TRACING_DELEGATE_H_
 
 #include <memory>
-#include <string>
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
@@ -42,8 +41,6 @@ class CONTENT_EXPORT TracingDelegate {
       const content::BackgroundTracingConfig& config,
       bool requires_anonymized_data,
       bool is_crash_scenario);
-
-  virtual bool IsProfileLoaded();
 
   // Whether system-wide performance trace collection using the external system
   // tracing service is enabled.

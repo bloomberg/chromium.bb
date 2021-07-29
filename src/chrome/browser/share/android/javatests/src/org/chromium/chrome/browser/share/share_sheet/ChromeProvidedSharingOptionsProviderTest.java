@@ -32,16 +32,13 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.util.ApplicationTestUtils;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.link_to_text.LinkToTextCoordinator.LinkGeneration;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetPropertyModelBuilder.ContentType;
 import org.chromium.chrome.browser.tab.Tab;
@@ -57,6 +54,7 @@ import org.chromium.components.user_prefs.UserPrefsJni;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.DummyUiActivity;
+import org.chromium.ui.test.util.ThemedDummyUiActivityTestRule;
 import org.chromium.url.GURL;
 
 import java.util.List;
@@ -70,8 +68,9 @@ public class ChromeProvidedSharingOptionsProviderTest {
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     @Rule
-    public BaseActivityTestRule<DummyUiActivity> mActivityTestRule =
-            new BaseActivityTestRule<>(DummyUiActivity.class);
+    public ThemedDummyUiActivityTestRule<DummyUiActivity> mActivityTestRule =
+            new ThemedDummyUiActivityTestRule<>(
+                    DummyUiActivity.class, R.style.ColorOverlay_ChromiumAndroid);
 
     @Rule
     public TestRule mFeatureProcessor = new Features.JUnitProcessor();
@@ -79,36 +78,31 @@ public class ChromeProvidedSharingOptionsProviderTest {
     @Rule
     public JniMocker mJniMocker = new JniMocker();
 
+    private static final String URL = "http://www.google.com/";
+
     @Mock
     private UserPrefs.Natives mUserPrefsNatives;
-
     @Mock
     private Profile mProfile;
     @Mock
     private PrefService mPrefService;
-
-    private static final String URL = "http://www.google.com/";
-
     @Mock
     private ShareSheetCoordinator mShareSheetCoordinator;
+    @Mock
+    private Supplier<Tab> mTabProvider;
+    @Mock
+    private Tab mTab;
+    @Mock
+    private BottomSheetController mBottomSheetController;
+    @Mock
+    private WebContents mWebContents;
+    @Mock
+    private Tracker mTracker;
+    @Mock
+    private ShareParams.TargetChosenCallback mTargetChosenCallback;
 
     private Activity mActivity;
     private ChromeProvidedSharingOptionsProvider mChromeProvidedSharingOptionsProvider;
-
-    @Mock
-    private Supplier<Tab> mTabProvider;
-
-    @Mock
-    private Tab mTab;
-
-    @Mock
-    private BottomSheetController mBottomSheetController;
-
-    @Mock
-    private WebContents mWebContents;
-
-    @Mock
-    private Tracker mTracker;
     private UserActionTester mActionTester;
 
     @Before
@@ -137,9 +131,11 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT})
-    @FlakyTest(message = "crbug.com/1207314")
-    public void getPropertyModels_screenshotEnabled() {
+    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT,
+            ChromeFeatureList.CHROME_SHARE_HIGHLIGHTS_ANDROID})
+    @Features.DisableFeatures({ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION})
+    public void
+    getPropertyModels_screenshotEnabled() {
         setUpChromeProvidedSharingOptionsProviderTest(
                 /*printingEnabled=*/false, LinkGeneration.MAX);
         List<PropertyModel> propertyModels =
@@ -159,9 +155,11 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     @Test
     @MediumTest
-    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT})
-    @FlakyTest(message = "crbug.com/1207314")
-    public void getPropertyModels_printingEnabled_includesPrinting() {
+    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARE_HIGHLIGHTS_ANDROID})
+    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT,
+            ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION})
+    public void
+    getPropertyModels_printingEnabled_includesPrinting() {
         setUpChromeProvidedSharingOptionsProviderTest(
                 /*printingEnabled=*/true, LinkGeneration.MAX);
         List<PropertyModel> propertyModels =
@@ -343,7 +341,6 @@ public class ChromeProvidedSharingOptionsProviderTest {
         @LinkGeneration
         int linkGenerationStatus = LinkGeneration.LINK;
 
-        String detailMetrics = "LinkGeneration.DetailsMetrics";
         setUpChromeProvidedSharingOptionsProviderTest(
                 /*printingEnabled=*/false, linkGenerationStatus);
         List<PropertyModel> propertyModels =
@@ -353,17 +350,36 @@ public class ChromeProvidedSharingOptionsProviderTest {
         assertCorrectMetrics(propertyModels, linkGenerationStatus);
     }
 
+    @Test
+    @MediumTest
+    public void getPropertyModels_onClick_callsOnTargetChosen() {
+        setUpChromeProvidedSharingOptionsProviderTest(
+                /*printingEnabled=*/false, LinkGeneration.LINK);
+
+        List<PropertyModel> propertyModels =
+                mChromeProvidedSharingOptionsProvider.getPropertyModels(
+                        ImmutableSet.of(ContentType.LINK_PAGE_VISIBLE), /*isMultiWindow=*/false);
+        View.OnClickListener onClickListener =
+                propertyModels.get(0).get(ShareSheetItemViewProperties.CLICK_LISTENER);
+
+        onClickListener.onClick(null);
+        Mockito.verify(mTargetChosenCallback, Mockito.times(1))
+                .onTargetChosen(ChromeProvidedSharingOptionsProvider
+                                        .CHROME_PROVIDED_FEATURE_COMPONENT_NAME);
+    }
+
     private void setUpChromeProvidedSharingOptionsProviderTest(
             boolean printingEnabled, @LinkGeneration int linkGenerationStatus) {
         Mockito.when(mPrefService.getBoolean(anyString())).thenReturn(printingEnabled);
 
-        ShareParams shareParams = new ShareParams.Builder(null, /*title=*/"", /*url=*/"").build();
+        ShareParams shareParams = new ShareParams.Builder(null, /*title=*/"", /*url=*/"")
+                                          .setCallback(mTargetChosenCallback)
+                                          .build();
         mChromeProvidedSharingOptionsProvider = new ChromeProvidedSharingOptionsProvider(mActivity,
                 mTabProvider, mBottomSheetController,
                 new ShareSheetBottomSheetContent(
                         mActivity, null, mShareSheetCoordinator, shareParams),
-                new ShareParams.Builder(null, "", "").build(),
-                new ChromeShareExtras.Builder().build(),
+                shareParams,
                 /*TabPrinterDelegate=*/null,
                 /*settingsLauncher=*/null,
                 /*syncState=*/false,

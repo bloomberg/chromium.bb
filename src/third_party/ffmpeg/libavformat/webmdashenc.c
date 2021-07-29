@@ -155,7 +155,8 @@ static int bitstream_switching(AVFormatContext *s, const AdaptationSet *as)
             !av_strstart(track_num->value, gold_track_num->value, NULL) ||
             gold_par->codec_id != par->codec_id ||
             gold_par->extradata_size != par->extradata_size ||
-            memcmp(gold_par->extradata, par->extradata, par->extradata_size)) {
+            (par->extradata_size > 0 &&
+             memcmp(gold_par->extradata, par->extradata, par->extradata_size))) {
             return 0;
         }
     }
@@ -536,7 +537,7 @@ static const AVClass webm_dash_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVOutputFormat ff_webm_dash_manifest_muxer = {
+const AVOutputFormat ff_webm_dash_manifest_muxer = {
     .name              = "webm_dash_manifest",
     .long_name         = NULL_IF_CONFIG_SMALL("WebM DASH Manifest"),
     .mime_type         = "application/xml",

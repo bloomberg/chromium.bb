@@ -315,7 +315,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
   _selection?: TimelineSelection|null;
   constructor() {
     super('timeline');
-    this.registerRequiredCSS('panels/timeline/timelinePanel.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/timeline/timelinePanel.css');
     this.element.addEventListener('contextmenu', this._contextMenu.bind(this), false);
     this._dropTarget = new UI.DropTarget.DropTarget(
         this.element, [UI.DropTarget.Type.File, UI.DropTarget.Type.URI],
@@ -386,7 +386,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
 
     this._createFileSelector();
 
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._loadEventFired, this);
 
     this._flameChart = new TimelineFlameChartView(this);
@@ -406,8 +406,8 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
 
     Extensions.ExtensionServer.ExtensionServer.instance().addEventListener(
         Extensions.ExtensionServer.Events.TraceProviderAdded, this._appendExtensionsToToolbar, this);
-    SDK.SDKModel.TargetManager.instance().addEventListener(
-        SDK.SDKModel.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
+    SDK.TargetManager.TargetManager.instance().addEventListener(
+        SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged, this);
   }
 
   static instance(opts: {
@@ -535,8 +535,8 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener(
         SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged, this._updateShowSettingsToolbarButton,
         this);
-    MobileThrottling.ThrottlingManager.throttlingManager().addEventListener(
-        MobileThrottling.ThrottlingManager.Events.RateChanged, this._updateShowSettingsToolbarButton, this);
+    SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener(
+        SDK.CPUThrottlingManager.Events.RateChanged, this._updateShowSettingsToolbarButton, this);
     this._disableCaptureJSProfileSetting.addChangeListener(this._updateShowSettingsToolbarButton, this);
     this._captureLayersAndPicturesSetting.addChangeListener(this._updateShowSettingsToolbarButton, this);
 
@@ -732,7 +732,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
 
   _updateShowSettingsToolbarButton(): void {
     const messages: string[] = [];
-    if (MobileThrottling.ThrottlingManager.throttlingManager().cpuThrottlingRate() !== 1) {
+    if (SDK.CPUThrottlingManager.CPUThrottlingManager.instance().cpuThrottlingRate() !== 1) {
       messages.push(i18nString(UIStrings.CpuThrottlingIsEnabled));
     }
     if (SDK.NetworkManager.MultitargetNetworkManager.instance().isThrottling()) {
@@ -791,7 +791,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     const enabledTraceProviders = Extensions.ExtensionServer.ExtensionServer.instance().traceProviders().filter(
         provider => TimelinePanel._settingForTraceProvider(provider).get());
 
-    const mainTarget = (SDK.SDKModel.TargetManager.instance().mainTarget() as SDK.SDKModel.Target);
+    const mainTarget = (SDK.TargetManager.TargetManager.instance().mainTarget() as SDK.Target.Target);
     if (UIDevtoolsUtils.isUiDevTools()) {
       this._controller = new UIDevtoolsController(mainTarget, this);
     } else {
@@ -1159,7 +1159,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
         if (!this._performanceModel) {
           return null;
         }
-        return this._performanceModel.frameModel().frames(selection._endTime, selection._endTime)[0];
+        return this._performanceModel.frameModel().getFramesWithinWindow(selection._endTime, selection._endTime)[0];
       default:
         console.assert(false, 'Should never be reached');
         return null;
@@ -1357,7 +1357,7 @@ export class StatusPane extends UI.Widget.VBox {
       },
       buttonCallback: () => (Promise<void>| void)) {
     super(true);
-    this.registerRequiredCSS('panels/timeline/timelineStatusDialog.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('panels/timeline/timelineStatusDialog.css');
     this.contentElement.classList.add('timeline-status-dialog');
 
     const statusLine = this.contentElement.createChild('div', 'status-dialog-line status');
@@ -1399,10 +1399,12 @@ export class StatusPane extends UI.Widget.VBox {
 
   hide(): void {
     (this.element.parentNode as HTMLElement).classList.remove('tinted');
+    this._arrangeDialog((this.element.parentNode as HTMLElement));
     this.element.remove();
   }
 
   showPane(parent: Element): void {
+    this._arrangeDialog(parent);
     this.show(parent);
     parent.classList.add('tinted');
   }
@@ -1439,11 +1441,18 @@ export class StatusPane extends UI.Widget.VBox {
   }
 
   _updateTimer(precise?: boolean): void {
+    this._arrangeDialog((this.element.parentNode as HTMLElement));
     if (!this._timeUpdateTimer) {
       return;
     }
     const elapsed = (Date.now() - this._startTime) / 1000;
     this._time.textContent = i18nString(UIStrings.ssec, {PH1: elapsed.toFixed(precise ? 1 : 0)});
+  }
+
+  _arrangeDialog(parent: Element): void {
+    const isSmallDialog = parent.clientWidth < 325;
+    this.element.classList.toggle('small-dialog', isSmallDialog);
+    this.contentElement.classList.toggle('small-dialog', isSmallDialog);
   }
 }
 

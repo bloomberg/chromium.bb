@@ -73,7 +73,6 @@ class BrowserTest(browser_test_case.BrowserTestCase):
     self.assertEquals(1, len(self._browser.tabs))
 
   @decorators.Enabled('has tabs')
-  @decorators.Disabled('android')  # http://crbug.com/905359
   def testForegroundTab(self):
     # Should be only one tab at this stage, so that must be the foreground tab
     original_tab = self._browser.tabs[0]
@@ -206,7 +205,7 @@ class BrowserCreationTest(unittest.TestCase):
       browser_module.Browser(
           self.mock_browser_backend, self.mock_platform_backend,
           self.fake_startup_args)
-    self.assertIn('Boom!', context.exception.message)
+    self.assertIn('Boom!', repr(context.exception))
 
 
 class TestBrowserCreation(unittest.TestCase):

@@ -59,10 +59,10 @@ class NET_EXPORT CanonicalCookie {
 
   CanonicalCookie();
   CanonicalCookie(const CanonicalCookie& other);
-
+  CanonicalCookie(CanonicalCookie&& other);
+  CanonicalCookie& operator=(const CanonicalCookie& other);
+  CanonicalCookie& operator=(CanonicalCookie&& other);
   ~CanonicalCookie();
-
-  // Supports the default copy constructor.
 
   // Creates a new |CanonicalCookie| from the |cookie_line| and the
   // |creation_time|.  Canonicalizes inputs.  May return nullptr if
@@ -89,8 +89,9 @@ class NET_EXPORT CanonicalCookie {
 
   // Create a canonical cookie based on sanitizing the passed inputs in the
   // context of the passed URL.  Returns a null unique pointer if the inputs
-  // cannot be sanitized.  If a cookie is created, |cookie->IsCanonical()|
-  // will be true.
+  // cannot be sanitized.  If `status` is provided it will have any relevant
+  // CookieInclusionStatus rejection reasons set. If a cookie is created,
+  // `cookie->IsCanonical()` will be true.
   static std::unique_ptr<CanonicalCookie> CreateSanitizedCookie(
       const GURL& url,
       const std::string& name,
@@ -104,7 +105,8 @@ class NET_EXPORT CanonicalCookie {
       bool http_only,
       CookieSameSite same_site,
       CookiePriority priority,
-      bool same_party);
+      bool same_party,
+      CookieInclusionStatus* status = nullptr);
 
   // FromStorage is a factory method which is meant for creating a new
   // CanonicalCookie using properties of a previously existing cookie
@@ -114,13 +116,13 @@ class NET_EXPORT CanonicalCookie {
   // Returns nullptr if the resulting cookie is not canonical,
   // i.e. cc->IsCanonical() returns false.
   static std::unique_ptr<CanonicalCookie> FromStorage(
-      const std::string& name,
-      const std::string& value,
-      const std::string& domain,
-      const std::string& path,
-      const base::Time& creation,
-      const base::Time& expiration,
-      const base::Time& last_access,
+      std::string name,
+      std::string value,
+      std::string domain,
+      std::string path,
+      base::Time creation,
+      base::Time expiration,
+      base::Time last_access,
       bool secure,
       bool httponly,
       CookieSameSite same_site,
@@ -356,13 +358,13 @@ class NET_EXPORT CanonicalCookie {
   // themselves.
   // NOTE: Prefer using CreateSanitizedCookie() over directly using this
   // constructor.
-  CanonicalCookie(const std::string& name,
-                  const std::string& value,
-                  const std::string& domain,
-                  const std::string& path,
-                  const base::Time& creation,
-                  const base::Time& expiration,
-                  const base::Time& last_access,
+  CanonicalCookie(std::string name,
+                  std::string value,
+                  std::string domain,
+                  std::string path,
+                  base::Time creation,
+                  base::Time expiration,
+                  base::Time last_access,
                   bool secure,
                   bool httponly,
                   CookieSameSite same_site,
@@ -483,6 +485,18 @@ inline void PrintTo(const CookieWithAccessResult& cwar, std::ostream* os) {
   PrintTo(cwar.cookie, os);
   *os << ", ";
   PrintTo(cwar.access_result, os);
+  *os << " }";
+}
+inline void PrintTo(const CookieAndLineWithAccessResult& calwar,
+                    std::ostream* os) {
+  *os << "{ ";
+  if (calwar.cookie) {
+    PrintTo(*calwar.cookie, os);
+  } else {
+    *os << "nullopt";
+  }
+  *os << ", " << calwar.cookie_string << ", ";
+  PrintTo(calwar.access_result, os);
   *os << " }";
 }
 

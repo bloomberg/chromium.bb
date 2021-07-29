@@ -21,13 +21,11 @@
 
 namespace blink {
 
-IntSize SVGImageForContainer::Size() const {
-  // The image orientation is irrelevant because there is not concept of
-  // orientation for SVG images.
-  return RoundedIntSize(SizeAsFloat(kRespectImageOrientation));
+IntSize SVGImageForContainer::SizeWithConfig(SizeConfig config) const {
+  return RoundedIntSize(SizeWithConfigAsFloat(config));
 }
 
-FloatSize SVGImageForContainer::SizeAsFloat(RespectImageOrientationEnum) const {
+FloatSize SVGImageForContainer::SizeWithConfigAsFloat(SizeConfig) const {
   return container_size_.ScaledBy(zoom_);
 }
 
@@ -44,16 +42,13 @@ void SVGImageForContainer::Draw(cc::PaintCanvas* canvas,
 }
 
 void SVGImageForContainer::DrawPattern(GraphicsContext& context,
-                                       const FloatRect& src_rect,
-                                       const FloatSize& scale,
-                                       const FloatPoint& phase,
-                                       SkBlendMode op,
+                                       const cc::PaintFlags& flags,
                                        const FloatRect& dst_rect,
-                                       const FloatSize& repeat_spacing,
+                                       const ImageTilingInfo& tiling_info,
                                        RespectImageOrientationEnum) {
   const SVGImage::DrawInfo draw_info(container_size_, zoom_, url_);
-  image_->DrawPatternForContainer(draw_info, context, src_rect, scale, phase,
-                                  op, dst_rect, repeat_spacing);
+  image_->DrawPatternForContainer(draw_info, context, flags, dst_rect,
+                                  tiling_info);
 }
 
 bool SVGImageForContainer::ApplyShader(cc::PaintFlags& flags,

@@ -378,7 +378,8 @@ void ShapeResultView::GetRunFontData(
     Vector<ShapeResult::RunFontData>* font_data) const {
   for (const auto& part : RunsOrParts()) {
     font_data->push_back(ShapeResult::RunFontData(
-        {part.run_->font_data_.get(), part.end() - part.begin()}));
+        {part.run_->font_data_.get(),
+         static_cast<wtf_size_t>(part.end() - part.begin())}));
   }
 }
 
@@ -654,11 +655,8 @@ FloatRect ShapeResultView::ComputeInkBounds() const {
 
 void ShapeResultView::ExpandRangeToIncludePartialGlyphs(unsigned* from,
                                                         unsigned* to) const {
-  unsigned accumulated_offset = char_index_offset_;
-  for (const auto& part : Parts()) {
-    part.ExpandRangeToIncludePartialGlyphs(accumulated_offset, from, to);
-    accumulated_offset += part.NumCharacters();
-  }
+  for (const auto& part : Parts())
+    part.ExpandRangeToIncludePartialGlyphs(char_index_offset_, from, to);
 }
 
 }  // namespace blink

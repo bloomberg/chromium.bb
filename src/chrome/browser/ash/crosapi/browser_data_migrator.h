@@ -21,8 +21,6 @@ namespace ash {
 constexpr char kLacrosDir[] = "lacros";
 // Profile data directory for lacros.
 constexpr char kLacrosProfilePath[] = "Default";
-// Lacros' user data is backward compatible up until this version.
-constexpr char kRequiredDataVersion[] = "92.0.0.0";
 // The following are UMA names.
 constexpr char kFinalStatus[] = "Ash.BrowserDataMigrator.FinalStatus";
 constexpr char kCopiedDataSize[] = "Ash.BrowserDataMigrator.CopiedDataSizeMB";
@@ -31,7 +29,7 @@ constexpr char kCreateDirectoryFail[] =
     "Ash.BrowserDataMigrator.CreateDirectoryFailure";
 
 // BrowserDataMigrator is responsible for one time browser data migration from
-// ash-chrome to lacros-chrome. The static method `MaybeMigrate()` instantiates
+// ash-chrome to lacros-chrome. The static method `Migrate()` instantiates
 // an instance and calls `MigrateInternal()`.
 class BrowserDataMigrator {
  public:
@@ -67,7 +65,7 @@ class BrowserDataMigrator {
   // This enum corresponds to BrowserDataMigratorFinalStatus in hisograms.xml
   // and enums.xml.
   enum class FinalStatus {
-    kSkipped = 0,
+    kSkipped = 0,  // No longer in use.
     kSuccess = 1,
     kGetPathFailed = 2,
     kDeleteTmpDirFailed = 3,
@@ -99,47 +97,33 @@ class BrowserDataMigrator {
   BrowserDataMigrator& operator=(const BrowserDataMigrator&) = delete;
   ~BrowserDataMigrator();
 
-  // Called on UI thread. If `async` is true, it posts `MigrateInternal()` to a
-  // worker thread with callback as reply. If `async` is false, the whole
-  // process will be done on UI thread. Since the migration copies user data
-  // files, it has to be completed before ash chrome starts accessing those
-  // files. Files are copied to `tmp_dir_` first and then moved to `to_dir_` in
-  // an atomic way.
-  static void MaybeMigrate(const AccountId& account_id,
-                           const std::string& user_id_hash,
-                           bool async,
-                           base::OnceClosure callback);
+  // Checks if migration is required for the user identified by `user_context`
+  // and if it is required, calls a DBus method to session_manager and
+  // terminates ash-chrome.
+  static void MaybeRestartToMigrate(const UserContext& user_context);
 
-  // Checks if lacros' data directory needs to be wiped before migration.
-  // `data_version` is the version of last data wipe. `current_version` is the
-  // version of ash-chrome. `required_version` is the version that introduces
-  // some breaking change. `data_version` needs to be greater or equal to
-  // `required_version`. If `required_version` is newer than `current_version`,
-  // data wipe is not required.
-  static bool IsDataWipeRequired(base::Version data_version,
-                                 const base::Version& current_version,
-                                 const base::Version& required_version);
+  // The method needs to be called on UI thread. It instantiates
+  // BrowserDataMigrator and posts `MigrateInternal()` on a worker thread. It
+  // calls `callback` on the original thread when migration has completed or
+  // failed.
+  static void Migrate(const std::string& user_id_hash,
+                      base::OnceClosure callback);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, IsMigrationRequiredOnUI);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest,
                            IsMigrationRequiredOnWorker);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, IsDataWipeRequiredInvalid);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest,
-                           IsDataWipeRequiredFutureVersion);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest,
-                           IsDataWipeRequiredSameVersion);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, IsDataWipeRequired);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, IsDataWipeRequired2);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, MaybeWipeUserDir);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, GetTargetInfo);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, RecordStatus);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorTest, Migrate);
 
-  // Handles the migration on a worker thread. Returns whether a migration
-  // occurred.
-  MigrationResult MigrateInternal(bool is_data_wipe_required);
-  // Called when the migration is finished on the UI thread.
+  // The method includes a blocking operation. It checks if lacros user data dir
+  // already exists or not. Check if lacros is enabled or not beforehand.
+  static bool IsMigrationRequiredOnWorker(base::FilePath user_data_dir,
+                                          const std::string& user_id_hash);
+  // Handles the migration on a worker thread. Returns the end status of data
+  // wipe and migration.
+  MigrationResult MigrateInternal();
+  // Called on UI thread once migration is finished.
   static void MigrateInternalFinishedUIThread(base::OnceClosure callback,
                                               const std::string& user_id_hash,
                                               MigrationResult result);
@@ -148,12 +132,6 @@ class BrowserDataMigrator {
   static void RecordStatus(const FinalStatus& final_status,
                            const TargetInfo* target_info = nullptr,
                            const base::ElapsedTimer* timer = nullptr);
-  // Checks if migration should happen. Called on UI thread.
-  static bool IsMigrationRequiredOnUI(const user_manager::User* user);
-  // Checks if migration should happen. Called on worker thread.
-  bool IsMigrationRequiredOnWorker() const;
-  // Gets what files/dirs need to be copied and the total byte size of files to
-  // be copied.
   TargetInfo GetTargetInfo() const;
   // Compares space available under `from_dir_` against total byte size that
   // needs to be copied.

@@ -38,7 +38,29 @@ class PresubmitApi(recipe_api.RecipeApi):
         kwargs['wrapper'] = ('rdb', 'stream', '--')
       step_data = self.m.python(
           name, self.presubmit_support_path, presubmit_args, **kwargs)
-      return step_data.json.output
+      output = step_data.json.output or {}
+      if self.m.step.active_result.retcode != 0:
+        return output
+
+      # Run with vpython3 directly
+      del (kwargs['venv'])
+      presubmit_args = list(args) + [
+          '--json_output',
+          self.m.json.output(),
+      ]
+      step_data = self.m.step(name + " py3",
+                              ['vpython3', self.presubmit_support_path] +
+                              presubmit_args, **kwargs)
+      output2 = step_data.json.output or {}
+
+      # combine outputs
+      for key in output:
+        if key in output2:
+          output[key] += output2[key]
+          del (output2[key])
+      for key in output2:
+        output[key] = output2[key]
+      return output
 
   def prepare(self):
     """Sets up a presubmit run.

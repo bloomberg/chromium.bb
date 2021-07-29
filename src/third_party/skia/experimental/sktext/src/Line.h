@@ -9,8 +9,6 @@
 namespace skia {
 namespace text {
 
-class Processor;
-
 class TextMetrics {
 
 public:
@@ -45,9 +43,12 @@ public:
       return this->fDescent - this->fAscent + this->fLeading;
   }
 
-SkScalar baseline() const {
-      return - this->fAscent + this->fLeading / 2;
-  }
+    SkScalar baseline() const {
+          return - this->fAscent + this->fLeading / 2;
+    }
+
+    SkScalar above() const { return - this->fAscent + this->fLeading / 2; }
+    SkScalar below() const { return this->fDescent + this->fLeading / 2; }
 
 private:
     SkScalar fAscent;
@@ -165,11 +166,14 @@ private:
 
 class Line {
 public:
-    Line(Processor* processor, const Stretch& stretch, const Stretch& spaces);
+    Line(const Stretch& stretch, const Stretch& spaces, SkSTArray<1, size_t, true> visualOrder);
     ~Line() = default;
 
+    TextMetrics getMetrics() const { return fTextMetrics; }
+
 private:
-    friend class Processor;
+    friend class WrappedText;
+    friend class FormattedText;
 
     GlyphPos fTextStart;
     GlyphPos fTextEnd;
@@ -180,7 +184,6 @@ private:
     SkScalar fSpacesWidth;
     TextMetrics fTextMetrics;
     SkSTArray<1, size_t, true> fRunsInVisualOrder;
-    Processor* fProcessor;
 };
 
 } // namespace text

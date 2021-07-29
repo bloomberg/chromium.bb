@@ -90,7 +90,7 @@ component("ipc") {
     ":mojom",
     ":native_handle_type_converters",
     ":param_traits",
-    "//base/util/type_safety",
+    "//base",
     "//mojo/public/cpp/base",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
@@ -192,7 +192,10 @@ mojom_component("mojom") {
   output_prefix = "ipc_mojom"
   macro_prefix = "IPC_MOJOM"
   sources = [ "ipc.mojom" ]
-  public_deps = [ "//mojo/public/interfaces/bindings" ]
+  public_deps = [
+    "//mojo/public/interfaces/bindings",
+    "//mojo/public/mojom/base",
+  ]
 
   cpp_typemaps = [
     {

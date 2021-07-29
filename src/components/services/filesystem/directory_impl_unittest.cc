@@ -8,12 +8,13 @@
 #include <map>
 #include <string>
 
+#include "base/cxx17_backports.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/test/task_environment.h"
 #include "components/services/filesystem/directory_test_helper.h"
 #include "components/services/filesystem/public/mojom/directory.mojom.h"
 #include "components/services/filesystem/public/mojom/file.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"

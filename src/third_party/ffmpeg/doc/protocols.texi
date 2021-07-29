@@ -341,6 +341,12 @@ operation. ff* tools may produce incomplete content due to server limitations.
 
 Gopher protocol.
 
+@section gophers
+
+Gophers protocol.
+
+The Gopher protocol with TLS encapsulation.
+
 @section hls
 
 Read Apple HTTP Live Streaming compliant segmented stream as
@@ -399,9 +405,6 @@ Set the Referer header. Include 'Referer: URL' header in HTTP request.
 @item user_agent
 Override the User-Agent header. If not specified the protocol will use a
 string describing the libavformat build. ("Lavf/<version>")
-
-@item user-agent
-This is a deprecated option, you can use user_agent instead it.
 
 @item reconnect_at_eof
 If set then eof is treated like an error and causes reconnection, this is useful
@@ -689,6 +692,42 @@ Example usage:
 @example
 -f rtp_mpegts -fec prompeg=l=8:d=4 rtp://@var{hostname}:@var{port}
 @end example
+
+@section rist
+
+Reliable Internet Streaming Transport protocol
+
+The accepted options are:
+@table @option
+@item rist_profile
+Supported values:
+@table @samp
+@item simple
+@item main
+This one is default.
+@item advanced
+@end table
+
+@item buffer_size
+Set internal RIST buffer size in milliseconds for retransmission of data.
+Default value is 0 which means the librist default (1 sec). Maximum value is 30
+seconds.
+
+@item pkt_size
+Set maximum packet size for sending data. 1316 by default.
+
+@item log_level
+Set loglevel for RIST logging messages. You only need to set this if you
+explicitly want to enable debug level messages or packet loss simulation,
+otherwise the regular loglevel is respected.
+
+@item secret
+Set override of encryption secret, by default is unset.
+
+@item encryption
+Set encryption type, by default is disabled.
+Acceptable values are 128 and 256.
+@end table
 
 @section rtmp
 
@@ -991,6 +1030,9 @@ Set the local RTCP port to @var{n}.
 @item pkt_size=@var{n}
 Set max packet size (in bytes) to @var{n}.
 
+@item buffer_size=@var{size}
+Set the maximum UDP socket buffer size in bytes.
+
 @item connect=0|1
 Do a @code{connect()} on the UDP socket (if set to 1) or not (if set
 to 0).
@@ -1119,19 +1161,18 @@ Set minimum local UDP port. Default value is 5000.
 @item max_port
 Set maximum local UDP port. Default value is 65000.
 
-@item timeout
-Set maximum timeout (in seconds) to wait for incoming connections.
-
-A value of -1 means infinite (default). This option implies the
-@option{rtsp_flags} set to @samp{listen}.
+@item listen_timeout
+Set maximum timeout (in seconds) to establish an initial connection. Setting
+@option{listen_timeout} > 0 sets @option{rtsp_flags} to @samp{listen}. Default is -1
+which means an infinite timeout when @samp{listen} mode is set.
 
 @item reorder_queue_size
 Set number of packets to buffer for handling of reordered packets.
 
-@item stimeout
+@item timeout
 Set socket TCP I/O timeout in microseconds.
 
-@item user-agent
+@item user_agent
 Override User-Agent header. If not specified, it defaults to the
 libavformat identifier string.
 @end table
@@ -1729,6 +1770,10 @@ A file containing the private key for the certificate.
 @item listen=@var{1|0}
 If enabled, listen for connections on the provided port, and assume
 the server role in the handshake instead of the client role.
+
+@item http_proxy
+The HTTP proxy to tunnel through, e.g. @code{http://example.com:1234}.
+The proxy must support the CONNECT method.
 
 @end table
 

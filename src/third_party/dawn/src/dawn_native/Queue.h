@@ -38,8 +38,6 @@ namespace dawn_native {
 
         // Dawn API
         void APISubmit(uint32_t commandCount, CommandBufferBase* const* commands);
-        void APISignal(Fence* fence, uint64_t signalValue);
-        Fence* APICreateFence(const FenceDescriptor* descriptor);
         void APIOnSubmittedWorkDone(uint64_t signalValue,
                                     WGPUQueueWorkDoneCallback callback,
                                     void* userdata);
@@ -73,7 +71,7 @@ namespace dawn_native {
         MaybeError WriteTextureInternal(const ImageCopyTexture* destination,
                                         const void* data,
                                         size_t dataSize,
-                                        const TextureDataLayout* dataLayout,
+                                        const TextureDataLayout& dataLayout,
                                         const Extent3D* writeSize);
         MaybeError CopyTextureForBrowserInternal(const ImageCopyTexture* source,
                                                  const ImageCopyTexture* destination,
@@ -92,16 +90,14 @@ namespace dawn_native {
                                             const Extent3D& writeSize);
 
         MaybeError ValidateSubmit(uint32_t commandCount, CommandBufferBase* const* commands) const;
-        MaybeError ValidateSignal(const Fence* fence, FenceAPISerial signalValue) const;
         MaybeError ValidateOnSubmittedWorkDone(uint64_t signalValue,
                                                WGPUQueueWorkDoneStatus* status) const;
-        MaybeError ValidateCreateFence(const FenceDescriptor* descriptor) const;
         MaybeError ValidateWriteBuffer(const BufferBase* buffer,
                                        uint64_t bufferOffset,
                                        size_t size) const;
         MaybeError ValidateWriteTexture(const ImageCopyTexture* destination,
                                         size_t dataSize,
-                                        const TextureDataLayout* dataLayout,
+                                        const TextureDataLayout& dataLayout,
                                         const Extent3D* writeSize) const;
 
         void SubmitInternal(uint32_t commandCount, CommandBufferBase* const* commands);

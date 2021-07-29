@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/loader/fetch/loader_freeze_mode.h"
 #include "third_party/blink/renderer/platform/loader/link_header.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -51,7 +52,12 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
     request_.CopyFrom(request);
   }
 
-  ~PrefetchedSignedExchangeLoader() override {}
+  PrefetchedSignedExchangeLoader(const PrefetchedSignedExchangeLoader&) =
+      delete;
+  PrefetchedSignedExchangeLoader& operator=(
+      const PrefetchedSignedExchangeLoader&) = delete;
+
+  ~PrefetchedSignedExchangeLoader() override = default;
 
   base::WeakPtr<PrefetchedSignedExchangeLoader> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -106,14 +112,13 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
         std::move(resource_load_info_notifier_wrapper),
         WTF::Unretained(client)));
   }
-  void SetDefersLoading(DeferType value) override {
+  void Freeze(LoaderFreezeMode value) override {
     if (url_loader_) {
-      url_loader_->SetDefersLoading(value);
+      url_loader_->Freeze(value);
       return;
     }
-    pending_method_calls_.push(
-        WTF::Bind(&PrefetchedSignedExchangeLoader::SetDefersLoading,
-                  GetWeakPtr(), value));
+    pending_method_calls_.push(WTF::Bind(
+        &PrefetchedSignedExchangeLoader::Freeze, GetWeakPtr(), value));
   }
   void DidChangePriority(WebURLRequest::Priority new_priority,
                          int intra_priority_value) override {
@@ -146,8 +151,6 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
   std::queue<base::OnceClosure> pending_method_calls_;
 
   base::WeakPtrFactory<PrefetchedSignedExchangeLoader> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PrefetchedSignedExchangeLoader);
 };
 
 // static

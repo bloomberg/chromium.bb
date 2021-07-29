@@ -12,9 +12,9 @@
 
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -278,6 +278,11 @@ void FeatureInfo::InitializeForTesting(ContextType context_type) {
 }
 
 bool IsGL_REDSupportedOnFBOs() {
+#if defined(OS_MAC)
+  // The glTexImage2D call below can hang on Mac so skip this since it's only
+  // really needed to workaround a Mesa issue. See https://crbug.com/1158744.
+  return true;
+#else
   DCHECK(glGetError() == GL_NO_ERROR);
   // Skia uses GL_RED with frame buffers, unfortunately, Mesa claims to support
   // GL_EXT_texture_rg, but it doesn't support it on frame buffers.  To fix
@@ -309,6 +314,7 @@ bool IsGL_REDSupportedOnFBOs() {
   DCHECK(glGetError() == GL_NO_ERROR);
 
   return result;
+#endif  // defined(OS_MAC)
 }
 
 void FeatureInfo::EnableCHROMIUMTextureStorageImage() {

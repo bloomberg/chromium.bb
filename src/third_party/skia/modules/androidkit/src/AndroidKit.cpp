@@ -24,12 +24,24 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     }
 
     REGISTER_NATIVES(Canvas)
+    REGISTER_NATIVES(ColorFilter)
+    REGISTER_NATIVES(ComposeColorFilter)
+    REGISTER_NATIVES(HSLAMatrixColorFilter)
+    REGISTER_NATIVES(Image)
+    REGISTER_NATIVES(ImageFilter)
+    REGISTER_NATIVES(LinearGradient)
     REGISTER_NATIVES(Matrix)
+    REGISTER_NATIVES(MatrixColorFilter)
     REGISTER_NATIVES(Paint)
+    REGISTER_NATIVES(Path)
+    REGISTER_NATIVES(PathBuilder)
+    REGISTER_NATIVES(RadialGradient)
     REGISTER_NATIVES(RuntimeShaderBuilder)
     REGISTER_NATIVES(Shader)
     REGISTER_NATIVES(SkottieAnimation)
     REGISTER_NATIVES(Surface)
+    REGISTER_NATIVES(SweepGradient)
+    REGISTER_NATIVES(TwoPointConicalGradient)
 
     return JNI_VERSION_1_6;
 }

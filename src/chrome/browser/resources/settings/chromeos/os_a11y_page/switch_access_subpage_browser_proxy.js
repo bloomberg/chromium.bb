@@ -18,12 +18,17 @@
   /**
    * Notifies SwitchAccessHandler an assignment dialog has been attached.
    */
-  notifySwitchAccessActionAssignmentDialogAttached() {}
+  notifySwitchAccessActionAssignmentPaneActive() {}
 
   /**
    * Notifies SwitchAccessHandler an assignment dialog is closing.
    */
-  notifySwitchAccessActionAssignmentDialogDetached() {}
+  notifySwitchAccessActionAssignmentPaneInactive() {}
+
+  /**
+   * Notifies when the setup guide dialog is ready.
+   */
+  notifySwitchAccessSetupGuideAttached() {}
 }
 
 /**
@@ -36,13 +41,18 @@
   }
 
   /** @override */
-  notifySwitchAccessActionAssignmentDialogAttached() {
-    chrome.send('notifySwitchAccessActionAssignmentDialogAttached');
+  notifySwitchAccessActionAssignmentPaneActive() {
+    chrome.send('notifySwitchAccessActionAssignmentPaneActive');
   }
 
   /** @override */
-  notifySwitchAccessActionAssignmentDialogDetached() {
-    chrome.send('notifySwitchAccessActionAssignmentDialogDetached');
+  notifySwitchAccessActionAssignmentPaneInactive() {
+    chrome.send('notifySwitchAccessActionAssignmentPaneInactive');
+  }
+
+  /** @override */
+  notifySwitchAccessSetupGuideAttached() {
+    // Currently only used in testing, so no event is fired.
   }
 }
 

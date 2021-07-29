@@ -41,12 +41,25 @@ class TrustedVaultClientAndroid : public syncer::TrustedVaultClient {
       const base::android::JavaParamRef<jstring>& gaia_id,
       const base::android::JavaParamRef<jobjectArray>& keys);
 
-  // Called from Java to notify the completion of a MarkKeysAsStale() operation
-  // previously initiated from C++ and identified by |request_id|.
-  void MarkKeysAsStaleCompleted(JNIEnv* env, jint request_id, jboolean result);
+  // Called from Java to notify the completion of a MarkLocalKeysAsStale()
+  // operation previously initiated from C++ and identified by |request_id|.
+  void MarkLocalKeysAsStaleCompleted(JNIEnv* env,
+                                     jint request_id,
+                                     jboolean result);
+
+  // Called from Java to notify the completion of a
+  // GetIsRecoverabilityDegraded() operation previously initiated from C++ and
+  // identified by |request_id|.
+  void GetIsRecoverabilityDegradedCompleted(JNIEnv* env,
+                                            jint request_id,
+                                            jboolean result);
 
   // Called from Java to notify that the keys in the vault may have changed.
   void NotifyKeysChanged(JNIEnv* env);
+
+  // Called from Java to notify that the recoverability of the vault may have
+  // changed.
+  void NotifyRecoverabilityChanged(JNIEnv* env);
 
   // TrustedVaultClient implementation.
   void AddObserver(Observer* observer) override;
@@ -58,9 +71,8 @@ class TrustedVaultClientAndroid : public syncer::TrustedVaultClient {
   void StoreKeys(const std::string& gaia_id,
                  const std::vector<std::vector<uint8_t>>& keys,
                  int last_key_version) override;
-  void RemoveAllStoredKeys() override;
-  void MarkKeysAsStale(const CoreAccountInfo& account_info,
-                       base::OnceCallback<void(bool)> cb) override;
+  void MarkLocalKeysAsStale(const CoreAccountInfo& account_info,
+                            base::OnceCallback<void(bool)> cb) override;
   void GetIsRecoverabilityDegraded(const CoreAccountInfo& account_info,
                                    base::OnceCallback<void(bool)> cb) override;
   void AddTrustedRecoveryMethod(const std::string& gaia_id,
@@ -82,18 +94,32 @@ class TrustedVaultClientAndroid : public syncer::TrustedVaultClient {
     base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> callback;
   };
 
-  // Struct representing an in-flight MarkKeysAsStale() call invoked from C++.
-  struct OngoingMarkKeysAsStale {
-    explicit OngoingMarkKeysAsStale(base::OnceCallback<void(bool)> callback);
-    OngoingMarkKeysAsStale(OngoingMarkKeysAsStale&&);
-    ~OngoingMarkKeysAsStale();
+  // Struct representing an in-flight MarkLocalKeysAsStale() call invoked from
+  // C++.
+  struct OngoingMarkLocalKeysAsStale {
+    explicit OngoingMarkLocalKeysAsStale(
+        base::OnceCallback<void(bool)> callback);
+    OngoingMarkLocalKeysAsStale(OngoingMarkLocalKeysAsStale&&);
+    ~OngoingMarkLocalKeysAsStale();
+
+    base::OnceCallback<void(bool)> callback;
+  };
+
+  // Struct representing an in-flight GetIsRecoverabilityDegraded() invoked from
+  // C++.
+  struct OngoingGetIsRecoverabilityDegraded {
+    explicit OngoingGetIsRecoverabilityDegraded(
+        base::OnceCallback<void(bool)> callback);
+    OngoingGetIsRecoverabilityDegraded(OngoingGetIsRecoverabilityDegraded&&);
+    ~OngoingGetIsRecoverabilityDegraded();
 
     base::OnceCallback<void(bool)> callback;
   };
 
   using RequestId = int32_t;
-  using OngoingRequest =
-      absl::variant<OngoingFetchKeys, OngoingMarkKeysAsStale>;
+  using OngoingRequest = absl::variant<OngoingFetchKeys,
+                                       OngoingMarkLocalKeysAsStale,
+                                       OngoingGetIsRecoverabilityDegraded>;
 
   RequestId RegisterNewOngoingRequest(OngoingRequest request);
   OngoingRequest GetAndUnregisterOngoingRequest(RequestId id);

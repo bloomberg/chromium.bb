@@ -4,7 +4,9 @@
 
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
+
 import {Icon} from './Icon.js';
+import iconButtonStyles from './iconButton.css.js';
 
 import type {IconData} from './Icon.js';
 
@@ -21,21 +23,35 @@ export interface IconButtonData {
   groups: IconWithTextData[];
   leadingText?: string;
   trailingText?: string;
+  accessibleName?: string;
 }
 
 export class IconButton extends HTMLElement {
+  static readonly litTagName = LitHtml.literal`icon-button`;
   private readonly shadow = this.attachShadow({mode: 'open'});
   private clickHandler: undefined|(() => void) = undefined;
   private groups: IconWithTextData[] = [];
   private leadingText: string = '';
   private trailingText: string = '';
+  private accessibleName: string|undefined;
 
   set data(data: IconButtonData) {
     this.groups = data.groups.map(group => ({...group}));  // Ensure we make a deep copy.
     this.clickHandler = data.clickHandler;
     this.trailingText = data.trailingText ?? '';
     this.leadingText = data.leadingText ?? '';
+    this.accessibleName = data.accessibleName;
     this.render();
+  }
+
+  get data(): IconButtonData {
+    return {
+      groups: this.groups.map(group => ({...group})),  // Ensure we make a deep copy.
+      accessibleName: this.accessibleName,
+      clickHandler: this.clickHandler,
+      leadingText: this.leadingText,
+      trailingText: this.trailingText,
+    };
   }
 
   setTexts(texts: (string|undefined)[]): void {
@@ -46,6 +62,10 @@ export class IconButton extends HTMLElement {
       this.groups[i].text = texts[i];
     }
     this.render();
+  }
+
+  connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [iconButtonStyles];
   }
 
   private onClickHandler(event: Event): void {
@@ -63,63 +83,7 @@ export class IconButton extends HTMLElement {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     LitHtml.render(LitHtml.html`
-      <style>
-        :host {
-          white-space: normal;
-          display: inline-block;
-        }
-
-        .icon-button {
-          border: none;
-          margin-right: 2px;
-          display: inline-flex;
-          align-items: center;
-          color: inherit;
-          font-size: inherit;
-          font-family: inherit;
-          background-color: var(--color-background-elevation-1);
-        }
-
-        .icon-button.with-click-handler {
-          cursor: pointer;
-          border: 1px solid var(--color-details-hairline);
-          border-radius: 2px;
-        }
-
-        .icon-button.with-click-handler:hover {
-          background-color: var(--legacy-toolbar-hover-bg-color);
-        }
-
-        .icon-button:focus-visible {
-          background-color: var(--legacy-toolbar-hover-bg-color);
-          border: 1px solid var(--color-details-hairline);
-        }
-
-        .icon-button-title {
-          margin-left: 0.5ex;
-        }
-
-        .status-icon {
-          margin-left: 1ex;
-        }
-
-        .status-icon:first-child {
-          margin-left: inherit;
-        }
-
-        @media (forced-colors: active) {
-          .icon-button {
-            forced-color-adjust: none;
-            background-color: ButtonFace;
-          }
-
-          .icon-button.with-click-handler:hover {
-            background-color: Highlight;
-            color: HighlightText;
-          }
-        }
-      </style>
-      <button class="${buttonClasses}" @click=${this.onClickHandler}>
+      <button class="${buttonClasses}" @click=${this.onClickHandler} aria-label="${LitHtml.Directives.ifDefined(this.accessibleName)}">
       ${this.leadingText ? LitHtml.html`<span class="icon-button-title">${this.leadingText}</span>` : LitHtml.nothing}
       ${this.groups.filter(counter => counter.text !== undefined).map(counter =>
       LitHtml.html`

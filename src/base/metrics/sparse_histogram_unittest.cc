@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
@@ -18,7 +19,6 @@
 #include "base/metrics/sample_map.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,6 +37,8 @@ class SparseHistogramTest : public testing::TestWithParam<bool> {
 
  protected:
   const int32_t kAllocatorMemorySize = 8 << 20;  // 8 MiB
+
+  using CountAndBucketData = base::SparseHistogram::CountAndBucketData;
 
   void SetUp() override {
     if (use_persistent_histogram_allocator_)
@@ -82,13 +84,10 @@ class SparseHistogramTest : public testing::TestWithParam<bool> {
     return std::unique_ptr<SparseHistogram>(new SparseHistogram(name));
   }
 
-  void GetCountAndBucketData(SparseHistogram* histogram,
-                             base::Histogram::Count* count,
-                             int64_t* sum,
-                             base::ListValue* buckets) {
+  CountAndBucketData GetCountAndBucketData(SparseHistogram* histogram) {
     // A simple wrapper around |GetCountAndBucketData| to make it visible for
     // testing.
-    histogram->GetCountAndBucketData(count, sum, buckets);
+    return histogram->GetCountAndBucketData();
   }
 
   const bool use_persistent_histogram_allocator_;
@@ -405,34 +404,28 @@ TEST_P(SparseHistogramTest, CheckGetCountAndBucketData) {
   // Add samples to the same bucket and make sure they'll be aggregated.
   histogram->AddCount(/*sample=*/100, /*count=*/5);
 
-  base::Histogram::Count total_count;
-  int64_t sum;
-  base::ListValue buckets;
-  GetCountAndBucketData(histogram.get(), &total_count, &sum, &buckets);
-  EXPECT_EQ(25, total_count);
-  EXPECT_EQ(4000, sum);
-  EXPECT_EQ(2u, buckets.GetSize());
+  const CountAndBucketData count_and_data_bucket =
+      GetCountAndBucketData(histogram.get());
+  EXPECT_EQ(25, count_and_data_bucket.count);
+  EXPECT_EQ(4000, count_and_data_bucket.sum);
 
-  int low, high, count;
+  const base::Value::ConstListView buckets_list =
+      count_and_data_bucket.buckets.GetList();
+  ASSERT_EQ(2u, buckets_list.size());
+
   // Check the first bucket.
-  base::DictionaryValue* bucket1;
-  EXPECT_TRUE(buckets.GetDictionary(0, &bucket1));
-  EXPECT_TRUE(bucket1->GetInteger("low", &low));
-  EXPECT_TRUE(bucket1->GetInteger("high", &high));
-  EXPECT_TRUE(bucket1->GetInteger("count", &count));
-  EXPECT_EQ(100, low);
-  EXPECT_EQ(101, high);
-  EXPECT_EQ(10, count);
+  const base::Value& bucket1 = buckets_list[0];
+  ASSERT_TRUE(bucket1.is_dict());
+  EXPECT_EQ(bucket1.FindIntKey("low"), absl::optional<int>(100));
+  EXPECT_EQ(bucket1.FindIntKey("high"), absl::optional<int>(101));
+  EXPECT_EQ(bucket1.FindIntKey("count"), absl::optional<int>(10));
 
   // Check the second bucket.
-  base::DictionaryValue* bucket2;
-  EXPECT_TRUE(buckets.GetDictionary(1, &bucket2));
-  EXPECT_TRUE(bucket2->GetInteger("low", &low));
-  EXPECT_TRUE(bucket2->GetInteger("high", &high));
-  EXPECT_TRUE(bucket2->GetInteger("count", &count));
-  EXPECT_EQ(200, low);
-  EXPECT_EQ(201, high);
-  EXPECT_EQ(15, count);
+  const base::Value& bucket2 = buckets_list[1];
+  ASSERT_TRUE(bucket2.is_dict());
+  EXPECT_EQ(bucket2.FindIntKey("low"), absl::optional<int>(200));
+  EXPECT_EQ(bucket2.FindIntKey("high"), absl::optional<int>(201));
+  EXPECT_EQ(bucket2.FindIntKey("count"), absl::optional<int>(15));
 }
 
 TEST_P(SparseHistogramTest, WriteAscii) {
@@ -458,7 +451,7 @@ TEST_P(SparseHistogramTest, ToGraphDict) {
   histogram->AddCount(/*sample=*/4, /*count=*/5);
   histogram->AddCount(/*sample=*/10, /*count=*/15);
 
-  base::DictionaryValue output = histogram->ToGraphDict();
+  base::Value output = histogram->ToGraphDict();
   std::string* header = output.FindStringKey("header");
   std::string* body = output.FindStringKey("body");
 

@@ -33,23 +33,21 @@ void StaticDataNavigationBodyLoader::Finish() {
   Continue();
 }
 
-void StaticDataNavigationBodyLoader::SetDefersLoading(
-    WebURLLoader::DeferType defers) {
-  defers_loading_ = defers;
+void StaticDataNavigationBodyLoader::SetDefersLoading(LoaderFreezeMode mode) {
+  freeze_mode_ = mode;
   Continue();
 }
 
 void StaticDataNavigationBodyLoader::StartLoadingBody(
     WebNavigationBodyLoader::Client* client,
-    bool use_isolated_code_cache) {
+    blink::mojom::CodeCacheHost* code_cache_host) {
   DCHECK(!is_in_continue_);
   client_ = client;
   Continue();
 }
 
 void StaticDataNavigationBodyLoader::Continue() {
-  if (defers_loading_ != WebURLLoader::DeferType::kNotDeferred || !client_ ||
-      is_in_continue_)
+  if (freeze_mode_ != LoaderFreezeMode::kNone || !client_ || is_in_continue_)
     return;
 
   // We don't want reentrancy in this method -
@@ -74,7 +72,7 @@ void StaticDataNavigationBodyLoader::Continue() {
           return;
       }
 
-      if (defers_loading_ != WebURLLoader::DeferType::kNotDeferred) {
+      if (freeze_mode_ != LoaderFreezeMode::kNone) {
         is_in_continue_ = false;
         return;
       }

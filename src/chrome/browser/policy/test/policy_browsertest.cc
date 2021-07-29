@@ -37,7 +37,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -152,8 +151,7 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/constants/ash_pref_names.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
@@ -346,7 +344,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_DisableScreenshotsFile) {
   ASSERT_EQ(CountScreenshots(), screenshot_count + 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_WaitForInitialUserActivityUnsatisfied) {
+// Disabled, see http://crbug.com/554728.
+IN_PROC_BROWSER_TEST_F(PolicyTest,
+                       DISABLED_PRE_WaitForInitialUserActivityUnsatisfied) {
   // Indicate that the session started 2 hours ago and no user activity has
   // occurred yet.
   g_browser_process->local_state()->SetInt64(
@@ -354,7 +354,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_WaitForInitialUserActivityUnsatisfied) {
       (base::Time::Now() - base::TimeDelta::FromHours(2)).ToInternalValue());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, WaitForInitialUserActivityUnsatisfied) {
+// Disabled, see http://crbug.com/554728.
+IN_PROC_BROWSER_TEST_F(PolicyTest,
+                       DISABLED_WaitForInitialUserActivityUnsatisfied) {
   content::MockNotificationObserver observer;
   content::NotificationRegistrar registrar;
   registrar.Add(&observer, chrome::NOTIFICATION_APP_TERMINATING,

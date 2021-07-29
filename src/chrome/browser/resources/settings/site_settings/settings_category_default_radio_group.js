@@ -12,12 +12,14 @@ import '../controls/settings_radio_group.js';
 import '../privacy_page/collapse_radio_button.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {loadTimeData} from '../i18n_setup.js';
 
 import {ContentSetting, ContentSettingsTypes} from './constants.js';
-import {SiteSettingsBehavior} from './site_settings_behavior.js';
+import {SiteSettingsMixin, SiteSettingsMixinInterface} from './site_settings_mixin.js';
 import {ContentSettingProvider, DefaultContentSetting} from './site_settings_prefs_browser_proxy.js';
 
 /**
@@ -29,53 +31,87 @@ export const SiteContentRadioSetting = {
   ENABLED: 1,
 };
 
-Polymer({
-  is: 'settings-category-default-radio-group',
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ * @implements {SiteSettingsMixinInterface}
+ * @implements {WebUIListenerBehaviorInterface}
+ */
+const SettingsCategoryDefaultRadioGroupElementBase = mixinBehaviors(
+    [I18nBehavior, WebUIListenerBehavior], SiteSettingsMixin(PolymerElement));
 
-  _template: html`{__html_template__}`,
+/** @polymer */
+export class SettingsCategoryDefaultRadioGroupElement extends
+    SettingsCategoryDefaultRadioGroupElementBase {
+  static get is() {
+    return 'settings-category-default-radio-group';
+  }
 
-  behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-  properties: {
-    allowOptionLabel: String,
-    allowOptionSubLabel: String,
-    allowOptionIcon: String,
-
-    blockOptionLabel: String,
-    blockOptionSubLabel: String,
-    blockOptionIcon: String,
-
-    /** @private */
-    siteContentRadioSettingEnum_: {
-      type: Object,
-      value: SiteContentRadioSetting,
-    },
-
-    /**
-     * Preference object used to keep track of the selected content setting
-     * option.
-     * @private {!chrome.settingsPrivate.PrefObject}
-     */
-    pref_: {
-      type: Object,
-      value() {
-        return /** @type {!chrome.settingsPrivate.PrefObject} */ ({
-          type: chrome.settingsPrivate.PrefType.NUMBER,
-          value: -1,  // No element is selected until the value is loaded.
-        });
+  static get properties() {
+    return {
+      header: {
+        type: String,
+        value() {
+          return this.i18n('siteSettingsDefaultBehavior');
+        },
       },
-    },
-  },
 
-  observers: [
-    'onCategoryChanged_(category)',
-  ],
+      description: {
+        type: String,
+        value() {
+          return this.i18n('siteSettingsDefaultBehaviorDescription');
+        },
+      },
+
+      allowOptionLabel: String,
+      allowOptionSubLabel: String,
+      allowOptionIcon: String,
+
+      blockOptionLabel: String,
+      blockOptionSubLabel: String,
+      blockOptionIcon: String,
+
+      /** @private */
+      siteContentRadioSettingEnum_: {
+        type: Object,
+        value: SiteContentRadioSetting,
+      },
+
+      /**
+       * Preference object used to keep track of the selected content setting
+       * option.
+       * @private {!chrome.settingsPrivate.PrefObject}
+       */
+      pref_: {
+        type: Object,
+        value() {
+          return /** @type {!chrome.settingsPrivate.PrefObject} */ ({
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: -1,  // No element is selected until the value is loaded.
+          });
+        },
+      },
+    };
+  }
+
+  static get observers() {
+    return [
+      'onCategoryChanged_(category)',
+    ];
+  }
 
   /** @override */
   ready() {
+    super.ready();
+
     this.addWebUIListener(
         'contentSettingCategoryChanged', this.onCategoryChanged_.bind(this));
-  },
+  }
 
   /**
    * @return {!ContentSetting}
@@ -125,7 +161,7 @@ Polymer({
         assertNotReached('Invalid category: ' + this.category);
         return ContentSetting.ALLOW;
     }
-  },
+  }
 
   /**
    * @return {string}
@@ -133,7 +169,7 @@ Polymer({
    */
   getEnabledButtonClass_() {
     return this.allowOptionSubLabel ? 'two-line' : '';
-  },
+  }
 
   /**
    * @return {string}
@@ -141,7 +177,7 @@ Polymer({
    */
   getDisabledButtonClass_() {
     return this.blockOptionSubLabel ? 'two-line' : '';
-  },
+  }
 
   /**
    * A handler for changing the default permission value for a content type.
@@ -157,7 +193,7 @@ Polymer({
     this.browserProxy.setDefaultValueForContentType(
         this.category,
         this.categoryEnabled_ ? allowOption : ContentSetting.BLOCK);
-  },
+  }
 
   /**
    * Update the pref values from the content settings.
@@ -189,7 +225,7 @@ Polymer({
                                 this.siteContentRadioSettingEnum_.DISABLED;
 
     this.set('pref_.value', prefValue);
-  },
+  }
 
   /** @private */
   async onCategoryChanged_(category) {
@@ -199,7 +235,7 @@ Polymer({
     const defaultValue =
         await this.browserProxy.getDefaultValueForContentType(this.category);
     this.updatePref_(defaultValue);
-  },
+  }
 
   /**
    * @return {boolean}
@@ -207,7 +243,7 @@ Polymer({
    */
   get categoryEnabled_() {
     return this.pref_.value === SiteContentRadioSetting.ENABLED;
-  },
+  }
 
   /**
    * Check if the category is popups and the user is logged in guest mode.
@@ -218,5 +254,9 @@ Polymer({
   isRadioGroupDisabled_() {
     return this.category === ContentSettingsTypes.POPUPS &&
         loadTimeData.getBoolean('isGuest');
-  },
-});
+  }
+}
+
+customElements.define(
+    SettingsCategoryDefaultRadioGroupElement.is,
+    SettingsCategoryDefaultRadioGroupElement);

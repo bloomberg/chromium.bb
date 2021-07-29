@@ -103,12 +103,16 @@ DownloadItemView::discard_button_
 DownloadItemView::open_now_button_
 DownloadItemView::save_button_
 DownloadItemView::scan_button_
+OpaqueBrowserFrameViewLayout::minimize_button_
+OpaqueBrowserFrameViewLayout::maximize_button_
+OpaqueBrowserFrameViewLayout::restore_button_
+OpaqueBrowserFrameViewLayout::close_button_
 
 # Populated manually - incompatibilities with tracing (TRACE_EVENT*) and
 # gmock/EXPECT_THAT.
 cc::GpuImageDecodeCache::dark_mode_filter_
 blink::scheduler::MainThreadSchedulerImpl::current_agent_group_scheduler_
-performance_manager::v8_memory::(anonymous namespace)::V8ContextTrackerTest::tracker
+performance_manager::v8_memory::(anonymous namespace)::V8ContextTrackerTest::tracker_
 content::(anonymous namespace)::BackForwardCacheMessageFilter::interface_name_
 base::trace_event::MemoryDumpProviderInfo::name
 

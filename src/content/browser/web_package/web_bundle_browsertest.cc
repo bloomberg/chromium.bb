@@ -29,6 +29,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -1206,6 +1207,11 @@ void RunIframeNavigationTest(
     const GURL& web_bundle_url,
     const GURL& url_origin,
     base::RepeatingCallback<GURL(const GURL&)> get_url_for_bundle) {
+  // The test assumes the previous page gets deleted after navigation and doing
+  // back navigation will recreate the page. Disable back/forward cache to
+  // ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(web_contents,
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
   NavigateAndWaitForTitle(
       web_contents, web_bundle_url,
       get_url_for_bundle.Run(url_origin.Resolve("/top-page/")), "Ready");
@@ -1394,6 +1400,11 @@ void RunIframeSameDocumentNavigationTest(
     const GURL& web_bundle_url,
     const GURL& url_origin,
     base::RepeatingCallback<GURL(const GURL&)> get_url_for_bundle) {
+  // The test assumes the previous page gets deleted after navigation and doing
+  // back navigation will recreate the page. Disable back/forward cache to
+  // ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(web_contents,
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
   NavigateAndWaitForTitle(
       web_contents, web_bundle_url,
       get_url_for_bundle.Run(url_origin.Resolve("/top-page/")), "Ready");
@@ -1730,7 +1741,13 @@ IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest,
                           &RunSameDocumentNavigationTest);
 }
 
-IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, IframeNavigation) {
+#if defined(OS_ANDROID)
+#define MAYBE_IframeNavigation DISABLED_IframeNavigation
+#else
+#define MAYBE_IframeNavigation IframeNavigation
+#endif
+IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest,
+                       MAYBE_IframeNavigation) {
   RunSharedNavigationTest(&SetUpIframeNavigationTest, &RunIframeNavigationTest);
 }
 
@@ -1746,8 +1763,13 @@ IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest,
                           &RunIframeParentInitiatedOutOfBundleNavigationTest);
 }
 
+#if defined(OS_ANDROID)
+#define MAYBE_IframeSameDocumentNavigation DISABLED_IframeSameDocumentNavigation
+#else
+#define MAYBE_IframeSameDocumentNavigation IframeSameDocumentNavigation
+#endif
 IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest,
-                       IframeSameDocumentNavigation) {
+                       MAYBE_IframeSameDocumentNavigation) {
   RunSharedNavigationTest(&SetUpIframeNavigationTest,
                           &RunIframeSameDocumentNavigationTest);
 }
@@ -1832,7 +1854,13 @@ class WebBundleTrustableFileNotFoundBrowserTest
   DISALLOW_COPY_AND_ASSIGN(WebBundleTrustableFileNotFoundBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebBundleTrustableFileNotFoundBrowserTest, NotFound) {
+// TODO(https://crbug.com/1227439): flaky
+#if defined(OS_LINUX)
+#define MAYBE_NotFound DISABLED_NotFound
+#else
+#define MAYBE_NotFound NotFound
+#endif
+IN_PROC_BROWSER_TEST_F(WebBundleTrustableFileNotFoundBrowserTest, MAYBE_NotFound) {
   std::string console_message = ExpectNavigationFailureAndReturnConsoleMessage(
       shell()->web_contents(), test_data_url());
 
@@ -1933,7 +1961,13 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, IframeSameDocumentNavigation) {
                           &RunIframeSameDocumentNavigationTest);
 }
 
-IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, InvalidWebBundleFile) {
+// TODO(https://crbug.com/1225178): flaky
+#if defined(OS_LINUX)
+#define MAYBE_InvalidWebBundleFile DISABLED_InvalidWebBundleFile
+#else
+#define MAYBE_InvalidWebBundleFile InvalidWebBundleFile
+#endif
+IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, MAYBE_InvalidWebBundleFile) {
   const GURL test_data_url =
       GetTestUrlForFile(GetTestDataPath("invalid_web_bundle.wbn"));
 
@@ -1944,8 +1978,15 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, InvalidWebBundleFile) {
             console_message);
 }
 
+// TODO(https://crbug.com/1225178): flaky
+#if defined(OS_LINUX)
+#define MAYBE_ResponseParseErrorInMainResource \
+  DISABLED_ResponseParseErrorInMainResource
+#else
+#define MAYBE_ResponseParseErrorInMainResource ResponseParseErrorInMainResource
+#endif
 IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest,
-                       ResponseParseErrorInMainResource) {
+                       MAYBE_ResponseParseErrorInMainResource) {
   const GURL test_data_url = GetTestUrlForFile(
       GetTestDataPath("broken_bundle_broken_first_entry.wbn"));
 
@@ -2043,7 +2084,13 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, DataDecoderRestart) {
   EXPECT_EQ(3, mock_factory.GetParserCreationCount());
 }
 
-IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, ParseMetadataCrash) {
+// TODO(https://crbug.com/1225178): flaky
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_ANDROID)
+#define MAYBE_ParseMetadataCrash DISABLED_ParseMetadataCrash
+#else
+#define MAYBE_ParseMetadataCrash ParseMetadataCrash
+#endif
+IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, MAYBE_ParseMetadataCrash) {
   base::FilePath test_file_path = GetTestDataPath("mocked.wbn");
   MockParserFactory mock_factory({GURL(kTestPageUrl)}, test_file_path);
   mock_factory.SimulateParseMetadataCrash();
@@ -2057,7 +2104,13 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, ParseMetadataCrash) {
       console_message);
 }
 
-IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, ParseResponseCrash) {
+// TODO(https://crbug.com/1225178): flaky
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_ANDROID)
+#define MAYBE_ParseResponseCrash DISABLED_ParseResponseCrash
+#else
+#define MAYBE_ParseResponseCrash ParseResponseCrash
+#endif
+IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, MAYBE_ParseResponseCrash) {
   base::FilePath test_file_path = GetTestDataPath("mocked.wbn");
   MockParserFactory mock_factory({GURL(kTestPageUrl)}, test_file_path);
   mock_factory.SimulateParseResponseCrash();
@@ -2569,7 +2622,13 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, SameDocumentNavigation) {
                           &RunSameDocumentNavigationTest);
 }
 
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, IframeNavigation) {
+// https://crbug.com/1219373 fails with BFCache field trial testing config.
+#if defined(OS_ANDROID)
+#define MAYBE_IframeNavigation DISABLED_IframeNavigation
+#else
+#define MAYBE_IframeNavigation IframeNavigation
+#endif
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, MAYBE_IframeNavigation) {
   RunSharedNavigationTest(&SetUpIframeNavigationTest, &RunIframeNavigationTest);
 }
 
@@ -2585,8 +2644,14 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
                           &RunIframeParentInitiatedOutOfBundleNavigationTest);
 }
 
+// https://crbug.com/1219373 fails with BFCache field trial testing config.
+#if defined(OS_ANDROID)
+#define MAYBE_IframeSameDocumentNavigation DISABLED_IframeSameDocumentNavigation
+#else
+#define MAYBE_IframeSameDocumentNavigation IframeSameDocumentNavigation
+#endif
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       IframeSameDocumentNavigation) {
+                       MAYBE_IframeSameDocumentNavigation) {
   RunSharedNavigationTest(&SetUpIframeNavigationTest,
                           &RunIframeSameDocumentNavigationTest);
 }
@@ -2659,6 +2724,11 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
                        HistoryNavigationError_UnexpectedContentType) {
+  // The test assumes the previous page gets deleted after navigation and doing
+  // back navigation will recreate the page. Disable back/forward cache to
+  // ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const std::string wbn_path = "/web_bundle/test.wbn";
   const std::string primary_url_path = "/web_bundle/test.html";
   RegisterRequestHandler(wbn_path);
@@ -2688,6 +2758,11 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
                        HistoryNavigationError_MissingNosniff) {
+  // The test assumes the previous page gets deleted after navigation and doing
+  // back navigation will recreate the page. Disable back/forward cache to
+  // ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const std::string wbn_path = "/web_bundle/test.wbn";
   const std::string primary_url_path = "/web_bundle/test.html";
   RegisterRequestHandler(wbn_path);
@@ -2718,6 +2793,11 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
                        HistoryNavigationError_UnexpectedRedirect) {
+  // The test assumes the previous page gets deleted after navigation and doing
+  // back navigation will recreate the page. Disable back/forward cache to
+  // ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const std::string wbn_path = "/web_bundle/test.wbn";
   const std::string primary_url_path = "/web_bundle/test.html";
   RegisterRequestHandler(wbn_path);
@@ -2747,6 +2827,10 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
                        HistoryNavigationError_ReadMetadataFailure) {
+  // The test assumes the previous page gets deleted after navigation. Disable
+  // back/forward cache to ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const std::string wbn_path = "/web_bundle/test.wbn";
   const std::string primary_url_path = "/web_bundle/test.html";
   RegisterRequestHandler(wbn_path);
@@ -2769,6 +2853,11 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
                        HistoryNavigationError_ExpectedUrlNotFound) {
+  // The test assumes the previous page gets deleted after navigation and doing
+  // back navigation will recreate the page. Disable back/forward cache to
+  // ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const std::string wbn_path = "/web_bundle/test.wbn";
   const std::string primary_url_path = "/web_bundle/test.html";
   const std::string alt_primary_url_path = "/web_bundle/alt.html";

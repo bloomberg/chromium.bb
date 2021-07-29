@@ -6,8 +6,8 @@
 
 #include <va/va.h>
 
+#include "base/cxx17_backports.h"
 #include "base/memory/aligned_memory.h"
-#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/cdm_context.h"
 #include "media/gpu/decode_surface_handler.h"
@@ -494,6 +494,17 @@ DecodeStatus H264VaapiVideoDecoderDelegate::SubmitSlice(
        ++i) {
     if (ref_pic_list1[i])
       FillVAPicture(&slice_param.RefPicList1[i], ref_pic_list1[i]);
+  }
+  if (IsTranscrypted()) {
+    CHECK_EQ(subsamples.size(), 1u);
+    return vaapi_wrapper_->SubmitBuffers(
+               {{VAProtectedSliceDataBufferType, GetDecryptKeyId().length(),
+                 GetDecryptKeyId().data()},
+                {VASliceParameterBufferType, sizeof(slice_param), &slice_param},
+                {VASliceDataBufferType, subsamples[0].cypher_bytes,
+                 data + subsamples[0].clear_bytes}})
+               ? DecodeStatus::kOk
+               : DecodeStatus::kFail;
   }
 
   return vaapi_wrapper_->SubmitBuffers(

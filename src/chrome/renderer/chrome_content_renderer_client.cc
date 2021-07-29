@@ -94,7 +94,6 @@
 #include "components/no_state_prefetch/renderer/prerender_render_frame_observer.h"
 #include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 #include "components/paint_preview/buildflags/buildflags.h"
-#include "components/pdf/renderer/pepper_pdf_host.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/renderer/threat_dom_details.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
@@ -119,7 +118,6 @@
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_visitor.h"
-#include "content/public/renderer/render_view.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/base/media_switches.h"
@@ -142,8 +140,10 @@
 #include "third_party/blink/public/platform/scheduler/web_renderer_process_type.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_cache.h"
+#include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -153,6 +153,7 @@
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_origin_trials.h"
+#include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_security_policy.h"
@@ -166,7 +167,6 @@
 #if defined(OS_ANDROID)
 #include "chrome/renderer/sandbox_status_extension_android.h"
 #include "components/continuous_search/renderer/search_result_extractor_impl.h"  // nogncheck
-#include "components/embedder_support/android/common/url_constants.h"
 #else
 #include "chrome/renderer/cart/commerce_hint_agent.h"
 #include "chrome/renderer/media/chrome_speech_recognition_client.h"
@@ -195,6 +195,7 @@
 #include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/manifest_handlers/csp_info.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
@@ -205,9 +206,11 @@
 #include "third_party/blink/public/web/web_view.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PDF_UNSEASONED)
-#include "pdf/pdf_view_web_plugin.h"
-#endif
+#if BUILDFLAG(ENABLE_PDF)
+#include "chrome/renderer/pdf/chrome_pdf_internal_plugin_delegate.h"
+#include "components/pdf/common/internal_plugin_helpers.h"
+#include "components/pdf/renderer/internal_plugin_renderer_helpers.h"
+#endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/common/plugin_utils.h"
@@ -225,6 +228,7 @@
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/renderer/pepper/chrome_pdf_print_client.h"
+#include "components/pdf/renderer/pepper_pdf_host.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW)
@@ -394,6 +398,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->RenderThreadStarted();
+  WebSecurityPolicy::RegisterURLSchemeAsExtension(
+      WebString::FromASCII(extensions::kExtensionScheme));
 #endif
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -453,7 +459,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
 #if defined(OS_ANDROID)
   WebSecurityPolicy::RegisterURLSchemeAsAllowedForReferrer(
-      WebString::FromUTF8(embedder_support::kAndroidAppScheme));
+      WebString::FromUTF8(content::kAndroidAppScheme));
 #endif
 
   // chrome-search: pages should not be accessible by bookmarklets
@@ -574,7 +580,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   if (!render_frame->IsMainFrame()) {
     auto* main_frame_no_state_prefetch_helper =
         prerender::NoStatePrefetchHelper::Get(
-            render_frame->GetRenderView()->GetMainRenderFrame());
+            render_frame->GetMainRenderFrame());
     if (main_frame_no_state_prefetch_helper) {
       // Avoid any race conditions from having the browser tell subframes that
       // they're no-state prefetching.
@@ -687,9 +693,8 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #endif
 }
 
-void ChromeContentRendererClient::RenderViewCreated(
-    content::RenderView* render_view) {
-  new prerender::NoStatePrefetchClient(render_view->GetWebView());
+void ChromeContentRendererClient::WebViewCreated(blink::WebView* web_view) {
+  new prerender::NoStatePrefetchClient(web_view);
 }
 
 SkBitmap* ChromeContentRendererClient::GetSadPluginBitmap() {
@@ -735,12 +740,31 @@ bool ChromeContentRendererClient::IsPluginHandledExternally(
         plugin_element);
     return false;
   }
+#if BUILDFLAG(ENABLE_PDF)
+  if (plugin_info->actual_mime_type == pdf::kInternalPluginMimeType &&
+      pdf::IsInternalPluginExternallyHandled()) {
+    // Only actually treat the internal PDF plugin as externally handled if
+    // used within an origin allowed to create the internal PDF plugin;
+    // otherwise, let Blink try to create the in-process PDF plugin.
+    url::Origin frame_origin = render_frame->GetWebFrame()->GetSecurityOrigin();
+    if (IsPdfInternalPluginAllowedOrigin(frame_origin)) {
+      // TODO(crbug.com/1225756): Until this is fixed, allow Print Preview to
+      // create the in-process plugin directly within its own frames.
+      if (frame_origin ==
+          url::Origin::Create(GURL(chrome::kChromeUIPrintURL))) {
+        DCHECK_EQ(original_url.GetOrigin(), chrome::kChromeUIPrintURL);
+        return false;
+      }
+      return true;
+    }
+  }
+#endif  // BUILDFLAG(ENABLE_PDF)
   return ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
       plugin_element, original_url, plugin_info->actual_mime_type,
       plugin_info->plugin);
-#else
+#else   // !(BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(ENABLE_PLUGINS))
   return false;
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(ENABLE_PLUGINS)
 }
 
 v8::Local<v8::Object> ChromeContentRendererClient::GetScriptableObject(
@@ -986,8 +1010,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         if (GURL(frame->GetDocument().Url()).host_piece() ==
             extension_misc::kPdfExtensionId) {
           if (!base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
-            auto* render_view = render_frame->GetRenderView();
-            auto* web_view = render_view ? render_view->GetWebView() : nullptr;
+            auto* web_view = render_frame->GetWebView();
             if (web_view) {
               web_view->GetSettings()->SetPreferredColorScheme(
                   blink::mojom::PreferredColorScheme::kLight);
@@ -1024,15 +1047,14 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           break;
         }
 
-#if BUILDFLAG(ENABLE_PDF_UNSEASONED)
+#if BUILDFLAG(ENABLE_PDF)
         if (info.name ==
             ASCIIToUTF16(ChromeContentClient::kPDFInternalPluginName)) {
-          // Create unseasoned PDF plugin directly, for development purposes.
-          // TODO(crbug.com/1123621): Implement a more permanent solution once
-          // the new PDF viewer process model is approved and in place.
-          return new chrome_pdf::PdfViewWebPlugin(params);
+          return pdf::CreateInternalPlugin(
+              info, std::move(params), render_frame,
+              std::make_unique<ChromePdfInternalPluginDelegate>(render_frame));
         }
-#endif  // BUILDFLAG(ENABLE_PDF_UNSEASONED)
+#endif  // BUILDFLAG(ENABLE_PDF)
 
         return render_frame->CreatePlugin(info, params);
       }
@@ -1660,5 +1682,30 @@ void ChromeContentRendererClient::DidSetUserAgent(
     const std::string& user_agent) {
 #if BUILDFLAG(ENABLE_PRINTING)
   printing::SetAgent(user_agent);
+#endif
+}
+
+void ChromeContentRendererClient::AppendContentSecurityPolicy(
+    const blink::WebURL& url,
+    blink::WebVector<blink::WebContentSecurityPolicyHeader>* csp) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  DCHECK(csp);
+  GURL gurl(url);
+  const extensions::Extension* extension =
+      extensions::RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(
+          gurl);
+  if (!extension)
+    return;
+
+  // Append a default CSP to ensure the extension can't relax the default
+  // applied CSP through means like Service Worker.
+  const std::string* default_csp =
+      extensions::CSPInfo::GetDefaultCSPToAppend(*extension, gurl.path());
+  if (!default_csp)
+    return;
+
+  csp->push_back({blink::WebString::FromUTF8(*default_csp),
+                  network::mojom::ContentSecurityPolicyType::kEnforce,
+                  network::mojom::ContentSecurityPolicySource::kHTTP});
 #endif
 }

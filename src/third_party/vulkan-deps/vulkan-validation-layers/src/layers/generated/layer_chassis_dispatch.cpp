@@ -8345,6 +8345,37 @@ void DispatchDestroyIndirectCommandsLayoutNV(
 
 }
 
+VkResult DispatchAcquireDrmDisplayEXT(
+    VkPhysicalDevice                            physicalDevice,
+    int32_t                                     drmFd,
+    VkDisplayKHR                                display)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(physicalDevice), layer_data_map);
+    if (!wrap_handles) return layer_data->instance_dispatch_table.AcquireDrmDisplayEXT(physicalDevice, drmFd, display);
+    {
+        display = layer_data->Unwrap(display);
+    }
+    VkResult result = layer_data->instance_dispatch_table.AcquireDrmDisplayEXT(physicalDevice, drmFd, display);
+
+    return result;
+}
+
+VkResult DispatchGetDrmDisplayEXT(
+    VkPhysicalDevice                            physicalDevice,
+    int32_t                                     drmFd,
+    uint32_t                                    connectorId,
+    VkDisplayKHR*                               display)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(physicalDevice), layer_data_map);
+    if (!wrap_handles) return layer_data->instance_dispatch_table.GetDrmDisplayEXT(physicalDevice, drmFd, connectorId, display);
+    {
+        display = layer_data->Unwrap(display);
+    }
+    VkResult result = layer_data->instance_dispatch_table.GetDrmDisplayEXT(physicalDevice, drmFd, connectorId, display);
+
+    return result;
+}
+
 VkResult DispatchCreatePrivateDataSlotEXT(
     VkDevice                                    device,
     const VkPrivateDataSlotCreateInfoEXT*       pCreateInfo,
@@ -8563,6 +8594,29 @@ VkResult DispatchGetSemaphoreZirconHandleFUCHSIA(
 }
 #endif // VK_USE_PLATFORM_FUCHSIA
 
+VkResult DispatchGetMemoryRemoteAddressNV(
+    VkDevice                                    device,
+    const VkMemoryGetRemoteAddressInfoNV*       getMemoryRemoteAddressInfo,
+    VkRemoteAddressNV*                          pAddress)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.GetMemoryRemoteAddressNV(device, getMemoryRemoteAddressInfo, pAddress);
+    safe_VkMemoryGetRemoteAddressInfoNV var_local_getMemoryRemoteAddressInfo;
+    safe_VkMemoryGetRemoteAddressInfoNV *local_getMemoryRemoteAddressInfo = NULL;
+    {
+        if (getMemoryRemoteAddressInfo) {
+            local_getMemoryRemoteAddressInfo = &var_local_getMemoryRemoteAddressInfo;
+            local_getMemoryRemoteAddressInfo->initialize(getMemoryRemoteAddressInfo);
+            if (getMemoryRemoteAddressInfo->memory) {
+                local_getMemoryRemoteAddressInfo->memory = layer_data->Unwrap(getMemoryRemoteAddressInfo->memory);
+            }
+        }
+    }
+    VkResult result = layer_data->device_dispatch_table.GetMemoryRemoteAddressNV(device, (const VkMemoryGetRemoteAddressInfoNV*)local_getMemoryRemoteAddressInfo, pAddress);
+
+    return result;
+}
+
 void DispatchCmdSetPatchControlPointsEXT(
     VkCommandBuffer                             commandBuffer,
     uint32_t                                    patchControlPoints)
@@ -8647,6 +8701,33 @@ void                                    DispatchCmdSetColorWriteEnableEXT(
 {
     auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
     layer_data->device_dispatch_table.CmdSetColorWriteEnableEXT(commandBuffer, attachmentCount, pColorWriteEnables);
+
+}
+
+void DispatchCmdDrawMultiEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    drawCount,
+    const VkMultiDrawInfoEXT*                   pVertexInfo,
+    uint32_t                                    instanceCount,
+    uint32_t                                    firstInstance,
+    uint32_t                                    stride)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    layer_data->device_dispatch_table.CmdDrawMultiEXT(commandBuffer, drawCount, pVertexInfo, instanceCount, firstInstance, stride);
+
+}
+
+void DispatchCmdDrawMultiIndexedEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    drawCount,
+    const VkMultiDrawIndexedInfoEXT*            pIndexInfo,
+    uint32_t                                    instanceCount,
+    uint32_t                                    firstInstance,
+    uint32_t                                    stride,
+    const int32_t*                              pVertexOffset)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    layer_data->device_dispatch_table.CmdDrawMultiIndexedEXT(commandBuffer, drawCount, pIndexInfo, instanceCount, firstInstance, stride, pVertexOffset);
 
 }
 

@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.UserDataHost;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.UiThreadTest;
@@ -91,7 +92,7 @@ public class ShoppingPersistedTabDataTest {
                 OptimizationGuideDecision.TRUE, null);
         PersistedTabDataConfiguration.setUseTestConfig(true);
         Profile.setLastUsedProfileForTesting(mProfileMock);
-        doReturn(true).when(mNavigationHandle).isInMainFrame();
+        doReturn(true).when(mNavigationHandle).isInPrimaryMainFrame();
     }
 
     @UiThreadTest
@@ -106,6 +107,8 @@ public class ShoppingPersistedTabDataTest {
         shoppingPersistedTabData.registerIsTabSaveEnabledSupplier(supplier);
         shoppingPersistedTabData.setPriceMicros(
                 ShoppingPersistedTabDataTestUtils.PRICE_MICROS, null);
+        shoppingPersistedTabData.setCurrencyCode(
+                ShoppingPersistedTabDataTestUtils.GREAT_BRITAIN_CURRENCY_CODE);
         ByteBuffer serialized = shoppingPersistedTabData.getSerializeSupplier().get();
         ShoppingPersistedTabData deserialized = new ShoppingPersistedTabData(tab);
         deserialized.deserialize(serialized);
@@ -113,6 +116,8 @@ public class ShoppingPersistedTabDataTest {
                 ShoppingPersistedTabDataTestUtils.PRICE_MICROS, deserialized.getPriceMicros());
         Assert.assertEquals(
                 ShoppingPersistedTabData.NO_PRICE_KNOWN, deserialized.getPreviousPriceMicros());
+        Assert.assertEquals(ShoppingPersistedTabDataTestUtils.GREAT_BRITAIN_CURRENCY_CODE,
+                deserialized.getCurrencyCode());
         MetricsResult metricsResult =
                 deserialized.getPriceDropMetricsLoggerForTesting().getMetricsResultForTesting();
         Assert.assertFalse(metricsResult.isProductDetailPage);
@@ -467,17 +472,40 @@ public class ShoppingPersistedTabDataTest {
     @UiThreadTest
     @SmallTest
     @Test
+    @CommandLineFlags.
+    Add({"force-fieldtrial-params=Study.Group:price_tracking_with_optimization_guide/true"})
     public void testNewUrlResetSPTD() {
         Tab tab = ShoppingPersistedTabDataTestUtils.createTabOnUiThread(
                 ShoppingPersistedTabDataTestUtils.TAB_ID,
                 ShoppingPersistedTabDataTestUtils.IS_INCOGNITO);
-        ShoppingPersistedTabData shoppingPersistedTabData = new ShoppingPersistedTabData(tab);
-        shoppingPersistedTabData.setPriceMicros(42_000_000L);
-        shoppingPersistedTabData.setPreviousPriceMicros(60_000_000L);
-        shoppingPersistedTabData.setCurrencyCode("USD");
-        Assert.assertNotNull(shoppingPersistedTabData.getPriceDrop());
-        shoppingPersistedTabData.getUrlUpdatedObserverForTesting().onUrlUpdated(tab);
-        Assert.assertNull(shoppingPersistedTabData.getPriceDrop());
+        ShoppingPersistedTabDataTestUtils.mockOptimizationGuideResponse(
+                mOptimizationGuideBridgeJniMock,
+                HintsProto.OptimizationType.PRICE_TRACKING.getNumber(),
+                ShoppingPersistedTabDataTestUtils.MockPriceTrackingResponse.NONE);
+        ShoppingPersistedTabDataTestUtils.mockOptimizationGuideResponse(
+                mOptimizationGuideBridgeJniMock,
+                HintsProto.OptimizationType.SHOPPING_PAGE_PREDICTOR.getNumber(),
+                OptimizationGuideDecision.TRUE, null);
+        NavigationHandle navigationHandle = mock(NavigationHandle.class);
+        for (boolean isInPrimaryMainFrame : new boolean[] {false, true}) {
+            for (boolean isSameDocument : new boolean[] {false, true}) {
+                ShoppingPersistedTabData shoppingPersistedTabData =
+                        new ShoppingPersistedTabData(tab);
+                shoppingPersistedTabData.setPriceMicros(42_000_000L);
+                shoppingPersistedTabData.setPreviousPriceMicros(60_000_000L);
+                shoppingPersistedTabData.setCurrencyCode("USD");
+                Assert.assertNotNull(shoppingPersistedTabData.getPriceDrop());
+                doReturn(isInPrimaryMainFrame).when(navigationHandle).isInPrimaryMainFrame();
+                doReturn(isSameDocument).when(navigationHandle).isSameDocument();
+                shoppingPersistedTabData.getUrlUpdatedObserverForTesting().onDidFinishNavigation(
+                        tab, navigationHandle);
+                if (isInPrimaryMainFrame && !isSameDocument) {
+                    Assert.assertNull(shoppingPersistedTabData.getPriceDrop());
+                } else {
+                    Assert.assertNotNull(shoppingPersistedTabData.getPriceDrop());
+                }
+            }
+        }
     }
 
     @UiThreadTest
@@ -614,7 +642,7 @@ public class ShoppingPersistedTabDataTest {
         Tab tab = new MockTab(ShoppingPersistedTabDataTestUtils.TAB_ID,
                 ShoppingPersistedTabDataTestUtils.IS_INCOGNITO);
         ShoppingPersistedTabData shoppingPersistedTabData = new ShoppingPersistedTabData(tab);
-        doReturn(true).when(mNavigationHandle).isInMainFrame();
+        doReturn(true).when(mNavigationHandle).isInPrimaryMainFrame();
         GURL gurl = new GURL("https://www.google.com");
         doReturn(gurl).when(mNavigationHandle).getUrl();
         shoppingPersistedTabData.getUrlUpdatedObserverForTesting().onDidFinishNavigation(
@@ -733,5 +761,58 @@ public class ShoppingPersistedTabDataTest {
             callbackHelper.notifyCalled();
         });
         callbackHelper.waitForCallback(0);
+    }
+
+    @UiThreadTest
+    @SmallTest
+    @Test
+    public void testUninitializedTabDisabled() throws TimeoutException {
+        TabImpl tab = mock(TabImpl.class);
+        doReturn(false).when(tab).isInitialized();
+        CallbackHelper callbackHelper = new CallbackHelper();
+        ShoppingPersistedTabData.from(tab, (res) -> {
+            Assert.assertNull(res);
+            callbackHelper.notifyCalled();
+        });
+        callbackHelper.waitForCallback(0);
+    }
+
+    @SmallTest
+    @Test
+    @CommandLineFlags.
+    Add({"force-fieldtrial-params=Study.Group:price_tracking_with_optimization_guide/true"})
+    public void testTabDestroyedSupplier() {
+        ShoppingPersistedTabDataTestUtils.mockOptimizationGuideResponse(
+                mOptimizationGuideBridgeJniMock,
+                HintsProto.OptimizationType.PRICE_TRACKING.getNumber(),
+                ShoppingPersistedTabDataTestUtils.MockPriceTrackingResponse
+                        .BUYABLE_PRODUCT_INITIAL);
+        ShoppingPersistedTabDataTestUtils.mockOptimizationGuideResponse(
+                mOptimizationGuideBridgeJniMock,
+                HintsProto.OptimizationType.SHOPPING_PAGE_PREDICTOR.getNumber(),
+                OptimizationGuideDecision.TRUE, null);
+        TabImpl tab = mock(TabImpl.class);
+        doReturn(ShoppingPersistedTabDataTestUtils.TAB_ID).when(tab).getId();
+        doReturn(ShoppingPersistedTabDataTestUtils.IS_INCOGNITO).when(tab).isIncognito();
+        CriticalPersistedTabData criticalPersistedTabData = new CriticalPersistedTabData(tab);
+        criticalPersistedTabData.setTimestampMillis(
+                System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1));
+        for (boolean isInitialized : new boolean[] {false, true}) {
+            doReturn(isInitialized).when(tab).isInitialized();
+            Semaphore semaphore = new Semaphore(0);
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                UserDataHost userDataHost = new UserDataHost();
+                userDataHost.setUserData(CriticalPersistedTabData.class, criticalPersistedTabData);
+                doReturn(userDataHost).when(tab).getUserDataHost();
+                ShoppingPersistedTabData.from(tab, (shoppingPersistedTabData) -> {
+                    if (isInitialized) {
+                        Assert.assertNotNull(shoppingPersistedTabData);
+                    } else {
+                        Assert.assertNull(shoppingPersistedTabData);
+                    }
+                    semaphore.release();
+                });
+            });
+        }
     }
 }

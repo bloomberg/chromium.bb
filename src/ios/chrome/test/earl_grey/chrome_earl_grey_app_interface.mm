@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
-#import "base/test/ios/wait_util.h"
 
 #include "base/command_line.h"
 #import "base/ios/ios_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -18,7 +18,6 @@
 #include "components/metrics/demographics/demographic_metrics_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/pref_names.h"
-#import "components/ukm/ios/features.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_ids_provider.h"
@@ -34,7 +33,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/menu_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
@@ -53,6 +51,7 @@
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/testing/hardware_keyboard_util.h"
 #import "ios/testing/nserror_util.h"
+#import "ios/testing/open_url_context.h"
 #include "ios/testing/verify_custom_webkit.h"
 #import "ios/web/common/features.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
@@ -63,6 +62,7 @@
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
+#import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
 #include "net/base/mac/url_conversions.h"
@@ -146,11 +146,15 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
       @"Clearing web state browsing data for main tabs timed out");
 }
 
-+ (void)applicationOpenURL:(NSString*)spec {
++ (void)sceneOpenURL:(NSString*)spec {
+  NSURL* url = [NSURL URLWithString:spec];
+  TestOpenURLContext* context = [[TestOpenURLContext alloc] init];
+  context.URL = url;
+
   UIApplication* application = UIApplication.sharedApplication;
-  [application.delegate application:application
-                            openURL:[NSURL URLWithString:spec]
-                            options:[NSDictionary dictionary]];
+  UIScene* scene = application.connectedScenes.anyObject;
+
+  [scene.delegate scene:scene openURLContexts:[NSSet setWithObject:context]];
 }
 
 + (void)startLoadingURL:(NSString*)spec {
@@ -458,32 +462,26 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
 + (void)closeAllExtraWindows {
   if (!base::ios::IsMultipleScenesSupported())
     return;
-
-  if (@available(iOS 13, *)) {
-    NSSet<UISceneSession*>* sessions =
-        UIApplication.sharedApplication.openSessions;
-    if (sessions.count <= 1)
-      return;
-    BOOL foundForegroundScene = NO;
-    for (UISceneSession* session in sessions) {
-      UIScene* scene = session.scene;
-      if (!foundForegroundScene && scene &&
-          (scene.activationState == UISceneActivationStateForegroundActive ||
-           scene.activationState == UISceneActivationStateForegroundInactive)) {
-        foundForegroundScene = YES;
-        // Leave the first foreground scene connected, so there's one open
-        // window left.
-        continue;
-      }
-      // If this isn't the first foreground scene, destroy it.
-      UIWindowSceneDestructionRequestOptions* options =
-          [[UIWindowSceneDestructionRequestOptions alloc] init];
-      options.windowDismissalAnimation =
-          UIWindowSceneDismissalAnimationStandard;
-      [UIApplication.sharedApplication requestSceneSessionDestruction:session
-                                                              options:options
-                                                         errorHandler:nil];
+  SceneState* foreground_scene_state =
+      chrome_test_util::GetMainController().appState.foregroundActiveScene;
+  // New windows get an accessibilityIdentifier equal to the number of windows
+  // when they are created.
+  // Renumber the remaining window to avoid conflicts with future windows.
+  foreground_scene_state.window.accessibilityIdentifier = @"0";
+  NSSet<UISceneSession*>* sessions =
+      UIApplication.sharedApplication.openSessions;
+  if (sessions.count <= 1)
+    return;
+  for (UISceneSession* session in sessions) {
+    if (foreground_scene_state.scene == session.scene) {
+      continue;
     }
+    UIWindowSceneDestructionRequestOptions* options =
+        [[UIWindowSceneDestructionRequestOptions alloc] init];
+    options.windowDismissalAnimation = UIWindowSceneDismissalAnimationStandard;
+    [UIApplication.sharedApplication requestSceneSessionDestruction:session
+                                                            options:options
+                                                       errorHandler:nil];
   }
 }
 
@@ -523,15 +521,6 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
 + (NSUInteger)incognitoTabCountInWindowWithNumber:(int)windowNumber {
   return chrome_test_util::GetIncognitoTabCountForWindowWithNumber(
       windowNumber);
-}
-
-// Disables default browser promo. If a test needs to check a message drop down
-// in a second window, this needs to be disabled or the popup will kill the
-// message.
-+ (void)disableDefaultBrowserPromo {
-  chrome_test_util::GetMainController().appState.shouldShowDefaultBrowserPromo =
-      NO;
-  LogUserInteractionWithFullscreenPromo();
 }
 
 #pragma mark - WebState Utilities (EG2)
@@ -642,6 +631,25 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
     return testing::NSErrorWithLocalizedDescription(errorString);
   }
 
+  return nil;
+}
+
++ (NSError*)waitForWebStateZoomScale:(CGFloat)scale {
+  bool success = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+    web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+    if (!web_state) {
+      return false;
+    }
+
+    CGFloat current_scale =
+        [[web_state->GetWebViewProxy() scrollViewProxy] zoomScale];
+    return (current_scale > (scale - 0.05)) && (current_scale < (scale + 0.05));
+  });
+  if (!success) {
+    NSString* NSErrorDescription = [NSString
+        stringWithFormat:@"Failed waiting for web state zoom scale %f", scale];
+    return testing::NSErrorWithLocalizedDescription(NSErrorDescription);
+  }
   return nil;
 }
 
@@ -984,10 +992,6 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
   return std::find(ids.begin(), ids.end(), variationID) != ids.end();
 }
 
-+ (BOOL)isUMACellularEnabled {
-  return base::FeatureList::IsEnabled(kUmaCellular);
-}
-
 + (BOOL)isUKMEnabled {
   return base::FeatureList::IsEnabled(ukm::kUkmFeature);
 }
@@ -1023,10 +1027,6 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
           chrome_test_util::GetCurrentWebState()->GetView(), GURL());
 
   return webClientUserAgent == web::UserAgentType::MOBILE;
-}
-
-+ (BOOL)isNativeContextMenusEnabled {
-  return IsNativeContextMenuEnabled();
 }
 
 + (BOOL)areMultipleWindowsSupported {
@@ -1208,6 +1208,33 @@ int watchRunNumber = 0;
     [watchedButtons addObject:view.accessibilityLabel];
     [watchingButtons removeObject:view.accessibilityLabel];
   }
+}
+
+#pragma mark - Default Browser Promo Utilities
+
++ (void)clearDefaultBrowserPromoData {
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  NSArray<NSString*>* keys = @[
+    @"lastTimeUserInteractedWithFullscreenPromo",
+    @"userHasInteractedWithFullscreenPromo",
+    @"userHasInteractedWithTailoredFullscreenPromo",
+    @"userInteractedWithNonModalPromoCount",
+    @"remindMeLaterPromoActionInteraction",
+  ];
+  for (NSString* key in keys) {
+    [defaults removeObjectForKey:key];
+  }
+}
+
++ (void)copyURLToPasteBoard {
+  UIPasteboard* pasteboard = UIPasteboard.generalPasteboard;
+  pasteboard.URL = [NSURL URLWithString:@"chrome://version"];
+}
+
++ (void)disableDefaultBrowserPromo {
+  chrome_test_util::GetMainController().appState.shouldShowDefaultBrowserPromo =
+      NO;
+  LogUserInteractionWithFullscreenPromo();
 }
 
 @end

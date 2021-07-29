@@ -20,7 +20,7 @@
 
 /**
  * @file
- * Caculate the Identity between two input videos.
+ * Calculate the Identity between two input videos.
  */
 
 #include "libavutil/avstring.h"
@@ -296,7 +296,7 @@ static int config_input_ref(AVFilterLink *inlink)
     if (!s->scores)
         return AVERROR(ENOMEM);
 
-    for (int t = 0; t < s->nb_threads && s->scores; t++) {
+    for (int t = 0; t < s->nb_threads; t++) {
         s->scores[t] = av_calloc(s->nb_components, sizeof(*s->scores[0]));
         if (!s->scores[t])
             return AVERROR(ENOMEM);
@@ -413,7 +413,7 @@ static const AVOption options[] = {
 #define identity_options options
 FRAMESYNC_DEFINE_CLASS(identity, IdentityContext, fs);
 
-AVFilter ff_vf_identity = {
+const AVFilter ff_vf_identity = {
     .name          = "identity",
     .description   = NULL_IF_CONFIG_SMALL("Calculate the Identity between two video streams."),
     .preinit       = identity_framesync_preinit,
@@ -435,7 +435,7 @@ AVFilter ff_vf_identity = {
 #define msad_options options
 FRAMESYNC_DEFINE_CLASS(msad, IdentityContext, fs);
 
-AVFilter ff_vf_msad = {
+const AVFilter ff_vf_msad = {
     .name          = "msad",
     .description   = NULL_IF_CONFIG_SMALL("Calculate the MSAD between two video streams."),
     .preinit       = msad_framesync_preinit,

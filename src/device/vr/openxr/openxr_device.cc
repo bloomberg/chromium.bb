@@ -8,7 +8,9 @@
 
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "device/base/features.h"
 #include "device/vr/openxr/openxr_api_wrapper.h"
 #include "device/vr/openxr/openxr_render_loop.h"
 #include "device/vr/openxr/openxr_statics.h"
@@ -53,6 +55,20 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo() {
   return display_info;
 }
 
+const std::vector<mojom::XRSessionFeature>& GetSupportedFeatures() {
+  static base::NoDestructor<std::vector<mojom::XRSessionFeature>>
+      kSupportedFeatures{{
+    mojom::XRSessionFeature::REF_SPACE_VIEWER,
+    mojom::XRSessionFeature::REF_SPACE_LOCAL,
+    mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
+    mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR,
+    mojom::XRSessionFeature::REF_SPACE_UNBOUNDED,
+    mojom::XRSessionFeature::ANCHORS,
+  }};
+
+  return *kSupportedFeatures;
+}
+
 }  // namespace
 
 // OpenXrDevice must not take ownership of the OpenXrStatics passed in.
@@ -72,6 +88,21 @@ OpenXrDevice::OpenXrDevice(
 #if defined(OS_WIN)
   SetLuid(openxr_statics->GetLuid(extension_helper_));
 #endif
+
+  std::vector<mojom::XRSessionFeature> device_features(
+        GetSupportedFeatures());
+
+  // Only support hand input if the feature flag is enabled.
+  if (base::FeatureList::IsEnabled(features::kWebXrHandInput))
+    device_features.emplace_back(mojom::XRSessionFeature::HAND_INPUT);
+
+  // Only support hit test if the feature flag is enabled.
+  if (base::FeatureList::IsEnabled(features::kWebXrHitTest) &&
+      base::FeatureList::IsEnabled(
+                  features::kOpenXrExtendedFeatureSupport))
+    device_features.emplace_back(mojom::XRSessionFeature::HIT_TEST);
+
+  SetSupportedFeatures(device_features);
 }
 
 OpenXrDevice::~OpenXrDevice() {
@@ -124,8 +155,14 @@ void OpenXrDevice::RequestSession(
   const bool hand_input_supported =
       extension_helper_.ExtensionEnumeration()->ExtensionSupported(
           kMSFTHandInteractionExtensionName);
+  const bool hittest_required = base::Contains(
+      options->required_features, device::mojom::XRSessionFeature::HIT_TEST);
+  const bool hittest_supported =
+      extension_helper_.ExtensionEnumeration()->ExtensionSupported(
+          XR_MSFT_SCENE_UNDERSTANDING_EXTENSION_NAME);
   if ((anchors_required && !anchors_supported) ||
-      (hand_input_required && !hand_input_supported)) {
+      (hand_input_required && !hand_input_supported) ||
+      (hittest_required && !hittest_supported)) {
     // Reject session request
     std::move(callback).Run(nullptr);
     return;

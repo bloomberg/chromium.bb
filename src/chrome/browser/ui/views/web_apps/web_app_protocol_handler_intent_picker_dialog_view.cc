@@ -10,17 +10,19 @@
 
 #include "base/callback_forward.h"
 #include "base/check_op.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/web_apps/web_app_hover_button.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -151,10 +153,11 @@ void WebAppProtocolHandlerIntentPickerView::Initialize() {
       views::BoxLayout::Orientation::kVertical));
 
   web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile_);
-  web_app::AppRegistrar& registrar = provider->registrar();
+  web_app::WebAppRegistrar& registrar = provider->registrar();
   auto app_button = std::make_unique<WebAppHoverButton>(
       views::Button::PressedCallback(), app_id_, provider,
-      registrar.GetAppShortName(app_id_), registrar.GetAppStartUrl(app_id_));
+      base::UTF8ToUTF16(registrar.GetAppShortName(app_id_)),
+      registrar.GetAppStartUrl(app_id_));
   app_button->set_tag(0);
   app_button->SetTooltipAndAccessibleName();
   scrollable_view->AddChildViewAt(std::move(app_button), 0);
@@ -196,8 +199,6 @@ void ShowWebAppProtocolHandlerIntentPicker(
     Profile* profile,
     const web_app::AppId& app_id,
     WebAppProtocolHandlerAcceptanceCallback close_callback) {
-  // TODO(crbug.com/1105257)::Check if we have permission to
-  // launch the app directly.
   auto profile_keep_alive = std::make_unique<ScopedProfileKeepAlive>(
       profile, ProfileKeepAliveOrigin::kWebAppPermissionDialogWindow);
   auto keep_alive = std::make_unique<ScopedKeepAlive>(

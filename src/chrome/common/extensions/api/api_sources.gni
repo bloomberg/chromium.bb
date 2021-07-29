@@ -10,7 +10,6 @@ assert(enable_extensions)
 
 schema_sources_ = [
   "accessibility_features.json",
-  "accessibility_private.json",
   "activity_log_private.json",
   "autofill_private.idl",
   "autotest_private.idl",
@@ -78,6 +77,7 @@ if (!is_android) {
 if (is_chromeos_ash || is_chromeos_lacros) {
   schema_sources_ += [
     "enterprise_device_attributes.idl",
+    "enterprise_networking_attributes.idl",
     "enterprise_platform_keys.idl",
     "enterprise_platform_keys_internal.idl",
     "platform_keys_internal.idl",
@@ -87,11 +87,11 @@ if (is_chromeos_ash || is_chromeos_lacros) {
 
 if (is_chromeos_ash) {
   schema_sources_ += [
+    "accessibility_private.json",
     "certificate_provider.idl",
     "certificate_provider_internal.idl",
     "document_scan.idl",
     "echo_private.json",
-    "enterprise_networking_attributes.idl",
     "enterprise_platform_keys_private.json",
     "file_browser_handler_internal.json",
     "file_manager_private.idl",
@@ -109,6 +109,7 @@ if (is_chromeos_ash) {
     "users_private.idl",
     "wallpaper.json",
     "wallpaper_private.json",
+    "wm_desks_private.idl",
   ]
   if (use_cups) {
     schema_sources_ += [
@@ -122,10 +123,6 @@ if (is_chromeos_ash) {
 
 if (enable_service_discovery) {
   schema_sources_ += [ "mdns.idl" ]
-}
-
-if (enable_autofill_assistant_api) {
-  schema_sources_ += [ "autofill_assistant_private.idl" ]
 }
 
 uncompiled_sources_ = [
@@ -148,7 +145,11 @@ if (is_chromeos_ash) {
 chrome_extensions_api_schema_sources = get_path_info(schema_sources_, "abspath")
 
 chrome_extensions_manifest_only_schema_sources =
-    get_path_info([ "manifest_types.json" ], "abspath")
+    get_path_info([
+                    "manifest_types.json",
+                    "chrome_url_overrides.idl",
+                  ],
+                  "abspath")
 
 chrome_extensions_api_uncompiled_sources =
     get_path_info(uncompiled_sources_, "abspath")

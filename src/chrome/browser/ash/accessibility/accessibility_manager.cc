@@ -13,14 +13,14 @@
 
 #include "ash/accessibility/sticky_keys/sticky_keys_controller.h"
 #include "ash/components/audio/sounds.h"
+#include "ash/constants/ash_constants.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/public/cpp/accessibility_focus_ring_controller.h"
 #include "ash/public/cpp/accessibility_focus_ring_info.h"
-#include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -37,17 +37,16 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/accessibility/accessibility_extension_api.h"
+#include "chrome/browser/accessibility/accessibility_extension_api_chromeos.h"
 #include "chrome/browser/ash/accessibility/accessibility_extension_loader.h"
 #include "chrome/browser/ash/accessibility/dictation.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
 #include "chrome/browser/ash/accessibility/select_to_speak_event_handler_delegate_impl.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -84,6 +83,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_resource.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -839,20 +839,35 @@ bool AccessibilityManager::IsDictationEnabled() const {
                          prefs::kAccessibilityDictationEnabled);
 }
 
-void AccessibilityManager::OnDictationChanged() {
+void AccessibilityManager::OnDictationChanged(bool triggered_by_user) {
   OnAccessibilityCommonChanged(prefs::kAccessibilityDictationEnabled);
   if (!profile_)
     return;
 
-  // Only need to check SODA installation if offline dictation is enabled.
-  if (!::switches::IsExperimentalAccessibilityDictationOfflineEnabled())
+  // Only need to check SODA installation and locale preference if offline
+  // dictation is enabled.
+  if (!features::IsExperimentalAccessibilityDictationOfflineEnabled())
     return;
 
-  // Note: OnDictationChanged should not be called at start-up or it will
-  // push back SODA deletion each time start-up occurs with dictation disabled.
   const bool enabled =
       profile_->GetPrefs()->GetBoolean(prefs::kAccessibilityDictationEnabled);
-  if (!enabled) {
+  if (enabled && profile_->GetPrefs()
+                     ->GetString(prefs::kAccessibilityDictationLocale)
+                     .empty()) {
+    // Dictation was turned on but the language pref isn't set yet. Determine if
+    // this is an upgrade (Dictation was enabled at start-up and the toggle was
+    // not triggered by a user) or a new user (Dictation was just enabled in
+    // settings) and pick the language accordingly.
+    const std::string locale = Dictation::DetermineDefaultSupportedLocale(
+        profile_, /*new_user=*/triggered_by_user);
+    profile_->GetPrefs()->SetString(prefs::kAccessibilityDictationLocale,
+                                    locale);
+  }
+
+  if (triggered_by_user && !enabled) {
+    // Note: This should not be called at start-up or it will
+    // push back SODA deletion each time start-up occurs with dictation
+    // disabled.
     speech::SodaInstaller::GetInstance()->SetUninstallTimer(
         profile_->GetPrefs(), g_browser_process->local_state());
   }
@@ -1190,7 +1205,8 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     pref_change_registrar_->Add(
         prefs::kAccessibilityDictationEnabled,
         base::BindRepeating(&AccessibilityManager::OnDictationChanged,
-                            base::Unretained(this)));
+                            base::Unretained(this),
+                            /*triggered_by_user=*/true));
 
     for (const std::string& feature : kAccessibilityCommonFeatures) {
       pref_change_registrar_->Add(
@@ -1241,10 +1257,8 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     OnAccessibilityCommonChanged(feature);
   // Dictation is not in kAccessibilityCommonFeatures because it needs to
   // be handled in OnDictationChanged also. OnDictationChanged will call to
-  // OnAccessibilityCommonChanged. However, OnDictationChanged shouldn't
-  // be called at start-up, so we call OnAccessibilityCommonChanged directly
-  // for dictation.
-  OnAccessibilityCommonChanged(prefs::kAccessibilityDictationEnabled);
+  // OnAccessibilityCommonChanged.
+  OnDictationChanged(/*triggered_by_user=*/false);
 }
 
 void AccessibilityManager::SetProfileByUser(const user_manager::User* user) {
@@ -1283,14 +1297,11 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
   if (details.notification_type ==
       AccessibilityNotificationType::kToggleDictation) {
     AccessibilityController::Get()->SetDictationActive(details.enabled);
-    AccessibilityController::Get()->NotifyAccessibilityStatusChanged();
-    return;
   }
 
   // Update system tray menu visibility. Prefs tracked inside ash handle their
   // own updates to avoid race conditions (pref updates are asynchronous between
   // chrome and ash).
-  // TODO(hferreiro): repeated condition
   if (details.notification_type ==
           AccessibilityNotificationType::kToggleScreenMagnifier ||
       details.notification_type ==
@@ -1587,10 +1598,29 @@ bool AccessibilityManager::ToggleDictation() {
   if (!profile_)
     return false;
 
-  if (!dictation_.get())
-    dictation_ = std::make_unique<Dictation>(profile_);
+  if (!::switches::IsExperimentalAccessibilityDictationExtensionEnabled()) {
+    if (!dictation_.get())
+      dictation_ = std::make_unique<Dictation>(profile_);
 
-  return dictation_->OnToggleDictation();
+    return dictation_->OnToggleDictation();
+  }
+
+  // We are using AccessibilityCommon extension instead of Dictation C++,
+  // so track Dictation state and simply send a notification to the
+  // AccessibilityPrivate API.
+  dictation_active_ = !dictation_active_;
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile_);
+  auto event_args = std::vector<base::Value>();
+  event_args.emplace_back(dictation_active_);
+  auto event = std::make_unique<extensions::Event>(
+      extensions::events::ACCESSIBILITY_PRIVATE_ON_TOGGLE_DICTATION,
+      extensions::api::accessibility_private::OnToggleDictation::kEventName,
+      std::move(event_args));
+  event_router->DispatchEventWithLazyListener(
+      extension_misc::kAccessibilityCommonExtensionId, std::move(event));
+
+  return dictation_active_;
 }
 
 const std::string AccessibilityManager::GetFocusRingId(

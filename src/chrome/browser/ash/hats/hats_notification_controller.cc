@@ -18,10 +18,10 @@
 #include "chrome/browser/ash/hats/hats_dialog.h"
 #include "chrome/browser/ash/hats/hats_finch_helper.h"
 #include "chrome/browser/ash/login/startup_utils.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -72,10 +72,19 @@ bool IsNewDevice(base::TimeDelta new_device_threshold) {
          new_device_threshold;
 }
 
-// Returns true if the |kForceHappinessTrackingSystem| flag is enabled.
-bool IsTestingEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kForceHappinessTrackingSystem);
+// Returns true if the |kForceHappinessTrackingSystem| flag is enabled for the
+// current survey.
+bool IsTestingEnabled(const ash::HatsConfig& hats_config) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  if (command_line->HasSwitch(
+          chromeos::switches::kForceHappinessTrackingSystem)) {
+    auto switch_value = command_line->GetSwitchValueASCII(
+        chromeos::switches::kForceHappinessTrackingSystem);
+    return switch_value.empty() || hats_config.feature.name == switch_value;
+  }
+
+  return false;
 }
 
 }  // namespace
@@ -110,7 +119,7 @@ HatsNotificationController::~HatsNotificationController() {
 void HatsNotificationController::Initialize(bool is_new_device) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (is_new_device && !IsTestingEnabled()) {
+  if (is_new_device && !IsTestingEnabled(hats_config_)) {
     // This device has been chosen for a survey, but it is too new. Instead
     // of showing the user the survey, just mark it as completed.
     UpdateLastInteractionTime();
@@ -130,7 +139,7 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(
     const HatsConfig& hats_config) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (IsTestingEnabled())
+  if (IsTestingEnabled(hats_config))
     return true;
 
   // Do not show the survey if the HaTS feature is disabled for the device. This
@@ -149,7 +158,7 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(
 
   const bool is_enterprise_enrolled = g_browser_process->platform_part()
                                           ->browser_policy_connector_chromeos()
-                                          ->IsEnterpriseManaged();
+                                          ->IsDeviceEnterpriseManaged();
 
   // Do not show survey if this is a non dogfood enterprise enrolled device.
   if (is_enterprise_enrolled &&

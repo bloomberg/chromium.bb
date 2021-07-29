@@ -28,12 +28,14 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/sequence_bound.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/media/frameless_media_interface_proxy.h"
 #include "content/browser/media/media_internals.h"
+#include "content/browser/renderer_host/code_cache_host_impl.h"
 #include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
 #include "content/browser/renderer_host/media/aec_dump_manager_impl.h"
 #include "content/browser/renderer_host/render_process_host_internal_observer.h"
@@ -58,11 +60,11 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "net/base/network_isolation_key.h"
 #include "net/net_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/network/public/mojom/mdns_responder.mojom-forward.h"
 #include "services/network/public/mojom/p2p.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -84,6 +86,7 @@
 #include "third_party/blink/public/mojom/plugins/plugin_registry.mojom-forward.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-forward.h"
 #include "third_party/blink/public/mojom/webdatabase/web_database.mojom-forward.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_proto.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -104,9 +107,21 @@ namespace tracing {
 class SystemTracingService;
 }
 
+namespace perfetto {
+namespace protos {
+namespace pbzero {
+class RenderProcessHost;
+}
+}  // namespace protos
+}  // namespace perfetto
+
 namespace viz {
 class GpuClient;
 }
+
+namespace blink {
+class StorageKey;
+}  // namespace blink
 
 namespace content {
 class AgentSchedulingGroupHost;
@@ -165,6 +180,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Special depth used when there are no PriorityClients.
   static const unsigned int kMaxFrameDepthForPriority;
 
+  // Exposed as a public constant to share with other entities that need to
+  // accommodate frame/process shutdown delays.
+  static constexpr int kKeepAliveHandleFactoryTimeoutInMSec = 30 * 1000;
+  static const base::TimeDelta kKeepAliveHandleFactoryTimeout;
+
   // Create a new RenderProcessHost. The storage partition for the process
   // is retrieved from |browser_context| based on information in
   // |site_instance|. The default storage partition is selected if
@@ -192,6 +212,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   unsigned int GetFrameDepth() override;
   bool GetIntersectsViewport() override;
   bool IsForGuestsOnly() override;
+  bool IsJitDisabled() override;
   StoragePartition* GetStoragePartition() override;
   bool Shutdown(int exit_code) override;
   bool ShutdownRequested() override;
@@ -235,7 +256,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void BindReceiver(mojo::GenericPendingReceiver receiver) override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
-  const base::TimeTicks& GetInitTimeForNavigationMetrics() override;
+  const base::TimeTicks& GetLastInitTime() override;
   bool IsProcessBackgrounded() override;
   void IncrementKeepAliveRefCount() override;
   void DecrementKeepAliveRefCount() override;
@@ -258,10 +279,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override;
   void BindIndexedDB(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void BindBucketManagerHost(
       const url::Origin& origin,
@@ -295,6 +316,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void mark_child_process_activity_time() {
     child_process_activity_time_ = base::TimeTicks::Now();
   }
+
+  void WriteIntoTrace(
+      perfetto::TracedProto<perfetto::protos::pbzero::RenderProcessHost> proto);
 
   // Return the set of previously stored frame tokens for a |new_routing_id|.
   // The frame tokens were stored on the IO thread via the
@@ -457,8 +481,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Allows external code to supply a callback that is invoked immediately
   // after the CodeCacheHostImpl is created and bound.  Used for swapping
   // the binding for a test version of the service.
-  using CodeCacheHostReceiverHandler =
-      base::RepeatingCallback<void(RenderProcessHost*, CodeCacheHostImpl*)>;
+  using CodeCacheHostReceiverHandler = base::RepeatingCallback<void(
+      CodeCacheHostImpl*,
+      mojo::ReceiverId,
+      mojo::UniqueReceiverSet<blink::mojom::CodeCacheHost>&)>;
   static void SetCodeCacheHostReceiverHandlerForTesting(
       CodeCacheHostReceiverHandler handler);
 
@@ -542,6 +568,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
                             const base::TimeDelta& unload_handler_timeout,
                             const SiteInfo& site_info);
   bool IsProcessShutdownDelayedForTesting() { return is_shutdown_delayed_; }
+  // Remove the host from the delayed-shutdown tracker, if present. This does
+  // not decrement |keep_alive_ref_count_|; if it was incremented by a shutdown
+  // delay, it will be decremented when the delay expires. This ensures that
+  // the host is not destroyed between cancelling its shutdown delay and the new
+  // navigation adding listeners to keep it alive.
   void CancelAllProcessShutdownDelays() override;
 
   // Binds |receiver| to the FileSystemManager instance owned by the render
@@ -560,7 +591,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Binds |receiver| to a NativeIOHost instance indirectly owned by the
   // StoragePartition. Used by frames and workers via BrowserInterfaceBroker.
   void BindNativeIOHost(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::NativeIOHost> receiver);
 
   FileSystemManagerImpl* GetFileSystemManagerForTesting() {
@@ -733,7 +764,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
     // Indicates whether this RenderProcessHost is exclusively hosting guest
     // RenderFrames.
-    kForGuestsOnly = 1 << 0
+    kForGuestsOnly = 1 << 0,
+
+    // Indicates whether JavaScript JIT will be disabled for the renderer
+    // process hosted by this RenderProcessHost.
+    kJitDisabled = 1 << 1
   };
 
   // Use CreateRenderProcessHost() instead of calling this constructor
@@ -871,11 +906,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static RenderProcessHost* FindReusableProcessHostForSiteInstance(
       SiteInstanceImpl* site_instance);
 
-#if BUILDFLAG(ENABLE_MDNS)
-  void CreateMdnsResponder(
-      mojo::PendingReceiver<network::mojom::MdnsResponder> receiver);
-#endif  // BUILDFLAG(ENABLE_MDNS)
-
   void NotifyRendererOfLockedStateUpdate();
   void PopulateTerminationInfoRendererFields(ChildProcessTerminationInfo* info);
 
@@ -1001,8 +1031,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // True after ProcessDied(), until the next call to Init().
   bool is_dead_ = false;
 
-  // Stores the time at which the first call to Init happened.
-  base::TimeTicks init_time_;
+  // Stores the time at which the last successful call to Init happened.
+  base::TimeTicks last_init_time_;
 
   // Used to launch and terminate the process without blocking the UI thread.
   std::unique_ptr<ChildProcessLauncher> child_process_launcher_;
@@ -1010,7 +1040,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The globally-unique identifier for this RenderProcessHost.
   const int id_;
 
-  BrowserContext* const browser_context_;
+  BrowserContext* browser_context_ = nullptr;
 
   // Owned by |browser_context_|.
   StoragePartitionImpl* const storage_partition_impl_;
@@ -1084,7 +1114,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The memory allocator, if any, in which the renderer will write its metrics.
   std::unique_ptr<base::PersistentMemoryAllocator> metrics_allocator_;
 
-  std::unique_ptr<CodeCacheHostImpl> code_cache_host_impl_;
+  // TODO(mythria): Currently we are in the process of migrating CodeCacheHost
+  // interface to use execution specific contexts. Once the migration is
+  // complete remove CodeCacheHost interface from the RenderProcessHost.
+  // Currently fetching code caches from main thread use the interface
+  // associated with the RenderFrameHost. All others (fetches from worker
+  // threads, writing into code caches) use per-process interface.
+  CodeCacheHostImpl::ReceiverSet code_cache_host_receivers_;
 
   bool channel_connected_;
   bool sent_render_process_ready_;

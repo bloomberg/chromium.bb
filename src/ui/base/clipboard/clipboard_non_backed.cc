@@ -13,9 +13,8 @@
 #include <utility>
 
 #include "base/check_op.h"
-#include "base/feature_list.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -32,7 +31,6 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/data_transfer_policy/data_transfer_policy_controller.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
@@ -88,7 +86,8 @@ bool IsRegisteredInstance(const Clipboard* clipboard) {
 class ClipboardInternal {
  public:
   ClipboardInternal() = default;
-
+  ClipboardInternal(const ClipboardInternal&) = delete;
+  ClipboardInternal& operator=(const ClipboardInternal&) = delete;
   ~ClipboardInternal() = default;
 
   void Clear() {
@@ -180,6 +179,14 @@ class ClipboardInternal {
     *result = data->rtf_data();
   }
 
+  // Reads png from the ClipboardData.
+  std::vector<uint8_t> ReadPng() const {
+    if (!HasFormat(ClipboardInternalFormat::kPng))
+      return std::vector<uint8_t>();
+
+    return GetData()->png();
+  }
+
   // Reads image from the ClipboardData.
   SkBitmap ReadImage() const {
     SkBitmap img;
@@ -254,7 +261,8 @@ class ClipboardInternal {
     auto* data = GetData();
     if (!policy_controller || !data)
       return true;
-    return policy_controller->IsClipboardReadAllowed(data->source(), data_dst);
+    return policy_controller->IsClipboardReadAllowed(data->source(), data_dst,
+                                                     data->size());
   }
 
  private:
@@ -269,8 +277,6 @@ class ClipboardInternal {
 
   // Sequence number uniquely identifying clipboard state.
   uint64_t sequence_number_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(ClipboardInternal);
 };
 
 // Helper class to build a ClipboardData object and write it to clipboard.
@@ -443,8 +449,7 @@ bool ClipboardNonBacked::IsFormatAvailable(
     return clipboard_internal_->IsFormatAvailable(
         ClipboardInternalFormat::kWeb);
   // Only support filenames if chrome://flags#clipboard-filenames is enabled.
-  if (format == ClipboardFormatType::GetFilenamesType() &&
-      base::FeatureList::IsEnabled(features::kClipboardFilenames))
+  if (format == ClipboardFormatType::GetFilenamesType())
     return clipboard_internal_->IsFormatAvailable(
         ClipboardInternalFormat::kFilenames);
   const ClipboardData* data = clipboard_internal_->GetData();
@@ -609,8 +614,18 @@ void ClipboardNonBacked::ReadPng(ClipboardBuffer buffer,
                                  const DataTransferEndpoint* data_dst,
                                  ReadPngCallback callback) const {
   DCHECK(CalledOnValidThread());
-  // TODO(crbug.com/1201018): Implement this.
-  NOTIMPLEMENTED();
+
+  if (!clipboard_internal_->IsReadAllowed(data_dst)) {
+    std::move(callback).Run(std::vector<uint8_t>());
+    return;
+  }
+
+  RecordRead(ClipboardFormatMetric::kPng);
+  std::move(callback).Run(clipboard_internal_->ReadPng());
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ClipboardMonitor::GetInstance()->NotifyClipboardDataRead();
+#endif
 }
 
 void ClipboardNonBacked::ReadImage(ClipboardBuffer buffer,
@@ -707,26 +722,17 @@ bool ClipboardNonBacked::IsSelectionBufferAvailable() const {
 }
 #endif  // defined(USE_OZONE)
 
-void ClipboardNonBacked::WritePortableRepresentations(
+void ClipboardNonBacked::WritePortableAndPlatformRepresentations(
     ClipboardBuffer buffer,
     const ObjectMap& objects,
-    std::unique_ptr<DataTransferEndpoint> data_src) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(IsSupportedClipboardBuffer(buffer));
-  for (const auto& object : objects)
-    DispatchPortableRepresentation(object.first, object.second);
-  ClipboardDataBuilder::CommitToClipboard(clipboard_internal_.get(),
-                                          std::move(data_src));
-}
-
-void ClipboardNonBacked::WritePlatformRepresentations(
-    ClipboardBuffer buffer,
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
     std::unique_ptr<DataTransferEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardBuffer(buffer));
 
   DispatchPlatformRepresentations(std::move(platform_representations));
+  for (const auto& object : objects)
+    DispatchPortableRepresentation(object.first, object.second);
 
   ClipboardDataBuilder::CommitToClipboard(clipboard_internal_.get(),
                                           std::move(data_src));

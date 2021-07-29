@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">In</translation>
 <translation id="1467231725790366244">Đã rút <ph name="CAMERA" /> khỏi thiết bị.</translation>
 <translation id="1473110567575736769">Đồng hồ hẹn giờ 3 giây</translation>
+<translation id="1478594628797167447">Máy quét</translation>
+<translation id="1545749641540134597">Quét mã QR</translation>
 <translation id="1620510694547887537">Máy ảnh</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Chưa ghi dữ liệu nào</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">Khổ dọc</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> đang hoạt động</translation>
 <translation id="2144806332417375165">Thông số video tùy chỉnh</translation>
+<translation id="2175927920773552910">Mã QR</translation>
+<translation id="2268107369530950373">Chuyển sang chế độ máy quét</translation>
 <translation id="229579744168541441">Xuất ra đĩa</translation>
 <translation id="2320741269052147773">Xoay trái</translation>
 <translation id="2501278716633472235">Quay lại</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">Micrô</translation>
 <translation id="3240426699337459095">Đã sao chép đường liên kết</translation>
 <translation id="3259149966178251584">Độ phân giải của máy ảnh</translation>
+<translation id="3448774564454087943">Không lưu được video vì thời lượng quá ngắn</translation>
 <translation id="3517926952904427380">Không thể chụp ảnh chân dung</translation>
 <translation id="3569311554794739032">Bạn có thực sự muốn xóa <ph name="FILE" /> không?</translation>
 <translation id="3733597664308256288">Hiện đã có thêm các tùy chọn điều khiển máy ảnh. Hãy nhấn tổ hợp phím Tìm kiếm + Mũi tên phải để truy cập.</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">Ảnh</translation>
 <translation id="4649291346448517080">Không thể lưu tệp</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">Quay video phát trực tuyến đa luồng</translation>
 <translation id="5057360777601936059">Máy ảnh của bạn hiện chưa sẵn sàng.
         Vui lòng kiểm tra xem máy ảnh có được kết nối đúng cách không.</translation>
 <translation id="5152121255775685072">Truy cập thư viện</translation>
+<translation id="5268823927180092501">Bật chế độ tài liệu trên tất cả máy ảnh</translation>
 <translation id="5422455049771430511">Ảnh và video của bạn sẽ có nơi lưu trữ mới</translation>
 <translation id="5671277269877808209">Vuông</translation>
+<translation id="5753488212459587150">Bật chế độ chuyên gia</translation>
 <translation id="5775960006311140197">Chế độ Chuyên gia</translation>
 <translation id="5869546221129391014">Lưới</translation>
 <translation id="5975083100439434680">Thu nhỏ</translation>

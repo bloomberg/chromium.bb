@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "ui/base/models/combobox_model.h"
@@ -32,7 +31,6 @@ namespace test {
 class ComboboxTestApi;
 }
 
-class FocusRing;
 class MenuRunner;
 class PrefixSelector;
 
@@ -59,6 +57,8 @@ class VIEWS_EXPORT Combobox : public View,
   explicit Combobox(ui::ComboboxModel* model,
                     int text_context = kDefaultComboboxTextContext,
                     int text_style = kDefaultComboboxTextStyle);
+  Combobox(const Combobox&) = delete;
+  Combobox& operator=(const Combobox&) = delete;
   ~Combobox() override;
 
   const gfx::FontList& GetFontList() const;
@@ -71,6 +71,8 @@ class VIEWS_EXPORT Combobox : public View,
   // Gets/Sets the selected index.
   int GetSelectedIndex() const { return selected_index_; }
   void SetSelectedIndex(int index);
+  base::CallbackListSubscription AddSelectedIndexChangedCallback(
+      views::PropertyChangedCallback callback) WARN_UNUSED_RESULT;
 
   // Looks for the first occurrence of |value| in |model()|. If found, selects
   // the found index and returns true. Otherwise simply noops and returns false.
@@ -155,13 +157,12 @@ class VIEWS_EXPORT Combobox : public View,
   // Finds the size of the largest menu label.
   gfx::Size GetContentSize() const;
 
+  void OnContentSizeMaybeChanged();
+
   // Handles the clicking event.
   void HandleClickEvent();
 
   PrefixSelector* GetPrefixSelector();
-
-  // Returns the color to use for the combobox's focus ring.
-  SkColor GetFocusRingColor() const;
 
   // Optionally used to tie the lifetime of the model to this combobox. See
   // constructor.
@@ -221,13 +222,8 @@ class VIEWS_EXPORT Combobox : public View,
   // true, the parent view must relayout in ChildPreferredSizeChanged().
   bool size_to_largest_label_ = true;
 
-  // The focus ring for this Combobox.
-  FocusRing* focus_ring_ = nullptr;
-
   base::ScopedObservation<ui::ComboboxModel, ui::ComboboxModelObserver>
       observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Combobox);
 };
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Combobox, View)

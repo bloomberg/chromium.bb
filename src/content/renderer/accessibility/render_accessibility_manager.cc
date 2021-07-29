@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/debug/alias.h"
+#include "content/common/render_accessibility.mojom-forward.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/render_frame_impl.h"
 
@@ -91,12 +92,11 @@ void RenderAccessibilityManager::Reset(int32_t reset_token) {
 }
 
 void RenderAccessibilityManager::HandleAccessibilityEvents(
-    const std::vector<ui::AXTreeUpdate>& updates,
-    const std::vector<ui::AXEvent>& events,
+    mojom::AXUpdatesAndEventsPtr updates_and_events,
     int32_t reset_token,
     mojom::RenderAccessibilityHost::HandleAXEventsCallback callback) {
   GetOrCreateRemoteRenderAccessibilityHost()->HandleAXEvents(
-      updates, events, reset_token, std::move(callback));
+      std::move(updates_and_events), reset_token, std::move(callback));
 }
 
 void RenderAccessibilityManager::HandleLocationChanges(
@@ -105,13 +105,22 @@ void RenderAccessibilityManager::HandleLocationChanges(
       std::move(changes));
 }
 
-mojo::AssociatedRemote<mojom::RenderAccessibilityHost>&
+mojo::Remote<mojom::RenderAccessibilityHost>&
 RenderAccessibilityManager::GetOrCreateRemoteRenderAccessibilityHost() {
   if (!render_accessibility_host_) {
-    render_frame_->GetRemoteAssociatedInterfaces()->GetInterface(
-        &render_accessibility_host_);
+    render_frame_->GetBrowserInterfaceBroker()->GetInterface(
+        render_accessibility_host_.BindNewPipeAndPassReceiver());
   }
   return render_accessibility_host_;
+}
+
+void RenderAccessibilityManager::CloseConnection() {
+  if (render_accessibility_host_) {
+    render_accessibility_host_.reset();
+    if (render_accessibility_) {
+      render_accessibility_->ConnectionClosed();
+    }
+  }
 }
 
 }  // namespace content

@@ -5,6 +5,7 @@
 #include "ui/accessibility/ax_tree_manager_map.h"
 
 #include "base/containers/contains.h"
+#include "base/no_destructor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ui {
@@ -54,12 +55,10 @@ AXTreeManager* AXTreeManagerMap::GetManagerForChildTree(
 
   // Some platforms do not use AXTreeManagers, so child trees don't exist in
   // the browser process.
-  if (!child_tree_manager)
-    return nullptr;
-
-  DCHECK(child_tree_manager->GetParentNodeFromParentTreeAsAXNode()->id() ==
-         parent_node.id());
-
+  DCHECK(!child_tree_manager ||
+         !child_tree_manager->GetParentNodeFromParentTreeAsAXNode() ||
+         child_tree_manager->GetParentNodeFromParentTreeAsAXNode()->id() ==
+             parent_node.id());
   return child_tree_manager;
 }
 

@@ -15,6 +15,11 @@
         "swarming": {}
       },
       {
+        "name": "metrics_python_tests",
+        "script": "metrics_python_tests.py",
+        "swarming": {}
+      },
+      {
         "name": "webkit_lint",
         "script": "blink_lint_expectations.py",
         "swarming": {}
@@ -918,24 +923,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.11"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
       },
@@ -1616,47 +1603,6 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://tools/grit:grit_python_unittests/"
-      },
-      {
-        "isolate_name": "mac_signing_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "mac_signing_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.11"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/installer/mac:mac_signing_tests/"
-      },
-      {
-        "isolate_name": "metrics_python_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "metrics_python_tests",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.11"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://tools/metrics:metrics_python_tests/"
       },
       {
         "isolate_name": "mojo_python_unittests",
@@ -2670,25 +2616,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
       },
@@ -3459,49 +3386,6 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://tools/grit:grit_python_unittests/"
-      },
-      {
-        "isolate_name": "mac_signing_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "mac_signing_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/installer/mac:mac_signing_tests/"
-      },
-      {
-        "isolate_name": "metrics_python_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "metrics_python_tests",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://tools/metrics:metrics_python_tests/"
       },
       {
         "isolate_name": "mojo_python_unittests",
@@ -4490,24 +4374,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.13.6"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
       },
@@ -5262,28 +5128,6 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/installer/mac:mac_signing_tests/"
-      },
-      {
-        "isolate_name": "metrics_python_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "metrics_python_tests",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.13.6"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://tools/metrics:metrics_python_tests/"
       },
       {
         "isolate_name": "mojo_python_unittests",
@@ -6276,24 +6120,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.14.6"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
       },
@@ -7045,28 +6871,6 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/installer/mac:mac_signing_tests/"
-      },
-      {
-        "isolate_name": "metrics_python_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "metrics_python_tests",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.14.6"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://tools/metrics:metrics_python_tests/"
       },
       {
         "isolate_name": "mojo_python_unittests",
@@ -8115,25 +7919,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.15"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
       },
@@ -8927,29 +8712,6 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/installer/mac:mac_signing_tests/"
-      },
-      {
-        "isolate_name": "metrics_python_tests",
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "metrics_python_tests",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.15"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://tools/metrics:metrics_python_tests/"
       },
       {
         "isolate_name": "mojo_python_unittests",
@@ -9945,24 +9707,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.15"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "media_unittests",
         "test_id_prefix": "ninja://media:media_unittests/"
       },
@@ -10575,7 +10319,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 25
+          "shards": 40
         },
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
@@ -10646,28 +10390,6 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://tools/grit:grit_python_unittests/"
-      },
-      {
-        "isolate_name": "metrics_python_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "metrics_python_tests",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.15"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://tools/metrics:metrics_python_tests/"
       },
       {
         "args": [
@@ -10789,7 +10511,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -10808,7 +10529,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -10830,7 +10550,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -10850,7 +10569,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -10869,7 +10587,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -10888,7 +10605,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -10907,7 +10623,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -10926,7 +10641,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -10945,7 +10659,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -10964,7 +10677,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -10984,7 +10696,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11003,7 +10714,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11022,7 +10732,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11041,13 +10750,11 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-standard-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
-          "hard_timeout": 4500,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 8
+          "shards": 10
         },
         "test": "browser_tests",
         "test_id_prefix": "ninja://chrome/test:browser_tests/"
@@ -11065,7 +10772,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11084,7 +10790,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11103,7 +10808,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11122,7 +10826,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11141,7 +10844,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11160,7 +10862,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11179,7 +10880,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-standard-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11198,13 +10898,11 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-standard-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
-          "hard_timeout": 4500,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "shards": 6
         },
         "test": "content_browsertests",
         "test_id_prefix": "ninja://content/test:content_browsertests/"
@@ -11219,7 +10917,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11238,7 +10935,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-standard-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11257,7 +10953,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11276,7 +10971,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11295,7 +10989,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11314,7 +11007,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11333,7 +11025,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11352,7 +11043,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11371,7 +11061,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11390,7 +11079,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11409,7 +11097,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11428,7 +11115,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11447,7 +11133,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11466,7 +11151,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11485,7 +11169,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11504,7 +11187,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11523,7 +11205,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11542,7 +11223,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11561,7 +11241,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11580,7 +11259,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11599,11 +11277,11 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-standard-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 3
         },
         "test": "interactive_ui_tests",
         "test_id_prefix": "ninja://chrome/test:interactive_ui_tests/"
@@ -11618,7 +11296,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11637,7 +11314,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11656,7 +11332,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11675,7 +11350,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11694,7 +11368,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11713,26 +11386,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "media_blink_unittests",
-        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11751,7 +11404,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11770,7 +11422,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11789,7 +11440,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11808,7 +11458,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11827,7 +11476,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11846,7 +11494,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11865,7 +11512,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11884,7 +11530,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11903,7 +11548,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11922,7 +11566,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11941,7 +11584,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11960,7 +11602,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11979,7 +11620,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -11998,7 +11638,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12017,7 +11656,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12036,7 +11674,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12055,7 +11692,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12074,7 +11710,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12093,7 +11728,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12112,7 +11746,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-standard-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12131,7 +11764,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12150,7 +11782,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12169,7 +11800,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-standard-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12188,7 +11818,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12207,7 +11836,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12226,7 +11854,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12245,7 +11872,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12264,7 +11890,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12284,7 +11909,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12303,7 +11927,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12329,7 +11952,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12358,13 +11980,11 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-standard-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
-          "hard_timeout": 4500,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
+          "shards": 12
         },
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
@@ -12386,7 +12006,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12406,7 +12025,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12431,7 +12049,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12455,7 +12072,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12479,7 +12095,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12502,7 +12117,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12522,36 +12136,12 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/installer/mac:mac_signing_tests/"
-      },
-      {
-        "isolate_name": "metrics_python_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "metrics_python_tests",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://tools/metrics:metrics_python_tests/"
       },
       {
         "isolate_name": "mojo_python_unittests",
@@ -12568,7 +12158,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12591,7 +12180,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -12618,12 +12206,12 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-standard-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
           "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 12
         },
         "test_id_prefix": "ninja://chrome/test:telemetry_perf_unittests/"
       },
@@ -12646,12 +12234,12 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-standard-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
           "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 8
         },
         "test_id_prefix": "ninja://chrome/test:telemetry_unittests/"
       },
@@ -12672,7 +12260,6 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "machine_type": "n1-highcpu-4",
               "os": "Mac-11|Mac-10.16"
             }
           ],
@@ -20943,11 +20530,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest"
         ],
         "isolate_name": "absl_hardening_tests",
@@ -20955,7 +20542,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "absl_hardening_tests_iPhone 6s 12.4",
+        "name": "absl_hardening_tests_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -20976,12 +20563,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -20993,11 +20580,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest"
         ],
         "isolate_name": "boringssl_crypto_tests",
@@ -21005,7 +20592,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_crypto_tests_iPhone 6s 12.4",
+        "name": "boringssl_crypto_tests_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21026,12 +20613,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21043,11 +20630,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest"
         ],
         "isolate_name": "boringssl_ssl_tests",
@@ -21055,7 +20642,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_ssl_tests_iPhone 6s 12.4",
+        "name": "boringssl_ssl_tests_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21076,12 +20663,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21093,11 +20680,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest"
         ],
         "isolate_name": "crypto_unittests",
@@ -21105,7 +20692,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crypto_unittests_iPhone 6s 12.4",
+        "name": "crypto_unittests_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21126,12 +20713,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21143,11 +20730,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest"
         ],
         "isolate_name": "google_apis_unittests",
@@ -21155,7 +20742,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "google_apis_unittests_iPhone 6s 12.4",
+        "name": "google_apis_unittests_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21176,12 +20763,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21191,13 +20778,13 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
@@ -21206,7 +20793,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPad Air 2 12.4",
+        "name": "ios_chrome_bookmarks_eg2tests_module_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21227,63 +20814,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPhone X",
-          "--version",
-          "12.4",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "12d4e",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_chrome_bookmarks_eg2tests_module",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPhone X 12.4",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_12d4e",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21295,11 +20831,11 @@
           "--platform",
           "iPad Air 2",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
@@ -21308,7 +20844,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPad Air 2 12.4",
+        "name": "ios_chrome_integration_eg2tests_module_iPad Air 2 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21329,12 +20865,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -21347,11 +20883,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
@@ -21360,7 +20896,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone 6s 12.4",
+        "name": "ios_chrome_integration_eg2tests_module_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21381,12 +20917,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -21397,22 +20933,22 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPhone 6s Plus",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
-        "isolate_name": "ios_chrome_settings_eg2tests_module",
+        "isolate_name": "ios_chrome_integration_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPad Air 2 12.4",
+        "name": "ios_chrome_integration_eg2tests_module_iPhone 6s Plus 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21433,38 +20969,38 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone SE (1st generation)",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
-        "isolate_name": "ios_chrome_settings_eg2tests_module",
+        "isolate_name": "ios_chrome_integration_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPhone X 12.4",
+        "name": "ios_chrome_integration_eg2tests_module_iPhone SE (1st generation) 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21485,12 +21021,64 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 3
+        },
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone 6s",
+          "--version",
+          "15.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "13a5155e",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_chrome_settings_eg2tests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_chrome_settings_eg2tests_module_iPhone 6s 15.0",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-11|Mac-10.16"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_13a5155e",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -21503,11 +21091,11 @@
           "--platform",
           "iPad Air 2",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
@@ -21516,7 +21104,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPad Air 2 12.4",
+        "name": "ios_chrome_signin_eg2tests_module_iPad Air 2 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21537,12 +21125,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21554,11 +21142,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
@@ -21567,7 +21155,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone 6s 12.4",
+        "name": "ios_chrome_signin_eg2tests_module_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21588,12 +21176,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21603,22 +21191,22 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPhone 6s Plus",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
-        "isolate_name": "ios_chrome_smoke_eg2tests_module",
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module_iPad Air 2 12.4",
+        "name": "ios_chrome_signin_eg2tests_module_iPhone 6s Plus 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21639,37 +21227,37 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone SE (1st generation)",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
-        "isolate_name": "ios_chrome_smoke_eg2tests_module",
+        "isolate_name": "ios_chrome_signin_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module_iPhone X 12.4",
+        "name": "ios_chrome_signin_eg2tests_module_iPhone SE (1st generation) 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21690,12 +21278,63 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone 6s",
+          "--version",
+          "15.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "13a5155e",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_chrome_smoke_eg2tests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_chrome_smoke_eg2tests_module_iPhone 6s 15.0",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-11|Mac-10.16"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_13a5155e",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21707,11 +21346,11 @@
           "--platform",
           "iPad Air 2",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
@@ -21720,7 +21359,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPad Air 2 12.4",
+        "name": "ios_chrome_ui_eg2tests_module_iPad Air 2 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21741,12 +21380,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -21759,11 +21398,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
@@ -21772,7 +21411,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone 6s 12.4",
+        "name": "ios_chrome_ui_eg2tests_module_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21793,12 +21432,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -21809,22 +21448,22 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPhone 6s Plus",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
-        "isolate_name": "ios_chrome_web_eg2tests_module",
+        "isolate_name": "ios_chrome_ui_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPad Air 2 12.4",
+        "name": "ios_chrome_ui_eg2tests_module_iPhone 6s Plus 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21845,37 +21484,38 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 5
         },
-        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/"
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone SE (1st generation)",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
-        "isolate_name": "ios_chrome_web_eg2tests_module",
+        "isolate_name": "ios_chrome_ui_eg2tests_module",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPhone X 12.4",
+        "name": "ios_chrome_ui_eg2tests_module_iPhone SE (1st generation) 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21896,12 +21536,64 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 5
+        },
+        "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone 6s",
+          "--version",
+          "15.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "13a5155e",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_chrome_web_eg2tests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_chrome_web_eg2tests_module_iPhone 6s 15.0",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-11|Mac-10.16"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_13a5155e",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21913,11 +21605,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest"
         ],
         "isolate_name": "ios_components_unittests",
@@ -21925,7 +21617,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_components_unittests_iPhone 6s 12.4",
+        "name": "ios_components_unittests_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21946,12 +21638,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -21963,11 +21655,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest"
         ],
         "isolate_name": "ios_net_unittests",
@@ -21975,7 +21667,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_net_unittests_iPhone 6s 12.4",
+        "name": "ios_net_unittests_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -21996,12 +21688,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -22013,11 +21705,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest"
         ],
         "isolate_name": "ios_remoting_unittests",
@@ -22025,7 +21717,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_remoting_unittests_iPhone 6s 12.4",
+        "name": "ios_remoting_unittests_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -22046,12 +21738,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -22061,13 +21753,13 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
@@ -22076,7 +21768,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPad Air 2 12.4",
+        "name": "ios_showcase_eg2tests_module_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -22097,63 +21789,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/"
-      },
-      {
-        "args": [
-          "--platform",
-          "iPhone X",
-          "--version",
-          "12.4",
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "12d4e",
-          "--xctest",
-          "--xcode-parallelization"
-        ],
-        "isolate_name": "ios_showcase_eg2tests_module",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "ios_showcase_eg2tests_module_iPhone X 12.4",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-11|Mac-10.16"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_12d4e",
-              "path": "Xcode.app"
-            },
-            {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -22165,11 +21806,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest"
         ],
         "isolate_name": "ios_testing_unittests",
@@ -22177,7 +21818,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_testing_unittests_iPhone 6s 12.4",
+        "name": "ios_testing_unittests_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -22198,12 +21839,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -22215,11 +21856,11 @@
           "--platform",
           "iPad Air 2",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
@@ -22228,7 +21869,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPad Air 2 12.4",
+        "name": "ios_web_shell_eg2tests_module_iPad Air 2 15.0",
         "resultdb": {
           "enable": true
         },
@@ -22249,12 +21890,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -22266,11 +21907,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest",
           "--xcode-parallelization"
         ],
@@ -22279,7 +21920,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone 6s 12.4",
+        "name": "ios_web_shell_eg2tests_module_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -22300,12 +21941,114 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone 6s Plus",
+          "--version",
+          "15.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "13a5155e",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_web_shell_eg2tests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_web_shell_eg2tests_module_iPhone 6s Plus 15.0",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-11|Mac-10.16"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_13a5155e",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone SE (1st generation)",
+          "--version",
+          "15.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "13a5155e",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_web_shell_eg2tests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_web_shell_eg2tests_module_iPhone SE (1st generation) 15.0",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-11|Mac-10.16"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_13a5155e",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -22317,11 +22060,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest"
         ],
         "isolate_name": "net_unittests",
@@ -22329,7 +22072,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "net_unittests_iPhone 6s 12.4",
+        "name": "net_unittests_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -22350,12 +22093,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -22367,11 +22110,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest"
         ],
         "isolate_name": "services_unittests",
@@ -22379,7 +22122,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "services_unittests_iPhone 6s 12.4",
+        "name": "services_unittests_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -22400,12 +22143,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -22417,11 +22160,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest"
         ],
         "isolate_name": "sql_unittests",
@@ -22429,7 +22172,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "sql_unittests_iPhone 6s 12.4",
+        "name": "sql_unittests_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -22450,12 +22193,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -22467,11 +22210,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "12.4",
+          "15.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "12d4e",
+          "13a5155e",
           "--xctest"
         ],
         "isolate_name": "url_unittests",
@@ -22479,7 +22222,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "url_unittests_iPhone 6s 12.4",
+        "name": "url_unittests_iPhone 6s 15.0",
         "resultdb": {
           "enable": true
         },
@@ -22500,12 +22243,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_12d4e",
+              "name": "xcode_ios_13a5155e",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_12_4",
-              "path": "Runtime-ios-12.4"
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -22517,6 +22260,1711 @@
   "mac-arm64-rel": {
     "additional_compile_targets": [
       "all"
+    ]
+  },
+  "mac-arm64-rel-tests": {
+    "gtest_tests": [
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "absl_hardening_tests",
+        "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "accessibility_unittests",
+        "test_id_prefix": "ninja://ui/accessibility:accessibility_unittests/"
+      },
+      {
+        "args": [
+          "angle_unittests"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "angle_unittests",
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/",
+        "use_isolated_scripts_api": true
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "app_shell_unittests",
+        "test_id_prefix": "ninja://extensions/shell:app_shell_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "base_unittests",
+        "test_id_prefix": "ninja://base:base_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "base_util_unittests",
+        "test_id_prefix": "ninja://base/util:base_util_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "blink_common_unittests",
+        "test_id_prefix": "ninja://third_party/blink/common:blink_common_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "blink_fuzzer_unittests",
+        "test_id_prefix": "ninja://third_party/blink/renderer/platform:blink_fuzzer_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "blink_heap_unittests",
+        "test_id_prefix": "ninja://third_party/blink/renderer/platform/heap:blink_heap_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "blink_platform_unittests",
+        "test_id_prefix": "ninja://third_party/blink/renderer/platform:blink_platform_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "webkit_unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "blink_unittests",
+        "test_id_prefix": "ninja://third_party/blink/renderer/controller:blink_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "boringssl_crypto_tests",
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "boringssl_ssl_tests",
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 10
+        },
+        "test": "browser_tests",
+        "test_id_prefix": "ninja://chrome/test:browser_tests/"
+      },
+      {
+        "args": [
+          "--gtest_filter=-*UsingRealWebcam*"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "capture_unittests",
+        "test_id_prefix": "ninja://media/capture:capture_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "cast_unittests",
+        "test_id_prefix": "ninja://media/cast:cast_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "cc_unittests",
+        "test_id_prefix": "ninja://cc:cc_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "chrome_app_unittests",
+        "test_id_prefix": "ninja://chrome/test:chrome_app_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "chromedriver_unittests",
+        "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "components_browsertests",
+        "test_id_prefix": "ninja://components:components_browsertests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "components_unittests",
+        "test_id_prefix": "ninja://components:components_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 6
+        },
+        "test": "content_browsertests",
+        "test_id_prefix": "ninja://content/test:content_browsertests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "content_unittests",
+        "test_id_prefix": "ninja://content/test:content_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "crashpad_tests",
+        "test_id_prefix": "ninja://third_party/crashpad/crashpad:crashpad_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "cronet_tests",
+        "test_id_prefix": "ninja://components/cronet:cronet_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "cronet_unittests",
+        "test_id_prefix": "ninja://components/cronet:cronet_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "crypto_unittests",
+        "test_id_prefix": "ninja://crypto:crypto_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "device_unittests",
+        "test_id_prefix": "ninja://device:device_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "display_unittests",
+        "test_id_prefix": "ninja://ui/display:display_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "events_unittests",
+        "test_id_prefix": "ninja://ui/events:events_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "extensions_browsertests",
+        "test_id_prefix": "ninja://extensions:extensions_browsertests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "extensions_unittests",
+        "test_id_prefix": "ninja://extensions:extensions_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "filesystem_service_unittests",
+        "test_id_prefix": "ninja://components/services/filesystem:filesystem_service_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "gcm_unit_tests",
+        "test_id_prefix": "ninja://google_apis/gcm:gcm_unit_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "gfx_unittests",
+        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "gin_unittests",
+        "test_id_prefix": "ninja://gin:gin_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "google_apis_unittests",
+        "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "gpu_unittests",
+        "test_id_prefix": "ninja://gpu:gpu_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "gwp_asan_unittests",
+        "test_id_prefix": "ninja://components/gwp_asan:gwp_asan_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "headless_browsertests",
+        "test_id_prefix": "ninja://headless:headless_browsertests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "headless_unittests",
+        "test_id_prefix": "ninja://headless:headless_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 3
+        },
+        "test": "interactive_ui_tests",
+        "test_id_prefix": "ninja://chrome/test:interactive_ui_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ipc_tests",
+        "test_id_prefix": "ninja://ipc:ipc_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "jingle_unittests",
+        "test_id_prefix": "ninja://jingle:jingle_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "latency_unittests",
+        "test_id_prefix": "ninja://ui/latency:latency_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "libjingle_xmpp_unittests",
+        "test_id_prefix": "ninja://third_party/libjingle_xmpp:libjingle_xmpp_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "liburlpattern_unittests",
+        "test_id_prefix": "ninja://third_party/liburlpattern:liburlpattern_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "media_unittests",
+        "test_id_prefix": "ninja://media:media_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "message_center_unittests",
+        "test_id_prefix": "ninja://ui/message_center:message_center_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "midi_unittests",
+        "test_id_prefix": "ninja://media/midi:midi_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_unittests",
+        "test_id_prefix": "ninja://mojo:mojo_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "native_theme_unittests",
+        "test_id_prefix": "ninja://ui/native_theme:native_theme_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "net_unittests",
+        "test_id_prefix": "ninja://net:net_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "pdf_unittests",
+        "test_id_prefix": "ninja://pdf:pdf_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "perfetto_unittests",
+        "test_id_prefix": "ninja://third_party/perfetto:perfetto_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ppapi_unittests",
+        "test_id_prefix": "ninja://ppapi:ppapi_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "printing_unittests",
+        "test_id_prefix": "ninja://printing:printing_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "remoting_unittests",
+        "test_id_prefix": "ninja://remoting:remoting_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "sandbox_mac_unittests",
+        "test_id_prefix": "ninja://sandbox/mac:sandbox_mac_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "service_manager_unittests",
+        "test_id_prefix": "ninja://services/service_manager/tests:service_manager_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "services_unittests",
+        "test_id_prefix": "ninja://services:services_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "shell_dialogs_unittests",
+        "test_id_prefix": "ninja://ui/shell_dialogs:shell_dialogs_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "skia_unittests",
+        "test_id_prefix": "ninja://skia:skia_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "snapshot_unittests",
+        "test_id_prefix": "ninja://ui/snapshot:snapshot_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "sql_unittests",
+        "test_id_prefix": "ninja://sql:sql_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "storage_unittests",
+        "test_id_prefix": "ninja://storage:storage_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "sync_integration_tests",
+        "test_id_prefix": "ninja://chrome/test:sync_integration_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ui_base_unittests",
+        "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ui_touch_selection_unittests",
+        "test_id_prefix": "ninja://ui/touch_selection:ui_touch_selection_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "unit_tests",
+        "test_id_prefix": "ninja://chrome/test:unit_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "updater_tests",
+        "test_id_prefix": "ninja://chrome/updater:updater_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "url_unittests",
+        "test_id_prefix": "ninja://url:url_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "views_unittests",
+        "test_id_prefix": "ninja://ui/views:views_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "viz_unittests",
+        "test_id_prefix": "ninja://components/viz:viz_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "wtf_unittests",
+        "test_id_prefix": "ninja://third_party/blink/renderer/platform/wtf:wtf_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "xr_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "xr_browser_tests",
+        "test_id_prefix": "ninja://chrome/test:xr_browser_tests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "zlib_unittests",
+        "test_id_prefix": "ninja://third_party/zlib:zlib_unittests/"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "blink_python_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "blink_python_tests",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://:blink_python_tests/"
+      },
+      {
+        "args": [
+          "--test-type=integration"
+        ],
+        "isolate_name": "chromedriver_py_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "chromedriver_py_tests",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_py_tests/"
+      },
+      {
+        "isolate_name": "chromedriver_replay_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "chromedriver_replay_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_replay_unittests/"
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name=components_perftests"
+        ],
+        "isolate_name": "components_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "components_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://components:components_perftests/"
+      },
+      {
+        "isolate_name": "content_shell_crash_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "content_shell_crash_test",
+        "resultdb": {
+          "enable": true,
+          "result_format": "single"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://content/shell:content_shell_crash_test/"
+      },
+      {
+        "isolate_name": "flatbuffers_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "flatbuffers_unittests",
+        "resultdb": {
+          "enable": true,
+          "result_format": "single"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/flatbuffers:flatbuffers_unittests/"
+      },
+      {
+        "isolate_name": "grit_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "grit_python_unittests",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://tools/grit:grit_python_unittests/"
+      },
+      {
+        "isolate_name": "mac_signing_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "mac_signing_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://chrome/installer/mac:mac_signing_tests/"
+      },
+      {
+        "isolate_name": "mojo_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "mojo_python_unittests",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://mojo/public/tools:mojo_python_unittests/"
+      },
+      {
+        "isolate_name": "telemetry_gpu_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "telemetry_gpu_unittests",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_unittests/"
+      },
+      {
+        "args": [
+          "--extra-browser-args=--enable-crashpad"
+        ],
+        "isolate_name": "telemetry_perf_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "telemetry_perf_unittests",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 12
+        },
+        "test_id_prefix": "ninja://chrome/test:telemetry_perf_unittests/"
+      },
+      {
+        "args": [
+          "--jobs=1",
+          "--extra-browser-args=--disable-gpu"
+        ],
+        "isolate_name": "telemetry_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "telemetry_unittests",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 8
+        },
+        "test_id_prefix": "ninja://chrome/test:telemetry_unittests/"
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name=views_perftests"
+        ],
+        "isolate_name": "views_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "views_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Mac-11"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://ui/views:views_perftests/"
+      }
     ]
   }
 }

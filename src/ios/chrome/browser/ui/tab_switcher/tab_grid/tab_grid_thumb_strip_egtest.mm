@@ -74,13 +74,9 @@ id<GREYMatcher> cellWithLabel(NSString* label) {
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
-  // Enabling this feature causes all tests to fail as part of setup.
-  // See crbug.com/1143299.
-  if (base::ios::IsRunningOnIOS13OrLater()) {
-    config.features_enabled.push_back(kExpandedTabStrip);
-    config.features_disabled.push_back(
-        fullscreen::features::kSmoothScrollingDefault);
-  }
+  config.features_enabled.push_back(kExpandedTabStrip);
+  config.features_disabled.push_back(
+      fullscreen::features::kSmoothScrollingDefault);
   return config;
 }
 
@@ -96,14 +92,13 @@ id<GREYMatcher> cellWithLabel(NSString* label) {
 // plus button as the last item in the tab grid or a floating plus button on
 // the trailing edge of the thumb strip if the last item is offscreen.
 - (void)testBasicPlusButtonBehavior {
+  // TODO(crbug.com/1220137): This test is failing on iOS 15.
+  if (@available(iOS 15, *)) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 15 as it is failing.");
+  }
   // The feature only works on iPad.
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Thumb strip is not enabled on iPhone");
-  }
-
-  // See crbug.com/1143299.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12 devices.");
   }
 
   [self setUpTestServer];
@@ -180,14 +175,14 @@ id<GREYMatcher> cellWithLabel(NSString* label) {
 }
 
 - (void)testTappingBackgroundClosesThumbStrip {
+  // TODO(crbug.com/1220137): This test is failing on iOS 15.
+  if (@available(iOS 15, *)) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 15 as it is failing.");
+  }
+
   // The feature only works on iPad.
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Thumb strip is not enabled on iPhone");
-  }
-
-  // See crbug.com/1143299.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12 devices.");
   }
 
   [self setUpTestServer];
@@ -239,14 +234,14 @@ id<GREYMatcher> cellWithLabel(NSString* label) {
 // After scrolling the thumb strip so the currently selected tab is offscreen,
 // when opening the thumb strip again, the selected tab should be back onscreen.
 - (void)testThumbnailVisibleWhenThumbStripOpens {
+  // TODO(crbug.com/1220137): This test is failing on iOS 15.
+  if (@available(iOS 15, *)) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 15 as it is failing.");
+  }
+
   // The feature only works on iPad.
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Thumb strip is not enabled on iPhone");
-  }
-
-  // See crbug.com/1143299.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12 devices.");
   }
 
   [self setUpTestServer];
@@ -311,14 +306,14 @@ id<GREYMatcher> cellWithLabel(NSString* label) {
 // Tests that the plus button in the collection view actually opens a new tab
 // when pressed.
 - (void)testGridPlusButtonOpensNewTab {
+  // TODO(crbug.com/1220137): This test is failing on iOS 15.
+  if (@available(iOS 15, *)) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 15 as it is failing.");
+  }
+
   // The feature only works on iPad.
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Thumb strip is not enabled on iPhone");
-  }
-
-  // See crbug.com/1143299.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12 devices.");
   }
 
   [self setUpTestServer];
@@ -357,14 +352,14 @@ id<GREYMatcher> cellWithLabel(NSString* label) {
 
 // Tests that the floating plus button actually opens a new tab when pressed.
 - (void)testFloatingPlusButtonOpensNewTab {
+  // TODO(crbug.com/1220137): This test is failing on iOS 15.
+  if (@available(iOS 15, *)) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 15 as it is failing.");
+  }
+
   // The feature only works on iPad.
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Thumb strip is not enabled on iPhone");
-  }
-
-  // See crbug.com/1143299.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12 devices.");
   }
 
   [self setUpTestServer];

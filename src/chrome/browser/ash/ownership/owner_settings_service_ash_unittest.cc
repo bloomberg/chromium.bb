@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -86,7 +87,7 @@ bool FindInListValue(const std::string& needle, const base::Value* haystack) {
   const base::ListValue* list;
   if (!haystack->GetAsList(&list))
     return false;
-  return list->GetList().end() != list->Find(base::Value(needle));
+  return base::Contains(list->GetList(), base::Value(needle));
 }
 
 }  // namespace
@@ -180,9 +181,10 @@ TEST_F(OwnerSettingsServiceAshTest, MultipleSetTest) {
 
 TEST_F(OwnerSettingsServiceAshTest, FailedSetRequest) {
   session_manager_client_.ForceStorePolicyFailure(true);
-  std::string current_channel;
-  ASSERT_TRUE(provider_->Get(kReleaseChannel)->GetAsString(&current_channel));
-  ASSERT_NE(current_channel, "stable-channel");
+  ASSERT_TRUE(provider_->Get(kReleaseChannel)->is_string());
+  const std::string current_channel =
+      provider_->Get(kReleaseChannel)->GetString();
+  ASSERT_NE("stable-channel", current_channel);
 
   // Check that DeviceSettingsProvider's cache is updated.
   PrefsChecker checker(service_, provider_.get());

@@ -650,7 +650,7 @@ static int vaapi_encode_output(AVCodecContext *avctx,
     for (buf = buf_list; buf; buf = buf->next)
         total_size += buf->size;
 
-    err = av_new_packet(pkt, total_size);
+    err = ff_get_encode_buffer(avctx, pkt, total_size, 0);
     ptr = pkt->data;
 
     if (err < 0)
@@ -2235,7 +2235,7 @@ static void vaapi_encode_free_output_buffer(void *opaque,
 }
 
 static AVBufferRef *vaapi_encode_alloc_output_buffer(void *opaque,
-                                                     buffer_size_t size)
+                                                     size_t size)
 {
     AVCodecContext   *avctx = opaque;
     VAAPIEncodeContext *ctx = avctx->priv_data;

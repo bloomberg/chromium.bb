@@ -4,7 +4,6 @@
 
 #include "components/autofill/core/browser/test_autofill_client.h"
 
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -254,6 +253,10 @@ void TestAutofillClient::UpdatePopup(const std::vector<Suggestion>& suggestions,
                                      PopupType popup_type) {}
 
 void TestAutofillClient::HideAutofillPopup(PopupHidingReason reason) {}
+
+void TestAutofillClient::ShowVirtualCardErrorDialog(bool is_permanent_error) {
+  virtual_card_error_dialog_shown_ = true;
+}
 
 bool TestAutofillClient::IsAutocompleteEnabled() {
   return true;

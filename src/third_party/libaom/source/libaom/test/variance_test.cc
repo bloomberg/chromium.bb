@@ -1004,8 +1004,8 @@ void SubpelVarianceTest<DistWtdSubpixAvgVarMxNFunc>::RefTest() {
         for (int y0 = 0; y0 < 4; ++y0) {
           uint32_t sse1, sse2;
           uint32_t var1, var2;
-          jcp_param_.fwd_offset = quant_dist_lookup_table[x0][y0][0];
-          jcp_param_.bck_offset = quant_dist_lookup_table[x0][y0][1];
+          jcp_param_.fwd_offset = quant_dist_lookup_table[y0][x0];
+          jcp_param_.bck_offset = quant_dist_lookup_table[y0][1 - x0];
           ASM_REGISTER_STATE_CHECK(var1 = params_.func(ref_, width() + 0, x, y,
                                                        src_, width(), &sse1,
                                                        sec_, &jcp_param_));

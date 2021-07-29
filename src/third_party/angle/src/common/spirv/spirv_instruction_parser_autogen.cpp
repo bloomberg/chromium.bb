@@ -218,7 +218,10 @@ void ParseEntryPoint(const uint32_t *_instruction,
         }
     }
 }
-void ParseExecutionMode(const uint32_t *_instruction, IdRef *entryPoint, spv::ExecutionMode *mode)
+void ParseExecutionMode(const uint32_t *_instruction,
+                        IdRef *entryPoint,
+                        spv::ExecutionMode *mode,
+                        LiteralIntegerList *operandsList)
 {
     spv::Op _op;
     uint32_t _length;
@@ -227,6 +230,13 @@ void ParseExecutionMode(const uint32_t *_instruction, IdRef *entryPoint, spv::Ex
     uint32_t _o = 1;
     *entryPoint = IdRef(_instruction[_o++]);
     *mode       = spv::ExecutionMode(_instruction[_o++]);
+    if (operandsList)
+    {
+        while (_o < _length)
+        {
+            operandsList->emplace_back(_instruction[_o++]);
+        }
+    }
 }
 void ParseCapability(const uint32_t *_instruction, spv::Capability *capability)
 {
@@ -428,18 +438,6 @@ void ParseTypeFunction(const uint32_t *_instruction,
             parameterList->emplace_back(_instruction[_o++]);
         }
     }
-}
-void ParseTypeForwardPointer(const uint32_t *_instruction,
-                             IdRef *pointerType,
-                             spv::StorageClass *storageClass)
-{
-    spv::Op _op;
-    uint32_t _length;
-    GetInstructionOpAndLength(_instruction, &_op, &_length);
-    ASSERT(_op == spv::OpTypeForwardPointer);
-    uint32_t _o   = 1;
-    *pointerType  = IdRef(_instruction[_o++]);
-    *storageClass = spv::StorageClass(_instruction[_o++]);
 }
 void ParseConstantTrue(const uint32_t *_instruction, IdResultType *idResultType, IdResult *idResult)
 {
@@ -705,25 +703,6 @@ void ParseCopyMemory(const uint32_t *_instruction,
         *memoryAccess = spv::MemoryAccessMask(_instruction[_o++]);
     }
 }
-void ParseCopyMemorySized(const uint32_t *_instruction,
-                          IdRef *target,
-                          IdRef *source,
-                          IdRef *size,
-                          spv::MemoryAccessMask *memoryAccess)
-{
-    spv::Op _op;
-    uint32_t _length;
-    GetInstructionOpAndLength(_instruction, &_op, &_length);
-    ASSERT(_op == spv::OpCopyMemorySized);
-    uint32_t _o = 1;
-    *target     = IdRef(_instruction[_o++]);
-    *source     = IdRef(_instruction[_o++]);
-    *size       = IdRef(_instruction[_o++]);
-    if (memoryAccess && _o < _length)
-    {
-        *memoryAccess = spv::MemoryAccessMask(_instruction[_o++]);
-    }
-}
 void ParseAccessChain(const uint32_t *_instruction,
                       IdResultType *idResultType,
                       IdResult *idResult,
@@ -784,34 +763,10 @@ void ParseArrayLength(const uint32_t *_instruction,
     *structure    = IdRef(_instruction[_o++]);
     *arraymember  = LiteralInteger(_instruction[_o++]);
 }
-void ParseInBoundsPtrAccessChain(const uint32_t *_instruction,
-                                 IdResultType *idResultType,
-                                 IdResult *idResult,
-                                 IdRef *base,
-                                 IdRef *element,
-                                 IdRefList *indexesList)
-{
-    spv::Op _op;
-    uint32_t _length;
-    GetInstructionOpAndLength(_instruction, &_op, &_length);
-    ASSERT(_op == spv::OpInBoundsPtrAccessChain);
-    uint32_t _o   = 1;
-    *idResultType = IdResultType(_instruction[_o++]);
-    *idResult     = IdResult(_instruction[_o++]);
-    *base         = IdRef(_instruction[_o++]);
-    *element      = IdRef(_instruction[_o++]);
-    if (indexesList)
-    {
-        while (_o < _length)
-        {
-            indexesList->emplace_back(_instruction[_o++]);
-        }
-    }
-}
 void ParseDecorate(const uint32_t *_instruction,
                    IdRef *target,
                    spv::Decoration *decoration,
-                   LiteralIntegerList *valuesPairList)
+                   LiteralIntegerList *valuesList)
 {
     spv::Op _op;
     uint32_t _length;
@@ -820,11 +775,11 @@ void ParseDecorate(const uint32_t *_instruction,
     uint32_t _o = 1;
     *target     = IdRef(_instruction[_o++]);
     *decoration = spv::Decoration(_instruction[_o++]);
-    if (valuesPairList)
+    if (valuesList)
     {
         while (_o < _length)
         {
-            valuesPairList->emplace_back(_instruction[_o++]);
+            valuesList->emplace_back(_instruction[_o++]);
         }
     }
 }
@@ -832,7 +787,7 @@ void ParseMemberDecorate(const uint32_t *_instruction,
                          IdRef *structureType,
                          LiteralInteger *member,
                          spv::Decoration *decoration,
-                         LiteralIntegerList *valuesPairList)
+                         LiteralIntegerList *valuesList)
 {
     spv::Op _op;
     uint32_t _length;
@@ -842,11 +797,11 @@ void ParseMemberDecorate(const uint32_t *_instruction,
     *structureType = IdRef(_instruction[_o++]);
     *member        = LiteralInteger(_instruction[_o++]);
     *decoration    = spv::Decoration(_instruction[_o++]);
-    if (valuesPairList)
+    if (valuesList)
     {
         while (_o < _length)
         {
-            valuesPairList->emplace_back(_instruction[_o++]);
+            valuesList->emplace_back(_instruction[_o++]);
         }
     }
 }
@@ -936,7 +891,7 @@ void ParseVectorShuffle(const uint32_t *_instruction,
                         IdResult *idResult,
                         IdRef *vector1,
                         IdRef *vector2,
-                        LiteralIntegerList *componentsPairList)
+                        LiteralIntegerList *componentsList)
 {
     spv::Op _op;
     uint32_t _length;
@@ -947,11 +902,11 @@ void ParseVectorShuffle(const uint32_t *_instruction,
     *idResult     = IdResult(_instruction[_o++]);
     *vector1      = IdRef(_instruction[_o++]);
     *vector2      = IdRef(_instruction[_o++]);
-    if (componentsPairList)
+    if (componentsList)
     {
         while (_o < _length)
         {
-            componentsPairList->emplace_back(_instruction[_o++]);
+            componentsList->emplace_back(_instruction[_o++]);
         }
     }
 }
@@ -979,7 +934,7 @@ void ParseCompositeExtract(const uint32_t *_instruction,
                            IdResultType *idResultType,
                            IdResult *idResult,
                            IdRef *composite,
-                           LiteralIntegerList *indexesPairList)
+                           LiteralIntegerList *indexesList)
 {
     spv::Op _op;
     uint32_t _length;
@@ -989,11 +944,11 @@ void ParseCompositeExtract(const uint32_t *_instruction,
     *idResultType = IdResultType(_instruction[_o++]);
     *idResult     = IdResult(_instruction[_o++]);
     *composite    = IdRef(_instruction[_o++]);
-    if (indexesPairList)
+    if (indexesList)
     {
         while (_o < _length)
         {
-            indexesPairList->emplace_back(_instruction[_o++]);
+            indexesList->emplace_back(_instruction[_o++]);
         }
     }
 }
@@ -1002,7 +957,7 @@ void ParseCompositeInsert(const uint32_t *_instruction,
                           IdResult *idResult,
                           IdRef *object,
                           IdRef *composite,
-                          LiteralIntegerList *indexesPairList)
+                          LiteralIntegerList *indexesList)
 {
     spv::Op _op;
     uint32_t _length;
@@ -1013,11 +968,11 @@ void ParseCompositeInsert(const uint32_t *_instruction,
     *idResult     = IdResult(_instruction[_o++]);
     *object       = IdRef(_instruction[_o++]);
     *composite    = IdRef(_instruction[_o++]);
-    if (indexesPairList)
+    if (indexesList)
     {
         while (_o < _length)
         {
-            indexesPairList->emplace_back(_instruction[_o++]);
+            indexesList->emplace_back(_instruction[_o++]);
         }
     }
 }
@@ -1454,6 +1409,36 @@ void ParseImage(const uint32_t *_instruction,
     *idResult     = IdResult(_instruction[_o++]);
     *sampledImage = IdRef(_instruction[_o++]);
 }
+void ParseImageQuerySizeLod(const uint32_t *_instruction,
+                            IdResultType *idResultType,
+                            IdResult *idResult,
+                            IdRef *image,
+                            IdRef *levelofDetail)
+{
+    spv::Op _op;
+    uint32_t _length;
+    GetInstructionOpAndLength(_instruction, &_op, &_length);
+    ASSERT(_op == spv::OpImageQuerySizeLod);
+    uint32_t _o    = 1;
+    *idResultType  = IdResultType(_instruction[_o++]);
+    *idResult      = IdResult(_instruction[_o++]);
+    *image         = IdRef(_instruction[_o++]);
+    *levelofDetail = IdRef(_instruction[_o++]);
+}
+void ParseImageQuerySize(const uint32_t *_instruction,
+                         IdResultType *idResultType,
+                         IdResult *idResult,
+                         IdRef *image)
+{
+    spv::Op _op;
+    uint32_t _length;
+    GetInstructionOpAndLength(_instruction, &_op, &_length);
+    ASSERT(_op == spv::OpImageQuerySize);
+    uint32_t _o   = 1;
+    *idResultType = IdResultType(_instruction[_o++]);
+    *idResult     = IdResult(_instruction[_o++]);
+    *image        = IdRef(_instruction[_o++]);
+}
 void ParseImageQueryLod(const uint32_t *_instruction,
                         IdResultType *idResultType,
                         IdResult *idResult,
@@ -1469,6 +1454,34 @@ void ParseImageQueryLod(const uint32_t *_instruction,
     *idResult     = IdResult(_instruction[_o++]);
     *sampledImage = IdRef(_instruction[_o++]);
     *coordinate   = IdRef(_instruction[_o++]);
+}
+void ParseImageQueryLevels(const uint32_t *_instruction,
+                           IdResultType *idResultType,
+                           IdResult *idResult,
+                           IdRef *image)
+{
+    spv::Op _op;
+    uint32_t _length;
+    GetInstructionOpAndLength(_instruction, &_op, &_length);
+    ASSERT(_op == spv::OpImageQueryLevels);
+    uint32_t _o   = 1;
+    *idResultType = IdResultType(_instruction[_o++]);
+    *idResult     = IdResult(_instruction[_o++]);
+    *image        = IdRef(_instruction[_o++]);
+}
+void ParseImageQuerySamples(const uint32_t *_instruction,
+                            IdResultType *idResultType,
+                            IdResult *idResult,
+                            IdRef *image)
+{
+    spv::Op _op;
+    uint32_t _length;
+    GetInstructionOpAndLength(_instruction, &_op, &_length);
+    ASSERT(_op == spv::OpImageQuerySamples);
+    uint32_t _o   = 1;
+    *idResultType = IdResultType(_instruction[_o++]);
+    *idResult     = IdResult(_instruction[_o++]);
+    *image        = IdRef(_instruction[_o++]);
 }
 void ParseConvertFToU(const uint32_t *_instruction,
                       IdResultType *idResultType,
@@ -1581,34 +1594,6 @@ void ParseQuantizeToF16(const uint32_t *_instruction,
     *idResultType = IdResultType(_instruction[_o++]);
     *idResult     = IdResult(_instruction[_o++]);
     *value        = IdRef(_instruction[_o++]);
-}
-void ParseConvertPtrToU(const uint32_t *_instruction,
-                        IdResultType *idResultType,
-                        IdResult *idResult,
-                        IdRef *pointer)
-{
-    spv::Op _op;
-    uint32_t _length;
-    GetInstructionOpAndLength(_instruction, &_op, &_length);
-    ASSERT(_op == spv::OpConvertPtrToU);
-    uint32_t _o   = 1;
-    *idResultType = IdResultType(_instruction[_o++]);
-    *idResult     = IdResult(_instruction[_o++]);
-    *pointer      = IdRef(_instruction[_o++]);
-}
-void ParseConvertUToPtr(const uint32_t *_instruction,
-                        IdResultType *idResultType,
-                        IdResult *idResult,
-                        IdRef *integerValue)
-{
-    spv::Op _op;
-    uint32_t _length;
-    GetInstructionOpAndLength(_instruction, &_op, &_length);
-    ASSERT(_op == spv::OpConvertUToPtr);
-    uint32_t _o   = 1;
-    *idResultType = IdResultType(_instruction[_o++]);
-    *idResult     = IdResult(_instruction[_o++]);
-    *integerValue = IdRef(_instruction[_o++]);
 }
 void ParseBitcast(const uint32_t *_instruction,
                   IdResultType *idResultType,
@@ -3282,7 +3267,7 @@ void ParseBranchConditional(const uint32_t *_instruction,
                             IdRef *condition,
                             IdRef *trueLabel,
                             IdRef *falseLabel,
-                            LiteralIntegerList *branchweightsPairList)
+                            LiteralIntegerList *branchweightsList)
 {
     spv::Op _op;
     uint32_t _length;
@@ -3292,11 +3277,11 @@ void ParseBranchConditional(const uint32_t *_instruction,
     *condition  = IdRef(_instruction[_o++]);
     *trueLabel  = IdRef(_instruction[_o++]);
     *falseLabel = IdRef(_instruction[_o++]);
-    if (branchweightsPairList)
+    if (branchweightsList)
     {
         while (_o < _length)
         {
-            branchweightsPairList->emplace_back(_instruction[_o++]);
+            branchweightsList->emplace_back(_instruction[_o++]);
         }
     }
 }

@@ -132,7 +132,7 @@ typedef struct MP3Context {
     int pics_to_write;
 
     /* audio packets are queued here until we get all the attached pictures */
-    AVPacketList *queue, *queue_end;
+    PacketList *queue, *queue_end;
 } MP3Context;
 
 static const uint8_t xing_offtbl[2][2] = {{32, 17}, {17, 9}};
@@ -355,7 +355,7 @@ static int mp3_write_audio_packet(AVFormatContext *s, AVPacket *pkt)
 
         if (mp3->xing_offset) {
             uint8_t *side_data = NULL;
-            buffer_size_t side_data_size;
+            size_t side_data_size;
 
             mp3_xing_add_frame(mp3, pkt);
             mp3->audio_size += pkt->size;
@@ -402,7 +402,7 @@ static void mp3_update_xing(AVFormatContext *s)
     AVReplayGain *rg;
     uint16_t tag_crc;
     uint8_t *toc;
-    buffer_size_t rg_size;
+    size_t rg_size;
     int i;
     int64_t old_pos = avio_tell(s->pb);
 
@@ -636,7 +636,7 @@ static void mp3_deinit(struct AVFormatContext *s)
     av_freep(&mp3->xing_frame);
 }
 
-AVOutputFormat ff_mp3_muxer = {
+const AVOutputFormat ff_mp3_muxer = {
     .name              = "mp3",
     .long_name         = NULL_IF_CONFIG_SMALL("MP3 (MPEG audio layer 3)"),
     .mime_type         = "audio/mpeg",

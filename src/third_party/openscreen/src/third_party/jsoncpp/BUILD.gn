@@ -22,7 +22,6 @@ if (build_with_chromium) {
   source_set("jsoncpp") {
     sources = [
       "src/include/json/allocator.h",
-      "src/include/json/autolink.h",
       "src/include/json/config.h",
       "src/include/json/forwards.h",
       "src/include/json/json.h",

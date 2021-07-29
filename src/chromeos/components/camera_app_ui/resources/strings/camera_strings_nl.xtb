@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">Afdrukken</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> is niet aangesloten.</translation>
 <translation id="1473110567575736769">Timer 3 seconden</translation>
+<translation id="1478594628797167447">Scanner</translation>
+<translation id="1545749641540134597">QR-code scannen</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Niets opgenomen</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">Staand</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> actief</translation>
 <translation id="2144806332417375165">Aangepaste videoparameters</translation>
+<translation id="2175927920773552910">QR-code</translation>
+<translation id="2268107369530950373">Naar de scannermodus</translation>
 <translation id="229579744168541441">Exporteren naar schijf</translation>
 <translation id="2320741269052147773">Naar links schuiven</translation>
 <translation id="2501278716633472235">Terug</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">Microfoon</translation>
 <translation id="3240426699337459095">Link gekopieerd</translation>
 <translation id="3259149966178251584">Cameraresolutie</translation>
+<translation id="3448774564454087943">De video is niet opgeslagen omdat deze te kort is</translation>
 <translation id="3517926952904427380">Kan geen portretfoto maken</translation>
 <translation id="3569311554794739032">Weet je zeker dat je <ph name="FILE" /> wilt verwijderen?</translation>
 <translation id="3733597664308256288">Er zijn nieuwe camera-opties beschikbaar. Druk op Zoeken + pijl-rechts om ze te openen.</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">Foto</translation>
 <translation id="4649291346448517080">Kan het bestand niet opslaan</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">Multistream-video opnemen</translation>
 <translation id="5057360777601936059">Je camera is momenteel niet beschikbaar.
         Controleer of de camera correct is aangesloten.</translation>
 <translation id="5152121255775685072">Naar galerij</translation>
+<translation id="5268823927180092501">Documentmodus aanzetten voor alle camera's</translation>
 <translation id="5422455049771430511">Je foto's en video's staan op een nieuwe plaats</translation>
 <translation id="5671277269877808209">Vierkant</translation>
+<translation id="5753488212459587150">Expertmodus aanzetten</translation>
 <translation id="5775960006311140197">Expertmodus</translation>
 <translation id="5869546221129391014">Raster</translation>
 <translation id="5975083100439434680">Uitzoomen</translation>

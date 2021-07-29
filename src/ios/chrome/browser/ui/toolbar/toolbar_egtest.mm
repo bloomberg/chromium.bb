@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/ios/ios_util.h"
+#import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -31,6 +33,12 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 @end
 
 @implementation ToolbarTestCase
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  config.features_disabled.push_back(kStartSurface);
+  return config;
+}
 
 #pragma mark Tests
 
@@ -306,8 +314,17 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 
   [ChromeEarlGreyUI focusOmniboxAndType:@"javascript:alert('Hello');\n"];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Hello")]
-      assertWithMatcher:grey_notNil()];
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Hello")]
+        assertWithMatcher:grey_sufficientlyVisible()
+                    error:&error];
+    return error == nil;
+  };
+
+  bool alertVisible = base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, condition);
+  GREYAssertTrue(alertVisible, @"JavaScript alert didn't appear");
 }
 
 // Loads WebUI page, types JavaScript into Omnibox and verifies that alert is
@@ -323,7 +340,9 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
   [ChromeEarlGreyUI focusOmniboxAndType:@"javascript:alert('Hello');\n"];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Hello")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"Hello"),
+                                          grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_nil()];
 }
 
@@ -341,7 +360,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
                                    grey_descendant(
                                        grey_accessibilityLabel(@"a")),
                                    grey_kindOfClassName(@"OmniboxPopupRowCell"),
-                                   nil)]
+                                   grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -351,7 +370,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
                                    grey_descendant(
                                        grey_accessibilityLabel(@"ab")),
                                    grey_kindOfClassName(@"OmniboxPopupRowCell"),
-                                   nil)]
+                                   grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -361,7 +380,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
                                    grey_descendant(
                                        grey_accessibilityLabel(@"abC")),
                                    grey_kindOfClassName(@"OmniboxPopupRowCell"),
-                                   nil)]
+                                   grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -371,7 +390,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
                                    grey_descendant(
                                        grey_accessibilityLabel(@"abC1")),
                                    grey_kindOfClassName(@"OmniboxPopupRowCell"),
-                                   nil)]
+                                   grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -381,7 +400,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
                                    grey_descendant(
                                        grey_accessibilityLabel(@"abC12")),
                                    grey_kindOfClassName(@"OmniboxPopupRowCell"),
-                                   nil)]
+                                   grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -391,7 +410,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
                                    grey_descendant(
                                        grey_accessibilityLabel(@"abC12@")),
                                    grey_kindOfClassName(@"OmniboxPopupRowCell"),
-                                   nil)]
+                                   grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -401,7 +420,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
                                    grey_descendant(
                                        grey_accessibilityLabel(@"abC12@{")),
                                    grey_kindOfClassName(@"OmniboxPopupRowCell"),
-                                   nil)]
+                                   grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -411,7 +430,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
                                    grey_descendant(
                                        grey_accessibilityLabel(@"abC12@{#")),
                                    grey_kindOfClassName(@"OmniboxPopupRowCell"),
-                                   nil)]
+                                   grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   id<GREYMatcher> cancelButton =

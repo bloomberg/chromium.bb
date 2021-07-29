@@ -31,7 +31,6 @@
 #include "components/autofill_assistant/browser/user_action.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/user_model.h"
-#include "components/autofill_assistant/browser/web/element_store.h"
 #include "components/autofill_assistant/browser/web/web_controller.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -107,7 +106,6 @@ class Controller : public ScriptExecutorDelegate,
   const GURL& GetScriptURL() override;
   Service* GetService() override;
   WebController* GetWebController() override;
-  ElementStore* GetElementStore() const override;
   const TriggerContext* GetTriggerContext() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   WebsiteLoginManager* GetWebsiteLoginManager() override;
@@ -233,7 +231,6 @@ class Controller : public ScriptExecutorDelegate,
                           const ValueProto& value) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
   void GetRestrictedArea(std::vector<RectF>* area) const override;
-  void GetVisualViewport(RectF* visual_viewport) const override;
   void OnFatalError(const std::string& error_message,
                     bool show_feedback_chip,
                     Metrics::DropOutReason reason) override;
@@ -374,8 +371,7 @@ class Controller : public ScriptExecutorDelegate,
   void OnValueChanged(const std::string& identifier,
                       const ValueProto& new_value) override;
 
-  void OnTouchableAreaChanged(const RectF& visual_viewport,
-                              const std::vector<RectF>& touchable_areas,
+  void OnTouchableAreaChanged(const std::vector<RectF>& touchable_areas,
                               const std::vector<RectF>& restricted_areas);
 
   void SetOverlayColors(std::unique_ptr<OverlayColors> colors);
@@ -417,9 +413,6 @@ class Controller : public ScriptExecutorDelegate,
 
   // Lazily instantiate in GetWebController().
   std::unique_ptr<WebController> web_controller_;
-
-  // Lazily initiate in GetElementStore();
-  mutable std::unique_ptr<ElementStore> element_store_;
 
   // Lazily instantiate in GetService().
   std::unique_ptr<Service> service_;

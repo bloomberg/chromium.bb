@@ -31,6 +31,8 @@
 #include "net/cert/x509_util.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,8 +66,8 @@ scoped_refptr<net::X509Certificate> CreateFakeCert() {
           &cert_der)) {
     return nullptr;
   }
-  return net::X509Certificate::CreateFromBytes(cert_der.data(),
-                                               cert_der.size());
+  return net::X509Certificate::CreateFromBytes(
+      base::as_bytes(base::make_span(cert_der)));
 }
 
 std::string MakeReport(const std::string& hostname) {

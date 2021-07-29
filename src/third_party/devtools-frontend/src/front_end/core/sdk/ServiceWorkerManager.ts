@@ -37,8 +37,10 @@ import * as Protocol from '../../generated/protocol.js';
 
 import type {ExecutionContext} from './RuntimeModel.js';
 import {Events as RuntimeModelEvents, RuntimeModel} from './RuntimeModel.js';  // eslint-disable-line no-unused-vars
-import type {Target} from './SDKModel.js';
-import {Capability, SDKModel, TargetManager, Type} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';
+import {Capability, Type} from './Target.js';
+import {SDKModel} from './SDKModel.js';
+import {TargetManager} from './TargetManager.js';
 
 const UIStrings = {
   /**
@@ -620,7 +622,7 @@ class ServiceWorkerContextNamer {
     const parsedUrl = Common.ParsedURL.ParsedURL.fromString(context.origin);
     const label = parsedUrl ? parsedUrl.lastPathComponentWithFragment() : context.name;
     const localizedStatus = ServiceWorkerVersion.Status[version.status];
-    context.setLabel(i18nString(UIStrings.sSS, {PH1: label, PH2: version.id, PH3: localizedStatus}));
+    context.setLabel(i18nString(UIStrings.sSS, {PH1: label, PH2: version.id, PH3: localizedStatus()}));
   }
 }
 

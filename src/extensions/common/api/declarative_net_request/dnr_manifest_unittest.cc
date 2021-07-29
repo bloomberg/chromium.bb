@@ -146,13 +146,15 @@ TEST_F(DNRManifestTest, InvalidRulesFileKey) {
 TEST_F(DNRManifestTest, InvalidRulesFileFormat) {
   const char* kRulesetFile = "file1.json";
   std::unique_ptr<base::DictionaryValue> manifest = CreateManifest({});
-  manifest->Set(dnr_api::ManifestKeys::kDeclarativeNetRequest,
-                DictionaryBuilder()
-                    .Set(dnr_api::DNRInfo::kRuleResources,
-                         (ListBuilder().Append(
-                              std::make_unique<base::Value>(kRulesetFile)))
-                             .Build())
-                    .Build());
+  manifest->SetKey(
+      dnr_api::ManifestKeys::kDeclarativeNetRequest,
+      base::Value::FromUniquePtrValue(
+          DictionaryBuilder()
+              .Set(dnr_api::DNRInfo::kRuleResources,
+                   (ListBuilder().Append(
+                        std::make_unique<base::Value>(kRulesetFile)))
+                       .Build())
+              .Build()));
 
   WriteManifestAndRuleset(*manifest, {});
 
@@ -224,7 +226,7 @@ TEST_F(DNRManifestTest, NeedsDeclarativeNetRequestPermission) {
   std::vector<TestRulesetInfo> rulesets({CreateDefaultRuleset()});
   std::unique_ptr<base::DictionaryValue> manifest = CreateManifest(rulesets);
   // Remove "declarativeNetRequest" permission.
-  manifest->Remove(manifest_keys::kPermissions, nullptr);
+  manifest->RemoveKey(manifest_keys::kPermissions);
 
   WriteManifestAndRuleset(*manifest, rulesets);
 

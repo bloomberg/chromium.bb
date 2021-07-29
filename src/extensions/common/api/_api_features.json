@@ -321,7 +321,8 @@
       "chrome://welcome/*",
       "chrome://profile-picker/*",
       "chrome://file-manager/*",
-      "chrome://help-app/*"
+      "chrome://help-app/*",
+      "chrome://eche-app/*"
     ]
   }, {
     "channel": "stable",
@@ -557,8 +558,8 @@
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
   "storage.session": {
-    "channel": "canary"
-    // TODO(crbug.com/1185226): Restrict to Manifest V3.
+    "channel": "canary",
+    "min_manifest_version": 3
   },
   "system.cpu": {
     "dependencies": ["permission:system.cpu"],

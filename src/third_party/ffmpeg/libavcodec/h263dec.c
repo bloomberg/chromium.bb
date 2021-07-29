@@ -128,7 +128,6 @@ av_cold int ff_h263_decode_init(AVCodecContext *avctx)
                avctx->codec->id);
         return AVERROR(ENOSYS);
     }
-    s->codec_id    = avctx->codec->id;
 
     if (avctx->codec_tag == AV_RL32("L263") || avctx->codec_tag == AV_RL32("S263"))
         if (avctx->extradata_size == 56 && avctx->extradata[0] == 1)
@@ -758,7 +757,7 @@ const AVCodecHWConfigInternal *const ff_h263_hw_config_list[] = {
     NULL
 };
 
-AVCodec ff_h263_decoder = {
+const AVCodec ff_h263_decoder = {
     .name           = "h263",
     .long_name      = NULL_IF_CONFIG_SMALL("H.263 / H.263-1996, H.263+ / H.263-1998 / H.263 version 2"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -769,14 +768,14 @@ AVCodec ff_h263_decoder = {
     .decode         = ff_h263_decode_frame,
     .capabilities   = AV_CODEC_CAP_DRAW_HORIZ_BAND | AV_CODEC_CAP_DR1 |
                       AV_CODEC_CAP_TRUNCATED | AV_CODEC_CAP_DELAY,
-    .caps_internal  = FF_CODEC_CAP_SKIP_FRAME_FILL_PARAM | FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal  = FF_CODEC_CAP_SKIP_FRAME_FILL_PARAM,
     .flush          = ff_mpeg_flush,
     .max_lowres     = 3,
     .pix_fmts       = ff_h263_hwaccel_pixfmt_list_420,
     .hw_configs     = ff_h263_hw_config_list,
 };
 
-AVCodec ff_h263p_decoder = {
+const AVCodec ff_h263p_decoder = {
     .name           = "h263p",
     .long_name      = NULL_IF_CONFIG_SMALL("H.263 / H.263-1996, H.263+ / H.263-1998 / H.263 version 2"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -787,7 +786,7 @@ AVCodec ff_h263p_decoder = {
     .decode         = ff_h263_decode_frame,
     .capabilities   = AV_CODEC_CAP_DRAW_HORIZ_BAND | AV_CODEC_CAP_DR1 |
                       AV_CODEC_CAP_TRUNCATED | AV_CODEC_CAP_DELAY,
-    .caps_internal  = FF_CODEC_CAP_SKIP_FRAME_FILL_PARAM | FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal  = FF_CODEC_CAP_SKIP_FRAME_FILL_PARAM,
     .flush          = ff_mpeg_flush,
     .max_lowres     = 3,
     .pix_fmts       = ff_h263_hwaccel_pixfmt_list_420,

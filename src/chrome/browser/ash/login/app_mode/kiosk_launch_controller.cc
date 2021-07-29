@@ -19,14 +19,15 @@
 #include "chrome/browser/ash/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "components/policy/core/browser/policy_error_map.h"
@@ -34,9 +35,9 @@
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/network_service_instance.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
+
 // Web Kiosk splash screen minimum show time.
 constexpr base::TimeDelta kKioskSplashScreenMinTime =
     base::TimeDelta::FromSeconds(10);
@@ -76,15 +77,15 @@ enum KioskLaunchType {
   KIOSK_LAUNCH_TYPE_COUNT  // This must be the last entry.
 };
 
-bool IsEnterpriseManaged() {
+bool IsDeviceEnterpriseManaged() {
   return g_browser_process->platform_part()
       ->browser_policy_connector_chromeos()
-      ->IsEnterpriseManaged();
+      ->IsDeviceEnterpriseManaged();
 }
 
 void RecordKioskLaunchUMA(bool is_auto_launch) {
   const KioskLaunchType launch_type =
-      IsEnterpriseManaged()
+      IsDeviceEnterpriseManaged()
           ? (is_auto_launch ? KIOSK_LAUNCH_ENTERPRISE_AUTO_LAUNCH
                             : KIOKS_LAUNCH_ENTERPRISE_MANUAL_LAUNCH)
           : (is_auto_launch ? KIOSK_LAUNCH_CONSUMER_AUTO_LAUNCH
@@ -93,7 +94,7 @@ void RecordKioskLaunchUMA(bool is_auto_launch) {
   UMA_HISTOGRAM_ENUMERATION("Kiosk.LaunchType", launch_type,
                             KIOSK_LAUNCH_TYPE_COUNT);
 
-  if (IsEnterpriseManaged()) {
+  if (IsDeviceEnterpriseManaged()) {
     enterprise_user_session_metrics::RecordSignInEvent(
         is_auto_launch
             ? enterprise_user_session_metrics::SignInEventType::AUTOMATIC_KIOSK
@@ -197,8 +198,7 @@ void KioskLaunchController::Start(const KioskAppId& kiosk_app_id,
                                           weak_ptr_factory_.GetWeakPtr()));
 
   kiosk_profile_loader_ = std::make_unique<KioskProfileLoader>(
-      *kiosk_app_id_.account_id, kiosk_app_id_.type,
-      /*use_guest_mount=*/false, /*delegate=*/this);
+      *kiosk_app_id_.account_id, kiosk_app_id_.type, /*delegate=*/this);
   kiosk_profile_loader_->Start();
 }
 
@@ -281,27 +281,31 @@ KioskAppManagerBase::App KioskLaunchController::GetAppData() {
   switch (kiosk_app_id_.type) {
     case KioskAppType::kChromeApp: {
       KioskAppManagerBase::App app;
-      bool app_found =
-          KioskAppManager::Get()->GetApp(*kiosk_app_id_.app_id, &app);
-      DCHECK(app_found);
-      return app;
+      if (KioskAppManager::Get()->GetApp(*kiosk_app_id_.app_id, &app))
+        return app;
+      break;
     }
     case KioskAppType::kArcApp: {
       const ArcKioskAppData* arc_app =
           ArcKioskAppManager::Get()->GetAppByAccountId(
               *kiosk_app_id_.account_id);
-      DCHECK(arc_app);
-      return KioskAppManagerBase::App(*arc_app);
+      if (arc_app)
+        return KioskAppManagerBase::App(*arc_app);
+      break;
     }
     case KioskAppType::kWebApp: {
-      const WebKioskAppData* app = WebKioskAppManager::Get()->GetAppByAccountId(
-          *kiosk_app_id_.account_id);
-      DCHECK(app);
-      auto data = KioskAppManagerBase::App(*app);
-      data.url = app->install_url();
-      return data;
+      const WebKioskAppData* web_app =
+          WebKioskAppManager::Get()->GetAppByAccountId(
+              *kiosk_app_id_.account_id);
+      if (web_app)
+        return WebKioskAppManager::CreateAppByData(*web_app);
+      break;
     }
   }
+
+  LOG(WARNING) << "Cannot get a valid kiosk app. App type: "
+               << (int)kiosk_app_id_.type;
+  return KioskAppManagerBase::App();
 }
 
 bool KioskLaunchController::IsNetworkRequired() {
@@ -563,7 +567,7 @@ bool KioskLaunchController::CanConfigureNetwork() {
   if (can_configure_network_callback)
     return can_configure_network_callback->Run();
 
-  if (IsEnterpriseManaged()) {
+  if (IsDeviceEnterpriseManaged()) {
     bool should_prompt;
     if (CrosSettings::Get()->GetBoolean(
             kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline,
@@ -581,7 +585,7 @@ bool KioskLaunchController::NeedOwnerAuthToConfigureNetwork() {
   if (need_owner_auth_to_configure_network_callback)
     return need_owner_auth_to_configure_network_callback->Run();
 
-  return !IsEnterpriseManaged();
+  return !IsDeviceEnterpriseManaged();
 }
 
 void KioskLaunchController::MaybeShowNetworkConfigureUI() {
@@ -652,10 +656,17 @@ void KioskLaunchController::OnNetworkConfigRequested() {
 
 void KioskLaunchController::OnNetworkConfigFinished() {
   network_ui_state_ = NetworkUIState::kNotShowing;
-  splash_screen_view_->UpdateAppLaunchState(
-      AppLaunchSplashScreenView::AppLaunchState::kPreparingProfile);
+
+  if (splash_screen_view_) {
+    splash_screen_view_->UpdateAppLaunchState(
+        AppLaunchSplashScreenView::AppLaunchState::kPreparingProfile);
+  }
+
   app_state_ = AppState::kInitNetwork;
-  app_launcher_->RestartLauncher();
+
+  if (app_launcher_) {
+    app_launcher_->RestartLauncher();
+  }
 }
 
 void KioskLaunchController::OnNetworkStateChanged(bool online) {
@@ -750,4 +761,4 @@ std::unique_ptr<KioskLaunchController> KioskLaunchController::CreateForTesting(
   return controller;
 }
 
-}  // namespace chromeos
+}  // namespace ash

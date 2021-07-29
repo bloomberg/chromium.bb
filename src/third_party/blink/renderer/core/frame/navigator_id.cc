@@ -65,13 +65,15 @@ String NavigatorID::platform() const {
   // If the User-Agent string is frozen, platform should be a value
   // matching the frozen string per https://github.com/WICG/ua-client-hints. See
   // content::frozen_user_agent_strings.
-  if (base::FeatureList::IsEnabled(features::kFreezeUserAgent)) {
+  if (base::FeatureList::IsEnabled(features::kReduceUserAgent)) {
 #if defined(OS_ANDROID)
-    // Matches the frozen mobile User-Agent string (arbitrary Android device).
-    return "Linux armv8l";
-#else
-    // Matches the frozen desktop User-Agent string (Windows).
+    return "Linux armv81";
+#elif defined(OS_MAC)
+    return "MacIntel";
+#elif defined(OS_WIN)
     return "Win32";
+#else
+    return "Linux x86_64";
 #endif
   }
 

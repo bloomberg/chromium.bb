@@ -37,6 +37,13 @@ const char kFinchSeedExpirationAge[] = "finch-seed-expiration-age";
 const char kFinchSeedIgnorePendingDownload[] =
     "finch-seed-ignore-pending-download";
 
+// Forces WebView's service to always schedule a new variations seed download
+// job, even if the device is not charging. Note this switch may be necessary
+// for testing on Android emulators as these are not always considered to be
+// charging.
+const char kFinchSeedNoChargingRequirement[] =
+    "finch-seed-no-charging-requirement";
+
 // The minimum amount of time in seconds that WebView's service will wait
 // between two variations seed downloads from the variations server.
 const char kFinchSeedMinDownloadPeriod[] = "finch-seed-min-download-period";
@@ -52,5 +59,9 @@ const char kFinchSeedMinUpdatePeriod[] = "finch-seed-min-update-period";
 // cookies-without-SameSite-must-be-secure, and schemeful-same-site features.
 const char kWebViewEnableModernCookieSameSite[] =
     "webview-enable-modern-cookie-same-site";
+
+// Disables downloading/updating Apps Package Names Allowlist.
+const char kWebViewDisableAppsPackageNamesAllowlistComponent[] =
+    "disable-webview-apps-package-names-allowlist-component";
 
 }  // namespace switches

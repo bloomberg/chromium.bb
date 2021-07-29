@@ -32,12 +32,7 @@
 #define INCLUDE_BASE_CEF_CALLBACK_FORWARD_H_
 #pragma once
 
-#if defined(BASE_CALLBACK_FORWARD_H_)
-// Do nothing if the Chromium header has already been included.
-// This can happen in cases where Chromium code is used directly by the
-// client application. When using Chromium code directly always include
-// the Chromium header first to avoid type conflicts.
-#elif defined(USING_CHROMIUM_INCLUDES)
+#if defined(USING_CHROMIUM_INCLUDES)
 // When building CEF include the Chromium header directly.
 #include "base/callback_forward.h"
 #else  // !USING_CHROMIUM_INCLUDES
@@ -47,10 +42,21 @@
 
 namespace base {
 
-template <typename Sig>
-class Callback;
+template <typename Signature>
+class OnceCallback;
 
-typedef Callback<void(void)> Closure;
+template <typename Signature>
+class RepeatingCallback;
+
+template <typename Signature>
+using Callback = RepeatingCallback<Signature>;
+
+// Syntactic sugar to make OnceClosure<void()> and RepeatingClosure<void()>
+// easier to declare since they will be used in a lot of APIs with delayed
+// execution.
+using OnceClosure = OnceCallback<void()>;
+using RepeatingClosure = RepeatingCallback<void()>;
+using Closure = Callback<void()>;
 
 }  // namespace base
 

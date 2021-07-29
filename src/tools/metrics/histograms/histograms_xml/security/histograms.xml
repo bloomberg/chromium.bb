@@ -99,7 +99,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.MixedForm.InterstitialTriggerState"
-    enum="MixedFormInterstitialTriggeredState" expires_after="2021-10-25">
+    enum="MixedFormInterstitialTriggeredState" expires_after="2021-12-26">
   <owner>carlosil@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -195,7 +195,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.PageInfo.TimeOpen.Action" units="units"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -237,7 +237,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SafetyTips.DownloadStarted" enum="SafetyTipStatus"
-    expires_after="2021-10-25">
+    expires_after="2021-12-26">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
@@ -250,7 +250,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SafetyTips.FormSubmission" enum="SafetyTipStatus"
-    expires_after="2021-10-25">
+    expires_after="2021-12-26">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
@@ -263,7 +263,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SafetyTips.Interaction" enum="SafetyTipInteraction"
-    expires_after="2021-10-25">
+    expires_after="2021-12-25">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
@@ -275,7 +275,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SafetyTips.OpenTime.CloseTab" units="ms"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
@@ -285,7 +285,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SafetyTips.OpenTime.Dismiss" units="ms"
-    expires_after="2021-10-25">
+    expires_after="2021-12-25">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
@@ -296,7 +296,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SafetyTips.OpenTime.DismissWithClose" units="ms"
-    expires_after="2021-10-25">
+    expires_after="2021-12-26">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <owner>livvielin@chromium.org</owner>
@@ -308,7 +308,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SafetyTips.OpenTime.DismissWithEsc" units="ms"
-    expires_after="2021-10-25">
+    expires_after="2021-12-26">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <owner>livvielin@chromium.org</owner>
@@ -332,7 +332,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SafetyTips.OpenTime.LeaveSite" units="ms"
-    expires_after="2021-10-25">
+    expires_after="2021-12-26">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
@@ -352,7 +352,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SafetyTips.OpenTime.StartNewNavigation" units="ms"
-    expires_after="2021-10-25">
+    expires_after="2021-12-26">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
@@ -362,7 +362,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SafetyTips.OpenTime.SwitchTab" units="ms"
-    expires_after="2021-10-25">
+    expires_after="2021-12-26">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
@@ -382,7 +382,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Security.SafetyTips.ReputationCheckComplete"
-    enum="SafetyTipStatus" expires_after="2021-10-25">
+    enum="SafetyTipStatus" expires_after="2021-12-26">
   <owner>jdeblasio@chromium.org</owner>
   <owner>src/chrome/browser/reputation/OWNERS</owner>
   <summary>
@@ -393,7 +393,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SafetyTips.SafetyTipIgnoredPageLoad"
-    enum="SafetyTipStatus" expires_after="2021-10-25">
+    enum="SafetyTipStatus" expires_after="2021-12-26">
   <owner>jdeblasio@chromium.org</owner>
   <owner>livvielin@chromium.org</owner>
   <summary>
@@ -403,7 +403,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SafetyTips.SafetyTipShown" enum="SafetyTipStatus"
-    expires_after="2021-10-25">
+    expires_after="2021-12-25">
   <owner>jdeblasio@chromium.org</owner>
   <owner>livvielin@chromium.org</owner>
   <summary>
@@ -412,15 +412,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram base="true" name="Security.SafetyTips.SafetyTipShown_AfterFlag"
-    enum="SafetyTipStatus" expires_after="2021-10-25">
+<histogram name="Security.SafetyTips.SafetyTipShown_AfterFlag"
+    enum="SafetyTipStatus" expires_after="2021-12-25">
   <owner>jdeblasio@chromium.org</owner>
   <owner>src/chrome/browser/reputation/OWNERS</owner>
   <summary>
-    TEMPORARY histogram that records the Safety Tip status of a page after
-    navigation commit or page visibility change. This is the same as
-    SafetyTipShown, but records *after* the flag is checked to evaluate the
-    impact of starts_active.
+    Records the Safety Tip status of a page after navigation commit or page
+    visibility change. This is the same as SafetyTipShown, but records *after*
+    the flag is checked to evaluate the impact of starts_active.
   </summary>
 </histogram>
 
@@ -480,7 +479,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SCTAuditing.OptIn.ReportDeduplicated" enum="Boolean"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -501,7 +500,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SCTAuditing.OptIn.ReportSampled" enum="Boolean"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -512,7 +511,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SCTAuditing.OptIn.ReportSize" units="bytes"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -522,7 +521,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Security.SCTAuditing.OptIn.ReportSucceeded" enum="Boolean"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -673,7 +672,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Security.TimeOnPage2" units="units"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>

@@ -14,9 +14,7 @@
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_channel.mojom.h"
-#include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
-#include "ipc/ipc_listener.h"
 
 namespace gpu {
 class SharedContextState;
@@ -25,8 +23,7 @@ class GpuChannel;
 class SharedImageFactory;
 
 class GPU_IPC_SERVICE_EXPORT SharedImageStub
-    : public IPC::Listener,
-      public MemoryTracker,
+    : public MemoryTracker,
       public base::trace_event::MemoryDumpProvider {
  public:
   ~SharedImageStub() override;
@@ -39,9 +36,6 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
 
   // Executes a DeferredRequest routed to this stub by a GpuChannel.
   void ExecuteDeferredRequest(mojom::DeferredSharedImageRequestPtr request);
-
-  // IPC::Listener implementation:
-  bool OnMessageReceived(const IPC::Message& msg) override;
 
   // MemoryTracker implementation:
   void TrackMemoryAllocatedChange(int64_t delta) override;
@@ -82,13 +76,22 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
   bool UpdateSharedImage(const Mailbox& mailbox,
                          gfx::GpuFenceHandle in_fence_handle);
 
+#if defined(OS_FUCHSIA)
+  void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
+                                      zx::channel token,
+                                      gfx::BufferFormat format,
+                                      gfx::BufferUsage usage,
+                                      bool register_with_image_pipe);
+  void ReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id);
+#endif  // OS_FUCHSIA
+
  private:
   SharedImageStub(GpuChannel* channel, int32_t route_id);
 
   void OnCreateSharedImage(mojom::CreateSharedImageParamsPtr params);
   void OnCreateSharedImageWithData(
       mojom::CreateSharedImageWithDataParamsPtr params);
-  void OnCreateGMBSharedImage(GpuChannelMsg_CreateGMBSharedImage_Params params);
+  void OnCreateGMBSharedImage(mojom::CreateGMBSharedImageParamsPtr params);
   void OnUpdateSharedImage(const Mailbox& mailbox,
                            uint32_t release_id,
                            gfx::GpuFenceHandle in_fence_handle);
@@ -106,14 +109,6 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
   void OnCreateSwapChain(mojom::CreateSwapChainParamsPtr params);
   void OnPresentSwapChain(const Mailbox& mailbox, uint32_t release_id);
 #endif  // OS_WIN
-#if defined(OS_FUCHSIA)
-  void OnRegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
-                                        zx::channel token,
-                                        gfx::BufferFormat format,
-                                        gfx::BufferUsage usage,
-                                        bool register_with_image_pipe);
-  void OnReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id);
-#endif  // OS_FUCHSIA
 
   bool MakeContextCurrent(bool needs_gl = false);
   ContextResult MakeContextCurrentAndCreateFactory();
@@ -129,7 +124,7 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
   // TODO(jonross): Look into a rename of CommandBufferId to reflect that it can
   // be a unique identifier for numerous gpu constructs.
   CommandBufferId command_buffer_id_;
-  SequenceId sequence_;
+  const SequenceId sequence_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
   scoped_refptr<SharedContextState> context_state_;
   std::unique_ptr<SharedImageFactory> factory_;

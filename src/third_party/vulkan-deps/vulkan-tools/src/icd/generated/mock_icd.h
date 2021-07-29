@@ -79,8 +79,9 @@ static const std::unordered_map<std::string, uint32_t> instance_extension_map = 
     {"VK_FUCHSIA_imagepipe_surface", 1},
     {"VK_EXT_metal_surface", 1},
     {"VK_KHR_surface_protected_capabilities", 1},
-    {"VK_EXT_validation_features", 4},
+    {"VK_EXT_validation_features", 5},
     {"VK_EXT_headless_surface", 1},
+    {"VK_EXT_acquire_drm_display", 1},
     {"VK_EXT_directfb_surface", 1},
     {"VK_QNX_screen_surface", 1},
 };
@@ -277,8 +278,10 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_NV_device_diagnostics_config", 1},
     {"VK_QCOM_render_pass_store_ops", 2},
     {"VK_KHR_synchronization2", 1},
+    {"VK_KHR_shader_subgroup_uniform_control_flow", 1},
     {"VK_KHR_zero_initialize_workgroup_memory", 1},
     {"VK_NV_fragment_shading_rate_enums", 1},
+    {"VK_NV_ray_tracing_motion_blur", 1},
     {"VK_EXT_ycbcr_2plane_444_formats", 1},
     {"VK_EXT_fragment_density_map2", 1},
     {"VK_QCOM_rotated_copy_commands", 1},
@@ -289,10 +292,15 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_NV_acquire_winrt_display", 1},
     {"VK_VALVE_mutable_descriptor_type", 1},
     {"VK_EXT_vertex_input_dynamic_state", 2},
+    {"VK_EXT_physical_device_drm", 1},
     {"VK_FUCHSIA_external_memory", 1},
     {"VK_FUCHSIA_external_semaphore", 1},
+    {"VK_HUAWEI_subpass_shading", 2},
+    {"VK_NV_external_memory_rdma", 1},
     {"VK_EXT_extended_dynamic_state2", 1},
     {"VK_EXT_color_write_enable", 1},
+    {"VK_EXT_global_priority_query", 1},
+    {"VK_EXT_multi_draw", 1},
 };
 
 
@@ -2085,6 +2093,7 @@ static VKAPI_ATTR void VKAPI_CALL GetQueueCheckpointData2NV(
 
 
 
+
 static VKAPI_ATTR void VKAPI_CALL CmdCopyBuffer2KHR(
     VkCommandBuffer                             commandBuffer,
     const VkCopyBufferInfo2KHR*                 pCopyBufferInfo);
@@ -3011,6 +3020,18 @@ static VKAPI_ATTR void VKAPI_CALL DestroyIndirectCommandsLayoutNV(
 
 
 
+static VKAPI_ATTR VkResult VKAPI_CALL AcquireDrmDisplayEXT(
+    VkPhysicalDevice                            physicalDevice,
+    int32_t                                     drmFd,
+    VkDisplayKHR                                display);
+
+static VKAPI_ATTR VkResult VKAPI_CALL GetDrmDisplayEXT(
+    VkPhysicalDevice                            physicalDevice,
+    int32_t                                     drmFd,
+    uint32_t                                    connectorId,
+    VkDisplayKHR*                               display);
+
+
 
 
 
@@ -3053,6 +3074,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetFragmentShadingRateEnumNV(
 
 
 
+
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 
 static VKAPI_ATTR VkResult VKAPI_CALL AcquireWinrtDisplayNV(
@@ -3088,6 +3110,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetVertexInputEXT(
     uint32_t                                    vertexAttributeDescriptionCount,
     const VkVertexInputAttributeDescription2EXT* pVertexAttributeDescriptions);
 
+
 #ifdef VK_USE_PLATFORM_FUCHSIA
 
 static VKAPI_ATTR VkResult VKAPI_CALL GetMemoryZirconHandleFUCHSIA(
@@ -3113,6 +3136,12 @@ static VKAPI_ATTR VkResult VKAPI_CALL GetSemaphoreZirconHandleFUCHSIA(
     const VkSemaphoreGetZirconHandleInfoFUCHSIA* pGetZirconHandleInfo,
     zx_handle_t*                                pZirconHandle);
 #endif /* VK_USE_PLATFORM_FUCHSIA */
+
+
+static VKAPI_ATTR VkResult VKAPI_CALL GetMemoryRemoteAddressNV(
+    VkDevice                                    device,
+    const VkMemoryGetRemoteAddressInfoNV*       getMemoryRemoteAddressInfo,
+    VkRemoteAddressNV*                          pAddress);
 
 
 static VKAPI_ATTR void VKAPI_CALL CmdSetPatchControlPointsEXT(
@@ -3154,6 +3183,25 @@ static VKAPI_ATTR void                                    VKAPI_CALL CmdSetColor
     VkCommandBuffer                             commandBuffer,
     uint32_t                                    attachmentCount,
     const VkBool32*                             pColorWriteEnables);
+
+
+
+static VKAPI_ATTR void VKAPI_CALL CmdDrawMultiEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    drawCount,
+    const VkMultiDrawInfoEXT*                   pVertexInfo,
+    uint32_t                                    instanceCount,
+    uint32_t                                    firstInstance,
+    uint32_t                                    stride);
+
+static VKAPI_ATTR void VKAPI_CALL CmdDrawMultiIndexedEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    drawCount,
+    const VkMultiDrawIndexedInfoEXT*            pIndexInfo,
+    uint32_t                                    instanceCount,
+    uint32_t                                    firstInstance,
+    uint32_t                                    stride,
+    const int32_t*                              pVertexOffset);
 
 
 static VKAPI_ATTR VkResult VKAPI_CALL CreateAccelerationStructureKHR(
@@ -3827,6 +3875,8 @@ static const std::unordered_map<std::string, void*> name_to_funcptr_map = {
     {"vkCmdBindPipelineShaderGroupNV", (void*)CmdBindPipelineShaderGroupNV},
     {"vkCreateIndirectCommandsLayoutNV", (void*)CreateIndirectCommandsLayoutNV},
     {"vkDestroyIndirectCommandsLayoutNV", (void*)DestroyIndirectCommandsLayoutNV},
+    {"vkAcquireDrmDisplayEXT", (void*)AcquireDrmDisplayEXT},
+    {"vkGetDrmDisplayEXT", (void*)GetDrmDisplayEXT},
     {"vkCreatePrivateDataSlotEXT", (void*)CreatePrivateDataSlotEXT},
     {"vkDestroyPrivateDataSlotEXT", (void*)DestroyPrivateDataSlotEXT},
     {"vkSetPrivateDataEXT", (void*)SetPrivateDataEXT},
@@ -3857,6 +3907,7 @@ static const std::unordered_map<std::string, void*> name_to_funcptr_map = {
 #ifdef VK_USE_PLATFORM_FUCHSIA
     {"vkGetSemaphoreZirconHandleFUCHSIA", (void*)GetSemaphoreZirconHandleFUCHSIA},
 #endif
+    {"vkGetMemoryRemoteAddressNV", (void*)GetMemoryRemoteAddressNV},
     {"vkCmdSetPatchControlPointsEXT", (void*)CmdSetPatchControlPointsEXT},
     {"vkCmdSetRasterizerDiscardEnableEXT", (void*)CmdSetRasterizerDiscardEnableEXT},
     {"vkCmdSetDepthBiasEnableEXT", (void*)CmdSetDepthBiasEnableEXT},
@@ -3869,6 +3920,8 @@ static const std::unordered_map<std::string, void*> name_to_funcptr_map = {
     {"vkGetPhysicalDeviceScreenPresentationSupportQNX", (void*)GetPhysicalDeviceScreenPresentationSupportQNX},
 #endif
     {"vkCmdSetColorWriteEnableEXT", (void*)CmdSetColorWriteEnableEXT},
+    {"vkCmdDrawMultiEXT", (void*)CmdDrawMultiEXT},
+    {"vkCmdDrawMultiIndexedEXT", (void*)CmdDrawMultiIndexedEXT},
     {"vkCreateAccelerationStructureKHR", (void*)CreateAccelerationStructureKHR},
     {"vkDestroyAccelerationStructureKHR", (void*)DestroyAccelerationStructureKHR},
     {"vkCmdBuildAccelerationStructuresKHR", (void*)CmdBuildAccelerationStructuresKHR},

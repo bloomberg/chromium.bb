@@ -17,6 +17,7 @@
 #include "components/sqlite_proto/key_value_table.h"
 #include "components/sqlite_proto/proto_table_manager.h"
 #include "services/network/trust_tokens/proto/storage.pb.h"
+#include "sql/database.h"
 
 namespace network {
 
@@ -26,6 +27,8 @@ const char kToplevelTableName[] = "trust_tokens_toplevel_config";
 const char kIssuerToplevelPairTableName[] =
     "trust_tokens_issuer_toplevel_pair_config";
 
+// When updating the database's schema, please increment the schema version.
+constexpr int kCurrentSchemaVersion = 2;
 }  // namespace
 
 void TrustTokenDatabaseOwner::Create(
@@ -79,7 +82,16 @@ NOINLINE TrustTokenDatabaseOwner::TrustTokenDatabaseOwner(
       table_manager_(base::MakeRefCounted<sqlite_proto::ProtoTableManager>(
           db_task_runner)),
       db_task_runner_(db_task_runner),
-      backing_database_(std::make_unique<sql::Database>()),
+      backing_database_(std::make_unique<sql::Database>(sql::DatabaseOptions{
+          // As they work on deleting the feature (crbug.com/1120969), sql/
+          // owners prefer to see which clients are explicitly okay with using
+          // exclusive locking (the default).
+          .exclusive_locking = true,
+          .page_size = 4096,
+          .cache_size = 500,
+          // TODO(pwnall): Add a meta table and remove this option.
+          .mmap_alt_status_discouraged = true,
+      })),
       issuer_table_(
           std::make_unique<sqlite_proto::KeyValueTable<TrustTokenIssuerConfig>>(
               kIssuerTableName)),
@@ -109,10 +121,8 @@ NOINLINE TrustTokenDatabaseOwner::TrustTokenDatabaseOwner(
               issuer_toplevel_pair_table_.get(),
               /*max_num_entries=*/absl::nullopt,
               flush_delay_for_writes)) {
-  // These two lines are boilerplate copied from predictor_database.cc.
+  // This line is boilerplate copied from predictor_database.cc.
   backing_database_->set_histogram_tag("TrustTokens");
-  // We have to call this because the database doesn't have a "meta" table.
-  backing_database_->set_mmap_alt_status();
 
   // Because TrustTokenDatabaseOwners are only constructed through an
   // asynchronous factory method, they are impossible to delete prior to their
@@ -146,7 +156,8 @@ void TrustTokenDatabaseOwner::InitializeMembersOnDbSequence(
   table_manager_->InitializeOnDbSequence(
       backing_database_.get(),
       std::vector<std::string>{kIssuerTableName, kToplevelTableName,
-                               kIssuerToplevelPairTableName});
+                               kIssuerToplevelPairTableName},
+      kCurrentSchemaVersion);
 
   issuer_data_->InitializeOnDBSequence();
   toplevel_data_->InitializeOnDBSequence();

@@ -105,8 +105,8 @@ class ScopedLogIn {
 
     if (!identity_test_env_->identity_manager()->HasPrimaryAccount(
             signin::ConsentLevel::kSignin)) {
-      identity_test_env_->MakeUnconsentedPrimaryAccountAvailable(
-          account_id_.GetUserEmail());
+      identity_test_env_->MakePrimaryAccountAvailable(
+          account_id_.GetUserEmail(), signin::ConsentLevel::kSignin);
     }
   }
 
@@ -131,7 +131,6 @@ class ScopedLogIn {
         EXPECT_EQ(account_id_, fake_user_manager_->GetGuestAccountId());
         return;
       case user_manager::NUM_USER_TYPES:
-      case user_manager::USER_TYPE_SUPERVISED_DEPRECATED:
         NOTREACHED();
     }
   }
@@ -162,7 +161,6 @@ class ScopedLogIn {
       case user_manager::USER_TYPE_GUEST:
         fake_user_manager_->AddGuestUser();
         return;
-      case user_manager::USER_TYPE_SUPERVISED_DEPRECATED:
       case user_manager::NUM_USER_TYPES:
         NOTREACHED();
     }

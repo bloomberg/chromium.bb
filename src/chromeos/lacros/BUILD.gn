@@ -21,17 +21,27 @@ component("lacros") {
     "//build:chromeos_buildflags",
     "//chromeos/crosapi/cpp",
     "//chromeos/crosapi/mojom",
+    "//chromeos/dbus/constants",
+    "//chromeos/dbus/init",
+    "//chromeos/dbus/permission_broker",
     "//chromeos/process_proxy",
     "//chromeos/startup",
+    "//dbus",
     "//mojo/public/cpp/bindings",
+    "//ui/native_theme",
   ]
   sources = [
-    "lacros_chrome_service_delegate.h",
     "lacros_chrome_service_impl.cc",
     "lacros_chrome_service_impl.h",
     "lacros_chrome_service_impl_never_blocking_state.cc",
     "lacros_chrome_service_impl_never_blocking_state.h",
+    "lacros_dbus_helper.cc",
+    "lacros_dbus_helper.h",
+    "lacros_dbus_thread_manager.cc",
+    "lacros_dbus_thread_manager.h",
     "lacros_service.h",
+    "native_theme_cache.cc",
+    "native_theme_cache.h",
     "system_idle_cache.cc",
     "system_idle_cache.h",
   ]
@@ -55,29 +65,23 @@ lacros_resource_sizes_test("resource_sizes_lacros_chrome") {
 }
 
 if (is_chromeos_device) {
-  lacros_tast_tests("lacros_smoke_tast_tests") {
-    # A list of tests that are known to work reliably.
-    # TODO(crbug.com/1158590): use --attr-expr instead of hard-coding the tests.
-    tast_tests = [
-      "lacros.AppLauncherLaunch",
-      "lacros.AudioPlay",
-      "lacros.Basic",
-
-      # TODO(crbug.com/1205526): Enable this test again.
-      #"lacros.ShelfLaunch",
-    ]
-  }
-
-  lacros_tast_tests("lacros_fyi_tast_tests") {
+  lacros_tast_tests("lacros_all_tast_tests") {
     # The following expression filters out all non-critical tests. See the link
     # below for more details:
     # https://chromium.googlesource.com/chromiumos/platform/tast/+/main/docs/test_attributes.md
-    tast_attr_expr = "\"group:mainline\" && (\"dep:lacros\" || \"dep:lacros_stable\" || \"dep:lacros_unstable\")"
+    tast_attr_expr = "\"group:mainline\" && \"dep:lacros\" && !informational"
+  }
 
-    tast_disabled_tests = [
-      # Chromium CI/CQ is meant to test the tip of the trunk or branch, but
-      # test tests again the live Lacros on Omaha, so it's not applicable here.
-      "lacros.ShelfLaunch.omaha",
+  lacros_tast_tests("lacros_fyi_tast_tests") {
+    tast_tests = [
+      "lacros.AppLauncherLaunch",
+      "lacros.AppLauncherLaunch.unstable",
+      "lacros.AudioPlay",
+      "lacros.AudioPlay.unstable",
+      "lacros.Basic",
+      "lacros.Basic.unstable",
+      "lacros.ShelfLaunch",
+      "lacros.ShelfLaunch.unstable",
     ]
   }
 }

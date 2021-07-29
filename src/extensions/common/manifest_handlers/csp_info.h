@@ -37,6 +37,12 @@ struct CSPInfo : public Extension::ManifestData {
   // shouldn't be returned for those cases.
   static const std::string& GetExtensionPagesCSP(const Extension* extension);
 
+  // Returns the default CSP (if any) to append for the `extension`'s resource
+  // at the given `relative_path`.
+  static const std::string* GetDefaultCSPToAppend(
+      const Extension& extension,
+      const std::string& relative_path);
+
   // Returns the Content Security Policy to be used for extension isolated
   // worlds or null if there is no defined CSP.
   static const std::string* GetIsolatedWorldCSP(const Extension& extension);

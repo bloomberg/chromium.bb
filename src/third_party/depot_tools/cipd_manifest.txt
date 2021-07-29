@@ -42,10 +42,10 @@ infra/tools/luci/vpython/${platform} git_revision:0dbbfa5eee811c616e6c8d661db197
 infra/tools/luci/led/${platform} git_revision:c7e0fe5a619616f73d4f1aa0884875dffd65bacd
 
 # LUCI config generator
-infra/tools/luci/lucicfg/${platform} git_revision:5327cdc81037f538c840abfd9076a6d4a2c62ddb
+infra/tools/luci/lucicfg/${platform} git_revision:c4cdac8164e6a79e49c47df062f1bb5030b07c29
 
 # Mac toolchain installer
-infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:e75c9bf286fbb31347379cb478df2a556ab185b1
+infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1
 
 # LUCI rpc command line tool
 infra/tools/prpc/${platform} git_revision:5a038afb97f6b77e0fcefe1185317da216fced1f
@@ -57,17 +57,17 @@ infra/tools/luci-auth/${platform} git_revision:297491c0babda68d84d8240c9d4504be6
 infra/tools/bb/${platform} git_revision:1563088c23532d1e45b8c3041afb9458c1788fc3
 
 # LUCI ResultDB CLI
-infra/tools/rdb/${platform} git_revision:050cbe058399cf0c2c3625188f501963c64e8d70
+infra/tools/rdb/${platform} git_revision:8b4a6cf7f39ae893233ed3dfe64ecf22fd62ecc0
 
 # CHROMEOS Buildjobs CLI
 chromiumos/infra/crosjobs/${platform=linux-amd64} git_revision:ed616d595eb7241d39d34907050d2949121d6ae8
 
 # goma client
-infra/goma/client/${os=linux,windows}-${arch=amd64} git_revision:0510b32bc33603588b940ab2dad4314ef71da9d4
-infra/goma/client/${os=mac}-${arch} git_revision:0510b32bc33603588b940ab2dad4314ef71da9d4
+infra/goma/client/${os=linux,windows}-${arch=amd64} git_revision:93f92a71431849be697d91c74052595a56c237e6
+infra/goma/client/${os=mac}-${arch} git_revision:93f92a71431849be697d91c74052595a56c237e6
 
 # dirmd, a tool to work with DIR_METADATA files
-infra/tools/dirmd/${platform} git_revision:32969f6a6374a38fbb8d46c3e98f8c953899c388
+infra/tools/dirmd/${platform} git_revision:c7072c98f7ac3ce1998542cc5637bdc54f908f4a
 
 # Pinpoint CLI
 infra/chromeperf/pinpoint/${platform} git_revision:a16d4a545857c36165e543c8e757392b18b7ddf9

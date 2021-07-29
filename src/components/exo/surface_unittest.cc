@@ -89,9 +89,25 @@ class SurfaceTest : public test::ExoTestBase,
         gfx::ConvertRectToPixels(rect, device_scale_factor()));
   }
 
-  gfx::Rect ToTargetSpaceDamage(const gfx::Rect damage_rect) {
+  gfx::Rect GetCompleteDamage(const viz::CompositorFrame& frame) {
+    auto& root_pass = frame.render_pass_list.back();
+    gfx::Rect complete_damage = root_pass->damage_rect;
+
+    for (auto* quad : root_pass->quad_list) {
+      if (quad->material == viz::DrawQuad::Material::kTextureContent) {
+        auto* texture_quad = viz::TextureDrawQuad::MaterialCast(quad);
+        if (texture_quad->damage_rect.has_value()) {
+          complete_damage.Union(texture_quad->damage_rect.value());
+        }
+      }
+    }
+    return complete_damage;
+  }
+
+  gfx::Rect ToTargetSpaceDamage(const viz::CompositorFrame& frame) {
     // Map a frame's damage back to the coordinate space of its buffer.
-    return gfx::ScaleToEnclosingRect(damage_rect, 1 / device_scale_factor());
+    return gfx::ScaleToEnclosingRect(GetCompleteDamage(frame),
+                                     1 / device_scale_factor());
   }
 
   const viz::CompositorFrame& GetFrameFromSurface(ShellSurface* shell_surface) {
@@ -106,6 +122,11 @@ class SurfaceTest : public test::ExoTestBase,
 };
 
 void ReleaseBuffer(int* release_buffer_call_count) {
+  (*release_buffer_call_count)++;
+}
+
+void ExplicitReleaseBuffer(int* release_buffer_call_count,
+                           gfx::GpuFenceHandle release_fence) {
   (*release_buffer_call_count)++;
 }
 
@@ -174,8 +195,7 @@ TEST_P(SurfaceTest, Damage) {
   {
     const viz::CompositorFrame& frame =
         GetFrameFromSurface(shell_surface.get());
-    EXPECT_EQ(ToPixel(gfx::Rect(buffer_size)),
-              frame.render_pass_list.back()->damage_rect);
+    EXPECT_EQ(ToPixel(gfx::Rect(buffer_size)), GetCompleteDamage(frame));
   }
 
   gfx::RectF buffer_damage(32, 64, 16, 32);
@@ -193,8 +213,8 @@ TEST_P(SurfaceTest, Damage) {
   {
     const viz::CompositorFrame& frame =
         GetFrameFromSurface(shell_surface.get());
-    EXPECT_TRUE(ToTargetSpaceDamage(frame.render_pass_list.back()->damage_rect)
-                    .Contains(gfx::ToNearestRect(buffer_damage)));
+    EXPECT_TRUE(
+        ToTargetSpaceDamage(frame).Contains(gfx::ToNearestRect(buffer_damage)));
   }
 }
 
@@ -223,7 +243,7 @@ TEST_P(SurfaceTest, SubsurfaceDamageAggregation) {
         GetFrameFromSurface(shell_surface.get());
     const gfx::Rect scaled_damage = gfx::ToNearestRect(gfx::ScaleRect(
         gfx::RectF(gfx::Rect(buffer_size)), device_scale_factor()));
-    EXPECT_EQ(scaled_damage, frame.render_pass_list.back()->damage_rect);
+    EXPECT_EQ(scaled_damage, GetCompleteDamage(frame));
   }
 
   const gfx::RectF surface_damage(16, 16);
@@ -241,8 +261,8 @@ TEST_P(SurfaceTest, SubsurfaceDamageAggregation) {
         GetFrameFromSurface(shell_surface.get());
     const gfx::Rect scaled_damage = gfx::ToNearestRect(
         gfx::ScaleRect(subsurface_damage, device_scale_factor()));
-    EXPECT_TRUE(scaled_damage.ApproximatelyEqual(
-        frame.render_pass_list.back()->damage_rect, margin));
+    EXPECT_TRUE(
+        scaled_damage.ApproximatelyEqual(GetCompleteDamage(frame), margin));
   }
 
   surface->Damage(gfx::ToNearestRect(surface_damage));
@@ -256,8 +276,8 @@ TEST_P(SurfaceTest, SubsurfaceDamageAggregation) {
         GetFrameFromSurface(shell_surface.get());
     const gfx::Rect scaled_damage = gfx::ToNearestRect(
         gfx::ScaleRect(surface_damage, device_scale_factor()));
-    EXPECT_TRUE(scaled_damage.ApproximatelyEqual(
-        frame.render_pass_list.back()->damage_rect, margin));
+    EXPECT_TRUE(
+        scaled_damage.ApproximatelyEqual(GetCompleteDamage(frame), margin));
   }
 }
 
@@ -287,7 +307,7 @@ TEST_P(SurfaceTest, SubsurfaceDamageSynchronizedCommitBehavior) {
         GetFrameFromSurface(shell_surface.get());
     const gfx::Rect scaled_damage = gfx::ToNearestRect(gfx::ScaleRect(
         gfx::RectF(gfx::Rect(buffer_size)), device_scale_factor()));
-    EXPECT_EQ(scaled_damage, frame.render_pass_list.back()->damage_rect);
+    EXPECT_EQ(scaled_damage, GetCompleteDamage(frame));
   }
 
   const gfx::RectF subsurface_damage(32, 32, 16, 16);
@@ -309,7 +329,7 @@ TEST_P(SurfaceTest, SubsurfaceDamageSynchronizedCommitBehavior) {
         GetFrameFromSurface(shell_surface.get());
     const gfx::Rect scaled_damage = gfx::ToNearestRect(gfx::ScaleRect(
         gfx::RectF(gfx::Rect(buffer_size)), device_scale_factor()));
-    EXPECT_EQ(scaled_damage, frame.render_pass_list.back()->damage_rect);
+    EXPECT_EQ(scaled_damage, GetCompleteDamage(frame));
   }
 
   // Damage but do not commit.
@@ -326,8 +346,8 @@ TEST_P(SurfaceTest, SubsurfaceDamageSynchronizedCommitBehavior) {
         GetFrameFromSurface(shell_surface.get());
     const gfx::Rect scaled_damage = gfx::ToNearestRect(
         gfx::ScaleRect(subsurface_damage, device_scale_factor()));
-    EXPECT_TRUE(scaled_damage.ApproximatelyEqual(
-        frame.render_pass_list.back()->damage_rect, margin));
+    EXPECT_TRUE(
+        scaled_damage.ApproximatelyEqual(GetCompleteDamage(frame), margin));
   }
 }
 
@@ -357,7 +377,7 @@ TEST_P(SurfaceTest, SubsurfaceDamageDesynchronizedCommitBehavior) {
         GetFrameFromSurface(shell_surface.get());
     const gfx::Rect scaled_damage = gfx::ToNearestRect(gfx::ScaleRect(
         gfx::RectF(gfx::Rect(buffer_size)), device_scale_factor()));
-    EXPECT_EQ(scaled_damage, frame.render_pass_list.back()->damage_rect);
+    EXPECT_EQ(scaled_damage, GetCompleteDamage(frame));
   }
 
   const gfx::RectF subsurface_damage(32, 32, 16, 16);
@@ -378,8 +398,8 @@ TEST_P(SurfaceTest, SubsurfaceDamageDesynchronizedCommitBehavior) {
         GetFrameFromSurface(shell_surface.get());
     const gfx::Rect scaled_damage = gfx::ToNearestRect(
         gfx::ScaleRect(subsurface_damage, device_scale_factor()));
-    EXPECT_TRUE(scaled_damage.ApproximatelyEqual(
-        frame.render_pass_list.back()->damage_rect, margin));
+    EXPECT_TRUE(
+        scaled_damage.ApproximatelyEqual(GetCompleteDamage(frame), margin));
   }
 }
 
@@ -434,8 +454,7 @@ TEST_P(SurfaceTest, MAYBE_SetOpaqueRegion) {
 
     EXPECT_FALSE(texture_draw_quad->ShouldDrawWithBlending());
     EXPECT_EQ(SK_ColorBLACK, texture_draw_quad->background_color);
-    EXPECT_EQ(gfx::Rect(buffer_size),
-              ToTargetSpaceDamage(frame.render_pass_list.back()->damage_rect));
+    EXPECT_EQ(gfx::Rect(buffer_size), ToTargetSpaceDamage(frame));
   }
 
   // Setting an empty opaque region requires draw with blending.
@@ -452,8 +471,7 @@ TEST_P(SurfaceTest, MAYBE_SetOpaqueRegion) {
         frame.render_pass_list.back()->quad_list.back());
     EXPECT_TRUE(texture_draw_quad->ShouldDrawWithBlending());
     EXPECT_EQ(SK_ColorTRANSPARENT, texture_draw_quad->background_color);
-    EXPECT_EQ(gfx::Rect(buffer_size),
-              ToTargetSpaceDamage(frame.render_pass_list.back()->damage_rect));
+    EXPECT_EQ(gfx::Rect(buffer_size), ToTargetSpaceDamage(frame));
   }
 
   std::unique_ptr<Buffer> buffer_without_alpha(
@@ -474,8 +492,7 @@ TEST_P(SurfaceTest, MAYBE_SetOpaqueRegion) {
     EXPECT_FALSE(frame.render_pass_list.back()
                      ->quad_list.back()
                      ->ShouldDrawWithBlending());
-    EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 0, 0)),
-              frame.render_pass_list.back()->damage_rect);
+    EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 0, 0)), GetCompleteDamage(frame));
   }
 }
 
@@ -594,8 +611,7 @@ TEST_P(SurfaceTest, SetBufferScale) {
 
   const viz::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
-  EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 256, 256)),
-            frame.render_pass_list.back()->damage_rect);
+  EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 256, 256)), GetCompleteDamage(frame));
 }
 
 // Disabled due to flakiness: crbug.com/856145
@@ -629,7 +645,7 @@ TEST_P(SurfaceTest, MAYBE_SetBufferTransform) {
     ASSERT_EQ(1u, frame.render_pass_list.size());
     EXPECT_EQ(
         ToPixel(gfx::Rect(0, 0, buffer_size.height(), buffer_size.width())),
-        frame.render_pass_list.back()->damage_rect);
+        GetCompleteDamage(frame));
     const auto& quad_list = frame.render_pass_list[0]->quad_list;
     ASSERT_EQ(1u, quad_list.size());
     EXPECT_EQ(
@@ -732,8 +748,7 @@ TEST_P(SurfaceTest, SetViewport) {
 
   const viz::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
-  EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 512, 512)),
-            frame.render_pass_list.back()->damage_rect);
+  EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 512, 512)), GetCompleteDamage(frame));
 }
 
 TEST_P(SurfaceTest, SetCrop) {
@@ -755,8 +770,7 @@ TEST_P(SurfaceTest, SetCrop) {
 
   const viz::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
-  EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 12, 12)),
-            frame.render_pass_list.back()->damage_rect);
+  EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 12, 12)), GetCompleteDamage(frame));
 }
 
 // Disabled due to flakiness: crbug.com/856145
@@ -1019,8 +1033,7 @@ TEST_P(SurfaceTest, SetAlpha) {
     ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
     ASSERT_EQ(1u, frame.resource_list.size());
     ASSERT_EQ(viz::ResourceId(1u), frame.resource_list.back().id);
-    EXPECT_EQ(gfx::Rect(buffer_size),
-              ToTargetSpaceDamage(frame.render_pass_list.back()->damage_rect));
+    EXPECT_EQ(gfx::Rect(buffer_size), ToTargetSpaceDamage(frame));
   }
 
   {
@@ -1034,8 +1047,7 @@ TEST_P(SurfaceTest, SetAlpha) {
     // No quad if alpha is 0.
     ASSERT_EQ(0u, frame.render_pass_list.back()->quad_list.size());
     ASSERT_EQ(0u, frame.resource_list.size());
-    EXPECT_EQ(gfx::Rect(buffer_size),
-              ToTargetSpaceDamage(frame.render_pass_list.back()->damage_rect));
+    EXPECT_EQ(gfx::Rect(buffer_size), ToTargetSpaceDamage(frame));
   }
 
   {
@@ -1050,8 +1062,7 @@ TEST_P(SurfaceTest, SetAlpha) {
     ASSERT_EQ(1u, frame.resource_list.size());
     // The resource should be updated again, the id should be changed.
     ASSERT_EQ(viz::ResourceId(2u), frame.resource_list.back().id);
-    EXPECT_EQ(gfx::Rect(buffer_size),
-              ToTargetSpaceDamage(frame.render_pass_list.back()->damage_rect));
+    EXPECT_EQ(gfx::Rect(buffer_size), ToTargetSpaceDamage(frame));
   }
 }
 
@@ -1308,6 +1319,114 @@ TEST_P(SurfaceTest, UpdatesOcclusionOnDestroyingSubsurface) {
   EXPECT_EQ(1, observer.num_occlusion_changes());
   EXPECT_EQ(aura::Window::OcclusionState::HIDDEN,
             child_surface->window()->GetOcclusionState());
+}
+
+TEST_P(SurfaceTest, HasPendingPerCommitBufferReleaseCallback) {
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(1, 1)));
+  auto surface = std::make_unique<Surface>();
+
+  // We can only commit a buffer release callback if a buffer is attached.
+  surface->Attach(buffer.get());
+
+  EXPECT_FALSE(surface->HasPendingPerCommitBufferReleaseCallback());
+  surface->SetPerCommitBufferReleaseCallback(
+      base::BindOnce([](gfx::GpuFenceHandle) {}));
+  EXPECT_TRUE(surface->HasPendingPerCommitBufferReleaseCallback());
+  surface->Commit();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(surface->HasPendingPerCommitBufferReleaseCallback());
+}
+
+TEST_P(SurfaceTest, PerCommitBufferReleaseCallbackForSameSurface) {
+  gfx::Size buffer_size(1, 1);
+  auto buffer1 = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer2 = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  int per_commit_release_count = 0;
+
+  // Set the release callback that will be run when buffer is no longer in use.
+  int buffer_release_count = 0;
+  buffer1->set_release_callback(base::BindRepeating(
+      &ReleaseBuffer, base::Unretained(&buffer_release_count)));
+
+  surface->SetPerCommitBufferReleaseCallback(base::BindOnce(
+      &ExplicitReleaseBuffer, base::Unretained(&per_commit_release_count)));
+  surface->Attach(buffer1.get());
+  surface->Commit();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(per_commit_release_count, 0);
+  EXPECT_EQ(buffer_release_count, 0);
+
+  // Attaching the same buffer causes the per-commit callback to be emitted.
+  surface->SetPerCommitBufferReleaseCallback(base::BindOnce(
+      &ExplicitReleaseBuffer, base::Unretained(&per_commit_release_count)));
+  surface->Attach(buffer1.get());
+  surface->Commit();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(per_commit_release_count, 1);
+  EXPECT_EQ(buffer_release_count, 0);
+
+  // Attaching a different buffer causes the per-commit callback to be emitted.
+  surface->Attach(buffer2.get());
+  surface->Commit();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(per_commit_release_count, 2);
+  // The buffer should now be completely released.
+  EXPECT_EQ(buffer_release_count, 1);
+}
+
+TEST_P(SurfaceTest, PerCommitBufferReleaseCallbackForDifferentSurfaces) {
+  gfx::Size buffer_size(1, 1);
+  auto buffer1 = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto buffer2 = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface1 = std::make_unique<Surface>();
+  auto shell_surface1 = std::make_unique<ShellSurface>(surface1.get());
+  auto surface2 = std::make_unique<Surface>();
+  auto shell_surface2 = std::make_unique<ShellSurface>(surface2.get());
+  int per_commit_release_count1 = 0;
+  int per_commit_release_count2 = 0;
+
+  // Set the release callback that will be run when buffer is no longer in use.
+  int buffer_release_count = 0;
+  buffer1->set_release_callback(base::BindRepeating(
+      &ReleaseBuffer, base::Unretained(&buffer_release_count)));
+
+  // Attach buffer1 to both surface1 and surface2.
+  surface1->SetPerCommitBufferReleaseCallback(base::BindOnce(
+      &ExplicitReleaseBuffer, base::Unretained(&per_commit_release_count1)));
+  surface1->Attach(buffer1.get());
+  surface1->Commit();
+  surface2->SetPerCommitBufferReleaseCallback(base::BindOnce(
+      &ExplicitReleaseBuffer, base::Unretained(&per_commit_release_count2)));
+  surface2->Attach(buffer1.get());
+  surface2->Commit();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(per_commit_release_count1, 0);
+  EXPECT_EQ(per_commit_release_count2, 0);
+  EXPECT_EQ(buffer_release_count, 0);
+
+  // Attach buffer2 to surface1, only the surface1 callback should be emitted.
+  surface1->Attach(buffer2.get());
+  surface1->Commit();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(per_commit_release_count1, 1);
+  EXPECT_EQ(per_commit_release_count2, 0);
+  EXPECT_EQ(buffer_release_count, 0);
+
+  // Attach buffer2 to surface2, only the surface2 callback should be emitted.
+  surface2->Attach(buffer2.get());
+  surface2->Commit();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(per_commit_release_count1, 1);
+  EXPECT_EQ(per_commit_release_count2, 1);
+  // The buffer should now be completely released.
+  EXPECT_EQ(buffer_release_count, 1);
 }
 
 }  // namespace

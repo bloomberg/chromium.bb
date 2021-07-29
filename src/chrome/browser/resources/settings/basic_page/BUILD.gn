@@ -6,7 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/html_to_js.gni")
 import("../settings.gni")
 
-js_type_check("closure_compile_module") {
+js_type_check("closure_compile") {
   is_polymer3 = true
   closure_flags = settings_closure_flags
   deps = [ ":basic_page" ]
@@ -23,7 +23,7 @@ js_library("basic_page") {
     "../privacy_page:privacy_page",
     "../safety_check_page:safety_check_page",
     "../search_page",
-    "../settings_page:main_page_behavior",
+    "../settings_page:main_page_mixin",
     "//ui/webui/resources/js:load_time_data.m",
   ]
 }

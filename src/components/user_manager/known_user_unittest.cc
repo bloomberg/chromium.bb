@@ -8,10 +8,14 @@
 #include <utility>
 
 #include "base/test/task_environment.h"
+#include "base/util/values/values_util.h"
+#include "base/values.h"
 #include "components/account_id/account_id.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user_manager_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -40,7 +44,7 @@ class KnownUserTest : public testing::Test {
     scoped_user_manager_ =
         std::make_unique<ScopedUserManager>(std::move(fake_user_manager));
 
-    KnownUser::RegisterPrefs(local_state_.registry());
+    UserManagerBase::RegisterPrefs(local_state_.registry());
   }
   ~KnownUserTest() override = default;
 
@@ -51,6 +55,9 @@ class KnownUserTest : public testing::Test {
   const AccountId kDefaultAccountId =
       AccountId::FromUserEmailGaiaId("default_account@gmail.com",
                                      "fake-gaia-id");
+  const AccountId kDefaultAccountId2 =
+      AccountId::FromUserEmailGaiaId("default_account_2@gmail.com",
+                                     "fake-gaia-id-2");
 
   FakeUserManager* fake_user_manager() { return fake_user_manager_; }
 
@@ -324,32 +331,6 @@ TEST_F(KnownUserTest, SaveKnownUserIgnoresEphemeralGaiaUsers) {
                                             kAccountIdEphemeralAd));
 }
 
-TEST_F(KnownUserTest, UpdateGaiaID) {
-  KnownUser known_user(local_state());
-  const AccountId kAccountIdUnknown =
-      AccountId::FromUserEmail("account1@gmail.com");
-  known_user.SetStringPref(kAccountIdUnknown, "some_pref", "some_value");
-
-  {
-    std::string gaia_id;
-    EXPECT_FALSE(known_user.FindGaiaID(kAccountIdUnknown, &gaia_id));
-  }
-
-  known_user.UpdateGaiaID(kAccountIdUnknown, "gaia_id");
-
-  {
-    std::string gaia_id;
-    EXPECT_TRUE(known_user.FindGaiaID(kAccountIdUnknown, &gaia_id));
-    EXPECT_EQ(gaia_id, "gaia_id");
-  }
-
-  // UpdateGaiaID also sets account type to gaia account.
-  const AccountId kAccountIdGaia =
-      AccountId::FromUserEmailGaiaId("account1@gmail.com", "gaia_id");
-  EXPECT_THAT(known_user.GetKnownAccountIds(),
-              testing::UnorderedElementsAre(kAccountIdGaia));
-}
-
 TEST_F(KnownUserTest, UpdateIdForGaiaAccount) {
   KnownUser known_user(local_state());
   const AccountId kAccountIdUnknown =
@@ -422,14 +403,14 @@ TEST_F(KnownUserTest, RemovePrefOnCustomPref) {
   }
 }
 
-// Test failing on linux-chromeos-chrome (crbug.com/1198519)
-TEST_F(KnownUserTest, DISABLED_RemovePrefOnReservedPref) {
+TEST_F(KnownUserTest, RemovePrefOnReservedPref) {
   KnownUser known_user(local_state());
   const std::string kReservedPrefName = "device_id";
 
   known_user.SetStringPref(kDefaultAccountId, kReservedPrefName, "value");
-  ASSERT_DEATH(known_user.RemovePref(kDefaultAccountId, kReservedPrefName),
-               ".*Check failed.*");
+  // Don't verify the message because on some builds CHECK failures do not print
+  // debug messages (https://crbug.com/1198519).
+  ASSERT_DEATH(known_user.RemovePref(kDefaultAccountId, kReservedPrefName), "");
 }
 
 TEST_F(KnownUserTest, GaiaIdMigrationStatus) {
@@ -686,6 +667,49 @@ TEST_F(KnownUserTest, CleanObsoletePrefs) {
   EXPECT_TRUE(custom_pref_value);
 
   EXPECT_TRUE(known_user.GetIsEnterpriseManaged(kDefaultAccountId));
+}
+
+TEST_F(KnownUserTest, MigrateOfflineSigninLimit) {
+  KnownUser known_user(local_state());
+  const std::string kDeprecatedPrefName = "offline_signin_limit";
+  const std::string kNewPrefName = "offline_signin_limit2";
+
+  // Set a deprecated pref. base::TimeDelta() meant that value is not set.
+  known_user.SetPref(kDefaultAccountId, kDeprecatedPrefName,
+                     util::TimeDeltaToValue(base::TimeDelta()));
+
+  // Imitate that user is forced to online signin.
+  const char kUserForceOnlineSignin[] = "UserForceOnlineSignin";
+  {
+    DictionaryPrefUpdate force_online_update(local_state(),
+                                             kUserForceOnlineSignin);
+    force_online_update->SetKey(kDefaultAccountId.GetUserEmail(),
+                                base::Value(true));
+  }
+
+  const base::TimeDelta kLegitValue = base::TimeDelta::FromDays(14);
+  known_user.SetPref(kDefaultAccountId2, kDeprecatedPrefName,
+                     util::TimeDeltaToValue(kLegitValue));
+
+  known_user.CleanObsoletePrefs();
+
+  const base::Value* out_value = nullptr;
+  // Verify that the deprecated pref has been removed.
+  EXPECT_FALSE(
+      known_user.GetPref(kDefaultAccountId, kDeprecatedPrefName, &out_value));
+  EXPECT_FALSE(
+      known_user.GetPref(kDefaultAccountId2, kDeprecatedPrefName, &out_value));
+
+  EXPECT_FALSE(known_user.GetPref(kDefaultAccountId, kNewPrefName, &out_value));
+
+  EXPECT_TRUE(known_user.GetPref(kDefaultAccountId2, kNewPrefName, &out_value));
+  EXPECT_EQ(kLegitValue, util::ValueToTimeDelta(*out_value));
+
+  // Verify that user is not forced to online signin anymore.
+  const base::DictionaryValue* prefs_force_online =
+      local_state()->GetDictionary(kUserForceOnlineSignin);
+  EXPECT_FALSE(prefs_force_online->FindBoolKey(kDefaultAccountId.GetUserEmail())
+                   .value());
 }
 
 //

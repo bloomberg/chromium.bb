@@ -8,13 +8,13 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -69,6 +69,8 @@ using testing::Field;
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
+
+#include <windows.h>
 #endif
 
 // Provide a BackendImpl object to macros from histogram_macros.h.

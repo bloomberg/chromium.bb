@@ -39,14 +39,14 @@ class CORE_EXPORT WebRemoteFrameImpl final
       const RemoteFrameToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
       WebFrame* opener);
-  static WebRemoteFrameImpl* CreateForPortal(
+  static WebRemoteFrameImpl* CreateForPortalOrFencedFrame(
       mojom::blink::TreeScopeType,
       WebRemoteFrameClient*,
       InterfaceRegistry*,
       AssociatedInterfaceProvider*,
       const RemoteFrameToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
-      const WebElement& portal_element);
+      const WebElement& frame_owner);
 
   WebRemoteFrameImpl(mojom::blink::TreeScopeType,
                      WebRemoteFrameClient*,
@@ -93,8 +93,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void SetReplicatedInsecureRequestPolicy(
       mojom::blink::InsecureRequestPolicy) override;
   void SetReplicatedInsecureNavigationsSet(const WebVector<unsigned>&) override;
-  void SetReplicatedAdFrameType(
-      mojom::blink::AdFrameType ad_frame_type) override;
+  void SetReplicatedIsAdSubframe(bool is_ad_subframe) override;
   void DidStartLoading() override;
   bool IsIgnoredForHitTest() const override;
   void UpdateUserActivationState(

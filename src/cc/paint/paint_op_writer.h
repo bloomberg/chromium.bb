@@ -59,8 +59,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const SkRect& rect);
   void Write(const SkIRect& rect);
   void Write(const SkRRect& rect);
-
-  void Write(const SkPath& path);
+  void Write(const SkPath& path, UsePaintCache);
   void Write(const sk_sp<SkData>& data);
   void Write(const SkColorSpace* data);
   void Write(const SkSamplingOptions&);
@@ -161,11 +160,11 @@ class CC_PAINT_EXPORT PaintOpWriter {
              const SkM44& current_ctm);
   void Write(const LightingPointPaintFilter& filter, const SkM44& current_ctm);
   void Write(const LightingSpotPaintFilter& filter, const SkM44& current_ctm);
+  void Write(const StretchPaintFilter& filter, const SkM44& current_ctm);
 
   void Write(const PaintRecord* record,
              const gfx::Rect& playback_rect,
-             const gfx::SizeF& post_scale,
-             const SkMatrix& post_matrix_for_analysis);
+             const gfx::SizeF& post_scale);
   void Write(const SkRegion& region);
   void WriteImage(const DecodedDrawImage& decoded_draw_image);
   void WriteImage(uint32_t transfer_cache_entry_id, bool needs_mips);

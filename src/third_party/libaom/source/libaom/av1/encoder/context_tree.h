@@ -21,6 +21,7 @@
 extern "C" {
 #endif
 
+struct AV1_PRIMARY;
 struct AV1_COMP;
 struct AV1Common;
 struct ThreadData;
@@ -101,7 +102,7 @@ typedef struct SIMPLE_MOTION_DATA_TREE {
   int sms_rect_valid;
 } SIMPLE_MOTION_DATA_TREE;
 
-void av1_setup_shared_coeff_buffer(AV1_COMMON *cm,
+void av1_setup_shared_coeff_buffer(struct aom_internal_error_info *error,
                                    PC_TREE_SHARED_BUFFERS *shared_bufs);
 void av1_free_shared_coeff_buffer(PC_TREE_SHARED_BUFFERS *shared_bufs);
 
@@ -115,6 +116,18 @@ PICK_MODE_CONTEXT *av1_alloc_pmc(const struct AV1_COMP *const cpi,
 void av1_free_pmc(PICK_MODE_CONTEXT *ctx, int num_planes);
 void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
                            PICK_MODE_CONTEXT *src_ctx);
+
+static const BLOCK_SIZE square[MAX_SB_SIZE_LOG2 - 1] = {
+  BLOCK_4X4, BLOCK_8X8, BLOCK_16X16, BLOCK_32X32, BLOCK_64X64, BLOCK_128X128,
+};
+
+static AOM_INLINE int av1_get_pc_tree_nodes(const int is_sb_size_128,
+                                            int stat_generation_stage) {
+  const int tree_nodes_inc = is_sb_size_128 ? 1024 : 0;
+  const int tree_nodes =
+      stat_generation_stage ? 1 : (tree_nodes_inc + 256 + 64 + 16 + 4 + 1);
+  return tree_nodes;
+}
 
 void av1_setup_sms_tree(struct AV1_COMP *const cpi, struct ThreadData *td);
 void av1_free_sms_tree(struct ThreadData *td);

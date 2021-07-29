@@ -45,6 +45,8 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
     ~Params();
     absl::optional<int> default_button = absl::nullopt;
     bool round_corners = true;
+    absl::optional<int> corner_radius = absl::nullopt;
+
     bool draggable = false;
 
     // Whether to use the Views-styled frame (if true) or a platform-native
@@ -102,16 +104,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
                                                       gfx::NativeWindow context,
                                                       gfx::NativeView parent,
                                                       const gfx::Rect& bounds);
-
-  // Called when the DialogDelegate and its frame have finished initializing but
-  // not been shown yet. Override this to perform customizations to the dialog
-  // that need to happen after the dialog's widget, border, buttons, and so on
-  // are ready.
-  //
-  // Overrides of this method should be quite rare - prefer to do dialog
-  // customization before the frame/widget/etc are ready if at all possible, via
-  // other setters on this class.
-  virtual void OnDialogInitialized() {}
 
   // Returns a mask specifying which of the available DialogButtons are visible
   // for the dialog.
@@ -182,13 +174,13 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   BubbleFrameView* GetBubbleFrameView() const;
 
   // Helpers for accessing parts of the DialogClientView without needing to know
-  // about DialogClientView. Do not call these before OnDialogInitialized.
+  // about DialogClientView. Do not call these before OnWidgetInitialized().
   views::LabelButton* GetOkButton() const;
   views::LabelButton* GetCancelButton() const;
   views::View* GetExtraView() const;
 
   // Helper for accessing the footnote view. Unlike the three methods just
-  // above, this *is* safe to call before OnDialogInitialized.
+  // above, this *is* safe to call before OnWidgetInitialized().
   views::View* GetFootnoteViewForTesting() const;
 
   // Add or remove an observer notified by calls to DialogModelChanged().
@@ -203,6 +195,12 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   void DialogModelChanged();
 
   void set_use_round_corners(bool round) { params_.round_corners = round; }
+  void set_corner_radius(int corner_radius) {
+    params_.corner_radius = corner_radius;
+  }
+  const absl::optional<int> corner_radius() const {
+    return params_.corner_radius;
+  }
   void set_draggable(bool draggable) { params_.draggable = draggable; }
   bool draggable() const { return params_.draggable; }
   void set_use_custom_frame(bool use) { params_.custom_frame = use; }
@@ -271,7 +269,9 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // 2) Depending on their return value, close the dialog's widget.
   // Neither of these methods can be called before the dialog has been
   // initialized.
-  void AcceptDialog();
+  // NOT_TAIL_CALLED forces the calling function to appear on the stack in
+  // crash dumps. https://crbug.com/1215247
+  void NOT_TAIL_CALLED AcceptDialog();
   void CancelDialog();
 
   // This method invokes the behavior that *would* happen if this dialog's
@@ -307,10 +307,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   std::unique_ptr<View> DisownFootnoteView();
 
  private:
-  // Overridden from WidgetDelegate. If you need to hook after widget
-  // initialization, use OnDialogInitialized above.
-  void OnWidgetInitialized() final;
-
   // A helper for accessing the DialogClientView object contained by this
   // delegate's Window.
   const DialogClientView* GetDialogClientView() const;

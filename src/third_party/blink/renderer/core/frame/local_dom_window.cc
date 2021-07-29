@@ -38,7 +38,6 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/action_after_pagehide.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/permissions_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -132,10 +131,12 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "ui/display/screen_info.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -330,7 +331,7 @@ HttpsState LocalDOMWindow::GetHttpsState() const {
   return CalculateHttpsState(GetSecurityOrigin());
 }
 
-ResourceFetcher* LocalDOMWindow::Fetcher() const {
+ResourceFetcher* LocalDOMWindow::Fetcher() {
   return document()->Fetcher();
 }
 
@@ -437,6 +438,9 @@ void LocalDOMWindow::ReportPermissionsPolicyViolation(
     mojom::blink::PermissionsPolicyFeature feature,
     mojom::blink::PolicyDisposition disposition,
     const String& message) const {
+  if (disposition == mojom::blink::PolicyDisposition::kEnforce)
+    CountPermissionsPolicyViolation(feature);
+
   if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled(this))
     return;
   if (!GetFrame())
@@ -463,8 +467,6 @@ void LocalDOMWindow::ReportPermissionsPolicyViolation(
     GetFrame()->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kViolation,
         mojom::blink::ConsoleMessageLevel::kError, body->message()));
-
-    CountPermissionsPolicyViolation(feature);
   }
 }
 
@@ -2111,6 +2113,10 @@ ukm::UkmRecorder* LocalDOMWindow::UkmRecorder() {
 ukm::SourceId LocalDOMWindow::UkmSourceID() const {
   DCHECK(document_);
   return document_->UkmSourceID();
+}
+
+void LocalDOMWindow::SetStorageKey(const BlinkStorageKey& storage_key) {
+  storage_key_ = storage_key;
 }
 
 }  // namespace blink

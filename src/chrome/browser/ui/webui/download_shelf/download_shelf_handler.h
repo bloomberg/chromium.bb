@@ -16,6 +16,10 @@ class DownloadShelfHandler {
   // Notify the Views component to hide itself.
   virtual void DoClose() = 0;
 
+  virtual void DiscardDownload(uint32_t download_id) = 0;
+
+  virtual void KeepDownload(uint32_t download_it) = 0;
+
   virtual void GetDownloads(
       download_shelf::mojom::PageHandler::GetDownloadsCallback callback) = 0;
 
@@ -26,6 +30,8 @@ class DownloadShelfHandler {
 
   // Notify the WebUI to show a new download.
   virtual void DoShowDownload(DownloadUIModel* download_model) = 0;
+
+  virtual void OnDownloadOpened(uint32_t download_id) = 0;
 
   virtual void OnDownloadUpdated(DownloadUIModel* download_model) = 0;
 

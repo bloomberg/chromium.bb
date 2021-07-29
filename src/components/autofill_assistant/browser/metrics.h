@@ -120,6 +120,7 @@ class Metrics {
   // at the end and update kMaxValue. Also remember to update the
   // AutofillAssistantPaymentRequestMandatoryPostalCode enum listing
   // in tools/metrics/histograms/enums.xml.
+  // Note: This is deprecated and no longer logged.
   enum class PaymentRequestMandatoryPostalCode {
     REQUIRED_INITIALLY_WRONG_SUCCESS = 0,
     REQUIRED_INITIALLY_WRONG_FAILURE = 1,
@@ -174,8 +175,11 @@ class Metrics {
     // Since Chrome M-88. The user swipe-dismissed the bottom sheet. Depending
     // on configuration, this may happen multiple times per run.
     SWIPE_DISMISSED = 4,
+    // Since Chrome M-93. The UI has timed out without receiving any user
+    // interaction.
+    UI_TIMEOUT = 5,
 
-    kMaxValue = SWIPE_DISMISSED
+    kMaxValue = UI_TIMEOUT
   };
 
   // The different ways a user might have opted out of the trigger script
@@ -370,9 +374,6 @@ class Metrics {
                                                    bool success);
   static void RecordPaymentRequestAutofillChanged(bool changed, bool success);
   static void RecordPaymentRequestFirstNameOnly(bool first_name_only);
-  static void RecordPaymentRequestMandatoryPostalCode(bool required,
-                                                      bool initially_right,
-                                                      bool success);
   static void RecordTriggerScriptStarted(ukm::UkmRecorder* ukm_recorder,
                                          ukm::SourceId source_id,
                                          TriggerScriptStarted event);

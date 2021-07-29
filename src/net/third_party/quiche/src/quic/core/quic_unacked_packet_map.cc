@@ -8,6 +8,7 @@
 #include <limits>
 #include <type_traits>
 
+#include "absl/container/inlined_vector.h"
 #include "quic/core/quic_connection_stats.h"
 #include "quic/core/quic_packet_number.h"
 #include "quic/core/quic_types.h"
@@ -174,7 +175,7 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* mutable_packet,
     last_inflight_packet_sent_time_ = sent_time;
     last_inflight_packets_sent_time_[packet_number_space] = sent_time;
   }
-  unacked_packets_.push_back(info);
+  unacked_packets_.push_back(std::move(info));
   // Swap the retransmittable frames to avoid allocations.
   // TODO(ianswett): Could use emplace_back when Chromium can.
   if (has_crypto_handshake) {
@@ -325,9 +326,9 @@ void QuicUnackedPacketMap::RemoveFromInFlight(QuicPacketNumber packet_number) {
   RemoveFromInFlight(info);
 }
 
-QuicInlinedVector<QuicPacketNumber, 2>
+absl::InlinedVector<QuicPacketNumber, 2>
 QuicUnackedPacketMap::NeuterUnencryptedPackets() {
-  QuicInlinedVector<QuicPacketNumber, 2> neutered_packets;
+  absl::InlinedVector<QuicPacketNumber, 2> neutered_packets;
   QuicPacketNumber packet_number = GetLeastUnacked();
   for (QuicUnackedPacketMap::iterator it = begin(); it != end();
        ++it, ++packet_number) {
@@ -353,9 +354,9 @@ QuicUnackedPacketMap::NeuterUnencryptedPackets() {
   return neutered_packets;
 }
 
-QuicInlinedVector<QuicPacketNumber, 2>
+absl::InlinedVector<QuicPacketNumber, 2>
 QuicUnackedPacketMap::NeuterHandshakePackets() {
-  QuicInlinedVector<QuicPacketNumber, 2> neutered_packets;
+  absl::InlinedVector<QuicPacketNumber, 2> neutered_packets;
   QuicPacketNumber packet_number = GetLeastUnacked();
   for (QuicUnackedPacketMap::iterator it = begin(); it != end();
        ++it, ++packet_number) {

@@ -79,11 +79,13 @@ class SetFormFieldValueActionTest : public testing::Test {
         .WillByDefault(RunOnceCallback<2>(OkClientStatus()));
     ON_CALL(mock_web_controller_, SelectFieldValue(_, _))
         .WillByDefault(RunOnceCallback<1>(OkClientStatus()));
+    ON_CALL(mock_web_controller_, SendKeyEvent(_, _, _))
+        .WillByDefault(RunOnceCallback<2>(OkClientStatus()));
     ON_CALL(mock_action_delegate_, WaitUntilDocumentIsInReadyState(_, _, _, _))
         .WillByDefault(RunOnceCallback<3>(OkClientStatus(),
                                           base::TimeDelta::FromSeconds(0)));
-    ON_CALL(mock_web_controller_, ScrollIntoView(_, _, _))
-        .WillByDefault(RunOnceCallback<2>(OkClientStatus()));
+    ON_CALL(mock_web_controller_, ScrollIntoView(_, _, _, _, _))
+        .WillByDefault(RunOnceCallback<4>(OkClientStatus()));
     ON_CALL(mock_web_controller_, WaitUntilElementIsStable(_, _, _, _))
         .WillByDefault(RunOnceCallback<3>(OkClientStatus(),
                                           base::TimeDelta::FromSeconds(0)));
@@ -392,8 +394,9 @@ TEST_F(SetFormFieldValueActionTest, KeyboardInputHasExpectedCallChain) {
       .WillOnce(RunOnceCallback<3>(OkClientStatus(),
                                    base::TimeDelta::FromSeconds(0)));
   EXPECT_CALL(mock_web_controller_,
-              ScrollIntoView(true, EqualsElement(expected_element), _))
-      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+              ScrollIntoView(std::string(), "center", "center",
+                             EqualsElement(expected_element), _))
+      .WillOnce(RunOnceCallback<4>(OkClientStatus()));
   EXPECT_CALL(
       mock_web_controller_,
       ClickOrTapElement(ClickType::TAP, EqualsElement(expected_element), _))
@@ -453,8 +456,9 @@ TEST_F(SetFormFieldValueActionTest, TextWithKeystrokeHasExpectedCallChain) {
       .WillOnce(RunOnceCallback<3>(OkClientStatus(),
                                    base::TimeDelta::FromSeconds(0)));
   EXPECT_CALL(mock_web_controller_,
-              ScrollIntoView(true, EqualsElement(expected_element), _))
-      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+              ScrollIntoView(std::string(), "center", "center",
+                             EqualsElement(expected_element), _))
+      .WillOnce(RunOnceCallback<4>(OkClientStatus()));
   EXPECT_CALL(
       mock_web_controller_,
       ClickOrTapElement(ClickType::CLICK, EqualsElement(expected_element), _))
@@ -488,6 +492,9 @@ TEST_F(SetFormFieldValueActionTest,
   EXPECT_CALL(mock_web_controller_,
               SelectFieldValue(EqualsElement(expected_element), _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus()));
+  EXPECT_CALL(mock_web_controller_,
+              SendKeyEvent(_, EqualsElement(expected_element), _))
+      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
   EXPECT_CALL(mock_web_controller_,
               SendKeyboardInput(UTF8ToUnicode(keyboard_input), _,
                                 EqualsElement(expected_element), _))

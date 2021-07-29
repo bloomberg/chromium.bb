@@ -77,6 +77,10 @@ public class MessagesMetrics {
                 return "MerchantTrust";
             case MessageIdentifier.ADD_TO_HOMESCREEN_IPH:
                 return "AddToHomescreenIPH";
+            case MessageIdentifier.SEND_TAB_TO_SELF:
+                return "SendTabToSelf";
+            case MessageIdentifier.READER_MODE:
+                return "ReaderMode";
             default:
                 return "Unknown";
         }

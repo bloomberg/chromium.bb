@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/animation/scroll_timeline_offset.h"
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/renderer/bindings/core/v8/css_numeric_value_or_string_or_css_keyword_value_or_scroll_timeline_element_based_offset.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_timeline_element_based_offset.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_csskeywordvalue_cssnumericvalue_scrolltimelineelementbasedoffset_string.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
@@ -22,7 +21,8 @@ namespace blink {
 
 namespace {
 
-bool ValidateElementBasedOffset(ScrollTimelineElementBasedOffset* offset) {
+bool ValidateElementBasedOffset(
+    const ScrollTimelineElementBasedOffset* offset) {
   if (!offset->hasTarget())
     return false;
 
@@ -66,45 +66,45 @@ bool ElementBasedOffsetsEqual(ScrollTimelineElementBasedOffset* o1,
          o1->threshold() == o2->threshold();
 }
 
-CSSKeywordValue* GetCSSKeywordValue(const ScrollTimelineOffsetValue& offset) {
-  if (offset.IsCSSKeywordValue())
-    return offset.GetAsCSSKeywordValue();
-  // CSSKeywordish:
-  if (offset.IsString() && !offset.GetAsString().IsEmpty())
-    return CSSKeywordValue::Create(offset.GetAsString());
-  return nullptr;
-}
-
 }  // namespace
 
 // static
 ScrollTimelineOffset* ScrollTimelineOffset::Create(
-    const ScrollTimelineOffsetValue& input_offset) {
-  if (input_offset.IsCSSNumericValue()) {
-    auto* numeric = input_offset.GetAsCSSNumericValue();
-    const auto& offset = To<CSSPrimitiveValue>(*numeric->ToCSSValue());
-    bool matches_length_percentage = offset.IsLength() ||
-                                     offset.IsPercentage() ||
-                                     offset.IsCalculatedPercentageWithLength();
-    if (!matches_length_percentage)
-      return nullptr;
-    return MakeGarbageCollected<ScrollTimelineOffset>(&offset);
+    const V8ScrollTimelineOffset* offset) {
+  switch (offset->GetContentType()) {
+    case V8ScrollTimelineOffset::ContentType::kCSSKeywordValue: {
+      const auto* keyword = offset->GetAsCSSKeywordValue();
+      if (keyword->KeywordValueID() != CSSValueID::kAuto)
+        return nullptr;
+      return MakeGarbageCollected<ScrollTimelineOffset>();
+    }
+    case V8ScrollTimelineOffset::ContentType::kCSSNumericValue: {
+      const auto* value =
+          To<CSSPrimitiveValue>(offset->GetAsCSSNumericValue()->ToCSSValue());
+      bool matches_length_percentage =
+          value->IsLength() || value->IsPercentage() ||
+          value->IsCalculatedPercentageWithLength();
+      if (!matches_length_percentage)
+        return nullptr;
+      return MakeGarbageCollected<ScrollTimelineOffset>(value);
+    }
+    case V8ScrollTimelineOffset::ContentType::
+        kScrollTimelineElementBasedOffset: {
+      auto* value = offset->GetAsScrollTimelineElementBasedOffset();
+      if (!ValidateElementBasedOffset(value))
+        return nullptr;
+      return MakeGarbageCollected<ScrollTimelineOffset>(value);
+    }
+    case V8ScrollTimelineOffset::ContentType::kString: {
+      if (offset->GetAsString().IsEmpty())
+        return nullptr;
+      const auto* keyword = CSSKeywordValue::Create(offset->GetAsString());
+      if (keyword->KeywordValueID() != CSSValueID::kAuto)
+        return nullptr;
+      return MakeGarbageCollected<ScrollTimelineOffset>();
+    }
   }
-
-  if (input_offset.IsScrollTimelineElementBasedOffset()) {
-    auto* offset = input_offset.GetAsScrollTimelineElementBasedOffset();
-    if (!ValidateElementBasedOffset(offset))
-      return nullptr;
-
-    return MakeGarbageCollected<ScrollTimelineOffset>(offset);
-  }
-
-  if (auto* keyword = GetCSSKeywordValue(input_offset)) {
-    if (keyword->KeywordValueID() != CSSValueID::kAuto)
-      return nullptr;
-    return MakeGarbageCollected<ScrollTimelineOffset>();
-  }
-
+  NOTREACHED();
   return nullptr;
 }
 
@@ -125,9 +125,10 @@ absl::optional<double> ScrollTimelineOffset::ResolveOffset(
             ? document.documentElement()->GetComputedStyle()
             : document.GetComputedStyle();
 
+    // TOOD(crbug.com/1223030): Handle container relative units.
     CSSToLengthConversionData conversion_data = CSSToLengthConversionData(
         &computed_style, root_style, document.GetLayoutView(),
-        computed_style.EffectiveZoom());
+        /* nearest_container */ nullptr, computed_style.EffectiveZoom());
     double resolved = FloatValueForLength(
         length_based_offset_->ConvertToLength(conversion_data), max_offset);
 
@@ -210,7 +211,6 @@ absl::optional<double> ScrollTimelineOffset::ResolveOffset(
   }
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 V8ScrollTimelineOffset* ScrollTimelineOffset::ToV8ScrollTimelineOffset() const {
   if (length_based_offset_) {
     return MakeGarbageCollected<V8ScrollTimelineOffset>(
@@ -222,23 +222,6 @@ V8ScrollTimelineOffset* ScrollTimelineOffset::ToV8ScrollTimelineOffset() const {
   return MakeGarbageCollected<V8ScrollTimelineOffset>(
       CSSKeywordValue::Create("auto"));
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-ScrollTimelineOffsetValue ScrollTimelineOffset::ToScrollTimelineOffsetValue()
-    const {
-  ScrollTimelineOffsetValue result;
-  if (length_based_offset_) {
-    result.SetCSSNumericValue(
-        CSSNumericValue::FromCSSValue(*length_based_offset_.Get()));
-  } else if (element_based_offset_) {
-    result.SetScrollTimelineElementBasedOffset(element_based_offset_);
-  } else {
-    // This is the default value (i.e., 'auto' value)
-    result.SetCSSKeywordValue(CSSKeywordValue::Create("auto"));
-  }
-
-  return result;
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 bool ScrollTimelineOffset::operator==(const ScrollTimelineOffset& o) const {
   return DataEquivalent(length_based_offset_, o.length_based_offset_) &&

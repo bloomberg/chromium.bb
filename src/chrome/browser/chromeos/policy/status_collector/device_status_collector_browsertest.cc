@@ -15,6 +15,7 @@
 
 #include "ash/components/audio/cras_audio_handler.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -23,10 +24,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/test/scoped_chromeos_version_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/simple_test_clock.h"
@@ -43,11 +44,10 @@
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/ash/ownership/fake_owner_settings_service.h"
+#include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -58,7 +58,7 @@
 #include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/cros_disks_client.h"
+#include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -110,6 +110,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using base::test::ScopedChromeOSVersionInfo;
 using chromeos::disks::DiskMountManager;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -215,7 +216,7 @@ constexpr char kTimezoneRegion[] = "America/Denver";
 constexpr uint32_t kFakeTotalMemory = 1287312;
 constexpr uint32_t kFakeFreeMemory = 981239;
 constexpr uint32_t kFakeAvailableMemory = 98719321;
-constexpr uint32_t kFakePageFaults = 896123761;
+constexpr uint64_t kFakePageFaults = 896123761;
 // Backlight test values:
 constexpr char kFakeBacklightPath[] = "/sys/class/backlight/fake_backlight";
 constexpr uint32_t kFakeMaxBrightness = 769;
@@ -946,7 +947,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     options->crash_report_info_fetcher =
         base::BindRepeating(&GetEmptyCrashReportInfo);
     options->app_info_generator = std::make_unique<policy::AppInfoGenerator>(
-        base::TimeDelta::FromDays(0));
+        nullptr, base::TimeDelta::FromDays(0));
     return options;
   }
 
@@ -1026,11 +1027,12 @@ class DeviceStatusCollectorTest : public testing::Test {
     SetDeviceLocalAccounts(&owner_settings_service_, accounts);
   }
 
-  void MockPlatformVersion(const std::string& platform_version) {
+  std::unique_ptr<ScopedChromeOSVersionInfo> MockPlatformVersion(
+      const std::string& platform_version) {
     const std::string lsb_release = base::StringPrintf(
         "CHROMEOS_RELEASE_VERSION=%s", platform_version.c_str());
-    base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release,
-                                                 base::Time::Now());
+    return std::make_unique<ScopedChromeOSVersionInfo>(lsb_release,
+                                                       base::Time::Now());
   }
 
   void MockAutoLaunchKioskAppWithRequiredPlatformVersion(
@@ -2557,7 +2559,7 @@ TEST_F(DeviceStatusCollectorTest, ReportWebKioskSessionStatus) {
 }
 
 TEST_F(DeviceStatusCollectorTest, NoOsUpdateStatusByDefault) {
-  MockPlatformVersion(kDefaultPlatformVersion);
+  auto scoped_version = MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, kDefaultPlatformVersion);
 
@@ -2566,7 +2568,7 @@ TEST_F(DeviceStatusCollectorTest, NoOsUpdateStatusByDefault) {
 }
 
 TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatusUpToDate) {
-  MockPlatformVersion(kDefaultPlatformVersion);
+  auto scoped_version = MockPlatformVersion(kDefaultPlatformVersion);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportOsUpdateStatus, true);
 
@@ -2589,7 +2591,7 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatusUpToDate) {
 }
 
 TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatusUpToDate_NonKiosk) {
-  MockPlatformVersion(kDefaultPlatformVersion);
+  auto scoped_version = MockPlatformVersion(kDefaultPlatformVersion);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportOsUpdateStatus, true);
   GetStatus();
@@ -2602,7 +2604,7 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatusUpToDate_NonKiosk) {
 }
 
 TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
-  MockPlatformVersion(kDefaultPlatformVersion);
+  auto scoped_version = MockPlatformVersion(kDefaultPlatformVersion);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportOsUpdateStatus, true);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
@@ -2648,7 +2650,7 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
 }
 
 TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus_NonKiosk) {
-  MockPlatformVersion(kDefaultPlatformVersion);
+  auto scoped_version = MockPlatformVersion(kDefaultPlatformVersion);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportOsUpdateStatus, true);
 
@@ -2701,7 +2703,7 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus_NonKiosk) {
 }
 
 TEST_F(DeviceStatusCollectorTest, NoLastCheckedTimestampByDefault) {
-  MockPlatformVersion(kDefaultPlatformVersion);
+  auto scoped_version = MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, kDefaultPlatformVersion);
 
@@ -2710,7 +2712,7 @@ TEST_F(DeviceStatusCollectorTest, NoLastCheckedTimestampByDefault) {
 }
 
 TEST_F(DeviceStatusCollectorTest, ReportLastCheckedTimestamp) {
-  MockPlatformVersion(kDefaultPlatformVersion);
+  auto scoped_version = MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, kDefaultPlatformVersion);
 
@@ -2739,7 +2741,7 @@ TEST_F(DeviceStatusCollectorTest, ReportLastCheckedTimestamp) {
 }
 
 TEST_F(DeviceStatusCollectorTest, NoLastRebootTimestampByDefault) {
-  MockPlatformVersion(kDefaultPlatformVersion);
+  auto scoped_version = MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, kDefaultPlatformVersion);
 
@@ -2748,7 +2750,7 @@ TEST_F(DeviceStatusCollectorTest, NoLastRebootTimestampByDefault) {
 }
 
 TEST_F(DeviceStatusCollectorTest, ReportLastRebootTimestamp) {
-  MockPlatformVersion(kDefaultPlatformVersion);
+  auto scoped_version = MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, kDefaultPlatformVersion);
 
@@ -2767,7 +2769,7 @@ TEST_F(DeviceStatusCollectorTest, ReportLastRebootTimestamp) {
 }
 
 TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppByDefault) {
-  MockPlatformVersion(kDefaultPlatformVersion);
+  auto scoped_version = MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, kDefaultPlatformVersion);
   status_collector_->set_kiosk_account(
@@ -2783,7 +2785,7 @@ TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppByDefault) {
 TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppWhenNotInKioskSession) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportRunningKioskApp, true);
-  MockPlatformVersion(kDefaultPlatformVersion);
+  auto scoped_version = MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, kDefaultPlatformVersion);
 
@@ -2794,7 +2796,7 @@ TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppWhenNotInKioskSession) {
 TEST_F(DeviceStatusCollectorTest, ReportRunningKioskApp) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportRunningKioskApp, true);
-  MockPlatformVersion(kDefaultPlatformVersion);
+  auto scoped_version = MockPlatformVersion(kDefaultPlatformVersion);
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, "1235");
 
@@ -3249,11 +3251,10 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
       base::BindRepeating(&FetchFakeFullCrosHealthdData);
   RestartStatusCollector(std::move(options));
 
-  // If the ReportDeviceHardwareStatus policy is false, the policies
-  // corresponding to cros_healthd data are ignored. The policy is true by
-  // default, but set it explicitly to ensure the other policies are tested.
+  // Policies set by fetching Cros Healthd Data were once dependent on
+  // ReportDeviceHardwareStatus being set. Ensure this is no longer the case.
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
-      chromeos::kReportDeviceHardwareStatus, true);
+      chromeos::kReportDeviceHardwareStatus, false);
 
   // If none of the relevant policies are set to true, expect that the data from
   // cros_healthd isn't present in the protobuf.
@@ -3461,6 +3462,10 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfoOptional) {
       base::BindRepeating(&FetchFakeOptionalCrosHealthdData);
   RestartStatusCollector(std::move(options));
 
+  // Policies set by fetching Cros Healthd Data were once dependent on
+  // ReportDeviceHardwareStatus being set. Ensure this is no longer the case.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceHardwareStatus, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceCpuInfo, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -3485,6 +3490,10 @@ TEST_F(DeviceStatusCollectorTest, TestPartialCrosHealthdInfo) {
       base::BindRepeating(&FetchFakePartialCrosHealthdData);
   RestartStatusCollector(std::move(options));
 
+  // Policies set by fetching Cros Healthd Data were once dependent on
+  // ReportDeviceHardwareStatus being set. Ensure this is no longer the case.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceHardwareStatus, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceCpuInfo, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -3543,12 +3552,10 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdVpdAndSystemInfo) {
       base::BindRepeating(&FetchFakeFullCrosHealthdData);
   RestartStatusCollector(std::move(options));
 
-  // If the ReportDeviceHardwareStatus policy is false, the policies
-  // corresponding to cros_healthd data are ignored. The policy is true by
-  // default, but set it explicitly to ensure the other policies are tested.
+  // Policies set by fetching Cros Healthd Data were once dependent on
+  // ReportDeviceHardwareStatus being set. Ensure this is no longer the case.
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
-      chromeos::kReportDeviceHardwareStatus, true);
-
+      chromeos::kReportDeviceHardwareStatus, false);
   // When the vpd reporting policy is turned on and the system reporting
   // property is turned off, we only expect the protobuf to only have vpd info.
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -3601,8 +3608,8 @@ TEST_F(DeviceStatusCollectorTest, GenerateAppInfo) {
   MockRegularUserWithAffiliation(account_id, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceAppInfo, true);
-  status_collector_->GetAffiliatedSessionServiceForTesting()
-      ->OnUserProfileLoaded(account_id);
+  status_collector_->GetManagedSessionServiceForTesting()->OnUserProfileLoaded(
+      account_id);
   auto* app_proxy =
       apps::AppServiceProxyFactory::GetForProfile(testing_profile_.get());
   auto app1 = apps::mojom::App::New();

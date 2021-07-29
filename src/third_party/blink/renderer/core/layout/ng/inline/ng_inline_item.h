@@ -32,6 +32,7 @@ class CORE_EXPORT NGInlineItem {
     kText,
     kControl,
     kAtomicInline,
+    kBlockInInline,
     kOpenTag,
     kCloseTag,
     kFloating,
@@ -132,6 +133,9 @@ class CORE_EXPORT NGInlineItem {
   bool IsRubyRun() const {
     return GetLayoutObject() && GetLayoutObject()->IsRubyRun();
   }
+  bool IsTextCombine() const {
+    return GetLayoutObject() && GetLayoutObject()->IsLayoutNGTextCombine();
+  }
 
   void SetOffset(unsigned start, unsigned end) {
     DCHECK_GE(end, start);
@@ -169,24 +173,26 @@ class CORE_EXPORT NGInlineItem {
     // Use the |ComputedStyle| in |LayoutObject|, because not all style changes
     // re-run |CollectInlines()|.
     DCHECK(layout_object_);
-    NGStyleVariant variant = StyleVariant();
-    if (variant == NGStyleVariant::kStandard)
-      return layout_object_->Style();
-    DCHECK_EQ(variant, NGStyleVariant::kFirstLine);
-    return layout_object_->FirstLineStyle();
+    return &layout_object_->EffectiveStyle(StyleVariant());
   }
 
   // Returns a screen-size font for SVG text.
   // Returns Style()->GetFont() otherwise.
-  const Font& FontWithSVGScaling() const;
+  const Font& FontWithSvgScaling() const;
 
   // Get or set the whitespace collapse type at the end of this item.
   NGCollapseType EndCollapseType() const {
     return static_cast<NGCollapseType>(end_collapse_type_);
   }
   void SetEndCollapseType(NGCollapseType type) {
-    DCHECK(Type() == NGInlineItem::kText || type == kOpaqueToCollapsing ||
-           (Type() == NGInlineItem::kControl && type == kCollapsible));
+    // |kText| can set any types.
+    DCHECK(Type() == NGInlineItem::kText ||
+           // |kControl| and |kBlockInInline| are always |kCollapsible|.
+           ((Type() == NGInlineItem::kControl ||
+             Type() == NGInlineItem::kBlockInInline) &&
+            type == kCollapsible) ||
+           // Other types are |kOpaqueToCollapsing|.
+           type == kOpaqueToCollapsing);
     end_collapse_type_ = type;
   }
   bool IsCollapsibleSpaceOnly() const {

@@ -2127,8 +2127,6 @@ void Renderer11::releaseDeviceResources()
 // set notify to true to broadcast a message to all contexts of the device loss
 bool Renderer11::testDeviceLost()
 {
-    bool isLost = false;
-
     if (!mDevice)
     {
         return true;
@@ -2136,7 +2134,7 @@ bool Renderer11::testDeviceLost()
 
     // GetRemovedReason is used to test if the device is removed
     HRESULT result = mDevice->GetDeviceRemovedReason();
-    isLost         = d3d11::isDeviceLostError(result);
+    bool isLost    = FAILED(result);
 
     if (isLost)
     {
@@ -3289,23 +3287,27 @@ angle::Result Renderer11::copyImage(const gl::Context *context,
                               unpackPremultiplyAlpha, unpackUnmultiplyAlpha, mRenderer11DeviceCaps);
 }
 
-TextureStorage *Renderer11::createTextureStorage2D(SwapChainD3D *swapChain)
+TextureStorage *Renderer11::createTextureStorage2D(SwapChainD3D *swapChain,
+                                                   const std::string &label)
 {
     SwapChain11 *swapChain11 = GetAs<SwapChain11>(swapChain);
-    return new TextureStorage11_2D(this, swapChain11);
+    return new TextureStorage11_2D(this, swapChain11, label);
 }
 
 TextureStorage *Renderer11::createTextureStorageEGLImage(EGLImageD3D *eglImage,
-                                                         RenderTargetD3D *renderTargetD3D)
+                                                         RenderTargetD3D *renderTargetD3D,
+                                                         const std::string &label)
 {
-    return new TextureStorage11_EGLImage(this, eglImage, GetAs<RenderTarget11>(renderTargetD3D));
+    return new TextureStorage11_EGLImage(this, eglImage, GetAs<RenderTarget11>(renderTargetD3D),
+                                         label);
 }
 
 TextureStorage *Renderer11::createTextureStorageExternal(
     egl::Stream *stream,
-    const egl::Stream::GLTextureDescription &desc)
+    const egl::Stream::GLTextureDescription &desc,
+    const std::string &label)
 {
-    return new TextureStorage11_External(this, stream, desc);
+    return new TextureStorage11_External(this, stream, desc, label);
 }
 
 TextureStorage *Renderer11::createTextureStorage2D(GLenum internalformat,
@@ -3313,9 +3315,10 @@ TextureStorage *Renderer11::createTextureStorage2D(GLenum internalformat,
                                                    GLsizei width,
                                                    GLsizei height,
                                                    int levels,
+                                                   const std::string &label,
                                                    bool hintLevelZeroOnly)
 {
-    return new TextureStorage11_2D(this, internalformat, renderTarget, width, height, levels,
+    return new TextureStorage11_2D(this, internalformat, renderTarget, width, height, levels, label,
                                    hintLevelZeroOnly);
 }
 
@@ -3323,10 +3326,11 @@ TextureStorage *Renderer11::createTextureStorageCube(GLenum internalformat,
                                                      bool renderTarget,
                                                      int size,
                                                      int levels,
-                                                     bool hintLevelZeroOnly)
+                                                     bool hintLevelZeroOnly,
+                                                     const std::string &label)
 {
     return new TextureStorage11_Cube(this, internalformat, renderTarget, size, levels,
-                                     hintLevelZeroOnly);
+                                     hintLevelZeroOnly, label);
 }
 
 TextureStorage *Renderer11::createTextureStorage3D(GLenum internalformat,
@@ -3334,10 +3338,11 @@ TextureStorage *Renderer11::createTextureStorage3D(GLenum internalformat,
                                                    GLsizei width,
                                                    GLsizei height,
                                                    GLsizei depth,
-                                                   int levels)
+                                                   int levels,
+                                                   const std::string &label)
 {
-    return new TextureStorage11_3D(this, internalformat, renderTarget, width, height, depth,
-                                   levels);
+    return new TextureStorage11_3D(this, internalformat, renderTarget, width, height, depth, levels,
+                                   label);
 }
 
 TextureStorage *Renderer11::createTextureStorage2DArray(GLenum internalformat,
@@ -3345,10 +3350,11 @@ TextureStorage *Renderer11::createTextureStorage2DArray(GLenum internalformat,
                                                         GLsizei width,
                                                         GLsizei height,
                                                         GLsizei depth,
-                                                        int levels)
+                                                        int levels,
+                                                        const std::string &label)
 {
     return new TextureStorage11_2DArray(this, internalformat, renderTarget, width, height, depth,
-                                        levels);
+                                        levels, label);
 }
 
 TextureStorage *Renderer11::createTextureStorage2DMultisample(GLenum internalformat,
@@ -3356,10 +3362,11 @@ TextureStorage *Renderer11::createTextureStorage2DMultisample(GLenum internalfor
                                                               GLsizei height,
                                                               int levels,
                                                               int samples,
-                                                              bool fixedSampleLocations)
+                                                              bool fixedSampleLocations,
+                                                              const std::string &label)
 {
     return new TextureStorage11_2DMultisample(this, internalformat, width, height, levels, samples,
-                                              fixedSampleLocations);
+                                              fixedSampleLocations, label);
 }
 
 TextureStorage *Renderer11::createTextureStorage2DMultisampleArray(GLenum internalformat,
@@ -3368,10 +3375,11 @@ TextureStorage *Renderer11::createTextureStorage2DMultisampleArray(GLenum intern
                                                                    GLsizei depth,
                                                                    int levels,
                                                                    int samples,
-                                                                   bool fixedSampleLocations)
+                                                                   bool fixedSampleLocations,
+                                                                   const std::string &label)
 {
     return new TextureStorage11_2DMultisampleArray(this, internalformat, width, height, depth,
-                                                   levels, samples, fixedSampleLocations);
+                                                   levels, samples, fixedSampleLocations, label);
 }
 
 angle::Result Renderer11::readFromAttachment(const gl::Context *context,

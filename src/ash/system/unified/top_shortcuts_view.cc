@@ -7,7 +7,7 @@
 #include <numeric>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -23,11 +23,14 @@
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/user_chooser_detailed_view_controller.h"
 #include "ash/system/unified/user_chooser_view.h"
+#include "base/bind.h"
 #include "base/numerics/ranges.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -57,8 +60,9 @@ UserAvatarButton::UserAvatarButton(PressedCallback callback)
   SetInstallFocusRingOnFocus(true);
 
   views::InstallCircleHighlightPathGenerator(this);
-  focus_ring()->SetColor(AshColorProvider::Get()->GetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kFocusRingColor));
+  views::FocusRing::Get(this)->SetColor(
+      AshColorProvider::Get()->GetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::kFocusRingColor));
 }
 
 }  // namespace
@@ -89,7 +93,7 @@ void TopShortcutButtonContainer::Layout() {
   int spacing = 0;
   if (visible_children.size() > 1) {
     spacing = (child_area.width() - visible_child_width) /
-              (int{visible_children.size()} - 1);
+              (static_cast<int>(visible_children.size()) - 1);
     spacing = base::ClampToRange(spacing, kUnifiedTopShortcutButtonMinSpacing,
                                  kUnifiedTopShortcutButtonDefaultSpacing);
   }
@@ -105,9 +109,10 @@ void TopShortcutButtonContainer::Layout() {
       child_y -= kUnifiedCircularButtonFocusPadding.bottom();
     } else if (child == sign_out_button_) {
       // When there's not enough space, shrink the sign-out button.
-      const int remainder = child_area.width() -
-                            (int{visible_children.size()} - 1) * spacing -
-                            (visible_child_width - width);
+      const int remainder =
+          child_area.width() -
+          (static_cast<int>(visible_children.size()) - 1) * spacing -
+          (visible_child_width - width);
       width = base::ClampToRange(width, 0, remainder);
     }
 

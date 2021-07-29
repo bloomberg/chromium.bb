@@ -369,6 +369,10 @@ bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
   if (IsCrashed())
     return false;
 
+  // TODO(crbug.com/809738)  Register with `PrintBackendServiceManager` when
+  // system print is enabled out-of-process.  A corresponding unregister should
+  // go in `ReleasePrintJob()`.
+
   SetPrintingRFH(rfh);
   GetPrintRenderFrame(rfh)->PrintRequestedPages();
   return true;
@@ -718,11 +722,6 @@ void PrintViewManagerBase::PrintingFailed(int32_t cookie) {
 #endif
 
   ReleasePrinterQuery();
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-      content::Source<content::WebContents>(web_contents()),
-      content::NotificationService::NoDetails());
 }
 
 void PrintViewManagerBase::ShowInvalidPrinterSettingsError() {
@@ -768,10 +767,6 @@ void PrintViewManagerBase::SystemDialogCancelled() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ReleasePrinterQuery();
   TerminatePrintJob(true);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-      content::Source<content::WebContents>(web_contents()),
-      content::NotificationService::NoDetails());
 }
 #endif
 
@@ -788,28 +783,6 @@ void PrintViewManagerBase::OnNotifyPrintJobEvent(
   switch (event_details.type()) {
     case JobEventDetails::FAILED: {
       TerminatePrintJob(true);
-
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-          content::Source<content::WebContents>(web_contents()),
-          content::NotificationService::NoDetails());
-      break;
-    }
-    case JobEventDetails::USER_INIT_DONE:
-    case JobEventDetails::DEFAULT_INIT_DONE:
-    case JobEventDetails::USER_INIT_CANCELED: {
-      NOTREACHED();
-      break;
-    }
-    case JobEventDetails::ALL_PAGES_REQUESTED: {
-      ShouldQuitFromInnerMessageLoop();
-      break;
-    }
-#if defined(OS_WIN)
-    case JobEventDetails::PAGE_DONE:
-#endif
-    case JobEventDetails::NEW_DOC: {
-      // Don't care about the actual printing process.
       break;
     }
     case JobEventDetails::DOC_DONE: {
@@ -831,23 +804,15 @@ void PrintViewManagerBase::OnNotifyPrintJobEvent(
 #endif
       break;
     }
-    case JobEventDetails::JOB_DONE: {
+    case JobEventDetails::JOB_DONE:
       // Printing is done, we don't need it anymore.
       // print_job_->is_job_pending() may still be true, depending on the order
       // of object registration.
       printing_succeeded_ = true;
       ReleasePrintJob();
-
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-          content::Source<content::WebContents>(web_contents()),
-          content::NotificationService::NoDetails());
       break;
-    }
-    default: {
-      NOTREACHED();
+    default:
       break;
-    }
   }
 }
 
@@ -875,11 +840,9 @@ bool PrintViewManagerBase::RenderAllMissingPagesNow() {
   // pages in an hurry if a print_job_ is still pending. No need to wait for it
   // to actually spool the pages, only to have the renderer generate them. Run
   // a message loop until we get our signal that the print job is satisfied.
-  // PrintJob will send a ALL_PAGES_REQUESTED after having received all the
-  // pages it needs. |quit_inner_loop_| will be called as soon as
-  // print_job_->document()->IsComplete() is true on either ALL_PAGES_REQUESTED
-  // or in DidPrintDocument(). The check is done in
-  // ShouldQuitFromInnerMessageLoop().
+  // |quit_inner_loop_| will be called as soon as
+  // print_job_->document()->IsComplete() is true in DidPrintDocument(). The
+  // check is done in ShouldQuitFromInnerMessageLoop().
   // BLOCKS until all the pages are received. (Need to enable recursive task)
   if (!RunInnerMessageLoop()) {
     // This function is always called from DisconnectFromCurrentPrintJob() so we
@@ -1063,6 +1026,18 @@ bool PrintViewManagerBase::PrintNowInternal(
 }
 
 void PrintViewManagerBase::SetPrintingRFH(content::RenderFrameHost* rfh) {
+  // Do not allow any print operation during prerendering.
+  if (rfh->GetLifecycleState() ==
+      content::RenderFrameHost::LifecycleState::kPrerendering) {
+    // If we come here during prerendering, it's because either:
+    // 1) Renderer did something unexpected (indicates a compromised renderer),
+    // or 2) Some plumbing in the browser side is wrong (wrong code).
+    // mojo::ReportBadMessage() below will let the renderer crash for 1), or
+    // will hit DCHECK for 2).
+    mojo::ReportBadMessage(
+        "The print's message shouldn't reach here during prerendering.");
+    return;
+  }
   DCHECK(!printing_rfh_);
   printing_rfh_ = rfh;
 }

@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="Event.AggregatedLatency.Renderer2" units="microseconds"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>flackr@chromium.org</owner>
   <summary>
     Time between initiation of any input event and the renderer receiving and
@@ -65,7 +65,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.AsyncTargeting.ResponseTime" units="ms"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>sadrul@chromium.org</owner>
   <owner>event-targeting@chromium.org</owner>
   <summary>
@@ -214,17 +214,25 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Event.InputEventPrediction.Scroll.OverPrediction"
+<histogram name="Event.InputEventPrediction.Scroll.Frame{ScoreType}"
     units="pixels" expires_after="M97">
-  <owner>eirage@chromium.org</owner>
-  <owner>axantoine@google.com</owner>
+  <owner>flackr@chromium.org</owner>
+  <owner>joalmei@microsoft.com</owner>
   <summary>
     Overshoot distance in pixels between a predicted scroll position and the
-    corresponding interpolated real scroll position that occurred at the
-    prediction time.
+    corresponding interpolated real scroll position that occurred at the frame
+    time.
+
+    The difference between {ScoreType} and Frame{ScoreType} is the former uses
+    prediction time and the later uses frame time.
 
     Team: input-dev@chromium.org.
   </summary>
+  <token key="ScoreType">
+    <variant name="OverPrediction" summary="Positive score values"/>
+    <variant name="PredictionScore" summary="Score abolute value"/>
+    <variant name="UnderPrediction" summary="Negative score values"/>
+  </token>
 </histogram>
 
 <histogram name="Event.InputEventPrediction.Scroll.PredictionJitter"
@@ -236,19 +244,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     scroll deltas which are the difference between a predicted scroll position
     and its corresponding interpolated real position that occurred at prediction
     time.
-
-    Team: input-dev@chromium.org.
-  </summary>
-</histogram>
-
-<histogram name="Event.InputEventPrediction.Scroll.UnderPrediction"
-    units="pixels" expires_after="M97">
-  <owner>eirage@chromium.org</owner>
-  <owner>axantoine@google.com</owner>
-  <summary>
-    Undershoot distance in pixels between a predicted scroll position and the
-    corresponding interpolated real scroll position that occurred at the
-    prediction time.
 
     Team: input-dev@chromium.org.
   </summary>
@@ -278,6 +273,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
     Team: input-dev@chromium.org.
   </summary>
+</histogram>
+
+<histogram name="Event.InputEventPrediction.Scroll.{ScoreType}" units="pixels"
+    expires_after="M97">
+  <owner>flackr@chromium.org</owner>
+  <owner>joalmei@microsoft.com</owner>
+  <summary>
+    Overshoot distance in pixels between a predicted scroll position and the
+    corresponding interpolated real scroll position that occurred at the frame
+    time.
+
+    Team: input-dev@chromium.org.
+  </summary>
+  <token key="ScoreType">
+    <variant name="OverPrediction" summary="Positive score values"/>
+    <variant name="PredictionScore" summary="Score abolute value"/>
+    <variant name="UnderPrediction" summary="Negative score values"/>
+  </token>
 </histogram>
 
 <histogram name="Event.Latency.EndToEnd.KeyPress" units="microseconds"
@@ -324,7 +337,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.EndToEnd.TouchpadPinch2" units="microseconds"
-    expires_after="2021-10-25">
+    expires_after="2021-12-26">
   <owner>nzolghadr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -492,7 +505,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.Scroll.Wheel.TimeToHandled2"
-    units="microseconds" expires_after="2021-10-17">
+    units="microseconds" expires_after="2021-12-19">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -634,7 +647,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Event.Latency.ScrollBegin.Scrollbar.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2021-10-10">
+    units="microseconds" expires_after="2021-12-12">
   <owner>nzolghadr@chromium.org</owner>
   <owner>dlibby@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -684,6 +697,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Event.Latency.ScrollBegin.Touch.AverageLag" units="pixels"
     expires_after="M97">
+  <obsolete>
+    Removed 2021.06.30 - replaced by AverageLagPresentation, which is more
+    accurate.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>joalmei@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -710,14 +727,31 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     finger when user scrolls. Only reports touch scrolling. See
     https://docs.google.com/document/d/154jddNiKtxELBvrjLz9v6A7sA1J3iwQQzySHgtY12Oo/
 
-    This is the lag caused by the Gesture Scroll Begin Event. In each touch
-    interaction there is a GSB followed by multiple Gesture Scroll Updates,
-    which are separately logged by
+    This is the lag observed in processing the Gesture Scroll Begin Event. In
+    each touch interaction there is a GSB followed by multiple Gesture Scroll
+    Updates, which are separately logged by
     Event.Latency.ScrollUpdate.Touch.AverageLagPresentation.
 
-    The difference between AverageLag and AverageLagPresentation is that the
-    former uses the Gpu Swap Begin Time as an approximation for the time the
-    frame is visible on the screen, while the latter uses the Presentation Time.
+    Team: input-dev@chromium.org.
+  </summary>
+</histogram>
+
+<histogram
+    name="Event.Latency.ScrollBegin.Touch.AverageLagPresentation.NoPrediction"
+    units="pixels" expires_after="M97">
+  <owner>flackr@chromium.org</owner>
+  <owner>joalmei@microsoft.org</owner>
+  <owner>input-dev@chromium.org</owner>
+  <summary>
+    Measures an average distance that represents how the page sticks to the
+    finger when user scrolls if prediction was disabled. Only reports touch
+    scrolling. See
+    https://docs.google.com/document/d/154jddNiKtxELBvrjLz9v6A7sA1J3iwQQzySHgtY12Oo/
+
+    This is the lag observed in processing the Gesture Scroll Begin Event. In
+    each touch interaction there is a GSB followed by multiple Gesture Scroll
+    Updates, which are separately logged by
+    Event.Latency.ScrollUpdate.Touch.AverageLagPresentation.
 
     Team: input-dev@chromium.org.
   </summary>
@@ -738,7 +772,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.ScrollBegin.Touch.GpuSwap2" units="microseconds"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>flackr@chromium.org</owner>
   <summary>
     Time between gpu starts to swap the first ScrollUpdate gesture event in a
@@ -809,7 +843,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2021-10-17">
+    units="microseconds" expires_after="2021-12-19">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
@@ -864,7 +898,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.ScrollBegin.Wheel.HandledToRendererSwap2"
-    units="microseconds" expires_after="2021-09-19">
+    units="microseconds" expires_after="2021-11-21">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -917,7 +951,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2021-10-31">
+    units="microseconds" expires_after="2022-01-02">
   <owner>flackr@chromium.org</owner>
   <summary>
     Time between initial creation of a wheel event and the start of the frame
@@ -1032,6 +1066,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Total duration (wall time in milliseconds of potentially concurrent events)
     of LatencyInfo::GestureScrollUpdate events that are detected as janky during
     a particular scroll.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.ScrollUpdate.JankyDurationPercentage" units="%"
+    expires_after="2022-07-15">
+  <owner>ddrone@google.com</owner>
+  <owner>chrometto-team@google.com</owner>
+  <summary>
+    Percentage of duration of scroll events that are detected as janky during a
+    particular scroll.
   </summary>
 </histogram>
 
@@ -1166,7 +1210,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.TimeToScrollUpdateSwapBegin2"
-    units="microseconds" expires_after="2021-10-10">
+    units="microseconds" expires_after="2021-12-12">
   <owner>nzolghadr@chromium.org</owner>
   <summary>
     Time between initial creation of a wheel/touch event and start of the frame
@@ -1210,6 +1254,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Event.Latency.ScrollUpdate.Touch.AverageLag" units="pixels"
     expires_after="M97">
+  <obsolete>
+    Removed 2021.06.30 - replaced by AverageLagPresentation, which is more
+    accurate.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>joalmei@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -1226,47 +1274,38 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram
-    name="Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionNegative"
+    name="Event.Latency.ScrollUpdate.Touch.AverageLag.{PredictionImpact}"
     units="pixels" expires_after="M97">
+  <obsolete>
+    Removed 2021.06.30 - replaced by AverageLagPresentation.{PredictionImpact},
+    which is more accurate.
+  </obsolete>
   <owner>flackr@chromium.org</owner>
   <owner>joalmei@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
-    Measures the negative impact on the AverageLag metric that is attributable
-    to scroll prediction. This value has the same units as
-    Event.Latency.ScrollUpdate.Touch.AverageLag but is a difference between that
-    value and what it would have been if prediction was disabled.
+    Improvement of prediction in touch lag. It is defined as
+    (Lag_without_prediction - Lag_with_prediction).
 
-    PredictionNegative is logged when prediction caused an increase in perceived
-    lag (i.e. the rendered position was on average further from the actual
-    location of the finger) for a given interaction/interval. The duration of
-    the interaction/interval is either 1s, or the time from when the user starts
-    scrolling to lifting the finger, whichever is smaller.
+    Lag is the distance between the finger position and the rendered position.
 
-    Team: input-dev@chromium.org.
-  </summary>
-</histogram>
+    When positive, prediction improves touch performance (reduces lag). When
+    negative, prediction worsens touch performance (increases lag).
 
-<histogram
-    name="Event.Latency.ScrollUpdate.Touch.AverageLag.PredictionPositive"
-    units="pixels" expires_after="M97">
-  <owner>flackr@chromium.org</owner>
-  <owner>joalmei@microsoft.com</owner>
-  <owner>input-dev@chromium.org</owner>
-  <summary>
-    Measures the positive impact on the AverageLag metric that is attributable
-    to scroll prediction. This value has the same units as
-    Event.Latency.ScrollUpdate.Touch.AverageLag but is a difference between that
-    value and what it would have been if prediction was disabled.
+    The duration of the interaction/interval is either 1s, or the time from when
+    the user starts scrolling to lifting the finger, whichever is smaller.
 
-    PredictionPostive is logged when prediction caused a decrease in perceived
-    lag (i.e. the rendered position was on average closer to the actual location
-    of the finger) for a given interaction/interval. The duration of the
-    interaction/interval is either 1s, or the time from when the user starts
-    scrolling to lifting the finger, whichever is smaller.
+    Lag_with_prediction =
+    Event.Latency.ScrollUpdate.Touch.AverageLagPresentation
+    Lag_without_prediction =
+    Event.Latency.ScrollUpdate.Touch.AverageLagPresentation.NoPrediction
 
     Team: input-dev@chromium.org.
   </summary>
+  <token key="PredictionImpact">
+    <variant name="PredictionNegative" summary="Negative impact values"/>
+    <variant name="PredictionPositive" summary="Positive impact values"/>
+  </token>
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.Touch.AverageLagPresentation"
@@ -1279,67 +1318,96 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     finger when user scrolls. Only reports touch scrolling. See
     https://docs.google.com/document/d/154jddNiKtxELBvrjLz9v6A7sA1J3iwQQzySHgtY12Oo/
 
-    This is the lag caused by the Gesture Scroll Updates occurring in the
-    lifetime of a scroll interaction.
-
-    The difference between AverageLag and AverageLagPresentation is that the
-    former uses the Gpu Swap Begin Time as an approximation for the time the
-    frame is visible on the screen, while the latter uses the Presentation Time.
+    This is the lag observed in processing the Gesture Scroll Updates occurring
+    in the lifetime of a scroll interaction.
 
     Team: input-dev@chromium.org.
   </summary>
 </histogram>
 
 <histogram
-    name="Event.Latency.ScrollUpdate.Touch.AverageLagPresentation.PredictionNegative"
+    name="Event.Latency.ScrollUpdate.Touch.AverageLagPresentation.NoPrediction"
     units="pixels" expires_after="M97">
   <owner>flackr@chromium.org</owner>
   <owner>joalmei@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
-    Measures the negative impact on the AverageLagPresentation metric that is
-    attributable to scroll prediction. This value has the same units as
-    Event.Latency.ScrollUpdate.Touch.AverageLagPresentation but is a difference
-    between that value and what it would have been if prediction was disabled.
+    Measures an average distance that represents how the page sticks to the
+    finger when user scrolls if prediction was disabled. Only reports touch
+    scrolling. See
+    https://docs.google.com/document/d/154jddNiKtxELBvrjLz9v6A7sA1J3iwQQzySHgtY12Oo/
 
-    PredictionNegative is logged when prediction caused an increase in perceived
-    lag (i.e. the rendered position was on average further from the actual
-    location of the finger) for a given interaction/interval. The duration of
-    the interaction/interval is either 1s, or the time from when the user starts
-    scrolling to lifting the finger, whichever is smaller.
-
-    The difference between AverageLag and AverageLagPresentation is that the
-    former uses the Gpu Swap Begin Time as an approximation for the time the
-    frame is visible on the screen, while the latter uses the Presentation Time.
+    This is the lag observed in processing the Gesture Scroll Updates occurring
+    in the lifetime of a scroll interaction.
 
     Team: input-dev@chromium.org.
   </summary>
 </histogram>
 
 <histogram
-    name="Event.Latency.ScrollUpdate.Touch.AverageLagPresentation.PredictionPositive"
+    name="Event.Latency.ScrollUpdate.Touch.AverageLagPresentation.RemainingLagPercentage"
+    units="%" expires_after="M97">
+  <owner>flackr@chromium.org</owner>
+  <owner>joalmei@microsoft.com</owner>
+  <owner>input-dev@chromium.org</owner>
+  <summary>
+    Percentage of touch lag that prediction wasn't able to remove.
+
+    This is the ratio (Lag_with_prediction)/(Lag_without_prediction). Lag is the
+    average distance between the finger and page positons during touch
+    scrolling.
+
+    0% means all the lag existing before prediction was removed. 100% means that
+    prediction had no impact. Greater than 100% means that prediction introduced
+    more lag.
+
+    This metric doesn't distinguish between OverPrediction and UnderPrediction.
+    A same absolute value of OverPrediction or UnderPrediction will result in
+    the same RemainingLagPercentage value.
+
+    Lag_with_prediction =
+    Event.Latency.ScrollUpdate.Touch.AverageLagPresentation
+    Lag_without_prediction =
+    Event.Latency.ScrollUpdate.Touch.AverageLagPresentation.NoPrediction
+
+    Team: input-dev@chromium.org.
+  </summary>
+</histogram>
+
+<histogram
+    name="Event.Latency.ScrollUpdate.Touch.AverageLagPresentation.{PredictionImpact}"
     units="pixels" expires_after="M97">
   <owner>flackr@chromium.org</owner>
   <owner>joalmei@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
-    Measures the positive impact on the AverageLagPresentation metric that is
-    attributable to scroll prediction. This value has the same units as
-    Event.Latency.ScrollUpdate.Touch.AverageLagPresentation but is a difference
-    between that value and what it would have been if prediction was disabled.
+    Improvement of prediction in touch lag. It is defined as
+    (Lag_without_prediction - Lag_with_prediction).
 
-    PredictionPostive is logged when prediction caused a decrease in perceived
-    lag (i.e. the rendered position was on average closer to the actual location
-    of the finger) for a given interaction/interval. The duration of the
-    interaction/interval is either 1s, or the time from when the user starts
-    scrolling to lifting the finger, whichever is smaller.
+    Lag is the distance between the finger position and the rendered position.
 
-    The difference between AverageLag and AverageLagPresentation is that the
-    former uses the Gpu Swap Begin Time as an approximation for the time the
-    frame is visible on the screen, while the latter uses the Presentation Time.
+    When positive, prediction improves touch performance (reduces lag). When
+    negative, prediction worsens touch performance (increases lag).
+
+    The duration of the interaction/interval is either 1s, or the time from when
+    the user starts scrolling to lifting the finger, whichever is smaller.
+
+    This metric uses directionless distances, therefore it doesn't distinguish
+    between OverPrediction and UnderPrediction. A same absolute value of
+    OverPrediction or UnderPrediction will result in the same PredictionImpact
+    value.
+
+    Lag_with_prediction =
+    Event.Latency.ScrollUpdate.Touch.AverageLagPresentation
+    Lag_without_prediction =
+    Event.Latency.ScrollUpdate.Touch.AverageLagPresentation.NoPrediction
 
     Team: input-dev@chromium.org.
   </summary>
+  <token key="PredictionImpact">
+    <variant name="PredictionNegative" summary="Negative impact values"/>
+    <variant name="PredictionPositive" summary="Positive impact values"/>
+  </token>
 </histogram>
 
 <histogram
@@ -1537,7 +1605,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2021-10-31">
+    units="microseconds" expires_after="2022-01-02">
   <owner>flackr@chromium.org</owner>
   <summary>
     Time between initial creation of a wheel event and start of the frame swap
@@ -1588,7 +1656,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Event.PassiveListeners" enum="EventResultType"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>dtapuska@chromium.org</owner>
   <summary>
     The result of handling of MouseWheel, TouchStart, TouchMove, TouchEnd events

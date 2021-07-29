@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">พิมพ์</translation>
 <translation id="1467231725790366244">ถอดปลั๊ก <ph name="CAMERA" /> แล้ว</translation>
 <translation id="1473110567575736769">ตัวจับเวลา 3 วินาที</translation>
+<translation id="1478594628797167447">เครื่องสแกน</translation>
+<translation id="1545749641540134597">สแกนโค้ด QR</translation>
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">ไม่ได้บันทึกข้อมูลใด</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">แนวตั้ง</translation>
 <translation id="2064538373111010176">ใช้งาน <ph name="CAMERA" /> อยู่</translation>
 <translation id="2144806332417375165">กำหนดพารามิเตอร์วิดีโอเอง</translation>
+<translation id="2175927920773552910">คิวอาร์โค้ด</translation>
+<translation id="2268107369530950373">เปลี่ยนเป็นโหมดสแกนเนอร์</translation>
 <translation id="229579744168541441">ส่งออกไปยังดิสก์</translation>
 <translation id="2320741269052147773">เลื่อนไปทางซ้าย</translation>
 <translation id="2501278716633472235">ย้อนกลับ</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">ไมโครโฟน</translation>
 <translation id="3240426699337459095">คัดลอกลิงก์แล้ว</translation>
 <translation id="3259149966178251584">ความละเอียดกล้อง</translation>
+<translation id="3448774564454087943">ไม่ได้บันทึกวิดีโอเนื่องจากสั้นเกินไป</translation>
 <translation id="3517926952904427380">ถ่ายภาพบุคคลไม่ได้</translation>
 <translation id="3569311554794739032">คุณต้องการนำ <ph name="FILE" /> ออกจริงๆ ใช่ไหม</translation>
 <translation id="3733597664308256288">มีตัวควบคุมกล้องให้ใช้งานเพิ่มเติม กดค้นหา + ลูกศรขวาเพื่อเข้าถึง</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">รูปภาพ</translation>
 <translation id="4649291346448517080">บันทึกไฟล์ไม่ได้</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">การบันทึกวิดีโอแบบหลายสตรีม</translation>
 <translation id="5057360777601936059">ขณะนี้กล้องไม่พร้อมใช้งาน
         โปรดตรวจสอบว่ากล้องเชื่อมต่ออย่างถูกต้อง</translation>
 <translation id="5152121255775685072">ไปที่แกลเลอรี</translation>
+<translation id="5268823927180092501">เปิดใช้โหมดเอกสารในทุกกล้อง</translation>
 <translation id="5422455049771430511">โฟลเดอร์ใหม่สำหรับรูปภาพและวิดีโอ</translation>
 <translation id="5671277269877808209">สี่เหลี่ยมจัตุรัส</translation>
+<translation id="5753488212459587150">เปิดใช้โหมดผู้เชี่ยวชาญ</translation>
 <translation id="5775960006311140197">โหมดผู้เชี่ยวชาญ</translation>
 <translation id="5869546221129391014">ตาราง</translation>
 <translation id="5975083100439434680">ย่อ</translation>

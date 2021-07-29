@@ -111,33 +111,16 @@ namespace dawn_wire { namespace server {
 
         ObjectHandle buffer;
         WGPUBuffer bufferObj;
-        uint32_t requestSerial;
+        uint64_t requestSerial;
         uint64_t offset;
         uint64_t size;
         WGPUMapModeFlags mode;
-        // TODO(enga): Use a tagged pointer to save space.
-        std::unique_ptr<MemoryTransferService::ReadHandle> readHandle = nullptr;
-        std::unique_ptr<MemoryTransferService::WriteHandle> writeHandle = nullptr;
     };
 
     struct ErrorScopeUserdata : CallbackUserdata {
         using CallbackUserdata::CallbackUserdata;
 
         ObjectHandle device;
-        uint64_t requestSerial;
-    };
-
-    struct FenceCompletionUserdata : CallbackUserdata {
-        using CallbackUserdata::CallbackUserdata;
-
-        ObjectHandle fence;
-        uint64_t value;
-    };
-
-    struct FenceOnCompletionUserdata : CallbackUserdata {
-        using CallbackUserdata::CallbackUserdata;
-
-        ObjectHandle fence;
         uint64_t requestSerial;
     };
 
@@ -214,14 +197,11 @@ namespace dawn_wire { namespace server {
         // Error callbacks
         void OnUncapturedError(ObjectHandle device, WGPUErrorType type, const char* message);
         void OnDeviceLost(ObjectHandle device, const char* message);
+        void OnLogging(ObjectHandle device, WGPULoggingType type, const char* message);
         void OnDevicePopErrorScope(WGPUErrorType type,
                                    const char* message,
                                    ErrorScopeUserdata* userdata);
         void OnBufferMapAsyncCallback(WGPUBufferMapAsyncStatus status, MapUserdata* userdata);
-        void OnFenceCompletedValueUpdated(WGPUFenceCompletionStatus status,
-                                          FenceCompletionUserdata* userdata);
-        void OnFenceOnCompletion(WGPUFenceCompletionStatus status,
-                                 FenceOnCompletionUserdata* userdata);
         void OnQueueWorkDone(WGPUQueueWorkDoneStatus status, QueueWorkDoneUserdata* userdata);
         void OnCreateComputePipelineAsyncCallback(WGPUCreatePipelineAsyncStatus status,
                                                   WGPUComputePipeline pipeline,

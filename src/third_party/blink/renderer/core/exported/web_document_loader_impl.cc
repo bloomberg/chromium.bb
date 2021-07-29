@@ -93,10 +93,6 @@ WebURL WebDocumentLoaderImpl::UnreachableURL() const {
   return DocumentLoader::UnreachableURL();
 }
 
-void WebDocumentLoaderImpl::RedirectChain(WebVector<WebURL>& result) const {
-  result.Assign(redirect_chain_);
-}
-
 bool WebDocumentLoaderImpl::IsClientRedirect() const {
   return DocumentLoader::IsClientRedirect();
 }
@@ -203,6 +199,11 @@ bool WebDocumentLoaderImpl::LastNavigationHadTransientUserActivation() const {
 
 bool WebDocumentLoaderImpl::IsListingFtpDirectory() const {
   return DocumentLoader::IsListingFtpDirectory();
+}
+
+void WebDocumentLoaderImpl::SetCodeCacheHost(
+    mojo::PendingRemote<mojom::CodeCacheHost> code_cache_host) {
+  DocumentLoader::SetCodeCacheHost(std::move(code_cache_host));
 }
 
 void WebDocumentLoaderImpl::Trace(Visitor* visitor) const {

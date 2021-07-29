@@ -20,6 +20,7 @@ mojom("mojom") {
     "gpu_extra_info.mojom",
     "gpu_fence_handle.mojom",
     "hdr_metadata.mojom",
+    "hdr_static_metadata.mojom",
     "mask_filter_info.mojom",
     "overlay_transform.mojom",
     "presentation_feedback.mojom",
@@ -130,6 +131,16 @@ mojom("mojom") {
     {
       types = [
         {
+          mojom = "gfx.mojom.HDRStaticMetadata"
+          cpp = "::gfx::HDRStaticMetadata"
+        },
+      ]
+      traits_headers = [ "hdr_static_metadata_mojom_traits.h" ]
+      traits_public_deps = [ ":shared_mojom_traits" ]
+    },
+    {
+      types = [
+        {
           mojom = "gfx.mojom.PresentationFeedback"
           cpp = "::gfx::PresentationFeedback"
         },
@@ -219,8 +230,8 @@ mojom("mojom") {
     {
       types = [
         {
-          mojom = "gfx.mojom.MasteringMetadata"
-          cpp = "::gfx::MasteringMetadata"
+          mojom = "gfx.mojom.ColorVolumeMetadata"
+          cpp = "::gfx::ColorVolumeMetadata"
         },
         {
           mojom = "gfx.mojom.HDRMetadata"
@@ -370,6 +381,8 @@ component("shared_mojom_traits") {
     "gpu_extra_info_mojom_traits.h",
     "gpu_fence_handle_mojom_traits.cc",
     "gpu_fence_handle_mojom_traits.h",
+    "hdr_static_metadata_mojom_traits.cc",
+    "hdr_static_metadata_mojom_traits.h",
   ]
   public_deps = [
     ":mojom_shared",

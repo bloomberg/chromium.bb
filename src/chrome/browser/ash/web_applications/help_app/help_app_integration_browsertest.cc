@@ -38,6 +38,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/components/help_app_ui/buildflags.h"
 #include "chromeos/components/help_app_ui/help_app_manager.h"
 #include "chromeos/components/help_app_ui/help_app_manager_factory.h"
 #include "chromeos/components/help_app_ui/search/search.mojom.h"
@@ -48,6 +49,7 @@
 #include "components/user_manager/user_names.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/idle/idle.h"
 #include "ui/base/idle/scoped_set_idle_state.h"
@@ -175,7 +177,7 @@ IN_PROC_BROWSER_TEST_P(HelpAppAllProfilesIntegrationTest, HelpAppV2ShowHelp) {
 
   chrome::ShowHelp(browser(), chrome::HELP_SOURCE_KEYBOARD);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_CROS_HELP_APP)
   EXPECT_NO_FATAL_FAILURE(WaitForAppToOpen(GURL("chrome://help-app/")));
 #else
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -199,7 +201,7 @@ IN_PROC_BROWSER_TEST_P(HelpAppAllProfilesIntegrationTest,
 
   chrome::LaunchReleaseNotes(profile(),
                              apps::mojom::LaunchSource::kFromOtherApp);
-#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_CROS_HELP_APP)
   // If no navigation happens, then this test will time out due to the wait.
   navigation_observer.Wait();
 
@@ -225,7 +227,7 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2ReleaseNotesMetrics) {
   base::UserActionTester user_action_tester;
   chrome::LaunchReleaseNotes(profile(),
                              apps::mojom::LaunchSource::kFromOtherApp);
-#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_CROS_HELP_APP)
   EXPECT_EQ(1,
             user_action_tester.GetActionCount("ReleaseNotes.ShowReleaseNotes"));
 #else
@@ -247,7 +249,8 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
       std::make_unique<ash::ReleaseNotesStorage>(profile());
 
   // Force the release notes notification to show up.
-  profile()->GetPrefs()->SetInteger(prefs::kReleaseNotesLastShownMilestone, 20);
+  profile()->GetPrefs()->SetInteger(
+      prefs::kHelpAppNotificationLastShownMilestone, 20);
   release_notes_notification->MaybeShowReleaseNotes();
   // Assert that the notification really is there.
   auto notifications = display_service->GetDisplayedNotificationsForType(
@@ -263,7 +266,7 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
       1, user_action_tester.GetActionCount("ReleaseNotes.NotificationShown"));
   EXPECT_EQ(1, user_action_tester.GetActionCount(
                    "ReleaseNotes.LaunchedNotification"));
-#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_CROS_HELP_APP)
   EXPECT_NO_FATAL_FAILURE(WaitForAppToOpen(GURL("chrome://help-app/updates")));
   EXPECT_EQ(1,
             user_action_tester.GetActionCount("ReleaseNotes.ShowReleaseNotes"));
@@ -286,7 +289,7 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
   profile()->GetPrefs()->SetString(prefs::kSupervisedUserId,
                                    supervised_users::kChildAccountSUID);
   profile()->GetPrefs()->SetInteger(
-      prefs::kDiscoverTabNotificationLastShownMilestone, 20);
+      prefs::kHelpAppNotificationLastShownMilestone, 20);
   EXPECT_EQ(profile()->GetPrefs()->GetInteger(
                 prefs::kDiscoverTabSuggestionChipTimesLeftToShow),
             0);
@@ -309,24 +312,14 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
   EXPECT_EQ(profile()->GetPrefs()->GetInteger(
                 prefs::kDiscoverTabSuggestionChipTimesLeftToShow),
             3);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   // Close the web contents we just created to simulate what would happen in
   // production with a background page. This helps us ensure that our
   // notification shows up and can be interacted with even after the web ui
   // that triggered it has died.
-  auto original_browser_count = chrome::GetTotalBrowserCount();
   web_contents->Close();
-  // Wait until the web contents closes.
-  // TODO(b/186819234): Add a way to wait for the task instead of polling.
-  base::RunLoop run_loop;
-  base::RepeatingTimer check_timer;
-  check_timer.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(10),
-      base::BindLambdaForTesting([&]() {
-        if (chrome::GetTotalBrowserCount() == original_browser_count)
-          return;
-        run_loop.QuitClosure().Run();
-      }));
-  run_loop.Run();
+  // Wait until the browser with the web contents closes.
+  ui_test_utils::WaitForBrowserToClose(browser);
 
   // Assert that the notification really is there.
   auto notifications = display_service->GetDisplayedNotificationsForType(
@@ -341,8 +334,70 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
       chromeos::kShowHelpAppDiscoverTabNotificationId, absl::nullopt,
       absl::nullopt);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_CROS_HELP_APP)
   EXPECT_NO_FATAL_FAILURE(WaitForAppToOpen(GURL("chrome://help-app/discover")));
+#else
+  // We just have the original browser. No new app opens.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+#endif
+}
+
+// Test that the background page can trigger the release notes notification.
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
+                       HelpAppV2ReleaseNotesNotificationFromBackground) {
+  WaitForTestSystemAppInstall();
+  content::WebContents* web_contents = LaunchApp(web_app::SystemAppType::HELP);
+  auto display_service =
+      std::make_unique<NotificationDisplayServiceTester>(/*profile=*/nullptr);
+  base::UserActionTester user_action_tester;
+  profile()->GetPrefs()->SetInteger(
+      prefs::kHelpAppNotificationLastShownMilestone, 20);
+  EXPECT_EQ(profile()->GetPrefs()->GetInteger(
+                prefs::kReleaseNotesSuggestionChipTimesLeftToShow),
+            0);
+
+  // Script that simulates what the Help App background page would do to show
+  // the release notes notification.
+  constexpr char kScript[] = R"(
+    (async () => {
+      const delegate = window.customLaunchData.delegate;
+      await delegate.maybeShowReleaseNotesNotification();
+      window.domAutomationController.send(true);
+    })();
+  )";
+  // Use ExecuteScript instead of EvalJsInAppFrame because the script needs to
+  // run in the same world as the page's code.
+  bool script_finished;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      SandboxedWebUiAppTestBase::GetAppFrame(web_contents), kScript,
+      &script_finished));
+  EXPECT_TRUE(script_finished);
+  EXPECT_EQ(profile()->GetPrefs()->GetInteger(
+                prefs::kReleaseNotesSuggestionChipTimesLeftToShow),
+            3);
+
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  // Close the web contents we just created to simulate what would happen in
+  // production with a background page. This helps us ensure that our
+  // notification shows up and can be interacted with even after the web ui
+  // that triggered it has died.
+  web_contents->Close();
+  // Wait until the browser with the web contents closes.
+  ui_test_utils::WaitForBrowserToClose(browser);
+
+  // Assert that the notification really is there.
+  auto notifications = display_service->GetDisplayedNotificationsForType(
+      NotificationHandler::Type::TRANSIENT);
+  ASSERT_EQ(1u, notifications.size());
+  ASSERT_EQ("show_release_notes_notification", notifications[0].id());
+
+  // Click on the notification.
+  display_service->SimulateClick(NotificationHandler::Type::TRANSIENT,
+                                 "show_release_notes_notification",
+                                 absl::nullopt, absl::nullopt);
+
+#if BUILDFLAG(ENABLE_CROS_HELP_APP)
+  EXPECT_NO_FATAL_FAILURE(WaitForAppToOpen(GURL("chrome://help-app/updates")));
 #else
   // We just have the original browser. No new app opens.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -603,25 +658,19 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
   // that base::Timer works.
   timer->FireNow();
 
+  // Wait for the task to launch the background page.
   navigation_observer.Wait();
 
-  // Wait until the background page closes. It's closed when the web contents
-  // becomes null.
-  // TODO(b/186819234): Add a way to wait for the task instead of polling.
-  base::RunLoop bg_page_run_loop;
-  base::RepeatingTimer check_timer;
-  check_timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(10),
-                    base::BindLambdaForTesting([&]() {
-                      if (help_task->get()->web_contents_for_testing())
-                        return;
-                      bg_page_run_loop.QuitClosure().Run();
-                    }));
-  bg_page_run_loop.Run();
+  // Store web_content while the page is open.
+  content::WebContents* web_contents =
+      help_task->get()->web_contents_for_testing();
+  // Wait until the background page closes.
+  content::WebContentsDestroyedWatcher destroyed_watcher(web_contents);
+  destroyed_watcher.Wait();
 
   EXPECT_EQ(help_task->get()->opened_count_for_testing(), 1u);
 
-// TODO(b/187231134): Replace this with a single build flag.
-#if !BUILDFLAG(IS_CHROMEOS_ASH) || !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if !BUILDFLAG(ENABLE_CROS_HELP_APP)
   // This part only works in non-branded builds because it uses fake data added
   // by the mock app.
   // Search using the search handler to confirm that the update happened.
@@ -673,7 +722,7 @@ IN_PROC_BROWSER_TEST_P(HelpAppAllProfilesIntegrationTest,
       browser(), ui::VKEY_OEM_2, /*control=*/true,
       /*shift=*/false, /*alt=*/false, /*command=*/false));
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(ENABLE_CROS_HELP_APP)
   // Default browser tab and Help app are open.
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
   EXPECT_EQ("chrome://help-app/", GetActiveWebContents()->GetVisibleURL());

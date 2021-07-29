@@ -35,10 +35,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(AVIF_CODEC_AOM_ENCODE)
 // Detect whether the aom_codec_set_option() function is available. See aom/aom_codec.h
 // in https://aomedia-review.googlesource.com/c/aom/+/126302.
 #if AOM_CODEC_ABI_VERSION >= (6 + AOM_IMAGE_ABI_VERSION)
 #define HAVE_AOM_CODEC_SET_OPTION 1
+#endif
+
+// Speeds 7-9 were added to all intra mode in https://aomedia-review.googlesource.com/c/aom/+/140624.
+#if defined(AOM_EXT_PART_ABI_VERSION)
+#if AOM_ENCODER_ABI_VERSION >= (10 + AOM_CODEC_ABI_VERSION + AOM_EXT_PART_ABI_VERSION)
+#define ALL_INTRA_HAS_SPEEDS_7_TO_9 1
+#endif
+#endif
 #endif
 
 struct avifCodecInternal
@@ -102,10 +111,10 @@ static avifBool aomCodecGetNextImage(struct avifCodec * codec,
         }
         codec->internal->decoderInitialized = AVIF_TRUE;
 
-        // Ensure that we only get the "highest spatial layer" as a single frame
-        // for each input sample, instead of getting each spatial layer as its own
-        // frame one at a time ("all layers").
-        if (aom_codec_control(&codec->internal->decoder, AV1D_SET_OUTPUT_ALL_LAYERS, 0)) {
+        if (aom_codec_control(&codec->internal->decoder, AV1D_SET_OUTPUT_ALL_LAYERS, codec->allLayers)) {
+            return AVIF_FALSE;
+        }
+        if (aom_codec_control(&codec->internal->decoder, AV1D_SET_OPERATING_POINT, codec->operatingPoint)) {
             return AVIF_FALSE;
         }
 
@@ -113,16 +122,26 @@ static avifBool aomCodecGetNextImage(struct avifCodec * codec,
     }
 
     aom_image_t * nextFrame = NULL;
+    uint8_t spatialID = AVIF_SPATIAL_ID_UNSET;
     for (;;) {
         nextFrame = aom_codec_get_frame(&codec->internal->decoder, &codec->internal->iter);
         if (nextFrame) {
-            // Got an image!
-            break;
+            if (spatialID != AVIF_SPATIAL_ID_UNSET) {
+                // This requires a version of libaom with the fix for https://crbug.com/aomedia/2993.
+                if (spatialID == nextFrame->spatial_id) {
+                    // Found the correct spatial_id.
+                    break;
+                }
+            } else {
+                // Got an image!
+                break;
+            }
         } else if (sample) {
             codec->internal->iter = NULL;
             if (aom_codec_decode(&codec->internal->decoder, sample->data.data, sample->data.size, NULL)) {
                 return AVIF_FALSE;
             }
+            spatialID = sample->spatialID;
             sample = NULL;
         } else {
             break;
@@ -346,6 +365,7 @@ static avifBool avifProcessAOMOptionsPreInit(avifCodec * codec, avifBool alpha, 
         int val;
         if (avifKeyEqualsName(entry->key, "end-usage", alpha)) { // Rate control mode
             if (!aomOptionParseEnum(entry->value, endUsageEnum, &val)) {
+                avifDiagnosticsPrintf(codec->diag, "Invalid value for end-usage: %s", entry->value);
                 return AVIF_FALSE;
             }
             cfg->rc_end_usage = val;
@@ -431,6 +451,12 @@ static avifBool avifProcessAOMOptionsPostInit(avifCodec * codec, avifBool alpha)
             key += shortPrefixLen;
         }
         if (aom_codec_set_option(&codec->internal->encoder, key, entry->value) != AOM_CODEC_OK) {
+            avifDiagnosticsPrintf(codec->diag,
+                                  "aom_codec_set_option(\"%s\", \"%s\") failed: %s: %s",
+                                  key,
+                                  entry->value,
+                                  aom_codec_error(&codec->internal->encoder),
+                                  aom_codec_error_detail(&codec->internal->encoder));
             return AVIF_FALSE;
         }
 #else  // !defined(HAVE_AOM_CODEC_SET_OPTION)
@@ -496,10 +522,10 @@ static avifResult aomCodecEncodeImage(avifCodec * codec,
         // Speed  4: GoodQuality CpuUsed 4
         // Speed  5: GoodQuality CpuUsed 5
         // Speed  6: GoodQuality CpuUsed 6
-        // Speed  7: GoodQuality CpuUsed 6
-        // Speed  8: RealTime    CpuUsed 6
-        // Speed  9: RealTime    CpuUsed 7
-        // Speed 10: RealTime    CpuUsed 8
+        // Speed  7: RealTime    CpuUsed 7
+        // Speed  8: RealTime    CpuUsed 8
+        // Speed  9: RealTime    CpuUsed 9
+        // Speed 10: RealTime    CpuUsed 9
         unsigned int aomUsage = AOM_USAGE_GOOD_QUALITY;
         // Use the new AOM_USAGE_ALL_INTRA (added in https://crbug.com/aomedia/2959) for still
         // image encoding if it is available.
@@ -510,11 +536,15 @@ static avifResult aomCodecEncodeImage(avifCodec * codec,
 #endif
         int aomCpuUsed = -1;
         if (encoder->speed != AVIF_SPEED_DEFAULT) {
-            if (encoder->speed < 8) {
-                aomCpuUsed = AVIF_CLAMP(encoder->speed, 0, 6);
-            } else {
+            aomCpuUsed = AVIF_CLAMP(encoder->speed, 0, 9);
+            if (aomCpuUsed >= 7) {
+#if defined(AOM_USAGE_ALL_INTRA) && defined(ALL_INTRA_HAS_SPEEDS_7_TO_9)
+                if (!(addImageFlags & AVIF_ADD_IMAGE_FLAG_SINGLE)) {
+                    aomUsage = AOM_USAGE_REALTIME;
+                }
+#else
                 aomUsage = AOM_USAGE_REALTIME;
-                aomCpuUsed = AVIF_CLAMP(encoder->speed - 2, 6, 8);
+#endif
             }
         }
 
@@ -698,55 +728,71 @@ static avifResult aomCodecEncodeImage(avifCodec * codec,
 #endif
     }
 
-    int yShift = codec->internal->formatInfo.chromaShiftY;
-    uint32_t uvHeight = (image->height + yShift) >> yShift;
-    aom_image_t * aomImage = aom_img_alloc(NULL, codec->internal->aomFormat, image->width, image->height, 16);
+    aom_image_t aomImage;
+    memset(&aomImage, 0, sizeof(aomImage));
+    aomImage.fmt = codec->internal->aomFormat;
+    aomImage.bit_depth = (image->depth > 8) ? 16 : 8;
+    aomImage.w = image->width;
+    aomImage.h = image->height;
+    aomImage.d_w = image->width;
+    aomImage.d_h = image->height;
+    // Get sample size for this format.
+    unsigned int bps;
+    if (codec->internal->aomFormat == AOM_IMG_FMT_I420) {
+        bps = 12;
+    } else if (codec->internal->aomFormat == AOM_IMG_FMT_I422) {
+        bps = 16;
+    } else if (codec->internal->aomFormat == AOM_IMG_FMT_I444) {
+        bps = 24;
+    } else if (codec->internal->aomFormat == AOM_IMG_FMT_I42016) {
+        bps = 24;
+    } else if (codec->internal->aomFormat == AOM_IMG_FMT_I42216) {
+        bps = 32;
+    } else if (codec->internal->aomFormat == AOM_IMG_FMT_I44416) {
+        bps = 48;
+    } else {
+        bps = 16;
+    }
+    aomImage.bps = bps;
+
     avifBool monochromeRequested = AVIF_FALSE;
 
     if (alpha) {
-        aomImage->range = (image->alphaRange == AVIF_RANGE_FULL) ? AOM_CR_FULL_RANGE : AOM_CR_STUDIO_RANGE;
-        aom_codec_control(&codec->internal->encoder, AV1E_SET_COLOR_RANGE, aomImage->range);
+        aomImage.x_chroma_shift = 1;
+        aomImage.y_chroma_shift = 1;
+        aomImage.range = (image->alphaRange == AVIF_RANGE_FULL) ? AOM_CR_FULL_RANGE : AOM_CR_STUDIO_RANGE;
+        aom_codec_control(&codec->internal->encoder, AV1E_SET_COLOR_RANGE, aomImage.range);
         monochromeRequested = AVIF_TRUE;
-        for (uint32_t j = 0; j < image->height; ++j) {
-            uint8_t * srcAlphaRow = &image->alphaPlane[j * image->alphaRowBytes];
-            uint8_t * dstAlphaRow = &aomImage->planes[0][j * aomImage->stride[0]];
-            memcpy(dstAlphaRow, srcAlphaRow, image->alphaRowBytes);
-        }
+        aomImage.planes[0] = image->alphaPlane;
+        aomImage.stride[0] = image->alphaRowBytes;
 
         // Ignore UV planes when monochrome
     } else {
-        aomImage->range = (image->yuvRange == AVIF_RANGE_FULL) ? AOM_CR_FULL_RANGE : AOM_CR_STUDIO_RANGE;
-        aom_codec_control(&codec->internal->encoder, AV1E_SET_COLOR_RANGE, aomImage->range);
+        aomImage.x_chroma_shift = codec->internal->formatInfo.chromaShiftX;
+        aomImage.y_chroma_shift = codec->internal->formatInfo.chromaShiftY;
+        aomImage.range = (image->yuvRange == AVIF_RANGE_FULL) ? AOM_CR_FULL_RANGE : AOM_CR_STUDIO_RANGE;
+        aom_codec_control(&codec->internal->encoder, AV1E_SET_COLOR_RANGE, aomImage.range);
         int yuvPlaneCount = 3;
         if (image->yuvFormat == AVIF_PIXEL_FORMAT_YUV400) {
             yuvPlaneCount = 1; // Ignore UV planes when monochrome
             monochromeRequested = AVIF_TRUE;
         }
-        int xShift = codec->internal->formatInfo.chromaShiftX;
-        uint32_t uvWidth = (image->width + xShift) >> xShift;
-        uint32_t bytesPerPixel = (image->depth > 8) ? 2 : 1;
         for (int yuvPlane = 0; yuvPlane < yuvPlaneCount; ++yuvPlane) {
-            uint32_t planeWidth = (yuvPlane == AVIF_CHAN_Y) ? image->width : uvWidth;
-            uint32_t planeHeight = (yuvPlane == AVIF_CHAN_Y) ? image->height : uvHeight;
-            uint32_t bytesPerRow = bytesPerPixel * planeWidth;
-
-            for (uint32_t j = 0; j < planeHeight; ++j) {
-                uint8_t * srcRow = &image->yuvPlanes[yuvPlane][j * image->yuvRowBytes[yuvPlane]];
-                uint8_t * dstRow = &aomImage->planes[yuvPlane][j * aomImage->stride[yuvPlane]];
-                memcpy(dstRow, srcRow, bytesPerRow);
-            }
+            aomImage.planes[yuvPlane] = image->yuvPlanes[yuvPlane];
+            aomImage.stride[yuvPlane] = image->yuvRowBytes[yuvPlane];
         }
 
-        aomImage->cp = (aom_color_primaries_t)image->colorPrimaries;
-        aomImage->tc = (aom_transfer_characteristics_t)image->transferCharacteristics;
-        aomImage->mc = (aom_matrix_coefficients_t)image->matrixCoefficients;
-        aomImage->csp = (aom_chroma_sample_position_t)image->yuvChromaSamplePosition;
-        aom_codec_control(&codec->internal->encoder, AV1E_SET_COLOR_PRIMARIES, aomImage->cp);
-        aom_codec_control(&codec->internal->encoder, AV1E_SET_TRANSFER_CHARACTERISTICS, aomImage->tc);
-        aom_codec_control(&codec->internal->encoder, AV1E_SET_MATRIX_COEFFICIENTS, aomImage->mc);
-        aom_codec_control(&codec->internal->encoder, AV1E_SET_CHROMA_SAMPLE_POSITION, aomImage->csp);
+        aomImage.cp = (aom_color_primaries_t)image->colorPrimaries;
+        aomImage.tc = (aom_transfer_characteristics_t)image->transferCharacteristics;
+        aomImage.mc = (aom_matrix_coefficients_t)image->matrixCoefficients;
+        aomImage.csp = (aom_chroma_sample_position_t)image->yuvChromaSamplePosition;
+        aom_codec_control(&codec->internal->encoder, AV1E_SET_COLOR_PRIMARIES, aomImage.cp);
+        aom_codec_control(&codec->internal->encoder, AV1E_SET_TRANSFER_CHARACTERISTICS, aomImage.tc);
+        aom_codec_control(&codec->internal->encoder, AV1E_SET_MATRIX_COEFFICIENTS, aomImage.mc);
+        aom_codec_control(&codec->internal->encoder, AV1E_SET_CHROMA_SAMPLE_POSITION, aomImage.csp);
     }
 
+    unsigned char * monoUVPlane = NULL;
     if (monochromeRequested && !codec->internal->monochromeEnabled) {
         // The user requested monochrome (via alpha or YUV400) but libaom cannot currently support
         // monochrome (see chroma_check comment above). Manually set UV planes to 0.5.
@@ -754,21 +800,26 @@ static avifResult aomCodecEncodeImage(avifCodec * codec,
         // aomImage is always 420 when we're monochrome
         uint32_t monoUVWidth = (image->width + 1) >> 1;
         uint32_t monoUVHeight = (image->height + 1) >> 1;
+        uint32_t channelSize = avifImageUsesU16(image) ? 2 : 1;
+        uint32_t monoUVRowBytes = channelSize * monoUVWidth;
+        size_t monoUVSize = (size_t)monoUVHeight * monoUVRowBytes;
 
-        for (int yuvPlane = 1; yuvPlane < 3; ++yuvPlane) {
-            if (image->depth > 8) {
-                const uint16_t half = 1 << (image->depth - 1);
-                for (uint32_t j = 0; j < monoUVHeight; ++j) {
-                    uint16_t * dstRow = (uint16_t *)&aomImage->planes[yuvPlane][j * aomImage->stride[yuvPlane]];
-                    for (uint32_t i = 0; i < monoUVWidth; ++i) {
-                        dstRow[i] = half;
-                    }
+        monoUVPlane = avifAlloc(monoUVSize);
+        if (image->depth > 8) {
+            const uint16_t half = 1 << (image->depth - 1);
+            for (uint32_t j = 0; j < monoUVHeight; ++j) {
+                uint16_t * dstRow = (uint16_t *)&monoUVPlane[(size_t)j * monoUVRowBytes];
+                for (uint32_t i = 0; i < monoUVWidth; ++i) {
+                    dstRow[i] = half;
                 }
-            } else {
-                const uint8_t half = 128;
-                size_t planeSize = (size_t)monoUVHeight * aomImage->stride[yuvPlane];
-                memset(aomImage->planes[yuvPlane], half, planeSize);
             }
+        } else {
+            const uint8_t half = 128;
+            memset(monoUVPlane, half, monoUVSize);
+        }
+        for (int yuvPlane = 1; yuvPlane < 3; ++yuvPlane) {
+            aomImage.planes[yuvPlane] = monoUVPlane;
+            aomImage.stride[yuvPlane] = monoUVRowBytes;
         }
     }
 
@@ -776,7 +827,9 @@ static avifResult aomCodecEncodeImage(avifCodec * codec,
     if (addImageFlags & AVIF_ADD_IMAGE_FLAG_FORCE_KEYFRAME) {
         encodeFlags |= AOM_EFLAG_FORCE_KF;
     }
-    if (aom_codec_encode(&codec->internal->encoder, aomImage, 0, 1, encodeFlags) != AOM_CODEC_OK) {
+    aom_codec_err_t encodeErr = aom_codec_encode(&codec->internal->encoder, &aomImage, 0, 1, encodeFlags);
+    avifFree(monoUVPlane);
+    if (encodeErr != AOM_CODEC_OK) {
         avifDiagnosticsPrintf(codec->diag,
                               "aom_codec_encode() failed: %s: %s",
                               aom_codec_error(&codec->internal->encoder),
@@ -794,8 +847,6 @@ static avifResult aomCodecEncodeImage(avifCodec * codec,
             avifCodecEncodeOutputAddSample(output, pkt->data.frame.buf, pkt->data.frame.sz, (pkt->data.frame.flags & AOM_FRAME_IS_KEY));
         }
     }
-
-    aom_img_free(aomImage);
 
     if (addImageFlags & AVIF_ADD_IMAGE_FLAG_SINGLE) {
         // Flush and clean up encoder resources early to save on overhead when encoding alpha or grid images

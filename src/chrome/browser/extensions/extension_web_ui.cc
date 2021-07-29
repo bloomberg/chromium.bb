@@ -102,7 +102,7 @@ void InitializeOverridesList(base::ListValue* list) {
 
 // Adds |override| to |list|, or, if there's already an entry for the override,
 // marks it as active.
-void AddOverridesToList(base::ListValue* list, const GURL& override_url) {
+void AddOverridesToList(base::Value* list, const GURL& override_url) {
   const std::string& spec = override_url.spec();
   for (auto& val : list->GetList()) {
     std::string* entry = nullptr;
@@ -129,11 +129,11 @@ void AddOverridesToList(base::ListValue* list, const GURL& override_url) {
     }
   }
 
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString(kEntry, spec);
-  dict->SetBoolean(kActive, true);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringPath(kEntry, spec);
+  dict.SetBoolPath(kActive, true);
   // Add the entry to the front of the list.
-  list->Insert(0, std::move(dict));
+  list->Insert(list->GetList().begin(), std::move(dict));
 }
 
 // Validates that each entry in |list| contains a valid url and points to an
@@ -221,7 +221,7 @@ bool UpdateOverridesList(base::ListValue* overrides_list,
         FALLTHROUGH;
       }
       case UPDATE_REMOVE:
-        overrides_list->Erase(iter, nullptr);
+        overrides_list->EraseListIter(iter);
         break;
     }
     return true;
@@ -337,7 +337,7 @@ void ForEachOverrideList(
     // user's prefs are mangled (by malware, user modification, hard drive
     // corruption, evil robots, etc), this will fail. Instead, delete the pref.
     if (!success) {
-      all_overrides->Remove(key, nullptr);
+      all_overrides->RemoveKey(key);
       continue;
     }
     callback.Run(list);
@@ -539,14 +539,13 @@ void ExtensionWebUI::RegisterOrActivateChromeURLOverrides(
     return;
   PrefService* prefs = profile->GetPrefs();
   DictionaryPrefUpdate update(prefs, kExtensionURLOverrides);
-  base::DictionaryValue* all_overrides = update.Get();
+  base::Value* all_overrides = update.Get();
   for (const auto& page_override_pair : overrides) {
-    base::ListValue* page_overrides_weak = nullptr;
-    if (!all_overrides->GetList(page_override_pair.first,
-                                &page_overrides_weak)) {
-      auto page_overrides = std::make_unique<base::ListValue>();
-      page_overrides_weak = page_overrides.get();
-      all_overrides->Set(page_override_pair.first, std::move(page_overrides));
+    base::Value* page_overrides_weak =
+        all_overrides->FindListPath(page_override_pair.first);
+    if (page_overrides_weak == nullptr) {
+      page_overrides_weak = all_overrides->SetPath(
+          page_override_pair.first, base::Value(base::Value::Type::LIST));
     }
     AddOverridesToList(page_overrides_weak, page_override_pair.second);
   }
@@ -592,7 +591,8 @@ void ExtensionWebUI::GetFaviconForURL(
                                                pixel_size,
                                                ExtensionIconSet::MATCH_BIGGER);
 
-    ui::ScaleFactor resource_scale_factor = ui::GetSupportedScaleFactor(scale);
+    ui::ResourceScaleFactor resource_scale_factor =
+        ui::GetSupportedResourceScaleFactor(scale);
     if (!icon_resource.empty()) {
       info_list.push_back(extensions::ImageLoader::ImageRepresentation(
           icon_resource,
@@ -609,10 +609,11 @@ void ExtensionWebUI::GetFaviconForURL(
     gfx::ImageSkia placeholder_skia(placeholder_image.AsImageSkia());
     // Ensure the ImageSkia has representation at all scales we would use for
     // favicons.
-    std::vector<ui::ScaleFactor> scale_factors = ui::GetSupportedScaleFactors();
+    std::vector<ui::ResourceScaleFactor> scale_factors =
+        ui::GetSupportedResourceScaleFactors();
     for (const auto& scale_factor : scale_factors) {
       placeholder_skia.GetRepresentation(
-          ui::GetScaleForScaleFactor(scale_factor));
+          ui::GetScaleForResourceScaleFactor(scale_factor));
     }
     RunFaviconCallbackAsync(std::move(callback), gfx::Image(placeholder_skia));
   } else {

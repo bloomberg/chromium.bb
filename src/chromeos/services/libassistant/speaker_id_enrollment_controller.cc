@@ -4,6 +4,7 @@
 
 #include "chromeos/services/libassistant/speaker_id_enrollment_controller.h"
 
+#include "chromeos/services/libassistant/grpc/assistant_client.h"
 #include "chromeos/services/libassistant/public/mojom/audio_input_controller.mojom.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -212,15 +213,13 @@ void SpeakerIdEnrollmentController::GetSpeakerIdEnrollmentStatus(
   waiter->Start(assistant_manager_internal_, user_gaia_id, std::move(callback));
 }
 
-void SpeakerIdEnrollmentController::OnAssistantManagerStarted(
-    assistant_client::AssistantManager* assistant_manager,
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
-  assistant_manager_internal_ = assistant_manager_internal;
+void SpeakerIdEnrollmentController::OnAssistantClientStarted(
+    AssistantClient* assistant_client) {
+  assistant_manager_internal_ = assistant_client->assistant_manager_internal();
 }
 
-void SpeakerIdEnrollmentController::OnDestroyingAssistantManager(
-    assistant_client::AssistantManager* assistant_manager,
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
+void SpeakerIdEnrollmentController::OnDestroyingAssistantClient(
+    AssistantClient* assistant_client) {
   active_enrollment_session_ = nullptr;
   assistant_manager_internal_ = nullptr;
   pending_response_waiters_.AbortAll();

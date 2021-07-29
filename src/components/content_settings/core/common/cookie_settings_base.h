@@ -84,23 +84,23 @@ class CookieSettingsBase {
   // is used to determine third-party-ness of |url|.
   //
   // This may be called on any thread.
-  // DEPRECATED: Replace with IsCookieAccessAllowed(GURL, GURL, Origin).
-  bool IsCookieAccessAllowed(const GURL& url,
-                             const GURL& first_party_url) const;
+  // DEPRECATED: Replace with IsFullCookieAccessAllowed(GURL, GURL, Origin).
+  bool IsFullCookieAccessAllowed(const GURL& url,
+                                 const GURL& first_party_url) const;
 
-  // Similar to IsCookieAccessAllowed(GURL, GURL) but provides a mechanism
+  // Similar to IsFullCookieAccessAllowed(GURL, GURL) but provides a mechanism
   // to specify a separate |site_for_cookies|, which is used to determine
   // whether a request is in a third_party context and |top_frame_origin|, which
   // is used to check if there are any content_settings exceptions.
   // |top_frame_origin| should at least be specified when |site_for_cookies| is
   // non-empty.
-  bool IsCookieAccessAllowed(
+  bool IsFullCookieAccessAllowed(
       const GURL& url,
       const GURL& site_for_cookies,
       const absl::optional<url::Origin>& top_frame_origin) const;
 
   // Returns true if the cookie set by a page identified by |url| should be
-  // session only. Querying this only makes sense if |IsCookieAccessAllowed|
+  // session only. Querying this only makes sense if |IsFullCookieAccessAllowed|
   // has returned true.
   //
   // This may be called on any thread.
@@ -169,6 +169,17 @@ class CookieSettingsBase {
   // Determines whether |setting| is a valid content setting for legacy cookie
   // access.
   static bool IsValidSettingForLegacyAccess(ContentSetting setting);
+
+ protected:
+  // Returns true iff the request is considered third-party.
+  static bool IsThirdPartyRequest(const GURL& url,
+                                  const GURL& site_for_cookies);
+
+  // Returns the URL to be considered "first-party" for the given request. If
+  // the `top_frame_origin` is non-empty, it is chosen; otherwise, the
+  // `site_for_cookies` is used.
+  static GURL GetFirstPartyURL(const GURL& site_for_cookies,
+                               const url::Origin* top_frame_origin);
 
  private:
   virtual ContentSetting GetCookieSettingInternal(

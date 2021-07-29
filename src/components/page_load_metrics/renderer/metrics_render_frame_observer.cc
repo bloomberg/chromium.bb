@@ -139,14 +139,6 @@ void MetricsRenderFrameObserver::DidObserveLayoutShift(
                                                        after_input_or_scroll);
 }
 
-void MetricsRenderFrameObserver::DidObserveInputForLayoutShiftTracking(
-    base::TimeTicks timestamp) {
-  if (page_timing_metrics_sender_) {
-    page_timing_metrics_sender_->DidObserveInputForLayoutShiftTracking(
-        timestamp);
-  }
-}
-
 void MetricsRenderFrameObserver::DidObserveLayoutNg(
     uint32_t all_block_count,
     uint32_t ng_block_count,
@@ -662,6 +654,8 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
     timing->paint_timing->portal_activated_paint =
         *perf.LastPortalActivatedPaint();
   }
+  if (perf.PrerenderActivationStart().has_value())
+    timing->activation_start = perf.PrerenderActivationStart();
 
   if (perf.UserTimingMarkFullyLoaded().has_value())
     timing->user_timing_mark_fully_loaded = perf.UserTimingMarkFullyLoaded();

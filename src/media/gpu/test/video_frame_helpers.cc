@@ -431,8 +431,8 @@ scoped_refptr<VideoFrame> CreateGpuMemoryBufferVideoFrame(
   gpu::MailboxHolder dummy_mailbox[media::VideoFrame::kMaxPlanes];
   return media::VideoFrame::WrapExternalGpuMemoryBuffer(
       frame->visible_rect(), frame->natural_size(),
-      std::move(gpu_memory_buffer), dummy_mailbox,
-      base::DoNothing() /* mailbox_holder_release_cb_ */, frame->timestamp());
+      std::move(gpu_memory_buffer), dummy_mailbox, base::NullCallback(),
+      frame->timestamp());
 }
 
 scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {
@@ -479,7 +479,7 @@ absl::optional<VideoFrameLayout> CreateVideoFrameLayout(
         VideoFrame::RowBytes(i, pixel_format, dimension.width());
     const size_t rows = VideoFrame::Rows(i, pixel_format, dimension.height());
     const size_t plane_size = stride * rows;
-    const size_t aligned_size = base::bits::Align(plane_size, alignment);
+    const size_t aligned_size = base::bits::AlignUp(plane_size, alignment);
     planes[i].stride = stride;
     planes[i].offset = offset;
     planes[i].size = aligned_size;

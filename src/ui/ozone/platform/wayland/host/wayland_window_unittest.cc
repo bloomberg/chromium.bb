@@ -22,6 +22,7 @@
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/hit_test.h"
+#include "ui/display/display.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
@@ -42,6 +43,7 @@
 #include "ui/ozone/platform/wayland/test/test_touch.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
+#include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -60,6 +62,8 @@ using ::testing::Values;
 namespace ui {
 
 namespace {
+
+constexpr float kDefaultCursorScale = 1.f;
 
 struct PopupPosition {
   gfx::Rect anchor_rect;
@@ -442,7 +446,7 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
                                                kMaximizedBounds.height()));
   EXPECT_CALL(delegate_, OnActivationChanged(Eq(true)));
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kMaximizedBounds)));
-  EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(1);
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
   window_->Maximize();
   SendConfigureEvent(xdg_surface_, kMaximizedBounds.width(),
                      kMaximizedBounds.height(), ++serial,
@@ -473,7 +477,7 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
 
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kNormalBounds.width(),
                                                kNormalBounds.height()));
-  EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(1);
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
   EXPECT_CALL(delegate_, OnActivationChanged(_)).Times(0);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kNormalBounds)));
   EXPECT_CALL(*GetXdgToplevel(), UnsetMaximized());
@@ -493,7 +497,7 @@ TEST_P(WaylandWindowTest, Minimize) {
   Sync();
 
   EXPECT_CALL(*GetXdgToplevel(), SetMinimized());
-  EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(1);
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
   window_->Minimize();
   EXPECT_EQ(window_->GetPlatformWindowState(), PlatformWindowState::kMinimized);
 
@@ -514,7 +518,7 @@ TEST_P(WaylandWindowTest, Minimize) {
   //
   // TODO(tonikito): Improve filtering of delegate notification here.
   ui::PlatformWindowState state;
-  EXPECT_CALL(delegate_, OnWindowStateChanged(_))
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _))
       .WillRepeatedly(DoAll(SaveArg<0>(&state), InvokeWithoutArgs([&]() {
                               EXPECT_EQ(state, PlatformWindowState::kMinimized);
                             })));
@@ -537,7 +541,7 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
   AddStateToWlArray(XDG_TOPLEVEL_STATE_FULLSCREEN, states.get());
 
   EXPECT_CALL(*GetXdgToplevel(), SetFullscreen());
-  EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(1);
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
   window_->ToggleFullscreen();
   // Make sure than WaylandWindow manually handles fullscreen states. Check the
   // comment in the WaylandWindow::ToggleFullscreen.
@@ -547,7 +551,7 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
   Sync();
 
   EXPECT_CALL(*GetXdgToplevel(), UnsetFullscreen());
-  EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(1);
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
   window_->Restore();
   EXPECT_EQ(window_->GetPlatformWindowState(), PlatformWindowState::kNormal);
   // Reinitialize wl_array, which removes previous old states.
@@ -580,7 +584,7 @@ TEST_P(WaylandWindowTest, StartWithFullscreen) {
   auto* mock_surface = server_.GetObject<wl::MockSurface>(
       window->root_surface()->GetSurfaceId());
   EXPECT_FALSE(mock_surface->xdg_surface());
-  EXPECT_CALL(delegate, OnWindowStateChanged(_)).Times(0);
+  EXPECT_CALL(delegate, OnWindowStateChanged(_, _)).Times(0);
   window->ToggleFullscreen();
   // The state of the window must already be fullscreen one.
   EXPECT_EQ(window->GetPlatformWindowState(), PlatformWindowState::kFullScreen);
@@ -589,7 +593,7 @@ TEST_P(WaylandWindowTest, StartWithFullscreen) {
 
   // We mustn't receive any state changes if that does not differ from the last
   // state.
-  EXPECT_CALL(delegate, OnWindowStateChanged(_)).Times(0);
+  EXPECT_CALL(delegate, OnWindowStateChanged(_, _)).Times(0);
 
   // Activate the surface.
   ScopedWlArray states = InitializeWlArrayWithActivatedState();
@@ -624,7 +628,7 @@ TEST_P(WaylandWindowTest, StartMaximized) {
   auto* mock_surface = server_.GetObject<wl::MockSurface>(
       window->root_surface()->GetSurfaceId());
   EXPECT_FALSE(mock_surface->xdg_surface());
-  EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(1);
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
 
   window_->Maximize();
   // The state of the window must already be fullscreen one.
@@ -634,7 +638,7 @@ TEST_P(WaylandWindowTest, StartMaximized) {
 
   // Window show state should be already up to date, so delegate is not
   // notified.
-  EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(0);
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(0);
   EXPECT_EQ(window_->GetPlatformWindowState(), PlatformWindowState::kMaximized);
 
   // Activate the surface.
@@ -656,7 +660,7 @@ TEST_P(WaylandWindowTest, CompositorSideStateChanges) {
   SendConfigureEvent(xdg_surface_, 2000, 2000, 1, states.get());
 
   EXPECT_CALL(delegate_,
-              OnWindowStateChanged(Eq(PlatformWindowState::kMaximized)))
+              OnWindowStateChanged(_, Eq(PlatformWindowState::kMaximized)))
       .Times(1);
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, 2000, 2000));
 
@@ -668,7 +672,8 @@ TEST_P(WaylandWindowTest, CompositorSideStateChanges) {
   states = InitializeWlArrayWithActivatedState();
   SendConfigureEvent(xdg_surface_, 0, 0, 2, states.get());
 
-  EXPECT_CALL(delegate_, OnWindowStateChanged(Eq(PlatformWindowState::kNormal)))
+  EXPECT_CALL(delegate_,
+              OnWindowStateChanged(_, Eq(PlatformWindowState::kNormal)))
       .Times(1);
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, normal_bounds.width(),
                                                normal_bounds.height()));
@@ -679,7 +684,7 @@ TEST_P(WaylandWindowTest, CompositorSideStateChanges) {
   AddStateToWlArray(XDG_TOPLEVEL_STATE_FULLSCREEN, states.get());
   SendConfigureEvent(xdg_surface_, 2005, 2005, 3, states.get());
   EXPECT_CALL(delegate_,
-              OnWindowStateChanged(Eq(PlatformWindowState::kFullScreen)))
+              OnWindowStateChanged(_, Eq(PlatformWindowState::kFullScreen)))
       .Times(1);
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, 2005, 2005));
 
@@ -689,7 +694,8 @@ TEST_P(WaylandWindowTest, CompositorSideStateChanges) {
   states = InitializeWlArrayWithActivatedState();
   SendConfigureEvent(xdg_surface_, 0, 0, 4, states.get());
 
-  EXPECT_CALL(delegate_, OnWindowStateChanged(Eq(PlatformWindowState::kNormal)))
+  EXPECT_CALL(delegate_,
+              OnWindowStateChanged(_, Eq(PlatformWindowState::kNormal)))
       .Times(1);
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, normal_bounds.width(),
                                                normal_bounds.height()));
@@ -702,7 +708,7 @@ TEST_P(WaylandWindowTest, CompositorSideStateChanges) {
   SendConfigureEvent(xdg_surface_, 2000, 2000, 1, states.get());
 
   EXPECT_CALL(delegate_,
-              OnWindowStateChanged(Eq(PlatformWindowState::kMaximized)))
+              OnWindowStateChanged(_, Eq(PlatformWindowState::kMaximized)))
       .Times(1);
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, 2000, 2000));
 
@@ -712,7 +718,7 @@ TEST_P(WaylandWindowTest, CompositorSideStateChanges) {
   SendConfigureEvent(xdg_surface_, 2005, 2005, 1, states.get());
 
   EXPECT_CALL(delegate_,
-              OnWindowStateChanged(Eq(PlatformWindowState::kFullScreen)))
+              OnWindowStateChanged(_, Eq(PlatformWindowState::kFullScreen)))
       .Times(1);
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, 2005, 2005));
 
@@ -720,7 +726,8 @@ TEST_P(WaylandWindowTest, CompositorSideStateChanges) {
   states = InitializeWlArrayWithActivatedState();
   SendConfigureEvent(xdg_surface_, 0, 0, 4, states.get());
 
-  EXPECT_CALL(delegate_, OnWindowStateChanged(Eq(PlatformWindowState::kNormal)))
+  EXPECT_CALL(delegate_,
+              OnWindowStateChanged(_, Eq(PlatformWindowState::kNormal)))
       .Times(1);
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, normal_bounds.width(),
                                                normal_bounds.height()));
@@ -752,7 +759,7 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
                                                kMaximizedBounds.height()));
   EXPECT_CALL(delegate_, OnActivationChanged(Eq(true)));
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kMaximizedBounds)));
-  EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(1);
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
   window_->Maximize();
   // State changes are synchronous.
   EXPECT_EQ(PlatformWindowState::kMaximized, window_->GetPlatformWindowState());
@@ -768,7 +775,7 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kMaximizedBounds.width(),
                                                kMaximizedBounds.height()));
   EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(0);
-  EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(1);
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
   window_->ToggleFullscreen();
   // State changes are synchronous.
   EXPECT_EQ(PlatformWindowState::kFullScreen,
@@ -787,7 +794,7 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
                                                kNormalBounds.height()));
   EXPECT_CALL(*GetXdgToplevel(), UnsetFullscreen());
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kNormalBounds)));
-  EXPECT_CALL(delegate_, OnWindowStateChanged(_)).Times(1);
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
   window_->Restore();
   EXPECT_EQ(PlatformWindowState::kNormal, window_->GetPlatformWindowState());
   // Reinitialize wl_array, which removes previous old states.
@@ -1031,27 +1038,27 @@ TEST_P(WaylandWindowTest, SetCursorUsesZcrCursorShapesForCommonTypes) {
   // Verify some commonly-used cursors.
   EXPECT_CALL(*mock_cursor_shapes,
               SetCursorShape(ZCR_CURSOR_SHAPES_V1_CURSOR_SHAPE_TYPE_POINTER));
-  auto pointer_cursor =
-      base::MakeRefCounted<BitmapCursorOzone>(mojom::CursorType::kPointer);
+  auto pointer_cursor = base::MakeRefCounted<BitmapCursorOzone>(
+      mojom::CursorType::kPointer, kDefaultCursorScale);
   window_->SetCursor(pointer_cursor.get());
 
   EXPECT_CALL(*mock_cursor_shapes,
               SetCursorShape(ZCR_CURSOR_SHAPES_V1_CURSOR_SHAPE_TYPE_HAND));
-  auto hand_cursor =
-      base::MakeRefCounted<BitmapCursorOzone>(mojom::CursorType::kHand);
+  auto hand_cursor = base::MakeRefCounted<BitmapCursorOzone>(
+      mojom::CursorType::kHand, kDefaultCursorScale);
   window_->SetCursor(hand_cursor.get());
 
   EXPECT_CALL(*mock_cursor_shapes,
               SetCursorShape(ZCR_CURSOR_SHAPES_V1_CURSOR_SHAPE_TYPE_IBEAM));
-  auto ibeam_cursor =
-      base::MakeRefCounted<BitmapCursorOzone>(mojom::CursorType::kIBeam);
+  auto ibeam_cursor = base::MakeRefCounted<BitmapCursorOzone>(
+      mojom::CursorType::kIBeam, kDefaultCursorScale);
   window_->SetCursor(ibeam_cursor.get());
 }
 
 TEST_P(WaylandWindowTest, SetCursorCallsZcrCursorShapesOncePerCursor) {
   MockZcrCursorShapes* mock_cursor_shapes = InstallMockZcrCursorShapes();
-  auto hand_cursor =
-      base::MakeRefCounted<BitmapCursorOzone>(mojom::CursorType::kHand);
+  auto hand_cursor = base::MakeRefCounted<BitmapCursorOzone>(
+      mojom::CursorType::kHand, kDefaultCursorScale);
   // Setting the same cursor twice on the client only calls the server once.
   EXPECT_CALL(*mock_cursor_shapes, SetCursorShape(_)).Times(1);
   window_->SetCursor(hand_cursor.get());
@@ -1061,8 +1068,8 @@ TEST_P(WaylandWindowTest, SetCursorCallsZcrCursorShapesOncePerCursor) {
 TEST_P(WaylandWindowTest, SetCursorDoesNotUseZcrCursorShapesForNoneCursor) {
   MockZcrCursorShapes* mock_cursor_shapes = InstallMockZcrCursorShapes();
   EXPECT_CALL(*mock_cursor_shapes, SetCursorShape(_)).Times(0);
-  auto none_cursor =
-      base::MakeRefCounted<BitmapCursorOzone>(mojom::CursorType::kNone);
+  auto none_cursor = base::MakeRefCounted<BitmapCursorOzone>(
+      mojom::CursorType::kNone, kDefaultCursorScale);
   window_->SetCursor(none_cursor.get());
 }
 
@@ -1072,7 +1079,8 @@ TEST_P(WaylandWindowTest, SetCursorDoesNotUseZcrCursorShapesForCustomCursors) {
   // Custom cursors require bitmaps, so they do not use server-side cursors.
   EXPECT_CALL(*mock_cursor_shapes, SetCursorShape(_)).Times(0);
   auto custom_cursor = base::MakeRefCounted<BitmapCursorOzone>(
-      mojom::CursorType::kCustom, SkBitmap(), gfx::Point());
+      mojom::CursorType::kCustom, SkBitmap(), gfx::Point(),
+      kDefaultCursorScale);
   window_->SetCursor(custom_cursor.get());
 }
 
@@ -1161,6 +1169,8 @@ TEST_P(WaylandWindowTest, OnAcceleratedWidgetDestroy) {
 
 TEST_P(WaylandWindowTest, CanCreateMenuWindow) {
   MockPlatformWindowDelegate menu_window_delegate;
+  EXPECT_CALL(menu_window_delegate, GetMenuType())
+      .WillRepeatedly(Return(MenuType::kRootContextMenu));
 
   // SetPointerFocus(true) requires a WaylandPointer.
   wl_seat_send_capabilities(
@@ -1204,6 +1214,8 @@ TEST_P(WaylandWindowTest, CreateAndDestroyNestedMenuWindow) {
   gfx::AcceleratedWidget menu_window_widget;
   EXPECT_CALL(menu_window_delegate, OnAcceleratedWidgetAvailable(_))
       .WillOnce(SaveArg<0>(&menu_window_widget));
+  EXPECT_CALL(menu_window_delegate, GetMenuType())
+      .WillRepeatedly(Return(MenuType::kRootContextMenu));
 
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
       PlatformWindowType::kMenu, widget_, gfx::Rect(0, 0, 10, 10),
@@ -1225,6 +1237,8 @@ TEST_P(WaylandWindowTest, CreateAndDestroyNestedMenuWindow) {
 
 TEST_P(WaylandWindowTest, DispatchesLocatedEventsToCapturedWindow) {
   MockPlatformWindowDelegate menu_window_delegate;
+  EXPECT_CALL(menu_window_delegate, GetMenuType())
+      .WillOnce(Return(MenuType::kRootContextMenu));
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
       PlatformWindowType::kMenu, widget_, gfx::Rect(10, 10, 10, 10),
       &menu_window_delegate);
@@ -1295,6 +1309,8 @@ TEST_P(WaylandWindowTest, DispatchesLocatedEventsToCapturedWindow) {
   // If nested menu window is added, the events are still correctly translated
   // to the captured window.
   MockPlatformWindowDelegate nested_menu_window_delegate;
+  EXPECT_CALL(nested_menu_window_delegate, GetMenuType())
+      .WillOnce(Return(MenuType::kRootContextMenu));
   std::unique_ptr<WaylandWindow> nested_menu_window =
       CreateWaylandWindowWithParams(
           PlatformWindowType::kMenu, menu_window->GetWidget(),
@@ -1337,6 +1353,8 @@ TEST_P(WaylandWindowTest, DispatchesLocatedEventsToCapturedWindow) {
 TEST_P(WaylandWindowTest,
        DispatchesLocatedEventsToCapturedWindowInTheSameStack) {
   MockPlatformWindowDelegate menu_window_delegate;
+  EXPECT_CALL(menu_window_delegate, GetMenuType())
+      .WillOnce(Return(MenuType::kRootContextMenu));
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
       PlatformWindowType::kMenu, widget_, gfx::Rect(30, 40, 20, 50),
       &menu_window_delegate);
@@ -1408,6 +1426,8 @@ TEST_P(WaylandWindowTest,
 
 TEST_P(WaylandWindowTest, DispatchesKeyboardEventToToplevelWindow) {
   MockPlatformWindowDelegate menu_window_delegate;
+  EXPECT_CALL(menu_window_delegate, GetMenuType())
+      .WillOnce(Return(MenuType::kRootContextMenu));
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
       PlatformWindowType::kMenu, widget_, gfx::Rect(10, 10, 10, 10),
       &menu_window_delegate);
@@ -1458,6 +1478,8 @@ TEST_P(WaylandWindowTest, CanDispatchEvent) {
   gfx::AcceleratedWidget menu_window_widget;
   EXPECT_CALL(menu_window_delegate, OnAcceleratedWidgetAvailable(_))
       .WillOnce(SaveArg<0>(&menu_window_widget));
+  EXPECT_CALL(menu_window_delegate, GetMenuType())
+      .WillOnce(Return(MenuType::kRootContextMenu));
 
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
       PlatformWindowType::kMenu, widget_, gfx::Rect(0, 0, 10, 10),
@@ -1467,6 +1489,8 @@ TEST_P(WaylandWindowTest, CanDispatchEvent) {
   Sync();
 
   MockPlatformWindowDelegate nested_menu_window_delegate;
+  EXPECT_CALL(nested_menu_window_delegate, GetMenuType())
+      .WillOnce(Return(MenuType::kRootContextMenu));
   std::unique_ptr<WaylandWindow> nested_menu_window =
       CreateWaylandWindowWithParams(
           PlatformWindowType::kMenu, menu_window_widget,
@@ -1596,11 +1620,11 @@ TEST_P(WaylandWindowTest, DispatchWindowResize) {
   }
 }
 
-TEST_P(WaylandWindowTest, ToplevelWindowUpdateBufferScale) {
+TEST_P(WaylandWindowTest, ToplevelWindowUpdateWindowScale) {
   VerifyAndClearExpectations();
 
-  // Buffer scale must be 1 when no output has been entered by the window.
-  EXPECT_EQ(1, window_->buffer_scale());
+  // Surface scale must be 1 when no output has been entered by the window.
+  EXPECT_EQ(1, window_->window_scale());
 
   // Creating an output with scale 1.
   wl::TestOutput* output1 = server_.CreateAndInitializeOutput();
@@ -1622,7 +1646,7 @@ TEST_P(WaylandWindowTest, ToplevelWindowUpdateBufferScale) {
   Sync();
 
   // The window's scale and bounds must remain unchanged.
-  EXPECT_EQ(1, window_->buffer_scale());
+  EXPECT_EQ(1, window_->window_scale());
   EXPECT_EQ(gfx::Rect(0, 0, 800, 600), window_->GetBounds());
 
   // Simulating drag process from |output1| to |output2|.
@@ -1631,11 +1655,11 @@ TEST_P(WaylandWindowTest, ToplevelWindowUpdateBufferScale) {
   Sync();
 
   // The window must change its scale and bounds to keep DIP bounds the same.
-  EXPECT_EQ(2, window_->buffer_scale());
+  EXPECT_EQ(2, window_->window_scale());
   EXPECT_EQ(gfx::Rect(0, 0, 1600, 1200), window_->GetBounds());
 }
 
-TEST_P(WaylandWindowTest, WaylandPopupBufferScale) {
+TEST_P(WaylandWindowTest, WaylandPopupSurfaceScale) {
   VerifyAndClearExpectations();
 
   // Creating an output with scale 1.
@@ -1670,8 +1694,8 @@ TEST_P(WaylandWindowTest, WaylandPopupBufferScale) {
 
     // the wayland_popup window should inherit its buffer scale from the focused
     // window.
-    EXPECT_EQ(1, window_->buffer_scale());
-    EXPECT_EQ(window_->buffer_scale(), wayland_popup->buffer_scale());
+    EXPECT_EQ(1, window_->window_scale());
+    EXPECT_EQ(window_->window_scale(), wayland_popup->window_scale());
     EXPECT_EQ(wayland_popup_bounds, wayland_popup->GetBounds());
     wayland_popup->Hide();
 
@@ -1680,16 +1704,16 @@ TEST_P(WaylandWindowTest, WaylandPopupBufferScale) {
     wl_surface_send_leave(surface->resource(), output1->resource());
     Sync();
 
-    EXPECT_EQ(2, window_->buffer_scale());
+    EXPECT_EQ(2, window_->window_scale());
     wayland_popup->Show(false);
 
     Sync();
 
     // |wayland_popup|'s scale and bounds must change whenever its parents
     // scale is changed.
-    EXPECT_EQ(window_->buffer_scale(), wayland_popup->buffer_scale());
+    EXPECT_EQ(window_->window_scale(), wayland_popup->window_scale());
     EXPECT_EQ(gfx::ScaleToRoundedRect(wayland_popup_bounds,
-                                      wayland_popup->buffer_scale()),
+                                      wayland_popup->window_scale()),
               wayland_popup->GetBounds());
 
     wayland_popup->Hide();
@@ -1775,6 +1799,64 @@ TEST_P(WaylandWindowTest, WaylandPopupInitialBufferScale) {
   }
 }
 
+// Same as above except that it verifies that the bounds are also translated if
+// forced scale factor is set.
+TEST_P(WaylandWindowTest, WaylandPopupInitialBufferScaleForcedScale) {
+  VerifyAndClearExpectations();
+
+  display::Display::SetForceDeviceScaleFactor(1.2);
+
+  // Creating an output with scale 1.
+  wl::TestOutput* main_output = server_.CreateAndInitializeOutput();
+  main_output->SetRect(gfx::Rect(0, 0, 1920, 1080));
+  main_output->SetScale(1);
+  Sync();
+
+  // Creating an output with scale 2.
+  wl::TestOutput* secondary_output = server_.CreateAndInitializeOutput();
+  secondary_output->SetRect(gfx::Rect(1921, 0, 1920, 1080));
+  secondary_output->SetScale(2);
+  Sync();
+
+  // Send the window to |output1|.
+  wl::MockSurface* surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
+  ASSERT_TRUE(surface);
+
+  wl_surface_send_enter(surface->resource(), secondary_output->resource());
+  Sync();
+
+  gfx::Rect bounds_dip(15, 15, 10, 10);
+  // DesktopWindowTreeHostPlatform has always to use a primary display's
+  // scale to translate initial bounds to pixels. However, the primary display
+  // will use forced device scale factor and ignore wl_output's scale. Thus, use
+  // primary output's scale to make initial bounds. This code snippet is a copy
+  // of DesktopWindowTreeHostPlatform::ToPixelRect.
+  gfx::Transform transform;
+  transform.Scale(display::Display::GetForcedDeviceScaleFactor(),
+                  display::Display::GetForcedDeviceScaleFactor());
+  gfx::RectF rect_in_pixels = gfx::RectF(bounds_dip);
+  transform.TransformRect(&rect_in_pixels);
+  gfx::Rect wayland_popup_bounds = gfx::ToEnclosingRect(rect_in_pixels);
+
+  std::unique_ptr<WaylandWindow> wayland_popup = CreateWaylandWindowWithParams(
+      PlatformWindowType::kMenu, window_->GetWidget(), wayland_popup_bounds,
+      &delegate_);
+  EXPECT_TRUE(wayland_popup);
+
+  wayland_popup->Show(false);
+
+  gfx::Rect expected_bounds = gfx::ScaleToRoundedRect(
+      wayland_popup_bounds,
+      1.f / display::Display::GetForcedDeviceScaleFactor());
+  expected_bounds = gfx::ScaleToRoundedRect(expected_bounds,
+                                            2 /*secondary display's scale */);
+
+  EXPECT_EQ(expected_bounds, wayland_popup->GetBounds());
+  wl_surface_send_leave(surface->resource(), secondary_output->resource());
+  Sync();
+}
+
 // Tests that a WaylandWindow uses the entered output with largest scale
 // factor as the preferred output. If scale factors are equal, the very first
 // entered display is used.
@@ -1782,7 +1864,7 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
   VerifyAndClearExpectations();
 
   // Buffer scale must be 1 when no output has been entered by the window.
-  EXPECT_EQ(1, window_->buffer_scale());
+  EXPECT_EQ(1, window_->window_scale());
 
   // Creating an output with scale 1.
   wl::TestOutput* output1 = server_.CreateAndInitializeOutput();
@@ -1794,7 +1876,7 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
   output2->SetRect(gfx::Rect(1921, 0, 1920, 1080));
   Sync();
 
-  auto entered_outputs = window_->entered_outputs();
+  auto entered_outputs = window_->root_surface()->entered_outputs();
   EXPECT_EQ(0u, entered_outputs.size());
 
   // Send the window to |output1|.
@@ -1806,7 +1888,7 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
   Sync();
 
   // The window entered two outputs.
-  entered_outputs = window_->entered_outputs();
+  entered_outputs = window_->root_surface()->entered_outputs();
   EXPECT_EQ(2u, entered_outputs.size());
 
   // The window must prefer the output that it entered first.
@@ -1824,7 +1906,7 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
   Sync();
 
   // The window entered three outputs...
-  entered_outputs = window_->entered_outputs();
+  entered_outputs = window_->root_surface()->entered_outputs();
   EXPECT_EQ(3u, entered_outputs.size());
 
   // but it still must prefer the output that it entered first.
@@ -1836,7 +1918,7 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
   output2->Flush();
   Sync();
 
-  entered_outputs = window_->entered_outputs();
+  entered_outputs = window_->root_surface()->entered_outputs();
   EXPECT_EQ(3u, entered_outputs.size());
 
   // It must be the second entered output now.
@@ -1853,7 +1935,7 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
   Sync();
 
   // It must be the very first output now.
-  entered_outputs = window_->entered_outputs();
+  entered_outputs = window_->root_surface()->entered_outputs();
   expected_entered_output = *entered_outputs.begin();
   EXPECT_EQ(expected_entered_output->output_id(),
             window_->GetPreferredEnteredOutputId());
@@ -1864,7 +1946,7 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
   Sync();
 
   // It must be the very the second output now.
-  entered_outputs = window_->entered_outputs();
+  entered_outputs = window_->root_surface()->entered_outputs();
   expected_entered_output = *(++entered_outputs.begin());
   EXPECT_EQ(expected_entered_output->output_id(),
             window_->GetPreferredEnteredOutputId());
@@ -1875,7 +1957,7 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
   output2->Flush();
   Sync();
 
-  entered_outputs = window_->entered_outputs();
+  entered_outputs = window_->root_surface()->entered_outputs();
   expected_entered_output = *(entered_outputs.begin());
   EXPECT_EQ(expected_entered_output->output_id(),
             window_->GetPreferredEnteredOutputId());
@@ -1885,7 +1967,7 @@ TEST_P(WaylandWindowTest, GetChildrenPreferredOutput) {
   VerifyAndClearExpectations();
 
   // Buffer scale must be 1 when no output has been entered by the window.
-  EXPECT_EQ(1, window_->buffer_scale());
+  EXPECT_EQ(1, window_->window_scale());
 
   MockPlatformWindowDelegate menu_window_delegate;
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
@@ -1906,10 +1988,10 @@ TEST_P(WaylandWindowTest, GetChildrenPreferredOutput) {
   output2->SetRect(gfx::Rect(1921, 0, 1920, 1080));
   Sync();
 
-  auto entered_outputs = window_->entered_outputs();
+  auto entered_outputs = window_->root_surface()->entered_outputs();
   EXPECT_EQ(0u, entered_outputs.size());
 
-  auto menu_entered_outputs = menu_window->entered_outputs();
+  auto menu_entered_outputs = menu_window->root_surface()->entered_outputs();
   EXPECT_EQ(0u, menu_entered_outputs.size());
 
   // Enter |output1|.
@@ -1920,26 +2002,26 @@ TEST_P(WaylandWindowTest, GetChildrenPreferredOutput) {
   Sync();
 
   // The window entered the output.
-  entered_outputs = window_->entered_outputs();
+  entered_outputs = window_->root_surface()->entered_outputs();
   EXPECT_EQ(1u, entered_outputs.size());
 
-  // The menu also things it entered the same output.
-  menu_entered_outputs = menu_window->entered_outputs();
+  // The menu also thinks it entered the same output.
+  menu_entered_outputs = menu_window->root_surface()->entered_outputs();
   EXPECT_EQ(0u, menu_entered_outputs.size());
 
   EXPECT_EQ(window_->GetPreferredEnteredOutputId(),
             menu_window->GetPreferredEnteredOutputId());
 
   // Pretend Wayland sends that menu entered output2, while the toplevel is on
-  // output1. Output1 must still be preferred by the menu.
+  // output1.  Output1 must still be preferred by the menu.
   wl::MockSurface* menu_surface = server_.GetObject<wl::MockSurface>(
       menu_window->root_surface()->GetSurfaceId());
   wl_surface_send_enter(menu_surface->resource(), output1->resource());
   Sync();
 
-  // Nothing should have been changed here.
-  EXPECT_EQ(1u, window_->entered_outputs().size());
-  EXPECT_EQ(0u, menu_window->entered_outputs().size());
+  // The menu surface should be aware of the output that Wayland sent it.
+  EXPECT_EQ(1u, window_->root_surface()->entered_outputs().size());
+  EXPECT_EQ(1u, menu_window->root_surface()->entered_outputs().size());
 
   EXPECT_EQ(window_->GetPreferredEnteredOutputId(),
             menu_window->GetPreferredEnteredOutputId());
@@ -1948,8 +2030,8 @@ TEST_P(WaylandWindowTest, GetChildrenPreferredOutput) {
   wl_surface_send_enter(surface->resource(), output1->resource());
   Sync();
 
-  EXPECT_EQ(2u, window_->entered_outputs().size());
-  EXPECT_EQ(0u, menu_window->entered_outputs().size());
+  EXPECT_EQ(2u, window_->root_surface()->entered_outputs().size());
+  EXPECT_EQ(1u, menu_window->root_surface()->entered_outputs().size());
 
   EXPECT_EQ(window_->GetPreferredEnteredOutputId(),
             menu_window->GetPreferredEnteredOutputId());
@@ -1960,7 +2042,7 @@ TEST_P(WaylandWindowTest, GetChildrenPreferredOutput) {
   Sync();
 
   // It must be the very the second output now.
-  entered_outputs = window_->entered_outputs();
+  entered_outputs = window_->root_surface()->entered_outputs();
   auto* expected_entered_output = *(++entered_outputs.begin());
   EXPECT_EQ(expected_entered_output->output_id(),
             window_->GetPreferredEnteredOutputId());
@@ -2010,6 +2092,8 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
 
   // Case 1: the top menu window is positioned normally.
   MockPlatformWindowDelegate menu_window_delegate;
+  EXPECT_CALL(menu_window_delegate, GetMenuType())
+      .WillOnce(Return(MenuType::kRootMenu));
   gfx::Rect menu_window_bounds(gfx::Point(440, 76),
                                menu_window_positioner.size);
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
@@ -2030,6 +2114,8 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
 
   // Case 2: the nested menu window is positioned normally.
   MockPlatformWindowDelegate nested_menu_window_delegate;
+  EXPECT_CALL(nested_menu_window_delegate, GetMenuType())
+      .WillRepeatedly(Return(MenuType::kChildMenu));
   gfx::Rect nested_menu_window_bounds(gfx::Point(723, 156),
                                       nested_menu_window_positioner.size);
   std::unique_ptr<WaylandWindow> nested_menu_window =
@@ -2198,6 +2284,8 @@ TEST_P(WaylandWindowTest, OnCloseRequest) {
 TEST_P(WaylandWindowTest, WaylandPopupSimpleParent) {
   VerifyAndClearExpectations();
 
+  EXPECT_CALL(delegate_, GetMenuType())
+      .WillRepeatedly(Return(MenuType::kRootContextMenu));
   // WaylandPopup must ignore the parent provided by aura and should always
   // use focused window instead.
   gfx::Rect wayland_popup_bounds(gfx::Point(15, 15), gfx::Size(10, 10));
@@ -2229,6 +2317,7 @@ TEST_P(WaylandWindowTest, WaylandPopupSimpleParent) {
 TEST_P(WaylandWindowTest, NestedMenuWindows) {
   VerifyAndClearExpectations();
 
+  EXPECT_CALL(delegate_, GetMenuType()).WillOnce(Return(MenuType::kRootMenu));
   gfx::Rect menu_window_bounds(gfx::Rect(4, 20, 8, 20));
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
       PlatformWindowType::kMenu, window_->GetWidget(), menu_window_bounds,
@@ -2237,6 +2326,7 @@ TEST_P(WaylandWindowTest, NestedMenuWindows) {
 
   VerifyAndClearExpectations();
 
+  EXPECT_CALL(delegate_, GetMenuType()).WillOnce(Return(MenuType::kChildMenu));
   gfx::Rect nested_menu_bounds(gfx::Rect(10, 30, 40, 20));
   std::unique_ptr<WaylandWindow> nested_menu_window =
       CreateWaylandWindowWithParams(PlatformWindowType::kMenu,
@@ -2266,6 +2356,8 @@ TEST_P(WaylandWindowTest, NestedMenuWindows) {
 TEST_P(WaylandWindowTest, NestedMenuWindows1) {
   VerifyAndClearExpectations();
 
+  EXPECT_CALL(delegate_, GetMenuType())
+      .WillRepeatedly(Return(MenuType::kRootContextMenu));
   gfx::Rect menu_window_bounds(gfx::Rect(6, 20, 8, 20));
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
       PlatformWindowType::kMenu, window_->GetWidget(), menu_window_bounds,
@@ -2303,6 +2395,7 @@ TEST_P(WaylandWindowTest, NestedMenuWindows1) {
 TEST_P(WaylandWindowTest, NestedMenuWindows2) {
   VerifyAndClearExpectations();
 
+  EXPECT_CALL(delegate_, GetMenuType()).WillOnce(Return(MenuType::kRootMenu));
   gfx::Rect menu_window_bounds(gfx::Rect(10, 20, 40, 20));
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
       PlatformWindowType::kMenu, window_->GetWidget(), menu_window_bounds,
@@ -2311,6 +2404,7 @@ TEST_P(WaylandWindowTest, NestedMenuWindows2) {
 
   VerifyAndClearExpectations();
 
+  EXPECT_CALL(delegate_, GetMenuType()).WillOnce(Return(MenuType::kChildMenu));
   gfx::Rect nested_menu_bounds(gfx::Rect(5, 30, 21, 20));
   std::unique_ptr<WaylandWindow> nested_menu_window =
       CreateWaylandWindowWithParams(PlatformWindowType::kMenu,
@@ -2340,6 +2434,8 @@ TEST_P(WaylandWindowTest, NestedMenuWindows2) {
 TEST_P(WaylandWindowTest, NestedMenuWindows3) {
   VerifyAndClearExpectations();
 
+  EXPECT_CALL(delegate_, GetMenuType())
+      .WillRepeatedly(Return(MenuType::kRootContextMenu));
   gfx::Rect menu_window_bounds(gfx::Rect(10, 20, 20, 20));
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
       PlatformWindowType::kMenu, window_->GetWidget(), menu_window_bounds,
@@ -2477,6 +2573,8 @@ TEST_P(WaylandWindowTest, DestroysCreatesSurfaceOnHideShow) {
 
 TEST_P(WaylandWindowTest, DestroysCreatesPopupsOnHideShow) {
   MockPlatformWindowDelegate delegate;
+  EXPECT_CALL(delegate, GetMenuType())
+      .WillRepeatedly(Return(MenuType::kRootContextMenu));
   auto window = CreateWaylandWindowWithParams(
       PlatformWindowType::kMenu, window_->GetWidget(), gfx::Rect(0, 0, 50, 50),
       &delegate);
@@ -2688,6 +2786,8 @@ TEST_P(WaylandWindowTest, CreatesPopupOnButtonPressSerial) {
 
   // Create a popup window and verify the client used correct serial.
   MockPlatformWindowDelegate delegate;
+  EXPECT_CALL(delegate, GetMenuType())
+      .WillOnce(Return(MenuType::kRootContextMenu));
   auto popup = CreateWaylandWindowWithParams(
       PlatformWindowType::kMenu, window_->GetWidget(), gfx::Rect(0, 0, 50, 50),
       &delegate);
@@ -2732,6 +2832,8 @@ TEST_P(WaylandWindowTest, CreatesPopupOnTouchDownSerial) {
 
   // Create a popup window and verify the client used correct serial.
   MockPlatformWindowDelegate delegate;
+  EXPECT_CALL(delegate, GetMenuType())
+      .WillRepeatedly(Return(MenuType::kRootContextMenu));
   auto popup = CreateWaylandWindowWithParams(
       PlatformWindowType::kMenu, window_->GetWidget(), gfx::Rect(0, 0, 50, 50),
       &delegate);
@@ -2807,6 +2909,8 @@ TEST_P(WaylandWindowTest, NestedPopupWindowsGetCorrectParent) {
 TEST_P(WaylandWindowTest, DoesNotGrabPopupIfNoSeat) {
   // Create a popup window and verify the grab serial is not set.
   MockPlatformWindowDelegate delegate;
+  EXPECT_CALL(delegate, GetMenuType())
+      .WillOnce(Return(MenuType::kRootContextMenu));
   auto popup = CreateWaylandWindowWithParams(
       PlatformWindowType::kMenu, window_->GetWidget(), gfx::Rect(0, 0, 50, 50),
       &delegate);
@@ -2841,9 +2945,9 @@ TEST_P(WaylandWindowTest, OneWaylandSubsurface) {
   auto* mock_surface_subsurface = server_.GetObject<wl::MockSurface>(
       wayland_subsurface->wayland_surface()->GetSurfaceId());
   EXPECT_TRUE(mock_surface_subsurface);
-  wayland_subsurface->ConfigureAndShowSurface(gfx::OVERLAY_TRANSFORM_NONE,
-                                              gfx::RectF(), subsurface_bounds,
-                                              true, nullptr, nullptr);
+  wayland_subsurface->ConfigureAndShowSurface(
+      gfx::OVERLAY_TRANSFORM_NONE, subsurface_bounds, 1 /*buffer_scale*/, true,
+      nullptr, nullptr);
   connection_->ScheduleFlush();
 
   Sync();

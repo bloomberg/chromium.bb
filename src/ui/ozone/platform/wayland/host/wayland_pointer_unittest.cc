@@ -276,36 +276,55 @@ TEST_P(WaylandPointerTest, SetBitmap) {
   Mock::VerifyAndClearExpectations(pointer_);
 }
 
-TEST_P(WaylandPointerTest, SetBitmapOnPointerFocus) {
-  SkBitmap dummy_cursor;
-  SkImageInfo info =
-      SkImageInfo::Make(10, 10, SkColorType::kBGRA_8888_SkColorType,
-                        SkAlphaType::kPremul_SkAlphaType);
-  dummy_cursor.allocPixels(info, 10 * 4);
+// Tests that bitmap is set on pointer focus and the pointer surface respects
+// provided scale of the surface image.
+TEST_P(WaylandPointerTest, SetBitmapAndScaleOnPointerFocus) {
+  for (int32_t scale = 1; scale < 5; scale++) {
+    gfx::Size size = {10 * scale, 10 * scale};
+    SkBitmap dummy_cursor;
+    SkImageInfo info = SkImageInfo::Make(size.width(), size.height(),
+                                         SkColorType::kBGRA_8888_SkColorType,
+                                         SkAlphaType::kPremul_SkAlphaType);
+    dummy_cursor.allocPixels(info, size.width() * 4);
 
-  BitmapCursorFactoryOzone cursor_factory;
-  auto cursor = cursor_factory.CreateImageCursor(
-      mojom::CursorType::kCustom, dummy_cursor, gfx::Point(5, 8));
+    BitmapCursorFactoryOzone cursor_factory;
+    cursor_factory.SetDeviceScaleFactor(scale);
+    auto cursor = cursor_factory.CreateImageCursor(
+        mojom::CursorType::kCustom, dummy_cursor, gfx::Point(5, 8));
 
-  EXPECT_CALL(*pointer_, SetCursor(Ne(nullptr), 5, 8));
-  window_->SetCursor(cursor);
-  connection_->ScheduleFlush();
+    // Set a cursor.
+    wl_resource* surface_resource = nullptr;
+    EXPECT_CALL(*pointer_, SetCursor(Ne(nullptr), 5, 8))
+        .WillOnce(SaveArg<0>(&surface_resource));
+    window_->SetCursor(cursor);
+    connection_->ScheduleFlush();
 
-  Sync();
+    Sync();
+    Mock::VerifyAndClearExpectations(pointer_);
 
-  Mock::VerifyAndClearExpectations(pointer_);
+    ASSERT_TRUE(surface_resource);
+    auto* mock_pointer_surface =
+        wl::MockSurface::FromResource(surface_resource);
+    EXPECT_EQ(mock_pointer_surface->buffer_scale(), scale);
 
-  EXPECT_CALL(*pointer_, SetCursor(Ne(nullptr), 5, 8));
-  wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(),
-                        wl_fixed_from_int(50), wl_fixed_from_int(75));
+    // Update the focus.
+    EXPECT_CALL(*pointer_, SetCursor(Ne(nullptr), 5, 8));
+    wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(),
+                          wl_fixed_from_int(50), wl_fixed_from_int(75));
+    Sync();
 
-  Sync();
+    connection_->ScheduleFlush();
 
-  connection_->ScheduleFlush();
+    Sync();
+    Mock::VerifyAndClearExpectations(pointer_);
 
-  Sync();
-
-  Mock::VerifyAndClearExpectations(pointer_);
+    // Reset the focus for the next iteration.
+    wl_pointer_send_leave(pointer_->resource(), 1, surface_->resource());
+    Sync();
+    connection_->ScheduleFlush();
+    Sync();
+    Mock::VerifyAndClearExpectations(pointer_);
+  }
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

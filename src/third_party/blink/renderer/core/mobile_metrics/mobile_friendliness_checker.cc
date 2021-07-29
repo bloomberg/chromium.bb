@@ -18,13 +18,13 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "ui/display/screen_info.h"
 
 namespace blink {
 
 using mojom::blink::ViewportStatus;
 static constexpr int kSmallFontThreshold = 9;
-const base::Feature kBadTapTargetsRatio{"BadTapTargetsRatio",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
 static constexpr int kTimeBudgetExceeded = -2;
 
 // Finding bad tap targets may takes too time for big page and should abort if
@@ -36,7 +36,6 @@ MobileFriendlinessChecker::MobileFriendlinessChecker(LocalFrameView& frame_view)
     : frame_view_(&frame_view),
       font_size_check_enabled_(frame_view_->GetFrame().GetWidgetForLocalRoot()),
       tap_target_check_enabled_(
-          base::FeatureList::IsEnabled(kBadTapTargetsRatio) &&
           frame_view_->GetFrame().GetWidgetForLocalRoot()),
       viewport_scalar_(
           font_size_check_enabled_
@@ -171,13 +170,14 @@ int ExtractAndCountAllTapTargets(
         object = object->NextInPreOrder();
         continue;
       }
-      const int top = rect.Y() - finger_radius;
-      const int bottom = rect.MaxY() + finger_radius;
-      const int left = rect.X() - finger_radius;
-      const int right = rect.MaxX() + finger_radius;
-      const int center = (left + right) / 2;
+      const int top = clampTo<int>(rect.Y() - finger_radius);
+      const int bottom = clampTo<int>(rect.MaxY() + finger_radius);
+      const int left = clampTo<int>(rect.X() - finger_radius);
+      const int right = clampTo<int>(rect.MaxX() + finger_radius);
+      const int center = left + (right - left) / 2;
       vertices.emplace_back(top, EdgeOrCenter::StartEdge(left, right));
-      vertices.emplace_back((top + bottom) / 2, EdgeOrCenter::Center(center));
+      vertices.emplace_back(top + (bottom - top) / 2,
+                            EdgeOrCenter::Center(center));
       vertices.emplace_back(bottom, EdgeOrCenter::EndEdge(left, right));
       x_positions.push_back(left);
       x_positions.push_back(right);
@@ -322,9 +322,10 @@ void MobileFriendlinessChecker::ComputeBadTapTargetsRatio() {
   }
 }
 
-void MobileFriendlinessChecker::NotifyDocumentUnload() {
+void MobileFriendlinessChecker::EvaluateNow() {
   // If detached, there's no need to calculate any metrics.
-  if (!frame_view_->GetChromeClient())
+  // Or if this is before FCP, there's nothing to evaluate.
+  if (!frame_view_->GetChromeClient() || !fcp_detected_)
     return;
 
   if (tap_target_check_enabled_)
@@ -340,8 +341,7 @@ void MobileFriendlinessChecker::NotifyDocumentUnload() {
   mobile_friendliness_.text_content_outside_viewport_percentage = std::max(
       0, mobile_friendliness_.text_content_outside_viewport_percentage);
 
-  if (fcp_detected_)
-    frame_view_->DidChangeMobileFriendliness(mobile_friendliness_);
+  frame_view_->DidChangeMobileFriendliness(mobile_friendliness_);
 }
 
 void MobileFriendlinessChecker::NotifyViewportUpdated(
@@ -362,6 +362,9 @@ void MobileFriendlinessChecker::NotifyViewportUpdated(
       if (viewport.max_width.IsFixed()) {
         mobile_friendliness_.viewport_hardcoded_width =
             viewport.max_width.GetFloatValue();
+        // Convert value from Blink space to device-independent pixels.
+        if (viewport_scalar_ != 0)
+          mobile_friendliness_.viewport_hardcoded_width /= viewport_scalar_;
       }
       if (viewport.zoom_is_explicit) {
         mobile_friendliness_.viewport_initial_scale_x10 =
@@ -431,9 +434,6 @@ bool CheckParentHasOverflowXHidden(const LayoutObject* obj) {
 
 void MobileFriendlinessChecker::ComputeTextContentOutsideViewport(
     const LayoutObject& object) {
-  if (!frame_view_->GetFrame().IsMainFrame())
-    return;
-
   int frame_width = frame_view_->GetPage()->GetVisualViewport().Size().Width();
   if (frame_width == 0) {
     return;

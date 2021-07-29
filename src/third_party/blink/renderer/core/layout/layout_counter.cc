@@ -26,8 +26,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/clamped_math.h"
 #include "third_party/blink/renderer/core/css/counter_style.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/html/html_olist_element.h"
@@ -35,7 +37,6 @@
 #include "third_party/blink/renderer/core/layout/counter_node.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/list_marker_text.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -483,14 +484,10 @@ CounterNode* MakeCounterNodeIfNeeded(LayoutObject& object,
 }
 
 String GenerateCounterText(const CounterStyle* counter_style,
-                           EListStyleType deprecated_list_style_type,
                            int value) {
-  if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
-    if (!counter_style)
-      return g_empty_string;
-    return counter_style->GenerateRepresentation(value);
-  }
-  return list_marker_text::GetText(deprecated_list_style_type, value);
+  if (!counter_style)
+    return g_empty_string;
+  return counter_style->GenerateRepresentation(value);
 }
 
 }  // namespace
@@ -598,20 +595,15 @@ scoped_refptr<StringImpl> LayoutCounter::OriginalText() const {
 
   int value = ValueForText(child);
   const CounterStyle* counter_style = nullptr;
-  EListStyleType list_style = EListStyleType::kNone;
-  if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
-    // Note: CSS3 spec doesn't allow 'none' but CSS2.1 allows it. We currently
-    // allow it for backward compatibility.
-    // See https://github.com/w3c/csswg-drafts/issues/5795 for details.
-    if (counter_->ListStyle() != "none") {
-      counter_style =
-          &GetDocument().GetStyleEngine().FindCounterStyleAcrossScopes(
-              counter_->ListStyle(), counter_->GetTreeScope());
-    }
-  } else {
-    list_style = counter_->ToDeprecatedListStyleTypeEnum();
+  // Note: CSS3 spec doesn't allow 'none' but CSS2.1 allows it. We currently
+  // allow it for backward compatibility.
+  // See https://github.com/w3c/csswg-drafts/issues/5795 for details.
+  if (counter_->ListStyle() != "none") {
+    counter_style =
+        &GetDocument().GetStyleEngine().FindCounterStyleAcrossScopes(
+            counter_->ListStyle(), counter_->GetTreeScope());
   }
-  String text = GenerateCounterText(counter_style, list_style, value);
+  String text = GenerateCounterText(counter_style, value);
   // If the separator exists, we need to append all of the parent values as well,
   // including the ones that cross the style containment boundary.
   if (!counter_->Separator().IsNull()) {
@@ -622,7 +614,7 @@ scoped_refptr<StringImpl> LayoutCounter::OriginalText() const {
                child->ParentCrossingStyleContainment(counter_->Identifier())) {
       int next_value = next_result_uses_parent_value ? ValueForText(parent)
                                                      : child->CountInParent();
-      text = GenerateCounterText(counter_style, list_style, next_value) +
+      text = GenerateCounterText(counter_style, next_value) +
              counter_->Separator() + text;
       child = parent;
       next_result_uses_parent_value = !child->Parent();

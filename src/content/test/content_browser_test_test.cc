@@ -108,8 +108,15 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_RendererCrash) {
 #define USE_EXTERNAL_SYMBOLIZER 0
 #endif
 
+// Flaky on Linux: crbug.com/1223763
+#if defined(OS_LINUX)
+#define MAYBE_RendererCrashCallStack DISABLED_RendererCrashCallStack
+#else
+#define MAYBE_RendererCrashCallStack RendererCrashCallStack
+#endif
+
 // Tests that browser tests print the callstack when a child process crashes.
-IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RendererCrashCallStack) {
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MAYBE_RendererCrashCallStack) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -134,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RendererCrashCallStack) {
   // "#0 0x0000007ea911 (...content_browsertests+0x7ea910)"
   std::string crash_string =
 #if !USE_EXTERNAL_SYMBOLIZER
-      "blink::LocalFrame::HandleRendererDebugURL";
+      "blink::LocalFrameMojoHandler::HandleRendererDebugURL";
 #else
       "#0 ";
 #endif

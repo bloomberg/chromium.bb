@@ -166,16 +166,8 @@ template("chrome_public_common_apk_or_module_tmpl") {
     resource_exclusion_regex += "|${_material_package}/xml.*badge_"
     _material_package = "*com_google_android_material*"
 
-    # Remove unneeded entries from material design values.xml files.
-    resource_values_filter_rules = [ "${_material_package}:[Tt]oolbarLayout" ]
-
     if (!_is_monochrome) {
       product_config_java_packages = [ "org.chromium.chrome.browser" ]
-    }
-
-    # Use zh-TW strings for zh-HK (https://crbug.com/780847).
-    if (!defined(support_zh_hk)) {
-      support_zh_hk = true
     }
 
     # Android supports webp transparent resources properly since API level 18,
@@ -184,24 +176,27 @@ template("chrome_public_common_apk_or_module_tmpl") {
       png_to_webp = !is_java_debug
     }
 
-    # Removes metadata needed for Resources.getIdentifier("resource_name").
-    strip_resource_names = !is_java_debug
+    # We only optimize resources for bundles since APKs are not shipped.
+    # Resources only live in the base module atm as such we only need to set
+    # these on the base module
+    if (_is_bundle) {
+      # Removes metadata needed for Resources.getIdentifier("resource_name").
+      strip_resource_names = !is_java_debug
 
-    short_resource_paths = true
+      # Shortens resource file names in apk eg: res/drawable/button.xml -> res/a.xml
+      short_resource_paths = true
+
+      # Removes unused resources from the apk. Only enabled on official builds
+      # since it adds a slow step and serializes the build graph causing fewer
+      # expensive tasks (eg: proguarding, resource optimization) to be run in
+      # parallel by adding dependencies between them (adds around 10-20
+      # seconds on my machine).
+      strip_unused_resources = is_official_build
+    }
 
     if (!defined(aapt_locale_allowlist)) {
-      if (target_type == "android_apk") {
-        # For APKs, do not include the resource strings files from our
-        # omitted locale list in order to save size.
-        aapt_locale_allowlist = android_apk_locales
-      } else {
-        # For bundles, only include resource strings files from our full
-        # locale list, but nothing more.
-        aapt_locale_allowlist = locales
-
-        # zh_hk is supported in Android bundles.
-        support_zh_hk = false
-      }
+      # Include resource strings files only for supported locales.
+      aapt_locale_allowlist = locales
     }
 
     if (!defined(use_chromium_linker)) {
@@ -373,12 +368,14 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         deps += invoker.deps
       }
 
-      if (_is_bundle_module && invoker.is_base_module && enable_arcore) {
+      if (_is_bundle_module && invoker.is_base_module && enable_arcore &&
+          is_monochrome) {
         # AR DFM is disabled - set the loadable_modules /
         # secondary_abi_loadable_modules to what would be brought in by the
         # module. The AR Java will be brought in by the chrome_bundle target.
-        # This needs to happen for monochrome & trichrome builds of base module
-        # if ARCore is enabled.
+        # This needs to happen for monochrome builds of base module if ARCore is
+        # enabled. For Trichrome, the native library is added to
+        # TrichromeLibrary.apk so it's not needed here.
         _libarcore_dir = get_label_info(
                              "//third_party/arcore-android-sdk-client:com_google_ar_core_java($default_toolchain)",
                              "target_out_dir") + "/com_google_ar_core_java/jni"
@@ -420,6 +417,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         if (enable_arcore) {
           deps += [
             "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
+            "//third_party/arcore-android-sdk-client:com_google_ar_core_java__ignored_manifest",
           ]
         }
 
@@ -554,13 +552,16 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         }
       }
 
-      # Resources config for blocklisting resource names from obfuscation
-      resources_config_paths = [
-        "//android_webview/aapt2.config",
-        "//chrome/android/aapt2.config",
-      ]
-      if (defined(invoker.resources_config_paths)) {
-        resources_config_paths += invoker.resources_config_paths
+      # We only optimize resources in bundles.
+      if (_is_bundle_module) {
+        # Resources config for blocklisting resource names from obfuscation
+        resources_config_paths = [
+          "//android_webview/aapt2.config",
+          "//chrome/android/aapt2.config",
+        ]
+        if (defined(invoker.resources_config_paths)) {
+          resources_config_paths += invoker.resources_config_paths
+        }
       }
 
       if (defined(invoker.never_incremental)) {
@@ -585,13 +586,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         uncompress_shared_libraries = invoker.uncompress_shared_libraries
       } else {
         uncompress_shared_libraries = true
-      }
-
-      # Android N+ better supports multiple locales (https://crbug.com/780847).
-      if (defined(invoker.support_zh_hk)) {
-        support_zh_hk = invoker.support_zh_hk
-      } else {
-        support_zh_hk = false
       }
 
       if (_is_bundle_module) {
@@ -644,7 +638,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       "secondary_abi_shared_libraries",
       "secondary_native_lib_placeholders",
       "shared_libraries",
-      "support_zh_hk",
       "uncompress_shared_libraries",
       "use_chromium_linker",
       "use_modern_linker",

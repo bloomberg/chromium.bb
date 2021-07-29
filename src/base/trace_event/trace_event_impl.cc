@@ -12,7 +12,6 @@
 #include "base/json/string_escape.h"
 #include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -40,7 +39,8 @@ perfetto::ThreadTrack ConvertThreadId(const ::base::PlatformThreadId& thread) {
 TraceTimestamp
 TraceTimestampTraits<::base::TimeTicks>::ConvertTimestampToTraceTimeNs(
     const ::base::TimeTicks& ticks) {
-  return {TrackEvent::GetTraceClockId(), ticks.since_origin().InNanoseconds()};
+  return {TrackEvent::GetTraceClockId(),
+          static_cast<uint64_t>(ticks.since_origin().InNanoseconds())};
 }
 
 namespace internal {

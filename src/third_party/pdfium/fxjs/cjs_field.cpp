@@ -28,6 +28,7 @@
 #include "fxjs/js_resources.h"
 #include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
+#include "third_party/base/optional.h"
 
 namespace {
 
@@ -63,14 +64,18 @@ void UpdateFormField(CPDFSDK_FormFillEnvironment* pFormFillEnv,
           Optional<WideString> sValue =
               ToCPDFSDKWidget(pObserved.Get())->OnFormat();
           if (pObserved) {  // Not redundant, may be clobbered by OnFormat.
-            ToCPDFSDKWidget(pObserved.Get())->ResetAppearance(sValue, false);
+            auto* pWidget = ToCPDFSDKWidget(pObserved.Get());
+            pWidget->ResetAppearance(sValue, CPDFSDK_Widget::kValueUnchanged);
           }
         }
       }
     } else {
       for (auto& pObserved : widgets) {
-        if (pObserved)
-          ToCPDFSDKWidget(pObserved.Get())->ResetAppearance({}, false);
+        if (pObserved) {
+          auto* pWidget = ToCPDFSDKWidget(pObserved.Get());
+          pWidget->ResetAppearance(pdfium::nullopt,
+                                   CPDFSDK_Widget::kValueUnchanged);
+        }
       }
     }
   }
@@ -117,9 +122,10 @@ void UpdateFormControl(CPDFSDK_FormFillEnvironment* pFormFillEnv,
         Optional<WideString> sValue = pWidget->OnFormat();
         if (!observed_widget)
           return;
-        pWidget->ResetAppearance(sValue, false);
+        pWidget->ResetAppearance(sValue, CPDFSDK_Widget::kValueUnchanged);
       } else {
-        pWidget->ResetAppearance({}, false);
+        pWidget->ResetAppearance(pdfium::nullopt,
+                                 CPDFSDK_Widget::kValueUnchanged);
       }
       if (!observed_widget)
         return;
@@ -135,34 +141,34 @@ void UpdateFormControl(CPDFSDK_FormFillEnvironment* pFormFillEnv,
     pFormFillEnv->SetChangeMark();
 }
 
-// note: iControlNo = -1, means not a widget.
-void ParseFieldName(const WideString& strFieldNameParsed,
-                    WideString& strFieldName,
-                    int& iControlNo) {
-  auto reverse_it = strFieldNameParsed.rbegin();
-  while (reverse_it != strFieldNameParsed.rend()) {
+struct FieldNameData {
+  FieldNameData(WideString field_name_in, int control_index_in)
+      : field_name(field_name_in), control_index(control_index_in) {}
+
+  WideString field_name;
+  int control_index;
+};
+
+Optional<FieldNameData> ParseFieldName(const WideString& field_name) {
+  auto reverse_it = field_name.rbegin();
+  while (reverse_it != field_name.rend()) {
     if (*reverse_it == L'.')
       break;
     ++reverse_it;
   }
-  if (reverse_it == strFieldNameParsed.rend()) {
-    strFieldName = strFieldNameParsed;
-    iControlNo = -1;
-    return;
+  if (reverse_it == field_name.rend()) {
+    return pdfium::nullopt;
   }
-  WideString suffixal =
-      strFieldNameParsed.Last(reverse_it - strFieldNameParsed.rbegin());
-  iControlNo = FXSYS_wtoi(suffixal.c_str());
-  if (iControlNo == 0) {
+  WideString suffixal = field_name.Last(reverse_it - field_name.rbegin());
+  int control_index = FXSYS_wtoi(suffixal.c_str());
+  if (control_index == 0) {
     suffixal.TrimRight(L' ');
     if (suffixal != L"0") {
-      strFieldName = strFieldNameParsed;
-      iControlNo = -1;
-      return;
+      return pdfium::nullopt;
     }
   }
-  strFieldName =
-      strFieldNameParsed.First(strFieldNameParsed.rend() - reverse_it - 1);
+  return FieldNameData(field_name.First(field_name.rend() - reverse_it - 1),
+                       control_index);
 }
 
 std::vector<CPDF_FormField*> GetFormFieldsForName(
@@ -176,6 +182,30 @@ std::vector<CPDF_FormField*> GetFormFieldsForName(
       fields.push_back(pFormField);
   }
   return fields;
+}
+
+CFX_Color GetFormControlColor(CPDF_FormControl* pFormControl,
+                              const ByteString& entry) {
+  switch (pFormControl->GetColorARGB(entry).color_type) {
+    case CFX_Color::Type::kTransparent:
+      return CFX_Color(CFX_Color::Type::kTransparent);
+    case CFX_Color::Type::kGray:
+      return CFX_Color(CFX_Color::Type::kGray,
+                       pFormControl->GetOriginalColorComponent(0, entry));
+    case CFX_Color::Type::kRGB:
+      return CFX_Color(CFX_Color::Type::kRGB,
+                       pFormControl->GetOriginalColorComponent(0, entry),
+                       pFormControl->GetOriginalColorComponent(1, entry),
+                       pFormControl->GetOriginalColorComponent(2, entry));
+    case CFX_Color::Type::kCMYK:
+      return CFX_Color(CFX_Color::Type::kCMYK,
+                       pFormControl->GetOriginalColorComponent(0, entry),
+                       pFormControl->GetOriginalColorComponent(1, entry),
+                       pFormControl->GetOriginalColorComponent(2, entry),
+                       pFormControl->GetOriginalColorComponent(3, entry));
+  }
+  NOTREACHED();
+  return CFX_Color();
 }
 
 bool SetWidgetDisplayStatus(CPDFSDK_Widget* pWidget, int value) {
@@ -220,19 +250,19 @@ bool SetWidgetDisplayStatus(CPDFSDK_Widget* pWidget, int value) {
 void SetBorderStyle(CPDFSDK_FormFillEnvironment* pFormFillEnv,
                     const WideString& swFieldName,
                     int nControlIndex,
-                    const ByteString& string) {
+                    const ByteString& bsString) {
   DCHECK(pFormFillEnv);
 
   BorderStyle nBorderStyle = BorderStyle::kSolid;
-  if (string == "solid")
+  if (bsString == "solid")
     nBorderStyle = BorderStyle::kSolid;
-  else if (string == "beveled")
+  else if (bsString == "beveled")
     nBorderStyle = BorderStyle::kBeveled;
-  else if (string == "dashed")
+  else if (bsString == "dashed")
     nBorderStyle = BorderStyle::kDash;
-  else if (string == "inset")
+  else if (bsString == "inset")
     nBorderStyle = BorderStyle::kInset;
-  else if (string == "underline")
+  else if (bsString == "underline")
     nBorderStyle = BorderStyle::kUnderline;
   else
     return;
@@ -623,14 +653,12 @@ bool CJS_Field::AttachField(CJS_Document* pDocument,
   swFieldNameTemp.Replace(L"..", L".");
 
   if (pForm->CountFields(swFieldNameTemp) <= 0) {
-    WideString strFieldName;
-    int iControlNo = -1;
-    ParseFieldName(swFieldNameTemp, strFieldName, iControlNo);
-    if (iControlNo == -1)
+    Optional<FieldNameData> parsed_data = ParseFieldName(swFieldNameTemp);
+    if (!parsed_data.has_value())
       return false;
 
-    m_FieldName = strFieldName;
-    m_nFormControlIndex = iControlNo;
+    m_FieldName = parsed_data.value().field_name;
+    m_nFormControlIndex = parsed_data.value().control_index;
     return true;
   }
 
@@ -1123,15 +1151,6 @@ CJS_Result CJS_Field::set_do_not_spell_check(CJS_Runtime* pRuntime,
   return CJS_Result::Success();
 }
 
-void CJS_Field::SetDelay(bool bDelay) {
-  m_bDelay = bDelay;
-
-  if (m_bDelay)
-    return;
-  if (m_pJSDoc)
-    m_pJSDoc->DoFieldDelay(m_FieldName, m_nFormControlIndex);
-}
-
 CJS_Result CJS_Field::get_delay(CJS_Runtime* pRuntime) {
   return CJS_Result::Success(pRuntime->NewBoolean(m_bDelay));
 }
@@ -1296,28 +1315,7 @@ CJS_Result CJS_Field::get_fill_color(CJS_Runtime* pRuntime) {
   if (!pFormControl)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  CFX_Color color;
-  CFX_Color::Type iColorType = pFormControl->GetBackgroundColor().first;
-  if (iColorType == CFX_Color::Type::kTransparent) {
-    color = CFX_Color(CFX_Color::Type::kTransparent);
-  } else if (iColorType == CFX_Color::Type::kGray) {
-    color = CFX_Color(CFX_Color::Type::kGray,
-                      pFormControl->GetOriginalBackgroundColorComponent(0));
-  } else if (iColorType == CFX_Color::Type::kRGB) {
-    color = CFX_Color(CFX_Color::Type::kRGB,
-                      pFormControl->GetOriginalBackgroundColorComponent(0),
-                      pFormControl->GetOriginalBackgroundColorComponent(1),
-                      pFormControl->GetOriginalBackgroundColorComponent(2));
-  } else if (iColorType == CFX_Color::Type::kCMYK) {
-    color = CFX_Color(CFX_Color::Type::kCMYK,
-                      pFormControl->GetOriginalBackgroundColorComponent(0),
-                      pFormControl->GetOriginalBackgroundColorComponent(1),
-                      pFormControl->GetOriginalBackgroundColorComponent(2),
-                      pFormControl->GetOriginalBackgroundColorComponent(3));
-  } else {
-    return CJS_Result::Failure(JSMessage::kValueError);
-  }
-
+  CFX_Color color = GetFormControlColor(pFormControl, pdfium::appearance::kBG);
   v8::Local<v8::Value> array =
       CJS_Color::ConvertPWLColorToArray(pRuntime, color);
   if (array.IsEmpty())
@@ -1383,15 +1381,15 @@ CJS_Result CJS_Field::get_highlight(CJS_Runtime* pRuntime) {
 
   int eHM = pFormControl->GetHighlightingMode();
   switch (eHM) {
-    case CPDF_FormControl::None:
+    case CPDF_FormControl::kNone:
       return CJS_Result::Success(pRuntime->NewString("none"));
-    case CPDF_FormControl::Push:
+    case CPDF_FormControl::kPush:
       return CJS_Result::Success(pRuntime->NewString("push"));
-    case CPDF_FormControl::Invert:
+    case CPDF_FormControl::kInvert:
       return CJS_Result::Success(pRuntime->NewString("invert"));
-    case CPDF_FormControl::Outline:
+    case CPDF_FormControl::kOutline:
       return CJS_Result::Success(pRuntime->NewString("outline"));
-    case CPDF_FormControl::Toggle:
+    case CPDF_FormControl::kToggle:
       return CJS_Result::Success(pRuntime->NewString("toggle"));
   }
   return CJS_Result::Success();
@@ -1669,11 +1667,21 @@ CJS_Result CJS_Field::get_readonly(CJS_Runtime* pRuntime) {
 
 CJS_Result CJS_Field::set_readonly(CJS_Runtime* pRuntime,
                                    v8::Local<v8::Value> vp) {
-  std::vector<CPDF_FormField*> FieldArray = GetFormFields();
-  if (FieldArray.empty())
+  CPDF_FormField* pFormField = GetFirstFormField();
+  if (!pFormField)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
+
   if (!m_bCanSet)
     return CJS_Result::Failure(JSMessage::kReadOnlyError);
+
+  const bool bReadOnly = pRuntime->ToBoolean(vp);
+  const uint32_t dwFlags = pFormField->GetFieldFlags();
+  const uint32_t dwNewFlags = bReadOnly
+                                  ? (dwFlags | pdfium::form_flags::kReadOnly)
+                                  : (dwFlags & ~pdfium::form_flags::kReadOnly);
+  if (dwNewFlags != dwFlags)
+    pFormField->SetFieldFlags(dwNewFlags);
+
   return CJS_Result::Success();
 }
 
@@ -1823,28 +1831,7 @@ CJS_Result CJS_Field::get_stroke_color(CJS_Runtime* pRuntime) {
   if (!pFormControl)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  CFX_Color color;
-  CFX_Color::Type iColorType = pFormControl->GetBorderColorARGB().first;
-  if (iColorType == CFX_Color::Type::kTransparent) {
-    color = CFX_Color(CFX_Color::Type::kTransparent);
-  } else if (iColorType == CFX_Color::Type::kGray) {
-    color = CFX_Color(CFX_Color::Type::kGray,
-                      pFormControl->GetOriginalBorderColorComponent(0));
-  } else if (iColorType == CFX_Color::Type::kRGB) {
-    color = CFX_Color(CFX_Color::Type::kRGB,
-                      pFormControl->GetOriginalBorderColorComponent(0),
-                      pFormControl->GetOriginalBorderColorComponent(1),
-                      pFormControl->GetOriginalBorderColorComponent(2));
-  } else if (iColorType == CFX_Color::Type::kCMYK) {
-    color = CFX_Color(CFX_Color::Type::kCMYK,
-                      pFormControl->GetOriginalBorderColorComponent(0),
-                      pFormControl->GetOriginalBorderColorComponent(1),
-                      pFormControl->GetOriginalBorderColorComponent(2),
-                      pFormControl->GetOriginalBorderColorComponent(3));
-  } else {
-    return CJS_Result::Failure(JSMessage::kObjectTypeError);
-  }
-
+  CFX_Color color = GetFormControlColor(pFormControl, pdfium::appearance::kBC);
   v8::Local<v8::Value> array =
       CJS_Color::ConvertPWLColorToArray(pRuntime, color);
   if (array.IsEmpty())
@@ -1930,17 +1917,18 @@ CJS_Result CJS_Field::get_text_color(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   CPDF_DefaultAppearance FieldAppearance = pFormControl->GetDefaultAppearance();
-  Optional<std::pair<CFX_Color::Type, FX_ARGB>> maybe_type_argb_pair =
+  Optional<CFX_Color::TypeAndARGB> maybe_type_argb_pair =
       FieldAppearance.GetColorARGB();
 
   CFX_Color crRet;
   if (maybe_type_argb_pair.has_value() &&
-      maybe_type_argb_pair.value().first != CFX_Color::Type::kTransparent) {
+      maybe_type_argb_pair.value().color_type !=
+          CFX_Color::Type::kTransparent) {
     int32_t a;
     int32_t r;
     int32_t g;
     int32_t b;
-    std::tie(a, r, g, b) = ArgbDecode(maybe_type_argb_pair.value().second);
+    std::tie(a, r, g, b) = ArgbDecode(maybe_type_argb_pair.value().argb);
     crRet =
         CFX_Color(CFX_Color::Type::kRGB, r / 255.0f, g / 255.0f, b / 255.0f);
   }
@@ -2506,15 +2494,13 @@ CJS_Result CJS_Field::setFocus(
     IPDF_Page* pPage = IPDFPageFromFPDFPage(m_pFormFillEnv->GetCurrentPage());
     if (!pPage)
       return CJS_Result::Failure(JSMessage::kBadObjectError);
-    if (CPDFSDK_PageView* pCurPageView =
-            m_pFormFillEnv->GetPageView(pPage, true)) {
-      for (int32_t i = 0; i < nCount; i++) {
-        if (CPDFSDK_Widget* pTempWidget =
-                pForm->GetWidget(pFormField->GetControl(i))) {
-          if (pTempWidget->GetPDFPage() == pCurPageView->GetPDFPage()) {
-            pWidget = pTempWidget;
-            break;
-          }
+    CPDFSDK_PageView* pCurPageView = m_pFormFillEnv->GetOrCreatePageView(pPage);
+    for (int32_t i = 0; i < nCount; i++) {
+      if (CPDFSDK_Widget* pTempWidget =
+              pForm->GetWidget(pFormField->GetControl(i))) {
+        if (pTempWidget->GetPDFPage() == pCurPageView->GetPDFPage()) {
+          pWidget = pTempWidget;
+          break;
         }
       }
     }
@@ -2573,6 +2559,15 @@ CJS_Result CJS_Field::signatureValidate(
     CJS_Runtime* pRuntime,
     const std::vector<v8::Local<v8::Value>>& params) {
   return CJS_Result::Failure(JSMessage::kNotSupportedError);
+}
+
+void CJS_Field::SetDelay(bool bDelay) {
+  m_bDelay = bDelay;
+  if (m_bDelay)
+    return;
+
+  if (m_pJSDoc)
+    m_pJSDoc->DoFieldDelay(m_FieldName, m_nFormControlIndex);
 }
 
 void CJS_Field::AddDelay_Int(FIELD_PROP prop, int32_t n) {

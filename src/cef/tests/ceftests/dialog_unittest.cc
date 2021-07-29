@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "include/base/cef_bind.h"
+#include "include/base/cef_callback.h"
 #include "include/wrapper/cef_closure_task.h"
 #include "tests/ceftests/test_handler.h"
 #include "tests/ceftests/test_util.h"
@@ -115,8 +115,8 @@ class DialogTestHandler : public TestHandler {
     TestStringVectorEqual(config_.accept_types, accept_types);
 
     if (config_.callback_async) {
-      CefPostTask(TID_UI, base::Bind(&DialogTestHandler::ExecuteCallback, this,
-                                     callback));
+      CefPostTask(TID_UI, base::BindOnce(&DialogTestHandler::ExecuteCallback,
+                                         this, callback));
     } else {
       ExecuteCallback(callback);
     }

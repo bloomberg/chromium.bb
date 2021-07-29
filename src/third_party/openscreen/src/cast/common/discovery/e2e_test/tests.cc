@@ -11,7 +11,7 @@
 // ASSERTS due to asynchronous concerns around test failures.
 // Although this causes the entire test binary to fail instead of
 // just a single test, it makes debugging easier/possible.
-#include "cast/common/public/service_info.h"
+#include "cast/common/public/receiver_info.h"
 #include "discovery/common/config.h"
 #include "discovery/common/reporting_client.h"
 #include "discovery/public/dns_sd_service_factory.h"
@@ -44,12 +44,12 @@ constexpr milliseconds kCheckLoopSleepTime(100);
 constexpr int kMaxCheckLoopIterations = 25;
 
 // Publishes new service instances.
-class Publisher : public discovery::DnsSdServicePublisher<ServiceInfo> {
+class Publisher : public discovery::DnsSdServicePublisher<ReceiverInfo> {
  public:
   explicit Publisher(discovery::DnsSdService* service)  // NOLINT
-      : DnsSdServicePublisher<ServiceInfo>(service,
-                                           kCastV2ServiceId,
-                                           ServiceInfoToDnsSdInstance) {
+      : DnsSdServicePublisher<ReceiverInfo>(service,
+                                            kCastV2ServiceId,
+                                            ReceiverInfoToDnsSdInstance) {
     OSP_LOG_INFO << "Initializing Publisher...\n";
   }
 
@@ -71,40 +71,40 @@ class Publisher : public discovery::DnsSdServicePublisher<ServiceInfo> {
 };
 
 // Receives incoming services and outputs their results to stdout.
-class ServiceReceiver : public discovery::DnsSdServiceWatcher<ServiceInfo> {
+class ServiceReceiver : public discovery::DnsSdServiceWatcher<ReceiverInfo> {
  public:
   explicit ServiceReceiver(discovery::DnsSdService* service)  // NOLINT
-      : discovery::DnsSdServiceWatcher<ServiceInfo>(
+      : discovery::DnsSdServiceWatcher<ReceiverInfo>(
             service,
             kCastV2ServiceId,
-            DnsSdInstanceEndpointToServiceInfo,
+            DnsSdInstanceEndpointToReceiverInfo,
             [this](
-                std::vector<std::reference_wrapper<const ServiceInfo>> infos) {
+                std::vector<std::reference_wrapper<const ReceiverInfo>> infos) {
               ProcessResults(std::move(infos));
             }) {
     OSP_LOG_INFO << "Initializing ServiceReceiver...";
   }
 
-  bool IsServiceFound(const ServiceInfo& check_service) {
-    return std::find_if(service_infos_.begin(), service_infos_.end(),
-                        [&check_service](const ServiceInfo& info) {
+  bool IsServiceFound(const ReceiverInfo& check_service) {
+    return std::find_if(receiver_infos_.begin(), receiver_infos_.end(),
+                        [&check_service](const ReceiverInfo& info) {
                           return info.friendly_name ==
                                  check_service.friendly_name;
-                        }) != service_infos_.end();
+                        }) != receiver_infos_.end();
   }
 
-  void EraseReceivedServices() { service_infos_.clear(); }
+  void EraseReceivedServices() { receiver_infos_.clear(); }
 
  private:
   void ProcessResults(
-      std::vector<std::reference_wrapper<const ServiceInfo>> infos) {
-    service_infos_.clear();
-    for (const ServiceInfo& info : infos) {
-      service_infos_.push_back(info);
+      std::vector<std::reference_wrapper<const ReceiverInfo>> infos) {
+    receiver_infos_.clear();
+    for (const ReceiverInfo& info : infos) {
+      receiver_infos_.push_back(info);
     }
   }
 
-  std::vector<ServiceInfo> service_infos_;
+  std::vector<ReceiverInfo> receiver_infos_;
 };
 
 class FailOnErrorReporting : public discovery::ReportingClient {
@@ -145,8 +145,8 @@ class DiscoveryE2ETest : public testing::Test {
   }
 
  protected:
-  ServiceInfo GetInfo(int id) {
-    ServiceInfo hosted_service;
+  ReceiverInfo GetInfo(int id) {
+    ReceiverInfo hosted_service;
     hosted_service.port = 1234;
     hosted_service.unique_id = "id" + std::to_string(id);
     hosted_service.model_name = "openscreen-Model" + std::to_string(id);
@@ -179,8 +179,8 @@ class DiscoveryE2ETest : public testing::Test {
     OSP_DCHECK(dnssd_service_.get());
     OSP_DCHECK(publisher_.get());
 
-    std::vector<ServiceInfo> record_set{std::move(records)...};
-    for (ServiceInfo& record : record_set) {
+    std::vector<ReceiverInfo> record_set{std::move(records)...};
+    for (ReceiverInfo& record : record_set) {
       task_runner_->PostTask([this, r = std::move(record)]() {
         auto error = publisher_->UpdateRegistration(r);
         OSP_CHECK(error.ok()) << "\tFailed to update service instance '"
@@ -194,8 +194,8 @@ class DiscoveryE2ETest : public testing::Test {
     OSP_DCHECK(dnssd_service_.get());
     OSP_DCHECK(publisher_.get());
 
-    std::vector<ServiceInfo> record_set{std::move(records)...};
-    for (ServiceInfo& record : record_set) {
+    std::vector<ReceiverInfo> record_set{std::move(records)...};
+    for (ReceiverInfo& record : record_set) {
       task_runner_->PostTask([this, r = std::move(record)]() {
         auto error = publisher_->Register(r);
         OSP_CHECK(error.ok()) << "\tFailed to publish service instance '"
@@ -230,20 +230,20 @@ class DiscoveryE2ETest : public testing::Test {
         << "Could not find " << waiting_on << " service instances!";
   }
 
-  void CheckForClaimedIds(ServiceInfo service_info,
+  void CheckForClaimedIds(ReceiverInfo receiver_info,
                           std::atomic_bool* has_been_seen) {
     OSP_DCHECK(dnssd_service_.get());
     task_runner_->PostTask(
-        [this, info = std::move(service_info), has_been_seen]() mutable {
+        [this, info = std::move(receiver_info), has_been_seen]() mutable {
           CheckForClaimedIds(std::move(info), has_been_seen, 0);
         });
   }
 
-  void CheckForPublishedService(ServiceInfo service_info,
+  void CheckForPublishedService(ReceiverInfo receiver_info,
                                 std::atomic_bool* has_been_seen) {
     OSP_DCHECK(dnssd_service_.get());
     task_runner_->PostTask(
-        [this, info = std::move(service_info), has_been_seen]() mutable {
+        [this, info = std::move(receiver_info), has_been_seen]() mutable {
           CheckForPublishedService(std::move(info), has_been_seen, 0, true);
         });
   }
@@ -251,11 +251,11 @@ class DiscoveryE2ETest : public testing::Test {
   // TODO(issuetracker.google.com/159256503): Change this to use a polling
   // method to wait until the service disappears rather than immediately failing
   // if it exists, so waits throughout this file can be removed.
-  void CheckNotPublishedService(ServiceInfo service_info,
+  void CheckNotPublishedService(ReceiverInfo receiver_info,
                                 std::atomic_bool* has_been_seen) {
     OSP_DCHECK(dnssd_service_.get());
     task_runner_->PostTask(
-        [this, info = std::move(service_info), has_been_seen]() mutable {
+        [this, info = std::move(receiver_info), has_been_seen]() mutable {
           CheckForPublishedService(std::move(info), has_been_seen, 0, false);
         });
   }
@@ -266,37 +266,38 @@ class DiscoveryE2ETest : public testing::Test {
   std::unique_ptr<Publisher> publisher_;
 
  private:
-  void CheckForClaimedIds(ServiceInfo service_info,
+  void CheckForClaimedIds(ReceiverInfo receiver_info,
                           std::atomic_bool* has_been_seen,
                           int attempts) {
-    if (publisher_->IsInstanceIdClaimed(service_info.GetInstanceId())) {
+    if (publisher_->IsInstanceIdClaimed(receiver_info.GetInstanceId())) {
       // TODO(crbug.com/openscreen/110): Log the published service instance.
       *has_been_seen = true;
       return;
     }
 
     OSP_CHECK_LE(attempts++, kMaxCheckLoopIterations)
-        << "Service " << service_info.friendly_name << " publication failed.";
+        << "Service " << receiver_info.friendly_name << " publication failed.";
     task_runner_->PostTaskWithDelay(
-        [this, info = std::move(service_info), has_been_seen,
+        [this, info = std::move(receiver_info), has_been_seen,
          attempts]() mutable {
           CheckForClaimedIds(std::move(info), has_been_seen, attempts);
         },
         kCheckLoopSleepTime);
   }
 
-  void CheckForPublishedService(ServiceInfo service_info,
+  void CheckForPublishedService(ReceiverInfo receiver_info,
                                 std::atomic_bool* has_been_seen,
                                 int attempts,
                                 bool expect_to_be_present) {
-    if (!receiver_->IsServiceFound(service_info)) {
+    if (!receiver_->IsServiceFound(receiver_info)) {
       if (attempts++ > kMaxCheckLoopIterations) {
         OSP_CHECK(!expect_to_be_present)
-            << "Service " << service_info.friendly_name << " discovery failed.";
+            << "Service " << receiver_info.friendly_name
+            << " discovery failed.";
         return;
       }
       task_runner_->PostTaskWithDelay(
-          [this, info = std::move(service_info), has_been_seen, attempts,
+          [this, info = std::move(receiver_info), has_been_seen, attempts,
            expect_to_be_present]() mutable {
             CheckForPublishedService(std::move(info), has_been_seen, attempts,
                                      expect_to_be_present);
@@ -306,7 +307,8 @@ class DiscoveryE2ETest : public testing::Test {
       // TODO(crbug.com/openscreen/110): Log the discovered service instance.
       *has_been_seen = true;
     } else {
-      OSP_LOG_FATAL << "Found instance '" << service_info.friendly_name << "'!";
+      OSP_LOG_FATAL << "Found instance '" << receiver_info.friendly_name
+                    << "'!";
     }
   }
 };

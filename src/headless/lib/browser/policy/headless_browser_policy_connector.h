@@ -6,8 +6,8 @@
 #define HEADLESS_LIB_BROWSER_POLICY_HEADLESS_BROWSER_POLICY_CONNECTOR_H_
 
 #include "base/memory/ref_counted.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/browser/configuration_policy_pref_store.h"
+#include "components/policy/core/browser/browser_policy_connector.h"  // nogncheck http://crbug.com/1227148
+#include "components/policy/core/browser/configuration_policy_pref_store.h"  // nogncheck http://crbug.com/1227148
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace policy {
@@ -37,7 +37,7 @@ class HeadlessBrowserPolicyConnector : public BrowserPolicyConnector {
             scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       override;
 
-  bool IsEnterpriseManaged() const override;
+  bool IsDeviceEnterpriseManaged() const override;
 
   bool IsCommandLineSwitchSupported() const override;
 

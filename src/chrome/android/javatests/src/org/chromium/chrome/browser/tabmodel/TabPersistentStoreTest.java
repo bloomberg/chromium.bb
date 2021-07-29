@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tabmodel;
 import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
 import android.util.Pair;
+import android.view.ViewGroup.LayoutParams;
 
 import androidx.test.filters.SmallTest;
 
@@ -33,6 +34,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.chrome.browser.ActivityUtils;
 import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.app.metrics.LaunchCauseMetrics;
@@ -53,7 +55,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.tab.TabStateFileManager;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tab.state.LoadCallbackHelper;
 import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
@@ -63,6 +64,7 @@ import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabRestoreDetails
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.TabModelMetaDataInfo;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.TabStateInfo;
 import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
+import org.chromium.chrome.browser.tabpersistence.TabStateFileManager;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.Features;
@@ -328,6 +330,16 @@ public class TabPersistentStoreTest {
                     if (getBaseContext() == null) {
                         attachBaseContext(mAppContext);
                     }
+                }
+
+                @Override
+                protected int getToolbarShadowLayoutHeight() {
+                    return LayoutParams.WRAP_CONTENT;
+                }
+
+                @Override
+                protected int getToolbarShadowResource() {
+                    return ActivityUtils.NO_RESOURCE_ID;
                 }
             };
             ApplicationStatus.onStateChangeForTesting(mChromeActivity, ActivityState.CREATED);

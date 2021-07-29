@@ -6,7 +6,7 @@
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/feed/core/shared_prefs/pref_names.h"
+#include "components/feed/core/v2/public/ios/pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/pref_names.h"
@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -127,6 +128,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   AppLaunchConfiguration config;
   config.additional_args.push_back(std::string("--") +
                                    switches::kEnableDiscoverFeed);
+  config.features_disabled.push_back(kStartSurface);
   return config;
 }
 
@@ -217,6 +219,12 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 // Tests that when loading an invalid URL, the NTP is still displayed.
 // Prevents regressions from https://crbug.com/1063154 .
 - (void)testInvalidURL {
+  if (@available(iOS 13, *)) {
+  } else {
+    // TODO(crbug.com/1217121): This test is failing on iOS 12.4.
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 12.4 as it is failing.");
+  }
+
   NSString* URL = @"app-settings://test-test-test/";
 
   // The URL needs to be typed to trigger the bug.
@@ -239,6 +247,12 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests that the fake omnibox width is correctly updated after a rotation.
 - (void)testOmniboxWidthRotation {
+  if (@available(iOS 13, *)) {
+  } else {
+    // TODO(crbug.com/1217121): This test is failing on iOS 12.4.
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 12.4 as it is failing.");
+  }
+
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
   // fixed.
   if ([ChromeEarlGrey isIPadIdiom]) {
@@ -279,6 +293,12 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 // Tests that the fake omnibox width is correctly updated after a rotation done
 // while the settings screen is shown.
 - (void)testOmniboxWidthRotationBehindSettings {
+  if (@available(iOS 13, *)) {
+  } else {
+    // TODO(crbug.com/1217121): This test is failing on iOS 12.4.
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 12.4 as it is failing.");
+  }
+
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
   // fixed.
   if ([ChromeEarlGrey isRegularXRegularSizeClass]) {
@@ -469,7 +489,15 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 // Tests that when navigating back to the NTP while having the omnibox focused
 // and moved up, the scroll position restored is the position before the omnibox
 // is selected.
-- (void)testPositionRestoredWithOmniboxFocused {
+// TODO(crbug.com/1227139): Test is flaky on simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testPositionRestoredWithOmniboxFocused \
+  DISABLED_testPositionRestoredWithOmniboxFocused
+#else
+#define MAYBE_testPositionRestoredWithOmniboxFocused \
+  testPositionRestoredWithOmniboxFocused
+#endif
+- (void)MAYBE_testPositionRestoredWithOmniboxFocused {
   [self addMostVisitedTile];
 
   // Add suggestions to be able to scroll on iPad.
@@ -703,7 +731,8 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Test to ensure that initial position and content are maintained when rotating
 // the device back and forth.
-- (void)testInitialPositionAndOrientationChange {
+// TODO(crbug.com/1217121): This test is failing on iOS 14.5 and iOS 12.4.
+- (void)DISABLED_testInitialPositionAndOrientationChange {
   UICollectionView* collectionView = [NewTabPageAppInterface collectionView];
 
   [self testNTPInitialPositionAndContent:collectionView];

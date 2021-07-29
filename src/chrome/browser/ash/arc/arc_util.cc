@@ -19,7 +19,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -28,6 +27,7 @@
 #include "chrome/browser/ash/arc/arc_web_contents_data.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/login/configuration_keys.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -37,7 +37,6 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -288,6 +287,10 @@ void ResetArcAllowedCheckForTesting(const Profile* profile) {
   g_profile_status_check.Get().erase(profile);
 }
 
+void ClearArcAllowedCheckForTesting() {
+  g_profile_status_check.Get().clear();
+}
+
 bool IsArcBlockedDueToIncompatibleFileSystem(const Profile* profile) {
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
@@ -425,7 +428,7 @@ bool IsArcOobeOptInActive() {
   // Check if Chrome OS OOBE flow is currently showing.
   // TODO(b/65861628): Redesign the OptIn flow since there is no longer reason
   // to have two different OptIn flows.
-  if (!chromeos::LoginDisplayHost::default_host())
+  if (!ash::LoginDisplayHost::default_host())
     return false;
 
   // Use the legacy logic for first sign-in OOBE OptIn flow. Make sure the user
@@ -463,7 +466,7 @@ bool IsArcTermsOfServiceNegotiationNeeded(const Profile* profile) {
       !ShouldShowOptInForTesting()) {
     VLOG(1) << "Skip ARC Terms of Service negotiation for managed user. "
             << "Don't record B&R and GLS if admin leave it as user to decide "
-            << "and user sikps the opt-in dialog.";
+            << "and user skips the opt-in dialog.";
     return false;
   }
 
@@ -574,13 +577,13 @@ void UpdateArcFileSystemCompatibilityPrefIfNeeded(
                      std::move(callback)));
 }
 
-ArcSupervisionTransition GetSupervisionTransition(const Profile* profile) {
+ArcManagementTransition GetManagementTransition(const Profile* profile) {
   DCHECK(profile);
   DCHECK(profile->GetPrefs());
 
-  const ArcSupervisionTransition supervision_transition =
-      static_cast<ArcSupervisionTransition>(
-          profile->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
+  const ArcManagementTransition management_transition =
+      static_cast<ArcManagementTransition>(
+          profile->GetPrefs()->GetInteger(prefs::kArcManagementTransition));
   const bool is_child_to_regular_enabled =
       base::FeatureList::IsEnabled(kEnableChildToRegularTransitionFeature);
   const bool is_regular_to_child_enabled =
@@ -588,23 +591,23 @@ ArcSupervisionTransition GetSupervisionTransition(const Profile* profile) {
   const bool is_unmanaged_to_managed_enabled =
       base::FeatureList::IsEnabled(kEnableUnmanagedToManagedTransitionFeature);
 
-  switch (supervision_transition) {
-    case ArcSupervisionTransition::NO_TRANSITION:
+  switch (management_transition) {
+    case ArcManagementTransition::NO_TRANSITION:
       // Do nothing.
       break;
-    case ArcSupervisionTransition::CHILD_TO_REGULAR:
+    case ArcManagementTransition::CHILD_TO_REGULAR:
       if (!is_child_to_regular_enabled)
-        return ArcSupervisionTransition::NO_TRANSITION;
+        return ArcManagementTransition::NO_TRANSITION;
       break;
-    case ArcSupervisionTransition::REGULAR_TO_CHILD:
+    case ArcManagementTransition::REGULAR_TO_CHILD:
       if (!is_regular_to_child_enabled)
-        return ArcSupervisionTransition::NO_TRANSITION;
+        return ArcManagementTransition::NO_TRANSITION;
       break;
-    case ArcSupervisionTransition::UNMANAGED_TO_MANAGED:
+    case ArcManagementTransition::UNMANAGED_TO_MANAGED:
       if (!is_unmanaged_to_managed_enabled)
-        return ArcSupervisionTransition::NO_TRANSITION;
+        return ArcManagementTransition::NO_TRANSITION;
   }
-  return supervision_transition;
+  return management_transition;
 }
 
 bool IsPlayStoreAvailable() {

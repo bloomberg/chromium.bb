@@ -2,7 +2,6 @@ export const description = `
 Test related to depth buffer, depth op, compare func, etc.
 `;
 
-import { pbool, params, poptions } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { kDepthStencilFormats } from '../../../capability_info.js';
 import { GPUTest } from '../../../gpu_test.js';
@@ -28,15 +27,13 @@ g.test('depth_compare_func')
   .desc(
     `Tests each depth compare function works properly. Clears the depth attachment to various values, and renders a point at depth 0.5 with various depthCompare modes.`
   )
-  .cases(
-    params()
+  .params(u =>
+    u
       .combine(
-        poptions(
-          'format',
-          kDepthStencilFormats.filter(format => format !== 'stencil8')
-        )
+        'format',
+        kDepthStencilFormats.filter(format => format !== 'stencil8')
       )
-      .combine([
+      .combineWithParams([
         { depthCompare: 'never', depthLoadValue: 1.0, _expected: backgroundColor },
         { depthCompare: 'never', depthLoadValue: 0.5, _expected: backgroundColor },
         { depthCompare: 'never', depthLoadValue: 0.0, _expected: backgroundColor },
@@ -158,7 +155,7 @@ g.test('reverse_depth')
     Note that in real use case the depth range remapping is done by the modified projection matrix.
 (see https://developer.nvidia.com/content/depth-precision-visualized).`
   )
-  .cases(pbool('reversed'))
+  .params(u => u.combine('reversed', [false, true]))
   .fn(async t => {
     const colorAttachmentFormat = 'rgba8unorm';
     const colorAttachment = t.device.createTexture({
@@ -189,7 +186,7 @@ g.test('reverse_depth')
               [[builtin(vertex_index)]] VertexIndex : u32,
               [[builtin(instance_index)]] InstanceIndex : u32) -> Output {
               // TODO: remove workaround for Tint unary array access broke
-              let zv : array<vec2<f32>, 4> = array<vec2<f32>, 4>(
+              var zv : array<vec2<f32>, 4> = array<vec2<f32>, 4>(
                   vec2<f32>(0.2, 0.2),
                   vec2<f32>(0.3, 0.3),
                   vec2<f32>(-0.1, -0.1),
@@ -198,7 +195,7 @@ g.test('reverse_depth')
 
               var output : Output;
               output.Position = vec4<f32>(0.5, 0.5, z, 1.0);
-              let colors : array<vec4<f32>, 4> = array<vec4<f32>, 4>(
+              var colors : array<vec4<f32>, 4> = array<vec4<f32>, 4>(
                   vec4<f32>(1.0, 0.0, 0.0, 1.0),
                   vec4<f32>(0.0, 1.0, 0.0, 1.0),
                   vec4<f32>(0.0, 0.0, 1.0, 1.0),

@@ -25,6 +25,7 @@ class ToolbarButtonProvider;
 class ExtensionsToolbarContainer;
 class WebAppMenuButton;
 class WebAppOriginText;
+class WindowControlsOverlayToggleButton;
 
 class WebAppToolbarButtonContainer : public views::View,
                                      public IconLabelBubbleView::Delegate,
@@ -74,6 +75,10 @@ class WebAppToolbarButtonContainer : public views::View,
 
   WebAppMenuButton* web_app_menu_button() { return web_app_menu_button_; }
 
+  WindowControlsOverlayToggleButton* window_controls_overlay_toggle_button() {
+    return window_controls_overlay_toggle_button_;
+  }
+
   static void DisableAnimationForTesting();
 
  private:
@@ -120,11 +125,8 @@ class WebAppToolbarButtonContainer : public views::View,
   // PageActionIconView::Delegate:
   content::WebContents* GetWebContentsForPageActionIconView() override;
 
-  // views::WidgetObserver:
-  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
-
-  // Whether we're waiting for the widget to become visible.
-  bool pending_widget_visibility_ = true;
+  // views::View:
+  void AddedToWidget() override;
 
   base::ScopedObservation<views::Widget, views::WidgetObserver>
       scoped_widget_observation_{this};
@@ -145,6 +147,8 @@ class WebAppToolbarButtonContainer : public views::View,
 
   // All remaining members are owned by the views hierarchy.
   WebAppOriginText* web_app_origin_text_ = nullptr;
+  WindowControlsOverlayToggleButton* window_controls_overlay_toggle_button_ =
+      nullptr;
   WebAppContentSettingsContainer* content_settings_container_ = nullptr;
   ExtensionsToolbarContainer* extensions_container_ = nullptr;
   WebAppMenuButton* web_app_menu_button_ = nullptr;

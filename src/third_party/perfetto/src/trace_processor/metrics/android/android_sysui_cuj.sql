@@ -43,6 +43,67 @@ SELECT RUN_METRIC(
   'table_name_prefix', 'android_sysui_cuj',
   'process_allowlist_table', 'android_sysui_cuj_last_cuj');
 
+DROP TABLE IF EXISTS android_sysui_cuj_do_frame_slices_in_cuj;
+CREATE TABLE android_sysui_cuj_do_frame_slices_in_cuj AS
+SELECT
+  slices.*,
+  lag(slices.ts_end) OVER (ORDER BY vsync ASC) as ts_prev_frame_end
+FROM android_sysui_cuj_do_frame_slices slices
+JOIN android_sysui_cuj_last_cuj last_cuj
+ON ts + slices.dur >= last_cuj.ts_start AND ts <= last_cuj.ts_end;
+
+DROP TABLE IF EXISTS android_sysui_cuj_vsync_boundaries;
+CREATE TABLE android_sysui_cuj_vsync_boundaries AS
+SELECT MIN(vsync) as vsync_min, MAX(vsync) as vsync_max
+FROM android_sysui_cuj_do_frame_slices_in_cuj;
+
+DROP TABLE IF EXISTS android_sysui_cuj_frame_timeline_events;
+CREATE TABLE android_sysui_cuj_frame_timeline_events AS
+  SELECT
+    actual.layer_name as layer_name,
+    CAST(actual.name as INTEGER) as vsync,
+    actual.ts as ts_actual,
+    actual.dur as dur_actual,
+    actual.jank_type LIKE '%App Deadline Missed%' as app_missed,
+    actual.jank_type,
+    actual.on_time_finish
+  FROM android_sysui_cuj_last_cuj cuj
+  JOIN actual_frame_timeline_slice actual USING (upid)
+  JOIN android_sysui_cuj_vsync_boundaries vsync
+    ON CAST(actual.name as INTEGER) >= vsync.vsync_min
+    AND CAST(actual.name as INTEGER) <= vsync.vsync_max;
+
+-- Adjust the timestamp when we consider the work on a given frame started,
+-- by looking at the time the previous frame finished on the main thread
+-- and the timing from the actual timeline.
+-- This is to detect cases where we started doFrame late due to some other work
+-- occupying the main thread.
+DROP TABLE IF EXISTS android_sysui_cuj_do_frame_slices_in_cuj_adjusted;
+CREATE TABLE android_sysui_cuj_do_frame_slices_in_cuj_adjusted AS
+SELECT
+  slices.*,
+  CASE
+    WHEN fte.ts_actual IS NULL
+    THEN ts
+    ELSE MAX(COALESCE(slices.ts_prev_frame_end, 0), fte.ts_actual)
+  END as ts_adjusted
+FROM android_sysui_cuj_do_frame_slices_in_cuj slices
+LEFT JOIN android_sysui_cuj_frame_timeline_events fte
+ON slices.vsync = fte.vsync
+-- In rare cases there is a clock drift after device suspends
+-- This may cause the actual/expected timeline to be misaligned with the rest
+-- of the trace for a short period.
+-- Do not use the timelines if it seems that this happened.
+AND slices.ts >= fte.ts_actual AND slices.ts <= fte.ts_actual + fte.dur_actual;
+
+DROP TABLE IF EXISTS android_sysui_cuj_ts_boundaries;
+CREATE TABLE android_sysui_cuj_ts_boundaries AS
+SELECT ts, ts_end - ts as dur, ts_end FROM (
+SELECT
+(SELECT ts_adjusted FROM android_sysui_cuj_do_frame_slices_in_cuj_adjusted ORDER BY ts ASC LIMIT 1) as ts,
+(SELECT ts FROM android_sysui_cuj_do_frame_slices_in_cuj ORDER BY ts DESC LIMIT 1) +
+(SELECT dur_actual FROM android_sysui_cuj_frame_timeline_events ORDER BY vsync DESC LIMIT 1) as ts_end);
+
 DROP VIEW IF EXISTS android_sysui_cuj_thread;
 CREATE VIEW android_sysui_cuj_thread AS
 SELECT
@@ -58,50 +119,44 @@ SELECT
   process_name,
   thread.utid,
   thread.name as thread_name,
-  slice.*,
-  ts + slice.dur AS ts_end
-FROM slice
-JOIN thread_track ON slice.track_id = thread_track.id
+  slices.*,
+  slices.ts + slices.dur AS ts_end
+FROM slices
+JOIN thread_track ON slices.track_id = thread_track.id
 JOIN android_sysui_cuj_thread thread USING (utid)
-JOIN android_sysui_cuj_last_cuj last_cuj
-ON ts >= last_cuj.ts_start AND ts <= last_cuj.ts_end
-WHERE slice.dur > 0;
+JOIN android_sysui_cuj_ts_boundaries cuj_boundaries
+ON slices.ts + slices.dur >= cuj_boundaries.ts AND slices.ts <= cuj_boundaries.ts_end
+WHERE slices.dur > 0;
 
 DROP TABLE IF EXISTS android_sysui_cuj_main_thread_slices_in_cuj;
 CREATE TABLE android_sysui_cuj_main_thread_slices_in_cuj AS
 SELECT slices.* FROM android_sysui_cuj_main_thread_slices slices
-JOIN android_sysui_cuj_last_cuj last_cuj
-ON ts >= last_cuj.ts_start AND ts <= last_cuj.ts_end;
-
-DROP TABLE IF EXISTS android_sysui_cuj_do_frame_slices_in_cuj;
-CREATE TABLE android_sysui_cuj_do_frame_slices_in_cuj AS
-SELECT slices.* FROM android_sysui_cuj_do_frame_slices slices
-JOIN android_sysui_cuj_last_cuj last_cuj
-ON ts >= last_cuj.ts_start AND ts <= last_cuj.ts_end;
+JOIN android_sysui_cuj_ts_boundaries cuj_boundaries
+ON slices.ts + slices.dur >= cuj_boundaries.ts AND slices.ts <= cuj_boundaries.ts_end;
 
 DROP TABLE IF EXISTS android_sysui_cuj_render_thread_slices_in_cuj;
 CREATE TABLE android_sysui_cuj_render_thread_slices_in_cuj AS
 SELECT slices.* FROM android_sysui_cuj_render_thread_slices slices
-JOIN android_sysui_cuj_last_cuj last_cuj
-ON ts >= last_cuj.ts_start AND ts <= last_cuj.ts_end;
+JOIN android_sysui_cuj_ts_boundaries cuj_boundaries
+ON slices.ts >= cuj_boundaries.ts AND slices.ts <= cuj_boundaries.ts_end;
 
 DROP TABLE IF EXISTS android_sysui_cuj_draw_frame_slices_in_cuj;
 CREATE TABLE android_sysui_cuj_draw_frame_slices_in_cuj AS
 SELECT slices.* FROM android_sysui_cuj_draw_frame_slices slices
-JOIN android_sysui_cuj_last_cuj last_cuj
-ON ts >= last_cuj.ts_start AND ts <= last_cuj.ts_end;
+JOIN android_sysui_cuj_ts_boundaries cuj_boundaries
+ON slices.ts >= cuj_boundaries.ts AND slices.ts <= cuj_boundaries.ts_end;
 
 DROP TABLE IF EXISTS android_sysui_cuj_hwc_release_slices_in_cuj;
 CREATE TABLE android_sysui_cuj_hwc_release_slices_in_cuj AS
 SELECT slices.* FROM android_sysui_cuj_hwc_release_slices slices
-JOIN android_sysui_cuj_last_cuj last_cuj
-ON ts >= last_cuj.ts_start AND ts <= last_cuj.ts_end;
+JOIN android_sysui_cuj_ts_boundaries cuj_boundaries
+ON slices.ts >= cuj_boundaries.ts AND slices.ts <= cuj_boundaries.ts_end;
 
 DROP TABLE IF EXISTS android_sysui_cuj_gpu_completion_slices_in_cuj;
 CREATE TABLE android_sysui_cuj_gpu_completion_slices_in_cuj AS
 SELECT slices.* FROM android_sysui_cuj_gpu_completion_slices slices
-JOIN android_sysui_cuj_last_cuj last_cuj
-ON ts >= last_cuj.ts_start AND ts <= last_cuj.ts_end;
+JOIN android_sysui_cuj_ts_boundaries cuj_boundaries
+ON slices.ts >= cuj_boundaries.ts AND slices.ts <= cuj_boundaries.ts_end;
 
 DROP TABLE IF EXISTS android_sysui_cuj_jit_slices;
 CREATE TABLE android_sysui_cuj_jit_slices AS
@@ -110,28 +165,6 @@ FROM android_sysui_cuj_slices_in_cuj
 WHERE thread_name LIKE 'Jit thread pool%'
 AND name LIKE 'JIT compiling%'
 AND parent_id IS NULL;
-
-DROP TABLE IF EXISTS android_sysui_cuj_frame_timeline_events;
-CREATE TABLE android_sysui_cuj_frame_timeline_events AS
-  SELECT
-    expected.ts as ts_expected,
-    expected.dur as dur_expected,
-    expected.layer_name as layer_name,
-    actual.name as vsync,
-    actual.ts as ts_actual,
-    actual.dur as dur_actual,
-    actual.jank_type LIKE '%App Deadline Missed%' as app_missed,
-    actual.jank_type,
-    actual.on_time_finish
-  FROM expected_frame_timeline_slice expected
-  JOIN android_sysui_cuj_last_cuj cuj
-    ON expected.upid = cuj.upid
-    AND expected.ts + expected.dur > cuj.ts_start
-    AND expected.ts < cuj.ts_end
-  JOIN actual_frame_timeline_slice actual
-    ON expected.surface_frame_token = actual.surface_frame_token
-    AND expected.upid = actual.upid
-    AND expected.layer_name = actual.layer_name;
 
 DROP TABLE IF EXISTS android_sysui_cuj_frames;
 CREATE TABLE android_sysui_cuj_frames AS
@@ -153,13 +186,13 @@ CREATE TABLE android_sysui_cuj_frames AS
   frame_boundaries AS (
     -- Match main thread doFrame with RT DrawFrame and optional GPU Completion
     SELECT
-      mts.ts as mts_ts,
+      mts.ts_adjusted as mts_ts,
       mts.ts_end as mts_ts_end,
-      mts.dur as mts_dur,
+      mts.ts_end - mts.ts_adjusted as mts_dur,
       mts.vsync as vsync,
       MAX(gcs_rt.gcs_ts) as gcs_ts_start,
       MAX(gcs_rt.gcs_ts_end) as gcs_ts_end
-    FROM android_sysui_cuj_do_frame_slices_in_cuj mts
+    FROM android_sysui_cuj_do_frame_slices_in_cuj_adjusted mts
     JOIN android_sysui_cuj_draw_frame_slices_in_cuj rts
       ON mts.vsync = rts.vsync
     LEFT JOIN gcs_to_rt_match gcs_rt ON gcs_rt.rts_ts = rts.ts

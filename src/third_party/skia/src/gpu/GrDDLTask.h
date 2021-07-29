@@ -41,7 +41,7 @@ private:
 
     void gatherProxyIntervals(GrResourceAllocator*) const override;
 
-    ExpectedOutcome onMakeClosed(const GrCaps&, SkIRect* targetUpdateBounds) override;
+    ExpectedOutcome onMakeClosed(GrRecordingContext*, SkIRect* targetUpdateBounds) override;
 
     void gatherIDs(SkSTArray<8, uint32_t, true>* idArray) const override;
 
@@ -64,7 +64,7 @@ private:
     const char* name() const final { return "DDL"; }
 #endif
 #ifdef SK_DEBUG
-    void visitProxies_debugOnly(const GrOp::VisitProxyFunc& fn) const override {}
+    void visitProxies_debugOnly(const GrVisitProxyFunc&) const override {}
 #endif
 
     sk_sp<const SkDeferredDisplayList> fDDL;

@@ -27,7 +27,7 @@
 #include "core/fxcrt/fx_system.h"
 #include "core/fxge/cfx_defaultrenderdevice.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/dib/fx_dib.h"
 #include "third_party/base/check.h"
@@ -69,13 +69,14 @@ std::array<FX_ARGB, kShadingSteps> GetShadingSteps(
   float diff = t_max - t_min;
   for (int i = 0; i < kShadingSteps; ++i) {
     float input = diff * i / kShadingSteps + t_min;
-    int offset = 0;
+    pdfium::span<float> result_span = pdfium::make_span(result_array);
     for (const auto& func : funcs) {
-      if (func) {
-        int nresults = 0;
-        if (func->Call(&input, 1, &result_array[offset], &nresults))
-          offset += nresults;
-      }
+      if (!func)
+        continue;
+      Optional<uint32_t> nresults =
+          func->Call(pdfium::make_span(&input, 1), result_span);
+      if (nresults.has_value())
+        result_span = result_span.subspan(nresults.value());
     }
     float R = 0.0f;
     float G = 0.0f;
@@ -195,7 +196,7 @@ void DrawRadialShading(const RetainPtr<CFX_DIBitmap>& pBitmap,
   const float dy = end_y - start_y;
   const float dr = end_r - start_r;
   const float a = dx * dx + dy * dy - dr * dr;
-  const bool a_is_float_zero = IsFloatZero(a);
+  const bool a_is_float_zero = FXSYS_IsFloatZero(a);
 
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
@@ -216,7 +217,7 @@ void DrawRadialShading(const RetainPtr<CFX_DIBitmap>& pBitmap,
       float b = -2 * (pos_dx * dx + pos_dy * dy + start_r * dr);
       float c = pos_dx * pos_dx + pos_dy * pos_dy - start_r * start_r;
       float s;
-      if (IsFloatZero(b)) {
+      if (FXSYS_IsFloatZero(b)) {
         s = sqrt(-c / a);
       } else if (a_is_float_zero) {
         s = -c / b;
@@ -295,16 +296,15 @@ void DrawFuncShading(const RetainPtr<CFX_DIBitmap>& pBitmap,
       if (pos.x < xmin || pos.x > xmax || pos.y < ymin || pos.y > ymax)
         continue;
 
-      float input[] = {pos.x, pos.y};
-      int offset = 0;
+      float input[2] = {pos.x, pos.y};
+      pdfium::span<float> result_span = pdfium::make_span(result_array);
       for (const auto& func : funcs) {
-        if (func) {
-          int nresults;
-          if (func->Call(input, 2, &result_array[offset], &nresults))
-            offset += nresults;
-        }
+        if (!func)
+          continue;
+        Optional<uint32_t> nresults = func->Call(input, result_span);
+        if (nresults.has_value())
+          result_span = result_span.subspan(nresults.value());
       }
-
       float R = 0.0f;
       float G = 0.0f;
       float B = 0.0f;
@@ -581,7 +581,7 @@ struct Coon_Bezier {
     y.BezierInterpol(C1.y, C2.y, D1.y, D2.y);
   }
 
-  void GetPoints(pdfium::span<FX_PATHPOINT> path_points) {
+  void GetPoints(pdfium::span<CFX_Path::Point> path_points) {
     constexpr size_t kPointsCount = 4;
     float points_x[kPointsCount];
     float points_y[kPointsCount];
@@ -591,7 +591,7 @@ struct Coon_Bezier {
       path_points[i].m_Point = {points_x[i], points_y[i]};
   }
 
-  void GetPointsReverse(pdfium::span<FX_PATHPOINT> path_points) {
+  void GetPointsReverse(pdfium::span<CFX_Path::Point> path_points) {
     constexpr size_t kPointsCount = 4;
     float points_x[kPointsCount];
     float points_y[kPointsCount];
@@ -701,7 +701,7 @@ struct CPDF_PatchDrawer {
     if (bSmall ||
         (d_bottom < COONCOLOR_THRESHOLD && d_left < COONCOLOR_THRESHOLD &&
          d_top < COONCOLOR_THRESHOLD && d_right < COONCOLOR_THRESHOLD)) {
-      pdfium::span<FX_PATHPOINT> points = path.GetPoints();
+      pdfium::span<CFX_Path::Point> points = path.GetPoints();
       C1.GetPoints(points.subspan(0, 4));
       D2.GetPoints(points.subspan(3, 4));
       C2.GetPointsReverse(points.subspan(6, 4));
@@ -761,7 +761,7 @@ struct CPDF_PatchDrawer {
   }
 
   int max_delta;
-  CFX_PathData path;
+  CFX_Path path;
   CFX_RenderDevice* pDevice;
   int bNoPathSmooth;
   int alpha;
@@ -793,8 +793,9 @@ void DrawCoonPatchMeshes(
   patch.bNoPathSmooth = bNoPathSmooth;
 
   for (int i = 0; i < 13; i++) {
-    patch.path.AppendPoint(CFX_PointF(),
-                           i == 0 ? FXPT_TYPE::MoveTo : FXPT_TYPE::BezierTo);
+    patch.path.AppendPoint(CFX_PointF(), i == 0
+                                             ? CFX_Path::Point::Type::kMove
+                                             : CFX_Path::Point::Type::kBezier);
   }
 
   CFX_PointF coords[16];

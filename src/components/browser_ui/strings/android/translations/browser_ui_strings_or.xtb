@@ -5,7 +5,6 @@
 <translation id="1044891598689252897">ସାଇଟଗୁଡ଼ିକ ସାଧାରଣ ଭାବେ କାମ କରିବ</translation>
 <translation id="1100504063505580045">ବର୍ତ୍ତମାନର ଆଇକନ୍</translation>
 <translation id="1124090076051167250">ଆପଣଙ୍କ ମୂଳ ସ୍କ୍ରିନରେ ସାଇଟ୍ କିମ୍ବା ଆପଗୁଡ଼ିକ ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା <ph name="DATASIZE" /> ଡାଟା ଏବଂ କୁକୀଗୁଡ଼ିକୁ ଏହା ଖାଲି କରିଦେବ।</translation>
-<translation id="1124772482545689468">ଉପଯୋଗକର୍ତ୍ତା</translation>
 <translation id="1178581264944972037">ବିରତି</translation>
 <translation id="1181037720776840403">କାଢ଼ି ଦିଅନ୍ତୁ</translation>
 <translation id="1195941046451948919">ଏହି ୱେବସାଇଟ୍ ପାଇଁ ଆପଣ ସମସ୍ତ ଅନୁମତି ରିସେଟ୍ କରିବାକୁ ଚାହୁଁଥିବା ନିଶ୍ଚିତ କି?</translation>
@@ -58,6 +57,7 @@
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, ଏବଂ ଅଧିକ <ph name="NUM_MORE" />ଟିକୁ ଅନୁମତି ଦିଆଯାଇଛି}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, ଏବଂ ଅଧିକ <ph name="NUM_MORE" />ଟିକୁ ଅନୁମତି ଦିଆଯାଇଛି}}</translation>
 <translation id="2434158240863470628">ଡାଉନ୍‌ଲୋଡ୍ ଶେଷ ହେଲା <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2482878487686419369">ବିଜ୍ଞପ୍ତି</translation>
+<translation id="2485422356828889247">ଅନ୍‍ଇନ୍‍ଷ୍ଟଲ୍‌ କରନ୍ତୁ</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> ଦ୍ୱାରା ପରିଚାଳିତ</translation>
 <translation id="2498359688066513246">ସାହାଯ୍ୟ ଓ ମତାମତ</translation>
 <translation id="2501278716633472235">ଫେରନ୍ତୁ</translation>
@@ -77,6 +77,7 @@
 <translation id="2903493209154104877">ଠିକଣାଗୁଡ଼ିକ</translation>
 <translation id="2910701580606108292">ସାଇଟ୍‌ଗୁଡ଼ିକୁ ସୁରକ୍ଷିତ ବିଷୟବସ୍ତୁ ଚଲାଇବା ପାଇଁ ଅନୁମତି ଦେବା ପୂର୍ବରୁ, ପଚାରନ୍ତୁ</translation>
 <translation id="2913331724188855103">କୁକୀ ଡାଟାଗୁଡ଼ିକୁ ସେଭ୍ କରିବାକୁ ଏବଂ ପଢ଼ିବା ପାଇଁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଅନୁମତି ଦିଅନ୍ତୁ (ସୁପାରିଶ୍ କରାଯାଇଛି)</translation>
+<translation id="2932883381142163287">ନିର୍ଯ୍ୟାତନାର ରିପୋର୍ଟ କରନ୍ତୁ</translation>
 <translation id="2968755619301702150">ସାର୍ଟିଫିକେଟ୍‌ ଭ୍ୟୁଅର୍‌</translation>
 <translation id="300526633675317032">ଏହା ୱେବ୍‌ସାଇଟ୍‌ ଷ୍ଟୋରେଜ୍‌ର ସମସ୍ତ <ph name="SIZE_IN_KB" /> ଡାଟା ଖାଲି କରିବ।</translation>
 <translation id="3008272652534848354">ଅନୁମତି ରିସେଟ୍ କରନ୍ତୁ</translation>
@@ -89,11 +90,9 @@
 <translation id="3227137524299004712">ମାଇକ୍ରୋଫୋନ୍</translation>
 <translation id="3277252321222022663">ସେନ୍ସର୍ ଆକ୍ସେସ୍ କରିବାକୁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଅନୁମତି ଦିଅନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
 <translation id="3295602654194328831">ସୂଚନା ଲୁଚାନ୍ତୁ</translation>
-<translation id="3317660236277031814">ଆପଣ ଇନଷ୍ଟଲ୍ କରିଥିବା ଏକ ୱେବ୍ ଆପ୍ ଏହାର ଆଇକନ୍ ବଦଳାଇଛି।</translation>
 <translation id="3328801116991980348">ସାଇଟ୍‌ ସୂଚନା</translation>
 <translation id="3333961966071413176">ସମସ୍ତ ଯୋଗାଯୋଗଗୁଡ଼ିକ</translation>
 <translation id="3386292677130313581">ସାଇଟ୍‍ଗୁଡ଼ିକ ଆପଣଙ୍କର ଲୋକେସନ୍‌ ଜାଣିବା ପୂର୍ବରୁ ପଚାରନ୍ତୁ (ସୁପାରିଶ୍‌ କରାଯାଇଛି)</translation>
-<translation id="345699454248713913">ଆପଣ ଇନଷ୍ଟଲ୍ କରିଥିବା ଏକ ୱେବ୍ ଆପ୍ ଏହାର ନାମ ବଦଳାଇଛି।</translation>
 <translation id="3538390592868664640">ଆପଣଙ୍କ ପରିପାର୍ଶ୍ୱର ଏକ 3D ମ୍ୟାପ୍ ତିଆରି କରିବା ଏବଂ କ୍ୟାମେରା ସ୍ଥିତି ଟ୍ରାକ୍ କରିବାକୁ ସାଇଟଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="3551268116566418498">ଇନକଗ୍ନିଟୋ ମୋଡରୁ ବାହାରି ଯିବେ କି?</translation>
 <translation id="3586500876634962664">କ୍ୟାମେରା ଏବଂ ମାଇକ୍ରୋଫୋନର ବ୍ୟବହାର</translation>
@@ -101,6 +100,7 @@
 <translation id="3594780231884063836">ଭିଡିଓ ମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
 <translation id="3596414637720633074">ଇନକଗ୍ନିଟୋ ମୋଡରେ ତୃତୀୟ-ପକ୍ଷ କୁକୀଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="3600792891314830896">ଯେଉଁ ୱେବ୍‌ସାଇଟ୍‌ଗୁଡ଼ିକରେ ସାଉଣ୍ଡ ଚାଲୁଛି ସେଗୁଡ଼ିକୁ ମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
+<translation id="365089839707261811">ନାମ ସମ୍ବନ୍ଧିତ ଅପଡେଟଗୁଡ଼ିକର ସମୀକ୍ଷା କରନ୍ତୁ</translation>
 <translation id="3744111561329211289">ପୃଷ୍ଠପଟ ସିଙ୍କ୍‌</translation>
 <translation id="3763247130972274048">10 ସେକେଣ୍ଡ ବାଦ୍ ଦେବାକୁ ଭିଡିଓର ବାମ କିମ୍ବା ଡାହାଣକୁ ଦୁଇ ଥର ଟାପ୍ କରନ୍ତୁ</translation>
 <translation id="381841723434055211">ଫୋନ୍ ନମ୍ଵରଗୁଡ଼ିକ</translation>
@@ -118,11 +118,11 @@
 <translation id="4200726100658658164">ଲୋକେସନ୍ ସେଟିଂସ୍ ଖୋଲନ୍ତୁ</translation>
 <translation id="4226663524361240545">ବିଜ୍ଞପ୍ତି ଡିଭାଇସ୍‍କୁ ଭାଇବ୍ରେଟ୍ କରିପାରେ</translation>
 <translation id="4259722352634471385">ନାଭିଗେସନ୍ ଅବରୋଧ କରାଯାଇଛି: <ph name="URL" /></translation>
-<translation id="4277239631747669329">ଆପଣ ଇନଷ୍ଟଲ୍ କରିଥିବା ଏକ ୱେବ୍ ଆପ୍ ଏହାର ନାମ ଏବଂ ଆଇକନ୍ ବଦଳାଇଛି।</translation>
 <translation id="4278390842282768270">ଅନୁମୋଦିତ</translation>
 <translation id="429312253194641664">କୌଣସି ସାଇଟ୍ ମିଡିଆ ଚଲାଉଛି</translation>
 <translation id="42981349822642051">ପ୍ରସାରଣ କରନ୍ତୁ</translation>
 <translation id="4336434711095810371">ସମସ୍ତ ଡାଟା ଖାଲି କରନ୍ତୁ</translation>
+<translation id="4339203724549370495">ଆପ୍ ଅନଇନଷ୍ଟଲ୍ କରନ୍ତୁ</translation>
 <translation id="4402755511846832236">ଆପଣ କେତେବେଳେ ସକ୍ରିୟ ଭାବେ ଏହି ଡିଭାଇସକୁ ବ୍ୟବହାର କରୁଛନ୍ତି ତାହା ଜାଣିବାରୁ ସାଇଟଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="4434045419905280838">ପପ୍-ଅପ୍ ଏବଂ ରିଡାଇରେକ୍‌ଟ</translation>
 <translation id="445467742685312942">ସାଇଟ୍‍ଗୁଡ଼ିକୁ ସୁରକ୍ଷିତ ବିଷୟବସ୍ତୁ ଚଳାଇବାକୁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
@@ -134,13 +134,14 @@
 <translation id="4645575059429386691">ଆପଣଙ୍କର ଅଭିବାବକଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ</translation>
 <translation id="4670064810192446073">ଭର୍ଚୁଆଲ୍ ରିଆଲିଟୀ</translation>
 <translation id="4708011789095599544">ଆପଣ ଏହି ୱେବସାଇଟର କୁକୀଗୁଡ଼ିକୁ ଏବଂ ଅନ୍ୟ ସାଇଟ୍‍ ଡାଟା ଖାଲି କରିବାକୁ ଚାହୁଁଥିବା ସୁନିଶ୍ଚିତ କି?</translation>
-<translation id="473775607612524610">ଅପ୍‍‍ଡେଟ୍</translation>
 <translation id="4751476147751820511">ମୋସନ୍ କିମ୍ବା ଲାଇଟ୍ ସେନ୍ସର୍</translation>
+<translation id="4800839971935185386">ନାମ ଓ ଆଇକନ୍ ସମ୍ବନ୍ଧିତ ଅପଡେଟଗୁଡ଼ିକର ସମୀକ୍ଷା କରନ୍ତୁ</translation>
 <translation id="4836046166855586901">ଆପଣ କେତେବେଳେ ଏହି ଡିଭାଇସକୁ ସକ୍ରିୟ ଭାବରେ ବ୍ୟବହାର କରୁଛନ୍ତି ତାହା କୌଣସି ସାଇଟ୍ ଜାଣିବାକୁ ଚାହିଁଲେ ପଚାରନ୍ତୁ</translation>
 <translation id="4883854917563148705">ପରିଚାଳିତ ସେଟିଂଗୁଡ଼ିକୁ ରିସେଟ୍ କରାଯାଇପାରିବ ନାହିଁ</translation>
 <translation id="4887024562049524730">ସାଇଟଗୁଡ଼ିକୁ ଆପଣଙ୍କର ଭର୍ଚୁଆଲ୍ ରିଆଲିଟୀ ଡିଭାଇସ୍ ଏବଂ ଡାଟା ବ୍ୟବହାର କରିବାକୁ ଅନୁମତି ଦେବା ଆଗରୁ ପଚାରନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
 <translation id="4962975101802056554">ଡିଭାଇସ୍‌ପାଇଁ ଥିବା ସମସ୍ତ ଅନୁମତିଗୁଡ଼ିକ ପ୍ରତ୍ୟାହାର କରନ୍ତୁ</translation>
 <translation id="497421865427891073">ଆଗକୁ ଯାଆନ୍ତୁ</translation>
+<translation id="4976702386844183910">ଗତ ଥର <ph name="DATE" />ରେ ଭିଜିଟ୍ କରାଯାଇଛି</translation>
 <translation id="4994033804516042629">କୌଣସି ଯୋଗାଯୋଗ ମିଳିଲା ନାହିଁ</translation>
 <translation id="4996978546172906250">ଏହା ମାଧ୍ୟମରେ ସେୟାର୍ କରନ୍ତୁ</translation>
 <translation id="5039804452771397117">ଅନୁମତି</translation>
@@ -151,6 +152,7 @@
 <translation id="5123685120097942451">ଇନ୍‌କଗ୍ନିଟୋ ଟାବ୍</translation>
 <translation id="5186036860380548585">ସ୍କ୍ରିନର ଶୀର୍ଷଭାଗର ନିକଟରେ ବିକଳ୍ପ ଉପଲବ୍ଧ ଅଛି</translation>
 <translation id="5197729504361054390">ଆପଣ ଚୟନ କରିଥିବା ଯୋଗାଯୋଗଗୁଡ଼ିକ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ସହିତ ସେୟାର୍ କରାଯିବ।</translation>
+<translation id="5216942107514965959">ଆଜି ଶେଷ ଥର ଭିଜିଟ୍ କରାଯାଇଛି</translation>
 <translation id="528192093759286357">ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍‌ରୁ ପ୍ରସ୍ଥାନ କରିବାକୁ ଶୀର୍ଷରୁ ଟାଣନ୍ତୁ ଏବଂ ପଛପଟ ବଟନ୍‌କୁ ସ୍ପର୍ଶ କରନ୍ତୁ</translation>
 <translation id="5300589172476337783">ପ୍ରଦର୍ଶନ କରନ୍ତୁ</translation>
 <translation id="5301954838959518834">ଠିକ୍ ଅଛି, ବୁଝିଗଲି</translation>
@@ -159,7 +161,6 @@
 <translation id="5335288049665977812">ସାଇଟ୍‌ଗୁଡ଼ିକୁ JavaScript ଚଲାଇବା ପାଇଁ ଅନୁମତି ଦିଅନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
 <translation id="534295439873310000">NFC ଡିଭାଇସ୍‌ଗୁଡ଼ିକ</translation>
 <translation id="5354152178998424783">ଏହା ସାଇଟଗୁଡ଼ିକ ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା <ph name="DATASIZE" /> ଡାଟା ଏବଂ କୁକୀଗୁଡ଼ିକୁ ଖାଲି କରିଦେବ।</translation>
-<translation id="536508626067510330">ଆପଣଙ୍କ ମୂଳସ୍କ୍ରିନରେ ଆଇକନ୍ ଅପଡେଟ୍ କରିବେ?</translation>
 <translation id="5391532827096253100">ଏହି ସାଇଟ୍‌କୁ ଆପଣଙ୍କର ସଂଯୋଗ ସୁରକ୍ଷିତ ନୁହେଁ ସାଇଟ୍ ସୂଚନା</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1ଟି ଅଧିକ)}other{(+ #ଟି ଅଧିକ)}}</translation>
 <translation id="5403592356182871684">ନାମଗୁଡ଼ିକ</translation>
@@ -182,7 +183,7 @@
 <translation id="5804241973901381774">ଅନୁମତିଗୁଡ଼ିକ</translation>
 <translation id="5860033963881614850">ବନ୍ଦ ଅଛି</translation>
 <translation id="5876056640971328065">ଭିଡିଓ ବିରତ କରନ୍ତୁ</translation>
-<translation id="5904826301761575486">ଆପଣଙ୍କ ମୂଳସ୍କ୍ରିନରେ ନାମ ଏବଂ ଆଇକନ୍ ଅପଡେଟ୍ କରିବେ?</translation>
+<translation id="5887687176710214216">ଗତକାଲି ଶେଷଥର ଭିଜିଟ୍ କରାଯାଇଛି</translation>
 <translation id="5916664084637901428">ଚାଲୁ</translation>
 <translation id="5922853908706496913">ଆପଣଙ୍କ ସ୍କ୍ରିନ୍ ସେୟାର୍ କରାଯାଉଛି</translation>
 <translation id="5939518447894949180">ପୁନଃସେଟ୍</translation>
@@ -199,7 +200,7 @@
 <translation id="6196640612572343990">ତୃତୀୟ ପକ୍ଷ କୁକୀଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="6206551242102657620">ସଂଯୋଗ ସୁରକ୍ଷିତ ଅଟେ। ସାଇଟ୍ ସୂଚନା</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> ବିକଳ୍ପ</translation>
-<translation id="6260852843601447737">ବନ୍ଦ କରି ଅପବ୍ୟବହାରର ରିପୋର୍ଟ କରନ୍ତୁ</translation>
+<translation id="6231752747840485235">'<ph name="APP_NAME" />' କୁ ଅନଇନଷ୍ଟଲ୍ କରିବେ?</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> ଏବଂ <ph name="PERMISSION_2" />କୁ ବ୍ଲକ୍ କରାଯାଇଛି</translation>
 <translation id="6270391203985052864">ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ପଠାଇବାକୁ ସାଇଟ୍‌ଗୁଡ଼ିକ ପଚାରିପାରିବେ</translation>
 <translation id="6295158916970320988">ସମସ୍ତ ସାଇଟ୍‍ଗୁଡ଼ିକ</translation>
@@ -212,6 +213,7 @@
 <translation id="6527303717912515753">ସେୟାର୍ କରନ୍ତୁ</translation>
 <translation id="6545864417968258051">ବ୍ଲୁଟୁଥ୍ ସ୍କାନିଂ</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ଏବଂ ଅଧିକ <ph name="NUM_MORE" />ଟିକୁ ବ୍ଲକ୍ କରାଯାଇଛି}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ଏବଂ ଅଧିକ <ph name="NUM_MORE" />ଟିକୁ ବ୍ଲକ୍ କରାଯାଇଛି}}</translation>
+<translation id="6554732001434021288">ଗତ ଥର <ph name="NUM_DAYS" /> ଦିନ ପୂର୍ବେ ଭିଜିଟ୍ କରାଯାଇଛି</translation>
 <translation id="6561560012278703671">’କ୍ୱାଇଟର୍ ମେସେଜିଂ’ ବ୍ୟବହାର କରନ୍ତୁ (ଆପଣଙ୍କୁ ବାଧା ଦେବାରୁ ବିଜ୍ଞପ୍ତି ପ୍ରମ୍ପ୍ଟଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରେ)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">ସୁରକ୍ଷିତ ବିଷୟବସ୍ତୁ</translation>
@@ -253,6 +255,7 @@
 <translation id="7589445247086920869">ସାମ୍ପ୍ରତିକ ସନ୍ଧାନ ଇଞ୍ଜିନ୍ ପାଇଁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="7649070708921625228">ସହାୟତା</translation>
 <translation id="7658239707568436148">ବାତିଲ୍</translation>
+<translation id="7734541938181328224">ଆଇକନ୍ ସମ୍ବନ୍ଧିତ ଅପଡେଟଗୁଡ଼ିକର ସମୀକ୍ଷା କରନ୍ତୁ</translation>
 <translation id="7781829728241885113">ଗତକଲି</translation>
 <translation id="7791543448312431591">ଯୋଡନ୍ତୁ</translation>
 <translation id="780301667611848630">ନାଁ, ଥାଉ</translation>
@@ -294,9 +297,9 @@
 <translation id="8487700953926739672">ଅଫ୍‍ଲାଇନ୍‌ରେ ଉପଲବ୍ଧ</translation>
 <translation id="851751545965956758">ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଡିଭାଇସ୍‌ଗୁଡ଼ିକ ସହିତ ସଂଯୋଗ ହେବାରୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="8525306231823319788">ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍‌</translation>
+<translation id="857074314439694500">ଯଦି ଆପଣଙ୍କୁ ଏହା ଏକ ଭିନ୍ନ ଆପ୍ ବୋଲି ଭାବିବା ପାଇଁ ଏହି ୱେବ୍ ଆପ୍ କୌଶଳରେ ଚେଷ୍ଟା କରୁଛି, ତେବେ ଏହାକୁ ଅନଇନଷ୍ଟଲ୍ କରନ୍ତୁ।</translation>
 <translation id="857943718398505171">ଅନୁମୋଦିତ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
 <translation id="8609465669617005112">ଉପରକୁ ଚଳନ କରନ୍ତୁ</translation>
-<translation id="861748745608658996">ଆପଣଙ୍କ ମୂଳସ୍କ୍ରିନରେ ନାମ ଅପଡେଟ୍ କରିବେ?</translation>
 <translation id="8676374126336081632">ଇନ୍‌ପୁଟ୍ ଖାଲି କରନ୍ତୁ</translation>
 <translation id="868929229000858085">ଆପଣଙ୍କର ଯୋଗାଯୋଗ ସନ୍ଧାନ କରନ୍ତୁ</translation>
 <translation id="8702612070107455751">ଯେ କୌଣସି ଅଫଲାଇନ୍ ଡାଟା ଖାଲି ହୋଇଯିବ।</translation>

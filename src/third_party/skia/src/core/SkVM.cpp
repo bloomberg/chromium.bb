@@ -159,7 +159,7 @@ namespace skvm {
             size_t fBytesWritten = 0;
 
             bool write(const void* buffer, size_t size) override {
-                SkDebugf("%.*s", size, buffer);
+                SkDebugf("%.*s", (int)size, (const char*)buffer);
                 fBytesWritten += size;
                 return true;
             }
@@ -530,6 +530,8 @@ namespace skvm {
                  hi = SkOpts::hash(fProgram.data(), fProgram.size() * sizeof(Instruction), 1);
         return (uint64_t)lo | (uint64_t)hi << 32;
     }
+
+    bool operator!=(Ptr a, Ptr b) { return a.ix != b.ix; }
 
     bool operator==(const Instruction& a, const Instruction& b) {
         return a.op   == b.op
@@ -2966,7 +2968,7 @@ namespace skvm {
         fImpl->loop = 0;
         fImpl->instructions.reserve(instructions.size());
 
-        // Add a dummy mapping for the N/A sentinel Val to any arbitrary register
+        // Add a mapping for the N/A sentinel Val to any arbitrary register
         // so lookups don't have to know which arguments are used by which Ops.
         auto lookup_register = [&](Val id) {
             return id == NA ? (Reg)0

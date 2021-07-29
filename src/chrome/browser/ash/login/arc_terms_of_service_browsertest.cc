@@ -29,11 +29,10 @@
 #include "chrome/browser/ash/login/test/webview_content_extractor.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/core/device_local_account.h"
+#include "chrome/browser/ash/policy/core/device_policy_builder.h"
+#include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -48,6 +47,7 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
+#include "components/policy/core/common/cloud/test/policy_builder.h"
 #include "components/prefs/pref_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/test/browser_test.h"
@@ -161,7 +161,6 @@ class ArcTermsOfServiceScreenTest : public OobeBaseTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kArcAvailability,
                                     "officially-supported");
-    command_line->AppendSwitch(chromeos::switches::kDisableEncryptionMigration);
     command_line->AppendSwitchASCII(switches::kArcTosHostForTests,
                                     TestServerBaseUrl());
     OobeBaseTest::SetUpCommandLine(command_line);

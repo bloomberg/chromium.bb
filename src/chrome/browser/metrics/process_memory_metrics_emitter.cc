@@ -13,9 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "build/build_config.h"
@@ -214,8 +214,8 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      kEffectiveSize, EmitTo::kSizeInUkmAndUma,
      &Memory_Experimental::SetMalloc_AllocatedObjects},
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-    {"malloc/thread_cache", "Malloc.ThreadCache", MetricSize::kSmall, kSize,
-     EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/partitions/allocator/thread_cache", "Malloc.ThreadCache",
+     MetricSize::kSmall, kSize, EmitTo::kSizeInUmaOnly, nullptr},
 #endif
     {"mojo", "NumberOfMojoHandles", MetricSize::kSmall,
      MemoryAllocatorDump::kNameObjectCount, EmitTo::kCountsInUkmOnly,
@@ -242,6 +242,12 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      &Memory_Experimental::SetNet_UrlRequestContext},
     {"omnibox", "OmniboxSuggestions", MetricSize::kSmall, kEffectiveSize,
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetOmniboxSuggestions},
+    {"parkable_images", "ParkableImage.OnDiskSize", MetricSize::kSmall,
+     "on_disk_size", EmitTo::kSizeInUmaOnly, nullptr},
+    {"parkable_images", "ParkableImage.UnparkedSize", MetricSize::kSmall,
+     "unparked_size", EmitTo::kSizeInUmaOnly, nullptr},
+    {"parkable_images", "ParkableImage.TotalSize", MetricSize::kSmall,
+     "total_size", EmitTo::kSizeInUmaOnly, nullptr},
     {"partition_alloc", "PartitionAlloc", MetricSize::kLarge, kEffectiveSize,
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetPartitionAlloc},
     {"partition_alloc/allocated_objects", "PartitionAlloc.AllocatedObjects",

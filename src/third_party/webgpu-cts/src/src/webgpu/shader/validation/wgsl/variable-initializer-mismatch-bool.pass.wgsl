@@ -2,6 +2,6 @@
 
 var<private> flag : bool  = true;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn main() {
 }

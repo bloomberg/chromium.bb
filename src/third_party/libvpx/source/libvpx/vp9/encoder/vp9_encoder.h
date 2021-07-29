@@ -291,6 +291,7 @@ typedef struct VP9EncoderConfig {
   int row_mt;
   unsigned int motion_vector_unit_test;
   int delta_q_uv;
+  int use_simple_encode_api;  // Use SimpleEncode APIs or not
 } VP9EncoderConfig;
 
 static INLINE int is_lossless_requested(const VP9EncoderConfig *cfg) {
@@ -746,6 +747,7 @@ typedef struct VP9_COMP {
   // Ambient reconstruction err target for force key frames
   int64_t ambient_err;
 
+  RD_CONTROL rd_ctrl;
   RD_OPT rd;
 
   CODING_CONTEXT coding_context;

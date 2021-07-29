@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">列印</translation>
 <translation id="1467231725790366244">已解除連接「<ph name="CAMERA" />」。</translation>
 <translation id="1473110567575736769">3 秒計時器</translation>
+<translation id="1478594628797167447">掃描器</translation>
+<translation id="1545749641540134597">掃描 QR 圖碼</translation>
 <translation id="1620510694547887537">攝影機</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">未錄製任何內容</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">直向</translation>
 <translation id="2064538373111010176">「<ph name="CAMERA" />」已啟用</translation>
 <translation id="2144806332417375165">自訂影片參數</translation>
+<translation id="2175927920773552910">QR 圖碼</translation>
+<translation id="2268107369530950373">切換為掃描器模式</translation>
 <translation id="229579744168541441">匯出至磁碟</translation>
 <translation id="2320741269052147773">向左平移</translation>
 <translation id="2501278716633472235">返回</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">麥克風</translation>
 <translation id="3240426699337459095">連結已複製</translation>
 <translation id="3259149966178251584">相機解析度</translation>
+<translation id="3448774564454087943">無法儲存長度太短的影片</translation>
 <translation id="3517926952904427380">無法拍攝肖像相片</translation>
 <translation id="3569311554794739032">確定要移除「<ph name="FILE" />」嗎？</translation>
 <translation id="3733597664308256288">已推出新的相機控制項。按下搜尋鍵 + 向右鍵即可使用。</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">相片</translation>
 <translation id="4649291346448517080">無法儲存檔案</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">錄製多串流視訊</translation>
 <translation id="5057360777601936059">目前無法使用相機。
         請檢查相機是否已正確連接。</translation>
 <translation id="5152121255775685072">前往圖片庫</translation>
+<translation id="5268823927180092501">針對所有相機啟用文件模式</translation>
 <translation id="5422455049771430511">你的相片和影片有新家了</translation>
 <translation id="5671277269877808209">正方形</translation>
+<translation id="5753488212459587150">啟用專家模式</translation>
 <translation id="5775960006311140197">專家模式</translation>
 <translation id="5869546221129391014">格線</translation>
 <translation id="5975083100439434680">縮小</translation>

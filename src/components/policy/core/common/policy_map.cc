@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -327,6 +326,10 @@ void PolicyMap::SetAllInvalid() {
 
 void PolicyMap::Erase(const std::string& policy) {
   map_.erase(policy);
+}
+
+PolicyMap::iterator PolicyMap::EraseIt(const_iterator it) {
+  return map_.erase(it);
 }
 
 void PolicyMap::EraseMatching(

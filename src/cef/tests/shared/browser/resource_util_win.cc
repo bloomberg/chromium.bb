@@ -14,7 +14,7 @@ namespace client {
 namespace {
 
 bool LoadBinaryResource(int binaryId, DWORD& dwSize, LPBYTE& pBytes) {
-  HINSTANCE hInst = GetModuleHandle(NULL);
+  HINSTANCE hInst = GetModuleHandle(nullptr);
   HRSRC hRes =
       FindResource(hInst, MAKEINTRESOURCE(binaryId), MAKEINTRESOURCE(256));
   if (hRes) {
@@ -43,7 +43,7 @@ class BinaryResourceProvider : public CefResourceManager::Provider {
     }
   }
 
-  bool OnRequest(scoped_refptr<CefResourceManager::Request> request) OVERRIDE {
+  bool OnRequest(scoped_refptr<CefResourceManager::Request> request) override {
     CEF_REQUIRE_IO_THREAD();
 
     const std::string& url = request->url();

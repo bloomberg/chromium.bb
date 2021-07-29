@@ -330,7 +330,7 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
       const viewRect = scrollParentElement.getBoundingClientRect();
 
       const currentScrollX = viewRect.left - treeRect.left;
-      const currentScrollY = viewRect.top - treeRect.top;
+      const currentScrollY = viewRect.top - treeRect.top + this.contentElement.offsetTop;
 
       // Only scroll into view on each axis if the item is not visible at all
       // but if we do scroll and _centerUponScrollIntoView is true
@@ -381,18 +381,20 @@ export class TreeOutlineInShadow extends TreeOutline {
   constructor() {
     super();
     this.contentElement.classList.add('tree-outline');
-    this.element = (document.createElement('div') as HTMLElement);
-    this._shadowRoot = createShadowRootWithCoreStyles(
-        this.element, {cssFile: 'ui/legacy/treeoutline.css', enableLegacyPatching: true, delegatesFocus: undefined});
+    this.element = document.createElement('div');
+    this._shadowRoot =
+        createShadowRootWithCoreStyles(this.element, {cssFile: 'ui/legacy/treeoutline.css', delegatesFocus: undefined});
     this._disclosureElement = this._shadowRoot.createChild('div', 'tree-outline-disclosure');
     this._disclosureElement.appendChild(this.contentElement);
     this._renderSelection = true;
   }
 
-  registerRequiredCSS(cssFile: string, options: {
-    enableLegacyPatching: boolean,
-  }): void {
-    appendStyle(this._shadowRoot, cssFile, options);
+  registerRequiredCSS(cssFile: string): void {
+    appendStyle(this._shadowRoot, cssFile);
+  }
+
+  registerCSSFiles(cssFiles: CSSStyleSheet[]): void {
+    this._shadowRoot.adoptedStyleSheets = this._shadowRoot.adoptedStyleSheets.concat(cssFiles);
   }
 
   hideOverflow(): void {
@@ -445,7 +447,7 @@ export class TreeElement {
     this.nextSibling = null;
     this._boundOnFocus = this._onFocus.bind(this);
     this._boundOnBlur = this._onBlur.bind(this);
-    this._listItemNode = (document.createElement('li') as HTMLLIElement);
+    this._listItemNode = document.createElement('li');
 
     this.titleElement = this._listItemNode.createChild('span', 'tree-element-title');
     treeElementBylistItemNode.set(this._listItemNode, this);
@@ -772,7 +774,7 @@ export class TreeElement {
       return;
     }
     if (!this._leadingIconsElement) {
-      this._leadingIconsElement = (document.createElement('div') as HTMLElement);
+      this._leadingIconsElement = document.createElement('div');
       this._leadingIconsElement.classList.add('leading-icons');
       this._leadingIconsElement.classList.add('icons-container');
       this._listItemNode.insertBefore(this._leadingIconsElement, this.titleElement);
@@ -789,7 +791,7 @@ export class TreeElement {
       return;
     }
     if (!this._trailingIconsElement) {
-      this._trailingIconsElement = (document.createElement('div') as HTMLElement);
+      this._trailingIconsElement = document.createElement('div');
       this._trailingIconsElement.classList.add('trailing-icons');
       this._trailingIconsElement.classList.add('icons-container');
       this._listItemNode.appendChild(this._trailingIconsElement);
@@ -879,7 +881,7 @@ export class TreeElement {
       return;
     }
     if (!this._selectionElement) {
-      this._selectionElement = (document.createElement('div') as HTMLElement);
+      this._selectionElement = document.createElement('div');
       this._selectionElement.classList.add('selection');
       this._selectionElement.classList.add('fill');
     }
@@ -1128,8 +1130,8 @@ export class TreeElement {
     }
 
     if (this._listItemNode.draggable && this._selectionElement && this.treeOutline) {
-      const marginLeft =
-          this.treeOutline.element.getBoundingClientRect().left - this._listItemNode.getBoundingClientRect().left;
+      const marginLeft = this.treeOutline.element.getBoundingClientRect().left -
+          this._listItemNode.getBoundingClientRect().left - this.treeOutline.element.scrollLeft;
       // By default the left margin extends far off screen. This is not a problem except when dragging an element.
       // Setting the margin once here should be fine, because we believe the left margin should never change.
       this._selectionElement.style.setProperty('margin-left', marginLeft + 'px');

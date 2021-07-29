@@ -47,7 +47,6 @@
 #include "base/files/scoped_file.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
@@ -63,7 +62,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/content/browser/mojo_safe_browsing_impl.h"
-#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -99,6 +98,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -588,9 +588,14 @@ AwContentBrowserClient::CreateThrottlesForNavigation(
     // doesn't actually call into an arbitrary client, it just posts a task to
     // call onPageStarted. shouldOverrideUrlLoading happens earlier (see
     // ContentBrowserClient::ShouldOverrideUrlLoading).
-    throttles.push_back(
-        navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
-            navigation_handle, navigation_interception::SynchronyMode::kSync));
+    std::unique_ptr<content::NavigationThrottle> intercept_navigation_throttle =
+        navigation_interception::InterceptNavigationDelegate::
+            MaybeCreateThrottleFor(
+                navigation_handle,
+                navigation_interception::SynchronyMode::kSync);
+    if (intercept_navigation_throttle)
+      throttles.push_back(std::move(intercept_navigation_throttle));
+
     throttles.push_back(std::make_unique<PolicyBlocklistNavigationThrottle>(
         navigation_handle,
         AwBrowserContext::FromWebContents(navigation_handle->GetWebContents()),
@@ -785,7 +790,7 @@ AwContentBrowserClient::CreateLoginDelegate(
 
 bool AwContentBrowserClient::HandleExternalProtocol(
     const GURL& url,
-    content::WebContents::OnceGetter web_contents_getter,
+    content::WebContents::Getter web_contents_getter,
     int child_id,
     int frame_tree_node_id,
     content::NavigationUIData* navigation_data,

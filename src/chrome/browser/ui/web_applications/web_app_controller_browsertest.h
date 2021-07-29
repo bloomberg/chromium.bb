@@ -5,15 +5,16 @@
 #ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_CONTROLLER_BROWSERTEST_H_
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_CONTROLLER_BROWSERTEST_H_
 
-#include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
+
+class Profile;
 
 namespace base {
 class CommandLine;
@@ -25,20 +26,20 @@ class WebContents;
 
 namespace web_app {
 
-class WebAppProviderBase;
+class WebAppProvider;
 
 // Base class for tests of user interface support for web applications.
-class WebAppControllerBrowserTestBase
-    : public extensions::ExtensionBrowserTest {
+class WebAppControllerBrowserTest : public InProcessBrowserTest {
  public:
-  WebAppControllerBrowserTestBase();
-  WebAppControllerBrowserTestBase(const WebAppControllerBrowserTestBase&) =
+  WebAppControllerBrowserTest();
+  WebAppControllerBrowserTest(const WebAppControllerBrowserTest&) = delete;
+  WebAppControllerBrowserTest& operator=(const WebAppControllerBrowserTest&) =
       delete;
-  WebAppControllerBrowserTestBase& operator=(
-      const WebAppControllerBrowserTestBase&) = delete;
-  ~WebAppControllerBrowserTestBase() override = 0;
+  ~WebAppControllerBrowserTest() override = 0;
 
-  WebAppProviderBase& provider();
+  WebAppProvider& provider();
+
+  Profile* profile();
 
   AppId InstallPWA(const GURL& app_url);
 
@@ -56,6 +57,15 @@ class WebAppControllerBrowserTestBase
   // Launches the app as a tab and returns the browser.
   Browser* LaunchBrowserForWebAppInTab(const AppId&);
 
+  // Simulates a page calling window.open on an URL and waits for the
+  // navigation.
+  content::WebContents* OpenWindow(content::WebContents* contents,
+                                   const GURL& url);
+
+  // Simulates a page navigating itself to an URL and waits for the
+  // navigation.
+  void NavigateInRenderer(content::WebContents* contents, const GURL& url);
+
   // Returns whether the installable check passed.
   static bool NavigateAndAwaitInstallabilityCheck(Browser* browser,
                                                   const GURL& url);
@@ -63,17 +73,10 @@ class WebAppControllerBrowserTestBase
   Browser* NavigateInNewWindowAndAwaitInstallabilityCheck(const GURL&);
 
   absl::optional<AppId> FindAppWithUrlInScope(const GURL& url);
-};
-
-class WebAppControllerBrowserTest : public WebAppControllerBrowserTestBase {
- public:
-  WebAppControllerBrowserTest();
-  ~WebAppControllerBrowserTest() override = 0;
-
-  // ExtensionBrowserTest:
-  void SetUp() override;
 
  protected:
+  ScopedOsHooksSuppress os_hooks_suppress_;
+
   content::WebContents* OpenApplication(const AppId&);
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
@@ -81,7 +84,8 @@ class WebAppControllerBrowserTest : public WebAppControllerBrowserTestBase {
   GURL GetInstallableAppURL();
   static const char* GetInstallableAppName();
 
-  // ExtensionBrowserTest:
+  // InProcessBrowserTest:
+  void SetUp() override;
   void SetUpInProcessBrowserTestFixture() override;
   void TearDownInProcessBrowserTestFixture() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
@@ -94,10 +98,6 @@ class WebAppControllerBrowserTest : public WebAppControllerBrowserTestBase {
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
   // used by the NetworkService.
   content::ContentMockCertVerifier cert_verifier_;
-
-  ScopedOsHooksSuppress os_hooks_suppress_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebAppControllerBrowserTest);
 };
 
 }  // namespace web_app

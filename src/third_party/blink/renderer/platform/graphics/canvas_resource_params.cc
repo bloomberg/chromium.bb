@@ -24,14 +24,11 @@ gfx::ColorSpace CanvasColorSpaceToGfxColorSpace(CanvasColorSpace color_space) {
   switch (color_space) {
     case CanvasColorSpace::kSRGB:
       return gfx::ColorSpace::CreateSRGB();
-      break;
     case CanvasColorSpace::kRec2020:
       return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
                              gfx::ColorSpace::TransferID::GAMMA24);
-      break;
     case CanvasColorSpace::kP3:
       return gfx::ColorSpace::CreateDisplayP3D65();
-      break;
   }
   NOTREACHED();
 }
@@ -53,8 +50,7 @@ CanvasResourceParams::CanvasResourceParams(const SkImageInfo& info)
 }
 
 SkSurfaceProps CanvasResourceParams::GetSkSurfaceProps() const {
-  bool can_use_lcd_text = (alpha_type_ == kOpaque_SkAlphaType);
-  return skia::LegacyDisplayGlobals::ComputeSurfaceProps(can_use_lcd_text);
+  return skia::LegacyDisplayGlobals::ComputeSurfaceProps(CanUseLcdText());
 }
 
 uint8_t CanvasResourceParams::BytesPerPixel() const {

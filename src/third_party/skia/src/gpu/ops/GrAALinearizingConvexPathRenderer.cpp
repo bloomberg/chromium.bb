@@ -179,7 +179,7 @@ public:
 
     const char* name() const override { return "AAFlatteningConvexPathOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
         if (fProgramInfo) {
             fProgramInfo->visitFPProxies(func);
         } else {
@@ -202,8 +202,9 @@ private:
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&& appliedClip,
-                             const GrXferProcessor::DstProxyView& dstProxyView,
+                             const GrDstProxyView& dstProxyView,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override {
         GrGeometryProcessor* gp = create_lines_only_gp(arena,
@@ -221,7 +222,7 @@ private:
                                                             renderPassXferBarriers, colorLoadOp);
     }
 
-    void recordDraw(Target* target,
+    void recordDraw(GrMeshDrawTarget* target,
                     int vertexCount, size_t vertexStride, void* vertices,
                     int indexCount, uint16_t* indices) {
         if (vertexCount == 0 || indexCount == 0) {
@@ -251,7 +252,7 @@ private:
         fMeshes.push_back(mesh);
     }
 
-    void onPrepareDraws(Target* target) override {
+    void onPrepareDraws(GrMeshDrawTarget* target) override {
         if (!fProgramInfo) {
             this->createProgramInfo(target);
             if (!fProgramInfo) {
@@ -388,9 +389,9 @@ private:
 }  // anonymous namespace
 
 bool GrAALinearizingConvexPathRenderer::onDrawPath(const DrawPathArgs& args) {
-    GR_AUDIT_TRAIL_AUTO_FRAME(args.fRenderTargetContext->auditTrail(),
+    GR_AUDIT_TRAIL_AUTO_FRAME(args.fContext->priv().auditTrail(),
                               "GrAALinearizingConvexPathRenderer::onDrawPath");
-    SkASSERT(args.fRenderTargetContext->numSamples() <= 1);
+    SkASSERT(args.fSurfaceDrawContext->numSamples() <= 1);
     SkASSERT(!args.fShape->isEmpty());
     SkASSERT(!args.fShape->style().pathEffect());
 
@@ -405,7 +406,7 @@ bool GrAALinearizingConvexPathRenderer::onDrawPath(const DrawPathArgs& args) {
     GrOp::Owner op = AAFlatteningConvexPathOp::Make(
             args.fContext, std::move(args.fPaint), *args.fViewMatrix, path, strokeWidth,
             stroke.getStyle(), join, miterLimit, args.fUserStencilSettings);
-    args.fRenderTargetContext->addDrawOp(args.fClip, std::move(op));
+    args.fSurfaceDrawContext->addDrawOp(args.fClip, std::move(op));
     return true;
 }
 

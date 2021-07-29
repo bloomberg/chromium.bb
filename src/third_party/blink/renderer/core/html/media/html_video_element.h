@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 namespace blink {
 class ImageBitmapOptions;
@@ -110,8 +109,10 @@ class CORE_EXPORT HTMLVideoElement final
       bool allow_accelerated_images = true);
 
   // CanvasImageSource implementation
-  scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                               const FloatSize&) override;
+  scoped_refptr<Image> GetSourceImageForCanvas(
+      SourceImageStatus*,
+      const FloatSize&,
+      const AlphaDisposition alpha_disposition = kPremultiplyAlpha) override;
   bool IsVideoElement() const override { return true; }
   bool WouldTaintOrigin() const override;
   FloatSize ElementSize(const FloatSize&,

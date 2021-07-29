@@ -9,6 +9,7 @@ interface AbortController
     method abort
     method constructor
 interface AbortSignal : EventTarget
+    static method abort
     attribute @@toStringTag
     getter aborted
     getter onabort
@@ -231,16 +232,27 @@ interface AnimationTimeline
     method constructor
 interface AppHistory : EventTarget
     attribute @@toStringTag
+    getter canGoBack
+    getter canGoForward
     getter current
     getter onnavigate
     getter onnavigateerror
     getter onnavigatesuccess
+    method back
     method constructor
     method entries
+    method forward
+    method goTo
     method navigate
     setter onnavigate
     setter onnavigateerror
     setter onnavigatesuccess
+interface AppHistoryDestination
+    attribute @@toStringTag
+    getter sameDocument
+    getter url
+    method constructor
+    method getState
 interface AppHistoryEntry : EventTarget
     attribute @@toStringTag
     getter id
@@ -253,6 +265,7 @@ interface AppHistoryEntry : EventTarget
 interface AppHistoryNavigateEvent : Event
     attribute @@toStringTag
     getter canRespond
+    getter destination
     getter formData
     getter hashChange
     getter info
@@ -270,6 +283,10 @@ interface Attr : Node
     getter value
     method constructor
     setter value
+interface AttributionReporting
+    attribute @@toStringTag
+    method constructor
+    method registerAttributionSource
 interface Audio
     attribute @@toStringTag
     method constructor
@@ -310,11 +327,17 @@ interface AudioContext : BaseAudioContext
     method suspend
 interface AudioData
     attribute @@toStringTag
-    getter buffer
+    getter duration
+    getter format
+    getter numberOfChannels
+    getter numberOfFrames
+    getter sampleRate
     getter timestamp
+    method allocationSize
     method clone
     method close
     method constructor
+    method copyTo
 interface AudioDecoder
     static method isConfigSupported
     attribute @@toStringTag
@@ -1085,6 +1108,7 @@ interface CanvasRenderingContext2D
     method addHitRegion
     method arc
     method arcTo
+    method beginLayer
     method beginPath
     method bezierCurveTo
     method clearHitRegions
@@ -1100,6 +1124,7 @@ interface CanvasRenderingContext2D
     method drawFocusIfNeeded
     method drawImage
     method ellipse
+    method endLayer
     method fill
     method fillFormattedText
     method fillRect
@@ -1164,7 +1189,7 @@ interface CanvasRenderingContext2D
     setter textWordSpacing
 interface CaptureHandleChangeEvent : Event
     attribute @@toStringTag
-    getter captureHandle
+    method captureHandle
     method constructor
 interface ChannelMergerNode : AudioNode
     attribute @@toStringTag
@@ -1211,10 +1236,6 @@ interface CloseEvent : Event
     getter code
     getter reason
     getter wasClean
-    method constructor
-interface ColorSelectEvent : PointerEvent
-    attribute @@toStringTag
-    getter value
     method constructor
 interface Comment : CharacterData
     attribute @@toStringTag
@@ -1651,9 +1672,17 @@ interface DataTransferItemList
     method remove
 interface DatagramDuplexStream
     attribute @@toStringTag
+    getter incomingHighWaterMark
+    getter incomingMaxAge
+    getter outgoingHighWaterMark
+    getter outgoingMaxAge
     getter readable
     getter writable
     method constructor
+    setter incomingHighWaterMark
+    setter incomingMaxAge
+    setter outgoingHighWaterMark
+    setter outgoingMaxAge
 interface DecompressionStream
     attribute @@toStringTag
     getter readable
@@ -1695,6 +1724,12 @@ interface DeviceOrientationEvent : Event
     getter beta
     getter gamma
     method constructor
+interface DevicePosture : EventTarget
+    attribute @@toStringTag
+    getter onchange
+    getter type
+    method constructor
+    setter onchange
 interface Document : Node
     attribute @@toStringTag
     attribute @@unscopables
@@ -1914,7 +1949,6 @@ interface Document : Node
     method getSelection
     method hasFocus
     method hasStorageAccess
-    method hasTrustToken
     method importNode
     method open
     method prepend
@@ -2269,6 +2303,7 @@ interface Element : Node
     method setAttributeNS
     method setAttributeNode
     method setAttributeNodeNS
+    method setHTML
     method setPointerCapture
     method toggleAttribute
     method webkitMatchesSelector
@@ -2454,17 +2489,19 @@ interface ElementInternals
     setter role
 interface EncodedAudioChunk
     attribute @@toStringTag
-    getter data
+    getter byteLength
     getter timestamp
     getter type
     method constructor
+    method copyTo
 interface EncodedVideoChunk
     attribute @@toStringTag
-    getter data
+    getter byteLength
     getter duration
     getter timestamp
     getter type
     method constructor
+    method copyTo
 interface ErrorEvent : Event
     attribute @@toStringTag
     getter colno
@@ -2538,16 +2575,10 @@ interface External
     method AddSearchProvider
     method IsSearchProviderInstalled
     method constructor
-interface EyeDropper : EventTarget
+interface EyeDropper
     attribute @@toStringTag
-    getter onclose
-    getter oncolorselect
-    getter opened
-    method close
     method constructor
     method open
-    setter onclose
-    setter oncolorselect
 interface FaceDetector
     attribute @@toStringTag
     method constructor
@@ -2628,6 +2659,7 @@ interface FileSystemHandle
     method constructor
     method isSameEntry
     method queryPermission
+    method remove
     method requestPermission
 interface FileSystemWritableFileStream : WritableStream
     attribute @@toStringTag
@@ -3526,7 +3558,6 @@ interface HTMLIFrameElement : HTMLElement
     getter contentDocument
     getter contentWindow
     getter csp
-    getter disallowDocumentAccess
     getter featurePolicy
     getter frameBorder
     getter height
@@ -3541,7 +3572,6 @@ interface HTMLIFrameElement : HTMLElement
     getter scrolling
     getter src
     getter srcdoc
-    getter trustToken
     getter width
     method constructor
     method getSVGDocument
@@ -3550,7 +3580,6 @@ interface HTMLIFrameElement : HTMLElement
     setter allowFullscreen
     setter allowPaymentRequest
     setter csp
-    setter disallowDocumentAccess
     setter frameBorder
     setter height
     setter loading
@@ -3564,7 +3593,6 @@ interface HTMLIFrameElement : HTMLElement
     setter scrolling
     setter src
     setter srcdoc
-    setter trustToken
     setter width
 interface HTMLImageElement : HTMLElement
     attribute @@toStringTag
@@ -3899,11 +3927,13 @@ interface HTMLMetaElement : HTMLElement
     attribute @@toStringTag
     getter content
     getter httpEquiv
+    getter media
     getter name
     getter scheme
     method constructor
     setter content
     setter httpEquiv
+    setter media
     setter name
     setter scheme
 interface HTMLMeterElement : HTMLElement
@@ -4154,6 +4184,7 @@ interface HTMLSelectElement : HTMLElement
     setter value
 interface HTMLSelectMenuElement : HTMLElement
     attribute @@toStringTag
+    getter open
     getter value
     method constructor
     setter value
@@ -4470,7 +4501,6 @@ interface Headers
     method values
 interface Highlight
     attribute @@toStringTag
-    getter name
     getter priority
     getter size
     method @@iterator
@@ -4488,14 +4518,15 @@ interface HighlightRegistry
     attribute @@toStringTag
     getter size
     method @@iterator
-    method add
     method clear
     method constructor
     method delete
     method entries
     method forEach
+    method get
     method has
     method keys
+    method set
     method values
 interface History
     attribute @@toStringTag
@@ -5335,6 +5366,8 @@ interface MediaSession
     getter playbackState
     method constructor
     method setActionHandler
+    method setCameraActive
+    method setMicrophoneActive
     method setPositionState
     setter metadata
     setter playbackState
@@ -5408,6 +5441,7 @@ interface MediaStreamTrack : EventTarget
     method clone
     method constructor
     method getCapabilities
+    method getCaptureHandle
     method getConstraints
     method getSettings
     method stop
@@ -5674,6 +5708,7 @@ interface Navigator
     getter cookieEnabled
     getter credentials
     getter deviceMemory
+    getter devicePosture
     getter doNotTrack
     getter geolocation
     getter hardwareConcurrency
@@ -5712,6 +5747,7 @@ interface Navigator
     getter webdriver
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
+    getter windowControlsOverlay
     getter xr
     method canShare
     method clearAppBadge
@@ -5747,8 +5783,10 @@ interface NavigatorUAData
     attribute @@toStringTag
     getter brands
     getter mobile
+    getter platform
     method constructor
     method getHighEntropyValues
+    method toJSON
 interface NetworkInformation : EventTarget
     attribute @@toStringTag
     getter downlink
@@ -5923,6 +5961,7 @@ interface OffscreenCanvasRenderingContext2D
     getter textWordSpacing
     method arc
     method arcTo
+    method beginLayer
     method beginPath
     method bezierCurveTo
     method clearRect
@@ -5937,12 +5976,14 @@ interface OffscreenCanvasRenderingContext2D
     method createRadialGradient
     method drawImage
     method ellipse
+    method endLayer
     method fill
     method fillRect
     method fillText
     method getImageData
     method getLineDash
     method getTransform
+    method isContextLost
     method isPointInPath
     method isPointInStroke
     method lineTo
@@ -6179,7 +6220,6 @@ interface Performance : EventTarget
     method mark
     method measure
     method now
-    method profile
     method setResourceTimingBufferSize
     method toJSON
     setter onresourcetimingbufferfull
@@ -6353,13 +6393,6 @@ interface PictureInPictureWindow : EventTarget
     getter width
     method constructor
     setter onresize
-interface Plane
-    attribute @@toStringTag
-    getter length
-    getter rows
-    getter stride
-    method constructor
-    method readInto
 interface Plugin
     attribute @@toStringTag
     getter description
@@ -6883,7 +6916,7 @@ interface ReadableStreamDefaultReader
     method constructor
     method read
     method releaseLock
-interface ReceiveStream
+interface ReceiveStream : ReadableStream
     attribute @@toStringTag
     getter readable
     getter readingAborted
@@ -8110,12 +8143,12 @@ interface SVGViewElement : SVGElement
     method constructor
     setter zoomAndPan
 interface Sanitizer
-    static method defaultConfig
+    static method getDefaultConfiguration
     attribute @@toStringTag
-    method config
     method constructor
+    method getConfiguration
     method sanitize
-    method sanitizeToString
+    method sanitizeFor
 interface Scheduler
     attribute @@toStringTag
     getter currentTaskSignal
@@ -8134,17 +8167,10 @@ interface Screen
     getter availWidth
     getter colorDepth
     getter height
-    getter id
-    getter internal
     getter isExtended
-    getter left
     getter onchange
     getter orientation
     getter pixelDepth
-    getter primary
-    getter scaleFactor
-    getter top
-    getter touchSupport
     getter width
     method addEventListener
     method constructor
@@ -9038,6 +9064,14 @@ interface ValidityState
     getter valid
     getter valueMissing
     method constructor
+interface VideoColorSpace
+    attribute @@toStringTag
+    getter fullRange
+    getter matrix
+    getter primaries
+    getter transfer
+    method constructor
+    method toJSON
 interface VideoDecoder
     static method isConfigSupported
     attribute @@toStringTag
@@ -9063,24 +9097,20 @@ interface VideoEncoder
 interface VideoFrame
     attribute @@toStringTag
     getter codedHeight
-    getter codedRegion
+    getter codedRect
     getter codedWidth
-    getter cropHeight
-    getter cropLeft
-    getter cropTop
-    getter cropWidth
+    getter colorSpace
     getter displayHeight
     getter displayWidth
     getter duration
     getter format
-    getter planes
     getter timestamp
-    getter visibleRegion
+    getter visibleRect
     method allocationSize
     method clone
     method close
     method constructor
-    method readInto
+    method copyTo
 interface VideoPlaybackQuality
     attribute @@toStringTag
     getter corruptedVideoFrames
@@ -10544,6 +10574,7 @@ interface WebTransport
     getter closed
     getter datagramReadable
     getter datagramWritable
+    getter datagrams
     getter incomingBidirectionalStreams
     getter incomingUnidirectionalStreams
     getter ready
@@ -10569,6 +10600,18 @@ interface Window : EventTarget
     attribute @@toStringTag
     attribute PERSISTENT
     attribute TEMPORARY
+    method constructor
+interface WindowControlsOverlay : EventTarget
+    attribute @@toStringTag
+    getter ongeometrychange
+    getter visible
+    method constructor
+    method getBoundingClientRect
+    setter ongeometrychange
+interface WindowControlsOverlayGeometryChangeEvent : Event
+    attribute @@toStringTag
+    getter boundingRect
+    getter visible
     method constructor
 interface Worker : EventTarget
     attribute @@toStringTag
@@ -10604,6 +10647,10 @@ interface WritableStream
     method close
     method constructor
     method getWriter
+interface WritableStreamDefaultController
+    attribute @@toStringTag
+    method constructor
+    method error
 interface WritableStreamDefaultWriter
     attribute @@toStringTag
     getter closed
@@ -10634,7 +10681,6 @@ interface XMLHttpRequest : XMLHttpRequestEventTarget
     getter status
     getter statusText
     getter timeout
-    getter trustTokenOperationError
     getter upload
     getter withCredentials
     method abort
@@ -10645,7 +10691,6 @@ interface XMLHttpRequest : XMLHttpRequestEventTarget
     method overrideMimeType
     method send
     method setRequestHeader
-    method setTrustToken
     setter onreadystatechange
     setter responseType
     setter timeout
@@ -11229,6 +11274,7 @@ namespace CSS
     attribute testRunner
     attribute textInputController
     getter appHistory
+    getter attributionReporting
     getter caches
     getter clientInformation
     getter closed
@@ -11341,7 +11387,6 @@ namespace CSS
     getter onrejectionhandled
     getter onreset
     getter onresize
-    getter onscreenschange
     getter onscroll
     getter onscrollend
     getter onsearch
@@ -11429,10 +11474,8 @@ namespace CSS
     method getDigitalGoodsService
     method getLockScreenData
     method getScreens
-    method getScreensDeprecated
     method getSelection
     method getWindowSegments
-    method isMultiScreen
     method matchMedia
     method moveBy
     method moveTo
@@ -11558,7 +11601,6 @@ namespace CSS
     setter onrejectionhandled
     setter onreset
     setter onresize
-    setter onscreenschange
     setter onscroll
     setter onscrollend
     setter onsearch

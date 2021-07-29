@@ -70,7 +70,14 @@ class CONTENT_EXPORT OptionalNSObject final {
 // Invokes attributes matching the given property filter.
 class CONTENT_EXPORT AttributeInvoker final {
  public:
-  AttributeInvoker(const LineIndexer* line_indexer);
+  // Generic version, all calls are executed in context of property nodes.
+  // Note: both |line_indexer| and |storage| must outlive this object.
+  AttributeInvoker(const LineIndexer* line_indexer,
+                   std::map<std::string, id>* storage);
+
+  // Single target version, all calls are executed in the context of the given
+  // target node.
+  // Note: |line_indexer| must outlive this object.
   AttributeInvoker(const id node, const LineIndexer* line_indexer);
 
   // Invokes an attribute matching to a property filter.
@@ -85,14 +92,32 @@ class CONTENT_EXPORT AttributeInvoker final {
                 const OptionalNSObject& value) const;
 
  private:
-  // Returns an accessible object of the given property node or default one.
-  id TargetOf(const ui::AXPropertyNode& property_node) const;
+  // Invokes a property node for a given target.
+  OptionalNSObject InvokeFor(const id target,
+                             const ui::AXPropertyNode& property_node) const;
+
+  // Invokes a property node for a given AXElement.
+  OptionalNSObject InvokeForAXElement(
+      const id target,
+      const ui::AXPropertyNode& property_node) const;
+
+  // Invokes a property node for a given AXTextMarkerRange.
+  OptionalNSObject InvokeForAXTextMarkerRange(
+      const id target,
+      const ui::AXPropertyNode& property_node) const;
+
+  // Invokes a property node for a given array.
+  OptionalNSObject InvokeForArray(
+      const id target,
+      const ui::AXPropertyNode& property_node) const;
 
   // Returns a parameterized attribute parameter by a property node.
   OptionalNSObject ParamByPropertyNode(const ui::AXPropertyNode&) const;
 
   NSNumber* PropertyNodeToInt(const ui::AXPropertyNode&) const;
+  NSString* PropertyNodeToString(const ui::AXPropertyNode&) const;
   NSArray* PropertyNodeToIntArray(const ui::AXPropertyNode&) const;
+  NSArray* PropertyNodeToTextMarkerArray(const ui::AXPropertyNode&) const;
   NSValue* PropertyNodeToRange(const ui::AXPropertyNode&) const;
   gfx::NativeViewAccessible PropertyNodeToUIElement(
       const ui::AXPropertyNode&) const;
@@ -105,7 +130,13 @@ class CONTENT_EXPORT AttributeInvoker final {
       const std::u16string line_index) const;
 
   const id node;
+
+  // Map between AXUIElement objects and their DOMIds/accessible tree
+  // line numbers. Owned by the caller and outlives this object.
   const LineIndexer* line_indexer;
+
+  // Variables storage. Owned by the caller and outlives this object.
+  std::map<std::string, id>* storage_;
 };
 
 // bindings

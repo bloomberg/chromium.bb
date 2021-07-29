@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/mock_callback.h"
+#include "build/build_config.h"
 #include "chrome/browser/search/background/ntp_background_service.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/instant_unittest_base.h"
@@ -74,7 +75,6 @@ class MockInstantService : public InstantService {
   explicit MockInstantService(Profile* profile) : InstantService(profile) {}
   ~MockInstantService() override = default;
 
-  MOCK_METHOD0(ResetCustomLinks, bool());
   MOCK_METHOD0(ResetCustomBackgroundNtpTheme, void());
 };
 
@@ -109,97 +109,6 @@ TEST_F(InstantServiceTest, GetNTPTileSuggestion) {
   ASSERT_EQ(1, (int)items.size());
   EXPECT_EQ(ntp_tiles::TileSource::TOP_SITES, items[0].source);
   EXPECT_EQ(ntp_tiles::TileTitleSource::TITLE_TAG, items[0].title_source);
-}
-
-TEST_F(InstantServiceTest, DoesToggleMostVisitedOrCustomLinks) {
-  sync_preferences::TestingPrefServiceSyncable* pref_service =
-      profile()->GetTestingPrefService();
-  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
-  ASSERT_FALSE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
-  ASSERT_FALSE(instant_service_->most_visited_info_->use_most_visited);
-
-  // Enable most visited tiles.
-  EXPECT_TRUE(instant_service_->ToggleMostVisitedOrCustomLinks());
-  EXPECT_TRUE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
-  EXPECT_TRUE(instant_service_->most_visited_info_->use_most_visited);
-
-  // Disable most visited tiles.
-  EXPECT_TRUE(instant_service_->ToggleMostVisitedOrCustomLinks());
-  EXPECT_FALSE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
-  EXPECT_FALSE(instant_service_->most_visited_info_->use_most_visited);
-
-  // Should do nothing if this is a non-Google NTP.
-  SetUserSelectedDefaultSearchProvider("https://www.search.com");
-  EXPECT_FALSE(instant_service_->ToggleMostVisitedOrCustomLinks());
-  EXPECT_FALSE(pref_service->GetBoolean(prefs::kNtpUseMostVisitedTiles));
-  EXPECT_FALSE(instant_service_->most_visited_info_->use_most_visited);
-}
-
-TEST_F(InstantServiceTest, DoesToggleShortcutsVisibility) {
-  testing::StrictMock<MockInstantServiceObserver> mock_observer;
-  instant_service_->AddObserver(&mock_observer);
-
-  sync_preferences::TestingPrefServiceSyncable* pref_service =
-      profile()->GetTestingPrefService();
-  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
-  ASSERT_TRUE(pref_service->GetBoolean(prefs::kNtpShortcutsVisible));
-  ASSERT_TRUE(instant_service_->most_visited_info_->is_visible);
-
-  // Hide shortcuts.
-  EXPECT_CALL(mock_observer, MostVisitedInfoChanged(testing::_)).Times(0);
-  EXPECT_TRUE(instant_service_->ToggleShortcutsVisibility(false));
-  EXPECT_FALSE(pref_service->GetBoolean(prefs::kNtpShortcutsVisible));
-  EXPECT_FALSE(instant_service_->most_visited_info_->is_visible);
-  task_environment()->RunUntilIdle();
-
-  // Show shortcuts, and check that a notification was sent.
-  EXPECT_CALL(mock_observer, MostVisitedInfoChanged(testing::_)).Times(1);
-  EXPECT_TRUE(instant_service_->ToggleShortcutsVisibility(true));
-  EXPECT_TRUE(pref_service->GetBoolean(prefs::kNtpShortcutsVisible));
-  EXPECT_TRUE(instant_service_->most_visited_info_->is_visible);
-
-  // Should do nothing if this is a non-Google NTP.
-  EXPECT_CALL(mock_observer, MostVisitedInfoChanged(testing::_)).Times(0);
-  SetUserSelectedDefaultSearchProvider("https://www.search.com");
-  EXPECT_FALSE(instant_service_->ToggleShortcutsVisibility(false));
-  EXPECT_TRUE(pref_service->GetBoolean(prefs::kNtpShortcutsVisible));
-  EXPECT_TRUE(instant_service_->most_visited_info_->is_visible);
-}
-
-TEST_F(InstantServiceTest,
-       DisableUndoCustomLinkActionForNonGoogleSearchProvider) {
-  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
-  EXPECT_TRUE(instant_service_->UndoCustomLinkAction());
-
-  SetUserSelectedDefaultSearchProvider("https://www.search.com");
-  EXPECT_FALSE(instant_service_->UndoCustomLinkAction());
-}
-
-TEST_F(InstantServiceTest, DisableResetCustomLinksForNonGoogleSearchProvider) {
-  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
-  EXPECT_TRUE(instant_service_->ResetCustomLinks());
-
-  SetUserSelectedDefaultSearchProvider("https://www.search.com");
-  EXPECT_FALSE(instant_service_->ResetCustomLinks());
-}
-
-TEST_F(InstantServiceTest, IsCustomLinksEnabled) {
-  sync_preferences::TestingPrefServiceSyncable* pref_service =
-      profile()->GetTestingPrefService();
-
-  // Test that custom links are only enabled when Most Visited is toggled off
-  // and this is a Google NTP.
-  pref_service->SetBoolean(prefs::kNtpUseMostVisitedTiles, false);
-  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
-  EXPECT_TRUE(instant_service_->IsCustomLinksEnabled());
-
-  // All other cases should return false.
-  SetUserSelectedDefaultSearchProvider("https://www.search.com");
-  EXPECT_FALSE(instant_service_->IsCustomLinksEnabled());
-  pref_service->SetBoolean(prefs::kNtpUseMostVisitedTiles, true);
-  EXPECT_FALSE(instant_service_->IsCustomLinksEnabled());
-  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
-  EXPECT_FALSE(instant_service_->IsCustomLinksEnabled());
 }
 
 TEST_F(InstantServiceTest, SetCustomBackgroundURL) {
@@ -527,7 +436,6 @@ TEST_F(InstantServiceTest, TestNoNtpTheme) {
 
 TEST_F(InstantServiceTest, TestResetToDefault) {
   MockInstantService mock_instant_service_(profile());
-  EXPECT_CALL(mock_instant_service_, ResetCustomLinks());
   EXPECT_CALL(mock_instant_service_, ResetCustomBackgroundNtpTheme());
   mock_instant_service_.ResetToDefault();
 }
@@ -587,7 +495,14 @@ TEST_F(InstantServiceTest, LocalImageDoesNotHaveAttribution) {
   EXPECT_EQ(GURL(), theme->custom_background_attribution_action_url);
 }
 
-TEST_F(InstantServiceTest, TestUpdateCustomBackgroundColor) {
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1223439
+#define MAYBE_TestUpdateCustomBackgroundColor \
+  DISABLED_TestUpdateCustomBackgroundColor
+#else
+#define MAYBE_TestUpdateCustomBackgroundColor TestUpdateCustomBackgroundColor
+#endif
+TEST_F(InstantServiceTest, MAYBE_TestUpdateCustomBackgroundColor) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(32, 32);
   bitmap.eraseColor(SK_ColorRED);

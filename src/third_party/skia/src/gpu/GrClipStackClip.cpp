@@ -25,7 +25,7 @@
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/effects/GrBlendFragmentProcessor.h"
 #include "src/gpu/effects/GrRRectEffect.h"
-#include "src/gpu/effects/generated/GrDeviceSpaceEffect.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/geometry/GrStyledShape.h"
 
 typedef SkClipStack::Element Element;
@@ -83,57 +83,7 @@ static std::unique_ptr<GrFragmentProcessor> create_fp_for_mask(GrSurfaceProxyVie
     auto fp = GrTextureEffect::MakeSubset(std::move(mask), kPremul_SkAlphaType, m, samplerState,
                                           subset, domain, caps);
     fp = GrBlendFragmentProcessor::Make(std::move(fp), nullptr, SkBlendMode::kDstIn);
-    return GrDeviceSpaceEffect::Make(std::move(fp));
-}
-
-// Does the path in 'element' require SW rendering?
-bool GrClipStackClip::PathNeedsSWRenderer(GrRecordingContext* context,
-                                          const SkIRect& scissorRect,
-                                          bool hasUserStencilSettings,
-                                          const GrSurfaceDrawContext* surfaceDrawContext,
-                                          const SkMatrix& viewMatrix,
-                                          const Element* element,
-                                          bool needsStencil) {
-    if (Element::DeviceSpaceType::kRect == element->getDeviceSpaceType()) {
-        // rects can always be drawn directly w/o using the software path
-        // TODO: skip rrects once we're drawing them directly.
-        return false;
-    } else {
-        // We shouldn't get here with an empty clip element.
-        SkASSERT(Element::DeviceSpaceType::kEmpty != element->getDeviceSpaceType());
-
-        // the gpu alpha mask will draw the inverse paths as non-inverse to a temp buffer
-        SkPath path;
-        element->asDeviceSpacePath(&path);
-        if (path.isInverseFillType()) {
-            path.toggleInverseFillType();
-        }
-
-        // We only use this method when rendering coverage clip masks.
-        SkASSERT(surfaceDrawContext->numSamples() <= 1);
-        auto aaType = (element->isAA()) ? GrAAType::kCoverage : GrAAType::kNone;
-
-        GrPathRendererChain::DrawType type =
-                needsStencil ? GrPathRendererChain::DrawType::kStencilAndColor
-                             : GrPathRendererChain::DrawType::kColor;
-
-        GrStyledShape shape(path, GrStyle::SimpleFill());
-        GrPathRenderer::CanDrawPathArgs canDrawArgs;
-        canDrawArgs.fCaps = context->priv().caps();
-        canDrawArgs.fProxy = surfaceDrawContext->asRenderTargetProxy();
-        canDrawArgs.fClipConservativeBounds = &scissorRect;
-        canDrawArgs.fViewMatrix = &viewMatrix;
-        canDrawArgs.fShape = &shape;
-        canDrawArgs.fPaint = nullptr;
-        canDrawArgs.fSurfaceProps = &surfaceDrawContext->surfaceProps();
-        canDrawArgs.fAAType = aaType;
-        canDrawArgs.fHasUserStencilSettings = hasUserStencilSettings;
-
-        // the 'false' parameter disallows use of the SW path renderer
-        GrPathRenderer* pr =
-            context->priv().drawingManager()->getPathRenderer(canDrawArgs, false, type);
-        return SkToBool(!pr);
-    }
+    return GrFragmentProcessor::DeviceSpace(std::move(fp));
 }
 
 /*
@@ -142,50 +92,19 @@ bool GrClipStackClip::PathNeedsSWRenderer(GrRecordingContext* context,
  * entire clip should be rendered in SW and then uploaded en masse to the gpu.
  */
 bool GrClipStackClip::UseSWOnlyPath(GrRecordingContext* context,
-                                    bool hasUserStencilSettings,
                                     const GrSurfaceDrawContext* surfaceDrawContext,
                                     const GrReducedClip& reducedClip) {
     // TODO: right now it appears that GPU clip masks are strictly slower than software. We may
     // want to revisit this assumption once we can test with render target sorting.
     return true;
-
-    // TODO: generalize this function so that when
-    // a clip gets complex enough it can just be done in SW regardless
-    // of whether it would invoke the GrSoftwarePathRenderer.
-
-    // If stencil isn't supported, always use SW.
-    if (!surfaceDrawContext->asRenderTargetProxy()->canUseStencil(*context->priv().caps())) {
-        return true;
-    }
-
-    // Set the matrix so that rendered clip elements are transformed to mask space from clip
-    // space.
-    SkMatrix translate;
-    translate.setTranslate(SkIntToScalar(-reducedClip.left()), SkIntToScalar(-reducedClip.top()));
-
-    for (ElementList::Iter iter(reducedClip.maskElements()); iter.get(); iter.next()) {
-        const Element* element = iter.get();
-
-        SkClipOp op = element->getOp();
-        bool invert = element->isInverseFilled();
-        bool needsStencil = invert ||
-                            kIntersect_SkClipOp == op || kReverseDifference_SkClipOp == op;
-
-        if (PathNeedsSWRenderer(context, reducedClip.scissor(), hasUserStencilSettings,
-                                surfaceDrawContext, translate, element, needsStencil)) {
-            return true;
-        }
-    }
-    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // sort out what kind of clip mask needs to be created: alpha, stencil,
 // scissor, or entirely software
 GrClip::Effect GrClipStackClip::apply(GrRecordingContext* context,
-                                      GrSurfaceDrawContext* surfaceDrawContext,
-                                      GrAAType aa, bool hasUserStencilSettings,
-                                      GrAppliedClip* out, SkRect* bounds) const {
+                                      GrSurfaceDrawContext* surfaceDrawContext, GrDrawOp*,
+                                      GrAAType aa, GrAppliedClip* out, SkRect* bounds) const {
     SkASSERT(surfaceDrawContext->width() == fDeviceSize.fWidth &&
              surfaceDrawContext->height() == fDeviceSize.fHeight);
     SkRect devBounds = SkRect::MakeIWH(fDeviceSize.fWidth, fDeviceSize.fHeight);
@@ -207,16 +126,15 @@ GrClip::Effect GrClipStackClip::apply(GrRecordingContext* context,
 
     int maxWindowRectangles = surfaceDrawContext->maxWindowRectangles();
     int maxAnalyticElements = kMaxAnalyticElements;
-    if (surfaceDrawContext->numSamples() > 1 || aa == GrAAType::kMSAA || hasUserStencilSettings) {
+    if (surfaceDrawContext->numSamples() > 1 || aa == GrAAType::kMSAA) {
         // Disable analytic clips when we have MSAA. In MSAA we never conflate coverage and opacity.
         maxAnalyticElements = 0;
         // We disable MSAA when stencil isn't supported.
         SkASSERT(surfaceDrawContext->asRenderTargetProxy()->canUseStencil(*context->priv().caps()));
     }
-    auto* ccpr = context->priv().drawingManager()->getCoverageCountingPathRenderer();
 
     GrReducedClip reducedClip(*fStack, devBounds, context->priv().caps(), maxWindowRectangles,
-                              maxAnalyticElements, ccpr ? maxAnalyticElements : 0);
+                              maxAnalyticElements);
     if (InitialState::kAllOut == reducedClip.initialState() &&
         reducedClip.maskElements().isEmpty()) {
         return Effect::kClippedOut;
@@ -235,8 +153,7 @@ GrClip::Effect GrClipStackClip::apply(GrRecordingContext* context,
     }
 
     if (!reducedClip.maskElements().isEmpty()) {
-        if (!this->applyClipMask(context, surfaceDrawContext, reducedClip, hasUserStencilSettings,
-                                 out)) {
+        if (!this->applyClipMask(context, surfaceDrawContext, reducedClip, out)) {
             return Effect::kClippedOut;
         }
         effect = Effect::kClipped;
@@ -246,7 +163,7 @@ GrClip::Effect GrClipStackClip::apply(GrRecordingContext* context,
     // can cause a flush or otherwise change which opstask our draw is going into.
     uint32_t opsTaskID = surfaceDrawContext->getOpsTask()->uniqueID();
     auto [success, clipFPs] = reducedClip.finishAndDetachAnalyticElements(context, *fMatrixProvider,
-                                                                          ccpr, opsTaskID);
+                                                                          opsTaskID);
     if (success) {
         out->addCoverageFP(std::move(clipFPs));
         effect = Effect::kClipped;
@@ -259,8 +176,7 @@ GrClip::Effect GrClipStackClip::apply(GrRecordingContext* context,
 
 bool GrClipStackClip::applyClipMask(GrRecordingContext* context,
                                     GrSurfaceDrawContext* surfaceDrawContext,
-                                    const GrReducedClip& reducedClip, bool hasUserStencilSettings,
-                                    GrAppliedClip* out) const {
+                                    const GrReducedClip& reducedClip, GrAppliedClip* out) const {
 #ifdef SK_DEBUG
     SkASSERT(reducedClip.hasScissor());
     SkIRect rtIBounds = SkIRect::MakeWH(surfaceDrawContext->width(),
@@ -272,7 +188,7 @@ bool GrClipStackClip::applyClipMask(GrRecordingContext* context,
     if ((surfaceDrawContext->numSamples() <= 1 && reducedClip.maskRequiresAA()) ||
         !surfaceDrawContext->asRenderTargetProxy()->canUseStencil(*context->priv().caps())) {
         GrSurfaceProxyView result;
-        if (UseSWOnlyPath(context, hasUserStencilSettings, surfaceDrawContext, reducedClip)) {
+        if (UseSWOnlyPath(context, surfaceDrawContext, reducedClip)) {
             // The clip geometry is complex enough that it will be more efficient to create it
             // entirely in software
             result = this->createSoftwareClipMask(context, reducedClip, surfaceDrawContext);

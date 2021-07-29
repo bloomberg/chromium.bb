@@ -10,13 +10,14 @@
 #include "base/bind_post_task.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_controller.h"
@@ -442,11 +443,6 @@ InterfaceEndpointClient::InterfaceEndpointClient(
           base::BindOnce(&InterfaceEndpointClient::OnAssociationEvent,
                          weak_ptr_factory_.GetWeakPtr())));
     }
-  } else if (!task_runner_->RunsTasksInCurrentSequence()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&InterfaceEndpointClient::InitControllerIfNecessary,
-                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     InitControllerIfNecessary();
   }
@@ -608,13 +604,14 @@ bool InterfaceEndpointClient::SendMessageWithResponder(
     ++num_unacked_messages_;
 
   if (!is_sync || sync_send_mode == SyncSendMode::kForceAsync) {
-    async_responders_[request_id] = std::move(responder);
     if (is_sync) {
       // This was forced to send async. Leave a placeholder in the map of
       // expected sync responses so HandleValidatedMessage knows what to do.
       sync_responses_.emplace(request_id, nullptr);
       controller_->RegisterExternalSyncWaiter(request_id);
     }
+    base::AutoLock lock(async_responders_lock_);
+    async_responders_[request_id] = std::move(responder);
     return true;
   }
 
@@ -676,7 +673,11 @@ void InterfaceEndpointClient::NotifyError(
   // them alive any longer. Note that it's allowed that a pending response
   // callback may own this endpoint, so we simply move the responders onto the
   // stack here and let them be destroyed when the stack unwinds.
-  AsyncResponderMap responders = std::move(async_responders_);
+  AsyncResponderMap responders;
+  {
+    base::AutoLock lock(async_responders_lock_);
+    std::swap(responders, async_responders_);
+  }
 
   control_message_proxy_.OnConnectionError();
 
@@ -784,13 +785,36 @@ void InterfaceEndpointClient::MaybeSendNotifyIdle() {
   }
 }
 
+void InterfaceEndpointClient::ResetFromAnotherSequenceUnsafe() {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+
+  if (controller_) {
+    controller_ = nullptr;
+    handle_.group_controller()->DetachEndpointClient(handle_);
+  }
+
+  handle_.reset();
+}
+
+void InterfaceEndpointClient::ForgetAsyncRequest(uint64_t request_id) {
+  std::unique_ptr<MessageReceiver> responder;
+  {
+    base::AutoLock lock(async_responders_lock_);
+    auto it = async_responders_.find(request_id);
+    if (it == async_responders_.end())
+      return;
+    responder = std::move(it->second);
+    async_responders_.erase(it);
+  }
+}
+
 void InterfaceEndpointClient::InitControllerIfNecessary() {
   if (controller_ || handle_.pending_association())
     return;
 
   controller_ = handle_.group_controller()->AttachEndpointClient(handle_, this,
                                                                  task_runner_);
-  if (expect_sync_requests_)
+  if (expect_sync_requests_ && task_runner_->RunsTasksInCurrentSequence())
     controller_->AllowWokenUpBySyncWatchOnSameThread();
 }
 
@@ -855,11 +879,15 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
       sync_responses_.erase(it);
     }
 
-    auto it = async_responders_.find(request_id);
-    if (it == async_responders_.end())
-      return false;
-    std::unique_ptr<MessageReceiver> responder = std::move(it->second);
-    async_responders_.erase(it);
+    std::unique_ptr<MessageReceiver> responder;
+    {
+      base::AutoLock lock(async_responders_lock_);
+      auto it = async_responders_.find(request_id);
+      if (it == async_responders_.end())
+        return false;
+      responder = std::move(it->second);
+      async_responders_.erase(it);
+    }
 
     internal::MessageDispatchContext dispatch_context(message);
     return responder->Accept(message);

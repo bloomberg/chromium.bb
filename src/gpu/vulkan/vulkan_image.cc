@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -88,11 +87,12 @@ std::unique_ptr<VulkanImage> VulkanImage::CreateFromGpuMemoryBufferHandle(
     VkFormat format,
     VkImageUsageFlags usage,
     VkImageCreateFlags flags,
-    VkImageTiling image_tiling) {
+    VkImageTiling image_tiling,
+    uint32_t queue_family_index) {
   auto image = std::make_unique<VulkanImage>(base::PassKey<VulkanImage>());
   if (!image->InitializeFromGpuMemoryBufferHandle(
           device_queue, std::move(gmb_handle), size, format, usage, flags,
-          image_tiling)) {
+          image_tiling, queue_family_index)) {
     return nullptr;
   }
   return image;
@@ -197,7 +197,8 @@ bool VulkanImage::Initialize(VulkanDeviceQueue* device_queue,
       .flags = flags_,
       .imageType = VK_IMAGE_TYPE_2D,
       .format = format_,
-      .extent = {size.width(), size.height(), 1},
+      .extent = {static_cast<uint32_t>(size.width()),
+                 static_cast<uint32_t>(size.height()), 1},
       .mipLevels = 1,
       .arrayLayers = 1,
       .samples = VK_SAMPLE_COUNT_1_BIT,
@@ -301,7 +302,7 @@ bool VulkanImage::InitializeWithExternalMemory(
     void* memory_allocation_info_next) {
 #if defined(OS_FUCHSIA)
   constexpr auto kHandleType =
-      VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
+      VK_EXTERNAL_MEMORY_HANDLE_TYPE_ZIRCON_VMO_BIT_FUCHSIA;
 #elif defined(OS_WIN)
   constexpr auto kHandleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
 #else

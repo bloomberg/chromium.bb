@@ -11,7 +11,12 @@
 #include "base/callback.h"
 #include "base/values.h"
 #include "chrome/credential_provider/gaiacp/scoped_handle.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
+
+namespace base {
+class TimeDelta;
+}
 
 namespace credential_provider {
 

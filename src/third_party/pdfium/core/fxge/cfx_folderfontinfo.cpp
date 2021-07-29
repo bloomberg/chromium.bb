@@ -12,12 +12,13 @@
 #include "build/build_config.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/fx_folder.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_safe_types.h"
-#include "core/fxcrt/fx_stream.h"
 #include "core/fxge/cfx_fontmapper.h"
 #include "core/fxge/fx_font.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace {
 

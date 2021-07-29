@@ -281,7 +281,7 @@ DEF_GPUTEST(InitialTextureClear, reporter, baseOptions) {
                             }
                         }
 
-                        dContext->priv().testingOnly_purgeAllUnlockedResources();
+                        dContext->priv().getResourceCache()->purgeUnlockedResources();
                     }
 
                     // Try creating the texture as a deferred proxy.
@@ -311,7 +311,7 @@ DEF_GPUTEST(InitialTextureClear, reporter, baseOptions) {
                                 }
                             }
                         }
-                        dContext->priv().testingOnly_purgeAllUnlockedResources();
+                        dContext->priv().getResourceCache()->purgeUnlockedResources();
                     }
                 }
             }
@@ -389,9 +389,12 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ReadOnlyTexture, reporter, context_info) {
         // Try the low level write.
         dContext->flushAndSubmit();
         auto gpuWriteResult = dContext->priv().getGpu()->writePixels(
-                proxy->peekTexture(), 0, 0, kSize, kSize, GrColorType::kRGBA_8888,
-                GrColorType::kRGBA_8888, write.addr32(),
-                kSize * GrColorTypeBytesPerPixel(GrColorType::kRGBA_8888));
+                proxy->peekTexture(),
+                SkIRect::MakeWH(kSize, kSize),
+                GrColorType::kRGBA_8888,
+                GrColorType::kRGBA_8888,
+                write.addr32(),
+                kSize*GrColorTypeBytesPerPixel(GrColorType::kRGBA_8888));
         REPORTER_ASSERT(reporter, gpuWriteResult == (ioType == kRW_GrIOType));
 
         SkBitmap copySrcBitmap;

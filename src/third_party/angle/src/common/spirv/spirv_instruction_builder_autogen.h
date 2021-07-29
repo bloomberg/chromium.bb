@@ -50,7 +50,10 @@ void WriteEntryPoint(Blob *blob,
                      IdRef entryPoint,
                      LiteralString name,
                      const IdRefList &interfaceList);
-void WriteExecutionMode(Blob *blob, IdRef entryPoint, spv::ExecutionMode mode);
+void WriteExecutionMode(Blob *blob,
+                        IdRef entryPoint,
+                        spv::ExecutionMode mode,
+                        const LiteralIntegerList &operandsList);
 void WriteCapability(Blob *blob, spv::Capability capability);
 void WriteTypeVoid(Blob *blob, IdResult idResult);
 void WriteTypeBool(Blob *blob, IdResult idResult);
@@ -81,7 +84,6 @@ void WriteTypeFunction(Blob *blob,
                        IdResult idResult,
                        IdRef returnType,
                        const IdRefList &parameterList);
-void WriteTypeForwardPointer(Blob *blob, IdRef pointerType, spv::StorageClass storageClass);
 void WriteConstantTrue(Blob *blob, IdResultType idResultType, IdResult idResult);
 void WriteConstantFalse(Blob *blob, IdResultType idResultType, IdResult idResult);
 void WriteConstant(Blob *blob,
@@ -136,11 +138,6 @@ void WriteCopyMemory(Blob *blob,
                      IdRef target,
                      IdRef source,
                      const spv::MemoryAccessMask *memoryAccess);
-void WriteCopyMemorySized(Blob *blob,
-                          IdRef target,
-                          IdRef source,
-                          IdRef size,
-                          const spv::MemoryAccessMask *memoryAccess);
 void WriteAccessChain(Blob *blob,
                       IdResultType idResultType,
                       IdResult idResult,
@@ -156,21 +153,15 @@ void WriteArrayLength(Blob *blob,
                       IdResult idResult,
                       IdRef structure,
                       LiteralInteger arraymember);
-void WriteInBoundsPtrAccessChain(Blob *blob,
-                                 IdResultType idResultType,
-                                 IdResult idResult,
-                                 IdRef base,
-                                 IdRef element,
-                                 const IdRefList &indexesList);
 void WriteDecorate(Blob *blob,
                    IdRef target,
                    spv::Decoration decoration,
-                   const LiteralIntegerList &valuesPairList);
+                   const LiteralIntegerList &valuesList);
 void WriteMemberDecorate(Blob *blob,
                          IdRef structureType,
                          LiteralInteger member,
                          spv::Decoration decoration,
-                         const LiteralIntegerList &valuesPairList);
+                         const LiteralIntegerList &valuesList);
 void WriteDecorationGroup(Blob *blob, IdResult idResult);
 void WriteGroupDecorate(Blob *blob, IdRef decorationGroup, const IdRefList &targetsList);
 void WriteGroupMemberDecorate(Blob *blob,
@@ -192,7 +183,7 @@ void WriteVectorShuffle(Blob *blob,
                         IdResult idResult,
                         IdRef vector1,
                         IdRef vector2,
-                        const LiteralIntegerList &componentsPairList);
+                        const LiteralIntegerList &componentsList);
 void WriteCompositeConstruct(Blob *blob,
                              IdResultType idResultType,
                              IdResult idResult,
@@ -201,13 +192,13 @@ void WriteCompositeExtract(Blob *blob,
                            IdResultType idResultType,
                            IdResult idResult,
                            IdRef composite,
-                           const LiteralIntegerList &indexesPairList);
+                           const LiteralIntegerList &indexesList);
 void WriteCompositeInsert(Blob *blob,
                           IdResultType idResultType,
                           IdResult idResult,
                           IdRef object,
                           IdRef composite,
-                          const LiteralIntegerList &indexesPairList);
+                          const LiteralIntegerList &indexesList);
 void WriteCopyObject(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef operand);
 void WriteTranspose(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef matrix);
 void WriteSampledImage(Blob *blob,
@@ -312,11 +303,19 @@ void WriteImageWrite(Blob *blob,
                      const spv::ImageOperandsMask *imageOperands,
                      const IdRefList &imageOperandIdsList);
 void WriteImage(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef sampledImage);
+void WriteImageQuerySizeLod(Blob *blob,
+                            IdResultType idResultType,
+                            IdResult idResult,
+                            IdRef image,
+                            IdRef levelofDetail);
+void WriteImageQuerySize(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef image);
 void WriteImageQueryLod(Blob *blob,
                         IdResultType idResultType,
                         IdResult idResult,
                         IdRef sampledImage,
                         IdRef coordinate);
+void WriteImageQueryLevels(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef image);
+void WriteImageQuerySamples(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef image);
 void WriteConvertFToU(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef floatValue);
 void WriteConvertFToS(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef floatValue);
 void WriteConvertSToF(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef signedValue);
@@ -328,11 +327,6 @@ void WriteUConvert(Blob *blob, IdResultType idResultType, IdResult idResult, IdR
 void WriteSConvert(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef signedValue);
 void WriteFConvert(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef floatValue);
 void WriteQuantizeToF16(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef value);
-void WriteConvertPtrToU(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef pointer);
-void WriteConvertUToPtr(Blob *blob,
-                        IdResultType idResultType,
-                        IdResult idResult,
-                        IdRef integerValue);
 void WriteBitcast(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef operand);
 void WriteSNegate(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef operand);
 void WriteFNegate(Blob *blob, IdResultType idResultType, IdResult idResult, IdRef operand);
@@ -789,7 +783,7 @@ void WriteBranchConditional(Blob *blob,
                             IdRef condition,
                             IdRef trueLabel,
                             IdRef falseLabel,
-                            const LiteralIntegerList &branchweightsPairList);
+                            const LiteralIntegerList &branchweightsList);
 void WriteSwitch(Blob *blob,
                  IdRef selector,
                  IdRef default_,

@@ -12,12 +12,12 @@
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/focus_cycler.h"
 #include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/frame_throttler/mock_frame_throttling_observer.h"
 #include "ash/multi_user/multi_user_window_manager_impl.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
@@ -961,7 +961,7 @@ TEST_F(WindowCycleControllerTest, AltKeyRelease) {
   generator->PressKey(ui::VKEY_MENU, ui::EF_NONE);
   auto currently_pressed_keys = Shell::Get()
                                     ->accelerator_controller()
-                                    ->accelerator_history()
+                                    ->GetAcceleratorHistory()
                                     ->currently_pressed_keys();
   // Expect exactly one key pressed, which is Alt.
   EXPECT_EQ(1u, currently_pressed_keys.size());
@@ -979,7 +979,7 @@ TEST_F(WindowCycleControllerTest, AltKeyRelease) {
   // Expect all keys pressed to be released.
   currently_pressed_keys = Shell::Get()
                                ->accelerator_controller()
-                               ->accelerator_history()
+                               ->GetAcceleratorHistory()
                                ->currently_pressed_keys();
   EXPECT_EQ(0u, currently_pressed_keys.size());
   EXPECT_FALSE(base::Contains(currently_pressed_keys, ui::VKEY_MENU));
@@ -1360,21 +1360,16 @@ TEST_F(WindowCycleControllerTest,
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
 
   // Open an overview session.
-  Shell::Get()->overview_controller()->StartOverview();
+  EnterOverview();
   EXPECT_TRUE(InOverviewSession());
 
-  // Open the window cycle list. Scroll right to second item. Scroll should only
-  // go to the window cycle list so the overview focus should not be visible.
+  // Open the window cycle list. Scroll right to second item. Overview mode
+  // should be dismissed at this point as they do the same thing by design.
   // Current order is [2,4,5,3,1].
   auto* cycle_controller = Shell::Get()->window_cycle_controller();
   cycle_controller->StartCycling();
   Scroll(GetOffsetX(horizontal_scroll), 0, kNumFingersForTrackpad);
-  EXPECT_TRUE(InOverviewSession());
-  EXPECT_FALSE(Shell::Get()
-                   ->overview_controller()
-                   ->overview_session()
-                   ->highlight_controller()
-                   ->IsFocusHighlightVisible());
+  EXPECT_FALSE(InOverviewSession());
 
   CompleteCycling(cycle_controller);
   EXPECT_FALSE(InOverviewSession());
@@ -1501,8 +1496,7 @@ TEST_F(WindowCycleControllerTest, TouchScroll) {
   std::unique_ptr<aura::Window> window3 = CreateTestWindow(bounds);
   std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds);
   std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds);
-  auto* shell = Shell::Get();
-  auto* cycle_controller = shell->window_cycle_controller();
+  auto* cycle_controller = Shell::Get()->window_cycle_controller();
   auto* event_generator = GetEventGenerator();
 
   // Start cycling.
@@ -1582,6 +1576,34 @@ TEST_F(WindowCycleControllerTest, TouchScroll) {
   EXPECT_TRUE(base::IsApproximatelyEqual(
       drag_dest.x(), preview_items[3]->GetBoundsInScreen().CenterPoint().x(),
       10));
+}
+
+// Tests that a vertical touch scroll doesn't crash. See crbug.com/1224969.
+TEST_F(WindowCycleControllerTest, VerticalTouchScroll) {
+  const gfx::Rect bounds(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow(bounds);
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds);
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds);
+  auto* cycle_controller = Shell::Get()->window_cycle_controller();
+  auto* event_generator = GetEventGenerator();
+
+  // Start cycling.
+  cycle_controller->StartCycling();
+  cycle_controller->HandleCycleWindow(
+      WindowCycleController::WindowCyclingDirection::kForward);
+  ASSERT_TRUE(cycle_controller->IsCycling());
+  ASSERT_EQ(window2.get(), GetTargetWindow());
+
+  // Vertical touch scroll from the second item. This will cause a
+  // ui::ET_SCROLL_FLING_START event to be generated. This should not crash and
+  // do nothing to the window cycle list.
+  auto preview_items = GetWindowCycleItemViews();
+  auto drag_origin = preview_items[0]->GetBoundsInScreen().CenterPoint();
+  auto drag_dest = drag_origin + gfx::Vector2d(0, 200);
+  event_generator->GestureScrollSequence(
+      drag_origin, drag_dest, base::TimeDelta::FromMilliseconds(10), 10);
+  EXPECT_EQ(drag_origin, preview_items[0]->GetBoundsInScreen().CenterPoint());
+  EXPECT_EQ(window2.get(), GetTargetWindow());
 }
 
 // When a user taps on an item, it should set the focus ring to that item. After

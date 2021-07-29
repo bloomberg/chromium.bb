@@ -14,7 +14,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
@@ -83,8 +82,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 @property(nonatomic, assign, readonly) BOOL disabledBecauseOfSyncError;
 // Returns YES if the user cannot turn on sync for enterprise policy reasons.
 @property(nonatomic, assign, readonly) BOOL isSyncDisabledByAdministrator;
-// Returns YES if the user is authenticated.
-@property(nonatomic, assign, readonly) BOOL isAuthenticated;
 
 @end
 
@@ -143,10 +140,11 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // is set to YES.
 - (void)updateSyncEverythingItemNotifyConsumer:(BOOL)notifyConsumer {
   BOOL shouldSyncEverythingBeEditable =
-      self.syncSetupService->IsSyncEnabled() &&
+      (self.syncSetupService->CanSyncFeatureStart() ||
+       base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency)) &&
       (!self.disabledBecauseOfSyncError || self.syncSettingsNotConfirmed);
   BOOL shouldSyncEverythingItemBeOn =
-      self.syncSetupService->IsSyncEnabled() &&
+      self.syncSetupService->CanSyncFeatureStart() &&
       self.syncSetupService->IsSyncingAllDataTypes();
   BOOL needsUpdate =
       (self.syncEverythingItem.on != shouldSyncEverythingItemBeOn) ||
@@ -173,8 +171,13 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         static_cast<SyncSetupService::SyncableDatatype>(
             syncSwitchItem.dataType);
     syncer::ModelType modelType = self.syncSetupService->GetModelType(dataType);
-    BOOL isDataTypeSynced =
-        self.syncSetupService->IsDataTypePreferred(modelType);
+    BOOL isDataTypeSynced;
+    if (base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency)) {
+      isDataTypeSynced = self.syncSetupService->IsSyncRequested() &&
+                         self.syncSetupService->IsDataTypePreferred(modelType);
+    } else {
+      isDataTypeSynced = self.syncSetupService->IsDataTypePreferred(modelType);
+    }
     BOOL needsUpdate =
         (syncSwitchItem.on != isDataTypeSynced) ||
         (syncSwitchItem.isEnabled != self.shouldSyncDataItemEnabled);
@@ -191,11 +194,24 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 - (void)updateAutocompleteWalletItemNotifyConsumer:(BOOL)notifyConsumer {
   syncer::ModelType autofillModelType =
       self.syncSetupService->GetModelType(SyncSetupService::kSyncAutofill);
-  BOOL isAutofillOn =
-      self.syncSetupService->IsDataTypePreferred(autofillModelType);
+  BOOL isAutofillOn;
+  if (base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency)) {
+    isAutofillOn =
+        self.syncSetupService->IsSyncRequested() &&
+        self.syncSetupService->IsDataTypePreferred(autofillModelType);
+  } else {
+    isAutofillOn =
+        self.syncSetupService->IsDataTypePreferred(autofillModelType);
+  }
   BOOL autocompleteWalletEnabled =
       isAutofillOn && self.shouldSyncDataItemEnabled;
-  BOOL autocompleteWalletOn = self.autocompleteWalletPreference.value;
+  BOOL autocompleteWalletOn;
+  if (base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency)) {
+    autocompleteWalletOn = self.syncSetupService->IsSyncRequested() &&
+                           self.autocompleteWalletPreference.value;
+  } else {
+    autocompleteWalletOn = self.autocompleteWalletPreference.value;
+  }
   BOOL needsUpdate =
       (self.autocompleteWalletItem.enabled != autocompleteWalletEnabled) ||
       (self.autocompleteWalletItem.on != autocompleteWalletOn);
@@ -418,27 +434,33 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     case SyncSetupService::kNoSyncServiceError:
     case SyncSetupService::kSyncServiceNeedsPassphrase:
     case SyncSetupService::kSyncServiceNeedsTrustedVaultKey:
+    case SyncSetupService::kSyncServiceTrustedVaultRecoverabilityDegraded:
       return NO;
   }
   NOTREACHED();
 }
 
 - (BOOL)shouldSyncDataItemEnabled {
+  if (base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency)) {
+    return (!self.syncSetupService->IsSyncingAllDataTypes() ||
+            !self.syncSetupService->IsSyncRequested()) &&
+           (!self.disabledBecauseOfSyncError || self.syncSettingsNotConfirmed);
+  }
   return (!self.syncSetupService->IsSyncingAllDataTypes() &&
-          self.syncSetupService->IsSyncEnabled() &&
+          self.syncSetupService->CanSyncFeatureStart() &&
           (!self.disabledBecauseOfSyncError || self.syncSettingsNotConfirmed));
 }
 
 - (BOOL)shouldEncryptionItemBeEnabled {
   return self.syncService->IsEngineInitialized() &&
-         self.syncSetupService->IsSyncEnabled() &&
+         self.syncSetupService->CanSyncFeatureStart() &&
          !self.disabledBecauseOfSyncError;
 }
 
 - (BOOL)shouldDisplaySignoutSection {
-  return self.isAuthenticated &&
-         self.syncSetupService->IsFirstSetupComplete() &&
-         self.syncSetupService->IsSyncEnabled();
+  return self.syncSetupService->IsFirstSetupComplete() &&
+         (self.syncSetupService->CanSyncFeatureStart() ||
+          base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency));
 }
 
 #pragma mark - ManageSyncSettingsTableViewControllerModelDelegate
@@ -543,6 +565,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       case ReauthDialogAsSyncIsInAuthErrorItemType:
       case ShowPassphraseDialogErrorItemType:
       case SyncNeedsTrustedVaultKeyErrorItemType:
+      case SyncTrustedVaultRecoverabilityDegradedErrorItemType:
       case SyncDisabledByAdministratorErrorItemType:
         NOTREACHED();
         break;
@@ -558,7 +581,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     case EncryptionItemType:
       if (self.syncSetupService->GetSyncServiceState() ==
           SyncSetupService::kSyncServiceNeedsTrustedVaultKey) {
-        [self.syncErrorHandler openTrustedVaultReauth];
+        [self.syncErrorHandler openTrustedVaultReauthForFetchKeys];
         break;
       }
       [self.syncErrorHandler openPassphraseDialog];
@@ -579,7 +602,10 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       [self.syncErrorHandler openPassphraseDialog];
       break;
     case SyncNeedsTrustedVaultKeyErrorItemType:
-      [self.syncErrorHandler openTrustedVaultReauth];
+      [self.syncErrorHandler openTrustedVaultReauthForFetchKeys];
+      break;
+    case SyncTrustedVaultRecoverabilityDegradedErrorItemType:
+      [self.syncErrorHandler openTrustedVaultReauthForDegradedRecoverability];
       break;
     case SignOutItemType:
       [self.commandHandler showTurnOffSyncOptionsFromTargetRect:cellRect];
@@ -605,32 +631,45 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 //   + ReauthDialogAsSyncIsInAuthErrorItemType
 //   + ShowPassphraseDialogErrorItemType
 //   + SyncNeedsTrustedVaultKeyErrorItemType
+//   + SyncTrustedVaultRecoverabilityDegradedErrorItemType
 - (TableViewItem*)createSyncErrorItemWithItemType:(NSInteger)itemType {
   DCHECK(itemType == RestartAuthenticationFlowErrorItemType ||
          itemType == ReauthDialogAsSyncIsInAuthErrorItemType ||
          itemType == ShowPassphraseDialogErrorItemType ||
-         itemType == SyncNeedsTrustedVaultKeyErrorItemType);
+         itemType == SyncNeedsTrustedVaultKeyErrorItemType ||
+         itemType == SyncTrustedVaultRecoverabilityDegradedErrorItemType);
   SettingsImageDetailTextItem* syncErrorItem =
       [[SettingsImageDetailTextItem alloc] initWithType:itemType];
   syncErrorItem.text = GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
   syncErrorItem.detailText =
       GetSyncErrorDescriptionForSyncSetupService(self.syncSetupService);
-  if (itemType == ShowPassphraseDialogErrorItemType) {
-    // Special case only for the sync passphrase error message. The regular
-    // error message should be still be displayed in the first settings screen.
-    syncErrorItem.detailText = GetNSString(
-        IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENTER_PASSPHRASE_TO_START_SYNC);
-  } else if (itemType == SyncNeedsTrustedVaultKeyErrorItemType) {
-    // Special case only for the sync encryption key error message. The regular
-    // error message should be still be displayed in the first settings screen.
-    syncErrorItem.detailText =
-        GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_ENCRYPTION_FIX_NOW);
+  switch (itemType) {
+    case ShowPassphraseDialogErrorItemType:
+      // Special case only for the sync passphrase error message. The regular
+      // error message should be still be displayed in the first settings
+      // screen.
+      syncErrorItem.detailText = GetNSString(
+          IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENTER_PASSPHRASE_TO_START_SYNC);
+      break;
+    case SyncNeedsTrustedVaultKeyErrorItemType:
+      syncErrorItem.detailText =
+          GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_ENCRYPTION_FIX_NOW);
 
-    // Also override the title to be more accurate, if only passwords are being
-    // encrypted.
-    if (!self.syncSetupService->IsEncryptEverythingEnabled()) {
-      syncErrorItem.text = GetNSString(IDS_IOS_SYNC_PASSWORDS_ERROR_TITLE);
-    }
+      // Also override the title to be more accurate, if only passwords are
+      // being encrypted.
+      if (!self.syncSetupService->IsEncryptEverythingEnabled()) {
+        syncErrorItem.text = GetNSString(IDS_IOS_SYNC_PASSWORDS_ERROR_TITLE);
+      }
+      break;
+    case SyncTrustedVaultRecoverabilityDegradedErrorItemType:
+      syncErrorItem.detailText = GetNSString(
+          self.syncSetupService->IsEncryptEverythingEnabled()
+              ? IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_FIX_RECOVERABILITY_DEGRADED_FOR_EVERYTHING
+              : IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_FIX_RECOVERABILITY_DEGRADED_FOR_PASSWORDS);
+
+      // Also override the title to be more accurate.
+      syncErrorItem.text = GetNSString(IDS_SYNC_NEEDS_VERIFICATION_TITLE);
+      break;
   }
   syncErrorItem.image = [UIImage imageNamed:kGoogleServicesSyncErrorImage];
   return syncErrorItem;
@@ -722,6 +761,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     case SyncSetupService::kSyncServiceNeedsTrustedVaultKey:
       return absl::make_optional<SyncSettingsItemType>(
           SyncNeedsTrustedVaultKeyErrorItemType);
+    case SyncSetupService::kSyncServiceTrustedVaultRecoverabilityDegraded:
+      return absl::make_optional<SyncSettingsItemType>(
+          SyncTrustedVaultRecoverabilityDegradedErrorItemType);
     case SyncSetupService::kSyncSettingsNotConfirmed:
     case SyncSetupService::kNoSyncServiceError:
     case SyncSetupService::kSyncServiceCouldNotConnect:
@@ -761,10 +803,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 - (BOOL)isSyncDisabledByAdministrator {
   return self.syncService->GetDisableReasons().Has(
       syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
-}
-
-- (BOOL)isAuthenticated {
-  return self.authService->IsAuthenticated();
 }
 
 @end

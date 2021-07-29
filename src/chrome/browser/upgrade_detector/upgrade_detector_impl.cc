@@ -13,11 +13,11 @@
 #include "base/build_time.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -39,6 +39,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_WIN)
 #include "base/enterprise_util.h"
@@ -55,6 +56,8 @@ constexpr auto kDefaultVeryLowThreshold = base::TimeDelta::FromHours(1);
 constexpr auto kDefaultLowThreshold = base::TimeDelta::FromDays(2);
 constexpr auto kDefaultElevatedThreshold = base::TimeDelta::FromDays(4);
 constexpr auto kDefaultHighThreshold = base::TimeDelta::FromDays(7);
+constexpr auto kDefaultGraceThreshold =
+    kDefaultHighThreshold - base::TimeDelta::FromHours(1);
 
 // How long to wait (each cycle) before checking which severity level we should
 // be at. Once we reach the highest severity, the timer will stop.
@@ -126,16 +129,18 @@ void UpgradeDetectorImpl::StartUpgradeNotificationTimer() {
   if (upgrade_detected_time().is_null())
     set_upgrade_detected_time(clock()->Now());
 
+  // Compute the thresholds for the annoyance levels.
+  CalculateThresholds();
+
   // Broadcast the appropriate notification.
   NotifyOnUpgrade();
 }
 
-void UpgradeDetectorImpl::InitializeThresholds() {
+void UpgradeDetectorImpl::CalculateThresholds() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!stages_[0].is_zero())
-    return;
+  DCHECK(!upgrade_detected_time().is_null());
 
-  DoInitializeThresholds();
+  DoCalculateThresholds();
 
 #if DCHECK_IS_ON()
   // |stages_| must be sorted in decreasing order of time.
@@ -147,31 +152,52 @@ void UpgradeDetectorImpl::InitializeThresholds() {
 #endif  // DCHECK_IS_ON()
 }
 
-void UpgradeDetectorImpl::DoInitializeThresholds() {
+void UpgradeDetectorImpl::DoCalculateThresholds() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(stages_[0].is_zero());
 
-  // Use a custom notification period for the "high" level, dividing it evenly
-  // to set the "low" and "elevated" levels. Such overrides trump all else.
-  const base::TimeDelta custom_high = GetRelaunchNotificationPeriod();
-  if (!custom_high.is_zero()) {
-    stages_[kStagesIndexHigh] = custom_high;
-    stages_[kStagesIndexLow] = custom_high / 3;
-    stages_[kStagesIndexElevated] = custom_high - stages_[kStagesIndexLow];
+  base::TimeDelta notification_period = GetRelaunchNotificationPeriod();
+  const absl::optional<RelaunchWindow> relaunch_window =
+      GetRelaunchWindowPolicyValue();
+
+  if (notification_period.is_zero() && !relaunch_window) {
+    // Use the default values when no override is set and we don't expect to
+    // adjust the levels according to the relaunch time interval.
+    stages_[kStagesIndexHigh] = kDefaultHighThreshold;
+    stages_[kStagesIndexGrace] = kDefaultGraceThreshold;
+    stages_[kStagesIndexElevated] = kDefaultElevatedThreshold;
+    stages_[kStagesIndexLow] = kDefaultLowThreshold;
+    stages_[kStagesIndexVeryLow] = kDefaultVeryLowThreshold;
+  } else {
+    // Calculate the "high" level using the notification period and adjust it to
+    // fall within the relaunch time interval. The adjusted "high" level is
+    // divided evenly to set the 'low' and 'elevated' levels.
+    base::TimeDelta effective_notification_period = notification_period;
+    if (notification_period.is_zero())
+      effective_notification_period = kDefaultHighThreshold;
+
+    const RelaunchWindow effective_relaunch_window =
+        relaunch_window.value_or(GetDefaultRelaunchWindow());
+
+    DCHECK(!upgrade_detected_time().is_null());
+    const base::Time adjusted_deadline =
+        AdjustDeadline(upgrade_detected_time() + effective_notification_period,
+                       effective_relaunch_window);
+    effective_notification_period = adjusted_deadline - upgrade_detected_time();
+
+    stages_[kStagesIndexHigh] = effective_notification_period;
+    stages_[kStagesIndexLow] = effective_notification_period / 3;
+    stages_[kStagesIndexElevated] =
+        effective_notification_period - stages_[kStagesIndexLow];
+    base::TimeDelta grace_period = GetGracePeriod(
+        stages_[kStagesIndexHigh] - stages_[kStagesIndexElevated]);
+    stages_[kStagesIndexGrace] = stages_[kStagesIndexHigh] - grace_period;
     // "Very low" is one hour, unless "low" is even less.
     stages_[kStagesIndexVeryLow] =
         std::min(stages_[kStagesIndexLow], kDefaultVeryLowThreshold);
-    return;
   }
 
-  // Use the default values when no override is set.
-  stages_[kStagesIndexHigh] = kDefaultHighThreshold;
-  stages_[kStagesIndexElevated] = kDefaultElevatedThreshold;
-  stages_[kStagesIndexLow] = kDefaultLowThreshold;
-  stages_[kStagesIndexVeryLow] = kDefaultVeryLowThreshold;
-
   // When testing, scale everything back so that a day passes in ten seconds.
-  if (is_testing_) {
+  if (is_testing_ && !relaunch_window) {
     constexpr int64_t scale_factor =
         base::TimeDelta::FromDays(1) / base::TimeDelta::FromSeconds(10);
     for (auto& stage : stages_)
@@ -272,6 +298,7 @@ void UpgradeDetectorImpl::UpgradeDetected(UpgradeAvailable upgrade_available) {
     upgrade_notification_timer_.Stop();
     set_upgrade_detected_time(base::Time());
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_NONE);
+    stages_.fill(base::TimeDelta());
   }
 }
 
@@ -323,6 +350,9 @@ void UpgradeDetectorImpl::NotifyOnUpgradeWithTimePassed(
     // the RelaunchNotificationPeriod) that brought the instance up to or above
     // the "high" annoyance level.
     upgrade_notification_timer_.Stop();
+    // Reset the threshold deltas as we are no longer announcing changes to the
+    // annoyance level.
+    stages_.fill(base::TimeDelta());
   }
 
   // Issue a notification if the stage is above "none" or if it's dropped down
@@ -353,6 +383,8 @@ UpgradeDetectorImpl::AnnoyanceLevelToStagesIndex(
       return kStagesIndexLow;
     case UPGRADE_ANNOYANCE_ELEVATED:
       return kStagesIndexElevated;
+    case UPGRADE_ANNOYANCE_GRACE:
+      return kStagesIndexGrace;
     case UPGRADE_ANNOYANCE_HIGH:
       break;
     case UPGRADE_ANNOYANCE_CRITICAL:
@@ -367,6 +399,7 @@ UpgradeDetector::UpgradeNotificationAnnoyanceLevel
 UpgradeDetectorImpl::StageIndexToAnnoyanceLevel(size_t index) {
   static constexpr UpgradeNotificationAnnoyanceLevel kIndexToLevel[] = {
       UpgradeDetector::UPGRADE_ANNOYANCE_HIGH,
+      UpgradeDetector::UPGRADE_ANNOYANCE_GRACE,
       UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED,
       UpgradeDetector::UPGRADE_ANNOYANCE_LOW,
       UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW};
@@ -375,16 +408,15 @@ UpgradeDetectorImpl::StageIndexToAnnoyanceLevel(size_t index) {
   return kIndexToLevel[index];
 }
 
-void UpgradeDetectorImpl::OnRelaunchNotificationPeriodPrefChanged() {
+void UpgradeDetectorImpl::OnMonitoredPrefsChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Force a recomputation of the thresholds.
-  stages_.fill(base::TimeDelta());
-  InitializeThresholds();
-
   // Broadcast the appropriate notification if an upgrade has been detected.
-  if (upgrade_available() != UPGRADE_AVAILABLE_NONE)
+  if (upgrade_available() != UPGRADE_AVAILABLE_NONE) {
+    // Force a recomputation of the thresholds.
+    CalculateThresholds();
     NotifyOnUpgrade();
+  }
 }
 
 void UpgradeDetectorImpl::NotifyOnUpgrade() {
@@ -404,7 +436,6 @@ void UpgradeDetectorImpl::Init() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   UpgradeDetector::Init();
-  InitializeThresholds();
 
   const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
   // The different command line switches that affect testing can't be used
@@ -493,6 +524,7 @@ void UpgradeDetectorImpl::Shutdown() {
   installed_version_poller_.reset();
   g_browser_process->GetBuildState()->RemoveObserver(this);
   outdated_build_timer_.Stop();
+  stages_.fill(base::TimeDelta());
 
   UpgradeDetector::Shutdown();
 }

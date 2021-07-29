@@ -82,8 +82,8 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebString Encoding() const;
   BLINK_EXPORT WebString ContentLanguage() const;
   BLINK_EXPORT WebString GetReferrer() const;
-  BLINK_EXPORT absl::optional<SkColor> ThemeColor() const;
-  // The url of the OpenSearch Desription Document (if any).
+  BLINK_EXPORT absl::optional<SkColor> ThemeColor();
+  // The url of the OpenSearch Description Document (if any).
   BLINK_EXPORT WebURL OpenSearchDescriptionURL() const;
 
   // Returns the frame the document belongs to or 0 if the document is
@@ -141,6 +141,17 @@ class WebDocument : public WebNode {
   BLINK_EXPORT uint64_t GetVisualViewportScrollingElementIdForTesting();
 
   BLINK_EXPORT bool IsLoaded();
+
+  // Returns true if the document is in prerendering.
+  BLINK_EXPORT bool IsPrerendering();
+
+  // Return true if  accessibility processing has been enabled.
+  BLINK_EXPORT bool IsAccessibilityEnabled();
+
+  // Adds `callback` to the post-prerendering activation steps.
+  // https://jeremyroman.github.io/alternate-loading-modes/#document-post-prerendering-activation-steps-list
+  BLINK_EXPORT void AddPostPrerenderingActivationStep(
+      base::OnceClosure callback);
 
 #if INSIDE_BLINK
   BLINK_EXPORT WebDocument(Document*);

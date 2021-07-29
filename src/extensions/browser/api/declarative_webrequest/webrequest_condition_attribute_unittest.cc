@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/values.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_condition.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
@@ -124,7 +124,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_FALSE(attribute_exclude->IsFulfilled(WebRequestData(
       &request_info, ON_HEADERS_RECEIVED, response_headers.get())));
 
-  content_types.Clear();
+  content_types.ClearList();
   content_types.AppendString("something/invalid");
   scoped_refptr<const WebRequestConditionAttribute> attribute_unincluded =
       WebRequestConditionAttribute::Create(
@@ -256,17 +256,17 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryFromArray(
     const std::string* name = array[i];
     const std::string* value = array[i+1];
     if (dictionary->HasKey(*name)) {
-      base::Value* entry = NULL;
-      std::unique_ptr<base::Value> entry_owned;
-      if (!dictionary->GetWithoutPathExpansion(*name, &entry))
+      absl::optional<base::Value> entry_owned;
+      base::Value* entry = dictionary->FindKey(*name);
+      if (!entry)
         return nullptr;
       switch (entry->type()) {
         case base::Value::Type::STRING: {
           // Replace the present string with a list.
           auto list = std::make_unique<base::ListValue>();
-          // Ignoring return value, we already verified the entry is there.
-          dictionary->RemoveWithoutPathExpansion(*name, &entry_owned);
-          list->Append(std::move(entry_owned));
+          // No need to check again, we already verified the entry is there.
+          entry_owned = dictionary->ExtractKey(*name);
+          list->Append(base::Value::ToUniquePtrValue(std::move(*entry_owned)));
           list->AppendString(*value);
           dictionary->SetKey(*name,
                              base::Value::FromUniquePtrValue(std::move(list)));

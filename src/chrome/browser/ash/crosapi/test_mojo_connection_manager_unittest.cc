@@ -30,9 +30,11 @@
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/idle_service_ash.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/crosapi/cpp/crosapi_constants.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/startup/startup_switches.h"
@@ -51,19 +53,17 @@ namespace {
 
 class TestBrowserService : public crosapi::mojom::BrowserService {
  public:
-  explicit TestBrowserService(
-      mojo::PendingReceiver<mojom::BrowserService> receiver)
-      : receiver_(this, std::move(receiver)) {}
-
+  TestBrowserService() : receiver_(this) {}
   ~TestBrowserService() override = default;
 
-  void REMOVED_2(crosapi::mojom::BrowserInitParamsPtr) override {
-    NOTIMPLEMENTED();
+  mojo::PendingRemote<crosapi::mojom::BrowserService>
+  BindNewPipeAndPassRemote() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
-  void RequestCrosapiReceiver(
-      RequestCrosapiReceiverCallback callback) override {
-    std::move(callback).Run(crosapi_.BindNewPipeAndPassReceiver());
+  void REMOVED_0(REMOVED_0Callback callback) override { NOTIMPLEMENTED(); }
+  void REMOVED_2(crosapi::mojom::BrowserInitParamsPtr) override {
+    NOTIMPLEMENTED();
   }
 
   void NewWindow(bool incognito, NewWindowCallback callback) override {}
@@ -76,7 +76,6 @@ class TestBrowserService : public crosapi::mojom::BrowserService {
 
  private:
   mojo::Receiver<mojom::BrowserService> receiver_;
-  mojo::Remote<crosapi::mojom::Crosapi> crosapi_;
 };
 
 class TestBrowserServiceHostObserver : public BrowserServiceHostObserver {
@@ -126,17 +125,18 @@ std::vector<base::ScopedFD> ConnectTestingMojoSocket(
       run_loop.QuitClosure());
   run_loop.Run();
   EXPECT_EQ(1, size);
-  EXPECT_EQ(0u, buf[0]);
+  EXPECT_EQ(1u, buf[0]);
   return descriptors;
 }
 
 base::Process LaunchTestSubprocess(std::vector<base::ScopedFD> descriptors) {
   base::LaunchOptions options;
   options.fds_to_remap.emplace_back(descriptors[0].get(), descriptors[0].get());
+  options.fds_to_remap.emplace_back(descriptors[1].get(), descriptors[1].get());
   base::CommandLine cmd(base::GetMultiProcessTestChildBaseCommandLine());
-  cmd.AppendSwitchASCII(mojo::PlatformChannel::kHandleSwitch,
-                        base::NumberToString(descriptors[0].get()));
   cmd.AppendSwitchASCII(chromeos::switches::kCrosStartupDataFD,
+                        base::NumberToString(descriptors[0].get()));
+  cmd.AppendSwitchASCII(kCrosapiMojoPlatformChannelHandle,
                         base::NumberToString(descriptors[1].get()));
   return base::SpawnMultiProcessTestChild("CrosapiClientMain", cmd, options);
 }
@@ -179,6 +179,11 @@ TEST_F(TestMojoConnectionManagerTest, ConnectMultipleClients) {
   const AccountId account = AccountId::FromUserEmail("test@test");
   const user_manager::User* user = user_manager.AddUser(account);
   user_manager.UserLoggedIn(account, user->username_hash(), false, false);
+  TestingProfile* profile =
+      testing_profile_manager.CreateTestingProfile(account.GetUserEmail());
+  profile->set_profile_name(account.GetUserEmail());
+  chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
+                                                                    profile);
 
   auto crosapi_manager = std::make_unique<CrosapiManager>();
 
@@ -206,10 +211,10 @@ TEST_F(TestMojoConnectionManagerTest, ConnectMultipleClients) {
   // Test connects with ash-chrome via the socket.
   std::vector<base::ScopedFD> descriptors1 =
       ConnectTestingMojoSocket(socket_path);
-  ASSERT_EQ(3u, descriptors1.size());
+  ASSERT_EQ(2u, descriptors1.size());
   std::vector<base::ScopedFD> descriptors2 =
       ConnectTestingMojoSocket(socket_path);
-  ASSERT_EQ(3u, descriptors2.size());
+  ASSERT_EQ(2u, descriptors2.size());
 
   base::RunLoop run_loop2;
   // Two BrowserService connections should be made (one for each subprocess).
@@ -241,13 +246,21 @@ TEST_F(TestMojoConnectionManagerTest, ConnectMultipleClients) {
 // Another process that emulates the behavior of lacros-chrome.
 MULTIPROCESS_TEST_MAIN(CrosapiClientMain) {
   base::test::SingleThreadTaskEnvironment task_environment;
+
   mojo::IncomingInvitation invitation = mojo::IncomingInvitation::Accept(
-      mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
-          *base::CommandLine::ForCurrentProcess()));
+      mojo::PlatformChannel::RecoverPassedEndpointFromString(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              kCrosapiMojoPlatformChannelHandle)));
   base::RunLoop run_loop;
-  TestBrowserService test_browser_service(
-      mojo::PendingReceiver<crosapi::mojom::BrowserService>(
-          invitation.ExtractMessagePipe(0)));
+  mojo::Remote<crosapi::mojom::Crosapi> crosapi(
+      mojo::PendingRemote<crosapi::mojom::Crosapi>(
+          invitation.ExtractMessagePipe(0), 0u));
+  mojo::Remote<crosapi::mojom::BrowserServiceHost> browser_service_host;
+  crosapi->BindBrowserServiceHost(
+      browser_service_host.BindNewPipeAndPassReceiver());
+  TestBrowserService test_browser_service;
+  browser_service_host->AddBrowserService(
+      test_browser_service.BindNewPipeAndPassRemote());
   // Do not return from the run loop.
   run_loop.Run();
   return 0;

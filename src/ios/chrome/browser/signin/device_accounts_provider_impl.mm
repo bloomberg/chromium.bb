@@ -6,8 +6,8 @@
 
 #include "base/check.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #include "ios/chrome/browser/signin/constants.h"
 #include "ios/chrome/browser/signin/signin_util.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -45,8 +45,10 @@ DeviceAccountsProvider::AccountInfo GetAccountInfo(
 }
 
 DeviceAccountsProviderImpl::DeviceAccountsProviderImpl(
-    PrefService* pref_service)
-    : pref_service_(pref_service) {}
+    ChromeAccountManagerService* account_manager_service)
+    : account_manager_service_(account_manager_service) {
+  DCHECK(account_manager_service_);
+}
 
 DeviceAccountsProviderImpl::~DeviceAccountsProviderImpl() = default;
 
@@ -57,7 +59,7 @@ void DeviceAccountsProviderImpl::GetAccessToken(
     AccessTokenCallback callback) {
   DCHECK(!callback.is_null());
   ios::ChromeIdentityService* identity_service =
-      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+      ios::GetChromeBrowserProvider().GetChromeIdentityService();
 
   // AccessTokenCallback is non-copyable. Using __block allocates the memory
   // directly in the block object at compilation time (instead of doing a
@@ -65,8 +67,8 @@ void DeviceAccountsProviderImpl::GetAccessToken(
   // types and Objective-C blocks.
   __block AccessTokenCallback scopedCallback = std::move(callback);
   identity_service->GetAccessToken(
-      identity_service->GetIdentityWithGaiaID(gaia_id), client_id, scopes,
-      ^(NSString* token, NSDate* expiration, NSError* error) {
+      account_manager_service_->GetIdentityWithGaiaID(gaia_id), client_id,
+      scopes, ^(NSString* token, NSDate* expiration, NSError* error) {
         std::move(scopedCallback).Run(token, expiration, error);
       });
 }
@@ -75,8 +77,8 @@ std::vector<DeviceAccountsProvider::AccountInfo>
 DeviceAccountsProviderImpl::GetAllAccounts() const {
   std::vector<AccountInfo> accounts;
   ios::ChromeIdentityService* identity_service =
-      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
-  NSArray* identities = identity_service->GetAllIdentities(pref_service_);
+      ios::GetChromeBrowserProvider().GetChromeIdentityService();
+  NSArray* identities = account_manager_service_->GetAllIdentities();
   for (ChromeIdentity* identity in identities) {
     accounts.push_back(GetAccountInfo(identity, identity_service));
   }
@@ -94,14 +96,14 @@ DeviceAccountsProviderImpl::GetAuthenticationErrorCategory(
   }
 
   ios::ChromeIdentityService* identity_service =
-      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+      ios::GetChromeBrowserProvider().GetChromeIdentityService();
   if (identity_service->IsMDMError(
-          identity_service->GetIdentityWithGaiaID(gaia_id), error)) {
+          account_manager_service_->GetIdentityWithGaiaID(gaia_id), error)) {
     return kAuthenticationErrorCategoryAuthorizationErrors;
   }
 
   ios::SigninErrorProvider* provider =
-      ios::GetChromeBrowserProvider()->GetSigninErrorProvider();
+      ios::GetChromeBrowserProvider().GetSigninErrorProvider();
   switch (provider->GetErrorCategory(error)) {
     case ios::SigninErrorCategory::UNKNOWN_ERROR: {
       // Google's OAuth 2 implementation returns a 400 with JSON body

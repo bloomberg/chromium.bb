@@ -98,6 +98,11 @@ void DarkModeFilterHelper::ApplyToImageIfNeeded(GraphicsContext* context,
   if (!context->IsDarkModeEnabled())
     return;
 
+  // Gradient generated images should not be classified by SkPixmap
+  if (image->IsGradientGeneratedImage()) {
+    return;
+  }
+
   SkIRect rounded_src = src.roundOut();
   SkIRect rounded_dst = dst.roundOut();
 

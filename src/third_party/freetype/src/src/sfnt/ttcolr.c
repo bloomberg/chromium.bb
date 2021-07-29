@@ -41,12 +41,23 @@
 
   /* NOTE: These are the table sizes calculated through the specs. */
 #define BASE_GLYPH_SIZE                   6U
-#define BASE_GLYPH_V1_RECORD_SIZE         6U
+#define BASE_GLYPH_PAINT_RECORD_SIZE      6U
 #define LAYER_V1_LIST_PAINT_OFFSET_SIZE   4U
 #define LAYER_V1_LIST_NUM_LAYERS_SIZE     4U
 #define COLOR_STOP_SIZE                   6U
 #define LAYER_SIZE                        4U
 #define COLR_HEADER_SIZE                 14U
+
+
+  typedef enum  FT_PaintFormat_Internal_
+  {
+    FT_COLR_PAINTFORMAT_INTERNAL_SCALE_CENTER         = 18,
+    FT_COLR_PAINTFORMAT_INTERNAL_SCALE_UNIFORM        = 20,
+    FT_COLR_PAINTFORMAT_INTERNAL_SCALE_UNIFORM_CENTER = 22,
+    FT_COLR_PAINTFORMAT_INTERNAL_ROTATE_CENTER        = 26,
+    FT_COLR_PAINTFORMAT_INTERNAL_SKEW_CENTER          = 30
+
+  } FT_PaintFormat_Internal;
 
 
   typedef struct  BaseGlyphRecord_
@@ -82,6 +93,13 @@
 
     FT_ULong  num_layers_v1;
     FT_Byte*  layers_v1;
+
+    /*
+     * Paint tables start at the minimum of the end of the LayerList and the
+     * end of the BaseGlyphList.  Record this location in a field here for
+     * safety checks when accessing paint tables.
+     */
+    FT_Byte*  paints_start_v1;
 
     /* The memory that backs up the `COLR' table. */
     void*     table;
@@ -170,7 +188,7 @@
       p1                 = (FT_Byte*)( table + base_glyphs_offset_v1 );
       num_base_glyphs_v1 = FT_PEEK_ULONG( p1 );
 
-      if ( num_base_glyphs_v1 * BASE_GLYPH_V1_RECORD_SIZE >
+      if ( num_base_glyphs_v1 * BASE_GLYPH_PAINT_RECORD_SIZE >
              table_size - base_glyphs_offset_v1 )
         goto InvalidTable;
 
@@ -179,14 +197,35 @@
 
       layer_offset_v1 = FT_NEXT_ULONG( p );
 
-      if ( !layer_offset_v1 || layer_offset_v1 >= table_size )
+      if ( layer_offset_v1 >= table_size )
         goto InvalidTable;
 
-      p1            = (FT_Byte*)( table + layer_offset_v1 );
-      num_layers_v1 = FT_PEEK_ULONG( p1 );
+      if ( layer_offset_v1 )
+      {
+        p1            = (FT_Byte*)( table + layer_offset_v1 );
+        num_layers_v1 = FT_PEEK_ULONG( p1 );
 
-      colr->num_layers_v1 = num_layers_v1;
-      colr->layers_v1     = p1;
+        if ( num_layers_v1 * LAYER_V1_LIST_PAINT_OFFSET_SIZE >
+               table_size - layer_offset_v1 )
+          goto InvalidTable;
+
+        colr->num_layers_v1 = num_layers_v1;
+        colr->layers_v1     = p1;
+
+        colr->paints_start_v1 =
+            FT_MIN( colr->base_glyphs_v1 +
+                    colr->num_base_glyphs_v1 * BASE_GLYPH_PAINT_RECORD_SIZE,
+                    colr->layers_v1 +
+                    colr->num_layers_v1 * LAYER_V1_LIST_PAINT_OFFSET_SIZE );
+      }
+      else
+      {
+        colr->num_layers_v1   = 0;
+        colr->layers_v1       = 0;
+        colr->paints_start_v1 =
+          colr->base_glyphs_v1 +
+          colr->num_base_glyphs_v1 * BASE_GLYPH_PAINT_RECORD_SIZE;
+      }
     }
 
     colr->base_glyphs = (FT_Byte*)( table + base_glyph_offset );
@@ -228,17 +267,17 @@
 
   static FT_Bool
   find_base_glyph_record( FT_Byte*          base_glyph_begin,
-                          FT_Int            num_base_glyph,
+                          FT_UInt           num_base_glyph,
                           FT_UInt           glyph_id,
                           BaseGlyphRecord*  record )
   {
-    FT_Int  min = 0;
-    FT_Int  max = num_base_glyph - 1;
+    FT_UInt  min = 0;
+    FT_UInt  max = num_base_glyph;
 
 
-    while ( min <= max )
+    while ( min < max )
     {
-      FT_Int    mid = min + ( max - min ) / 2;
+      FT_UInt   mid = min + ( max - min ) / 2;
       FT_Byte*  p   = base_glyph_begin + mid * BASE_GLYPH_SIZE;
 
       FT_UShort  gid = FT_NEXT_USHORT( p );
@@ -247,7 +286,7 @@
       if ( gid < glyph_id )
         min = mid + 1;
       else if (gid > glyph_id )
-        max = mid - 1;
+        max = mid;
       else
       {
         record->gid               = gid;
@@ -327,7 +366,7 @@
     FT_PaintExtend  paint_extend;
 
 
-    paint_extend = FT_NEXT_BYTE( p );
+    paint_extend = (FT_PaintExtend)FT_NEXT_BYTE( p );
     if ( paint_extend > FT_COLR_PAINT_EXTEND_REFLECT )
       return 0;
 
@@ -367,7 +406,7 @@
 
     child_table_p = (FT_Byte*)( paint_base + paint_offset );
 
-    if ( child_table_p < colr->base_glyphs_v1                          ||
+    if ( child_table_p < colr->paints_start_v1                         ||
          child_table_p >= ( (FT_Byte*)colr->table + colr->table_size ) )
       return 0;
 
@@ -388,11 +427,11 @@
     if ( !p || !colr || !colr->table )
       return 0;
 
-    if ( p < colr->base_glyphs_v1                          ||
+    if ( p < colr->paints_start_v1                         ||
          p >= ( (FT_Byte*)colr->table + colr->table_size ) )
       return 0;
 
-    apaint->format = FT_NEXT_BYTE( p );
+    apaint->format = (FT_PaintFormat)FT_NEXT_BYTE( p );
 
     if ( apaint->format >= FT_COLR_PAINT_FORMAT_MAX )
       return 0;
@@ -425,8 +464,8 @@
 
     else if ( apaint->format == FT_COLR_PAINTFORMAT_SOLID )
     {
-      apaint->u.solid.color.palette_index = FT_NEXT_USHORT ( p );
-      apaint->u.solid.color.alpha         = FT_NEXT_USHORT ( p );
+      apaint->u.solid.color.palette_index = FT_NEXT_USHORT( p );
+      apaint->u.solid.color.alpha         = FT_NEXT_SHORT( p );
 
       return 1;
     }
@@ -454,12 +493,12 @@
                              &apaint->u.linear_gradient.colorline ) )
         return 0;
 
-      apaint->u.linear_gradient.p0.x = FT_NEXT_SHORT ( p );
-      apaint->u.linear_gradient.p0.y = FT_NEXT_SHORT ( p );
-      apaint->u.linear_gradient.p1.x = FT_NEXT_SHORT ( p );
-      apaint->u.linear_gradient.p1.y = FT_NEXT_SHORT ( p );
-      apaint->u.linear_gradient.p2.x = FT_NEXT_SHORT ( p );
-      apaint->u.linear_gradient.p2.y = FT_NEXT_SHORT ( p );
+      apaint->u.linear_gradient.p0.x = FT_NEXT_SHORT( p );
+      apaint->u.linear_gradient.p0.y = FT_NEXT_SHORT( p );
+      apaint->u.linear_gradient.p1.x = FT_NEXT_SHORT( p );
+      apaint->u.linear_gradient.p1.y = FT_NEXT_SHORT( p );
+      apaint->u.linear_gradient.p2.x = FT_NEXT_SHORT( p );
+      apaint->u.linear_gradient.p2.y = FT_NEXT_SHORT( p );
 
       return 1;
     }
@@ -470,15 +509,15 @@
                              &apaint->u.radial_gradient.colorline ) )
         return 0;
 
-      apaint->u.radial_gradient.c0.x = FT_NEXT_SHORT ( p );
-      apaint->u.radial_gradient.c0.y = FT_NEXT_SHORT ( p );
+      apaint->u.radial_gradient.c0.x = FT_NEXT_SHORT( p );
+      apaint->u.radial_gradient.c0.y = FT_NEXT_SHORT( p );
 
-      apaint->u.radial_gradient.r0 = FT_NEXT_USHORT ( p );
+      apaint->u.radial_gradient.r0 = FT_NEXT_USHORT( p );
 
-      apaint->u.radial_gradient.c1.x = FT_NEXT_SHORT ( p );
-      apaint->u.radial_gradient.c1.y = FT_NEXT_SHORT ( p );
+      apaint->u.radial_gradient.c1.x = FT_NEXT_SHORT( p );
+      apaint->u.radial_gradient.c1.y = FT_NEXT_SHORT( p );
 
-      apaint->u.radial_gradient.r1 = FT_NEXT_USHORT ( p );
+      apaint->u.radial_gradient.r1 = FT_NEXT_USHORT( p );
 
       return 1;
     }
@@ -489,8 +528,8 @@
                              &apaint->u.sweep_gradient.colorline ) )
         return 0;
 
-      apaint->u.sweep_gradient.center.x = FT_NEXT_SHORT ( p );
-      apaint->u.sweep_gradient.center.y = FT_NEXT_SHORT ( p );
+      apaint->u.sweep_gradient.center.x = FT_NEXT_SHORT( p );
+      apaint->u.sweep_gradient.center.y = FT_NEXT_SHORT( p );
 
       apaint->u.sweep_gradient.start_angle = FT_NEXT_LONG( p );
       apaint->u.sweep_gradient.end_angle = FT_NEXT_LONG( p );
@@ -507,17 +546,17 @@
       return 1;
     }
 
-    else if ( apaint->format == FT_COLR_PAINTFORMAT_TRANSFORMED )
+    else if ( apaint->format == FT_COLR_PAINTFORMAT_TRANSFORM )
     {
-      apaint->u.transformed.paint.p                     = child_table_p;
-      apaint->u.transformed.paint.insert_root_transform = 0;
+      apaint->u.transform.paint.p                     = child_table_p;
+      apaint->u.transform.paint.insert_root_transform = 0;
 
-      apaint->u.transformed.affine.xx = FT_NEXT_LONG( p );
-      apaint->u.transformed.affine.yx = FT_NEXT_LONG( p );
-      apaint->u.transformed.affine.xy = FT_NEXT_LONG( p );
-      apaint->u.transformed.affine.yy = FT_NEXT_LONG( p );
-      apaint->u.transformed.affine.dx = FT_NEXT_LONG( p );
-      apaint->u.transformed.affine.dy = FT_NEXT_LONG( p );
+      apaint->u.transform.affine.xx = FT_NEXT_LONG( p );
+      apaint->u.transform.affine.yx = FT_NEXT_LONG( p );
+      apaint->u.transform.affine.xy = FT_NEXT_LONG( p );
+      apaint->u.transform.affine.yy = FT_NEXT_LONG( p );
+      apaint->u.transform.affine.dx = FT_NEXT_LONG( p );
+      apaint->u.transform.affine.dy = FT_NEXT_LONG( p );
 
       return 1;
     }
@@ -529,6 +568,53 @@
 
       apaint->u.translate.dx = FT_NEXT_LONG( p );
       apaint->u.translate.dy = FT_NEXT_LONG( p );
+
+      return 1;
+    }
+
+    else if ( apaint->format ==
+                FT_COLR_PAINTFORMAT_SCALE                         ||
+              (FT_PaintFormat_Internal)apaint->format ==
+                FT_COLR_PAINTFORMAT_INTERNAL_SCALE_CENTER         ||
+              (FT_PaintFormat_Internal)apaint->format ==
+                FT_COLR_PAINTFORMAT_INTERNAL_SCALE_UNIFORM        ||
+              (FT_PaintFormat_Internal)apaint->format ==
+                FT_COLR_PAINTFORMAT_INTERNAL_SCALE_UNIFORM_CENTER )
+    {
+      apaint->u.scale.paint.p                     = child_table_p;
+      apaint->u.scale.paint.insert_root_transform = 0;
+
+      /* All scale paints get at least one scale value. */
+      apaint->u.scale.scale_x = FT_NEXT_LONG( p );
+
+      /* Non-uniform ones read an extra y value. */
+      if ( apaint->format ==
+             FT_COLR_PAINTFORMAT_SCALE                 ||
+           (FT_PaintFormat_Internal)apaint->format ==
+             FT_COLR_PAINTFORMAT_INTERNAL_SCALE_CENTER )
+        apaint->u.scale.scale_y = FT_NEXT_LONG( p );
+      else
+        apaint->u.scale.scale_y = apaint->u.scale.scale_x;
+
+      /* Scale paints that have a center read center coordinates, */
+      /* otherwise the center is (0,0).                           */
+      if ( (FT_PaintFormat_Internal)apaint->format ==
+             FT_COLR_PAINTFORMAT_INTERNAL_SCALE_CENTER         ||
+           (FT_PaintFormat_Internal)apaint->format ==
+             FT_COLR_PAINTFORMAT_INTERNAL_SCALE_UNIFORM_CENTER )
+      {
+        apaint->u.scale.center_x = FT_NEXT_LONG ( p );
+        apaint->u.scale.center_y = FT_NEXT_LONG ( p );
+      }
+      else
+      {
+        apaint->u.scale.center_x = 0;
+        apaint->u.scale.center_y = 0;
+      }
+
+      /* FT 'COLR' v1 API output format always returns fully defined */
+      /* structs; we thus set the format to the public API value.    */
+      apaint->format = FT_COLR_PAINTFORMAT_SCALE;
 
       return 1;
     }
@@ -572,7 +658,7 @@
       if ( composite_mode >= FT_COLR_COMPOSITE_MAX )
         return 0;
 
-      apaint->u.composite.composite_mode = composite_mode;
+      apaint->u.composite.composite_mode = (FT_Composite_Mode)composite_mode;
 
       if ( !get_child_table_pointer( colr, paint_base, &p, &child_table_p ) )
          return 0;
@@ -590,25 +676,25 @@
 
 
   static FT_Bool
-  find_base_glyph_v1_record ( FT_Byte *           base_glyph_begin,
-                              FT_Int              num_base_glyph,
-                              FT_UInt             glyph_id,
-                              BaseGlyphV1Record  *record )
+  find_base_glyph_v1_record( FT_Byte *           base_glyph_begin,
+                             FT_UInt             num_base_glyph,
+                             FT_UInt             glyph_id,
+                             BaseGlyphV1Record  *record )
   {
-    FT_Int  min = 0;
-    FT_Int  max = num_base_glyph - 1;
+    FT_UInt  min = 0;
+    FT_UInt  max = num_base_glyph;
 
 
-    while ( min <= max )
+    while ( min < max )
     {
-      FT_Int  mid = min + ( max - min ) / 2;
+      FT_UInt  mid = min + ( max - min ) / 2;
 
       /*
        * `base_glyph_begin` is the beginning of `BaseGlyphV1List`;
        * skip `numBaseGlyphV1Records` by adding 4 to start binary search
        * in the array of `BaseGlyphV1Record`.
        */
-      FT_Byte  *p = base_glyph_begin + 4 + mid * BASE_GLYPH_V1_RECORD_SIZE;
+      FT_Byte  *p = base_glyph_begin + 4 + mid * BASE_GLYPH_PAINT_RECORD_SIZE;
 
       FT_UShort  gid = FT_NEXT_USHORT( p );
 
@@ -616,7 +702,7 @@
       if ( gid < glyph_id )
         min = mid + 1;
       else if (gid > glyph_id )
-        max = mid - 1;
+        max = mid;
       else
       {
         record->gid          = gid;
@@ -629,7 +715,7 @@
   }
 
 
-  FT_LOCAL_DEF ( FT_Bool )
+  FT_LOCAL_DEF( FT_Bool )
   tt_face_get_colr_glyph_paint( TT_Face                  face,
                                 FT_UInt                  base_glyph,
                                 FT_Color_Root_Transform  root_transform,
@@ -702,6 +788,13 @@
     p = iterator->p;
 
     /*
+     * First ensure that p is within COLRv1.
+     */
+    if ( p < colr->layers_v1                               ||
+         p >= ( (FT_Byte*)colr->table + colr->table_size ) )
+      return 0;
+
+    /*
      * Do a cursor sanity check of the iterator.  Counting backwards from
      * where it stands, we need to end up at a position after the beginning
      * of the `LayerV1List` table and not after the end of the
@@ -724,7 +817,7 @@
 
     p_paint = (FT_Byte*)( colr->layers_v1 + paint_offset );
 
-    if ( p_paint < colr->base_glyphs_v1                          ||
+    if ( p_paint < colr->paints_start_v1                         ||
          p_paint >= ( (FT_Byte*)colr->table + colr->table_size ) )
       return 0;
 
@@ -738,7 +831,7 @@
   }
 
 
-  FT_LOCAL_DEF ( FT_Bool )
+  FT_LOCAL_DEF( FT_Bool )
   tt_face_get_colorline_stops( TT_Face                face,
                                FT_ColorStop*          color_stop,
                                FT_ColorStopIterator  *iterator )
@@ -763,11 +856,11 @@
     /* Iterator points at first `ColorStop` of `ColorLine`. */
     p = iterator->p;
 
-    color_stop->stop_offset = FT_NEXT_USHORT ( p );
+    color_stop->stop_offset = FT_NEXT_SHORT( p );
 
-    color_stop->color.palette_index = FT_NEXT_USHORT ( p );
+    color_stop->color.palette_index = FT_NEXT_USHORT( p );
 
-    color_stop->color.alpha = FT_NEXT_USHORT ( p );
+    color_stop->color.alpha = FT_NEXT_SHORT( p );
 
     iterator->p = p;
     iterator->current_color_stop++;
@@ -802,11 +895,11 @@
        * drawing operations for subsequenct paints.  Prepare this initial
        * transform here.
        */
-      paint->format = FT_COLR_PAINTFORMAT_TRANSFORMED;
+      paint->format = FT_COLR_PAINTFORMAT_TRANSFORM;
 
       next_paint.p                     = opaque_paint.p;
       next_paint.insert_root_transform = 0;
-      paint->u.transformed.paint       = next_paint;
+      paint->u.transform.paint         = next_paint;
 
       /* `x_scale` and `y_scale` are in 26.6 format, representing the scale
        * factor to get from font units to requested size.  However, expected
@@ -821,28 +914,28 @@
         FT_Matrix_Multiply( &face->root.internal->transform_matrix,
                             &ft_root_scale );
 
-      paint->u.transformed.affine.xx = ft_root_scale.xx;
-      paint->u.transformed.affine.xy = ft_root_scale.xy;
-      paint->u.transformed.affine.yx = ft_root_scale.yx;
-      paint->u.transformed.affine.yy = ft_root_scale.yy;
+      paint->u.transform.affine.xx = ft_root_scale.xx;
+      paint->u.transform.affine.xy = ft_root_scale.xy;
+      paint->u.transform.affine.yx = ft_root_scale.yx;
+      paint->u.transform.affine.yy = ft_root_scale.yy;
 
       /* The translation is specified in 26.6 format and, according to the
        * documentation of `FT_Set_Translate`, is performed on the character
        * size given in the last call to `FT_Set_Char_Size`.  The
-       * 'PaintTransformed' paint table's `FT_Affine23` format expects
+       * 'PaintTransform' paint table's `FT_Affine23` format expects
        * values in 16.16 format, thus we need to shift by 10 bits.
        */
       if ( face->root.internal->transform_flags & 2 )
       {
-        paint->u.transformed.affine.dx =
+        paint->u.transform.affine.dx =
           face->root.internal->transform_delta.x << 10;
-        paint->u.transformed.affine.dy =
+        paint->u.transform.affine.dy =
           face->root.internal->transform_delta.y << 10;
       }
       else
       {
-        paint->u.transformed.affine.dx = 0;
-        paint->u.transformed.affine.dy = 0;
+        paint->u.transform.affine.dx = 0;
+        paint->u.transform.affine.dy = 0;
       }
 
       return 1;

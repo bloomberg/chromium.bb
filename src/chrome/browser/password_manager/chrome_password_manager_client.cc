@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -29,12 +30,13 @@
 #include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/chrome_biometric_authenticator.h"
 #include "chrome/browser/password_manager/field_info_manager_factory.h"
+#include "chrome/browser/password_manager/password_reuse_manager_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller_impl.h"
@@ -146,6 +148,7 @@
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/signin/dice_web_signin_interceptor_factory.h"
+#include "chrome/browser/ui/browser.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -177,8 +180,8 @@ typedef autofill::SavePasswordProgressLogger Logger;
 namespace {
 
 const syncer::SyncService* GetSyncService(Profile* profile) {
-  if (ProfileSyncServiceFactory::HasSyncService(profile))
-    return ProfileSyncServiceFactory::GetForProfile(profile);
+  if (SyncServiceFactory::HasSyncService(profile))
+    return SyncServiceFactory::GetForProfile(profile);
   return nullptr;
 }
 
@@ -285,8 +288,7 @@ bool ChromePasswordManagerClient::IsFillingFallbackEnabled(
     const GURL& url) const {
   const Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  return IsFillingEnabled(url) && !profile->IsGuestSession() &&
-         !profile->IsEphemeralGuestProfile();
+  return IsFillingEnabled(url) && !profile->IsGuestSession();
 }
 
 bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
@@ -604,17 +606,17 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
 void ChromePasswordManagerClient::TriggerReauthForPrimaryAccount(
     signin_metrics::ReauthAccessPoint access_point,
     base::OnceCallback<void(ReauthSucceeded)> reauth_callback) {
-#if defined(OS_ANDROID)
-  std::move(reauth_callback).Run(ReauthSucceeded(false));
-#else   // !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   account_storage_auth_helper_.TriggerOptInReauth(access_point,
                                                   std::move(reauth_callback));
-#endif  // defined(OS_ANDROID)
+#else
+  std::move(reauth_callback).Run(ReauthSucceeded(false));
+#endif
 }
 
 void ChromePasswordManagerClient::TriggerSignIn(
     signin_metrics::AccessPoint access_point) {
-#if !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   account_storage_auth_helper_.TriggerSignIn(access_point);
 #endif
 }
@@ -641,10 +643,15 @@ ChromePasswordManagerClient::GetAccountPasswordStore() const {
       .get();
 }
 
+password_manager::PasswordReuseManager*
+ChromePasswordManagerClient::GetPasswordReuseManager() const {
+  return PasswordReuseManagerFactory::GetForProfile(profile_);
+}
+
 password_manager::SyncState ChromePasswordManagerClient::GetPasswordSyncState()
     const {
   const syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
+      SyncServiceFactory::GetForProfile(profile_);
   return password_manager_util::GetPasswordSyncState(sync_service);
 }
 
@@ -699,14 +706,10 @@ void ChromePasswordManagerClient::PromptUserToEnableAutosignin() {
 #endif
 }
 
+// TODO(https://crbug.com/1225171): If off-the-record Guest is not deprecated,
+// rename this function to IsOffTheRecord for better readability.
 bool ChromePasswordManagerClient::IsIncognito() const {
-  // TODO(https://crbug.com/1125474): After deprecating off-the-record Guest
-  // profile, update this function for better readability.
-  content::BrowserContext* browser_context =
-      web_contents()->GetBrowserContext();
-  const Profile* profile = Profile::FromBrowserContext(browser_context);
-  return browser_context->IsOffTheRecord() ||
-         profile->IsEphemeralGuestProfile();
+  return web_contents()->GetBrowserContext()->IsOffTheRecord();
 }
 
 profile_metrics::BrowserProfileType
@@ -1102,6 +1105,12 @@ void ChromePasswordManagerClient::BindCredentialManager(
   if (web_contents->GetMainFrame() != render_frame_host)
     return;
 
+  // The ChromePasswordManagerClient will not bind the mojo interface for
+  // non-primary frames, e.g. BackForwardCache, Prerenderer, since the
+  // MojoBinderPolicy prevents this interface from being granted.
+  DCHECK_EQ(render_frame_host->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kActive);
+
   ChromePasswordManagerClient* instance =
       ChromePasswordManagerClient::FromWebContents(web_contents);
 
@@ -1163,25 +1172,34 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       password_manager_(this),
-      password_feature_manager_(
-          profile_->GetPrefs(),
-          ProfileSyncServiceFactory::GetForProfile(profile_)),
+      password_feature_manager_(profile_->GetPrefs(),
+                                SyncServiceFactory::GetForProfile(profile_)),
       httpauth_manager_(this),
       password_reuse_detection_manager_(this),
       driver_factory_(nullptr),
       content_credential_manager_(this),
-      password_generation_driver_receivers_(web_contents, this),
+      password_generation_driver_receivers_(
+          web_contents,
+          this,
+          content::WebContentsFrameReceiverSetPassKey()),
       observer_(nullptr),
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
       credentials_filter_(
           this,
           base::BindRepeating(&GetSyncService, profile_),
           DiceWebSigninInterceptorFactory::GetForProfile(profile_)),
+      account_storage_auth_helper_(
+          IdentityManagerFactory::GetForProfile(profile_),
+          &password_feature_manager_,
+          base::BindRepeating(
+              [](content::WebContents* web_contents) {
+                Browser* browser =
+                    chrome::FindBrowserWithWebContents(web_contents);
+                return browser ? browser->signin_view_controller() : nullptr;
+              },
+              web_contents)),
 #else
       credentials_filter_(this, base::BindRepeating(&GetSyncService, profile_)),
-#endif
-#if !defined(OS_ANDROID)
-      account_storage_auth_helper_(profile_, &password_feature_manager_),
 #endif
       helper_(this) {
   ContentPasswordManagerDriverFactory::CreateForWebContents(web_contents, this,
@@ -1235,7 +1253,8 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   password_reuse_detection_manager_.DidNavigateMainFrame(GetLastCommittedURL());
 
   AddToWidgetInputEventObservers(
-      web_contents()->GetMainFrame()->GetRenderViewHost()->GetWidget(), this);
+      navigation_handle->GetRenderFrameHost()->GetRenderWidgetHost(), this);
+
 #if defined(OS_ANDROID)
   // This unblocklisted info is only used after form submission to determine
   // whether to record PasswordManager.SaveUIDismissalReasonAfterUnblacklisting.
@@ -1314,8 +1333,8 @@ void ChromePasswordManagerClient::RenderFrameCreated(
   // that we can accurately report that the password was reused on a subframe.
   // Currently any password reuse for this WebContents will report password
   // reuse on the main frame URL.
-  AddToWidgetInputEventObservers(
-      render_frame_host->GetView()->GetRenderWidgetHost(), this);
+  AddToWidgetInputEventObservers(render_frame_host->GetRenderWidgetHost(),
+                                 this);
 }
 
 void ChromePasswordManagerClient::OnInputEvent(
@@ -1411,7 +1430,7 @@ bool ChromePasswordManagerClient::ShouldAnnotateNavigationEntries(
     return false;
 
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+      SyncServiceFactory::GetForProfile(profile);
   if (!sync_service || !sync_service->IsSyncFeatureActive() ||
       sync_service->GetUserSettings()->IsUsingExplicitPassphrase()) {
     return false;

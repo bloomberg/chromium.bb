@@ -70,9 +70,19 @@ bool IsBackForwardCacheEnabled() {
 bool IsSameSiteBackForwardCacheEnabled() {
   if (!IsBackForwardCacheEnabled())
     return false;
+
+  // Same-site back-forward cache is enabled through kBackForwardCache's
+  // "enable_same_site" param.
   static constexpr base::FeatureParam<bool> enable_same_site_back_forward_cache(
       &features::kBackForwardCache, "enable_same_site", false);
-  return enable_same_site_back_forward_cache.Get();
+  if (enable_same_site_back_forward_cache.Get())
+    return true;
+
+  // Additionally, same-site back-forward cache might be enabled through the
+  // BackForwardCacheSameSiteForBots feature flag (only by trybots) due to
+  // https://crbug.com/1211818.
+  return base::FeatureList::IsEnabled(
+      features::kBackForwardCacheSameSiteForBots);
 }
 
 bool ShouldSkipSameSiteBackForwardCacheForPageWithUnload() {
@@ -169,8 +179,10 @@ bool ShouldCreateNewHostForSameSiteSubframe() {
 }
 
 bool ShouldSkipEarlyCommitPendingForCrashedFrame() {
-  return base::FeatureList::IsEnabled(
-      features::kSkipEarlyCommitPendingForCrashedFrame);
+  static bool skip_early_commit_pending_for_crashed_frame =
+      base::FeatureList::IsEnabled(
+          features::kSkipEarlyCommitPendingForCrashedFrame);
+  return skip_early_commit_pending_for_crashed_frame;
 }
 
 }  // namespace content

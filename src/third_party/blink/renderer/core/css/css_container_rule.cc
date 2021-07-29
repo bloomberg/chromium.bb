@@ -16,9 +16,50 @@ CSSContainerRule::CSSContainerRule(StyleRuleContainer* container_rule,
 CSSContainerRule::~CSSContainerRule() = default;
 
 String CSSContainerRule::cssText() const {
-  // TODO(crbug.com/1145970): Spec and implement serialization.
-  NOTIMPLEMENTED();
-  return "";
+  StringBuilder result;
+  result.Append("@container ");
+  if (!Name().IsNull()) {
+    result.Append(Name());
+    result.Append(' ');
+  }
+  if (ContainerQueries()) {
+    result.Append(ContainerQueries()->MediaText());
+    result.Append(' ');
+  }
+  result.Append("{\n");
+  AppendCSSTextForItems(result);
+  result.Append('}');
+  return result.ToString();
 }
 
+scoped_refptr<MediaQuerySet> CSSContainerRule::ContainerQueries() const {
+  return To<StyleRuleContainer>(group_rule_.Get())
+      ->GetContainerQuery()
+      .MediaQueries();
+}
+
+MediaList* CSSContainerRule::container() const {
+  if (!ContainerQueries())
+    return nullptr;
+  if (!media_cssom_wrapper_) {
+    media_cssom_wrapper_ = MakeGarbageCollected<MediaList>(
+        ContainerQueries(), const_cast<CSSContainerRule*>(this));
+  }
+  return media_cssom_wrapper_.Get();
+}
+
+const AtomicString& CSSContainerRule::Name() const {
+  return To<StyleRuleContainer>(group_rule_.Get())->GetContainerQuery().Name();
+}
+
+void CSSContainerRule::Reattach(StyleRuleBase* rule) {
+  CSSConditionRule::Reattach(rule);
+  if (media_cssom_wrapper_ && ContainerQueries())
+    media_cssom_wrapper_->Reattach(ContainerQueries());
+}
+
+void CSSContainerRule::Trace(Visitor* visitor) const {
+  visitor->Trace(media_cssom_wrapper_);
+  CSSConditionRule::Trace(visitor);
+}
 }  // namespace blink

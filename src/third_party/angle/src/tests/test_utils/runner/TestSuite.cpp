@@ -47,6 +47,7 @@ constexpr char kResultFileArg[]        = "--results-file=";
 constexpr char kTestTimeoutArg[]       = "--test-timeout=";
 constexpr char kDisableCrashHandler[]  = "--disable-crash-handler";
 constexpr char kIsolatedOutDir[]       = "--isolated-outdir=";
+constexpr char kMaxFailures[]          = "--max-failures=";
 
 constexpr char kStartedTestString[] = "[ RUN      ] ";
 constexpr char kPassedTestString[]  = "[       OK ] ";
@@ -68,6 +69,7 @@ constexpr int kDefaultBatchTimeout = 600;
 constexpr int kDefaultBatchSize      = 256;
 constexpr double kIdleMessageTimeout = 15.0;
 constexpr int kDefaultMaxProcesses   = 16;
+constexpr int kDefaultMaxFailures    = 100;
 
 const char *ParseFlagValue(const char *flag, const char *argument)
 {
@@ -1056,7 +1058,9 @@ TestSuite::TestSuite(int *argc, char **argv)
       mTestTimeout(kDefaultTestTimeout),
       mBatchTimeout(kDefaultBatchTimeout),
       mBatchId(-1),
-      mFlakyRetries(0)
+      mFlakyRetries(0),
+      mMaxFailures(kDefaultMaxFailures),
+      mFailureCount(0)
 {
     ASSERT(mInstance == nullptr);
     mInstance = this;
@@ -1308,6 +1312,7 @@ bool TestSuite::parseSingleArg(const char *argument)
             ParseIntArg(kTestTimeoutArg, argument, &mTestTimeout) ||
             ParseIntArg("--batch-timeout=", argument, &mBatchTimeout) ||
             ParseIntArg(kFlakyRetries, argument, &mFlakyRetries) ||
+            ParseIntArg(kMaxFailures, argument, &mMaxFailures) ||
             // Other test functions consume the batch ID, so keep it in the list.
             ParseIntArgNoDelete(kBatchId, argument, &mBatchId) ||
             ParseStringArg("--results-directory=", argument, &mResultsDirectory) ||
@@ -1428,7 +1433,7 @@ bool TestSuite::launchChildTestProcess(uint32_t batchId,
     }
 
     // Launch child process and wait for completion.
-    processInfo.process = LaunchProcess(args, true, true);
+    processInfo.process = LaunchProcess(args, ProcessOutputCapture::StdoutAndStderrInterleaved);
 
     if (!processInfo.process->started())
     {
@@ -1569,10 +1574,12 @@ bool TestSuite::finishProcess(ProcessInfo *processInfo)
         else if (result.type == TestResultType::Timeout)
         {
             printf(" (TIMEOUT in %0.1lf s)\n", result.elapsedTimeSeconds);
+            mFailureCount++;
         }
         else
         {
             printf(" (%s)\n", ResultTypeToString(result.type));
+            mFailureCount++;
 
             const std::string &batchStdout = processInfo->process->getStdout();
             PrintTestOutputSnippet(id, result, batchStdout);
@@ -1702,6 +1709,7 @@ int TestSuite::run()
                 {
                     // Because the whole batch failed we can't know how long each test took.
                     mTestResults.results[testIdentifier].type = TestResultType::Timeout;
+                    mFailureCount++;
                 }
 
                 processIter = mCurrentProcesses.erase(processIter);
@@ -1727,13 +1735,31 @@ int TestSuite::run()
             messageTimer.start();
         }
 
+        // Early exit if we passed the maximum failure threshold. Still wait for current tests.
+        if (mFailureCount > mMaxFailures && !mTestQueue.empty())
+        {
+            printf("Reached maximum failure count (%d), clearing test queue.\n", mMaxFailures);
+            TestQueue emptyTestQueue;
+            std::swap(mTestQueue, emptyTestQueue);
+        }
+
         // Sleep briefly and continue.
         angle::Sleep(100);
     }
 
     // Dump combined results.
-    WriteOutputFiles(false, mTestResults, mResultsFile, mHistogramWriter, mHistogramJsonFile,
-                     mTestSuiteName.c_str());
+    if (mFailureCount > mMaxFailures)
+    {
+        printf(
+            "Omitted results files because the failure count (%d) exceeded the maximum number of "
+            "failures (%d).\n",
+            mFailureCount, mMaxFailures);
+    }
+    else
+    {
+        WriteOutputFiles(false, mTestResults, mResultsFile, mHistogramWriter, mHistogramJsonFile,
+                         mTestSuiteName.c_str());
+    }
 
     totalRunTime.stop();
     printf("Tests completed in %lf seconds\n", totalRunTime.getElapsedTime());
@@ -1863,6 +1889,66 @@ bool GetTestResultsFromFile(const char *fileName, TestResults *resultsOut)
     }
 
     return true;
+}
+
+void TestSuite::dumpTestExpectationsErrorMessages()
+{
+    std::stringstream errorMsgStream;
+    for (const auto &message : mTestExpectationsParser.getErrorMessages())
+    {
+        errorMsgStream << std::endl << " " << message;
+    }
+
+    std::cerr << "Failed to load test expectations." << errorMsgStream.str() << std::endl;
+}
+
+bool TestSuite::loadTestExpectationsFromFileWithConfig(const GPUTestConfig &config,
+                                                       const std::string &fileName)
+{
+    if (!mTestExpectationsParser.loadTestExpectationsFromFile(config, fileName))
+    {
+        dumpTestExpectationsErrorMessages();
+        return false;
+    }
+    return true;
+}
+
+bool TestSuite::loadAllTestExpectationsFromFile(const std::string &fileName)
+{
+    if (!mTestExpectationsParser.loadAllTestExpectationsFromFile(fileName))
+    {
+        dumpTestExpectationsErrorMessages();
+        return false;
+    }
+    return true;
+}
+
+bool TestSuite::logAnyUnusedTestExpectations()
+{
+    std::stringstream unusedMsgStream;
+    bool anyUnused = false;
+    for (const auto &message : mTestExpectationsParser.getUnusedExpectationsMessages())
+    {
+        anyUnused = true;
+        unusedMsgStream << std::endl << " " << message;
+    }
+    if (anyUnused)
+    {
+        std::cerr << "Failed to validate test expectations." << unusedMsgStream.str() << std::endl;
+        return true;
+    }
+    return false;
+}
+
+int32_t TestSuite::getTestExpectation(const std::string &testName)
+{
+    return mTestExpectationsParser.getTestExpectation(testName);
+}
+
+int32_t TestSuite::getTestExpectationWithConfig(const GPUTestConfig &config,
+                                                const std::string &testName)
+{
+    return mTestExpectationsParser.getTestExpectationWithConfig(config, testName);
 }
 
 const char *TestResultTypeToString(TestResultType type)

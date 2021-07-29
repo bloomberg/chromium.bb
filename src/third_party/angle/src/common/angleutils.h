@@ -37,11 +37,11 @@ using Microsoft::WRL::ComPtr;
 #endif  // defined(ANGLE_ENABLE_D3D9) || defined(ANGLE_ENABLE_D3D11)
 
 #if defined(ANGLE_USE_ABSEIL)
-template <typename Key, typename T>
-using HashMap = absl::flat_hash_map<Key, T>;
+template <typename Key, typename T, class Hash = absl::container_internal::hash_default_hash<Key>>
+using HashMap = absl::flat_hash_map<Key, T, Hash>;
 #else
-template <typename Key, typename T>
-using HashMap = std::unordered_map<Key, T>;
+template <typename Key, typename T, class Hash = std::hash<Key>>
+using HashMap = std::unordered_map<Key, T, Hash>;
 #endif  // defined(ANGLE_USE_ABSEIL)
 
 class NonCopyable
@@ -290,10 +290,6 @@ inline bool IsLittleEndian()
 #define GL_X2_RGB10_UNORM_ANGLEX 0x6AF7
 #define GL_X2_RGB10_SNORM_ANGLEX 0x6AF8
 
-// YUV formats
-#define GL_G8_B8_R8_3PLANE_420_UNORM_ANGLEX 0x6B00
-#define GL_G8_B8R8_2PLANE_420_UNORM_ANGLEX 0x6B01
-
 #define ANGLE_CHECK_GL_ALLOC(context, result) \
     ANGLE_CHECK(context, result, "Failed to allocate host memory", GL_OUT_OF_MEMORY)
 
@@ -308,6 +304,22 @@ inline bool IsLittleEndian()
 #    define ANGLE_SCOPED_DISABLE_LSAN() __lsan::ScopedDisabler lsanDisabler
 #else
 #    define ANGLE_SCOPED_DISABLE_LSAN()
+#endif
+
+// The ANGLE_NO_SANITIZE_MEMORY macro suppresses MemorySanitizer checks for
+// use-of-uninitialized-data. It can be used to decorate functions with known
+// false positives.
+#ifdef __clang__
+#    define ANGLE_NO_SANITIZE_MEMORY __attribute__((no_sanitize_memory))
+#else
+#    define ANGLE_NO_SANITIZE_MEMORY
+#endif
+
+// Similar to the above, but for thread sanitization.
+#ifdef __clang__
+#    define ANGLE_NO_SANITIZE_THREAD __attribute__((no_sanitize_thread))
+#else
+#    define ANGLE_NO_SANITIZE_THREAD
 #endif
 
 // The below inlining code lifted from V8.

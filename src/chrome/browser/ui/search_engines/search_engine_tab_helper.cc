@@ -24,6 +24,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -37,7 +38,35 @@ bool IsFormSubmit(NavigationEntry* entry) {
                                       ui::PAGE_TRANSITION_FORM_SUBMIT);
 }
 
-std::u16string GenerateKeywordFromNavigationEntry(NavigationEntry* entry) {
+}  // namespace
+
+// static
+void SearchEngineTabHelper::BindOpenSearchDescriptionDocumentHandler(
+    mojo::PendingAssociatedReceiver<
+        chrome::mojom::OpenSearchDescriptionDocumentHandler> receiver,
+    content::RenderFrameHost* rfh) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
+    return;
+  auto* tab_helper = SearchEngineTabHelper::FromWebContents(web_contents);
+  if (!tab_helper)
+    return;
+  tab_helper->osdd_handler_receivers_.Bind(rfh, std::move(receiver));
+}
+
+SearchEngineTabHelper::~SearchEngineTabHelper() = default;
+
+void SearchEngineTabHelper::DidFinishNavigation(
+    content::NavigationHandle* handle) {
+  GenerateKeywordIfNecessary(handle);
+}
+
+void SearchEngineTabHelper::WebContentsDestroyed() {
+  favicon_driver_observation_.Reset();
+}
+
+std::u16string SearchEngineTabHelper::GenerateKeywordFromNavigationEntry(
+    NavigationEntry* entry) {
   // Don't autogenerate keywords for pages that are the result of form
   // submissions.
   if (IsFormSubmit(entry))
@@ -65,20 +94,6 @@ std::u16string GenerateKeywordFromNavigationEntry(NavigationEntry* entry) {
   }
 
   return TemplateURL::GenerateKeyword(url);
-}
-
-}  // namespace
-
-SearchEngineTabHelper::~SearchEngineTabHelper() {
-}
-
-void SearchEngineTabHelper::DidFinishNavigation(
-    content::NavigationHandle* handle) {
-  GenerateKeywordIfNecessary(handle);
-}
-
-void SearchEngineTabHelper::WebContentsDestroyed() {
-  favicon_driver_observation_.Reset();
 }
 
 SearchEngineTabHelper::SearchEngineTabHelper(WebContents* web_contents)
@@ -164,7 +179,8 @@ void SearchEngineTabHelper::OnFaviconUpdated(
 
 void SearchEngineTabHelper::GenerateKeywordIfNecessary(
     content::NavigationHandle* handle) {
-  if (!handle->IsInMainFrame() || !handle->GetSearchableFormURL().is_valid())
+  if (!handle->IsInPrimaryMainFrame() ||
+      !handle->GetSearchableFormURL().is_valid())
     return;
 
   Profile* profile =

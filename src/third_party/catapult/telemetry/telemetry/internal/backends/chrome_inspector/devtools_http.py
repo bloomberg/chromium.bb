@@ -46,7 +46,9 @@ class DevToolsHttp(object):
       self._conn = six.moves.http_client.HTTPConnection(
           host_port, timeout=timeout)
     except (socket.error, six.moves.http_client.HTTPException) as e:
-      six.reraise(DevToolsClientConnectionError, (e,), sys.exc_info()[2])
+      six.reraise(DevToolsClientConnectionError,
+                  DevToolsClientConnectionError(repr(e)),
+                  sys.exc_info()[2])
 
   def Disconnect(self):
     """Closes the HTTP connection."""
@@ -94,8 +96,14 @@ class DevToolsHttp(object):
     except (socket.error, six.moves.http_client.HTTPException) as e:
       self.Disconnect()
       if isinstance(e, socket.error) and e.errno == errno.ECONNREFUSED:
-        six.reraise(DevToolsClientUrlError, (e,), sys.exc_info()[2])
-      six.reraise(DevToolsClientConnectionError, (e,), sys.exc_info()[2])
+        six.reraise(
+            DevToolsClientUrlError,
+            DevToolsClientUrlError(repr(e)),
+            sys.exc_info()[2])
+      six.reraise(
+          DevToolsClientConnectionError,
+          DevToolsClientConnectionError(repr(e)),
+          sys.exc_info()[2])
 
   def RequestJson(self, path, timeout=30):
     """Sends a request and parse the response as JSON.

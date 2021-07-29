@@ -4,15 +4,50 @@
 
 #include "components/variations/variations_test_utils.h"
 
-#include <string>
-
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/metrics/field_trial.h"
 #include "components/variations/proto/client_variations.pb.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_switches.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 namespace variations {
+
+const char kUncompressedBase64TestSeedData[] =
+    "CigxZDI5NDY0ZmIzZDc4ZmYxNTU2ZTViNTUxYzY0NDdjYmM3NGU1ZmQwEr0BCh9VTUEtVW5pZm"
+    "9ybWl0eS1UcmlhbC0xMC1QZXJjZW50GICckqUFOAFCB2RlZmF1bHRKCwoHZGVmYXVsdBABSgwK"
+    "CGdyb3VwXzAxEAFKDAoIZ3JvdXBfMDIQAUoMCghncm91cF8wMxABSgwKCGdyb3VwXzA0EAFKDA"
+    "oIZ3JvdXBfMDUQAUoMCghncm91cF8wNhABSgwKCGdyb3VwXzA3EAFKDAoIZ3JvdXBfMDgQAUoM"
+    "Cghncm91cF8wORAB";
+
+const char kCompressedBase64TestSeedData[] =
+    "H4sIAAAAAAAAAOPSMEwxsjQxM0lLMk4xt0hLMzQ1NUs1TTI1NUw2MzExT05KNjdJNU1LMRDay8"
+    "glH+rrqBual5mWX5SbWVKpG1KUmZija2igG5BalJyaVyLRMGfSUlYLRif2lNS0xNKcEi9uLhhT"
+    "gNGLh4sjvSi/tCDewBCFZ4TCM0bhmaDwTFF4Zig8cxSeBQrPUoARAEVeJPrqAAAA";
+
+const char kBase64TestSeedSignature[] =
+    "MEQCIDD1IVxjzWYncun+9IGzqYjZvqxxujQEayJULTlbTGA/AiAr0oVmEgVUQZBYq5VLOSvy96"
+    "JkMYgzTkHPwbv7K/CmgA==";
+
+const char kTestSeedStudyName[] = "UMA-Uniformity-Trial-10-Percent";
+
+std::string GetTestSeedForPrefs() {
+  std::string serialized_seed;
+  base::Base64Decode(kUncompressedBase64TestSeedData, &serialized_seed);
+
+  std::string compressed_seed_data;
+  compression::GzipCompress(serialized_seed, &compressed_seed_data);
+
+  std::string base64_seed_data;
+  base::Base64Encode(compressed_seed_data, &base64_seed_data);
+  return base64_seed_data;
+}
+
+void DisableTestingConfig() {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableFieldTrialTestingConfig);
+}
 
 bool ExtractVariationIds(const std::string& variations,
                          std::set<VariationID>* variation_ids,

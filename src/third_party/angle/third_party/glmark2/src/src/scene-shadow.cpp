@@ -1,5 +1,5 @@
 //
-// Copyright © 2012 Linaro Limited
+// Copyright Â© 2012 Linaro Limited
 //
 // This file is part of the glmark2 OpenGL (ES) 2.0 benchmark.
 //
@@ -54,6 +54,7 @@ class DepthRenderTarget
     unsigned int height_;
     unsigned int tex_;
     unsigned int fbo_;
+    unsigned int canvas_fbo_;
 public:
     DepthRenderTarget() :
         canvas_width_(0),
@@ -63,7 +64,7 @@ public:
         tex_(0),
         fbo_(0) {}
     ~DepthRenderTarget() {}
-    bool setup(unsigned int width, unsigned int height);
+    bool setup(unsigned int canvas_fbo, unsigned int width, unsigned int height);
     void teardown();
     void enable(const mat4& mvp);
     void disable();
@@ -72,7 +73,7 @@ public:
 };
 
 bool
-DepthRenderTarget::setup(unsigned int width, unsigned int height)
+DepthRenderTarget::setup(unsigned int canvas_fbo, unsigned int width, unsigned int height)
 {
     static const string vtx_shader_filename(Options::data_path + "/shaders/depth.vert");
     static const string frg_shader_filename(Options::data_path + "/shaders/depth.frag");
@@ -86,6 +87,7 @@ DepthRenderTarget::setup(unsigned int width, unsigned int height)
 
     canvas_width_ = width;
     canvas_height_ = height;
+    canvas_fbo_ = canvas_fbo;
     width_ = canvas_width_ * 2;
     height_ = canvas_height_ * 2;
 
@@ -112,16 +114,16 @@ DepthRenderTarget::setup(unsigned int width, unsigned int height)
                  GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glGenFramebuffers(1, &fbo_);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
-                           tex_, 0);
-    unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    GLExtensions::GenFramebuffers(1, &fbo_);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    GLExtensions::FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+                                       tex_, 0);
+    unsigned int status = GLExtensions::CheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE) {
         Log::error("DepthRenderTarget::setup: glCheckFramebufferStatus failed (0x%x)\n", status);
         return false;
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
 
     return true;
 }
@@ -136,7 +138,7 @@ DepthRenderTarget::teardown()
         tex_ = 0;
     }
     if (fbo_) {
-        glDeleteFramebuffers(1, &fbo_);
+        GLExtensions::DeleteFramebuffers(1, &fbo_);
         fbo_ = 0;
     }
 }
@@ -146,8 +148,8 @@ DepthRenderTarget::enable(const mat4& mvp)
 {
     program_.start();
     program_["ModelViewProjectionMatrix"] = mvp;
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    GLExtensions::FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
                            tex_, 0);
     glViewport(0, 0, width_, height_);
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -156,7 +158,7 @@ DepthRenderTarget::enable(const mat4& mvp)
 
 void DepthRenderTarget::disable()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, canvas_fbo_);
     glViewport(0, 0, canvas_width_, canvas_height_);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
@@ -373,7 +375,7 @@ ShadowPrivate::setup(map<string, Scene::Option>& options)
     float aspect(static_cast<float>(canvas_.width())/static_cast<float>(canvas_.height()));
     projection_.perspective(fovy, aspect, 2.0, 50.0);
 
-    if (!depthTarget_.setup(canvas_.width(), canvas_.height())) {
+    if (!depthTarget_.setup(canvas_.fbo(), canvas_.width(), canvas_.height())) {
         Log::error("Failed to set up the render target for the depth pass\n");
         return false;
     }
@@ -483,15 +485,24 @@ SceneShadow::supported(bool show_errors)
 {
     static const string oes_depth_texture("GL_OES_depth_texture");
     static const string arb_depth_texture("GL_ARB_depth_texture");
+    bool ret = true;
+
     if (!GLExtensions::support(oes_depth_texture) &&
         !GLExtensions::support(arb_depth_texture)) {
         if (show_errors) {
             Log::error("We do not have the depth texture extension!!!\n");
         }
 
-        return false;
+        ret = false;
     }
-    return true;
+
+    if (!GLExtensions::GenFramebuffers) {
+        if (show_errors)
+            Log::error("SceneShadow requires GL framebuffer support\n");
+        ret = false;
+    }
+
+    return ret;
 }
 
 bool
@@ -510,10 +521,8 @@ bool
 SceneShadow::setup()
 {
     // If the scene isn't supported, don't bother to go through setup.
-    if (!supported(false) || !Scene::setup())
-    {
+    if (!Scene::setup())
         return false;
-    }
 
     priv_ = new ShadowPrivate(canvas_);
     if (!priv_->setup(options_)) {

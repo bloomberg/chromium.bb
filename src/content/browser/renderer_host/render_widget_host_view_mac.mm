@@ -384,10 +384,7 @@ void RenderWidgetHostViewMac::InitAsPopup(
   SetContentBackgroundColor(SK_ColorTRANSPARENT);
 
   // This path is used by the time/date picker.
-  // When FormControlsRefresh is enabled the popup window should use
-  // the native shadow.
-  bool has_shadow = features::IsFormControlsRefreshEnabled();
-  ns_view_->InitAsPopup(pos, has_shadow);
+  ns_view_->InitAsPopup(pos);
 }
 
 RenderWidgetHostViewBase*
@@ -416,9 +413,9 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetWidgetForIme() {
   return GetActiveWidget();
 }
 
-void RenderWidgetHostViewMac::GetScreenInfo(blink::ScreenInfo* screen_info) {
+void RenderWidgetHostViewMac::GetScreenInfo(display::ScreenInfo* screen_info) {
   const display::DisplayList& displays = browser_compositor_->display_list();
-  CHECK(displays.IsValidAndHasPrimaryAndCurrentDisplays());
+  DCHECK(displays.IsValidAndHasPrimaryAndCurrentDisplays());
   const display::Display& display = displays.GetCurrentDisplay();
   DisplayUtil::DisplayToScreenInfo(screen_info, display);
   // Recalculate some ScreenInfo properties from the cached screen info, which

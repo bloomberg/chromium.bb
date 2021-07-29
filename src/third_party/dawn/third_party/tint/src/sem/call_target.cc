@@ -23,49 +23,18 @@ namespace sem {
 
 CallTarget::CallTarget(sem::Type* return_type, const ParameterList& parameters)
     : return_type_(return_type), parameters_(parameters) {
-  TINT_ASSERT(return_type);
+  TINT_ASSERT(Semantic, return_type);
 }
 
 CallTarget::~CallTarget() = default;
 
-int IndexOf(const ParameterList& parameters, Parameter::Usage usage) {
+int IndexOf(const ParameterList& parameters, ParameterUsage usage) {
   for (size_t i = 0; i < parameters.size(); i++) {
     if (parameters[i].usage == usage) {
       return static_cast<int>(i);
     }
   }
   return -1;
-}
-
-const char* str(Parameter::Usage usage) {
-  switch (usage) {
-    case Parameter::Usage::kArrayIndex:
-      return "array_index";
-    case Parameter::Usage::kBias:
-      return "bias";
-    case Parameter::Usage::kCoords:
-      return "coords";
-    case Parameter::Usage::kDepthRef:
-      return "depth_ref";
-    case Parameter::Usage::kDdx:
-      return "ddx";
-    case Parameter::Usage::kDdy:
-      return "ddy";
-    case Parameter::Usage::kLevel:
-      return "level";
-    case Parameter::Usage::kOffset:
-      return "offset";
-    case Parameter::Usage::kSampler:
-      return "sampler";
-    case Parameter::Usage::kSampleIndex:
-      return "sample_index";
-    case Parameter::Usage::kTexture:
-      return "texture";
-    case Parameter::Usage::kValue:
-      return "value";
-    default:
-      return "<unknown>";
-  }
 }
 
 std::ostream& operator<<(std::ostream& out, Parameter parameter) {

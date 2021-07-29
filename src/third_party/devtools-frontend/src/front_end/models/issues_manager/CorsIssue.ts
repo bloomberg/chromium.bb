@@ -94,8 +94,10 @@ function getIssueCode(details: Protocol.Audits.CorsIssueDetails): IssueCode {
 export class CorsIssue extends Issue<IssueCode> {
   private issueDetails: Protocol.Audits.CorsIssueDetails;
 
-  constructor(issueDetails: Protocol.Audits.CorsIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel) {
-    super(getIssueCode(issueDetails), issuesModel);
+  constructor(
+      issueDetails: Protocol.Audits.CorsIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel,
+      issueId: string|undefined) {
+    super(getIssueCode(issueDetails), issuesModel, issueId);
     this.issueDetails = issueDetails;
   }
 
@@ -232,13 +234,13 @@ export class CorsIssue extends Issue<IssueCode> {
     return IssueKind.PageError;
   }
 
-  static fromInspectorIssue(
-      issuesModel: SDK.IssuesModel.IssuesModel, inspectorDetails: Protocol.Audits.InspectorIssueDetails): CorsIssue[] {
-    const corsIssueDetails = inspectorDetails.corsIssueDetails;
+  static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue):
+      CorsIssue[] {
+    const corsIssueDetails = inspectorIssue.details.corsIssueDetails;
     if (!corsIssueDetails) {
       console.warn('Cors issue without details received.');
       return [];
     }
-    return [new CorsIssue(corsIssueDetails, issuesModel)];
+    return [new CorsIssue(corsIssueDetails, issuesModel, inspectorIssue.issueId)];
   }
 }

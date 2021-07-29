@@ -89,10 +89,12 @@ void CompositorRenderPass::SetAll(
     const cc::FilterOperations& backdrop_filters,
     const absl::optional<gfx::RRectF>& backdrop_filter_bounds,
     SubtreeCaptureId subtree_capture_id,
+    gfx::Size subtree_size,
     bool has_transparent_background,
     bool cache_render_pass,
     bool has_damage_from_contributing_content,
-    bool generate_mipmap) {
+    bool generate_mipmap,
+    bool has_per_quad_damage) {
   DCHECK(id);
 
   this->id = id;
@@ -103,57 +105,24 @@ void CompositorRenderPass::SetAll(
   this->backdrop_filters = backdrop_filters;
   this->backdrop_filter_bounds = backdrop_filter_bounds;
   this->subtree_capture_id = subtree_capture_id;
+  this->subtree_size = subtree_size;
   this->has_transparent_background = has_transparent_background;
   this->cache_render_pass = cache_render_pass;
   this->has_damage_from_contributing_content =
       has_damage_from_contributing_content;
   this->generate_mipmap = generate_mipmap;
-
+  this->has_per_quad_damage = has_per_quad_damage;
   DCHECK(quad_list.empty());
   DCHECK(shared_quad_state_list.empty());
 }
 
 void CompositorRenderPass::AsValueInto(
     base::trace_event::TracedValue* value) const {
-  cc::MathUtil::AddToTracedValue("output_rect", output_rect, value);
-  cc::MathUtil::AddToTracedValue("damage_rect", damage_rect, value);
+  RenderPassInternal::AsValueInto(value);
 
-  value->SetBoolean("has_transparent_background", has_transparent_background);
-  value->SetBoolean("cache_render_pass", cache_render_pass);
-  value->SetBoolean("has_damage_from_contributing_content",
-                    has_damage_from_contributing_content);
-  value->SetBoolean("generate_mipmap", generate_mipmap);
-  value->SetInteger("copy_requests",
-                    base::saturated_cast<int>(copy_requests.size()));
+  value->SetString("subtree_capture_id", subtree_capture_id.ToString());
 
-  value->BeginArray("filters");
-  filters.AsValueInto(value);
-  value->EndArray();
-
-  value->BeginArray("backdrop_filters");
-  backdrop_filters.AsValueInto(value);
-  value->EndArray();
-
-  if (backdrop_filter_bounds.has_value()) {
-    cc::MathUtil::AddToTracedValue("backdrop_filter_bounds",
-                                   backdrop_filter_bounds.value(), value);
-  }
-
-  value->BeginArray("shared_quad_state_list");
-  for (auto* shared_quad_state : shared_quad_state_list) {
-    value->BeginDictionary();
-    shared_quad_state->AsValueInto(value);
-    value->EndDictionary();
-  }
-  value->EndArray();
-
-  value->BeginArray("quad_list");
-  for (auto* quad : quad_list) {
-    value->BeginDictionary();
-    quad->AsValueInto(value);
-    value->EndDictionary();
-  }
-  value->EndArray();
+  cc::MathUtil::AddToTracedValue("subtree_size", subtree_size, value);
 
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("viz.quads"), value, "CompositorRenderPass",
@@ -224,9 +193,10 @@ std::unique_ptr<CompositorRenderPass> CompositorRenderPass::DeepCopy() const {
                                                 quad_list.size());
   copy_pass->SetAll(id, output_rect, damage_rect, transform_to_root_target,
                     filters, backdrop_filters, backdrop_filter_bounds,
-                    subtree_capture_id, has_transparent_background,
-                    cache_render_pass, has_damage_from_contributing_content,
-                    generate_mipmap);
+                    subtree_capture_id, subtree_size,
+                    has_transparent_background, cache_render_pass,
+                    has_damage_from_contributing_content, generate_mipmap,
+                    has_per_quad_damage);
 
   if (shared_quad_state_list.empty()) {
     DCHECK(quad_list.empty());

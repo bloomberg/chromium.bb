@@ -21,6 +21,7 @@
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -40,6 +41,7 @@
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(IS_CHROMEOS_ASH)
 
 using ::testing::_;
+using ::testing::NiceMock;
 
 using blink::mojom::WebUsbService;
 using device::FakeUsbDeviceInfo;
@@ -63,7 +65,9 @@ ACTION_P2(ExpectGuidAndThen, expected_guid, callback) {
 
 class WebUsbServiceImplTest : public ChromeRenderViewHostTestHarness {
  public:
-  WebUsbServiceImplTest() {}
+  WebUsbServiceImplTest() = default;
+  WebUsbServiceImplTest(const WebUsbServiceImplTest&) = delete;
+  WebUsbServiceImplTest& operator=(const WebUsbServiceImplTest&) = delete;
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -101,7 +105,6 @@ class WebUsbServiceImplTest : public ChromeRenderViewHostTestHarness {
 
  private:
   std::unique_ptr<device::FakeUsbDeviceManager> device_manager_;
-  DISALLOW_COPY_AND_ASSIGN(WebUsbServiceImplTest);
 };
 
 class MockDeviceManagerClient : public UsbDeviceManagerClient {
@@ -182,7 +185,7 @@ TEST_F(WebUsbServiceImplTest, NoPermissionDevice) {
 
   mojo::Remote<WebUsbService> web_usb_service;
   ConnectToService(web_usb_service.BindNewPipeAndPassReceiver());
-  MockDeviceManagerClient mock_client;
+  NiceMock<MockDeviceManagerClient> mock_client;
   web_usb_service->SetClient(mock_client.CreateInterfacePtrAndBind());
 
   // Call GetDevices once to make sure the WebUsbService is up and running
@@ -376,6 +379,15 @@ TEST_F(WebUsbServiceImplTest, OpenAndDisconnectDevice) {
 }
 
 TEST_F(WebUsbServiceImplTest, OpenAndNavigateCrossOrigin) {
+  // The test assumes the previous page gets deleted after navigation,
+  // disconnecting the device. Disable back/forward cache to ensure that it
+  // doesn't get preserved in the cache.
+  // TODO(https://crbug.com/1220314): WebUSB actually already disables
+  // back/forward cache in RenderFrameHostImpl::CreateWebUsbService(), but that
+  // path is not triggered in unit tests, so this test fails. Fix this.
+  content::DisableBackForwardCacheForTesting(
+      web_contents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   const auto origin = url::Origin::Create(GURL(kDefaultTestUrl));
 
   auto* context = GetChooserContext();

@@ -19,16 +19,6 @@ using testing::_;
 
 const std::string kLabel = "noladaleybeceipretsamrehtonatey";
 
-GlobalFrameRoutingId GetGlobalFrameRoutingId(RenderFrameHost* frame) {
-  return GlobalFrameRoutingId(frame->GetProcess()->GetID(),
-                              frame->GetRoutingID());
-}
-
-GlobalFrameRoutingId GetGlobalFrameRoutingId(
-    std::unique_ptr<TestWebContents>& web_contents) {
-  return GetGlobalFrameRoutingId(web_contents->GetMainFrame());
-}
-
 MATCHER(IsNullCaptureHandle, "") {
   static_assert(
       std::is_same<decltype(arg), const media::mojom::CaptureHandlePtr&>::value,
@@ -159,7 +149,7 @@ TEST_F(CaptureHandleManagerTest,
   auto& callback_helper = MakeCallbackHelper();
   EXPECT_CALL(callback_helper, Method(_, _, _)).Times(0);
   manager_.OnTabCaptureStarted(kLabel, MakeDevice(captured),
-                               GetGlobalFrameRoutingId(capturer),
+                               capturer->GetMainFrame()->GetGlobalId(),
                                callback_helper.AsCallback());
 }
 
@@ -175,7 +165,7 @@ TEST_F(CaptureHandleManagerTest,
   auto& callback_helper = MakeCallbackHelper();
   EXPECT_CALL(callback_helper, Method(_, _, _)).Times(0);
   manager_.OnTabCaptureStarted(kLabel, captured_device,
-                               GetGlobalFrameRoutingId(capturer),
+                               capturer->GetMainFrame()->GetGlobalId(),
                                callback_helper.AsCallback());
 }
 
@@ -193,7 +183,7 @@ TEST_F(CaptureHandleManagerTest,
                                       IsCaptureHandle(url::Origin(), u"new")))
       .Times(1);
   manager_.OnTabCaptureStarted(kLabel, captured_device,
-                               GetGlobalFrameRoutingId(capturer),
+                               capturer->GetMainFrame()->GetGlobalId(),
                                callback_helper.AsCallback());
 }
 
@@ -206,7 +196,7 @@ TEST_F(CaptureHandleManagerTest, CallbackInvokedWhenCaptureHandleChanges) {
 
   auto& callback_helper = MakeCallbackHelper();
   manager_.OnTabCaptureStarted(kLabel, captured_device,
-                               GetGlobalFrameRoutingId(capturer),
+                               capturer->GetMainFrame()->GetGlobalId(),
                                callback_helper.AsCallback());
 
   EXPECT_CALL(callback_helper, Method(kLabel, captured_device.type,
@@ -230,7 +220,7 @@ TEST_F(CaptureHandleManagerTest, CaptureHandleResetByNavigation) {
 
   auto& callback_helper = MakeCallbackHelper();
   manager_.OnTabCaptureStarted(kLabel, captured_device,
-                               GetGlobalFrameRoutingId(capturer),
+                               capturer->GetMainFrame()->GetGlobalId(),
                                callback_helper.AsCallback());
 
   EXPECT_CALL(callback_helper,
@@ -257,7 +247,7 @@ TEST_F(CaptureHandleManagerTest,
 
   auto& callback_helper = MakeCallbackHelper();
   manager_.OnTabCaptureStarted(kLabel, captured_device,
-                               GetGlobalFrameRoutingId(capturer),
+                               capturer->GetMainFrame()->GetGlobalId(),
                                callback_helper.AsCallback());
 
   EXPECT_CALL(callback_helper, Method(_, _, _)).Times(0);
@@ -281,7 +271,7 @@ TEST_F(CaptureHandleManagerTest, CallbackInvokedWhenConfigAllowsCapturer) {
 
   auto& callback_helper = MakeCallbackHelper();
   manager_.OnTabCaptureStarted(kLabel, captured_device,
-                               GetGlobalFrameRoutingId(capturer),
+                               capturer->GetMainFrame()->GetGlobalId(),
                                callback_helper.AsCallback());
 
   EXPECT_CALL(callback_helper,

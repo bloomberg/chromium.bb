@@ -13,7 +13,6 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/page_number.h"
@@ -62,7 +61,7 @@ class PrintJobWorker {
   // Set the new print settings from a dictionary value.
   void SetSettings(base::Value new_settings, SettingsCallback callback);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   // Set the new print settings from a POD type.
   void SetSettingsFromPOD(std::unique_ptr<printing::PrintSettings> new_settings,
                           SettingsCallback callback);
@@ -112,9 +111,8 @@ class PrintJobWorker {
  private:
   // The shared NotificationService service can only be accessed from the UI
   // thread, so this class encloses the necessary information to send the
-  // notification from the right thread. Most NOTIFY_PRINT_JOB_EVENT
-  // notifications are sent this way, except USER_INIT_DONE, USER_INIT_CANCELED
-  // and DEFAULT_INIT_DONE. These three are sent through PrintJob::InitDone().
+  // notification from the right thread. All NOTIFY_PRINT_JOB_EVENT
+  // notifications are sent this way.
   class NotificationTask;
 
   // Posts a task to call OnNewPage(). Used to wait for pages/document to be
@@ -151,7 +149,7 @@ class PrintJobWorker {
   // Called on the UI thread to update the print settings.
   void UpdatePrintSettings(base::Value new_settings, SettingsCallback callback);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   // Called on the UI thread to update the print settings.
   void UpdatePrintSettingsFromPOD(
       std::unique_ptr<printing::PrintSettings> new_settings,

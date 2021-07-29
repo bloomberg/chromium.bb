@@ -40,7 +40,6 @@
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasrenderingcontext2d_gpucanvascontext_imagebitmaprenderingcontext_webgl2renderingcontext_webglrenderingcontext.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
@@ -80,8 +79,9 @@
 
 namespace blink {
 
-static const base::TimeDelta kTryRestoreContextInterval =
-    base::TimeDelta::FromMilliseconds(500);
+// Try to restore context 4 times in the event that the context is lost. If the
+// context is unable to be restored after 4 attempts, we discard the backing
+// storage of the context and allocate a new one.
 static const unsigned kMaxTryRestoreContextAttempts = 4;
 
 // Drawing methods need to use this instead of SkAutoCanvasRestore in case
@@ -121,30 +121,13 @@ CanvasRenderingContext* CanvasRenderingContext2D::Factory::Create(
       MakeGarbageCollected<CanvasRenderingContext2D>(
           static_cast<HTMLCanvasElement*>(host), attrs);
   DCHECK(rendering_context);
-  rendering_context->RecordUKMCanvasRenderingAPI(
-      CanvasRenderingContext::CanvasRenderingAPI::k2D);
   return rendering_context;
 }
 
 CanvasRenderingContext2D::CanvasRenderingContext2D(
     HTMLCanvasElement* canvas,
     const CanvasContextCreationAttributesCore& attrs)
-    : CanvasRenderingContext(canvas, attrs),
-      context_lost_mode_(kNotLostContext),
-      context_restorable_(true),
-      try_restore_context_attempt_count_(0),
-      dispatch_context_lost_event_timer_(
-          canvas->GetDocument().GetTaskRunner(TaskType::kMiscPlatformAPI),
-          this,
-          &CanvasRenderingContext2D::DispatchContextLostEvent),
-      dispatch_context_restored_event_timer_(
-          canvas->GetDocument().GetTaskRunner(TaskType::kMiscPlatformAPI),
-          this,
-          &CanvasRenderingContext2D::DispatchContextRestoredEvent),
-      try_restore_context_event_timer_(
-          canvas->GetDocument().GetTaskRunner(TaskType::kMiscPlatformAPI),
-          this,
-          &CanvasRenderingContext2D::TryRestoreContextEvent),
+    : CanvasRenderingContext(canvas, attrs, CanvasRenderingAPI::k2D),
       should_prune_local_font_cache_(false),
       random_generator_((uint32_t)base::RandUint64()),
       bernoulli_distribution_(kRasterMetricProbability),
@@ -156,20 +139,9 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
   ValidateStateStack();
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
 V8RenderingContext* CanvasRenderingContext2D::AsV8RenderingContext() {
   return MakeGarbageCollected<V8RenderingContext>(this);
 }
-
-#else  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
-void CanvasRenderingContext2D::SetCanvasGetContextResult(
-    RenderingContext& result) {
-  result.SetCanvasRenderingContext2D(this);
-}
-
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 CanvasRenderingContext2D::~CanvasRenderingContext2D() = default;
 
@@ -220,6 +192,14 @@ bool CanvasRenderingContext2D::isContextLost() const {
   return context_lost_mode_ != kNotLostContext;
 }
 
+void CanvasRenderingContext2D::SendContextLostEventIfNeeded() {
+  if (!needs_context_lost_event_)
+    return;
+
+  needs_context_lost_event_ = false;
+  dispatch_context_lost_event_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
+}
+
 void CanvasRenderingContext2D::LoseContext(LostContextMode lost_mode) {
   if (context_lost_mode_ != kNotLostContext)
     return;
@@ -227,7 +207,13 @@ void CanvasRenderingContext2D::LoseContext(LostContextMode lost_mode) {
   if (context_lost_mode_ == kSyntheticLostContext && Host()) {
     Host()->DiscardResourceProvider();
   }
-  dispatch_context_lost_event_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
+
+  if (canvas() && canvas()->IsVisible()) {
+    dispatch_context_lost_event_timer_.StartOneShot(base::TimeDelta(),
+                                                    FROM_HERE);
+  } else {
+    needs_context_lost_event_ = true;
+  }
 }
 
 void CanvasRenderingContext2D::DidSetSurfaceSize() {
@@ -251,30 +237,10 @@ void CanvasRenderingContext2D::DidSetSurfaceSize() {
 
 void CanvasRenderingContext2D::Trace(Visitor* visitor) const {
   visitor->Trace(hit_region_manager_);
-  visitor->Trace(dispatch_context_lost_event_timer_);
-  visitor->Trace(dispatch_context_restored_event_timer_);
-  visitor->Trace(try_restore_context_event_timer_);
   visitor->Trace(filter_operations_);
   CanvasRenderingContext::Trace(visitor);
   BaseRenderingContext2D::Trace(visitor);
   SVGResourceClient::Trace(visitor);
-}
-
-void CanvasRenderingContext2D::DispatchContextLostEvent(TimerBase*) {
-  if (canvas() && RuntimeEnabledFeatures::NewCanvas2DAPIEnabled()) {
-    Event* event = Event::CreateCancelable(event_type_names::kContextlost);
-    canvas()->DispatchEvent(*event);
-    if (event->defaultPrevented()) {
-      context_restorable_ = false;
-    }
-  }
-
-  if (context_restorable_ && (context_lost_mode_ == kRealLostContext ||
-                              context_lost_mode_ == kSyntheticLostContext)) {
-    try_restore_context_attempt_count_ = 0;
-    try_restore_context_event_timer_.StartRepeating(kTryRestoreContextInterval,
-                                                    FROM_HERE);
-  }
 }
 
 void CanvasRenderingContext2D::TryRestoreContextEvent(TimerBase* timer) {
@@ -303,23 +269,16 @@ void CanvasRenderingContext2D::TryRestoreContextEvent(TimerBase* timer) {
     DispatchContextRestoredEvent(nullptr);
   }
 
-  if (++try_restore_context_attempt_count_ > kMaxTryRestoreContextAttempts) {
-    // final attempt: allocate a brand new image buffer instead of restoring
+  // If it fails to restore the context, TryRestoreContextEvent again.
+  if (++try_restore_context_attempt_count_ < kMaxTryRestoreContextAttempts) {
+    TryRestoreContextEvent(nullptr);
+  } else {
+    // After 4 tries, we start the final attempt, allocate a brand new image
+    // buffer instead of restoring
     Host()->DiscardResourceProvider();
     try_restore_context_event_timer_.Stop();
     if (CanCreateCanvas2dResourceProvider())
       DispatchContextRestoredEvent(nullptr);
-  }
-}
-
-void CanvasRenderingContext2D::DispatchContextRestoredEvent(TimerBase*) {
-  if (context_lost_mode_ == kNotLostContext)
-    return;
-  Reset();
-  context_lost_mode_ = kNotLostContext;
-  if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled()) {
-    Event* event(Event::Create(event_type_names::kContextrestored));
-    canvas()->DispatchEvent(*event);
   }
 }
 
@@ -445,11 +404,10 @@ void CanvasRenderingContext2D::clearRect(double x,
   }
 }
 
-void CanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
-  if (dirty_rect.isEmpty())
-    return;
-
-  CanvasRenderingContext::DidDraw(dirty_rect);
+void CanvasRenderingContext2D::DidDraw2D(
+    const SkIRect& dirty_rect,
+    CanvasPerformanceMonitor::DrawType draw_type) {
+  CanvasRenderingContext::DidDraw(dirty_rect, draw_type);
 }
 
 bool CanvasRenderingContext2D::StateHasFilter() {
@@ -713,6 +671,11 @@ void CanvasRenderingContext2D::FinalizeFrame() {
   TRACE_EVENT0("blink", "CanvasRenderingContext2D::FinalizeFrame");
   if (IsPaintable())
     canvas()->GetCanvas2DLayerBridge()->FinalizeFrame();
+}
+
+CanvasRenderingContextHost*
+CanvasRenderingContext2D::GetCanvasRenderingContextHost() {
+  return Host();
 }
 
 bool CanvasRenderingContext2D::ParseColorOrCurrentColor(
@@ -1007,7 +970,8 @@ void CanvasRenderingContext2D::fillFormattedText(
        { c->drawPicture(recording); },
        [](const SkIRect& rect) { return false; }, bounds,
        CanvasRenderingContext2DState::PaintType::kFillPaintType,
-       CanvasRenderingContext2DState::kNoImage);
+       CanvasRenderingContext2DState::kNoImage,
+       CanvasPerformanceMonitor::DrawType::kText);
 }
 
 void CanvasRenderingContext2D::DrawTextInternal(
@@ -1120,7 +1084,8 @@ void CanvasRenderingContext2D::DrawTextInternal(
       },
       [](const SkIRect& rect)  // overdraw test lambda
       { return false; },
-      bounds, paint_type, CanvasRenderingContext2DState::kNoImage);
+      bounds, paint_type, CanvasRenderingContext2DState::kNoImage,
+      CanvasPerformanceMonitor::DrawType::kText);
 }
 
 const Font& CanvasRenderingContext2D::AccessFont() {
@@ -1159,10 +1124,10 @@ CanvasRenderingContext2D::getContextAttributes() const {
   CanvasRenderingContext2DSettings* settings =
       CanvasRenderingContext2DSettings::Create();
   settings->setAlpha(CreationAttributes().alpha);
-  settings->setColorSpace(GetCanvas2DColorParams().GetColorSpaceAsString());
-  if (RuntimeEnabledFeatures::CanvasColorManagementEnabled()) {
+  if (RuntimeEnabledFeatures::CanvasColorManagementEnabled())
+    settings->setColorSpace(GetCanvas2DColorParams().GetColorSpaceAsString());
+  if (RuntimeEnabledFeatures::CanvasColorManagementV2Enabled())
     settings->setPixelFormat(GetCanvas2DColorParams().GetPixelFormatAsString());
-  }
   settings->setDesynchronized(Host()->LowLatencyEnabled());
   if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled())
     settings->setWillReadFrequently(CreationAttributes().will_read_frequently);
@@ -1232,7 +1197,7 @@ void CanvasRenderingContext2D::DrawFocusRing(const Path& path,
   if (!ComputeDirtyRect(path.StrokeBoundingRect(stroke_data), &dirty_rect))
     return;
 
-  DidDraw(dirty_rect);
+  DidDraw(dirty_rect, CanvasPerformanceMonitor::DrawType::kPath);
 }
 
 void CanvasRenderingContext2D::UpdateElementAccessibility(const Path& path,

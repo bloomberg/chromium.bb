@@ -79,8 +79,7 @@ void SkiaOutputSurfaceImplTest::SetUpSkiaOutputSurfaceImpl() {
   RendererSettings settings;
   settings.use_skia_renderer = true;
   auto skia_deps = std::make_unique<SkiaOutputSurfaceDependencyImpl>(
-      GetGpuService(), TestGpuServiceHolder::GetInstance()->task_executor(),
-      gpu::kNullSurfaceHandle);
+      GetGpuService(), gpu::kNullSurfaceHandle);
   display_controller_ =
       std::make_unique<DisplayCompositorMemoryAndTaskController>(
           std::move(skia_deps));
@@ -165,7 +164,7 @@ TEST_F(SkiaOutputSurfaceImplTest, EndPaint) {
   geometry.readback_offset = gfx::Vector2d(0, 0);
 
   output_surface_->CopyOutput(AggregatedRenderPassId{0}, geometry, color_space,
-                              std::move(request));
+                              std::move(request), gpu::Mailbox());
   output_surface_->SwapBuffersSkipped(kSurfaceRect);
   output_surface_->Flush();
   BlockMainThread();
@@ -232,7 +231,7 @@ TEST_F(SkiaOutputSurfaceImplTest, CopyOutputBitmapSupportedColorSpace) {
 
   PaintRootRenderPass(kSurfaceRect, base::DoNothing::Once());
   output_surface_->CopyOutput(AggregatedRenderPassId{0}, geometry, color_space,
-                              std::move(request));
+                              std::move(request), gpu::Mailbox());
   output_surface_->SwapBuffersSkipped(kSurfaceRect);
   output_surface_->Flush();
   run_loop.Run();
@@ -271,7 +270,7 @@ TEST_F(SkiaOutputSurfaceImplTest, CopyOutputBitmapUnsupportedColorSpace) {
 
   PaintRootRenderPass(kSurfaceRect, base::DoNothing::Once());
   output_surface_->CopyOutput(AggregatedRenderPassId{0}, geometry, color_space,
-                              std::move(request));
+                              std::move(request), gpu::Mailbox());
   output_surface_->SwapBuffersSkipped(kSurfaceRect);
   output_surface_->Flush();
   run_loop.Run();

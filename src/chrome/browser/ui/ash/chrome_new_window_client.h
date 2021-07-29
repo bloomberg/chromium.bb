@@ -49,7 +49,8 @@ class ChromeNewWindowClient : public ash::NewWindowDelegate,
   void ShowKeyboardShortcutViewer() override;
   void ShowTaskManager() override;
   void OpenDiagnostics() override;
-  void OpenFeedbackPage(bool from_assistant) override;
+  void OpenFeedbackPage(FeedbackSource source,
+                        const std::string& description_template) override;
 
   // arc::OpenUrlDelegate:
   void OpenUrlFromArc(const GURL& url) override;
@@ -59,6 +60,8 @@ class ChromeNewWindowClient : public ash::NewWindowDelegate,
       int32_t task_id,
       arc::mojom::IntentHelperHost::OnOpenCustomTabCallback callback) override;
   void OpenChromePageFromArc(arc::mojom::ChromePage page) override;
+  void OpenAppWithIntent(const GURL& start_url,
+                         arc::mojom::LaunchIntentPtr intent) override;
 
   // arc::ControlCameraAppDelegate:
   void LaunchCameraApp(const std::string& queries, int32_t task_id) override;

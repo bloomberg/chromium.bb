@@ -12,10 +12,11 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/app_types_util.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -221,10 +222,7 @@ class TabManagerDelegate::FocusedProcess {
 int TabManagerDelegate::MemoryStat::TargetMemoryToFreeKB() {
   auto* monitor = chromeos::memory::SystemMemoryPressureEvaluator::Get();
   if (monitor) {
-    // Low memory condition is reported if available memory is under the
-    // critical margin.
-    return monitor->GetMemoryMarginsKB().critical -
-           monitor->GetCachedAvailableMemoryKB();
+    return monitor->GetCachedReclaimTargetKB();
   } else {
     // When TabManager::DiscardTab(LifecycleUnitDiscardReason::EXTERNAL) is
     // called by an integration test, TabManagerDelegate might be used without
@@ -420,20 +418,6 @@ void TabManagerDelegate::Observe(int type,
       content::RenderProcessHost* host =
           content::Source<content::RenderProcessHost>(source).ptr();
       oom_score_map_.erase(host->GetProcess().Handle());
-      // Coming here we know that a renderer was just killed and memory should
-      // come back into the pool. However - the memory pressure observer did
-      // not yet update its status and therefore we ask it to redo the
-      // measurement, calling us again if we have to release more.
-      // Note: We do not only accelerate the discarding speed by doing another
-      // check in short succession - we also accelerate it because the timer
-      // driven MemoryPressureMonitor will continue to produce timed events
-      // on top. So the longer the cleanup phase takes, the more tabs will
-      // get discarded in parallel.
-
-      auto* monitor = chromeos::memory::SystemMemoryPressureEvaluator::Get();
-      if (monitor) {
-        monitor->ScheduleEarlyCheck();
-      }
       break;
     }
     case content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED: {

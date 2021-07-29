@@ -10,15 +10,13 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/smb_client/smb_service.h"
+#include "chrome/browser/ash/smb_client/smb_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class Profile;
 
 namespace chromeos {
 namespace smb_dialog {
-
-using smb_client::SmbMountResult;
 
 class SmbHandler : public content::WebUIMessageHandler {
  public:
@@ -44,7 +42,7 @@ class SmbHandler : public content::WebUIMessageHandler {
 
   // Callback handler for SmbMount.
   void HandleSmbMountResponse(const std::string& callback_id,
-                              SmbMountResult result);
+                              smb_client::SmbMountResult result);
 
   // Callback handler for StartDiscovery.
   void HandleGatherSharesResponse(

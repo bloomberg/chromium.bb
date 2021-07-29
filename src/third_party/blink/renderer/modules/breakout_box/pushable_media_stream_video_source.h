@@ -6,8 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BREAKOUT_BOX_PUSHABLE_MEDIA_STREAM_VIDEO_SOURCE_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
@@ -67,8 +69,10 @@ class MODULES_EXPORT PushableMediaStreamVideoSource
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   };
 
-  PushableMediaStreamVideoSource();
   explicit PushableMediaStreamVideoSource(
+      scoped_refptr<base::SingleThreadTaskRunner>);
+  PushableMediaStreamVideoSource(
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       const base::WeakPtr<MediaStreamVideoSource>& upstream_source);
   ~PushableMediaStreamVideoSource() override;
 
@@ -100,7 +104,6 @@ class MODULES_EXPORT PushableMediaStreamVideoSource
   base::WeakPtr<MediaStreamVideoSource> upstream_source_;
   WeakPersistent<MediaStreamVideoTrackSignalObserver> signal_observer_;
   scoped_refptr<Broker> broker_;
-  THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_{this};
 };
 

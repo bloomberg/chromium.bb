@@ -44,10 +44,13 @@ import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
+// eslint-disable-next-line rulesdir/es_modules_import
+import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import {ConsoleContextSelector} from './ConsoleContextSelector.js';
+import consoleViewStyles from './consoleView.css.js';
 
 import type {LevelsMask} from './ConsoleFilter.js';
 import {ConsoleFilter, FilterType} from './ConsoleFilter.js';
@@ -222,6 +225,11 @@ const UIStrings = {
   *@description A context menu item in the Console View of the Console panel
   */
   default: 'Default',
+  /**
+  *@description Text summary to indicate total number of messages in console for accessibility/screen readers.
+  *@example {5} PH1
+  */
+  filteredMessagesInConsole: '{PH1} messages in console',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/console/ConsoleView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -258,6 +266,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   _pinPane: ConsolePinPane;
   _viewport: ConsoleViewport;
   _messagesElement: HTMLElement;
+  _messagesCountElement: HTMLElement;
   _viewportThrottler: Common.Throttler.Throttler;
   _pendingBatchResize: boolean;
   _onMessageResizedBound: (e: Common.EventTarget.EventTargetEvent) => void;
@@ -283,12 +292,12 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   private pendingSidebarMessages: ConsoleViewMessage[] = [];
   private userHasOpenedSidebarAtLeastOnce = false;
   private issueToolbarThrottle: Common.Throttler.Throttler;
+  private requestResolver = new Logs.RequestResolver.RequestResolver();
+  private issueResolver = new IssuesManager.IssueResolver.IssueResolver();
 
   constructor() {
     super();
     this.setMinimumSize(0, 35);
-    this.registerRequiredCSS('panels/console/consoleView.css', {enableLegacyPatching: false});
-    this.registerRequiredCSS('ui/legacy/components/object_ui/objectValue.css', {enableLegacyPatching: false});
 
     this._searchableView = new UI.SearchableView.SearchableView(this, null);
     this._searchableView.element.classList.add('console-searchable-view');
@@ -445,7 +454,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     this._pinPane.show(this._contentsElement);
     this._pinPane.element.addEventListener('keydown', event => {
       if ((event.key === 'Enter' &&
-           UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta((event as KeyboardEvent))) ||
+           UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey((event as KeyboardEvent))) ||
           event.keyCode === UI.KeyboardShortcut.Keys.Esc.code) {
         this._prompt.focus();
         event.consume();
@@ -462,8 +471,8 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     this._messagesElement.addEventListener('click', this._messagesClicked.bind(this), false);
     this._messagesElement.addEventListener('paste', this._messagesPasted.bind(this), true);
     this._messagesElement.addEventListener('clipboard-paste', this._messagesPasted.bind(this), true);
-    UI.ARIAUtils.markAsLog(this._messagesElement);
-    UI.ARIAUtils.markAsPoliteLiveRegion(this._messagesElement, false);
+    this._messagesCountElement = this._consoleToolbarContainer.createChild('div', 'message-count');
+    UI.ARIAUtils.markAsPoliteLiveRegion(this._messagesCountElement, false);
 
     this._viewportThrottler = new Common.Throttler.Throttler(50);
     this._pendingBatchResize = false;
@@ -635,8 +644,8 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     }
 
     const consoleMessage = new SDK.ConsoleModel.ConsoleMessage(
-        null, Protocol.Log.LogEntrySource.Other, level, message.text, SDK.ConsoleModel.FrontendMessageType.System,
-        undefined, undefined, undefined, undefined, undefined, message.timestamp);
+        null, Protocol.Log.LogEntrySource.Other, level, message.text,
+        {type: SDK.ConsoleModel.FrontendMessageType.System, timestamp: message.timestamp});
     this._addConsoleMessage(consoleMessage);
   }
 
@@ -655,8 +664,10 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   }
 
   wasShown(): void {
+    super.wasShown();
     this._updateIssuesToolbarItem();
     this._viewport.refresh();
+    this.registerCSSFiles([consoleViewStyles, objectValueStyles]);
   }
 
   focus(): void {
@@ -898,17 +909,26 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     const nestingLevel = this._currentGroup.nestingLevel();
     switch (message.type) {
       case SDK.ConsoleModel.FrontendMessageType.Command:
-        return new ConsoleCommand(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
+        return new ConsoleCommand(
+            message, this._linkifier, this.requestResolver, this.issueResolver, nestingLevel,
+            this._onMessageResizedBound);
       case SDK.ConsoleModel.FrontendMessageType.Result:
-        return new ConsoleCommandResult(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
+        return new ConsoleCommandResult(
+            message, this._linkifier, this.requestResolver, this.issueResolver, nestingLevel,
+            this._onMessageResizedBound);
       case Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed:
       case Protocol.Runtime.ConsoleAPICalledEventType.StartGroup:
         return new ConsoleGroupViewMessage(
-            message, this._linkifier, nestingLevel, this._updateMessageList.bind(this), this._onMessageResizedBound);
+            message, this._linkifier, this.requestResolver, this.issueResolver, nestingLevel,
+            this._updateMessageList.bind(this), this._onMessageResizedBound);
       case Protocol.Runtime.ConsoleAPICalledEventType.Table:
-        return new ConsoleTableMessageView(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
+        return new ConsoleTableMessageView(
+            message, this._linkifier, this.requestResolver, this.issueResolver, nestingLevel,
+            this._onMessageResizedBound);
       default:
-        return new ConsoleViewMessage(message, this._linkifier, nestingLevel, this._onMessageResizedBound);
+        return new ConsoleViewMessage(
+            message, this._linkifier, this.requestResolver, this.issueResolver, nestingLevel,
+            this._onMessageResizedBound);
     }
   }
 
@@ -942,6 +962,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     this._viewport.setStickToBottom(true);
     this._linkifier.reset();
     this._filter.clear();
+    this.requestResolver.clear();
     if (hadFocus) {
       this._prompt.focus();
     }
@@ -987,7 +1008,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   }
 
   async _saveConsole(): Promise<void> {
-    const url = (SDK.SDKModel.TargetManager.instance().mainTarget() as SDK.SDKModel.Target).inspectedURL();
+    const url = (SDK.TargetManager.TargetManager.instance().mainTarget() as SDK.Target.Target).inspectedURL();
     const parsedURL = Common.ParsedURL.ParsedURL.fromString(url);
     const filename = Platform.StringUtilities.sprintf('%s-%d.log', parsedURL ? parsedURL.host : 'console', Date.now());
     const stream = new Bindings.FileUtils.FileOutputStream();
@@ -1085,6 +1106,8 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     this._updateFilterStatus();
     this._searchableView.updateSearchMatchesCount(this._regexMatchRanges.length);
     this._viewport.invalidate();
+    this._messagesCountElement.textContent =
+        i18nString(UIStrings.filteredMessagesInConsole, {PH1: this._visibleViewMessages.length});
   }
 
   _addGroupableMessagesToEnd(): void {
@@ -1129,7 +1152,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
       if (!startGroupViewMessage) {
         const startGroupMessage = new SDK.ConsoleModel.ConsoleMessage(
             null, message.source, message.level, viewMessage.groupTitle(),
-            Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed);
+            {type: Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed});
         startGroupViewMessage = this._createViewMessage(startGroupMessage);
         this._groupableMessageTitle.set(key, startGroupViewMessage);
       }
@@ -1145,7 +1168,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
 
       const endGroupMessage = new SDK.ConsoleModel.ConsoleMessage(
           null, message.source, message.level, message.messageText,
-          Protocol.Runtime.ConsoleAPICalledEventType.EndGroup);
+          {type: Protocol.Runtime.ConsoleAPICalledEventType.EndGroup});
       this._appendMessageToEnd(this._createViewMessage(endGroupMessage));
     }
   }
@@ -1218,7 +1241,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     if (!exceptionDetails) {
       message = new SDK.ConsoleModel.ConsoleMessage(
           result.runtimeModel(), Protocol.Log.LogEntrySource.Javascript, level, '',
-          SDK.ConsoleModel.FrontendMessageType.Result, undefined, undefined, undefined, [result]);
+          {type: SDK.ConsoleModel.FrontendMessageType.Result, parameters: [result]});
     } else {
       message = SDK.ConsoleModel.ConsoleMessage.fromException(
           result.runtimeModel(), exceptionDetails, SDK.ConsoleModel.FrontendMessageType.Result, undefined, undefined);
@@ -1468,7 +1491,7 @@ export class ConsoleViewFilter {
     const filterKeys = Object.values(FilterType);
     this._suggestionBuilder = new UI.FilterSuggestionBuilder.FilterSuggestionBuilder(filterKeys);
     this._textFilterUI = new UI.Toolbar.ToolbarInput(
-        i18nString(UIStrings.filter), '', 0.2, 1, i18nString(UIStrings.egEventdCdnUrlacom),
+        i18nString(UIStrings.filter), '', 1, 1, i18nString(UIStrings.egEventdCdnUrlacom),
         this._suggestionBuilder.completions.bind(this._suggestionBuilder), true);
     this._textFilterSetting = Common.Settings.Settings.instance().createSetting('console.textFilter', '');
     if (this._textFilterSetting.get()) {
@@ -1565,8 +1588,8 @@ export class ConsoleViewFilter {
       isAll = isAll && levels[name] === allValue[name];
       isDefault = isDefault && levels[name] === defaultValue[name];
       if (levels[name]) {
-        text =
-            text ? i18nString(UIStrings.customLevels) : i18nString(UIStrings.sOnly, {PH1: this._levelLabels.get(name)});
+        text = text ? i18nString(UIStrings.customLevels) :
+                      i18nString(UIStrings.sOnly, {PH1: String(this._levelLabels.get(name))});
       }
     }
     if (isAll) {

@@ -41,7 +41,7 @@ the first "./a.out" with "./a.out -bench". Combine these changes with the
 // -lm and -lz (and nothing else). It's easiest to just link with the union of
 // all of these libraries.
 //
-// !! wuffs mimic cflags: -DWUFFS_MIMIC -lm -lpng -lz
+// ¿ wuffs mimic cflags: -DWUFFS_MIMIC -lm -lpng -lz
 
 // Wuffs ships as a "single file C library" or "header file library" as per
 // https://github.com/nothings/stb/blob/master/docs/stb_howto.txt
@@ -815,7 +815,9 @@ proc g_tests[] = {
 #ifdef WUFFS_MIMIC
 
     test_mimic_png_decode_bad_crc32_checksum_ancillary,
+#ifndef WUFFS_MIMICLIB_PNG_DOES_NOT_VERIFY_CHECKSUM
     test_mimic_png_decode_bad_crc32_checksum_critical,
+#endif
     test_mimic_png_decode_image_19k_8bpp,
     test_mimic_png_decode_image_40k_24bpp,
     test_mimic_png_decode_image_77k_8bpp,
@@ -852,7 +854,9 @@ proc g_benches[] = {
 #ifndef WUFFS_MIMICLIB_PNG_DOES_NOT_SUPPORT_QUIRK_IGNORE_CHECKSUM
     bench_mimic_png_decode_image_552k_32bpp_ignore_checksum,
 #endif
+#ifndef WUFFS_MIMICLIB_PNG_DOES_NOT_VERIFY_CHECKSUM
     bench_mimic_png_decode_image_552k_32bpp_verify_checksum,
+#endif
     bench_mimic_png_decode_image_4002k_24bpp,
 
 #endif  // WUFFS_MIMIC

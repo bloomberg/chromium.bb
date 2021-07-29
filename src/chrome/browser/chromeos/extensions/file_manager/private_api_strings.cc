@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/values.h"
-#include "chrome/browser/chromeos/file_manager/file_manager_string_util.h"
+#include "chrome/browser/ash/file_manager/file_manager_string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/common/extension_l10n_util.h"
 
@@ -21,14 +21,13 @@ FileManagerPrivateGetStringsFunction::~FileManagerPrivateGetStringsFunction() =
     default;
 
 ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
-  auto dict = GetFileManagerStrings();
+  base::Value dict = GetFileManagerStrings();
 
   const std::string locale = extension_l10n_util::CurrentLocaleOrDefault();
   AddFileManagerFeatureStrings(
-      locale, Profile::FromBrowserContext(browser_context()), dict.get());
+      locale, Profile::FromBrowserContext(browser_context()), &dict);
 
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
+  return RespondNow(OneArgument(std::move(dict)));
 }
 
 }  // namespace extensions

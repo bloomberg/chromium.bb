@@ -17,7 +17,13 @@ struct PartitionDirectMapExtent {
   PartitionDirectMapExtent<thread_safe>* next_extent;
   PartitionDirectMapExtent<thread_safe>* prev_extent;
   PartitionBucket<thread_safe>* bucket;
-  size_t map_size;  // Mapped size, not including guard pages and meta-data.
+  // Size of the entire reservation, including guard pages, meta-data,
+  // padding for alignment before allocation, and padding for granularity at the
+  // end of the allocation.
+  size_t reservation_size;
+  // Padding between the first partition page (guard pages + meta-data) and
+  // the allocation.
+  size_t padding_for_alignment;
 
   ALWAYS_INLINE static PartitionDirectMapExtent<thread_safe>* FromSlotSpan(
       SlotSpanMetadata<thread_safe>* slot_span);
@@ -26,12 +32,8 @@ struct PartitionDirectMapExtent {
 // Metadata page for direct-mapped allocations.
 template <bool thread_safe>
 struct PartitionDirectMapMetadata {
-  union {
-    PartitionSuperPageExtentEntry<thread_safe> extent;
-    // Never used, but must have the same size as a real PartitionPage.
-    PartitionPage<thread_safe> first_invalid_page;
-  };
   PartitionPage<thread_safe> page;
+  PartitionPage<thread_safe> subsequent_page;
   PartitionBucket<thread_safe> bucket;
   PartitionDirectMapExtent<thread_safe> direct_map_extent;
 };
@@ -41,12 +43,10 @@ ALWAYS_INLINE PartitionDirectMapExtent<thread_safe>*
 PartitionDirectMapExtent<thread_safe>::FromSlotSpan(
     SlotSpanMetadata<thread_safe>* slot_span) {
   PA_DCHECK(slot_span->bucket->is_direct_mapped());
-  auto* page = reinterpret_cast<PartitionPage<thread_safe>*>(slot_span);
-  // The page passed here is always |page| in |PartitionDirectMapMetadata|
-  // above. To get the metadata structure, need to get the invalid page address.
-  auto* first_invalid_page = page - 1;
-  auto* metadata = reinterpret_cast<PartitionDirectMapMetadata<thread_safe>*>(
-      first_invalid_page);
+  // |*slot_span| is the first field of |PartitionDirectMapMetadata|, just cast.
+  auto* metadata =
+      reinterpret_cast<PartitionDirectMapMetadata<thread_safe>*>(slot_span);
+  PA_DCHECK(&metadata->page.slot_span_metadata == slot_span);
   return &metadata->direct_map_extent;
 }
 

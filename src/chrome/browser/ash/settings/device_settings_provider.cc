@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -23,12 +24,12 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
+#include "chrome/browser/ash/policy/core/device_policy_decoder_chromeos.h"
+#include "chrome/browser/ash/policy/handlers/system_proxy_handler.h"
+#include "chrome/browser/ash/policy/off_hours/off_hours_proto_parser.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_cache.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
-#include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
-#include "chrome/browser/chromeos/policy/off_hours/off_hours_proto_parser.h"
-#include "chrome/browser/chromeos/policy/system_proxy_handler.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -81,6 +82,7 @@ const char* const kKnownSettings[] = {
     kDeviceDisplayResolution,
     kDeviceDockMacAddressSource,
     kDeviceHostnameTemplate,
+    kDeviceHostnameUserConfigurable,
     kDeviceLoginScreenInputMethods,
     kDeviceLoginScreenLocales,
     kDeviceLoginScreenSystemInfoEnforced,
@@ -97,6 +99,7 @@ const char* const kKnownSettings[] = {
     kDevicePowerwashAllowed,
     kDeviceQuirksDownloadEnabled,
     kDeviceRebootOnUserSignout,
+    kDeviceScheduledReboot,
     kDeviceScheduledUpdateCheck,
     kDeviceSecondFactorAuthenticationMode,
     kDeviceUnaffiliatedCrostiniAllowed,
@@ -111,7 +114,6 @@ const char* const kKnownSettings[] = {
     kLoginAuthenticationBehavior,
     kLoginVideoCaptureAllowedUrls,
     kPluginVmAllowed,
-    kPluginVmLicenseKey,
     kPolicyMissingMitigationMode,
     kRebootOnShutdown,
     kReleaseChannel,
@@ -119,6 +121,7 @@ const char* const kKnownSettings[] = {
     kReleaseLtsTag,
     kDeviceChannelDowngradeBehavior,
     kReportDeviceActivityTimes,
+    kReportDeviceAudioStatus,
     kReportDeviceBluetoothInfo,
     kReportDeviceBoardStatus,
     kReportDeviceBootMode,
@@ -129,7 +132,9 @@ const char* const kKnownSettings[] = {
     kReportDeviceLocation,
     kReportDevicePowerStatus,
     kReportDeviceStorageStatus,
+    kReportDeviceNetworkConfiguration,
     kReportDeviceNetworkInterfaces,
+    kReportDeviceNetworkStatus,
     kReportDeviceSessionStatus,
     kReportDeviceTimezoneInfo,
     kReportDeviceGraphicsStatus,
@@ -141,9 +146,11 @@ const char* const kKnownSettings[] = {
     kReportDeviceAppInfo,
     kReportDeviceSystemInfo,
     kReportDevicePrintJobs,
+    kReportDeviceLoginLogout,
     kReportOsUpdateStatus,
     kReportRunningKioskApp,
     kReportUploadFrequency,
+    kRestrictedManagedGuestSessionEnabled,
     kSamlLoginAuthenticationType,
     kServiceAccountIdentity,
     kSignedDataRoamingEnabled,
@@ -478,13 +485,20 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
 
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
                            PrefValueMap* new_values_cache) {
-  // kSignedDataRoamingEnabled has a default value of false.
-  new_values_cache->SetBoolean(
-      kSignedDataRoamingEnabled,
-      policy.has_data_roaming_enabled() &&
-          policy.data_roaming_enabled().has_data_roaming_enabled() &&
-          policy.data_roaming_enabled().data_roaming_enabled());
-
+  // Device-level cellular roaming should always be enabled for devices not
+  // enrolled in an enterprise policy when per-network cellular roaming
+  // configuration is enabled.
+  if (base::FeatureList::IsEnabled(
+          ash::features::kCellularAllowPerNetworkRoaming) &&
+      !chromeos::InstallAttributes::Get()->IsEnterpriseManaged()) {
+    new_values_cache->SetBoolean(kSignedDataRoamingEnabled, true);
+  } else {
+    new_values_cache->SetBoolean(
+        kSignedDataRoamingEnabled,
+        policy.has_data_roaming_enabled() &&
+            policy.data_roaming_enabled().has_data_roaming_enabled() &&
+            policy.data_roaming_enabled().data_roaming_enabled());
+  }
   if (policy.has_system_proxy_settings()) {
     const em::SystemProxySettingsProto& settings_proto(
         policy.system_proxy_settings());
@@ -563,6 +577,10 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
       new_values_cache->SetBoolean(kReportDeviceActivityTimes,
                                    reporting_policy.report_activity_times());
     }
+    if (reporting_policy.has_report_audio_status()) {
+      new_values_cache->SetBoolean(kReportDeviceAudioStatus,
+                                   reporting_policy.report_audio_status());
+    }
     if (reporting_policy.has_report_boot_mode()) {
       new_values_cache->SetBoolean(kReportDeviceBootMode,
                                    reporting_policy.report_boot_mode());
@@ -571,10 +589,20 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
       new_values_cache->SetBoolean(kReportDeviceCrashReportInfo,
                                    reporting_policy.report_crash_report_info());
     }
+    if (reporting_policy.has_report_network_configuration()) {
+      new_values_cache->SetBoolean(
+          kReportDeviceNetworkConfiguration,
+          reporting_policy.report_network_configuration());
+    }
     if (reporting_policy.has_report_network_interfaces()) {
       new_values_cache->SetBoolean(
           kReportDeviceNetworkInterfaces,
           reporting_policy.report_network_interfaces());
+    }
+    if (reporting_policy.has_report_network_status()) {
+      new_values_cache->SetBoolean(
+          kReportDeviceNetworkStatus,
+          reporting_policy.report_network_status());
     }
     if (reporting_policy.has_report_users()) {
       new_values_cache->SetBoolean(kReportDeviceUsers,
@@ -655,6 +683,10 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (reporting_policy.has_report_print_jobs()) {
       new_values_cache->SetBoolean(kReportDevicePrintJobs,
                                    reporting_policy.report_print_jobs());
+    }
+    if (reporting_policy.has_report_login_logout()) {
+      new_values_cache->SetBoolean(kReportDeviceLoginLogout,
+                                   reporting_policy.report_login_logout());
     }
   }
 }
@@ -753,6 +785,17 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     new_values_cache->SetBoolean(kAttestationForContentProtectionEnabled, true);
   }
 
+  bool is_device_pci_peripheral_data_access_enabled = false;
+  if (policy.has_device_pci_peripheral_data_access_enabled_v2()) {
+    const em::DevicePciPeripheralDataAccessEnabledProtoV2& container(
+        policy.device_pci_peripheral_data_access_enabled_v2());
+    if (container.has_enabled()) {
+      is_device_pci_peripheral_data_access_enabled = container.enabled();
+    }
+  }
+  new_values_cache->SetBoolean(kDevicePeripheralDataAccessEnabled,
+                               is_device_pci_peripheral_data_access_enabled);
+
   if (policy.has_extension_cache_size() &&
       policy.extension_cache_size().has_extension_cache_size()) {
     new_values_cache->SetInteger(
@@ -779,10 +822,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     new_values_cache->SetValue(kDeviceDisplayResolution,
                                base::Value(base::Value::Type::DICTIONARY));
   }
-
-  new_values_cache->SetBoolean(
-      kDevicePeripheralDataAccessEnabled,
-      policy.device_pci_peripheral_data_access_enabled().enabled());
 
   if (policy.has_allow_bluetooth() &&
       policy.allow_bluetooth().has_allow_bluetooth()) {
@@ -868,6 +907,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
+  if (policy.has_hostname_user_configurable()) {
+    const em::HostnameUserConfigurableProto& container(
+        policy.hostname_user_configurable());
+    if (container.has_device_hostname_user_configurable()) {
+      new_values_cache->SetBoolean(
+          kDeviceHostnameUserConfigurable,
+          container.device_hostname_user_configurable());
+    }
+  }
+
   if (policy.virtual_machines_allowed().has_virtual_machines_allowed()) {
     new_values_cache->SetBoolean(
         kVirtualMachinesAllowed,
@@ -889,15 +938,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (container.has_plugin_vm_allowed()) {
       new_values_cache->SetValue(kPluginVmAllowed,
                                  base::Value(container.plugin_vm_allowed()));
-    }
-  }
-
-  if (policy.has_plugin_vm_license_key()) {
-    const em::PluginVmLicenseKeyProto& container(
-        policy.plugin_vm_license_key());
-    if (container.has_plugin_vm_license_key()) {
-      new_values_cache->SetValue(
-          kPluginVmLicenseKey, base::Value(container.plugin_vm_license_key()));
     }
   }
 
@@ -1075,6 +1115,26 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       list.Append(service_uuid);
     new_values_cache->SetValue(kDeviceAllowedBluetoothServices,
                                std::move(list));
+  }
+
+  if (policy.has_device_scheduled_reboot()) {
+    const em::DeviceScheduledRebootProto& scheduled_reboot_policy =
+        policy.device_scheduled_reboot();
+    if (scheduled_reboot_policy.has_device_scheduled_reboot_settings()) {
+      SetJsonDeviceSetting(
+          kDeviceScheduledReboot, policy::key::kDeviceScheduledReboot,
+          scheduled_reboot_policy.device_scheduled_reboot_settings(),
+          new_values_cache);
+    }
+  }
+
+  if (policy.has_device_restricted_managed_guest_session_enabled()) {
+    const em::DeviceRestrictedManagedGuestSessionEnabledProto& container(
+        policy.device_restricted_managed_guest_session_enabled());
+    if (container.has_enabled()) {
+      new_values_cache->SetValue(kRestrictedManagedGuestSessionEnabled,
+                                 base::Value(container.enabled()));
+    }
   }
 }
 

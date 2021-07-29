@@ -12,13 +12,11 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task_runner.h"
-#include "base/values.h"
 #include "chrome/browser/policy/messaging_layer/upload/dm_server_upload_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/reporting/proto/record.pb.h"
 #include "components/reporting/util/shared_queue.h"
 #include "components/reporting/util/status.h"
-#include "components/reporting/util/status_macros.h"
 #include "components/reporting/util/statusor.h"
 #include "components/reporting/util/task_runner_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -46,10 +44,6 @@ class RecordHandlerImpl : public DmServerUploadService::RecordHandler {
   // Helper |ReportUploader| class handles enqueuing events on the
   // |report_queue_|, and uploading those events with the |client_|.
   class ReportUploader;
-
-  // Processes last JSON response received from the server in case of success,
-  // or nullopt in case of failures on all attempts.
-  void ProcessResponse(const base::Value& response);
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 };

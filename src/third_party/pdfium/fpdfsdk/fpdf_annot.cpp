@@ -29,13 +29,14 @@
 #include "core/fpdfdoc/cpdf_generateap.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_color.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "third_party/base/check.h"
+#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/ptr_util.h"
-#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -1311,7 +1312,7 @@ FPDFAnnot_GetFocusableSubtypesCount(FPDF_FORMHANDLE hHandle) {
   if (!pFormFillEnv)
     return -1;
 
-  return pdfium::CollectionSize<int>(pFormFillEnv->GetFocusableAnnotSubtypes());
+  return fxcrt::CollectionSize<int>(pFormFillEnv->GetFocusableAnnotSubtypes());
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV

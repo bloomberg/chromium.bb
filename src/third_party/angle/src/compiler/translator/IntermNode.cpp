@@ -41,20 +41,20 @@ TPrecision GetHigherPrecision(TPrecision left, TPrecision right)
 TConstantUnion *Vectorize(const TConstantUnion &constant, size_t size)
 {
     TConstantUnion *constUnion = new TConstantUnion[size];
-    for (unsigned int i = 0; i < size; ++i)
+    for (size_t i = 0; i < size; ++i)
         constUnion[i] = constant;
 
     return constUnion;
 }
 
 void UndefinedConstantFoldingError(const TSourceLoc &loc,
-                                   TOperator op,
+                                   const TFunction *function,
                                    TBasicType basicType,
                                    TDiagnostics *diagnostics,
                                    TConstantUnion *result)
 {
     diagnostics->warning(loc, "operation result is undefined for the values passed in",
-                         GetOperatorString(op));
+                         function->name().data());
 
     switch (basicType)
     {
@@ -154,7 +154,7 @@ bool CanFoldAggregateBuiltInOp(TOperator op)
         case EOpSmoothstep:
         case EOpFma:
         case EOpLdexp:
-        case EOpMulMatrixComponentWise:
+        case EOpMatrixCompMult:
         case EOpOuterProduct:
         case EOpEqualComponentWise:
         case EOpNotEqualComponentWise:
@@ -170,6 +170,9 @@ bool CanFoldAggregateBuiltInOp(TOperator op)
         case EOpRefract:
         case EOpBitfieldExtract:
         case EOpBitfieldInsert:
+        case EOpDFdx:
+        case EOpDFdy:
+        case EOpFwidth:
             return true;
         default:
             return false;
@@ -185,14 +188,6 @@ bool CanFoldAggregateBuiltInOp(TOperator op)
 ////////////////////////////////////////////////////////////////
 
 TIntermExpression::TIntermExpression(const TType &t) : TIntermTyped(), mType(t) {}
-
-void TIntermExpression::setTypePreservePrecision(const TType &t)
-{
-    TPrecision precision = getPrecision();
-    mType                = t;
-    ASSERT(mType.getBasicType() != EbtBool || precision == EbpUndefined);
-    mType.setPrecision(precision);
-}
 
 #define REPLACE_IF_IS(node, type, original, replacement) \
     do                                                   \
@@ -409,13 +404,21 @@ bool TIntermAggregate::replaceChildNode(TIntermNode *original, TIntermNode *repl
 
 TIntermBlock::TIntermBlock(const TIntermBlock &node)
 {
-    for (TIntermNode *node : node.mStatements)
+    for (TIntermNode *intermNode : node.mStatements)
     {
-        mStatements.push_back(node->deepCopy());
+        mStatements.push_back(intermNode->deepCopy());
     }
 
     ASSERT(!node.mIsTreeRoot);
     mIsTreeRoot = false;
+}
+
+TIntermBlock::TIntermBlock(std::initializer_list<TIntermNode *> stmts)
+{
+    for (TIntermNode *stmt : stmts)
+    {
+        appendStatement(stmt);
+    }
 }
 
 size_t TIntermBlock::getChildCount() const
@@ -455,6 +458,37 @@ bool TIntermFunctionPrototype::replaceChildNode(TIntermNode *original, TIntermNo
     return false;
 }
 
+TIntermDeclaration::TIntermDeclaration(const TVariable *var, TIntermTyped *initExpr)
+{
+    if (initExpr)
+    {
+        appendDeclarator(
+            new TIntermBinary(TOperator::EOpInitialize, new TIntermSymbol(var), initExpr));
+    }
+    else
+    {
+        appendDeclarator(new TIntermSymbol(var));
+    }
+}
+
+TIntermDeclaration::TIntermDeclaration(std::initializer_list<const TVariable *> declarators)
+    : TIntermDeclaration()
+{
+    for (const TVariable *d : declarators)
+    {
+        appendDeclarator(new TIntermSymbol(d));
+    }
+}
+
+TIntermDeclaration::TIntermDeclaration(std::initializer_list<TIntermTyped *> declarators)
+    : TIntermDeclaration()
+{
+    for (TIntermTyped *d : declarators)
+    {
+        appendDeclarator(d);
+    }
+}
+
 size_t TIntermDeclaration::getChildCount() const
 {
     return mDeclarators.size();
@@ -472,9 +506,9 @@ bool TIntermDeclaration::replaceChildNode(TIntermNode *original, TIntermNode *re
 
 TIntermDeclaration::TIntermDeclaration(const TIntermDeclaration &node)
 {
-    for (TIntermNode *node : node.mDeclarators)
+    for (TIntermNode *intermNode : node.mDeclarators)
     {
-        mDeclarators.push_back(node->deepCopy());
+        mDeclarators.push_back(intermNode->deepCopy());
     }
 }
 
@@ -556,7 +590,7 @@ TIntermAggregate *TIntermAggregate::CreateRawFunctionCall(const TFunction &func,
 TIntermAggregate *TIntermAggregate::CreateBuiltInFunctionCall(const TFunction &func,
                                                               TIntermSequence *arguments)
 {
-    // op should be either EOpCallBuiltInFunction or a specific math op.
+    // Every built-in function should have an op.
     ASSERT(func.getBuiltInOp() != EOpNull);
     return new TIntermAggregate(&func, func.getReturnType(), func.getBuiltInOp(), arguments);
 }
@@ -586,7 +620,7 @@ TIntermAggregate::TIntermAggregate(const TFunction *func,
 void TIntermAggregate::setPrecisionAndQualifier()
 {
     mType.setQualifier(EvqTemporary);
-    if (mOp == EOpCallBuiltInFunction)
+    if (BuiltInGroup::IsBuiltIn(mOp) && !BuiltInGroup::IsMath(mOp))
     {
         setBuiltInFunctionPrecision();
     }
@@ -603,7 +637,7 @@ void TIntermAggregate::setPrecisionAndQualifier()
         }
         else
         {
-            setPrecisionForBuiltInOp();
+            setPrecisionForMathBuiltInOp();
         }
         if (areChildrenConstQualified())
         {
@@ -646,10 +680,9 @@ void TIntermAggregate::setPrecisionFromChildren()
     mType.setPrecision(precision);
 }
 
-void TIntermAggregate::setPrecisionForBuiltInOp()
+void TIntermAggregate::setPrecisionForMathBuiltInOp()
 {
-    ASSERT(!isConstructor());
-    ASSERT(!isFunctionCall());
+    ASSERT(BuiltInGroup::IsMath(mOp));
     if (!setPrecisionForSpecialBuiltInOp())
     {
         setPrecisionFromChildren();
@@ -680,9 +713,9 @@ bool TIntermAggregate::setPrecisionForSpecialBuiltInOp()
 
 void TIntermAggregate::setBuiltInFunctionPrecision()
 {
-    // All built-ins returning bool should be handled as ops, not functions.
+    // All built-ins returning bool are math operations.
     ASSERT(getBasicType() != EbtBool);
-    ASSERT(mOp == EOpCallBuiltInFunction);
+    ASSERT(!isFunctionCall() && !isConstructor() && !BuiltInGroup::IsMath(mOp));
 
     TPrecision precision = EbpUndefined;
     for (TIntermNode *arg : mArguments)
@@ -697,7 +730,7 @@ void TIntermAggregate::setBuiltInFunctionPrecision()
     }
     // ESSL 3.0 spec section 8: textureSize always gets highp precision.
     // All other functions that take a sampler are assumed to be texture functions.
-    if (mFunction->name() == "textureSize")
+    if (mOp == EOpTextureSize)
         mType.setPrecision(EbpHigh);
     else
         mType.setPrecision(precision);
@@ -709,10 +742,13 @@ const char *TIntermAggregate::functionName() const
     switch (mOp)
     {
         case EOpCallInternalRawFunction:
-        case EOpCallBuiltInFunction:
         case EOpCallFunctionInAST:
             return mFunction->name().data();
         default:
+            if (BuiltInGroup::IsBuiltIn(mOp))
+            {
+                return mFunction->name().data();
+            }
             return GetOperatorString(mOp);
     }
 }
@@ -726,6 +762,22 @@ bool TIntermAggregate::hasConstantValue() const
     for (TIntermNode *constructorArg : mArguments)
     {
         if (!constructorArg->getAsTyped()->hasConstantValue())
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool TIntermAggregate::isConstantNullValue() const
+{
+    if (!isConstructor())
+    {
+        return false;
+    }
+    for (TIntermNode *constructorArg : mArguments)
+    {
+        if (!constructorArg->getAsTyped()->isConstantNullValue())
         {
             return false;
         }
@@ -863,21 +915,25 @@ bool TIntermAggregate::hasSideEffects() const
     {
         return false;
     }
-    bool calledFunctionHasNoSideEffects =
-        isFunctionCall() && mFunction != nullptr && mFunction->isKnownToNotHaveSideEffects();
-    if (calledFunctionHasNoSideEffects || isConstructor())
+
+    // If the function itself is known to have a side effect, the expression has a side effect.
+    const bool calledFunctionHasSideEffects =
+        mFunction != nullptr && !mFunction->isKnownToNotHaveSideEffects();
+
+    if (calledFunctionHasSideEffects)
     {
-        for (TIntermNode *arg : mArguments)
-        {
-            if (arg->getAsTyped()->hasSideEffects())
-            {
-                return true;
-            }
-        }
-        return false;
+        return true;
     }
-    // Conservatively assume most aggregate operators have side-effects
-    return true;
+
+    // Otherwise it only has a side effect if one of the arguments does.
+    for (TIntermNode *arg : mArguments)
+    {
+        if (arg->getAsTyped()->hasSideEffects())
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 void TIntermBlock::appendStatement(TIntermNode *statement)
@@ -1018,6 +1074,11 @@ bool TIntermTyped::hasConstantValue() const
     return false;
 }
 
+bool TIntermTyped::isConstantNullValue() const
+{
+    return false;
+}
+
 const TConstantUnion *TIntermTyped::getConstantValue() const
 {
     return nullptr;
@@ -1073,8 +1134,7 @@ TIntermSwizzle::TIntermSwizzle(const TIntermSwizzle &node) : TIntermExpression(n
     mHasFoldedDuplicateOffsets = node.mHasFoldedDuplicateOffsets;
 }
 
-TIntermBinary::TIntermBinary(const TIntermBinary &node)
-    : TIntermOperator(node), mAddIndexClamp(node.mAddIndexClamp)
+TIntermBinary::TIntermBinary(const TIntermBinary &node) : TIntermOperator(node)
 {
     TIntermTyped *leftCopy  = node.mLeft->deepCopy();
     TIntermTyped *rightCopy = node.mRight->deepCopy();
@@ -1135,7 +1195,6 @@ bool TIntermOperator::isFunctionCall() const
     switch (mOp)
     {
         case EOpCallFunctionInAST:
-        case EOpCallBuiltInFunction:
         case EOpCallInternalRawFunction:
             return true;
         default:
@@ -1331,11 +1390,12 @@ TIntermUnary::TIntermUnary(TOperator op, TIntermTyped *operand, const TFunction 
     : TIntermOperator(op), mOperand(operand), mUseEmulatedFunction(false), mFunction(function)
 {
     ASSERT(mOperand);
+    ASSERT(!BuiltInGroup::IsBuiltIn(op) || (function != nullptr && function->getBuiltInOp() == op));
     promote();
 }
 
 TIntermBinary::TIntermBinary(TOperator op, TIntermTyped *left, TIntermTyped *right)
-    : TIntermOperator(op), mLeft(left), mRight(right), mAddIndexClamp(false)
+    : TIntermOperator(op), mLeft(left), mRight(right)
 {
     ASSERT(mLeft);
     ASSERT(mRight);
@@ -1565,8 +1625,12 @@ void TIntermBinary::promote()
 
     TQualifier resultQualifier = EvqConst;
     // Binary operations results in temporary variables unless both
-    // operands are const.
-    if (mLeft->getQualifier() != EvqConst || mRight->getQualifier() != EvqConst)
+    // operands are const.  If initializing a specialization constant, make the declarator also
+    // EvqSpecConst.
+    const bool isSpecConstInit = mOp == EOpInitialize && mLeft->getQualifier() == EvqSpecConst;
+    const bool isEitherNonConst =
+        mLeft->getQualifier() != EvqConst || mRight->getQualifier() != EvqConst;
+    if (!isSpecConstInit && isEitherNonConst)
     {
         resultQualifier = EvqTemporary;
         getTypePointer()->setQualifier(EvqTemporary);
@@ -1756,6 +1820,19 @@ void TIntermBinary::promote()
 
 bool TIntermConstantUnion::hasConstantValue() const
 {
+    return true;
+}
+
+bool TIntermConstantUnion::isConstantNullValue() const
+{
+    const size_t size = mType.getObjectSize();
+    for (size_t index = 0; index < size; ++index)
+    {
+        if (!mUnionArrayPointer[index].isZero())
+        {
+            return false;
+        }
+    }
     return true;
 }
 
@@ -2006,7 +2083,7 @@ TIntermTyped *TIntermUnary::fold(TDiagnostics *diagnostics)
                 constArray = operandConstant->foldUnaryNonComponentWise(mOp);
                 break;
             default:
-                constArray = operandConstant->foldUnaryComponentWise(mOp, diagnostics);
+                constArray = operandConstant->foldUnaryComponentWise(mOp, mFunction, diagnostics);
                 break;
         }
     }
@@ -2651,6 +2728,7 @@ TConstantUnion *TIntermConstantUnion::foldUnaryNonComponentWise(TOperator op)
 }
 
 TConstantUnion *TIntermConstantUnion::foldUnaryComponentWise(TOperator op,
+                                                             const TFunction *function,
                                                              TDiagnostics *diagnostics)
 {
     // Do unary operations where each component of the result is computed based on the corresponding
@@ -2777,7 +2855,7 @@ TConstantUnion *TIntermConstantUnion::foldUnaryComponentWise(TOperator op,
                 // For asin(x), results are undefined if |x| > 1, we are choosing to set result to
                 // 0.
                 if (fabsf(operandArray[i].getFConst()) > 1.0f)
-                    UndefinedConstantFoldingError(getLine(), op, getType().getBasicType(),
+                    UndefinedConstantFoldingError(getLine(), function, getType().getBasicType(),
                                                   diagnostics, &resultArray[i]);
                 else
                     foldFloatTypeUnary(operandArray[i], &asinf, &resultArray[i]);
@@ -2787,7 +2865,7 @@ TConstantUnion *TIntermConstantUnion::foldUnaryComponentWise(TOperator op,
                 // For acos(x), results are undefined if |x| > 1, we are choosing to set result to
                 // 0.
                 if (fabsf(operandArray[i].getFConst()) > 1.0f)
-                    UndefinedConstantFoldingError(getLine(), op, getType().getBasicType(),
+                    UndefinedConstantFoldingError(getLine(), function, getType().getBasicType(),
                                                   diagnostics, &resultArray[i]);
                 else
                     foldFloatTypeUnary(operandArray[i], &acosf, &resultArray[i]);
@@ -2816,7 +2894,7 @@ TConstantUnion *TIntermConstantUnion::foldUnaryComponentWise(TOperator op,
             case EOpAcosh:
                 // For acosh(x), results are undefined if x < 1, we are choosing to set result to 0.
                 if (operandArray[i].getFConst() < 1.0f)
-                    UndefinedConstantFoldingError(getLine(), op, getType().getBasicType(),
+                    UndefinedConstantFoldingError(getLine(), function, getType().getBasicType(),
                                                   diagnostics, &resultArray[i]);
                 else
                     foldFloatTypeUnary(operandArray[i], &acoshf, &resultArray[i]);
@@ -2826,7 +2904,7 @@ TConstantUnion *TIntermConstantUnion::foldUnaryComponentWise(TOperator op,
                 // For atanh(x), results are undefined if |x| >= 1, we are choosing to set result to
                 // 0.
                 if (fabsf(operandArray[i].getFConst()) >= 1.0f)
-                    UndefinedConstantFoldingError(getLine(), op, getType().getBasicType(),
+                    UndefinedConstantFoldingError(getLine(), function, getType().getBasicType(),
                                                   diagnostics, &resultArray[i]);
                 else
                     foldFloatTypeUnary(operandArray[i], &atanhf, &resultArray[i]);
@@ -2953,7 +3031,7 @@ TConstantUnion *TIntermConstantUnion::foldUnaryComponentWise(TOperator op,
             case EOpLog:
                 // For log(x), results are undefined if x <= 0, we are choosing to set result to 0.
                 if (operandArray[i].getFConst() <= 0.0f)
-                    UndefinedConstantFoldingError(getLine(), op, getType().getBasicType(),
+                    UndefinedConstantFoldingError(getLine(), function, getType().getBasicType(),
                                                   diagnostics, &resultArray[i]);
                 else
                     foldFloatTypeUnary(operandArray[i], &logf, &resultArray[i]);
@@ -2968,7 +3046,7 @@ TConstantUnion *TIntermConstantUnion::foldUnaryComponentWise(TOperator op,
                 // And log2f is not available on some plarforms like old android, so just using
                 // log(x)/log(2) here.
                 if (operandArray[i].getFConst() <= 0.0f)
-                    UndefinedConstantFoldingError(getLine(), op, getType().getBasicType(),
+                    UndefinedConstantFoldingError(getLine(), function, getType().getBasicType(),
                                                   diagnostics, &resultArray[i]);
                 else
                 {
@@ -2980,7 +3058,7 @@ TConstantUnion *TIntermConstantUnion::foldUnaryComponentWise(TOperator op,
             case EOpSqrt:
                 // For sqrt(x), results are undefined if x < 0, we are choosing to set result to 0.
                 if (operandArray[i].getFConst() < 0.0f)
-                    UndefinedConstantFoldingError(getLine(), op, getType().getBasicType(),
+                    UndefinedConstantFoldingError(getLine(), function, getType().getBasicType(),
                                                   diagnostics, &resultArray[i]);
                 else
                     foldFloatTypeUnary(operandArray[i], &sqrtf, &resultArray[i]);
@@ -2993,7 +3071,7 @@ TConstantUnion *TIntermConstantUnion::foldUnaryComponentWise(TOperator op,
                 // Also, for inversesqrt(x), results are undefined if x <= 0, we are choosing to set
                 // result to 0.
                 if (operandArray[i].getFConst() <= 0.0f)
-                    UndefinedConstantFoldingError(getLine(), op, getType().getBasicType(),
+                    UndefinedConstantFoldingError(getLine(), function, getType().getBasicType(),
                                                   diagnostics, &resultArray[i]);
                 else
                 {
@@ -3002,7 +3080,7 @@ TConstantUnion *TIntermConstantUnion::foldUnaryComponentWise(TOperator op,
                 }
                 break;
 
-            case EOpLogicalNotComponentWise:
+            case EOpNotComponentWise:
                 ASSERT(getType().getBasicType() == EbtBool);
                 resultArray[i].setBConst(!operandArray[i].getBConst());
                 break;
@@ -3015,7 +3093,7 @@ TConstantUnion *TIntermConstantUnion::foldUnaryComponentWise(TOperator op,
                 if (length != 0.0f)
                     resultArray[i].setFConst(x / length);
                 else
-                    UndefinedConstantFoldingError(getLine(), op, getType().getBasicType(),
+                    UndefinedConstantFoldingError(getLine(), function, getType().getBasicType(),
                                                   diagnostics, &resultArray[i]);
                 break;
             }
@@ -3095,13 +3173,6 @@ TConstantUnion *TIntermConstantUnion::foldUnaryComponentWise(TOperator op,
                 resultArray[i].setIConst(gl::FindMSB(value));
                 break;
             }
-            case EOpDFdx:
-            case EOpDFdy:
-            case EOpFwidth:
-                ASSERT(getType().getBasicType() == EbtFloat);
-                // Derivatives of constant arguments should be 0.
-                resultArray[i].setFConst(0.0f);
-                break;
 
             default:
                 return nullptr;
@@ -3125,7 +3196,8 @@ void TIntermConstantUnion::foldFloatTypeUnary(const TConstantUnion &parameter,
 TConstantUnion *TIntermConstantUnion::FoldAggregateBuiltIn(TIntermAggregate *aggregate,
                                                            TDiagnostics *diagnostics)
 {
-    TOperator op               = aggregate->getOp();
+    const TOperator op         = aggregate->getOp();
+    const TFunction *function  = aggregate->getFunction();
     TIntermSequence *arguments = aggregate->getSequence();
     unsigned int argsCount     = static_cast<unsigned int>(arguments->size());
     std::vector<const TConstantUnion *> unionArrays(argsCount);
@@ -3170,7 +3242,8 @@ TConstantUnion *TIntermConstantUnion::FoldAggregateBuiltIn(TIntermAggregate *agg
                 float x = unionArrays[1][i].getFConst();
                 // Results are undefined if x and y are both 0.
                 if (x == 0.0f && y == 0.0f)
-                    UndefinedConstantFoldingError(loc, op, basicType, diagnostics, &resultArray[i]);
+                    UndefinedConstantFoldingError(loc, function, basicType, diagnostics,
+                                                  &resultArray[i]);
                 else
                     resultArray[i].setFConst(atan2f(y, x));
             }
@@ -3188,9 +3261,11 @@ TConstantUnion *TIntermConstantUnion::FoldAggregateBuiltIn(TIntermAggregate *agg
                 // Results are undefined if x < 0.
                 // Results are undefined if x = 0 and y <= 0.
                 if (x < 0.0f)
-                    UndefinedConstantFoldingError(loc, op, basicType, diagnostics, &resultArray[i]);
+                    UndefinedConstantFoldingError(loc, function, basicType, diagnostics,
+                                                  &resultArray[i]);
                 else if (x == 0.0f && y <= 0.0f)
-                    UndefinedConstantFoldingError(loc, op, basicType, diagnostics, &resultArray[i]);
+                    UndefinedConstantFoldingError(loc, function, basicType, diagnostics,
+                                                  &resultArray[i]);
                 else
                     resultArray[i].setFConst(powf(x, y));
             }
@@ -3498,7 +3573,7 @@ TConstantUnion *TIntermConstantUnion::FoldAggregateBuiltIn(TIntermAggregate *agg
             break;
         }
 
-        case EOpMulMatrixComponentWise:
+        case EOpMatrixCompMult:
         {
             ASSERT(basicType == EbtFloat && (*arguments)[0]->getAsTyped()->isMatrix() &&
                    (*arguments)[1]->getAsTyped()->isMatrix());
@@ -3540,7 +3615,7 @@ TConstantUnion *TIntermConstantUnion::FoldAggregateBuiltIn(TIntermAggregate *agg
                         float max = unionArrays[2][i].getFConst();
                         // Results are undefined if min > max.
                         if (min > max)
-                            UndefinedConstantFoldingError(loc, op, basicType, diagnostics,
+                            UndefinedConstantFoldingError(loc, function, basicType, diagnostics,
                                                           &resultArray[i]);
                         else
                             resultArray[i].setFConst(gl::clamp(x, min, max));
@@ -3554,7 +3629,7 @@ TConstantUnion *TIntermConstantUnion::FoldAggregateBuiltIn(TIntermAggregate *agg
                         int max = unionArrays[2][i].getIConst();
                         // Results are undefined if min > max.
                         if (min > max)
-                            UndefinedConstantFoldingError(loc, op, basicType, diagnostics,
+                            UndefinedConstantFoldingError(loc, function, basicType, diagnostics,
                                                           &resultArray[i]);
                         else
                             resultArray[i].setIConst(gl::clamp(x, min, max));
@@ -3567,7 +3642,7 @@ TConstantUnion *TIntermConstantUnion::FoldAggregateBuiltIn(TIntermAggregate *agg
                         unsigned int max = unionArrays[2][i].getUConst();
                         // Results are undefined if min > max.
                         if (min > max)
-                            UndefinedConstantFoldingError(loc, op, basicType, diagnostics,
+                            UndefinedConstantFoldingError(loc, function, basicType, diagnostics,
                                                           &resultArray[i]);
                         else
                             resultArray[i].setUConst(gl::clamp(x, min, max));
@@ -3657,7 +3732,8 @@ TConstantUnion *TIntermConstantUnion::FoldAggregateBuiltIn(TIntermAggregate *agg
                 // Results are undefined if edge0 >= edge1.
                 if (edge0 >= edge1)
                 {
-                    UndefinedConstantFoldingError(loc, op, basicType, diagnostics, &resultArray[i]);
+                    UndefinedConstantFoldingError(loc, function, basicType, diagnostics,
+                                                  &resultArray[i]);
                 }
                 else
                 {
@@ -3695,7 +3771,8 @@ TConstantUnion *TIntermConstantUnion::FoldAggregateBuiltIn(TIntermAggregate *agg
                 int exp = unionArrays[1][i].getIConst();
                 if (exp > 128)
                 {
-                    UndefinedConstantFoldingError(loc, op, basicType, diagnostics, &resultArray[i]);
+                    UndefinedConstantFoldingError(loc, function, basicType, diagnostics,
+                                                  &resultArray[i]);
                 }
                 else
                 {
@@ -3770,8 +3847,8 @@ TConstantUnion *TIntermConstantUnion::FoldAggregateBuiltIn(TIntermAggregate *agg
                 }
                 else if (offset < 0 || bits < 0 || offset >= 32 || bits > 32 || offset + bits > 32)
                 {
-                    UndefinedConstantFoldingError(loc, op, aggregate->getBasicType(), diagnostics,
-                                                  &resultArray[i]);
+                    UndefinedConstantFoldingError(loc, function, aggregate->getBasicType(),
+                                                  diagnostics, &resultArray[i]);
                 }
                 else
                 {
@@ -3824,8 +3901,8 @@ TConstantUnion *TIntermConstantUnion::FoldAggregateBuiltIn(TIntermAggregate *agg
                 }
                 else if (offset < 0 || bits < 0 || offset >= 32 || bits > 32 || offset + bits > 32)
                 {
-                    UndefinedConstantFoldingError(loc, op, aggregate->getBasicType(), diagnostics,
-                                                  &resultArray[i]);
+                    UndefinedConstantFoldingError(loc, function, aggregate->getBasicType(),
+                                                  diagnostics, &resultArray[i]);
                 }
                 else
                 {
@@ -3853,6 +3930,17 @@ TConstantUnion *TIntermConstantUnion::FoldAggregateBuiltIn(TIntermAggregate *agg
             }
             break;
         }
+        case EOpDFdx:
+        case EOpDFdy:
+        case EOpFwidth:
+            ASSERT(basicType == EbtFloat);
+            resultArray = new TConstantUnion[maxObjectSize];
+            for (size_t i = 0; i < maxObjectSize; i++)
+            {
+                // Derivatives of constant arguments should be 0.
+                resultArray[i].setFConst(0.0f);
+            }
+            break;
 
         default:
             UNREACHABLE();

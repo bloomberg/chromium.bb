@@ -47,7 +47,7 @@ void SetVersionFlag(const ParsedQuicVersion& version, bool should_enable) {
   const bool enable = should_enable;
   const bool disable = !should_enable;
   if (version == ParsedQuicVersion::RFCv1()) {
-    SetQuicReloadableFlag(quic_enable_version_rfcv1, enable);
+    SetQuicReloadableFlag(quic_disable_version_rfcv1, disable);
   } else if (version == ParsedQuicVersion::Draft29()) {
     SetQuicReloadableFlag(quic_disable_version_draft_29, disable);
   } else if (version == ParsedQuicVersion::T051()) {
@@ -297,6 +297,18 @@ ParsedQuicVersionVector CurrentSupportedVersionsWithTls() {
   return versions;
 }
 
+ParsedQuicVersionVector CurrentSupportedHttp3Versions() {
+  ParsedQuicVersionVector versions;
+  for (const ParsedQuicVersion& version : CurrentSupportedVersions()) {
+    if (version.UsesHttp3()) {
+      versions.push_back(version);
+    }
+  }
+  QUIC_BUG_IF(no_version_uses_http3, versions.empty())
+      << "No version speaking Http3 found.";
+  return versions;
+}
+
 ParsedQuicVersion ParseQuicVersionLabel(QuicVersionLabel version_label) {
   for (const ParsedQuicVersion& version : AllSupportedVersions()) {
     if (version_label == CreateQuicVersionLabel(version)) {
@@ -395,7 +407,7 @@ ParsedQuicVersionVector FilterSupportedVersions(
   filtered_versions.reserve(versions.size());
   for (const ParsedQuicVersion& version : versions) {
     if (version == ParsedQuicVersion::RFCv1()) {
-      if (GetQuicReloadableFlag(quic_enable_version_rfcv1)) {
+      if (!GetQuicReloadableFlag(quic_disable_version_rfcv1)) {
         filtered_versions.push_back(version);
       }
     } else if (version == ParsedQuicVersion::Draft29()) {

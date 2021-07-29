@@ -44,6 +44,9 @@ struct hb_subset_plan_t
   bool desubroutinize : 1;
   bool retain_gids : 1;
   bool name_legacy : 1;
+  bool overlaps_flag : 1;
+  bool notdef_outline : 1;
+  bool retain_all_layout_features : 1;
 
   // For each cp that we'd like to retain maps to the corresponding gid.
   hb_set_t *unicodes;
@@ -53,6 +56,9 @@ struct hb_subset_plan_t
 
   // name_languages we would like to retain
   hb_set_t *name_languages;
+
+  //layout features which will be preserved
+  hb_set_t *layout_features;
 
   //glyph ids requested to retain
   hb_set_t *glyphs_requested;
@@ -86,6 +92,10 @@ struct hb_subset_plan_t
   //active features after removing redundant langsys and prune_features
   hb_map_t *gsub_features;
   hb_map_t *gpos_features;
+
+  //active layers/palettes we'd like to retain
+  hb_map_t *colrv1_layers;
+  hb_map_t *colr_palettes;
 
   //The set of layout item variation store delta set indices to be retained
   hb_set_t *layout_variation_indices;

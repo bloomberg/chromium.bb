@@ -728,7 +728,7 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
   // There will be always at least 1 auto-repeat track, so take it already into
   // account when computing the total track size.
   LayoutUnit tracks_size = auto_repeat_tracks_size;
-  const Vector<GridTrackSize>& track_sizes =
+  const Vector<GridTrackSize, 1>& track_sizes =
       is_row_axis ? StyleRef().GridTemplateColumns().LegacyTrackList()
                   : StyleRef().GridTemplateRows().LegacyTrackList();
 
@@ -1248,7 +1248,7 @@ void LayoutGrid::DirtyGrid() {
   grid_->SetNeedsItemsPlacement(true);
 }
 
-Vector<LayoutUnit> LayoutGrid::TrackSizesForComputedStyle(
+Vector<LayoutUnit, 1> LayoutGrid::TrackSizesForComputedStyle(
     GridTrackSizingDirection direction) const {
   NOT_DESTROYED();
   bool is_row_axis = direction == kForColumns;
@@ -1258,7 +1258,7 @@ Vector<LayoutUnit> LayoutGrid::TrackSizesForComputedStyle(
       is_row_axis ? offset_between_columns_.distribution_offset
                   : offset_between_rows_.distribution_offset;
 
-  Vector<LayoutUnit> tracks;
+  Vector<LayoutUnit, 1> tracks;
   if (num_positions < 2)
     return tracks;
 
@@ -1599,6 +1599,29 @@ StyleSelfAlignmentData LayoutGrid::JustifySelfForChild(
       SelfAlignmentNormalBehavior(&child), style);
 }
 
+bool LayoutGrid::AspectRatioPrefersInline(const LayoutBox& child,
+                                          bool block_flow_is_column_axis) {
+  if (child.StyleRef().AspectRatio().IsAuto())
+    return false;
+  // Not using AlignSelfForChild/JustifySelfForChild here since we are only
+  // interested in explicit stretch, not normal behavior.
+  bool has_explicit_inline_stretch =
+      child.StyleRef()
+          .ResolvedJustifySelf(ItemPosition::kNormal, Style())
+          .GetPosition() == ItemPosition::kStretch;
+  bool has_explicit_block_stretch =
+      child.StyleRef()
+          .ResolvedAlignSelf(ItemPosition::kNormal, Style())
+          .GetPosition() == ItemPosition::kStretch;
+  if (!block_flow_is_column_axis)
+    std::swap(has_explicit_inline_stretch, has_explicit_block_stretch);
+  if (has_explicit_inline_stretch && has_explicit_block_stretch)
+    return false;
+  if (has_explicit_inline_stretch)
+    return true;
+  return !has_explicit_block_stretch;
+}
+
 // FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to
 // LayoutBox.
 void LayoutGrid::ApplyStretchAlignmentToChildIfNeeded(LayoutBox& child) {
@@ -1609,7 +1632,8 @@ void LayoutGrid::ApplyStretchAlignmentToChildIfNeeded(LayoutBox& child) {
   bool allowed_to_stretch_child_block_size =
       block_flow_is_column_axis ? AllowedToStretchChildAlongColumnAxis(child)
                                 : AllowedToStretchChildAlongRowAxis(child);
-  if (allowed_to_stretch_child_block_size) {
+  if (allowed_to_stretch_child_block_size &&
+      !AspectRatioPrefersInline(child, block_flow_is_column_axis)) {
     LayoutUnit stretched_logical_height =
         AvailableAlignmentSpaceForChildBeforeStretching(
             OverrideContainingBlockContentSizeForChild(child,

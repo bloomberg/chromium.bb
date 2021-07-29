@@ -15,7 +15,6 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
-#import "ios/chrome/common/ui/colors/dynamic_color_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -24,16 +23,12 @@
 
 namespace {
 // The color of the main text of a suggest cell.
-UIColor* SuggestionTextColor(bool incognito) {
-  return color::DarkModeDynamicColor(
-      [UIColor colorNamed:kTextPrimaryColor], incognito,
-      [UIColor colorNamed:kTextPrimaryDarkColor]);
+UIColor* SuggestionTextColor() {
+  return [UIColor colorNamed:kTextPrimaryColor];
 }
 // The color of the detail text of a suggest cell.
-UIColor* SuggestionDetailTextColor(bool incognito) {
-  return color::DarkModeDynamicColor(
-      [UIColor colorNamed:kTextSecondaryColor], incognito,
-      [UIColor colorNamed:kTextSecondaryDarkColor]);
+UIColor* SuggestionDetailTextColor() {
+  return [UIColor colorNamed:kTextSecondaryColor];
 }
 // The color of the text in the portion of a search suggestion that matches the
 // omnibox input text.
@@ -97,7 +92,7 @@ UIColor* DimColorIncognito() {
           attributedStringWithString:base::SysUTF16ToNSString(_match.contents)
                      classifications:&_match.contents_class
                            smallFont:NO
-                               color:SuggestionDetailTextColor(self.incognito)
+                               color:SuggestionDetailTextColor()
                             dimColor:DimColor()];
       return [self addExtraTextFromAnswerLine:_match.answer->first_line()
                            toAttributedString:detailBaseText
@@ -124,9 +119,9 @@ UIColor* DimColorIncognito() {
     // instead.
     UIColor* suggestionDetailTextColor = nil;
     if (_match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
-      suggestionDetailTextColor = SuggestionTextColor(self.incognito);
+      suggestionDetailTextColor = SuggestionTextColor();
     } else {
-      suggestionDetailTextColor = SuggestionDetailTextColor(self.incognito);
+      suggestionDetailTextColor = SuggestionDetailTextColor();
     }
     DCHECK(suggestionDetailTextColor);
     return [self attributedStringWithString:detailText
@@ -141,7 +136,6 @@ UIColor* DimColorIncognito() {
   OmniboxIconFormatter* icon =
       [[OmniboxIconFormatter alloc] initWithMatch:_match];
   icon.defaultSearchEngineIsGoogle = self.defaultSearchEngineIsGoogle;
-  icon.incognito = self.incognito;
   return icon;
 }
 
@@ -162,7 +156,7 @@ UIColor* DimColorIncognito() {
       return [self attributedStringWithAnswerLine:_match.answer->second_line()
                            useDeemphasizedStyling:NO];
     } else {
-      UIColor* suggestionTextColor = SuggestionTextColor(self.incognito);
+      UIColor* suggestionTextColor = SuggestionTextColor();
       UIColor* dimColor = self.incognito ? DimColorIncognito() : DimColor();
       NSAttributedString* attributedBaseText = [self
           attributedStringWithString:base::SysUTF16ToNSString(_match.contents)
@@ -188,7 +182,7 @@ UIColor* DimColorIncognito() {
 
     const ACMatchClassifications* textClassifications =
         !self.isURL ? &_match.contents_class : &_match.description_class;
-    UIColor* suggestionTextColor = SuggestionTextColor(self.incognito);
+    UIColor* suggestionTextColor = SuggestionTextColor();
     UIColor* dimColor = self.incognito ? DimColorIncognito() : DimColor();
 
     return [self attributedStringWithString:text
@@ -342,9 +336,8 @@ UIColor* DimColorIncognito() {
                     UIFontDescriptorTraitTightLeading]
           : [UIFontDescriptor
                 preferredFontDescriptorWithTextStyle:UIFontTextStyleBody];
-  UIColor* defaultColor = useDeemphasizedStyling
-                              ? SuggestionDetailTextColor(self.incognito)
-                              : SuggestionTextColor(self.incognito);
+  UIColor* defaultColor = useDeemphasizedStyling ? SuggestionDetailTextColor()
+                                                 : SuggestionTextColor();
 
   switch (style) {
     case SuggestionAnswer::TextStyle::NORMAL:

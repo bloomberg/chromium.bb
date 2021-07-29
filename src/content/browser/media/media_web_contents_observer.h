@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/media_power_experiment_manager.h"
 #include "content/browser/media/session/media_session_controllers_manager.h"
 #include "content/common/content_export.h"
@@ -121,7 +122,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   // needed, and then passes |player_receiver| to it to establish a
   // communication channel.
   void BindMediaPlayerHost(
-      GlobalFrameRoutingId frame_routing_id,
+      GlobalRenderFrameHostId frame_routing_id,
       mojo::PendingAssociatedReceiver<media::mojom::MediaPlayerHost>
           player_receiver);
 
@@ -147,7 +148,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   // has been created, so that a communication channel can be established.
   class MediaPlayerHostImpl : public media::mojom::MediaPlayerHost {
    public:
-    MediaPlayerHostImpl(GlobalFrameRoutingId frame_routing_id,
+    MediaPlayerHostImpl(GlobalRenderFrameHostId frame_routing_id,
                         MediaWebContentsObserver* media_web_contents_observer);
     ~MediaPlayerHostImpl() override;
 
@@ -164,7 +165,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
         int32_t player_id) override;
 
    private:
-    GlobalFrameRoutingId frame_routing_id_;
+    GlobalRenderFrameHostId frame_routing_id_;
     MediaWebContentsObserver* media_web_contents_observer_;
     mojo::AssociatedReceiverSet<media::mojom::MediaPlayerHost> receivers_;
   };
@@ -198,19 +199,29 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
     void OnMediaSizeChanged(const ::gfx::Size& size) override;
     void OnPictureInPictureAvailabilityChanged(bool available) override;
     void OnAudioOutputSinkChanged(const std::string& hashed_device_id) override;
+    void OnUseAudioServiceChanged(bool uses_audio_service) override;
     void OnAudioOutputSinkChangingDisabled() override;
     void OnBufferUnderflow() override;
     void OnSeek() override;
 
    private:
-    MediaPlayerId media_player_id_;
-    MediaWebContentsObserver* media_web_contents_observer_;
+    PlayerInfo* GetPlayerInfo();
+    void NotifyAudioStreamMonitorIfNeeded();
+
+    const MediaPlayerId media_player_id_;
+    MediaWebContentsObserver* const media_web_contents_observer_;
+
     mojo::AssociatedReceiver<media::mojom::MediaPlayerObserver>
         media_player_observer_receiver_{this};
+
+    // Helps monitor audio stream when not using AudioService.
+    bool uses_audio_service_ = true;
+    std::unique_ptr<AudioStreamMonitor::AudibleClientRegistration>
+        audio_client_registration_;
   };
 
   using MediaPlayerHostImplMap =
-      base::flat_map<GlobalFrameRoutingId,
+      base::flat_map<GlobalRenderFrameHostId,
                      std::unique_ptr<MediaPlayerHostImpl>>;
   using MediaPlayerObserverHostImplMap =
       base::flat_map<MediaPlayerId,

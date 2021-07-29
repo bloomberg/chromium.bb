@@ -7,18 +7,13 @@
  * Switch Access settings.
  */
 
+import {getLabelForAssignment} from './switch_access_action_assignment_pane.m.js';
+
 /**
  * The portion of the setting name common to all Switch Access preferences.
  * @const
  */
 const PREFIX = 'settings.a11y.switch_access.';
-
-/** @type {!Array<number>} */
-const AUTO_SCAN_SPEED_RANGE_MS = [
-  4000, 3900, 3800, 3700, 3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900,
-  2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000, 1900, 1800, 1700,
-  1600, 1500, 1400, 1300, 1200, 1100, 1000, 900,  800,  700
-];
 
 /** @type {!Array<number>} */
 const POINT_SCAN_SPEED_RANGE_DIPS_PER_SECOND = [25, 50, 75, 100, 150, 200, 300];
@@ -170,6 +165,12 @@ Polymer({
       value: false,
     },
 
+    /** @private */
+    showSwitchAccessSetupGuideWarningDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {?SwitchAccessCommand} */
     action_: {
       type: String,
@@ -209,7 +210,30 @@ Polymer({
   },
 
   /** @private */
-  onSetupGuideClick_() {
+  onSetupGuideRerunClick_() {
+    if (this.showSetupGuide_()) {
+      this.showSwitchAccessSetupGuideWarningDialog_ = true;
+    }
+  },
+
+  /** @private */
+  onSetupGuideWarningDialogCancel_() {
+    this.showSwitchAccessSetupGuideWarningDialog_ = false;
+  },
+
+  /** @private */
+  onSetupGuideWarningDialogClose_() {
+    // The on_cancel is followed by on_close, so check cancel didn't happen
+    // first.
+    if (this.showSwitchAccessSetupGuideWarningDialog_) {
+      this.openSetupGuide_();
+      this.showSwitchAccessSetupGuideWarningDialog_ = false;
+    }
+  },
+
+  /** @private */
+  openSetupGuide_() {
+    this.showSwitchAccessSetupGuideWarningDialog_ = false;
     if (this.showSetupGuide_()) {
       this.showSwitchAccessSetupGuideDialog_ = true;
     }
@@ -257,6 +281,14 @@ Polymer({
     this.selectAssignments_ = value[SwitchAccessCommand.SELECT];
     this.nextAssignments_ = value[SwitchAccessCommand.NEXT];
     this.previousAssignments_ = value[SwitchAccessCommand.PREVIOUS];
+
+    // Any complete assignment will have at least one switch assigned to SELECT.
+    // If this method is called with no SELECT switches, then the page has just
+    // loaded, and we should open the setup guide.
+    if (Object.keys(this.selectAssignments_).length === 0 &&
+        this.showSetupGuide_) {
+      this.openSetupGuide_();
+    }
   },
 
   /**

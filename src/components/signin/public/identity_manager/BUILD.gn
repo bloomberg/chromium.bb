@@ -16,6 +16,8 @@ source_set("identity_manager") {
     "access_token_fetcher.h",
     "access_token_info.cc",
     "access_token_info.h",
+    "account_capabilities.cc",
+    "account_capabilities.h",
     "account_info.cc",
     "account_info.h",
     "accounts_cookie_mutator.h",
@@ -41,6 +43,8 @@ source_set("identity_manager") {
     "primary_account_mutator.h",
     "scope_set.h",
     "set_accounts_in_cookie_result.h",
+    "tribool.cc",
+    "tribool.h",
     "ubertoken_fetcher.cc",
     "ubertoken_fetcher.h",
   ]
@@ -95,6 +99,7 @@ source_set("unit_tests") {
 
   sources = [
     "access_token_fetcher_unittest.cc",
+    "account_capabilities_unittest.cc",
     "account_info_unittest.cc",
     "accounts_cookie_mutator_unittest.cc",
     "accounts_mutator_unittest.cc",

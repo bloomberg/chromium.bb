@@ -37,7 +37,6 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/account_id/account_id.h"
@@ -553,12 +552,11 @@ TEST_F(ShellTest, NoWindowTabFocus) {
   // Confirm that pressing tab when overview mode is open does not go to home
   // button. Tab should be handled by overview mode and not hit the shell event
   // handler.
-  auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
   generator->PressKey(ui::VKEY_TAB, ui::EF_NONE);
   generator->ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
   EXPECT_FALSE(home_button->GetNativeView()->HasFocus());
-  overview_controller->EndOverview();
+  ExitOverview();
 
   // Hit shift tab and expect that focus is on status widget.
   generator->PressKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);

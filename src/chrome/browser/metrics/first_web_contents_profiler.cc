@@ -108,7 +108,10 @@ FirstWebContentsProfiler::FirstWebContentsProfiler(
 void FirstWebContentsProfiler::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   // Ignore subframe navigations and same-document navigations.
-  if (!navigation_handle->IsInMainFrame() ||
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
   }
@@ -128,7 +131,10 @@ void FirstWebContentsProfiler::DidFinishNavigation(
   }
 
   // Ignore subframe navigations and same-document navigations.
-  if (!navigation_handle->IsInMainFrame() ||
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
   }
@@ -160,10 +166,8 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
   }
 
   startup_metric_utils::RecordFirstWebContentsNonEmptyPaint(
-      base::TimeTicks::Now(), web_contents()
-                                  ->GetMainFrame()
-                                  ->GetProcess()
-                                  ->GetInitTimeForNavigationMetrics());
+      base::TimeTicks::Now(),
+      web_contents()->GetMainFrame()->GetProcess()->GetLastInitTime());
 
   FinishedCollectingMetrics(FinishReason::kDone);
 }

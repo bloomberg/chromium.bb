@@ -1011,7 +1011,12 @@ public class PaymentUiService
         WebContents paymentHandlerWebContents = paymentHandlerUi.show(
                 /*paymentRequestWebContents=*/mWebContents, url, isOffTheRecord,
                 /*uiObserver=*/this);
-        if (paymentHandlerWebContents != null) mPaymentHandlerUi = paymentHandlerUi;
+        if (paymentHandlerWebContents == null) {
+            paymentHandlerUi.hide();
+            return null;
+        }
+        mPaymentHandlerUi = paymentHandlerUi;
+
         return paymentHandlerWebContents;
     }
 
@@ -1038,6 +1043,14 @@ public class PaymentUiService
     public boolean clickPaymentHandlerCloseButtonForTest() {
         if (mPaymentHandlerUi == null) return false;
         mPaymentHandlerUi.clickCloseButtonForTest();
+        return true;
+    }
+
+    // Implements PaymentUiServiceTestInterface:
+    @Override
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public boolean closeDialogForTest() {
+        if (!mHasClosed) close();
         return true;
     }
 

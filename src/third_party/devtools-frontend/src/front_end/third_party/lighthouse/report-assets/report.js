@@ -375,7 +375,7 @@ class Util {
   /**
    * Returns a primary domain for provided hostname (e.g. www.example.com -> example.com).
    * @param {string|URL} url hostname or URL object
-   * @returns {string}
+   * @return {string}
    */
   static getRootDomain(url) {
     const hostname = Util.createOrReturnURL(url).hostname;
@@ -581,7 +581,7 @@ Util.UIStrings = {
 
   /** This label is for a checkbox above a table of items loaded by a web page. The checkbox is used to show or hide third-party (or "3rd-party") resources in the table, where "third-party resources" refers to items loaded by a web page from URLs that aren't controlled by the owner of the web page. */
   thirdPartyResourcesLabel: 'Show 3rd-party resources',
-  /** This label is for a button that opens a new tab to a webapp called "Treemap", which is a nested visual representation of a heierarchy of data releated to the reports (script bytes and coverage, resource breakdown, etc.) */
+  /** This label is for a button that opens a new tab to a webapp called "Treemap", which is a nested visual representation of a heierarchy of data related to the reports (script bytes and coverage, resource breakdown, etc.) */
   viewTreemapLabel: 'View Treemap',
 
   /** Option in a dropdown menu that opens a small, summary report in a print dialog.  */
@@ -596,7 +596,7 @@ Util.UIStrings = {
   dropdownSaveJSON: 'Save as JSON',
   /** Option in a dropdown menu that opens the current report in the Lighthouse Viewer Application. */
   dropdownViewer: 'Open in Viewer',
-  /** Option in a dropdown menu that saves the current report as a new Github Gist. */
+  /** Option in a dropdown menu that saves the current report as a new GitHub Gist. */
   dropdownSaveGist: 'Save as Gist',
   /** Option in a dropdown menu that toggles the themeing of the report between Light(default) and Dark themes. */
   dropdownDarkTheme: 'Toggle Dark Theme',
@@ -624,7 +624,7 @@ Util.UIStrings = {
   /** Label for a row in a table that shows the version of the Axe library used. Example row values: 2.1.0, 3.2.3 */
   runtimeSettingsAxeVersion: 'Axe version',
 
-  /** Label for button to create an issue against the Lighthouse Github project. */
+  /** Label for button to create an issue against the Lighthouse GitHub project. */
   footerIssue: 'File an issue',
 
   /** Descriptive explanation for emulation setting when no device emulation is set. */
@@ -645,6 +645,9 @@ if (typeof module !== 'undefined' && module.exports) {
 } else {
   self.Util = Util;
 }
+
+// TODO(esmodules): export these strings too, then collect-strings will work when this file is esm.
+// export const UIStrings = Util.UIStrings;
 ;
 /**
  * @license
@@ -1254,7 +1257,7 @@ class DetailsRenderer {
    * @return {LH.Audit.Details.OpportunityColumnHeading['subItemsHeading']}
    */
   _getCanonicalizedsubItemsHeading(subItemsHeading, parentHeading) {
-    // Low-friction way to prevent commiting a falsy key (which is never allowed for
+    // Low-friction way to prevent committing a falsy key (which is never allowed for
     // a subItemsHeading) from passing in CI.
     if (!subItemsHeading.key) {
       // eslint-disable-next-line no-console
@@ -2542,7 +2545,7 @@ if (typeof module !== 'undefined' && module.exports) {
  * the report.
  */
 
-/* globals getFilenamePrefix Util ElementScreenshotRenderer */
+/* globals getFilenamePrefix Util TextEncoding ElementScreenshotRenderer */
 
 /** @typedef {import('./dom')} DOM */
 
@@ -2672,8 +2675,7 @@ class ReportUIFeatures {
 
     const showTreemapApp =
       this.json.audits['script-treemap-data'] && this.json.audits['script-treemap-data'].details;
-    // TODO: need window.opener to work in DevTools.
-    if (showTreemapApp && !this._dom.isDevTools()) {
+    if (showTreemapApp) {
       this.addButton({
         text: Util.i18n.strings.viewTreemapLabel,
         icon: 'treemap',
@@ -2700,12 +2702,18 @@ class ReportUIFeatures {
   }
 
   /**
-   * @param {{text: string, icon?: string, onClick: () => void}} opts
+   * @param {{container?: Element, text: string, icon?: string, onClick: () => void}} opts
    */
   addButton(opts) {
+    // report-ui-features doesn't have a reference to the root report el, and PSI has
+    // 2 reports on the page (and not even attached to DOM when installFeatures is called..)
+    // so we need a container option to specify where the element should go.
     const metricsEl = this._document.querySelector('.lh-audit-group--metrics');
-    // Not supported without metrics group.
-    if (!metricsEl) return;
+    const containerEl = opts.container || metricsEl;
+    if (!containerEl) return;
+
+    let buttonsEl = containerEl.querySelector('.lh-buttons');
+    if (!buttonsEl) buttonsEl = this._dom.createChildOf(containerEl, 'div', 'lh-buttons');
 
     const classes = [
       'lh-button',
@@ -2714,10 +2722,9 @@ class ReportUIFeatures {
       classes.push('report-icon');
       classes.push(`report-icon--${opts.icon}`);
     }
-    const buttonEl = this._dom.createChildOf(metricsEl, 'button', classes.join(' '));
-    buttonEl.addEventListener('click', opts.onClick);
+    const buttonEl = this._dom.createChildOf(buttonsEl, 'button', classes.join(' '));
     buttonEl.textContent = opts.text;
-    metricsEl.append(buttonEl);
+    buttonEl.addEventListener('click', opts.onClick);
     return buttonEl;
   }
 
@@ -3049,23 +3056,31 @@ class ReportUIFeatures {
   }
 
   /**
+   * The popup's window.name is keyed by version+url+fetchTime, so we reuse/select tabs correctly.
+   * @param {LH.Result} json
+   * @protected
+   */
+  static computeWindowNameSuffix(json) {
+    // @ts-ignore - If this is a v2 LHR, use old `generatedTime`.
+    const fallbackFetchTime = /** @type {string} */ (json.generatedTime);
+    const fetchTime = json.fetchTime || fallbackFetchTime;
+    return `${json.lighthouseVersion}-${json.requestedUrl}-${fetchTime}`;
+  }
+
+  /**
    * Opens a new tab to the online viewer and sends the local page's JSON results
    * to the online viewer using postMessage.
    * @param {LH.Result} json
    * @protected
    */
   static openTabAndSendJsonReportToViewer(json) {
-    // The popup's window.name is keyed by version+url+fetchTime, so we reuse/select tabs correctly
-    // @ts-ignore - If this is a v2 LHR, use old `generatedTime`.
-    const fallbackFetchTime = /** @type {string} */ (json.generatedTime);
-    const fetchTime = json.fetchTime || fallbackFetchTime;
-    const windowName = `${json.lighthouseVersion}-${json.requestedUrl}-${fetchTime}`;
+    const windowName = 'viewer-' + this.computeWindowNameSuffix(json);
     const url = getAppsOrigin() + '/viewer/';
     ReportUIFeatures.openTabAndSendData({lhr: json}, url, windowName);
   }
 
   /**
-   * Opens a new tab to the treemap app and sends the JSON results using postMessage.
+   * Opens a new tab to the treemap app and sends the JSON results using URL.fragment
    * @param {LH.Result} json
    */
   static openTreemap(json) {
@@ -3074,13 +3089,23 @@ class ReportUIFeatures {
       throw new Error('no script treemap data found');
     }
 
-    const windowName = `treemap-${json.requestedUrl}`;
     /** @type {LH.Treemap.Options} */
     const treemapOptions = {
-      lhr: json,
+      lhr: {
+        requestedUrl: json.requestedUrl,
+        finalUrl: json.finalUrl,
+        audits: {
+          'script-treemap-data': json.audits['script-treemap-data'],
+        },
+        configSettings: {
+          locale: json.configSettings.locale,
+        },
+      },
     };
     const url = getAppsOrigin() + '/treemap/';
-    ReportUIFeatures.openTabAndSendData(treemapOptions, url, windowName);
+    const windowName = 'treemap-' + this.computeWindowNameSuffix(json);
+
+    ReportUIFeatures.openTabWithUrlData(treemapOptions, url, windowName);
   }
 
   /**
@@ -3106,8 +3131,24 @@ class ReportUIFeatures {
       }
     });
 
-    // The popup's window.name is keyed by version+url+fetchTime, so we reuse/select tabs correctly
     const popup = window.open(url, windowName);
+  }
+
+  /**
+   * Opens a new tab to an external page and sends data via base64 encoded url params.
+   * @param {{lhr: LH.Result} | LH.Treemap.Options} data
+   * @param {string} url_
+   * @param {string} windowName
+   * @protected
+   */
+  static async openTabWithUrlData(data, url_, windowName) {
+    const url = new URL(url_);
+    const gzip = Boolean(window.CompressionStream);
+    url.hash = await TextEncoding.toBase64(JSON.stringify(data), {
+      gzip,
+    });
+    if (gzip) url.searchParams.set('gzip', '1');
+    window.open(url.toString(), windowName);
   }
 
   /**
@@ -3392,7 +3433,7 @@ class DropDown {
   /**
    * @param {Array<Node>} allNodes
    * @param {?HTMLElement=} startNode
-   * @returns {HTMLElement}
+   * @return {HTMLElement}
    */
   _getNextSelectableNode(allNodes, startNode) {
     const nodes = allNodes.filter(/** @return {node is HTMLElement} */ (node) => {
@@ -3423,7 +3464,7 @@ class DropDown {
 
   /**
    * @param {?HTMLElement=} startEl
-   * @returns {HTMLElement}
+   * @return {HTMLElement}
    */
   _getNextMenuItem(startEl) {
     const nodes = Array.from(this._menuEl.childNodes);
@@ -3432,7 +3473,7 @@ class DropDown {
 
   /**
    * @param {?HTMLElement=} startEl
-   * @returns {HTMLElement}
+   * @return {HTMLElement}
    */
   _getPreviousMenuItem(startEl) {
     const nodes = Array.from(this._menuEl.childNodes).reverse();
@@ -4071,11 +4112,12 @@ class PerformanceCategoryRenderer extends CategoryRenderer {
    * @return {string}
    */
   _getScoringCalculatorHref(auditRefs) {
-    const v5andv6metrics = auditRefs.filter(audit => audit.group === 'metrics');
+    // TODO: filter by !!acronym when dropping renderer support of v7 LHRs.
+    const metrics = auditRefs.filter(audit => audit.group === 'metrics');
     const fci = auditRefs.find(audit => audit.id === 'first-cpu-idle');
     const fmp = auditRefs.find(audit => audit.id === 'first-meaningful-paint');
-    if (fci) v5andv6metrics.push(fci);
-    if (fmp) v5andv6metrics.push(fmp);
+    if (fci) metrics.push(fci);
+    if (fmp) metrics.push(fmp);
 
     /**
      * Clamp figure to 2 decimal places
@@ -4084,7 +4126,7 @@ class PerformanceCategoryRenderer extends CategoryRenderer {
      */
     const clampTo2Decimals = val => Math.round(val * 100) / 100;
 
-    const metricPairs = v5andv6metrics.map(audit => {
+    const metricPairs = metrics.map(audit => {
       let value;
       if (typeof audit.result.numericValue === 'number') {
         value = audit.id === 'cumulative-layout-shift' ?
@@ -4270,17 +4312,17 @@ class PerformanceCategoryRenderer extends CategoryRenderer {
     ]);
     for (const metric of filterChoices) {
       const elemId = `metric-${metric.acronym}`;
+      const radioEl = this.dom.createChildOf(metricFilterEl, 'input', 'lh-metricfilter__radio', {
+        type: 'radio',
+        name: 'metricsfilter',
+        id: elemId,
+      });
+
       const labelEl = this.dom.createChildOf(metricFilterEl, 'label', 'lh-metricfilter__label', {
         for: elemId,
         title: metric.result && metric.result.title,
       });
       labelEl.textContent = metric.acronym || metric.id;
-      const radioEl = this.dom.createChildOf(labelEl, 'input', 'lh-metricfilter__radio', {
-        type: 'radio',
-        name: 'metricsfilter',
-        id: elemId,
-        hidden: 'true',
-      });
 
       if (metric.acronym === 'All') {
         radioEl.checked = true;
@@ -4905,7 +4947,7 @@ class I18n {
   }
 
   /**
-   * Format bytes with a constant number of fractional digits, i.e for a granularity of 0.1, 10 becomes '10.0'
+   * Format bytes with a constant number of fractional digits, i.e. for a granularity of 0.1, 10 becomes '10.0'
    * @param {number} granularity Controls how coarse the displayed value is
    * @return {Intl.NumberFormat}
    */
@@ -5009,4 +5051,138 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = I18n;
 } else {
   self.I18n = I18n;
+}
+;
+/**
+ * @license Copyright 2021 The Lighthouse Authors. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ */
+'use strict';
+
+/* global self btoa atob window CompressionStream Response */
+
+const btoa_ = typeof btoa !== 'undefined' ?
+  btoa :
+  /** @param {string} str */
+  (str) => Buffer.from(str).toString('base64');
+const atob_ = typeof atob !== 'undefined' ?
+  atob :
+  /** @param {string} str */
+  (str) => Buffer.from(str, 'base64').toString();
+
+/**
+ * Takes an UTF-8 string and returns a base64 encoded string.
+ * If gzip is true, the UTF-8 bytes are gzipped before base64'd, using
+ * CompressionStream (currently only in Chrome), falling back to pako
+ * (which is only used to encode in our Node tests).
+ * @param {string} string
+ * @param {{gzip: boolean}} options
+ * @return {Promise<string>}
+ */
+async function toBase64(string, options) {
+  let bytes = new TextEncoder().encode(string);
+
+  if (options.gzip) {
+    if (typeof CompressionStream !== 'undefined') {
+      const cs = new CompressionStream('gzip');
+      const writer = cs.writable.getWriter();
+      writer.write(bytes);
+      writer.close();
+      const compAb = await new Response(cs.readable).arrayBuffer();
+      bytes = new Uint8Array(compAb);
+    } else {
+      /** @type {import('pako')=} */
+      const pako = window.pako;
+      bytes = pako.gzip(string);
+    }
+  }
+
+  let binaryString = '';
+  // This is ~25% faster than building the string one character at a time.
+  // https://jsbench.me/2gkoxazvjl
+  const chunkSize = 5000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binaryString += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa_(binaryString);
+}
+
+/**
+ * @param {string} encoded
+ * @param {{gzip: boolean}} options
+ * @return {string}
+ */
+function fromBase64(encoded, options) {
+  const binaryString = atob_(encoded);
+  const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
+
+  if (options.gzip) {
+    /** @type {import('pako')=} */
+    const pako = window.pako;
+    return pako.ungzip(bytes, {to: 'string'});
+  } else {
+    return new TextDecoder().decode(bytes);
+  }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {toBase64, fromBase64};
+} else {
+  self.TextEncoding = {toBase64, fromBase64};
+}
+;
+/**
+ * @license Copyright 2021 The Lighthouse Authors. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ */
+'use strict';
+
+/* global document window ga DOM ReportRenderer ReportUIFeatures Logger */
+
+// Used by standalone.html
+// eslint-disable-next-line no-unused-vars
+function __initLighthouseReport__() {
+  const dom = new DOM(document);
+  const renderer = new ReportRenderer(dom);
+  const container = dom.find('main', document);
+  /** @type {LH.ReportResult} */
+  // @ts-expect-error
+  const lhr = window.__LIGHTHOUSE_JSON__;
+  renderer.renderReport(lhr, container);
+
+  // Hook in JS features and page-level event listeners after the report
+  // is in the document.
+  const features = new ReportUIFeatures(dom);
+  features.initFeatures(lhr);
+
+  document.addEventListener('lh-analytics', /** @param {Event} e */ e => {
+    // @ts-expect-error
+    if (window.ga) ga(e.detail.cmd, e.detail.fields);
+  });
+
+  document.addEventListener('lh-log', /** @param {Event} e */ e => {
+    const el = document.querySelector('#lh-log');
+    if (!el) return;
+
+    const logger = new Logger(el);
+    // @ts-expect-error
+    const detail = e.detail;
+
+    switch (detail.cmd) {
+      case 'log':
+        logger.log(detail.msg);
+        break;
+      case 'warn':
+        logger.warn(detail.msg);
+        break;
+      case 'error':
+        logger.error(detail.msg);
+        break;
+      case 'hide':
+        logger.hide();
+        break;
+    }
+  });
 }

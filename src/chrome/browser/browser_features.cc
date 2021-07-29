@@ -30,6 +30,11 @@ const base::Feature kPromoBrowserCommands{"PromoBrowserCommands",
 const char kPromoBrowserCommandIdParam[] = "PromoBrowserCommandIdParam";
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+// Enables reading and writing PWA notification permissions from quick settings
+// menu.
+const base::Feature kQuickSettingsPWANotifications{
+    "QuickSettingsPWA", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables being able to zoom a web page by double tapping in Chrome OS tablet
 // mode.
 const base::Feature kDoubleTapToZoomInTabletMode{
@@ -40,8 +45,17 @@ const base::Feature kDoubleTapToZoomInTabletMode{
 // Adds an item to the context menu that copies a link to the page with the
 // selected text highlighted.
 const base::Feature kCopyLinkToText{"CopyLinkToText",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Adds a "Snooze" action to mute notifications during screen sharing sessions.
+const base::Feature kMuteNotificationSnoozeAction{
+    "MuteNotificationSnoozeAction", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+// Shows a confirmation dialog when updates to PWAs identity (name and icon)
+// have been detected.
+const base::Feature kPwaUpdateDialogForNameAndIcon{
+    "PwaUpdateDialogForNameAndIcon", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables taking snapshots of the user data directory after a major

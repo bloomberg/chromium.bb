@@ -82,9 +82,7 @@ namespace blink {
 
 ScriptLoader::ScriptLoader(ScriptElementBase* element,
                            const CreateElementFlags flags)
-    : element_(element),
-      will_be_parser_executed_(false),
-      will_execute_when_document_finished_parsing_(false) {
+    : element_(element) {
   // <spec href="https://html.spec.whatwg.org/C/#already-started">... The
   // cloning steps for script elements must set the "already started" flag on
   // the copy if it is set on the element being cloned.</spec>
@@ -193,21 +191,6 @@ enum class ShouldFireErrorEvent {
   kShouldFire,
 };
 
-bool IsImportMapEnabled(LocalDOMWindow* context_window) {
-  // When window/modulator is null, `true` is returned here, because
-  // PrepareScript() should fail at "scripting is disabled" checks, not here.
-
-  if (!context_window)
-    return true;
-
-  Modulator* modulator =
-      Modulator::From(ToScriptStateForMainWorld(context_window->GetFrame()));
-  if (!modulator)
-    return true;
-
-  return modulator->ImportMapsEnabled();
-}
-
 }  // namespace
 
 // <specdef href="https://html.spec.whatwg.org/C/#prepare-a-script">
@@ -270,7 +253,7 @@ network::mojom::CredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
   return network::mojom::CredentialsMode::kOmit;
 }
 
-// https://github.com/w3c/webappsec-permissions-policy/issues/135
+// https://github.com/WICG/document-policy/issues/2
 bool ShouldBlockSyncScriptForDocumentPolicy(
     const ScriptElementBase* element,
     ScriptLoader::ScriptTypeAtPrepare script_type,
@@ -350,11 +333,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     case ScriptTypeAtPrepare::kInvalid:
       return false;
 
-    case ScriptTypeAtPrepare::kImportMap:
-      if (!IsImportMapEnabled(context_window))
-        return false;
-      break;
-
     case ScriptTypeAtPrepare::kSpeculationRules:
       if (!RuntimeEnabledFeatures::SpeculationRulesEnabled(context_window))
         return false;
@@ -362,6 +340,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
     case ScriptTypeAtPrepare::kClassic:
     case ScriptTypeAtPrepare::kModule:
+    case ScriptTypeAtPrepare::kImportMap:
       break;
   }
 
@@ -428,7 +407,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   if (!IsScriptForEventSupported())
     return false;
 
-  // This Document Policy is still in the process of being added to the spec.
   if (ShouldBlockSyncScriptForDocumentPolicy(element_.Get(), GetScriptType(),
                                              parser_inserted_)) {
     element_document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
@@ -733,9 +711,19 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         // If the script’s result is not null, append it to the element’s node
         // document's list of speculation rule sets.
         DCHECK(RuntimeEnabledFeatures::SpeculationRulesEnabled(context_window));
-        if (auto* rule_set =
-                SpeculationRuleSet::ParseInline(source_text, base_url)) {
+        String parse_error;
+        if (auto* rule_set = SpeculationRuleSet::ParseInline(
+                source_text, base_url, &parse_error)) {
           DocumentSpeculationRules::From(element_document).AddRuleSet(rule_set);
+        }
+        if (!parse_error.IsNull()) {
+          auto* console_message = MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kOther,
+              mojom::ConsoleMessageLevel::kWarning,
+              "While parsing speculation rules: " + parse_error);
+          console_message->SetNodes(element_document.GetFrame(),
+                                    {element_->GetDOMNodeId()});
+          element_document.AddConsoleMessage(console_message);
         }
         return false;
       }

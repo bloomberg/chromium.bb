@@ -11,6 +11,7 @@
 #include "cc/cc_export.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/proxy_common.h"
 
@@ -58,7 +59,7 @@ class CC_EXPORT ProxyMain : public Proxy {
       std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state);
   void DidPresentCompositorFrame(
       uint32_t frame_token,
-      std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
+      std::vector<PresentationTimeCallbackBuffer::MainCallback> callbacks,
       const gfx::PresentationFeedback& feedback);
   void NotifyThroughputTrackerResults(CustomTrackerResults results);
   void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay,
@@ -85,10 +86,14 @@ class CC_EXPORT ProxyMain : public Proxy {
   void SetNeedsCommit() override;
   void SetNeedsRedraw(const gfx::Rect& damage_rect) override;
   void SetNextCommitWaitsForActivation() override;
+  void SetTargetLocalSurfaceId(
+      const viz::LocalSurfaceId& target_local_surface_id) override;
   bool RequestedAnimatePending() override;
   void SetDeferMainFrameUpdate(bool defer_main_frame_update) override;
-  void StartDeferringCommits(base::TimeDelta timeout) override;
+  bool StartDeferringCommits(base::TimeDelta timeout,
+                             PaintHoldingReason reason) override;
   void StopDeferringCommits(PaintHoldingCommitTrigger) override;
+  bool IsDeferringCommits() const override;
   bool CommitRequested() const override;
   void Start() override;
   void Stop() override;
@@ -146,9 +151,9 @@ class CC_EXPORT ProxyMain : public Proxy {
   bool started_;
 
   // defer_main_frame_update_ will also cause commits to be deferred, regardless
-  // of the setting for defer_commits_.
+  // of the setting for paint_holding_reason_.
   bool defer_main_frame_update_;
-  bool defer_commits_;
+  absl::optional<PaintHoldingReason> paint_holding_reason_;
 
   // Only used when defer_commits_ is active and must be set in such cases.
   base::TimeTicks commits_restart_time_;

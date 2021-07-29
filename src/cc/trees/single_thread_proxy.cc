@@ -27,6 +27,7 @@
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
 #include "components/power_scheduler/power_mode_arbiter.h"
@@ -56,7 +57,6 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
 #endif
       inside_draw_(false),
       defer_main_frame_update_(false),
-      defer_commits_(false),
       animate_requested_(false),
       update_layers_requested_(false),
       commit_requested_(false),
@@ -271,6 +271,13 @@ void SingleThreadProxy::SetNextCommitWaitsForActivation() {
   DCHECK(task_runner_provider_->IsMainThread());
 }
 
+void SingleThreadProxy::SetTargetLocalSurfaceId(
+    const viz::LocalSurfaceId& target_local_surface_id) {
+  if (!scheduler_on_impl_thread_)
+    return;
+  host_impl_->SetTargetLocalSurfaceId(target_local_surface_id);
+}
+
 bool SingleThreadProxy::RequestedAnimatePending() {
   return animate_requested_ || update_layers_requested_ || commit_requested_ ||
          needs_impl_frame_;
@@ -303,36 +310,44 @@ void SingleThreadProxy::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
   scheduler_on_impl_thread_->SetDeferBeginMainFrame(defer_main_frame_update_);
 }
 
-void SingleThreadProxy::StartDeferringCommits(base::TimeDelta timeout) {
+bool SingleThreadProxy::StartDeferringCommits(base::TimeDelta timeout,
+                                              PaintHoldingReason reason) {
   DCHECK(task_runner_provider_->IsMainThread());
 
   // Do nothing if already deferring. The timeout remains as it was from when
   // we most recently began deferring.
-  if (defer_commits_)
-    return;
+  if (IsDeferringCommits())
+    return false;
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("cc", "SingleThreadProxy::SetDeferCommits",
                                     TRACE_ID_LOCAL(this));
 
-  defer_commits_ = true;
+  paint_holding_reason_ = reason;
   commits_restart_time_ = base::TimeTicks::Now() + timeout;
 
   // Notify dependent systems that the deferral status has changed.
-  layer_tree_host_->OnDeferCommitsChanged(defer_commits_);
+  layer_tree_host_->OnDeferCommitsChanged(true, reason);
+  return true;
 }
 
 void SingleThreadProxy::StopDeferringCommits(
     PaintHoldingCommitTrigger trigger) {
-  if (!defer_commits_)
+  if (!IsDeferringCommits())
     return;
-  defer_commits_ = false;
+  auto reason = *paint_holding_reason_;
+  paint_holding_reason_.reset();
   commits_restart_time_ = base::TimeTicks();
   UMA_HISTOGRAM_ENUMERATION("PaintHolding.CommitTrigger2", trigger);
   TRACE_EVENT_NESTABLE_ASYNC_END0("cc", "SingleThreadProxy::SetDeferCommits",
                                   TRACE_ID_LOCAL(this));
 
   // Notify dependent systems that the deferral status has changed.
-  layer_tree_host_->OnDeferCommitsChanged(defer_commits_);
+  layer_tree_host_->OnDeferCommitsChanged(false, reason);
+}
+
+bool SingleThreadProxy::IsDeferringCommits() const {
+  DCHECK(task_runner_provider_->IsMainThread());
+  return paint_holding_reason_.has_value();
 }
 
 bool SingleThreadProxy::CommitRequested() const {
@@ -533,15 +548,13 @@ void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
     uint32_t frame_token,
     PresentationTimeCallbackBuffer::PendingCallbacks callbacks,
     const viz::FrameTimingDetails& details) {
-  std::vector<LayerTreeHost::PresentationTimeCallback> main_thread_callbacks =
-      std::move(callbacks.main_thread_callbacks);
   DebugScopedSetImplThread impl(task_runner_provider_);
   host_impl_->NotifyDidPresentCompositorFrameOnImplThread(
       frame_token, std::move(callbacks.compositor_thread_callbacks), details);
   {
     DebugScopedSetMainThread main(task_runner_provider_);
     layer_tree_host_->DidPresentCompositorFrame(
-        frame_token, std::move(main_thread_callbacks),
+        frame_token, std::move(callbacks.main_thread_callbacks),
         details.presentation_feedback);
   }
   if (scheduler_on_impl_thread_) {
@@ -852,8 +865,8 @@ void SingleThreadProxy::BeginMainFrame(
   // Check now if we should stop deferring commits. Do this before
   // DoBeginMainFrame because the latter updates scroll offsets, which
   // we should avoid if deferring commits.
-  if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_)
-    StopDeferringCommits(PaintHoldingCommitTrigger::kTimeout);
+  if (IsDeferringCommits() && base::TimeTicks::Now() > commits_restart_time_)
+    StopDeferringCommits(ReasonToTimeoutTrigger(*paint_holding_reason_));
 
   DoBeginMainFrame(begin_frame_args);
 
@@ -862,7 +875,7 @@ void SingleThreadProxy::BeginMainFrame(
 
   // At this point the main frame may have deferred commits to avoid committing
   // right now.
-  if (defer_main_frame_update_ || defer_commits_ ||
+  if (defer_main_frame_update_ || IsDeferringCommits() ||
       begin_frame_args.animate_only) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit_InsideBeginMainFrame",
                          TRACE_EVENT_SCOPE_THREAD);
@@ -879,7 +892,7 @@ void SingleThreadProxy::DoBeginMainFrame(
     const viz::BeginFrameArgs& begin_frame_args) {
   // Only update scroll deltas if we are going to commit the frame, otherwise
   // scroll offsets get confused.
-  if (!defer_commits_) {
+  if (!IsDeferringCommits()) {
     // The impl-side scroll deltas may be manipulated directly via the
     // InputHandler on the UI thread and the scale deltas may change when they
     // are clamped on the impl thread.

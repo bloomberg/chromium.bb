@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_deferred_image.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/modules/csspaint/native_paint_worklet_proxy_client.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_rendering_context_2d.h"
@@ -22,8 +23,6 @@
 namespace blink {
 
 namespace {
-
-const float kProgressBoundsTolerance = 0.000001f;
 
 // This class includes information that is required by the compositor thread
 // when painting background color.
@@ -99,11 +98,8 @@ class BackgroundColorPaintWorkletProxyClient
 
     // Get the start and end color based on the progress and offsets.
     unsigned result_index = offsets.size() - 1;
-    // The progress of the animation might outside of [0, 1] by
-    // kProgressBoundsTolerance.
     if (progress <= 0) {
       result_index = 0;
-      DCHECK_GE(progress, -kProgressBoundsTolerance);
     } else if (progress > 0 && progress < 1) {
       for (unsigned i = 0; i < offsets.size() - 1; i++) {
         if (progress <= offsets[i + 1]) {
@@ -112,10 +108,8 @@ class BackgroundColorPaintWorkletProxyClient
         }
       }
     }
-    if (result_index == offsets.size() - 1) {
-      DCHECK_LE(std::fabs(progress - 1), kProgressBoundsTolerance);
+    if (result_index == offsets.size() - 1)
       result_index = offsets.size() - 2;
-    }
     // Because the progress is a global one, we need to adjust it with offsets.
     float adjusted_progress =
         (progress - offsets[result_index]) /
@@ -264,6 +258,8 @@ Animation* BackgroundColorPaintWorklet::GetAnimationIfCompositable(
 // static
 BackgroundColorPaintWorklet* BackgroundColorPaintWorklet::Create(
     LocalFrame& local_root) {
+  if (!WebLocalFrameImpl::FromFrame(local_root))
+    return nullptr;
   return MakeGarbageCollected<BackgroundColorPaintWorklet>(local_root);
 }
 

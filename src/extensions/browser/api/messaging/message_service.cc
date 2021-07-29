@@ -19,7 +19,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/back_forward_cache/back_forward_cache_disable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -111,14 +110,6 @@ const Extension* GetExtensionForNativeAppChannel(
                                                                 true);
 }
 
-void DisableBackForwardCacheForMessaging(content::RenderFrameHost* host) {
-  if (!host)
-    return;
-  content::BackForwardCache::DisableForRenderFrameHost(
-      host, back_forward_cache::DisabledReason(
-                back_forward_cache::DisabledReasonId::kExtensionMessaging));
-}
-
 }  // namespace
 
 struct MessageService::MessageChannel {
@@ -169,19 +160,6 @@ struct MessageService::OpenChannelParams {
  private:
   DISALLOW_COPY_AND_ASSIGN(OpenChannelParams);
 };
-
-namespace {
-
-static content::RenderProcessHost* GetExtensionProcess(
-    BrowserContext* context,
-    const std::string& extension_id) {
-  scoped_refptr<SiteInstance> site_instance =
-      ProcessManager::Get(context)->GetSiteInstanceForURL(
-          Extension::GetBaseURLFromExtensionId(extension_id));
-  return site_instance->HasProcess() ? site_instance->GetProcess() : NULL;
-}
-
-}  // namespace
 
 MessageService::MessageService(BrowserContext* context)
     : context_(context),
@@ -244,7 +222,7 @@ void MessageService::OpenChannelToExtension(
         weak_factory_.GetWeakPtr(), source_port_id,
         source_endpoint.extension_id ? *source_endpoint.extension_id
                                      : ExtensionId(),
-        source, false /* include_child_frames */);
+        source);
   }
   if (!opener_port->IsValidPort())
     return;
@@ -336,7 +314,6 @@ void MessageService::OpenChannelToExtension(
       source_port_id.GetOppositePortId(), source_endpoint,
       std::move(opener_port), target_extension_id, source_url,
       std::move(source_origin), channel_name, include_guest_process_info));
-
   pending_incognito_channels_[params->receiver_port_id.GetChannelId()] =
       PendingMessagesQueue();
   if (context->IsOffTheRecord() &&
@@ -399,8 +376,7 @@ void MessageService::OpenChannelToNativeApp(
 
   std::unique_ptr<ExtensionMessagePort> opener_port =
       ExtensionMessagePort::CreateForEndpoint(
-          weak_factory_.GetWeakPtr(), source_port_id, extension->id(), source,
-          false /* include_child_frames */);
+          weak_factory_.GetWeakPtr(), source_port_id, extension->id(), source);
   if (!opener_port->IsValidPort())
     return;
 
@@ -431,9 +407,6 @@ void MessageService::OpenChannelToNativeApp(
 
   content::RenderFrameHost* source_rfh =
       source.is_for_render_frame() ? source.GetRenderFrameHost() : nullptr;
-
-  // Disable back forward cache.
-  DisableBackForwardCacheForMessaging(source_rfh);
 
   std::string error = kReceivingEndDoesntExistError;
   const PortId receiver_port_id = source_port_id.GetOppositePortId();
@@ -484,8 +457,7 @@ void MessageService::OpenChannelToTab(const ChannelEndpoint& source,
 
   std::unique_ptr<ExtensionMessagePort> opener_port =
       ExtensionMessagePort::CreateForEndpoint(
-          weak_factory_.GetWeakPtr(), source_port_id, extension_id, source,
-          false /* include_child_frames */);
+          weak_factory_.GetWeakPtr(), source_port_id, extension_id, source);
   if (!opener_port->IsValidPort())
     return;
 
@@ -499,9 +471,6 @@ void MessageService::OpenChannelToTab(const ChannelEndpoint& source,
     opener_port->DispatchOnDisconnect(kReceivingEndDoesntExistError);
     return;
   }
-
-  // Disable back forward cache.
-  DisableBackForwardCacheForMessaging(receiver_contents->GetMainFrame());
 
   const PortId receiver_port_id = source_port_id.GetOppositePortId();
   std::unique_ptr<MessagePort> receiver =
@@ -820,7 +789,7 @@ bool MessageService::MaybeAddPendingLazyContextOpenChannelTask(
     return false;
 
   // If the extension uses spanning incognito mode, make sure we're always
-  // using the original profile since that is what the extension process
+  // using the original profile since that is what the extension processes
   // will use.
   if (!IncognitoInfo::IsSplitMode(extension))
     context = ExtensionsBrowserClient::Get()->GetOriginalContext(context);
@@ -877,19 +846,6 @@ void MessageService::OnOpenChannelAllowed(
   BrowserContext* context = source.browser_context();
   DCHECK(ExtensionsBrowserClient::Get()->IsSameContext(context, context_));
 
-  // Note: we use the source's profile here. If the source is an incognito
-  // process, we will use the incognito EPM to find the right extension process,
-  // which depends on whether the extension uses spanning or split mode.
-  if (content::RenderProcessHost* extension_process =
-          GetExtensionProcess(context, params->target_extension_id)) {
-    params->receiver = std::make_unique<ExtensionMessagePort>(
-
-        weak_factory_.GetWeakPtr(), params->receiver_port_id,
-        params->target_extension_id, extension_process);
-  } else {
-    params->receiver.reset();
-  }
-
   ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   const Extension* target_extension =
       registry->enabled_extensions().GetByID(params->target_extension_id);
@@ -898,9 +854,13 @@ void MessageService::OnOpenChannelAllowed(
     return;
   }
 
-  content::RenderFrameHost* source_rfh =
-      source.is_for_render_frame() ? source.GetRenderFrameHost() : nullptr;
-  DisableBackForwardCacheForMessaging(source_rfh);
+  BrowserContext* context_to_use_for_extension =
+      IncognitoInfo::IsSplitMode(target_extension)
+          ? context
+          : ExtensionsBrowserClient::Get()->GetOriginalContext(context);
+  params->receiver = ExtensionMessagePort::CreateForExtension(
+      weak_factory_.GetWeakPtr(), params->receiver_port_id,
+      params->target_extension_id, context_to_use_for_extension);
 
   // The target might be a lazy background page or a Service Worker. In that
   // case, we have to check if it is loaded and ready, and if not, queue up the
@@ -921,9 +881,9 @@ void MessageService::PendingLazyContextOpenChannel(
   if (context_info == nullptr)
     return;  // TODO(mpcomplete): notify source of disconnect?
 
-  params->receiver = std::make_unique<ExtensionMessagePort>(
+  params->receiver = ExtensionMessagePort::CreateForExtension(
       weak_factory_.GetWeakPtr(), params->receiver_port_id,
-      params->target_extension_id, context_info->render_process_host);
+      params->target_extension_id, context_info->browser_context);
   const Extension* const extension =
       extensions::ExtensionRegistry::Get(context_info->browser_context)
           ->enabled_extensions()

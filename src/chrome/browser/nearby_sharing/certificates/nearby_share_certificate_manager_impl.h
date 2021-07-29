@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -124,7 +123,7 @@ class NearbyShareCertificateManagerImpl
   // NearbyShareLocalDeviceDataManager::Observer:
   void OnLocalDeviceDataChanged(bool did_device_name_change,
                                 bool did_full_name_change,
-                                bool did_icon_url_change) override;
+                                bool did_icon_change) override;
 
   // Used by the private certificate expiration scheduler to determine the next
   // private certificate expiration time. Returns base::Time::Min() if

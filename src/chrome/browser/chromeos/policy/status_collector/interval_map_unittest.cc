@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/policy/status_collector/interval_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace policy {
 namespace {
 
 // Our tests only modify the interval map entries in [0..kTestSize).
@@ -74,7 +75,7 @@ class IntervalMapTest : public testing::Test {
     int32_t prev_ = 0;
     int32_t end_of_last_interval = 0;
     int32_t num_intervals = 0;
-    for (const auto& r : testee_) {
+    for (const auto r : testee_) {
       num_intervals++;
       EXPECT_LT(r.first.begin, r.first.end);
       if (r.first.begin == std::numeric_limits<int32_t>::min()) {
@@ -95,7 +96,7 @@ class IntervalMapTest : public testing::Test {
         LOG(ERROR) << i << ": Truth =" << truth_[i]
                    << " Testee = " << testee_[i];
       }
-      for (const auto& r : testee_) {
+      for (const auto r : testee_) {
         LOG(ERROR) << "Interval:  " << r.first.begin << " - " << r.first.end
                    << " = " << r.second;
       }
@@ -110,8 +111,9 @@ class IntervalMapTest : public testing::Test {
 
  protected:
   SimpleIntervalMap truth_;
-  policy::IntervalMap<int32_t, int32_t> testee_;
+  IntervalMap<int32_t, int32_t> testee_;
 };
+
 }  // namespace
 
 TEST_F(IntervalMapTest, SimpleTest) {
@@ -271,3 +273,5 @@ TEST_F(IntervalMapTest, RandomSetTest) {
     }
   }
 }
+
+}  // namespace policy

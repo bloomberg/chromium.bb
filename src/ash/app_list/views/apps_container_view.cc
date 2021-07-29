@@ -9,20 +9,22 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/views/app_list_a11y_announcer.h"
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
-#include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/folder_background_view.h"
 #include "ash/app_list/views/page_switcher.h"
+#include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/suggestion_chip_container_view.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/search_box/search_box_constants.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
@@ -56,6 +58,9 @@ constexpr int kNonAppsStateVerticalOffset = 24;
 // The opacity the apps container UI should have when shown on non apps page UI.
 constexpr float kNonAppsStateOpacity = 0.1;
 
+// The margins within the apps container for app list folder view.
+constexpr int kFolderMargin = 8;
+
 }  // namespace
 
 AppsContainerView::AppsContainerView(ContentsView* contents_view,
@@ -66,8 +71,14 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
   suggestion_chip_container_view_ = AddChildView(
       std::make_unique<SuggestionChipContainerView>(contents_view));
 
-  apps_grid_view_ =
-      AddChildView(std::make_unique<AppsGridView>(contents_view, nullptr));
+  AppListViewDelegate* view_delegate =
+      contents_view_->GetAppListMainView()->view_delegate();
+  AppListA11yAnnouncer* a11y_announcer =
+      contents_view->app_list_view()->a11y_announcer();
+  apps_grid_view_ = AddChildView(
+      std::make_unique<PagedAppsGridView>(contents_view, a11y_announcer,
+                                          /*folder_delegate=*/nullptr));
+  apps_grid_view_->Init();
 
   // Page switcher should be initialized after AppsGridView.
   auto page_switcher = std::make_unique<PageSwitcher>(
@@ -75,14 +86,14 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
       contents_view->app_list_view()->is_tablet_mode());
   page_switcher_ = AddChildView(std::move(page_switcher));
 
-  auto app_list_folder_view =
-      std::make_unique<AppListFolderView>(this, model, contents_view);
-  // The folder view is initially hidden.
-  app_list_folder_view->SetVisible(false);
-  auto folder_background_view =
-      std::make_unique<FolderBackgroundView>(app_list_folder_view.get());
-  folder_background_view_ = AddChildView(std::move(folder_background_view));
+  auto app_list_folder_view = std::make_unique<AppListFolderView>(
+      this, model, contents_view_, a11y_announcer, view_delegate);
+  folder_background_view_ = AddChildView(
+      std::make_unique<FolderBackgroundView>(app_list_folder_view.get()));
+
   app_list_folder_view_ = AddChildView(std::move(app_list_folder_view));
+  // The folder view is initially hidden.
+  app_list_folder_view_->SetVisible(false);
 
   apps_grid_view_->SetModel(model);
   apps_grid_view_->SetItemList(model->top_level_item_list());
@@ -257,6 +268,13 @@ void AppsContainerView::Layout() {
                             0);
   suggestion_chip_container_view_->SetBoundsRect(chip_container_rect);
 
+  // Set bounding box for the folder view - the folder may overlap with
+  // suggestion chips, but not the search box.
+  gfx::Rect folder_bounding_box = rect;
+  folder_bounding_box.Inset(kFolderMargin, chip_container_rect.y(),
+                            kFolderMargin, kFolderMargin);
+  app_list_folder_view_->SetBoundingBox(folder_bounding_box);
+
   // Leave the same available bounds for the apps grid view in both
   // fullscreen and peeking state to avoid resizing the view during
   // animation and dragging, which is an expensive operation.
@@ -264,7 +282,6 @@ void AppsContainerView::Layout() {
   rect.set_height(rect.height() -
                   GetExpectedSuggestionChipY(kAppListFullscreenProgressValue) -
                   chip_container_rect.height());
-
   const GridLayout grid_layout = CalculateGridLayout();
   apps_grid_view_->SetLayout(grid_layout.columns, grid_layout.rows);
 
@@ -301,6 +318,7 @@ void AppsContainerView::Layout() {
     case SHOW_APPS:
       break;
     case SHOW_ACTIVE_FOLDER: {
+      app_list_folder_view_->UpdatePreferredBounds();
       folder_background_view_->SetBoundsRect(rect);
       app_list_folder_view_->SetBoundsRect(
           app_list_folder_view_->preferred_bounds());
@@ -581,10 +599,11 @@ void AppsContainerView::SetShowState(ShowState show_state,
       folder_background_view_->SetVisible(false);
       apps_grid_view_->ResetForShowApps();
       app_list_folder_view_->ResetItemsGridForClose();
-      if (show_apps_with_animation)
+      if (show_apps_with_animation) {
         app_list_folder_view_->ScheduleShowHideAnimation(false, false);
-      else
+      } else {
         app_list_folder_view_->HideViewImmediately();
+      }
       break;
     case SHOW_ACTIVE_FOLDER:
       page_switcher_->SetCanProcessEventsWithinSubtree(false);

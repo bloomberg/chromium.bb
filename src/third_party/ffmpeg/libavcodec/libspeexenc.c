@@ -318,7 +318,6 @@ static av_cold int encode_close(AVCodecContext *avctx)
     speex_encoder_destroy(s->enc_state);
 
     ff_af_queue_close(&s->afq);
-    av_freep(&avctx->extradata);
 
     return 0;
 }
@@ -347,7 +346,7 @@ static const AVCodecDefault defaults[] = {
     { NULL },
 };
 
-AVCodec ff_libspeex_encoder = {
+const AVCodec ff_libspeex_encoder = {
     .name           = "libspeex",
     .long_name      = NULL_IF_CONFIG_SMALL("libspeex Speex"),
     .type           = AVMEDIA_TYPE_AUDIO,

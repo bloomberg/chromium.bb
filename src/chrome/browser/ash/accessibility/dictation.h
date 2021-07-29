@@ -8,7 +8,9 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/speech/speech_recognizer_delegate.h"
 #include "content/public/browser/speech_recognition_session_preamble.h"
@@ -28,6 +30,17 @@ namespace ash {
 class Dictation : public SpeechRecognizerDelegate,
                   public ui::InputMethodObserver {
  public:
+  // Gets the default locale given a user |profile|. If this is a |new_user|,
+  // uses the application language. Otherwise uses previous method of
+  // determining Dictation language with default IME language.
+  // This is guaranteed to return a supported BCP-47 locale.
+  static std::string DetermineDefaultSupportedLocale(Profile* profile,
+                                                     bool new_user);
+
+  // Gets all possible BCP-47 style locale codes supported by Dictation,
+  // and whether they are available offline.
+  static const base::flat_map<std::string, bool> GetAllSupportedLocales();
+
   explicit Dictation(Profile* profile);
   ~Dictation() override;
 
@@ -38,11 +51,10 @@ class Dictation : public SpeechRecognizerDelegate,
   friend class DictationTest;
 
   // SpeechRecognizerDelegate:
-  void OnSpeechResult(
-      const std::u16string& transcription,
-      bool is_final,
-      const absl::optional<SpeechRecognizerDelegate::TranscriptTiming>&
-          word_offsets) override;
+  void OnSpeechResult(const std::u16string& transcription,
+                      bool is_final,
+                      const absl::optional<media::SpeechRecognitionResult>&
+                          full_result) override;
   void OnSpeechSoundLevelChanged(int16_t level) override;
   void OnSpeechRecognitionStateChanged(
       SpeechRecognizerStatus new_state) override;
@@ -78,6 +90,10 @@ class Dictation : public SpeechRecognizerDelegate,
   base::OneShotTimer speech_timeout_;
   base::TimeDelta no_speech_timeout_;
   base::TimeDelta no_new_speech_timeout_;
+
+  // Used for metrics.
+  bool used_on_device_speech_ = false;
+  base::ElapsedTimer listening_duration_timer_;
 
   base::WeakPtrFactory<Dictation> weak_ptr_factory_{this};
 

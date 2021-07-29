@@ -7,12 +7,12 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/core_account_id.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace safe_browsing {
@@ -21,7 +21,6 @@ SafeBrowsingPrimaryAccountTokenFetcher::SafeBrowsingPrimaryAccountTokenFetcher(
     signin::IdentityManager* identity_manager)
     : identity_manager_(identity_manager),
       weak_ptr_factory_(this) {
-  DCHECK(CurrentlyOnThread(ThreadID::UI));
 }
 
 SafeBrowsingPrimaryAccountTokenFetcher::
@@ -29,7 +28,7 @@ SafeBrowsingPrimaryAccountTokenFetcher::
 
 void SafeBrowsingPrimaryAccountTokenFetcher::Start(
     Callback callback) {
-  DCHECK(CurrentlyOnThread(ThreadID::UI));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // NOTE: base::Unretained() is safe below as this object owns
   // |token_fetch_tracker_|, and the callback will not be invoked after
@@ -42,7 +41,8 @@ void SafeBrowsingPrimaryAccountTokenFetcher::Start(
       identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
   token_fetchers_[request_id] =
       identity_manager_->CreateAccessTokenFetcherForAccount(
-          account_id, "safe_browsing_service", {kAPIScope},
+          account_id, "safe_browsing_service",
+          {GaiaConstants::kChromeSafeBrowsingOAuth2Scope},
           base::BindOnce(
               &SafeBrowsingPrimaryAccountTokenFetcher::OnTokenFetched,
               weak_ptr_factory_.GetWeakPtr(), request_id),
@@ -53,8 +53,9 @@ void SafeBrowsingPrimaryAccountTokenFetcher::OnInvalidAccessToken(
     const std::string& invalid_access_token) {
   CoreAccountId account_id =
       identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
-  identity_manager_->RemoveAccessTokenFromCache(account_id, {kAPIScope},
-                                                invalid_access_token);
+  identity_manager_->RemoveAccessTokenFromCache(
+      account_id, {GaiaConstants::kChromeSafeBrowsingOAuth2Scope},
+      invalid_access_token);
 }
 
 void SafeBrowsingPrimaryAccountTokenFetcher::OnTokenFetched(

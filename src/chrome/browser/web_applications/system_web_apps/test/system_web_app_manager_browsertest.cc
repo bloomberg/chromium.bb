@@ -18,6 +18,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -26,11 +27,11 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
@@ -64,8 +65,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
-#include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#include "chrome/browser/ash/file_manager/file_manager_test_util.h"
+#include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
@@ -104,8 +105,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest, Install) {
   EXPECT_TRUE(GetManager().IsSystemWebApp(app_id));
 
   Profile* profile = app_browser->profile();
-  AppRegistrar& registrar =
-      WebAppProviderBase::GetProviderBase(profile)->registrar();
+  WebAppRegistrar& registrar = WebAppProvider::Get(profile)->registrar();
 
   EXPECT_EQ("Test System App", registrar.GetAppShortName(app_id));
   EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0), registrar.GetAppThemeColor(app_id));
@@ -267,7 +267,7 @@ class SystemWebAppManagerFileHandlingBrowserTestBase
         std::move(params));
   }
 
-  void GrantFileHandlingPermisson() {
+  void GrantFileHandlingPermission() {
     auto* map =
         HostContentSettingsMapFactory::GetForProfile(browser()->profile());
     map->SetDefaultContentSetting(ContentSettingsType::FILE_HANDLING,
@@ -332,7 +332,7 @@ class SystemWebAppManagerLaunchFilesBrowserTest
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchFilesBrowserTest,
                        LaunchFilesForSystemWebApp) {
   WaitForTestSystemAppInstall();
-  GrantFileHandlingPermisson();
+  GrantFileHandlingPermission();
 
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_directory;
@@ -366,6 +366,33 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchFilesBrowserTest,
   EXPECT_EQ(temp_file_path2.BaseName().AsUTF8Unsafe(),
             GetJsStatementValueAsString(web_contents,
                                         "window.launchParams2.files[0].name"));
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchFilesBrowserTest,
+                       LaunchMetricsWorks) {
+  WaitForTestSystemAppInstall();
+  GrantFileHandlingPermission();
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir temp_directory;
+  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
+  base::FilePath temp_file_path;
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.GetPath(),
+                                             &temp_file_path));
+
+  base::HistogramTester histograms;
+
+  content::TestNavigationObserver navigation_observer(
+      maybe_installation_->GetAppUrl());
+  navigation_observer.StartWatchingNewWebContents();
+
+  SystemAppLaunchParams params;
+  params.launch_paths = {temp_file_path};
+  params.launch_source = apps::mojom::LaunchSource::kFromOtherApp;
+  LaunchSystemWebAppAsync(browser()->profile(), GetMockAppType(), params);
+
+  navigation_observer.Wait();
+  histograms.ExpectTotalCount("Apps.DefaultAppLaunch.FromOtherApp", 1);
 }
 
 // The helper methods in this class uses ExecuteScriptXXX instead of ExecJs and
@@ -516,7 +543,7 @@ class SystemWebAppManagerLaunchDirectoryBrowserTest
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
                        LaunchDirectoryForSystemWebApp) {
   WaitForTestSystemAppInstall();
-  GrantFileHandlingPermisson();
+  GrantFileHandlingPermission();
 
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_directory;
@@ -573,7 +600,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
                        ReadWritePermissions_OrdinaryDirectory) {
   WaitForTestSystemAppInstall();
-  GrantFileHandlingPermisson();
+  GrantFileHandlingPermission();
 
   // Test for ordinary directory.
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -585,7 +612,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchDirectoryBrowserTest,
                        ReadWritePermissions_SensitiveDirectory) {
   WaitForTestSystemAppInstall();
-  GrantFileHandlingPermisson();
+  GrantFileHandlingPermission();
 
   // Test for sensitive directory (which are otherwise blocked by
   // FileSystemAccess API). It is safe to use |chrome::DIR_DEFAULT_DOWNLOADS|,
@@ -683,7 +710,7 @@ IN_PROC_BROWSER_TEST_P(
   Profile* profile = browser()->profile();
 
   WaitForTestSystemAppInstall();
-  GrantFileHandlingPermisson();
+  GrantFileHandlingPermission();
   InstallTestFileSystemProvider(profile);
 
   // Launch from FileSystemProvider path.
@@ -733,7 +760,7 @@ IN_PROC_BROWSER_TEST_P(
   Profile* profile = browser()->profile();
 
   WaitForTestSystemAppInstall();
-  GrantFileHandlingPermisson();
+  GrantFileHandlingPermission();
   InstallTestFileSystemProvider(profile);
 
   content::WebContents* web_contents =
@@ -758,7 +785,7 @@ IN_PROC_BROWSER_TEST_P(
   Profile* profile = browser()->profile();
 
   WaitForTestSystemAppInstall();
-  GrantFileHandlingPermisson();
+  GrantFileHandlingPermission();
   InstallTestFileSystemProvider(profile);
 
   content::WebContents* web_contents =
@@ -1050,7 +1077,7 @@ class SystemWebAppManagerInstallAllAppsBrowserTest
   // resets the OnAppsSynchronized signal, and starts a new synchronize request.
   void WaitForSystemAppsSynchronized() {
     base::RunLoop run_loop;
-    WebAppProvider::Get(browser()->profile())
+    WebAppProvider::GetForSystemWebApps(browser()->profile())
         ->system_web_app_manager()
         .on_apps_synchronized()
         .Post(FROM_HERE, run_loop.QuitClosure());
@@ -1096,15 +1123,16 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerInstallAllAppsBrowserTest, Upgrade) {
   EXPECT_EQ(GetManager().GetRegisteredSystemAppsForTesting().size(),
             app_ids.size());
 
-  for (const auto& app_id : app_ids) {
-    const auto type = GetManager().GetSystemAppTypeForAppId(app_id).value();
+  // Some system web apps keep their resources (e.g. html pages) in real
+  // Chrome OS images. Here we test a few apps whose resources are bundled in
+  // chrome and always available. These apps are able to cover the code path we
+  // execute when launching the app.
+  const SystemAppType apps_to_launch[] = {
+      SystemAppType::SETTINGS,
+      SystemAppType::MEDIA,  // Uses File Handling with launch directory
+  };
 
-    // We don't launch Terminal in browsertest, because it requires resources
-    // that are only available in Chrome OS images.
-    if (type == SystemAppType::TERMINAL)
-      continue;
-
-    // Launch other System Apps normally, and check the app's launch_url loads.
+  for (const auto& type : apps_to_launch) {
     EXPECT_TRUE(LaunchApp(type));
   }
 }
@@ -1134,8 +1162,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerChromeUntrustedTest, Install) {
   EXPECT_TRUE(GetManager().IsSystemWebApp(app_id));
 
   Profile* profile = app_browser->profile();
-  AppRegistrar& registrar =
-      WebAppProviderBase::GetProviderBase(profile)->registrar();
+  WebAppRegistrar& registrar = WebAppProvider::Get(profile)->registrar();
 
   EXPECT_EQ("Test System App", registrar.GetAppShortName(app_id));
   EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0), registrar.GetAppThemeColor(app_id));
@@ -1160,18 +1187,15 @@ class SystemWebAppManagerOriginTrialsBrowserTest
   ~SystemWebAppManagerOriginTrialsBrowserTest() override = default;
 
  protected:
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. A caller in WebAppTabHelper was converted automatically to the
+  // primary main frame to preserve its semantics. This mock was also updated
+  // due to this rewrite. Follow up to confirm correctness.
   class MockNavigationHandle : public content::MockNavigationHandle {
    public:
     explicit MockNavigationHandle(const GURL& url)
         : content::MockNavigationHandle(url, nullptr) {}
-    bool IsInMainFrame() override { return is_in_main_frame_; }
-
-    void set_is_in_main_frame(bool is_in_main_frame) {
-      is_in_main_frame_ = is_in_main_frame;
-    }
-
-   private:
-    bool is_in_main_frame_;
+    bool IsInMainFrame() override { return IsInPrimaryMainFrame(); }
   };
 
   std::unique_ptr<content::WebContents> CreateTestWebContents() {
@@ -1200,7 +1224,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
   // Simulate when first navigating into app's launch url.
   {
     MockNavigationHandle mock_nav_handle(main_url_);
-    mock_nav_handle.set_is_in_main_frame(true);
+    mock_nav_handle.set_is_in_primary_main_frame(true);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(main_url_trials_));
     tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
@@ -1210,7 +1234,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
   // Simulate loading app's embedded child-frame that has origin trials.
   {
     MockNavigationHandle mock_nav_handle(trial_url_);
-    mock_nav_handle.set_is_in_main_frame(false);
+    mock_nav_handle.set_is_in_primary_main_frame(false);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(trial_url_trials_));
     tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
@@ -1219,7 +1243,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
   // Simulate loading app's embedded child-frame that has no origin trial.
   {
     MockNavigationHandle mock_nav_handle(notrial_url_);
-    mock_nav_handle.set_is_in_main_frame(false);
+    mock_nav_handle.set_is_in_primary_main_frame(false);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials).Times(0);
     tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
@@ -1236,7 +1260,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
   // Simulate when first navigating into app's launch url.
   {
     MockNavigationHandle mock_nav_handle(main_url_);
-    mock_nav_handle.set_is_in_main_frame(true);
+    mock_nav_handle.set_is_in_primary_main_frame(true);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(main_url_trials_));
     tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
@@ -1246,7 +1270,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
   // Simulate same-document navigation.
   {
     MockNavigationHandle mock_nav_handle(main_url_);
-    mock_nav_handle.set_is_in_main_frame(true);
+    mock_nav_handle.set_is_in_primary_main_frame(true);
     mock_nav_handle.set_is_same_document(true);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials).Times(0);
     tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
@@ -1269,7 +1293,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
   // Simulate when first navigating into app's launch url.
   {
     MockNavigationHandle mock_nav_handle(main_url_);
-    mock_nav_handle.set_is_in_main_frame(true);
+    mock_nav_handle.set_is_in_primary_main_frame(true);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(main_url_trials_));
     tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
@@ -1279,7 +1303,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
   // Simulate navigating to a different site without origin trials.
   {
     MockNavigationHandle mock_nav_handle(notrial_url_);
-    mock_nav_handle.set_is_in_main_frame(true);
+    mock_nav_handle.set_is_in_primary_main_frame(true);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials).Times(0);
     tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
@@ -1289,7 +1313,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
   // Simulatenavigating back to a SWA with origin trials.
   {
     MockNavigationHandle mock_nav_handle(main_url_);
-    mock_nav_handle.set_is_in_main_frame(true);
+    mock_nav_handle.set_is_in_primary_main_frame(true);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(main_url_trials_));
     tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
@@ -1301,7 +1325,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
   // main frame, it should not get origin trials.
   {
     MockNavigationHandle mock_nav_handle(trial_url_);
-    mock_nav_handle.set_is_in_main_frame(true);
+    mock_nav_handle.set_is_in_primary_main_frame(true);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials).Times(0);
     tab_helper.ReadyToCommitNavigation(&mock_nav_handle);
@@ -1368,7 +1392,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
     ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
                           policy::policy_prefs::kSystemFeaturesDisableList);
     base::ListValue* list = update.Get();
-    list->Clear();
+    list->ClearList();
   }
   GetAppServiceProxy(browser()->profile())->FlushMojoCallsForTesting();
   EXPECT_EQ(apps::mojom::Readiness::kReady, GetAppReadiness(*settings_id));
@@ -1404,7 +1428,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
     ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
                           policy::policy_prefs::kSystemFeaturesDisableList);
     base::ListValue* list = update.Get();
-    list->Clear();
+    list->ClearList();
   }
   proxy->FlushMojoCallsForTesting();
   EXPECT_EQ(apps::mojom::Readiness::kReady, GetAppReadiness(*settings_id));
@@ -1427,7 +1451,7 @@ class SystemWebAppManagerBackgroundTaskTest
 
   void WaitForSystemAppsBackgroundTasksStart() {
     base::RunLoop run_loop;
-    WebAppProvider::Get(browser()->profile())
+    WebAppProvider::GetForSystemWebApps(browser()->profile())
         ->system_web_app_manager()
         .on_tasks_started()
         .Post(FROM_HERE, run_loop.QuitClosure());
@@ -1447,6 +1471,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBackgroundTaskTest, TimerFires) {
   // a hook in the background pages to detect the navigation as an event. That's
   // a little too much work for one test though, and since this is mostly tested
   // in unittests, this is probably enough.
+  base::HistogramTester histograms;
   content::TestNavigationObserver navigation_observer(
       GURL("chrome://test-system-app/page2.html"));
   navigation_observer.StartWatchingNewWebContents();
@@ -1473,6 +1498,147 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBackgroundTaskTest, TimerFires) {
   EXPECT_EQ(SystemAppBackgroundTask::WAIT_PERIOD,
             tasks[0]->get_state_for_testing());
   EXPECT_EQ(base::TimeDelta::FromDays(1), timer->GetCurrentDelay());
+
+  histograms.ExpectTotalCount("Webapp.SystemApps.BackgroundTaskStartDelay", 1);
+  histograms.ExpectUniqueSample("Webapp.SystemApps.BackgroundTaskStartDelay", 0,
+                                1);
+}
+
+class SystemWebAppManagerContextMenuBrowserTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppManagerContextMenuBrowserTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpAppsForContestMenuTest();
+  }
+  ~SystemWebAppManagerContextMenuBrowserTest() override = default;
+
+ protected:
+  std::unique_ptr<TestRenderViewContextMenu> CreateContextMenu(
+      content::WebContents* web_contents,
+      const GURL& link_href) {
+    content::ContextMenuParams params;
+    params.unfiltered_link_url = link_href;
+    params.link_url = link_href;
+    params.src_url = link_href;
+    params.link_text = std::u16string();
+    params.media_type = blink::mojom::ContextMenuDataMediaType::kNone;
+    params.page_url = web_contents->GetVisibleURL();
+    params.source_type = ui::MENU_SOURCE_NONE;
+    auto menu = std::make_unique<TestRenderViewContextMenu>(
+        web_contents->GetMainFrame(), params);
+    menu->Init();
+    return menu;
+  }
+
+  // See TestSystemWebAppInstallation::SetUpAppsForContestMenuTest.
+  const SystemAppType kAppTypeSingleWindow = SystemAppType::SETTINGS;
+  const SystemAppType kAppTypeMultiWindow = SystemAppType::FILE_MANAGER;
+  const SystemAppType kAppTypeSingleWindowTabStrip = SystemAppType::MEDIA;
+  const SystemAppType kAppTypeMultiWindowTabStrip = SystemAppType::HELP;
+};
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerContextMenuBrowserTest,
+                       LinkToAppItself) {
+  WaitForTestSystemAppInstall();
+
+  {
+    // Single window, no tab strip.
+    auto* web_contents = LaunchApp(kAppTypeSingleWindow);
+    auto menu =
+        CreateContextMenu(web_contents, web_contents->GetLastCommittedURL());
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+
+  {
+    // Single window, has tab strip.
+    auto* web_contents = LaunchApp(kAppTypeSingleWindowTabStrip);
+    auto menu =
+        CreateContextMenu(web_contents, web_contents->GetLastCommittedURL());
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+
+  {
+    // Multi window, no tab strip.
+    auto* web_contents = LaunchApp(kAppTypeMultiWindow);
+    auto menu =
+        CreateContextMenu(web_contents, web_contents->GetLastCommittedURL());
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+
+  {
+    // Multi window, has tab strip.
+    auto* web_contents = LaunchApp(kAppTypeMultiWindowTabStrip);
+    auto menu =
+        CreateContextMenu(web_contents, web_contents->GetLastCommittedURL());
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerContextMenuBrowserTest,
+                       LinkToOtherSystemWebApp) {
+  WaitForTestSystemAppInstall();
+
+  {
+    // Typical SWA, single window, no tab strip.
+    auto* web_contents = LaunchApp(kAppTypeSingleWindow);
+    auto menu = CreateContextMenu(web_contents,
+                                  GetStartUrl(kAppTypeSingleWindowTabStrip));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+
+  {
+    // Deliberately test on a multi-window, tab-strip app to cover edge cases.
+    auto* web_contents = LaunchApp(kAppTypeMultiWindowTabStrip);
+    auto menu =
+        CreateContextMenu(web_contents, GetStartUrl(kAppTypeMultiWindow));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerContextMenuBrowserTest, WebLink) {
+  WaitForTestSystemAppInstall();
+
+  GURL kWebUrl = GURL("https://example.com/");
+
+  {
+    // Typical SWA, single window, no tab strip.
+    auto* web_contents = LaunchApp(kAppTypeSingleWindow);
+    auto menu = CreateContextMenu(web_contents, kWebUrl);
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
+
+  {
+    // Deliberately test on a multi-window, tab-strip app to cover edge cases.
+    auto* web_contents = LaunchApp(kAppTypeMultiWindowTabStrip);
+    auto menu = CreateContextMenu(web_contents, kWebUrl);
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
+    EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+    EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  }
 }
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
@@ -1528,5 +1694,8 @@ INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppManagerDefaultBoundsTest);
 #endif
+
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
+    SystemWebAppManagerContextMenuBrowserTest);
 
 }  // namespace web_app

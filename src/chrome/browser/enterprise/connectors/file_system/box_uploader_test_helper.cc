@@ -5,7 +5,9 @@
 #include "chrome/browser/enterprise/connectors/file_system/box_uploader_test_helper.h"
 
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
+#include "chrome/browser/enterprise/connectors/file_system/box_api_call_test_helper.h"
 #include "chrome/browser/enterprise/connectors/file_system/box_uploader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace {
 std::string GetTestName() {
@@ -21,22 +23,6 @@ std::string GetTestName() {
 }  // namespace
 
 namespace enterprise_connectors {
-
-////////////////////////////////////////////////////////////////////////////////
-// DownloadItemForTest
-////////////////////////////////////////////////////////////////////////////////
-
-DownloadItemForTest::DownloadItemForTest(
-    base::FilePath::StringPieceType file_name) {
-  CHECK(temp_dir_.CreateUniqueTempDir());
-  file_path_ = temp_dir_.GetPath().Append(file_name);
-  CHECK_EQ(file_path_.FinalExtension(), FILE_PATH_LITERAL(".crdownload"));
-  SetTargetFilePath(file_path_.RemoveFinalExtension());
-}
-
-const base::FilePath& DownloadItemForTest::GetFullPath() const {
-  return file_path_;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // BoxUploaderTestBase
@@ -76,7 +62,10 @@ void BoxUploaderTestBase::CreateTemporaryFileWithContent(std::string content) {
 
 void BoxUploaderTestBase::InitUploader(BoxUploader* uploader) {
   ASSERT_TRUE(uploader);
+  ASSERT_TRUE(prefs_);
   uploader->Init(base::BindRepeating(&BoxUploaderTestBase::AuthenticationRetry,
+                                     base::Unretained(this)),
+                 base::BindRepeating(&BoxUploaderTestBase::OnProgressUpdate,
                                      base::Unretained(this)),
                  base::BindOnce(&BoxUploaderTestBase::OnUploaderFinished,
                                 base::Unretained(this)),
@@ -84,6 +73,7 @@ void BoxUploaderTestBase::InitUploader(BoxUploader* uploader) {
 }
 
 void BoxUploaderTestBase::InitFolderIdInPrefs(std::string folder_id) {
+  ASSERT_TRUE(prefs_);
   prefs_->SetString(kFileSystemUploadFolderIdPref, folder_id);
 }
 
@@ -95,7 +85,28 @@ void BoxUploaderTestBase::SetInterceptorForURLLoader(
 void BoxUploaderTestBase::AddFetchResult(const std::string& url,
                                          net::HttpStatusCode code,
                                          std::string body) {
+  ASSERT_EQ(sequential_responses_.count(GURL(url)), 0U)
+      << "Already has sequential response(s) for " << url;
+  if (code >= 400 && body.empty()) {
+    body = CreateFailureResponse(code, "some_box_error_code");
+  }
   test_url_loader_factory_.AddResponse(url, std::move(body), code);
+  repeating_responses_.emplace(GURL(url));
+}
+
+void BoxUploaderTestBase::AddSequentialFetchResult(
+    const std::string& url,
+    network::mojom::URLResponseHeadPtr head,
+    std::string body) {
+  ASSERT_EQ(repeating_responses_.count(GURL(url)), 0U)
+      << "Already has repeating response(s) for " << url;
+  const auto code = head->headers->response_code();
+  if (code >= 400 && body.empty()) {
+    body = CreateFailureResponse(code, "some_box_error_code");
+  }
+  sequential_responses_.emplace(
+      url,
+      HttpResponse(idx_sequential_add++, std::move(head), std::move(body)));
 }
 
 void BoxUploaderTestBase::AddSequentialFetchResult(const std::string& url,
@@ -105,16 +116,27 @@ void BoxUploaderTestBase::AddSequentialFetchResult(const std::string& url,
   AddSequentialFetchResult(url, std::move(head), std::move(body));
 }
 
-void BoxUploaderTestBase::AddSequentialFetchResult(
-    const std::string& url,
-    network::mojom::URLResponseHeadPtr head,
-    std::string body) {
-  responses_.emplace(GURL(url), HttpResponse(std::move(head), std::move(body)));
+void BoxUploaderTestBase::ClearFetchResults(const std::string& url) {
+  GURL gurl(url);
+  if (repeating_responses_.count(gurl)) {
+    repeating_responses_.erase(gurl);
+  } else if (sequential_responses_.count(gurl)) {
+    auto iter = sequential_responses_.find(gurl);
+    sequential_responses_.erase(iter);
+  }
+}
+
+size_t BoxUploaderTestBase::GetPendingSequentialResponsesCount(
+    const std::string& url) const {
+  return sequential_responses_.count(GURL(url));
+}
+
+void BoxUploaderTestBase::InitQuitClosure() {
+  run_loop_ = std::make_unique<base::RunLoop>();
+  quit_closure_ = run_loop_->QuitClosure();
 }
 
 void BoxUploaderTestBase::RunWithQuitClosure() {
-  run_loop_ = std::make_unique<base::RunLoop>();
-  quit_closure_ = run_loop_->QuitClosure();
   run_loop_->Run();
 }
 
@@ -128,23 +150,44 @@ void BoxUploaderTestBase::AuthenticationRetry() {
   Quit();
 }
 
-void BoxUploaderTestBase::OnUploaderFinished(bool success) {
+void BoxUploaderTestBase::OnProgressUpdate(
+    const download::DownloadItemRenameProgressUpdate& update) {
+  ++progress_update_cb_called_;
+  file_name_reported_back_ = update.target_file_name;
+}
+
+void BoxUploaderTestBase::OnUploaderFinished(
+    download::DownloadInterruptReason reason,
+    const base::FilePath& final_name) {
   download_thread_cb_called_ = true;
-  upload_success_ = success;
+  upload_success_ = (reason == download::DOWNLOAD_INTERRUPT_REASON_NONE);
+  reason_ = reason;
+  DLOG(INFO) << reason;
+  if (upload_success_)
+    file_name_reported_back_ = final_name;
   Quit();
 }
 
 void BoxUploaderTestBase::SetNextResponseForURLLoader(
     const network::ResourceRequest& request) {
-  if (!responses_.count(request.url)) {
+  if (!sequential_responses_.count(request.url)) {
+    ASSERT_TRUE(repeating_responses_.count(request.url)) << request.url;
     return;
   }
-  auto iter = responses_.find(request.url);
+  auto iter = sequential_responses_.find(request.url);
   auto& response = iter->second;
+
+  ASSERT_EQ(response.idx_, idx_sequential_fetch);
   test_url_loader_factory_.AddResponse(request.url, std::move(response.head_),
                                        response.body_,
                                        network::URLLoaderCompletionStatus());
-  responses_.erase(iter);
+  ++idx_sequential_fetch;
+  sequential_responses_.erase(iter);
+}
+
+void BoxUploaderTestBase::TearDown() {
+  ASSERT_EQ(sequential_responses_.size(), 0U);
+  testing::Test::TearDown();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -152,19 +195,16 @@ void BoxUploaderTestBase::SetNextResponseForURLLoader(
 ////////////////////////////////////////////////////////////////////////////////
 
 BoxUploaderTestBase::HttpResponse::HttpResponse(
+    size_t idx,
     network::mojom::URLResponseHeadPtr head,
     std::string body)
-    : head_(std::move(head)), body_(std::move(body)) {}
+    : idx_(idx), head_(std::move(head)), body_(std::move(body)) {}
 
 BoxUploaderTestBase::HttpResponse::~HttpResponse() = default;
 
 BoxUploaderTestBase::HttpResponse::HttpResponse(HttpResponse&& response)
-    : head_(std::move(response.head_)), body_(std::move(response.body_)) {}
-
-////////////////////////////////////////////////////////////////////////////////
-// MockApiCallFlow
-////////////////////////////////////////////////////////////////////////////////
-MockApiCallFlow::MockApiCallFlow() = default;
-MockApiCallFlow::~MockApiCallFlow() = default;
+    : idx_(response.idx_),
+      head_(std::move(response.head_)),
+      body_(std::move(response.body_)) {}
 
 }  // namespace enterprise_connectors

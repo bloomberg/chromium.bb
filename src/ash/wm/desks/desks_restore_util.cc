@@ -4,7 +4,7 @@
 
 #include "ash/wm/desks/desks_restore_util.h"
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desk.h"
@@ -62,8 +62,33 @@ PrefService* GetPrimaryUserPrefService() {
 // DesksController.
 bool IsValidDeskIndex(int desk_index) {
   return desk_index >= 0 &&
-         desk_index < int{DesksController::Get()->desks().size()} &&
+         desk_index <
+             static_cast<int>(DesksController::Get()->desks().size()) &&
          desk_index < int{desks_util::kMaxNumberOfDesks};
+}
+
+base::Time GetTime(int year, int month, int day_of_month, int day_of_week) {
+  base::Time::Exploded time_exploded;
+  time_exploded.year = year;
+  time_exploded.month = month;
+  time_exploded.day_of_week = day_of_week;
+  time_exploded.day_of_month = day_of_month;
+  time_exploded.hour = 0;
+  time_exploded.minute = 0;
+  time_exploded.second = 0;
+  time_exploded.millisecond = 0;
+  base::Time time;
+  const bool result = base::Time::FromLocalExploded(time_exploded, &time);
+  DCHECK(result);
+  return time;
+}
+
+// Check if base::Time::Now() is during the time period 07/27/2021 to
+// 09/07/2021.
+bool IsNowInValidTimePeriod() {
+  const auto now = base::Time::Now();
+  return now <= GetTime(2021, 9, 7, /*Tuesday=*/2) &&
+         now >= GetTime(2021, 7, 27, /*Tuesday=*/2);
 }
 
 }  // namespace
@@ -75,6 +100,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kDesksWeeklyActiveDesksMetrics);
   registry->RegisterIntegerPref(prefs::kDesksActiveDesk,
                                 kDefaultActiveDeskIndex);
+  registry->RegisterBooleanPref(prefs::kUserHasUsedDesksRecently,
+                                /*default_value=*/false);
 }
 
 void RestorePrimaryUserDesks() {
@@ -205,7 +232,7 @@ void UpdatePrimaryUserDeskNamesPrefs() {
 
   ListPrefUpdate name_update(primary_user_prefs, prefs::kDesksNamesList);
   base::ListValue* name_pref_data = name_update.Get();
-  name_pref_data->Clear();
+  name_pref_data->ClearList();
 
   const auto& desks = DesksController::Get()->desks();
   for (const auto& desk : desks) {
@@ -218,6 +245,11 @@ void UpdatePrimaryUserDeskNamesPrefs() {
   }
 
   DCHECK_EQ(name_pref_data->GetSize(), desks.size());
+
+  if (IsNowInValidTimePeriod() &&
+      !primary_user_prefs->GetBoolean(prefs::kUserHasUsedDesksRecently)) {
+    primary_user_prefs->SetBoolean(prefs::kUserHasUsedDesksRecently, true);
+  }
 }
 
 void UpdatePrimaryUserDeskMetricsPrefs() {
@@ -233,7 +265,7 @@ void UpdatePrimaryUserDeskMetricsPrefs() {
   // Save per-desk metrics.
   ListPrefUpdate metrics_update(primary_user_prefs, prefs::kDesksMetricsList);
   base::ListValue* metrics_pref_data = metrics_update.Get();
-  metrics_pref_data->Clear();
+  metrics_pref_data->ClearList();
 
   auto* desks_controller = DesksController::Get();
   const auto& desks = desks_controller->desks();

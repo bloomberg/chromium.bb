@@ -83,7 +83,7 @@ class OcclusionQueryTests : public QueryTests {
         vsModule = utils::CreateShaderModule(device, R"(
             [[stage(vertex)]]
             fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
-                let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                var pos = array<vec2<f32>, 3>(
                     vec2<f32>( 1.0,  1.0),
                     vec2<f32>(-1.0, -1.0),
                     vec2<f32>( 1.0, -1.0));
@@ -95,11 +95,11 @@ class OcclusionQueryTests : public QueryTests {
                 return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
 
-        pipeline = device.CreateRenderPipeline2(&descriptor);
+        pipeline = device.CreateRenderPipeline(&descriptor);
     }
 
     struct ScissorRect {
@@ -129,7 +129,7 @@ class OcclusionQueryTests : public QueryTests {
                                                 OcclusionExpectation::Result expected) {
         constexpr uint32_t kQueryCount = 1;
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
 
@@ -143,7 +143,7 @@ class OcclusionQueryTests : public QueryTests {
         depthStencil->stencilBack.compare =
             stencilTestEnabled ? wgpu::CompareFunction::Never : wgpu::CompareFunction::Always;
 
-        wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&descriptor);
+        wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&descriptor);
 
         wgpu::Texture renderTarget = CreateRenderTexture(wgpu::TextureFormat::RGBA8Unorm);
         wgpu::TextureView renderTargetView = renderTarget.CreateView();
@@ -215,6 +215,9 @@ class OcclusionQueryTests : public QueryTests {
 
 // Test creating query set with the type of Occlusion
 TEST_P(OcclusionQueryTests, QuerySetCreation) {
+    // Zero-sized query set is allowed.
+    CreateOcclusionQuerySet(0);
+
     CreateOcclusionQuerySet(1);
 }
 
@@ -461,19 +464,30 @@ class PipelineStatisticsQueryTests : public QueryTests {
 
         return requiredExtensions;
     }
+
+    wgpu::QuerySet CreateQuerySetForPipelineStatistics(
+        uint32_t queryCount,
+        std::vector<wgpu::PipelineStatisticName> pipelineStatistics = {}) {
+        wgpu::QuerySetDescriptor descriptor;
+        descriptor.count = queryCount;
+        descriptor.type = wgpu::QueryType::PipelineStatistics;
+
+        if (pipelineStatistics.size() > 0) {
+            descriptor.pipelineStatistics = pipelineStatistics.data();
+            descriptor.pipelineStatisticsCount = pipelineStatistics.size();
+        }
+        return device.CreateQuerySet(&descriptor);
+    }
 };
 
 // Test creating query set with the type of PipelineStatistics
 TEST_P(PipelineStatisticsQueryTests, QuerySetCreation) {
-    wgpu::QuerySetDescriptor descriptor;
-    descriptor.count = 1;
-    descriptor.type = wgpu::QueryType::PipelineStatistics;
-    wgpu::PipelineStatisticName pipelineStatistics[2] = {
-        wgpu::PipelineStatisticName::ClipperInvocations,
-        wgpu::PipelineStatisticName::VertexShaderInvocations};
-    descriptor.pipelineStatistics = pipelineStatistics;
-    descriptor.pipelineStatisticsCount = 2;
-    device.CreateQuerySet(&descriptor);
+    // Zero-sized query set is allowed.
+    CreateQuerySetForPipelineStatistics(0, {wgpu::PipelineStatisticName::ClipperInvocations,
+                                            wgpu::PipelineStatisticName::VertexShaderInvocations});
+
+    CreateQuerySetForPipelineStatistics(1, {wgpu::PipelineStatisticName::ClipperInvocations,
+                                            wgpu::PipelineStatisticName::VertexShaderInvocations});
 }
 
 DAWN_INSTANTIATE_TEST(PipelineStatisticsQueryTests,
@@ -529,15 +543,14 @@ class TimestampQueryTests : public QueryTests {
 
 // Test creating query set with the type of Timestamp
 TEST_P(TimestampQueryTests, QuerySetCreation) {
+    // Zero-sized query set is allowed.
+    CreateQuerySetForTimestamp(0);
+
     CreateQuerySetForTimestamp(1);
 }
 
 // Test calling timestamp query from command encoder
 TEST_P(TimestampQueryTests, TimestampOnCommandEncoder) {
-    // TODO(hao.x.li@intel.com): Crash occurs if we only call WriteTimestamp in a command encoder
-    // without any copy commands on Metal on AMD GPU. See https://crbug.com/dawn/545.
-    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsAMD());
-
     constexpr uint32_t kQueryCount = 2;
 
     // Write timestamp with different query indexes
@@ -759,10 +772,6 @@ TEST_P(TimestampQueryTests, ResolveToBufferWithOffset) {
     // vkCmdFillBuffer and vkCmdCopyQueryPoolResults are not executed in order, skip it util
     // the issue is fixed.
     DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan() && IsIntel());
-
-    // TODO(hao.x.li@intel.com): Crash occurs if we only call WriteTimestamp in a command encoder
-    // without any copy commands on Metal on AMD GPU. See https://crbug.com/dawn/545.
-    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsAMD());
 
     constexpr uint32_t kQueryCount = 2;
     constexpr uint64_t kZero = 0;

@@ -10,6 +10,7 @@ import org.mockito.Mockito;
 
 import org.chromium.components.payments.BrowserPaymentRequest;
 import org.chromium.components.payments.JourneyLogger;
+import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PaymentAppService;
 import org.chromium.components.payments.PaymentRequestService;
 import org.chromium.components.payments.PaymentRequestService.Delegate;
@@ -33,7 +34,6 @@ import java.util.Map;
 /** A builder of PaymentRequestService for testing. */
 public class PaymentRequestServiceBuilder implements Delegate {
     private static final String TWA_PACKAGE_NAME = "twa.package.name";
-    private final Delegate mDelegate;
     private final RenderFrameHost mRenderFrameHost;
     private final Runnable mOnClosedListener;
     private final PaymentAppService mPaymentAppService;
@@ -65,7 +65,6 @@ public class PaymentRequestServiceBuilder implements Delegate {
     public PaymentRequestServiceBuilder(Runnable onClosedListener, PaymentRequestClient client,
             PaymentAppService appService, BrowserPaymentRequest browserPaymentRequest,
             JourneyLogger journeyLogger) {
-        mDelegate = this;
         mWebContents = Mockito.mock(WebContents.class);
         setTopLevelOrigin(JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1));
         mRenderFrameHost = Mockito.mock(RenderFrameHost.class);
@@ -225,6 +224,14 @@ public class PaymentRequestServiceBuilder implements Delegate {
         return this;
     }
 
+    public PaymentRequestServiceBuilder setOnlySpcMethodWithoutPaymentOptions() {
+        mMethodData = new PaymentMethodData[1];
+        mMethodData[0] = new PaymentMethodData();
+        mMethodData[0].supportedMethod = MethodStrings.SECURE_PAYMENT_CONFIRMATION;
+        mOptions = new PaymentOptions();
+        return this;
+    }
+
     public PaymentRequestServiceBuilder setGooglePayBridgeEligible(boolean eligible) {
         mGooglePayBridgeEligible = eligible;
         return this;
@@ -267,8 +274,8 @@ public class PaymentRequestServiceBuilder implements Delegate {
     }
 
     public PaymentRequestService build() {
-        PaymentRequestService service =
-                new PaymentRequestService(mRenderFrameHost, mClient, mOnClosedListener, mDelegate);
+        PaymentRequestService service = new PaymentRequestService(
+                mRenderFrameHost, mClient, mOnClosedListener, /*delegate=*/this, () -> null);
         boolean success = service.init(mMethodData, mDetails, mOptions, mGooglePayBridgeEligible);
         return success ? service : null;
     }

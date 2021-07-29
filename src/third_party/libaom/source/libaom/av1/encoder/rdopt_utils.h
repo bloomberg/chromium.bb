@@ -433,8 +433,10 @@ static INLINE void set_tx_type_prune(const SPEED_FEATURES *sf,
   txfm_params->prune_2d_txfm_mode = sf->tx_sf.tx_type_search.prune_2d_txfm_mode;
   if (!winner_mode_tx_type_pruning) return;
 
-  const int prune_mode[2][2] = { { TX_TYPE_PRUNE_4, TX_TYPE_PRUNE_0 },
-                                 { TX_TYPE_PRUNE_5, TX_TYPE_PRUNE_2 } };
+  const int prune_mode[4][2] = { { TX_TYPE_PRUNE_3, TX_TYPE_PRUNE_0 },
+                                 { TX_TYPE_PRUNE_4, TX_TYPE_PRUNE_0 },
+                                 { TX_TYPE_PRUNE_5, TX_TYPE_PRUNE_2 },
+                                 { TX_TYPE_PRUNE_5, TX_TYPE_PRUNE_3 } };
   txfm_params->prune_2d_txfm_mode =
       prune_mode[winner_mode_tx_type_pruning - 1][is_winner_mode];
 }

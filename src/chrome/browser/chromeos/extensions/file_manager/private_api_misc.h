@@ -13,11 +13,11 @@
 #include <vector>
 
 #include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
-#include "chrome/browser/chromeos/extensions/file_manager/files_extension_function.h"
-#include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
+#include "chrome/browser/chromeos/extensions/file_manager/logged_extension_function.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
-#include "google_apis/drive/drive_api_error_codes.h"
+#include "google_apis/common/api_error_codes.h"
 #include "storage/browser/file_system/file_system_url.h"
 
 namespace chromeos {
@@ -27,7 +27,7 @@ class RecentFile;
 namespace crostini {
 enum class CrostiniResult;
 struct LinuxPackageInfo;
-}
+}  // namespace crostini
 
 namespace file_manager {
 namespace util {
@@ -84,7 +84,7 @@ class FileManagerPrivateSetPreferencesFunction : public ExtensionFunction {
 };
 
 // Implements the chrome.fileManagerPrivate.zipSelection method.
-// Creates a zip file for the selected files.
+// Creates a ZIP file for the selected files and folders.
 class FileManagerPrivateInternalZipSelectionFunction
     : public LoggedExtensionFunction {
  public:
@@ -100,7 +100,24 @@ class FileManagerPrivateInternalZipSelectionFunction
   ResponseAction Run() override;
 
   // Receives the result from ZipFileCreator.
-  void OnZipDone(const std::string& dest_file, bool success);
+  void OnZipDone(const base::FilePath& dest_file, bool success);
+};
+
+// Implements the chrome.fileManagerPrivate.cancelZip method.
+// Cancels an ongoing ZIP operation.
+class FileManagerPrivateInternalCancelZipFunction
+    : public LoggedExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.cancelZip",
+                             FILEMANAGERPRIVATEINTERNAL_CANCELZIP)
+
+  FileManagerPrivateInternalCancelZipFunction();
+
+ protected:
+  ~FileManagerPrivateInternalCancelZipFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
 };
 
 // Implements the chrome.fileManagerPrivate.zoom method.
@@ -136,7 +153,7 @@ class FileManagerPrivateRequestWebStoreAccessTokenFunction
  private:
   std::unique_ptr<google_apis::AuthServiceInterface> auth_service_;
 
-  void OnAccessTokenFetched(google_apis::DriveApiErrorCode code,
+  void OnAccessTokenFetched(google_apis::ApiErrorCode code,
                             const std::string& access_token);
 };
 
@@ -351,7 +368,7 @@ class FileManagerPrivateInternalUnsharePathWithCrostiniFunction
 // Implements the chrome.fileManagerPrivate.getCrostiniSharedPaths
 // method.  Returns list of file entries.
 class FileManagerPrivateInternalGetCrostiniSharedPathsFunction
-    : public FilesExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileManagerPrivateInternal.getCrostiniSharedPaths",
@@ -434,7 +451,7 @@ class FileManagerPrivateInternalGetCustomActionsFunction
 
  private:
   ResponseAction Run() override;
-  void OnCompleted(const chromeos::file_system_provider::Actions& actions,
+  void OnCompleted(const ash::file_system_provider::Actions& actions,
                    base::File::Error result);
 };
 

@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
@@ -154,5 +153,10 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+using ::chromeos::DlcserviceClient;
+}  // namespace ash
 
 #endif  // CHROMEOS_DBUS_DLCSERVICE_DLCSERVICE_CLIENT_H_

@@ -7,6 +7,8 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/json/json_file_value_serializer.h"
@@ -17,7 +19,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
@@ -162,7 +163,7 @@ absl::optional<base::Value> CopyWithoutEmptyChildren(const base::Value& value) {
     case base::Value::Type::DICTIONARY: {
       base::Value::DictStorage storage;
 
-      for (const auto& key_value_pair : value.DictItems()) {
+      for (const auto key_value_pair : value.DictItems()) {
         absl::optional<base::Value> item_copy =
             CopyWithoutEmptyChildren(key_value_pair.second);
         if (item_copy)
@@ -478,7 +479,7 @@ bool RlzValueStoreChromeOS::RemoveValueFromList(const std::string& list_name,
   if (!list_value)
     return false;
 
-  base::Value::ListStorage storage = list_value->TakeList();
+  base::Value::ListStorage storage = std::move(*list_value).TakeList();
   base::EraseIf(storage, [&to_remove](const base::Value& value) {
     return value == to_remove;
   });

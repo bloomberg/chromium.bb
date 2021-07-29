@@ -31,7 +31,6 @@
 #include "content/browser/web_package/web_bundle_handle_tracker.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
-#include "content/common/navigation_params.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -53,6 +52,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/loader/inter_process_time_ticks_converter.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
+#include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
@@ -60,6 +60,8 @@ namespace content {
 
 namespace {
 
+// TODO(titouan): Move the feature computation logic into `NavigationRequest`,
+// and use `NavigationRequest::TakeWebFeatureToLog()` to record them later.
 void RecordWebPlatformSecurityMetrics(RenderFrameHostImpl* rfh,
                                       bool has_embedding_control,
                                       bool is_error_page) {
@@ -156,6 +158,15 @@ void RecordWebPlatformSecurityMetrics(RenderFrameHostImpl* rfh,
                             kSameOriginDocumentsWithDifferentCOOPStatus);
       }
     }
+  }
+}
+
+// Records the fact that `rfh` made use of `web_features`.
+void RecordMetrics(RenderFrameHostImpl& rfh,
+                   const std::vector<blink::mojom::WebFeature>& web_features) {
+  ContentBrowserClient& client = *GetContentClient()->browser();
+  for (const auto feature : web_features) {
+    client.LogWebFeatureForCurrentPage(&rfh, feature);
   }
 }
 
@@ -358,15 +369,14 @@ void Navigator::DidNavigate(
   base::WeakPtr<RenderFrameHostImpl> old_frame_host =
       frame_tree_node->render_manager()->current_frame_host()->GetWeakPtr();
 
-  bool is_same_document_navigation = controller_.IsURLSameDocumentNavigation(
-      params.url, params.origin, was_within_same_document, render_frame_host);
   // If a frame claims the navigation was same-document, it must be the current
   // frame, not a pending one.
-  if (is_same_document_navigation &&
-      render_frame_host != old_frame_host.get()) {
+  // TODO(creis): This check should be moved to RenderFrameHostImpl, allowing an
+  // early return.  See https://crbug.com/1209097.
+  if (was_within_same_document && render_frame_host != old_frame_host.get()) {
     bad_message::ReceivedBadMessage(render_frame_host->GetProcess(),
                                     bad_message::NI_IN_PAGE_NAVIGATION);
-    is_same_document_navigation = false;
+    was_within_same_document = false;
   }
   // At this point we have already chosen a SiteInstance for this navigation, so
   // set |origin_isolation_request| to kNone in the conversion to UrlInfo
@@ -387,7 +397,8 @@ void Navigator::DidNavigate(
   if (ui::PageTransitionIsMainFrame(params.transition)) {
     if (delegate_) {
       // Run tasks that must execute just before the commit.
-      delegate_->DidNavigateMainFramePreCommit(is_same_document_navigation);
+      delegate_->DidNavigateMainFramePreCommit(frame_tree_node,
+                                               was_within_same_document);
     }
   }
 
@@ -398,7 +409,7 @@ void Navigator::DidNavigate(
   // frame's origin.  See https://crbug.com/825283.
   frame_tree_node->render_manager()->DidNavigateFrame(
       render_frame_host, params.gesture == NavigationGestureUser,
-      is_same_document_navigation,
+      was_within_same_document,
       navigation_request->coop_status()
           .require_browsing_instance_swap() /* clear_proxies_on_commit */,
       navigation_request->commit_params().frame_policy);
@@ -416,7 +427,7 @@ void Navigator::DidNavigate(
   bool previous_document_was_activated =
       frame_tree->root()->HasStickyUserActivation();
 
-  if (!is_same_document_navigation) {
+  if (!was_within_same_document) {
     // Navigating to a new location means a new, fresh set of http headers
     // and/or <meta> elements - we need to reset Permissions Policy.
     frame_tree_node->ResetForNavigation();
@@ -444,41 +455,27 @@ void Navigator::DidNavigate(
   // code doesn't exist anymore. Also, move this code in the
   // PageTransitionIsMainFrame code block above.
   if (ui::PageTransitionIsMainFrame(params.transition) && delegate_) {
-    RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-        render_frame_host->GetRenderViewHost());
-    rvh->SetContentsMimeType(params.contents_mime_type);
+    render_frame_host->GetPage().SetContentsMimeType(params.contents_mime_type);
   }
 
-  // Navigations that activate an existing bfcached or prerendered document do
-  // not create a new document.
-  //
-  // |was_within_same_document| (controlled by the renderer) also needs to be
-  // considered: in some cases, the browser and renderer can disagree. While
-  // this is usually a bad message kill, there are some situations where this
-  // can legitimately happen. When a new frame is created (e.g. with
-  // <iframe src="...">), the initial about:blank document doesn't have a
-  // corresponding entry in the browser process. As a result, the browser
-  // process incorrectly determines that the navigation is cross-document when
-  // in reality it's same-document.
-  //
-  // TODO(crbug/1099264): Remove |was_within_same_document| from this logic
-  // once all same-document navigations have a NavigationEntry. Once this
-  // happens there should be no cases where the browser and renderer
-  // legitimately disagree as described above.
-  bool did_create_new_document = !navigation_request->IsPageActivation() &&
-                                 !is_same_document_navigation &&
-                                 !was_within_same_document;
+  // RenderFrameHostImpl::DidNavigate will update the url, and may cause the
+  // node to consider itself no longer on the initial empty document. Record
+  // whether we're leaving the initial empty document before that.
+  bool was_on_initial_empty_document =
+      frame_tree_node
+          ->is_on_initial_empty_document_or_subsequent_empty_documents();
 
   render_frame_host->DidNavigate(params, navigation_request.get(),
-                                 did_create_new_document);
+                                 was_within_same_document);
 
   int old_entry_count = controller_.GetEntryCount();
   LoadCommittedDetails details;
   base::TimeTicks start = base::TimeTicks::Now();
   bool did_navigate = controller_.RendererDidNavigate(
-      render_frame_host, params, &details, is_same_document_navigation,
-      previous_document_was_activated, navigation_request.get());
-  if (!is_same_document_navigation) {
+      render_frame_host, params, &details, was_within_same_document,
+      was_on_initial_empty_document, previous_document_was_activated,
+      navigation_request.get());
+  if (!was_within_same_document) {
     base::UmaHistogramTimes(
         base::StrCat(
             {"Navigation.RendererDidNavigateTime.",
@@ -512,6 +509,17 @@ void Navigator::DidNavigate(
   bool is_error_page = navigation_request->IsErrorPage();
   const GURL original_request_url = navigation_request->GetOriginalRequestURL();
 
+  // Get the list of web features that the navigating document made use of
+  // before it could commit. We attribute these to the new document once it
+  // has committed.
+  std::vector<blink::mojom::WebFeature> web_features =
+      navigation_request->TakeWebFeaturesToLog();
+
+  // Navigations that activate an existing bfcached or prerendered document do
+  // not create a new document.
+  bool did_create_new_document =
+      !navigation_request->IsPageActivation() && !was_within_same_document;
+
   // Send notification about committed provisional loads. This notification is
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include
   // the actual URL navigated to and isn't sent for AUTO_SUBFRAME navigations.
@@ -527,6 +535,7 @@ void Navigator::DidNavigate(
   if (did_create_new_document) {
     RecordWebPlatformSecurityMetrics(render_frame_host, has_embedding_control,
                                      is_error_page);
+    RecordMetrics(*render_frame_host, web_features);
   }
 
   if (!did_navigate)
@@ -658,6 +667,13 @@ void Navigator::RequestOpenURL(
         render_frame_host->frame_tree_node()->frame_tree_node_id();
   }
 
+  // Prerendering frames need to have an FTN id set, so OpenURL() can find
+  // the correct frame tree for the navigation. Due to the above logic, that
+  // means this function currently can't be called for prerendering main frames.
+  DCHECK(render_frame_host->lifecycle_state() !=
+             RenderFrameHostImpl::LifecycleStateImpl::kPrerendering ||
+         frame_tree_node_id != FrameTreeNode::kFrameTreeNodeInvalidId);
+
   OpenURLParams params(url, referrer, frame_tree_node_id, disposition,
                        ui::PAGE_TRANSITION_LINK,
                        true /* is_renderer_initiated */);
@@ -724,8 +740,8 @@ void Navigator::NavigateFromFrameProxy(
     post_body = nullptr;
   }
 
-  // Allow the delegate to cancel the transfer.
-  if (!delegate_->ShouldTransferNavigation(
+  // Allow the delegate to cancel the cross-process navigation.
+  if (!delegate_->ShouldAllowRendererInitiatedCrossProcessNavigation(
           render_frame_host->frame_tree_node()->IsMainFrame()))
     return;
 
@@ -809,8 +825,8 @@ void Navigator::BeforeUnloadCompleted(FrameTreeNode* frame_tree_node,
 
 void Navigator::OnBeginNavigation(
     FrameTreeNode* frame_tree_node,
-    mojom::CommonNavigationParamsPtr common_params,
-    mojom::BeginNavigationParamsPtr begin_params,
+    blink::mojom::CommonNavigationParamsPtr common_params,
+    blink::mojom::BeginNavigationParamsPtr begin_params,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
     scoped_refptr<PrefetchedSignedExchangeCache>
@@ -1129,7 +1145,7 @@ void Navigator::RecordNavigationMetrics(
 
 NavigationEntryImpl*
 Navigator::GetNavigationEntryForRendererInitiatedNavigation(
-    const mojom::CommonNavigationParams& common_params,
+    const blink::mojom::CommonNavigationParams& common_params,
     FrameTreeNode* frame_tree_node) {
   if (!frame_tree_node->IsMainFrame())
     return nullptr;
@@ -1170,9 +1186,8 @@ Navigator::GetNavigationEntryForRendererInitiatedNavigation(
               ui::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */,
               std::string() /* extra_headers */,
               controller_.GetBrowserContext(),
-              nullptr /* blob_url_loader_factory */,
-              common_params.should_replace_current_entry,
-              controller_.GetWebContents()));
+              nullptr /* blob_url_loader_factory */));
+
   entry->set_reload_type(NavigationRequest::NavigationTypeToReloadType(
       common_params.navigation_type));
 

@@ -11,8 +11,8 @@ namespace chromeos {
 namespace ime {
 namespace rulebased {
 
-Engine::Engine() : process_key_count_(0) {}
-Engine::~Engine() {}
+Engine::Engine() = default;
+Engine::~Engine() = default;
 
 // static
 bool Engine::IsImeSupported(const std::string& id) {
@@ -28,8 +28,6 @@ void Engine::Activate(const std::string& id) {
 }
 
 void Engine::Reset() {
-  process_key_count_ = 0;
-
   // Clears current state.
   context_ = "";
   transat_ = -1;
@@ -37,10 +35,8 @@ void Engine::Reset() {
   ClearHistory();
 }
 
-ProcessKeyResult Engine::ProcessKey(const std::string& code,
+ProcessKeyResult Engine::ProcessKey(mojom::DomCode code,
                                     uint8_t modifier_state) {
-  process_key_count_++;
-
   ProcessKeyResult res;
   // The fallback result should commit the existing composition text.
   res.commit_text = context_;
@@ -52,7 +48,7 @@ ProcessKeyResult Engine::ProcessKey(const std::string& code,
   const KeyMap* key_map = current_data_->GetKeyMapByModifiers(modifier_state);
   auto it = key_map->find(code);
   if (it == key_map->end()) {
-    if (code == "Backspace" && !context_.empty())
+    if (code == mojom::DomCode::kBackspace && !context_.empty())
       return ProcessBackspace();
     Reset();
     return res;

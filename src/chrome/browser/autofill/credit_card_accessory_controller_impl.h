@@ -39,7 +39,7 @@ class CreditCardAccessoryControllerImpl
   void OnPersonalDataChanged() override;
 
   // CreditCardAccessManager::Accessor:
-  void OnCreditCardFetched(bool did_succeed,
+  void OnCreditCardFetched(CreditCardFetchResult result,
                            const CreditCard* credit_card,
                            const std::u16string& cvc) override;
 
@@ -64,13 +64,16 @@ class CreditCardAccessoryControllerImpl
       autofill::BrowserAutofillManager* af_manager,
       autofill::AutofillDriver* af_driver);
 
-  void FetchSuggestionsFromPersonalDataManager();
+  void FetchSuggestions();
   base::WeakPtr<ManualFillingController> GetManualFillingController();
   autofill::AutofillDriver* GetDriver();
   autofill::BrowserAutofillManager* GetManager() const;
 
   // Pointers to cards owned by PersonalDataManager.
   std::vector<CreditCard*> cards_cache_;
+  // Virtual cards that are created based on the enrollment status of the cards
+  // returned by the PersonalDataManager.
+  std::vector<std::unique_ptr<CreditCard>> virtual_cards_cache_;
   content::WebContents* web_contents_;
   base::WeakPtr<ManualFillingController> mf_controller_;
   PersonalDataManager* const personal_data_manager_;

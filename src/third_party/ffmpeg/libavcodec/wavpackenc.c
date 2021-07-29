@@ -2777,7 +2777,7 @@ static int wavpack_encode_block(WavPackEncodeContext *s,
     }
     encode_flush(s);
     flush_put_bits(&s->pb);
-    data_size = put_bits_count(&s->pb) >> 3;
+    data_size = put_bytes_output(&s->pb);
     bytestream2_put_le24(&pb, (data_size + 1) >> 1);
     bytestream2_skip_p(&pb, data_size);
     if (data_size & 1)
@@ -2791,7 +2791,7 @@ static int wavpack_encode_block(WavPackEncodeContext *s,
         else
             pack_int32(s, s->orig_l, s->orig_r, nb_samples);
         flush_put_bits(&s->pb);
-        data_size = put_bits_count(&s->pb) >> 3;
+        data_size = put_bytes_output(&s->pb);
         bytestream2_put_le24(&pb, (data_size + 5) >> 1);
         bytestream2_put_le32(&pb, s->crc_x);
         bytestream2_skip_p(&pb, data_size);
@@ -2957,7 +2957,7 @@ static const AVClass wavpack_encoder_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_wavpack_encoder = {
+const AVCodec ff_wavpack_encoder = {
     .name           = "wavpack",
     .long_name      = NULL_IF_CONFIG_SMALL("WavPack"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -2973,4 +2973,5 @@ AVCodec ff_wavpack_encoder = {
                                                      AV_SAMPLE_FMT_S32P,
                                                      AV_SAMPLE_FMT_FLTP,
                                                      AV_SAMPLE_FMT_NONE },
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

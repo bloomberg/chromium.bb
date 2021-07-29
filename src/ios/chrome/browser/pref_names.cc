@@ -106,14 +106,6 @@ const char kLastSessionExitedCleanly[] =
 const char kNTPContentSuggestionsEnabled[] =
     "ios.ntp.content_suggestions_enabled";
 
-// Preference that hold a boolean indicating whether metrics reporting should
-// be limited to wifi (when enabled).
-const char kMetricsReportingWifiOnly[] =
-    "ios.user_experience_metrics.wifi_only";
-
-// Boolean controlling whether history saving is disabled.
-const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
-
 // Boolean that is true when Suggest support is enabled.
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 
@@ -139,6 +131,15 @@ const char kSigninLastAccountsMigrated[] = "ios.signin.last_accounts_migrated";
 // when a new tab is created.
 const char kSigninShouldPromptForSigninAgain[] =
     "ios.signin.should_prompt_for_signin_again";
+
+// Number of times the user dismissed the web sign-in dialog. This value is
+// reset to zero when the user signs in (using the web sign-in dialog).
+const char kSigninWebSignDismissalCount[] =
+    "ios.signin.web_signin_dismissal_count";
+
+// Integer to count the number of times the MICE web sign-in is displayed.
+const char kSigninBottomSheetShownCount[] =
+    "ios.signin.bottom_sheet_shown_count";
 
 // Dictionary which stores the zoom levels the user has changed. The zoom levels
 // are unique for a given (iOS Dynamic Type, website domain) pair. Thus, the

@@ -136,6 +136,7 @@ Polymer({
     data['flowType'] = this.flowType;
     this.$.valueProp.reloadContent(data);
     this.$.relatedInfo.reloadContent(data);
+    this.$.voiceMatch.reloadContent(data);
     this.$.thirdParty.reloadContent(data);
     this.$.getMore.reloadContent(data);
   },
@@ -229,6 +230,17 @@ Polymer({
       default:
         break;
     }
+  },
+
+  /**
+   * Called to show the next settings when there are multiple unbundled
+   * activity control settings in the Value prop screen.
+   */
+  onValuePropUpdate() {
+    if (this.currentStep !== UIState.VALUE_PROP) {
+      return;
+    }
+    this.$.valueProp.showNextStep();
   },
 
   /**

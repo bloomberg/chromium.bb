@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/reputation/safety_tip_ui.h"
+#include "chrome/browser/ui/hats/trust_safety_sentiment_service.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/hover_button.h"
@@ -73,20 +74,6 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
   PageInfoBubbleView& operator=(const PageInfoBubbleView&) = delete;
   ~PageInfoBubbleView() override;
 
-  enum PageInfoBubbleViewID {
-    VIEW_ID_NONE = 0,
-    VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD,
-    VIEW_ID_PAGE_INFO_BUTTON_ALLOWLIST_PASSWORD_REUSE,
-    VIEW_ID_PAGE_INFO_LABEL_EV_CERTIFICATE_DETAILS,
-    VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
-    VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
-    VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER,
-    VIEW_ID_PAGE_INFO_BUTTON_END_VR,
-    VIEW_ID_PAGE_INFO_HOVER_BUTTON_VR_PRESENTATION,
-    VIEW_ID_PAGE_INFO_BUTTON_LEAVE_SITE,
-    VIEW_ID_PAGE_INFO_BUTTON_IGNORE_WARNING,
-  };
-
   // Creates the appropriate page info bubble for the given |url|.
   // |anchor_view| will be used to place the bubble.  If |anchor_view| is null,
   // |anchor_rect| will be used instead.  |parent_window| will become the
@@ -115,6 +102,7 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
   friend class PageInfoBubbleViewDialogBrowserTest;
   friend class PageInfoBubbleViewSyncBrowserTest;
   friend class test::PageInfoBubbleViewTestApi;
+  friend class TrustSafetySentimentServiceBrowserTest;
 
   PageInfoBubbleView(
       views::View* anchor_view,

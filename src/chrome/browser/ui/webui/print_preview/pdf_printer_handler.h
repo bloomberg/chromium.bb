@@ -92,6 +92,11 @@ class PdfPrinterHandler : public PrinterHandler,
   void OnDirectorySelected(const base::FilePath& filename,
                            const base::FilePath& directory);
 
+  void OnSaveLocationReady(content::WebContents* initiator,
+                           const base::FilePath& default_filename,
+                           bool prompt_user,
+                           const base::FilePath& path);
+
 #if BUILDFLAG(ENABLE_CEF)
   void ShowCefSaveAsDialog(content::WebContents* initiator,
                            const base::FilePath& filename,

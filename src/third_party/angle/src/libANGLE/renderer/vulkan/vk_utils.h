@@ -531,6 +531,9 @@ class RefCounted : angle::NonCopyable
     T &get() { return mObject; }
     const T &get() const { return mObject; }
 
+    // A debug function to validate that the reference count is as expected used for assertions.
+    bool isRefCountAsExpected(uint32_t expectedRefCount) { return mRefCount == expectedRefCount; }
+
   private:
     uint32_t mRefCount;
     T mObject;
@@ -724,8 +727,8 @@ struct SpecializationConstants final
 {
     VkBool32 lineRasterEmulation;
     uint32_t surfaceRotation;
-    uint32_t drawableWidth;
-    uint32_t drawableHeight;
+    float drawableWidth;
+    float drawableHeight;
 };
 ANGLE_DISABLE_STRUCT_PADDING_WARNINGS
 
@@ -883,6 +886,10 @@ struct PerfCounters
 
 // A Vulkan image level index.
 using LevelIndex = gl::LevelIndexWrapper<uint32_t>;
+
+// Ensure viewport is within Vulkan requirements
+void ClampViewport(VkViewport *viewport);
+
 }  // namespace vk
 
 #if !defined(ANGLE_SHARED_LIBVULKAN)

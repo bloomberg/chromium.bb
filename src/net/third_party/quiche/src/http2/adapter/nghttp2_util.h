@@ -8,6 +8,7 @@
 
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "http2/adapter/data_source.h"
 #include "http2/adapter/http2_protocol.h"
 #include "third_party/nghttp2/src/lib/includes/nghttp2/nghttp2.h"
 #include "spdy/core/spdy_header_block.h"
@@ -20,8 +21,8 @@ inline constexpr int kStreamCallbackFailureStatus =
     NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
 inline constexpr int kCancelStatus = NGHTTP2_ERR_CANCEL;
 
-using CallbacksDeleter = void (&)(nghttp2_session_callbacks*);
-using SessionDeleter = void (&)(nghttp2_session*);
+using CallbacksDeleter = void (*)(nghttp2_session_callbacks*);
+using SessionDeleter = void (*)(nghttp2_session*);
 
 using nghttp2_session_callbacks_unique_ptr =
     std::unique_ptr<nghttp2_session_callbacks, CallbacksDeleter>;
@@ -54,6 +55,16 @@ std::vector<nghttp2_nv> GetResponseNghttp2Nvs(
 // in RFC 7540 Section 7. Unrecognized error codes are treated as INTERNAL_ERROR
 // based on the RFC 7540 Section 7 suggestion.
 Http2ErrorCode ToHttp2ErrorCode(uint32_t wire_error_code);
+
+// Transforms a nghttp2_data_provider into a DataFrameSource. Assumes that
+// |provider| uses the zero-copy nghttp2_data_source_read_callback API. Unsafe
+// otherwise.
+std::unique_ptr<DataFrameSource> MakeZeroCopyDataFrameSource(
+    nghttp2_data_provider provider,
+    void* user_data,
+    nghttp2_send_data_callback send_data);
+
+void LogBeforeSend(const nghttp2_frame& frame);
 
 }  // namespace adapter
 }  // namespace http2

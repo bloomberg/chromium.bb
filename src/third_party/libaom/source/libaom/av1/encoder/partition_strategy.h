@@ -13,57 +13,9 @@
 #define AOM_AV1_ENCODER_PARTITION_STRATEGY_H_
 
 #include "av1/encoder/encodeframe.h"
+#include "av1/encoder/encodeframe_utils.h"
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encoder.h"
-
-#define FEATURE_SIZE_SMS_SPLIT_FAST 6
-#define FEATURE_SIZE_SMS_SPLIT 17
-#define FEATURE_SIZE_SMS_PRUNE_PART 25
-#define FEATURE_SIZE_SMS_TERM_NONE 28
-#define FEATURE_SIZE_FP_SMS_TERM_NONE 20
-#define FEATURE_SIZE_MAX_MIN_PART_PRED 13
-#define MAX_NUM_CLASSES_MAX_MIN_PART_PRED 4
-
-#define FEATURE_SMS_NONE_FLAG 1
-#define FEATURE_SMS_SPLIT_FLAG (1 << 1)
-#define FEATURE_SMS_RECT_FLAG (1 << 2)
-
-#define FEATURE_SMS_PRUNE_PART_FLAG \
-  (FEATURE_SMS_NONE_FLAG | FEATURE_SMS_SPLIT_FLAG | FEATURE_SMS_RECT_FLAG)
-#define FEATURE_SMS_SPLIT_MODEL_FLAG \
-  (FEATURE_SMS_NONE_FLAG | FEATURE_SMS_SPLIT_FLAG)
-
-// Number of sub-partitions in rectangular partition types.
-#define SUB_PARTITIONS_RECT 2
-
-// Number of sub-partitions in split partition type.
-#define SUB_PARTITIONS_SPLIT 4
-
-// Number of sub-partitions in AB partition types.
-#define SUB_PARTITIONS_AB 3
-
-// Number of sub-partitions in 4-way partition types.
-#define SUB_PARTITIONS_PART4 4
-
-// 4part parition types.
-enum { HORZ4 = 0, VERT4, NUM_PART4_TYPES } UENUM1BYTE(PART4_TYPES);
-
-// AB parition types.
-enum {
-  HORZ_A = 0,
-  HORZ_B,
-  VERT_A,
-  VERT_B,
-  NUM_AB_PARTS
-} UENUM1BYTE(AB_PART_TYPE);
-
-// Rectangular parition types.
-enum { HORZ = 0, VERT, NUM_RECT_PARTS } UENUM1BYTE(RECT_PART_TYPE);
-
-// Structure to keep win flags for HORZ and VERT partition evaluations.
-typedef struct {
-  int rect_part_win[NUM_RECT_PARTS];
-} RD_RECT_PART_WIN_INFO;
 
 void av1_intra_mode_cnn_partition(const AV1_COMMON *const cm, MACROBLOCK *x,
                                   int bsize, int label_idx,
@@ -129,16 +81,18 @@ void av1_ml_early_term_after_split(AV1_COMP *const cpi, MACROBLOCK *const x,
 // no information about rectangular partitions. Preliminary experiments suggest
 // that we can get better performance by adding in q_index and rectangular
 // sse/var from SMS. We should retrain and tune this model later.
-void av1_ml_prune_rect_partition(const AV1_COMP *const cpi,
-                                 const MACROBLOCK *const x, BLOCK_SIZE bsize,
-                                 int64_t best_rd, int64_t none_rd,
-                                 int64_t *split_rd, int *const dst_prune_horz,
+void av1_ml_prune_rect_partition(AV1_COMP *const cpi, const MACROBLOCK *const x,
+                                 BLOCK_SIZE bsize, const int mi_row,
+                                 const int mi_col, int64_t best_rd,
+                                 int64_t none_rd, int64_t *split_rd,
+                                 int *const dst_prune_horz,
                                  int *const dst_prune_vert);
 
 // Use a ML model to predict if horz_a, horz_b, vert_a, and vert_b should be
 // considered.
 void av1_ml_prune_ab_partition(
-    BLOCK_SIZE bsize, int part_ctx, int var_ctx, int64_t best_rd,
+    AV1_COMP *const cpi, BLOCK_SIZE bsize, const int mi_row, const int mi_col,
+    int part_ctx, int var_ctx, int64_t best_rd,
     int64_t horz_rd[SUB_PARTITIONS_RECT], int64_t vert_rd[SUB_PARTITIONS_RECT],
     int64_t split_rd[SUB_PARTITIONS_SPLIT], int *const horza_partition_allowed,
     int *const horzb_partition_allowed, int *const verta_partition_allowed,
@@ -146,18 +100,19 @@ void av1_ml_prune_ab_partition(
 
 // Use a ML model to predict if horz4 and vert4 should be considered.
 void av1_ml_prune_4_partition(
-    const AV1_COMP *const cpi, MACROBLOCK *const x, BLOCK_SIZE bsize,
-    int part_ctx, int64_t best_rd,
-    int64_t rect_part_rd[NUM_RECT_PARTS][SUB_PARTITIONS_RECT],
+    AV1_COMP *const cpi, MACROBLOCK *const x, BLOCK_SIZE bsize, int part_ctx,
+    int64_t best_rd, int64_t rect_part_rd[NUM_RECT_PARTS][SUB_PARTITIONS_RECT],
     int64_t split_rd[SUB_PARTITIONS_SPLIT], int *const partition_horz4_allowed,
     int *const partition_vert4_allowed, unsigned int pb_source_variance,
     int mi_row, int mi_col);
 
 // ML-based partition search breakout after PARTITION_NONE.
-int av1_ml_predict_breakout(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
-                            const MACROBLOCK *const x,
-                            const RD_STATS *const rd_stats,
-                            unsigned int pb_source_variance, int bit_depth);
+void av1_ml_predict_breakout(AV1_COMP *const cpi, BLOCK_SIZE bsize,
+                             const MACROBLOCK *const x,
+                             const RD_STATS *const rd_stats,
+                             const PartitionBlkParams blk_params,
+                             unsigned int pb_source_variance, int bit_depth,
+                             int *do_square_split, int *do_rectangular_split);
 
 // The first round of partition pruning determined before any partition
 // has been tested. The decisions will be updated and passed back
@@ -183,14 +138,19 @@ void av1_prune_partitions_by_max_min_bsize(
 // Prune out AB partitions based on rd decisions made from testing the
 // basic partitions.
 void av1_prune_ab_partitions(
-    const AV1_COMP *cpi, const MACROBLOCK *x, const PC_TREE *pc_tree,
-    BLOCK_SIZE bsize, int pb_source_variance, int64_t best_rdcost,
+    AV1_COMP *cpi, const MACROBLOCK *x, const PC_TREE *pc_tree,
+    BLOCK_SIZE bsize, const int mi_row, const int mi_col,
+    int pb_source_variance, int64_t best_rdcost,
     int64_t rect_part_rd[NUM_RECT_PARTS][SUB_PARTITIONS_RECT],
     int64_t split_rd[SUB_PARTITIONS_SPLIT],
     const RD_RECT_PART_WIN_INFO *rect_part_win_info, int ext_partition_allowed,
     int partition_horz_allowed, int partition_vert_allowed,
     int *horza_partition_allowed, int *horzb_partition_allowed,
     int *verta_partition_allowed, int *vertb_partition_allowed);
+
+void av1_collect_motion_search_features_sb(AV1_COMP *const cpi, ThreadData *td,
+                                           const int mi_row, const int mi_col,
+                                           const BLOCK_SIZE bsize);
 #endif  // !CONFIG_REALTIME_ONLY
 
 // A simplified version of set_offsets meant to be used for
@@ -261,6 +221,7 @@ static INLINE int is_full_sb(const CommonModeInfoParams *const mi_params,
          (mi_col + sb_mi_wide) <= mi_params->mi_cols;
 }
 
+#if !CONFIG_REALTIME_ONLY
 // Do not use this criteria for screen content videos.
 // Since screen content videos could often find good predictors and the largest
 // block size is likely to be used.
@@ -281,4 +242,45 @@ static INLINE int use_auto_max_partition(const AV1_COMP *const cpi,
              INTNL_OVERLAY_UPDATE;
 }
 
+static BLOCK_SIZE dim_to_size(int dim) {
+  switch (dim) {
+    case 4: return BLOCK_4X4;
+    case 8: return BLOCK_8X8;
+    case 16: return BLOCK_16X16;
+    case 32: return BLOCK_32X32;
+    case 64: return BLOCK_64X64;
+    case 128: return BLOCK_128X128;
+    default: assert(0); return 0;
+  }
+}
+
+static AOM_INLINE void set_max_min_partition_size(SuperBlockEnc *sb_enc,
+                                                  AV1_COMP *cpi, MACROBLOCK *x,
+                                                  const SPEED_FEATURES *sf,
+                                                  BLOCK_SIZE sb_size,
+                                                  int mi_row, int mi_col) {
+  const AV1_COMMON *cm = &cpi->common;
+
+  sb_enc->max_partition_size =
+      AOMMIN(sf->part_sf.default_max_partition_size,
+             dim_to_size(cpi->oxcf.part_cfg.max_partition_size));
+  sb_enc->min_partition_size =
+      AOMMAX(sf->part_sf.default_min_partition_size,
+             dim_to_size(cpi->oxcf.part_cfg.min_partition_size));
+  sb_enc->max_partition_size =
+      AOMMIN(sb_enc->max_partition_size, cm->seq_params->sb_size);
+  sb_enc->min_partition_size =
+      AOMMIN(sb_enc->min_partition_size, cm->seq_params->sb_size);
+
+  if (use_auto_max_partition(cpi, sb_size, mi_row, mi_col)) {
+    float features[FEATURE_SIZE_MAX_MIN_PART_PRED] = { 0.0f };
+
+    av1_get_max_min_partition_features(cpi, x, mi_row, mi_col, features);
+    sb_enc->max_partition_size =
+        AOMMAX(AOMMIN(av1_predict_max_partition(cpi, x, features),
+                      sb_enc->max_partition_size),
+               sb_enc->min_partition_size);
+  }
+}
+#endif  // !CONFIG_REALTIME_ONLY
 #endif  // AOM_AV1_ENCODER_PARTITION_STRATEGY_H_

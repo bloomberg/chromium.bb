@@ -15,19 +15,23 @@
 #include "media/base/media_util.h"
 #include "media/base/mime_util.h"
 #include "media/base/supported_types.h"
+#include "media/base/video_aspect_ratio.h"
 #include "media/base/video_decoder.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_color_space_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_support.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_region.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/webcodecs/codec_config_eval.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoded_video_chunk.h"
+#include "third_party/blink/renderer/modules/webcodecs/gpu_factories_retriever.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_color_space.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_decoder_broker.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
@@ -39,22 +43,28 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/libaom/libaom_buildflags.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+
+#if BUILDFLAG(ENABLE_LIBAOM)
+#include "third_party/libaom/source/libaom/aom/aom_decoder.h"
+#include "third_party/libaom/source/libaom/aom/aomdx.h"
+#endif
+
+#if BUILDFLAG(ENABLE_LIBVPX)
+#include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
+#include "third_party/libvpx/source/libvpx/vpx/vpx_decoder.h"
+#endif
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #include "media/filters/h264_to_annex_b_bitstream_converter.h"
 #include "media/formats/mp4/box_definitions.h"
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#endif
 
 namespace blink {
 
 namespace {
-
-media::GpuVideoAcceleratorFactories* GetGpuFactoriesOnMainThread() {
-  DCHECK(IsMainThread());
-  return Platform::Current()->GetGpuFactories();
-}
 
 void DecoderSupport_OnKnown(
     VideoDecoderSupport* support,
@@ -63,33 +73,9 @@ void DecoderSupport_OnKnown(
     media::GpuVideoAcceleratorFactories* gpu_factories) {
   DCHECK(gpu_factories->IsDecoderSupportKnown());
   support->setSupported(
-      gpu_factories->IsDecoderConfigSupported(*media_config) ==
+      gpu_factories->IsDecoderConfigSupportedOrUnknown(*media_config) ==
       media::GpuVideoAcceleratorFactories::Supported::kTrue);
   resolver->Resolve(support);
-}
-
-void DecoderSupport_OnGpuFactories(
-    VideoDecoderSupport* support,
-    std::unique_ptr<VideoDecoder::MediaConfigType> media_config,
-    ScriptPromiseResolver* resolver,
-    media::GpuVideoAcceleratorFactories* gpu_factories) {
-  if (!gpu_factories || !gpu_factories->IsGpuVideoAcceleratorEnabled()) {
-    support->setSupported(false);
-    resolver->Resolve(support);
-    return;
-  }
-
-  if (gpu_factories->IsDecoderSupportKnown()) {
-    DecoderSupport_OnKnown(support, std::move(media_config), resolver,
-                           gpu_factories);
-    return;
-  }
-
-  gpu_factories->NotifyDecoderSupportKnown(
-      ConvertToBaseOnceCallback(CrossThreadBindOnce(
-          &DecoderSupport_OnKnown, WrapCrossThreadPersistent(support),
-          std::move(media_config), WrapCrossThreadPersistent(resolver),
-          CrossThreadUnretained(gpu_factories))));
 }
 
 bool ParseCodecString(const String& codec_string,
@@ -144,107 +130,34 @@ bool IsValidConfig(const VideoDecoderConfig& config,
     const uint32_t coded_height = config.codedHeight();
     if (coded_width == 0 || coded_width > media::limits::kMaxDimension ||
         coded_height == 0 || coded_height > media::limits::kMaxDimension) {
+      // TODO(crbug.com/1212865): Exceeding implementation limits should not
+      // throw in isConfigSupported() (the config is valid, just unsupported).
       out_console_message = String::Format("Invalid coded size (%u, %u).",
                                            coded_width, coded_height);
       return false;
     }
-
-    // Validate visible region.
-    uint32_t visible_left = 0;
-    uint32_t visible_top = 0;
-    uint32_t visible_width = coded_width;
-    uint32_t visible_height = coded_height;
-    if (config.hasVisibleRegion()) {
-      visible_left = config.visibleRegion()->left();
-      visible_top = config.visibleRegion()->top();
-      visible_width = config.visibleRegion()->width();
-      visible_height = config.visibleRegion()->height();
-    } else {
-      // TODO(sandersd): Plumb |execution_context| so we can log a deprecation
-      // notice.
-      if (config.hasCropLeft()) {
-        visible_left = config.cropLeft();
-        if (visible_left >= coded_width) {
-          out_console_message =
-              String::Format("Invalid cropLeft %u for codedWidth %u.",
-                             visible_left, coded_width);
-          return false;
-        }
-        visible_width = coded_width - visible_left;
-      }
-      if (config.hasCropTop()) {
-        visible_top = config.cropTop();
-        if (visible_top >= coded_height) {
-          out_console_message =
-              String::Format("Invalid cropTop %u for codedHeight %u.",
-                             visible_top, coded_height);
-          return false;
-        }
-        visible_width = coded_width - visible_left;
-      }
-      if (config.hasCropWidth())
-        visible_width = config.cropWidth();
-      if (config.hasCropHeight())
-        visible_height = config.cropHeight();
-    }
-    if (visible_left >= coded_width || visible_top >= coded_height ||
-        visible_width == 0 || visible_width > media::limits::kMaxDimension ||
-        visible_height == 0 || visible_height > media::limits::kMaxDimension ||
-        visible_left + visible_width > coded_width ||
-        visible_top + visible_height > coded_height) {
-      out_console_message = String::Format(
-          "Invalid visible region {left: %u, top: %u, width: %u, height: %u} "
-          "for coded size (%u, %u).",
-          visible_left, visible_top, visible_width, visible_height, coded_width,
-          coded_height);
-      return false;
-    }
-  } else {
-    if (config.hasVisibleRegion()) {
-      out_console_message =
-          "Invalid config, visibleRegion specified without coded size.";
-      return false;
-    }
-    if (config.hasCropLeft()) {
-      out_console_message =
-          "Invalid config, cropLeft specified without coded size.";
-      return false;
-    }
-    if (config.hasCropTop()) {
-      out_console_message =
-          "Invalid config, cropTop specified without coded size.";
-      return false;
-    }
-    if (config.hasCropWidth()) {
-      out_console_message =
-          "Invalid config, cropWidth specified without coded size.";
-      return false;
-    }
-    if (config.hasCropHeight()) {
-      out_console_message =
-          "Invalid config, cropHeight specified without coded size.";
-      return false;
-    }
   }
 
-  if (config.hasDisplayWidth() || config.hasDisplayHeight()) {
-    if (!config.hasDisplayWidth()) {
+  if (config.hasDisplayAspectWidth() || config.hasDisplayAspectHeight()) {
+    if (!config.hasDisplayAspectWidth()) {
       out_console_message =
-          "Invalid config, displayHeight specified without displayWidth.";
+          "Invalid config, displayAspectHeight specified without "
+          "displayAspectWidth.";
       return false;
     }
-    if (!config.hasDisplayHeight()) {
+    if (!config.hasDisplayAspectHeight()) {
       out_console_message =
-          "Invalid config, displayWidth specified without displayHeight.";
+          "Invalid config, displayAspectWidth specified without "
+          "displayAspectHeight.";
       return false;
     }
 
-    uint32_t display_width = config.displayWidth();
-    uint32_t display_height = config.displayHeight();
-    if (display_width == 0 || display_width > media::limits::kMaxDimension ||
-        display_height == 0 || display_height > media::limits::kMaxDimension) {
-      out_console_message = String::Format("Invalid display size (%u, %u).",
-                                           display_width, display_height);
+    uint32_t display_aspect_width = config.displayAspectWidth();
+    uint32_t display_aspect_height = config.displayAspectHeight();
+    if (display_aspect_width == 0 || display_aspect_height == 0) {
+      out_console_message =
+          String::Format("Invalid display aspect (%u, %u).",
+                         display_aspect_width, display_aspect_height);
       return false;
     }
   }
@@ -260,8 +173,7 @@ VideoDecoderConfig* CopyConfig(const VideoDecoderConfig& config) {
     DOMArrayPiece buffer(config.description());
     DOMArrayBuffer* buffer_copy =
         DOMArrayBuffer::Create(buffer.Data(), buffer.ByteLength());
-    copy->setDescription(
-        ArrayBufferOrArrayBufferView::FromArrayBuffer(buffer_copy));
+    copy->setDescription(MakeGarbageCollected<V8BufferSource>(buffer_copy));
   }
 
   if (config.hasCodedWidth())
@@ -270,32 +182,17 @@ VideoDecoderConfig* CopyConfig(const VideoDecoderConfig& config) {
   if (config.hasCodedHeight())
     copy->setCodedHeight(config.codedHeight());
 
-  if (config.hasVisibleRegion()) {
-    auto* region = MakeGarbageCollected<VideoFrameRegion>();
-    region->setLeft(config.visibleRegion()->left());
-    region->setTop(config.visibleRegion()->top());
-    region->setWidth(config.visibleRegion()->width());
-    region->setHeight(config.visibleRegion()->height());
-    copy->setVisibleRegion(region);
+  if (config.hasDisplayAspectWidth())
+    copy->setDisplayAspectWidth(config.displayAspectWidth());
+
+  if (config.hasDisplayAspectHeight())
+    copy->setDisplayAspectHeight(config.displayAspectHeight());
+
+  if (config.hasColorSpace()) {
+    VideoColorSpace* color_space =
+        MakeGarbageCollected<VideoColorSpace>(config.colorSpace());
+    copy->setColorSpace(color_space->toJSON());
   }
-
-  if (config.hasCropLeft())
-    copy->setCropLeft(config.cropLeft());
-
-  if (config.hasCropTop())
-    copy->setCropTop(config.cropTop());
-
-  if (config.hasCropWidth())
-    copy->setCropWidth(config.cropWidth());
-
-  if (config.hasCropHeight())
-    copy->setCropHeight(config.cropHeight());
-
-  if (config.hasDisplayWidth())
-    copy->setDisplayWidth(config.displayWidth());
-
-  if (config.hasDisplayHeight())
-    copy->setDisplayHeight(config.displayHeight());
 
   if (config.hasHardwareAcceleration())
     copy->setHardwareAcceleration(config.hardwareAcceleration());
@@ -304,6 +201,37 @@ VideoDecoderConfig* CopyConfig(const VideoDecoderConfig& config) {
     copy->setOptimizeForLatency(config.optimizeForLatency());
 
   return copy;
+}
+
+void ParseAv1KeyFrame(const media::DecoderBuffer& buffer, bool* is_key_frame) {
+#if BUILDFLAG(ENABLE_LIBAOM)
+  aom_codec_stream_info_t stream_info = {0};
+  auto status = aom_codec_peek_stream_info(
+      &aom_codec_av1_dx_algo, buffer.data(), buffer.data_size(), &stream_info);
+  *is_key_frame = (status == AOM_CODEC_OK) && stream_info.is_kf;
+#endif
+}
+
+void ParseVpxKeyFrame(const media::DecoderBuffer& buffer,
+                      media::VideoCodec codec,
+                      bool* is_key_frame) {
+#if BUILDFLAG(ENABLE_LIBVPX)
+  vpx_codec_stream_info_t stream_info = {0};
+  stream_info.sz = sizeof(vpx_codec_stream_info_t);
+  auto status = vpx_codec_peek_stream_info(
+      codec == media::kCodecVP8 ? &vpx_codec_vp8_dx_algo
+                                : &vpx_codec_vp9_dx_algo,
+      buffer.data(), static_cast<uint32_t>(buffer.data_size()), &stream_info);
+  *is_key_frame = (status == VPX_CODEC_OK) && stream_info.is_kf;
+#endif
+}
+
+void ParseH264KeyFrame(const media::DecoderBuffer& buffer, bool* is_key_frame) {
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+  auto result = media::mp4::AVC::AnalyzeAnnexB(
+      buffer.data(), buffer.data_size(), std::vector<media::SubsampleEntry>());
+  *is_key_frame = result.is_keyframe.value_or(false);
+#endif
 }
 
 }  // namespace
@@ -435,22 +363,9 @@ ScriptPromise VideoDecoder::IsAcceleratedConfigSupported(
   VideoDecoderSupport* support = VideoDecoderSupport::Create();
   support->setConfig(CopyConfig(*config));
 
-  if (IsMainThread()) {
-    media::GpuVideoAcceleratorFactories* gpu_factories =
-        Platform::Current()->GetGpuFactories();
-    DecoderSupport_OnGpuFactories(support, std::move(media_config), resolver,
-                                  gpu_factories);
-  } else {
-    auto on_gpu_factories_cb = CrossThreadBindOnce(
-        &DecoderSupport_OnGpuFactories, WrapCrossThreadPersistent(support),
-        std::move(media_config), WrapCrossThreadPersistent(resolver));
-
-    Thread::MainThread()->GetTaskRunner()->PostTaskAndReplyWithResult(
-        FROM_HERE,
-        ConvertToBaseOnceCallback(
-            CrossThreadBindOnce(&GetGpuFactoriesOnMainThread)),
-        ConvertToBaseOnceCallback(std::move(on_gpu_factories_cb)));
-  }
+  RetrieveGpuFactoriesWithKnownDecoderSupport(CrossThreadBindOnce(
+      &DecoderSupport_OnKnown, WrapCrossThreadPersistent(support),
+      std::move(media_config), WrapCrossThreadPersistent(resolver)));
 
   return promise;
 }
@@ -516,16 +431,41 @@ CodecConfigEval VideoDecoder::MakeMediaVideoDecoderConfig(
   }
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
-  // TODO(sandersd): Use size information from the VideoDecoderConfig when it is
-  // provided, and figure out how to combine it with the avcC. Update fuzzer to
-  // match.
-  gfx::Size size = gfx::Size(1280, 720);
+  // Guess 720p if no coded size hint is provided. This choice should result in
+  // a preference for hardware decode.
+  gfx::Size coded_size = gfx::Size(1280, 720);
+  if (config.hasCodedWidth() && config.hasCodedHeight())
+    coded_size = gfx::Size(config.codedWidth(), config.codedHeight());
+
+  // These are meaningless.
+  // TODO(crbug.com/1214061): Remove.
+  gfx::Rect visible_rect(gfx::Point(), coded_size);
+  gfx::Size natural_size = coded_size;
+
+  // Note: Using a default-constructed VideoAspectRatio allows decoders to
+  // override using in-band metadata.
+  media::VideoAspectRatio aspect_ratio;
+  if (config.hasDisplayAspectWidth() && config.hasDisplayAspectHeight()) {
+    aspect_ratio = media::VideoAspectRatio::DAR(config.displayAspectWidth(),
+                                                config.displayAspectHeight());
+  }
+
+  // TODO(crbug.com/1138680): Ensure that this default value is acceptable
+  // under the WebCodecs spec. Should be BT.709 for YUV, sRGB for RGB, or
+  // whatever was explicitly set for codec strings that include a color space.
+  media::VideoColorSpace media_color_space = video_type.color_space;
+  if (config.hasColorSpace()) {
+    VideoColorSpace* color_space =
+        MakeGarbageCollected<VideoColorSpace>(config.colorSpace());
+    media_color_space = color_space->ToMediaColorSpace();
+  }
 
   out_media_config.Initialize(
       video_type.codec, video_type.profile,
-      media::VideoDecoderConfig::AlphaMode::kIsOpaque, video_type.color_space,
-      media::kNoTransformation, size, gfx::Rect(gfx::Point(), size), size,
+      media::VideoDecoderConfig::AlphaMode::kIsOpaque, media_color_space,
+      media::kNoTransformation, coded_size, visible_rect, natural_size,
       extra_data, media::EncryptionScheme::kUnencrypted);
+  out_media_config.set_aspect_ratio(aspect_ratio);
 
   return CodecConfigEval::kSupported;
 }
@@ -543,22 +483,25 @@ CodecConfigEval VideoDecoder::MakeMediaConfig(const ConfigType& config,
                                               String* out_console_message) {
   DCHECK(out_media_config);
   DCHECK(out_console_message);
-  return MakeMediaVideoDecoderConfig(config, *out_media_config,
+  auto result = MakeMediaVideoDecoderConfig(config, *out_media_config,
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-                                     h264_converter_ /* out */,
-                                     h264_avcc_ /* out */,
+                                            h264_converter_ /* out */,
+                                            h264_avcc_ /* out */,
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
-                                     *out_console_message);
+                                            *out_console_message);
+  if (result == CodecConfigEval::kSupported)
+    current_codec_ = out_media_config->codec();
+  return result;
 }
 
 media::StatusOr<scoped_refptr<media::DecoderBuffer>>
-VideoDecoder::MakeDecoderBuffer(const InputType& chunk) {
-  uint8_t* src = static_cast<uint8_t*>(chunk.data()->Data());
-  size_t src_size = chunk.data()->ByteLength();
-
-  scoped_refptr<media::DecoderBuffer> decoder_buffer;
+VideoDecoder::MakeDecoderBuffer(const InputType& chunk, bool verify_key_frame) {
+  scoped_refptr<media::DecoderBuffer> decoder_buffer = chunk.buffer();
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (h264_converter_) {
+    const uint8_t* src = chunk.buffer()->data();
+    size_t src_size = chunk.buffer()->data_size();
+
     // Note: this may not be safe if support for SharedArrayBuffers is added.
     uint32_t output_size = h264_converter_->CalculateNeededOutputBufferSize(
         src, static_cast<uint32_t>(src_size), h264_avcc_.get());
@@ -576,23 +519,25 @@ VideoDecoder::MakeDecoderBuffer(const InputType& chunk) {
     }
 
     decoder_buffer = media::DecoderBuffer::CopyFrom(buf.data(), output_size);
+    decoder_buffer->set_timestamp(chunk.buffer()->timestamp());
+    decoder_buffer->set_duration(chunk.buffer()->duration());
   }
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
-  if (!decoder_buffer)
-    decoder_buffer = media::DecoderBuffer::CopyFrom(src, src_size);
 
-  decoder_buffer->set_timestamp(
-      base::TimeDelta::FromMicroseconds(chunk.timestamp()));
+  bool is_key_frame = chunk.type() == "key";
+  if (verify_key_frame) {
+    if (current_codec_ == media::kCodecVP9 ||
+        current_codec_ == media::kCodecVP8) {
+      ParseVpxKeyFrame(*decoder_buffer, current_codec_, &is_key_frame);
+    } else if (current_codec_ == media::kCodecAV1) {
+      ParseAv1KeyFrame(*decoder_buffer, &is_key_frame);
+    } else if (current_codec_ == media::kCodecH264) {
+      ParseH264KeyFrame(*decoder_buffer, &is_key_frame);
+    }
 
-  if (chunk.duration()) {
-    // Clamp within bounds of our internal TimeDelta-based duration.
-    // See media/base/timestamp_constants.h
-    decoder_buffer->set_duration(base::TimeDelta::FromMicroseconds(
-        std::min(base::saturated_cast<int64_t>(chunk.duration().value()),
-                 std::numeric_limits<int64_t>::max() - 1)));
+    if (!is_key_frame)
+      return media::Status(media::StatusCode::kKeyFrameRequired);
   }
-
-  decoder_buffer->set_is_key_frame(chunk.type() == "key");
 
   return decoder_buffer;
 }

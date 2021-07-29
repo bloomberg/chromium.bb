@@ -14,10 +14,10 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/arc/fileapi/chrome_content_provider_url_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ash/file_system_provider/service_factory.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -62,13 +62,12 @@ class ArcFileSystemBridgeTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile(kTestingProfileName);
     auto fake_provider =
-        chromeos::file_system_provider::FakeExtensionProvider::Create(
-            kExtensionId);
+        ash::file_system_provider::FakeExtensionProvider::Create(kExtensionId);
     const auto kProviderId = fake_provider->GetId();
-    auto* service = chromeos::file_system_provider::Service::Get(profile_);
+    auto* service = ash::file_system_provider::Service::Get(profile_);
     service->RegisterProvider(std::move(fake_provider));
     service->MountFileSystem(kProviderId,
-                             chromeos::file_system_provider::MountOptions(
+                             ash::file_system_provider::MountOptions(
                                  kFileSystemId, "Test FileSystem"));
 
     arc_file_system_bridge_ =

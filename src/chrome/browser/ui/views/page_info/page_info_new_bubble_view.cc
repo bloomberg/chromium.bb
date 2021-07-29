@@ -14,29 +14,22 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
-namespace {
-
-// Bubble width constraints.
-constexpr int kMinBubbleWidth = 320;
-constexpr int kMaxBubbleWidth = 1000;
-
-}  // namespace
-
 PageInfoNewBubbleView::PageInfoNewBubbleView(
     views::View* anchor_view,
     const gfx::Rect& anchor_rect,
     gfx::NativeView parent_window,
     Profile* profile,
-    content::WebContents* web_contents,
+    content::WebContents* associated_web_contents,
     const GURL& url,
     PageInfoClosingCallback closing_callback)
     : PageInfoBubbleViewBase(anchor_view,
                              anchor_rect,
                              parent_window,
                              PageInfoBubbleViewBase::BUBBLE_PAGE_INFO,
-                             web_contents),
+                             associated_web_contents),
       closing_callback_(std::move(closing_callback)) {
   DCHECK(closing_callback_);
+  DCHECK(web_contents());
 
   SetShowTitle(false);
   SetShowCloseButton(false);
@@ -51,25 +44,21 @@ PageInfoNewBubbleView::PageInfoNewBubbleView(
   const int top_margin =
       layout_provider->GetInsetsMetric(views::INSETS_DIALOG).top();
   set_margins(gfx::Insets(top_margin, 0, bottom_margin, 0));
-
-  views::BubbleDialogDelegateView::CreateBubble(this);
-
-  // CreateBubble() may not set our size synchronously so explicitly set it here
-  // before PageInfo updates trigger child layouts.
-  SetSize(GetPreferredSize());
-
   ui_delegate_ = std::make_unique<ChromePageInfoUiDelegate>(profile, url);
   presenter_ = std::make_unique<PageInfo>(
-      std::make_unique<ChromePageInfoDelegate>(web_contents), web_contents,
+      std::make_unique<ChromePageInfoDelegate>(web_contents()), web_contents(),
       url);
   view_factory_ = std::make_unique<PageInfoViewFactory>(
       presenter_.get(), ui_delegate_.get(), this);
 
+  SetTitle(presenter_->GetSimpleSiteName());
+
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
-  page_container_ = AddChildView(std::make_unique<PageSwitcherView>());
-  OpenMainPage();
-  SizeToContents();
+  page_container_ = AddChildView(
+      std::make_unique<PageSwitcherView>(view_factory_->CreateMainPageView()));
+
+  views::BubbleDialogDelegateView::CreateBubble(this);
 }
 
 PageInfoNewBubbleView::~PageInfoNewBubbleView() = default;
@@ -79,7 +68,15 @@ void PageInfoNewBubbleView::OpenMainPage() {
 }
 
 void PageInfoNewBubbleView::OpenSecurityPage() {
+  presenter_->RecordPageInfoAction(
+      PageInfo::PageInfoAction::PAGE_INFO_SECURITY_DETAILS_OPENED);
   page_container_->SwitchToPage(view_factory_->CreateSecurityPageView());
+}
+
+void PageInfoNewBubbleView::OpenPermissionPage(ContentSettingsType type) {
+  presenter_->RecordPageInfoAction(
+      PageInfo::PageInfoAction::PAGE_INFO_PERMISSION_DIALOG_OPENED);
+  page_container_->SwitchToPage(view_factory_->CreatePermissionPageView(type));
 }
 
 void PageInfoNewBubbleView::CloseBubble() {
@@ -87,17 +84,24 @@ void PageInfoNewBubbleView::CloseBubble() {
       views::Widget::ClosedReason::kCloseButtonClicked);
 }
 
+void PageInfoNewBubbleView::DidChangeVisibleSecurityState() {
+  presenter_->UpdateSecurityState();
+}
+
 void PageInfoNewBubbleView::OnWidgetDestroying(views::Widget* widget) {
   PageInfoBubbleViewBase::OnWidgetDestroying(widget);
 
-  bool reload_prompt;
-  presenter_->OnUIClosing(&reload_prompt);
-
   // This method mostly shouldn't be re-entrant but there are a few cases where
   // it can be (see crbug/966308). In that case, we have already run the closing
-  // callback so should not attempt to do it again.
-  if (closing_callback_)
+  // callback so should not attempt to do it again. As there will always be a
+  // |closing_callback_|, this is also used to ensure that the |presenter_| is
+  // informed exactly once.
+  if (closing_callback_) {
+    bool reload_prompt;
+    presenter_->OnUIClosing(&reload_prompt);
+
     std::move(closing_callback_).Run(widget->closed_reason(), reload_prompt);
+  }
 }
 
 void PageInfoNewBubbleView::WebContentsDestroyed() {
@@ -109,10 +113,10 @@ gfx::Size PageInfoNewBubbleView::CalculatePreferredSize() const {
     return views::View::CalculatePreferredSize();
   }
 
-  int width = kMinBubbleWidth;
+  int width = PageInfoViewFactory::kMinBubbleWidth;
   if (page_container_) {
     width = std::max(width, page_container_->GetPreferredSize().width());
-    width = std::min(width, kMaxBubbleWidth);
+    width = std::min(width, PageInfoViewFactory::kMaxBubbleWidth);
   }
   return gfx::Size(width, views::View::GetHeightForWidth(width));
 }

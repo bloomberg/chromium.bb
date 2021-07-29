@@ -90,7 +90,7 @@ probefmt(){
 }
 
 probeaudiostream(){
-    run ffprobe${PROGSUF}${EXECSUF} -show_entries stream=codec_name,codec_time_base,sample_fmt,channels,channel_layout "$@"
+    run ffprobe${PROGSUF}${EXECSUF} -show_entries stream=codec_name,codec_time_base,sample_fmt,channels,channel_layout:side_data "$@"
 }
 
 probetags(){
@@ -133,6 +133,15 @@ ffmpeg(){
         ffmpeg_args="${ffmpeg_args} ${arg}"
     done
     run ffmpeg${PROGSUF}${EXECSUF} ${ffmpeg_args}
+}
+
+ffprobe_demux(){
+    filename=$1
+    shift
+    print_filename=$(basename "$filename")
+    run ffprobe${PROGSUF}${EXECSUF} -print_filename "${print_filename}" \
+        -of compact -bitexact -show_format -show_streams -show_packets  \
+        -show_data_hash CRC32 "$filename" "$@"
 }
 
 framecrc(){

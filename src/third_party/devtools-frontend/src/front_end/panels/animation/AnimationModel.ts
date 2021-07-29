@@ -18,7 +18,7 @@ export class AnimationModel extends SDK.SDKModel.SDKModel {
   _screenshotCapture?: ScreenshotCapture;
   _enabled?: boolean;
 
-  constructor(target: SDK.SDKModel.Target) {
+  constructor(target: SDK.Target.Target) {
     super(target);
     this._runtimeModel = (target.model(SDK.RuntimeModel.RuntimeModel) as SDK.RuntimeModel.RuntimeModel);
     this._agent = target.animationAgent();
@@ -357,8 +357,8 @@ export class AnimationEffect {
     return new SDK.DOMModel.DeferredDOMNode(this._animationModel.target(), this.backendNodeId());
   }
 
-  backendNodeId(): number {
-    return this._payload.backendNodeId as number;
+  backendNodeId(): Protocol.DOM.BackendNodeId {
+    return this._payload.backendNodeId as Protocol.DOM.BackendNodeId;
   }
 
   keyframesRule(): KeyframesRule|null {
@@ -620,7 +620,7 @@ export class ScreenshotCapture {
   }
 }
 
-SDK.SDKModel.SDKModel.register(AnimationModel, {capabilities: SDK.SDKModel.Capability.DOM, autostart: false});
+SDK.SDKModel.SDKModel.register(AnimationModel, {capabilities: SDK.Target.Capability.DOM, autostart: false});
 export interface Request {
   endTime: number;
   screenshots: string[];

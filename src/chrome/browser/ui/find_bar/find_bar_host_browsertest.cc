@@ -1187,7 +1187,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
 // The only exception is if there is a global pasteboard (for example on Mac).
 // http://crbug.com/30006
 #if defined(OS_MAC)
-// https://crbug.com/845389
 #define MAYBE_PreferPreviousSearch DISABLED_PreferPreviousSearch
 #else
 #define MAYBE_PreferPreviousSearch PreferPreviousSearch
@@ -1451,31 +1450,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
       content::Source<NavigationController>(&web_contents->GetController()));
   find_tab_helper->StopFinding(find_in_page::SelectionAction::kActivate);
   observer.Wait();
-}
-
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FitWindow) {
-  Browser::CreateParams params(Browser::TYPE_POPUP, browser()->profile(), true);
-  params.initial_bounds = gfx::Rect(0, 0, 250, 500);
-  Browser* popup = Browser::Create(params);
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
-  chrome::AddSelectedTabWithURL(
-      popup, GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_LINK);
-  // Wait for the page to finish loading.
-  observer.Wait();
-  popup->window()->Show();
-
-  // On GTK, bounds change is asynchronous.
-  base::RunLoop().RunUntilIdle();
-
-  EnsureFindBoxOpenForBrowser(popup);
-
-  // GTK adjusts FindBar size asynchronously.
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_LE(GetFindBarWidthForBrowser(popup),
-            popup->window()->GetBounds().width());
 }
 
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,

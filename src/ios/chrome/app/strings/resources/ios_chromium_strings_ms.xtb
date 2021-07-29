@@ -6,10 +6,12 @@
 <translation id="1257458525759135959">Untuk menyimpan imej, ketik Tetapan untuk membolehkan Chromium membuat penambahan pada foto anda.</translation>
 <translation id="1289216811211435351">Beralih kepada Chromium</translation>
 <translation id="1361748954329991663">Chromium sudah lapuk. Jika tiada kemas kini yang tersedia dalam <ph name="BEGIN_LINK" />Gedung Apl<ph name="END_LINK" />, mungkin peranti anda sudah tidak menyokong versi baharu Chromium lagi.</translation>
+<translation id="1370204544543370355">Untuk memanfaatkan Chromium sepenuhnya, log masuk ke Chromium dengan Akaun Google anda</translation>
 <translation id="1431818719585918472">Biarkan Chromium mengunci tab Inkognito anda.</translation>
 <translation id="1472013873724362412">Akaun anda tidak berfungsi pada Chromium. Sila hubungi pentadbir domain anda atau gunakan Akaun Google biasa untuk log masuk.</translation>
 <translation id="1507010443238049608">Bantu Tingkatkan Ciri dan Prestasi Chromium</translation>
 <translation id="1531155317299575425">Memaparkan gesaan untuk log masuk ke Chromium.</translation>
+<translation id="1584569488888892906">Chromium mudah, selamat dan lebih pantas berbanding dengan dahulu</translation>
 <translation id="1617663976202781617">Data daripada penyegerakan Chromium</translation>
 <translation id="1736662517232558588">Data Chromium dikosongkan</translation>
 <translation id="1838412507805038478">Chromium mengesahkan bahawa <ph name="ISSUER" /> telah mengeluarkan sijil tapak web ini.</translation>
@@ -17,7 +19,6 @@
 <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="2006345422933397527">Chromium tidak dapat menyemak kemaskinian. Cuba periksa sambungan internet anda.</translation>
 <translation id="2054703085270098503">Kekal Selamat dengan Chromium</translation>
-<translation id="2075400798887076382">Akses tab yang telah dibuka pada komputer anda di sini. Cuma buka Chromium pada komputer anda, pergi ke menu dan pilih "Log masuk ke Chromium…"</translation>
 <translation id="2168108852149185974">Beberapa alat tambah menyebabkan Chromium ranap. Sila nyahpasang:</translation>
 <translation id="2178608107313874732">Chromium tidak dapat menggunakan kamera anda sekarang</translation>
 <translation id="2195025571279539885">Adakah anda mahu Chromium menawarkan halaman <ph name="LANGUAGE_NAME" /> dari tapak ini diterjemahkan pada masa akan datang?</translation>
@@ -42,10 +43,8 @@
 <translation id="4585809515399340748">Kini, anda boleh menggunakan Chromium pada bila-bila masa anda mengetik pautan dalam mesej, dokumen dan apl lain.</translation>
 <translation id="4681781466797808448">Hidupkan pengimbas Chromium</translation>
 <translation id="4736424910885271643">Akaun anda diurus oleh <ph name="HOSTED_DOMAIN" />, oleh itu data Chromium anda akan dikosongkan daripada peranti ini</translation>
-<translation id="4787850887676698916">Tab yang telah dibuka dalam Chromium pada peranti anda yang lain akan dipaparkan di sini.</translation>
 <translation id="4806326830773390517">Bantu tingkatkan Chromium dengan menghantar perangkaan penggunaan dan laporan ranap sistem kepada Google</translation>
 <translation id="4828317641996116749">Chromium tidak dapat menyemak semua kata laluan. Cuba lagi nanti.</translation>
-<translation id="4852878756222711218">Untuk memanfaatkan Chromium sepenuhnya, log masuk dengan Akaun Google anda</translation>
 <translation id="4985291216379576555">Luar Talian, Chromium tidak dapat menyemak kemaskinian</translation>
 <translation id="4999538639245140991">Oleh sebab anda log keluar daripada akaun yang diurus oleh <ph name="SIGNOUT_MANAGED_DOMAIN" />, data Chromium anda akan dipadamkan daripada peranti ini. Data anda akan kekal dalam Akaun Google anda.</translation>
 <translation id="5171868502429358653">Log Masuk ke Chromium</translation>
@@ -55,6 +54,7 @@
 <translation id="5521125884468363740">Untuk melihat tab anda daripada mana-mana tempat anda menggunakan Chromium, log masuk dan hidupkan penyegerakan</translation>
 <translation id="5573014823074921752">Petua Chromium. Untuk melihat lebih banyak pilihan tab, sentuh &amp; tahan butang Tunjukkan Tab dalam bar alat, yang terletak di bahagian bawah atau atas skrin anda.</translation>
 <translation id="5700709190537129682">Chromium tidak dapat menyemak kata laluan anda</translation>
+<translation id="5715349567881822785">Selesaikan lebih banyak perkara dengan Chromium</translation>
 <translation id="5742135483959137648">Gunakan Chromium untuk Membuka Pautan</translation>
 <translation id="5777187867430702742">Halaman Chromium</translation>
 <translation id="5862307444128926510">Selamat datang ke Chromium</translation>
@@ -69,6 +69,7 @@
 <translation id="632825460376924298">Benarkan Log Masuk Chromium</translation>
 <translation id="6337530241089703714">Pilih sama ada anda hendak mengosongkan data Chromium anda daripada peranti ini atau mengekalkan data tersebut</translation>
 <translation id="6424492062988593837">Chromium telah dipertingkatkan! Versi baharu kini boleh didapati.</translation>
+<translation id="6752854822223394465">Organisasi anda sedang menyediakan Chromium...</translation>
 <translation id="6820823224820483452">Chromium tidak dapat menyemak semua kata laluan. Cuba lagi esok.</translation>
 <translation id="6827294685447036764">Jika anda membenarkan Chromium mengetahui lokasi anda, Chromium akan menghantar maklumat itu kepada mana-mana laman yang anda benarkan. Laman mungkin meminta lokasi anda apabila laman itu mempunyai maklumat setempat untuk ditunjukkan kepada anda, seperti kedai atau berita berdekatan.</translation>
 <translation id="7018284295775193585">Chromium tidak dapat mengemas kini</translation>

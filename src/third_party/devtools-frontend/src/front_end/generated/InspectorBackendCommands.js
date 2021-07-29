@@ -6,9 +6,9 @@
 
 /**
  * @typedef {{
- *  registerCommand: function(string, !Array.<!{name: string, type: string, optional: boolean}>, !Array.<string>):void,
- *  registerEnum: function(string, !Object<string, string>):void,
- *  registerEvent: function(string, !Array<string>):void,
+ *  registerCommand: function(string&any, !Array.<!{name: string, type: string, optional: boolean}>, !Array.<string>):void,
+ *  registerEnum: function(string&any, !Object<string, string>):void,
+ *  registerEvent: function(string&any, !Array<string>):void,
  * }}
  */
 // @ts-ignore typedef
@@ -183,7 +183,8 @@ export function registerCommands(inspectorBackend) {
     ExcludeSameSiteUnspecifiedTreatedAsLax: 'ExcludeSameSiteUnspecifiedTreatedAsLax',
     ExcludeSameSiteNoneInsecure: 'ExcludeSameSiteNoneInsecure',
     ExcludeSameSiteLax: 'ExcludeSameSiteLax',
-    ExcludeSameSiteStrict: 'ExcludeSameSiteStrict'
+    ExcludeSameSiteStrict: 'ExcludeSameSiteStrict',
+    ExcludeInvalidSameParty: 'ExcludeInvalidSameParty'
   });
   inspectorBackend.registerEnum('Audits.SameSiteCookieWarningReason', {
     WarnSameSiteUnspecifiedCrossSiteContext: 'WarnSameSiteUnspecifiedCrossSiteContext',
@@ -271,7 +272,9 @@ export function registerCommands(inspectorBackend) {
     LowTextContrastIssue: 'LowTextContrastIssue',
     CorsIssue: 'CorsIssue',
     AttributionReportingIssue: 'AttributionReportingIssue',
-    QuirksModeIssue: 'QuirksModeIssue'
+    QuirksModeIssue: 'QuirksModeIssue',
+    NavigatorUserAgentIssue: 'NavigatorUserAgentIssue',
+    WasmCrossOriginModuleSharingIssue: 'WasmCrossOriginModuleSharingIssue'
   });
   inspectorBackend.registerEvent('Audits.issueAdded', ['issue']);
   inspectorBackend.registerEnum('Audits.GetEncodedResponseRequestEncoding', {Webp: 'webp', Jpeg: 'jpeg', Png: 'png'});
@@ -498,6 +501,13 @@ export function registerCommands(inspectorBackend) {
       ],
       ['media']);
   inspectorBackend.registerCommand(
+      'CSS.setContainerQueryText',
+      [
+        {'name': 'styleSheetId', 'type': 'string', 'optional': false},
+        {'name': 'range', 'type': 'object', 'optional': false}, {'name': 'text', 'type': 'string', 'optional': false}
+      ],
+      ['containerQuery']);
+  inspectorBackend.registerCommand(
       'CSS.setRuleSelector',
       [
         {'name': 'styleSheetId', 'type': 'string', 'optional': false},
@@ -582,6 +592,7 @@ export function registerCommands(inspectorBackend) {
     TargetText: 'target-text',
     SpellingError: 'spelling-error',
     GrammarError: 'grammar-error',
+    Highlight: 'highlight',
     FirstLineInherited: 'first-line-inherited',
     Scrollbar: 'scrollbar',
     ScrollbarThumb: 'scrollbar-thumb',
@@ -593,6 +604,9 @@ export function registerCommands(inspectorBackend) {
     InputListButton: 'input-list-button'
   });
   inspectorBackend.registerEnum('DOM.ShadowRootType', {UserAgent: 'user-agent', Open: 'open', Closed: 'closed'});
+  inspectorBackend.registerEnum(
+      'DOM.CompatibilityMode',
+      {QuirksMode: 'QuirksMode', LimitedQuirksMode: 'LimitedQuirksMode', NoQuirksMode: 'NoQuirksMode'});
   inspectorBackend.registerEvent('DOM.attributeModified', ['nodeId', 'name', 'value']);
   inspectorBackend.registerEvent('DOM.attributeRemoved', ['nodeId', 'name']);
   inspectorBackend.registerEvent('DOM.characterDataModified', ['nodeId', 'characterData']);
@@ -816,6 +830,13 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerCommand('DOM.undo', [], []);
   inspectorBackend.registerCommand(
       'DOM.getFrameOwner', [{'name': 'frameId', 'type': 'string', 'optional': false}], ['backendNodeId', 'nodeId']);
+  inspectorBackend.registerCommand(
+      'DOM.getContainerForNode',
+      [
+        {'name': 'nodeId', 'type': 'number', 'optional': false},
+        {'name': 'containerName', 'type': 'string', 'optional': true}
+      ],
+      ['nodeId']);
 
   // DOMDebugger.
   inspectorBackend.registerEnum(
@@ -1568,7 +1589,7 @@ export function registerCommands(inspectorBackend) {
   });
   inspectorBackend.registerEnum(
       'Network.CrossOriginEmbedderPolicyValue',
-      {None: 'None', CorsOrCredentialless: 'CorsOrCredentialless', RequireCorp: 'RequireCorp'});
+      {None: 'None', Credentialless: 'Credentialless', RequireCorp: 'RequireCorp'});
   inspectorBackend.registerEvent('Network.dataReceived', ['requestId', 'timestamp', 'dataLength', 'encodedDataLength']);
   inspectorBackend.registerEvent(
       'Network.eventSourceMessageReceived', ['requestId', 'timestamp', 'eventName', 'eventId', 'data']);
@@ -1621,6 +1642,13 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEvent(
       'Network.trustTokenOperationDone',
       ['status', 'type', 'requestId', 'topLevelOrigin', 'issuerOrigin', 'issuedTokenCount']);
+  inspectorBackend.registerEvent('Network.subresourceWebBundleMetadataReceived', ['requestId', 'urls']);
+  inspectorBackend.registerEvent('Network.subresourceWebBundleMetadataError', ['requestId', 'errorMessage']);
+  inspectorBackend.registerEvent(
+      'Network.subresourceWebBundleInnerResponseParsed', ['innerRequestId', 'innerRequestURL', 'bundleRequestId']);
+  inspectorBackend.registerEvent(
+      'Network.subresourceWebBundleInnerResponseError',
+      ['innerRequestId', 'innerRequestURL', 'errorMessage', 'bundleRequestId']);
   inspectorBackend.registerCommand(
       'Network.setAcceptedEncodings', [{'name': 'encodings', 'type': 'object', 'optional': false}], []);
   inspectorBackend.registerCommand('Network.clearAcceptedEncodingsOverride', [], []);
@@ -1717,13 +1745,6 @@ export function registerCommands(inspectorBackend) {
       ['success']);
   inspectorBackend.registerCommand(
       'Network.setCookies', [{'name': 'cookies', 'type': 'object', 'optional': false}], []);
-  inspectorBackend.registerCommand(
-      'Network.setDataSizeLimitsForTest',
-      [
-        {'name': 'maxTotalSize', 'type': 'number', 'optional': false},
-        {'name': 'maxResourceSize', 'type': 'number', 'optional': false}
-      ],
-      []);
   inspectorBackend.registerCommand(
       'Network.setExtraHTTPHeaders', [{'name': 'headers', 'type': 'object', 'optional': false}], []);
   inspectorBackend.registerCommand(
@@ -1849,6 +1870,9 @@ export function registerCommands(inspectorBackend) {
       'Overlay.setShowScrollSnapOverlays',
       [{'name': 'scrollSnapHighlightConfigs', 'type': 'object', 'optional': false}], []);
   inspectorBackend.registerCommand(
+      'Overlay.setShowContainerQueryOverlays',
+      [{'name': 'containerQueryHighlightConfigs', 'type': 'object', 'optional': false}], []);
+  inspectorBackend.registerCommand(
       'Overlay.setShowPaintRects', [{'name': 'result', 'type': 'boolean', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'Overlay.setShowLayoutShiftRegions', [{'name': 'result', 'type': 'boolean', 'optional': false}], []);
@@ -1865,6 +1889,9 @@ export function registerCommands(inspectorBackend) {
 
   // Page.
   inspectorBackend.registerEnum('Page.AdFrameType', {None: 'none', Child: 'child', Root: 'root'});
+  inspectorBackend.registerEnum(
+      'Page.AdFrameExplanation',
+      {ParentIsAd: 'ParentIsAd', CreatedByAdScript: 'CreatedByAdScript', MatchedBlockingRule: 'MatchedBlockingRule'});
   inspectorBackend.registerEnum('Page.SecureContextType', {
     Secure: 'Secure',
     SecureLocalhost: 'SecureLocalhost',
@@ -1883,6 +1910,7 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum('Page.PermissionsPolicyFeature', {
     Accelerometer: 'accelerometer',
     AmbientLightSensor: 'ambient-light-sensor',
+    AttributionReporting: 'attribution-reporting',
     Autoplay: 'autoplay',
     Camera: 'camera',
     ChDpr: 'ch-dpr',
@@ -1890,9 +1918,11 @@ export function registerCommands(inspectorBackend) {
     ChDownlink: 'ch-downlink',
     ChEct: 'ch-ect',
     ChLang: 'ch-lang',
+    ChPrefersColorScheme: 'ch-prefers-color-scheme',
     ChRtt: 'ch-rtt',
     ChUa: 'ch-ua',
     ChUaArch: 'ch-ua-arch',
+    ChUaBitness: 'ch-ua-bitness',
     ChUaPlatform: 'ch-ua-platform',
     ChUaModel: 'ch-ua-model',
     ChUaMobile: 'ch-ua-mobile',
@@ -1902,7 +1932,6 @@ export function registerCommands(inspectorBackend) {
     ChWidth: 'ch-width',
     ClipboardRead: 'clipboard-read',
     ClipboardWrite: 'clipboard-write',
-    ConversionMeasurement: 'conversion-measurement',
     CrossOriginIsolated: 'cross-origin-isolated',
     DirectSockets: 'direct-sockets',
     DisplayCapture: 'display-capture',
@@ -1935,6 +1964,7 @@ export function registerCommands(inspectorBackend) {
     Usb: 'usb',
     VerticalScroll: 'vertical-scroll',
     WebShare: 'web-share',
+    WindowPlacement: 'window-placement',
     XrSpatialTracking: 'xr-spatial-tracking'
   });
   inspectorBackend.registerEnum(
@@ -2001,6 +2031,103 @@ export function registerCommands(inspectorBackend) {
   });
   inspectorBackend.registerEnum(
       'Page.NavigationType', {Navigation: 'Navigation', BackForwardCacheRestore: 'BackForwardCacheRestore'});
+  inspectorBackend.registerEnum('Page.BackForwardCacheNotRestoredReason', {
+    NotMainFrame: 'NotMainFrame',
+    BackForwardCacheDisabled: 'BackForwardCacheDisabled',
+    RelatedActiveContentsExist: 'RelatedActiveContentsExist',
+    HTTPStatusNotOK: 'HTTPStatusNotOK',
+    SchemeNotHTTPOrHTTPS: 'SchemeNotHTTPOrHTTPS',
+    Loading: 'Loading',
+    WasGrantedMediaAccess: 'WasGrantedMediaAccess',
+    DisableForRenderFrameHostCalled: 'DisableForRenderFrameHostCalled',
+    DomainNotAllowed: 'DomainNotAllowed',
+    HTTPMethodNotGET: 'HTTPMethodNotGET',
+    SubframeIsNavigating: 'SubframeIsNavigating',
+    Timeout: 'Timeout',
+    CacheLimit: 'CacheLimit',
+    JavaScriptExecution: 'JavaScriptExecution',
+    RendererProcessKilled: 'RendererProcessKilled',
+    RendererProcessCrashed: 'RendererProcessCrashed',
+    GrantedMediaStreamAccess: 'GrantedMediaStreamAccess',
+    SchedulerTrackedFeatureUsed: 'SchedulerTrackedFeatureUsed',
+    ConflictingBrowsingInstance: 'ConflictingBrowsingInstance',
+    CacheFlushed: 'CacheFlushed',
+    ServiceWorkerVersionActivation: 'ServiceWorkerVersionActivation',
+    SessionRestored: 'SessionRestored',
+    ServiceWorkerPostMessage: 'ServiceWorkerPostMessage',
+    EnteredBackForwardCacheBeforeServiceWorkerHostAdded: 'EnteredBackForwardCacheBeforeServiceWorkerHostAdded',
+    RenderFrameHostReused_SameSite: 'RenderFrameHostReused_SameSite',
+    RenderFrameHostReused_CrossSite: 'RenderFrameHostReused_CrossSite',
+    ServiceWorkerClaim: 'ServiceWorkerClaim',
+    IgnoreEventAndEvict: 'IgnoreEventAndEvict',
+    HaveInnerContents: 'HaveInnerContents',
+    TimeoutPuttingInCache: 'TimeoutPuttingInCache',
+    BackForwardCacheDisabledByLowMemory: 'BackForwardCacheDisabledByLowMemory',
+    BackForwardCacheDisabledByCommandLine: 'BackForwardCacheDisabledByCommandLine',
+    NetworkRequestDatAPIpeDrainedAsBytesConsumer: 'NetworkRequestDatapipeDrainedAsBytesConsumer',
+    NetworkRequestRedirected: 'NetworkRequestRedirected',
+    NetworkRequestTimeout: 'NetworkRequestTimeout',
+    NetworkExceedsBufferLimit: 'NetworkExceedsBufferLimit',
+    NavigationCancelledWhileRestoring: 'NavigationCancelledWhileRestoring',
+    NotMostRecentNavigationEntry: 'NotMostRecentNavigationEntry',
+    BackForwardCacheDisabledForPrerender: 'BackForwardCacheDisabledForPrerender',
+    UserAgentOverrideDiffers: 'UserAgentOverrideDiffers',
+    ForegroundCacheLimit: 'ForegroundCacheLimit',
+    BrowsingInstanceNotSwapped: 'BrowsingInstanceNotSwapped',
+    BackForwardCacheDisabledForDelegate: 'BackForwardCacheDisabledForDelegate',
+    OptInUnloadHeaderNotPresent: 'OptInUnloadHeaderNotPresent',
+    UnloadHandlerExistsInSubFrame: 'UnloadHandlerExistsInSubFrame',
+    ServiceWorkerUnregistration: 'ServiceWorkerUnregistration',
+    WebSocket: 'WebSocket',
+    WebRTC: 'WebRTC',
+    MainResourceHasCacheControlNoStore: 'MainResourceHasCacheControlNoStore',
+    MainResourceHasCacheControlNoCache: 'MainResourceHasCacheControlNoCache',
+    SubresourceHasCacheControlNoStore: 'SubresourceHasCacheControlNoStore',
+    SubresourceHasCacheControlNoCache: 'SubresourceHasCacheControlNoCache',
+    ContainsPlugins: 'ContainsPlugins',
+    DocumentLoaded: 'DocumentLoaded',
+    DedicatedWorkerOrWorklet: 'DedicatedWorkerOrWorklet',
+    OutstandingNetworkRequestOthers: 'OutstandingNetworkRequestOthers',
+    OutstandingIndexedDBTransaction: 'OutstandingIndexedDBTransaction',
+    RequestedGeolocationPermission: 'RequestedGeolocationPermission',
+    RequestedNotificationsPermission: 'RequestedNotificationsPermission',
+    RequestedMIDIPermission: 'RequestedMIDIPermission',
+    RequestedAudioCapturePermission: 'RequestedAudioCapturePermission',
+    RequestedVideoCapturePermission: 'RequestedVideoCapturePermission',
+    RequestedBackForwardCacheBlockedSensors: 'RequestedBackForwardCacheBlockedSensors',
+    RequestedBackgroundWorkPermission: 'RequestedBackgroundWorkPermission',
+    BroadcastChannel: 'BroadcastChannel',
+    IndexedDBConnection: 'IndexedDBConnection',
+    WebXR: 'WebXR',
+    SharedWorker: 'SharedWorker',
+    WebLocks: 'WebLocks',
+    WebHID: 'WebHID',
+    WebShare: 'WebShare',
+    RequestedStorageAccessGrant: 'RequestedStorageAccessGrant',
+    WebNfc: 'WebNfc',
+    WebFileSystem: 'WebFileSystem',
+    OutstandingNetworkRequestFetch: 'OutstandingNetworkRequestFetch',
+    OutstandingNetworkRequestXHR: 'OutstandingNetworkRequestXHR',
+    AppBanner: 'AppBanner',
+    Printing: 'Printing',
+    WebDatabase: 'WebDatabase',
+    PictureInPicture: 'PictureInPicture',
+    Portal: 'Portal',
+    SpeechRecognizer: 'SpeechRecognizer',
+    IdleManager: 'IdleManager',
+    PaymentManager: 'PaymentManager',
+    SpeechSynthesis: 'SpeechSynthesis',
+    KeyboardLock: 'KeyboardLock',
+    WebOTPService: 'WebOTPService',
+    OutstandingNetworkRequestDirectSocket: 'OutstandingNetworkRequestDirectSocket',
+    IsolatedWorldScript: 'IsolatedWorldScript',
+    InjectedStyleSheet: 'InjectedStyleSheet',
+    MediaSessionImplOnServiceCreated: 'MediaSessionImplOnServiceCreated',
+    Unknown: 'Unknown'
+  });
+  inspectorBackend.registerEnum(
+      'Page.BackForwardCacheNotRestoredReasonType',
+      {SupportPending: 'SupportPending', PageSupportNeeded: 'PageSupportNeeded', Circumstantial: 'Circumstantial'});
   inspectorBackend.registerEvent('Page.domContentEventFired', ['timestamp']);
   inspectorBackend.registerEnum(
       'Page.FileChooserOpenedEventMode', {SelectSingle: 'selectSingle', SelectMultiple: 'selectMultiple'});
@@ -2026,7 +2153,7 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEvent(
       'Page.javascriptDialogOpening', ['url', 'message', 'type', 'hasBrowserHandler', 'defaultPrompt']);
   inspectorBackend.registerEvent('Page.lifecycleEvent', ['frameId', 'loaderId', 'name', 'timestamp']);
-  inspectorBackend.registerEvent('Page.backForwardCacheNotUsed', ['loaderId', 'frameId']);
+  inspectorBackend.registerEvent('Page.backForwardCacheNotUsed', ['loaderId', 'frameId', 'notRestoredExplanations']);
   inspectorBackend.registerEvent('Page.loadEventFired', ['timestamp']);
   inspectorBackend.registerEvent('Page.navigatedWithinDocument', ['frameId', 'url']);
   inspectorBackend.registerEvent('Page.screencastFrame', ['data', 'metadata', 'sessionId']);
@@ -2045,7 +2172,7 @@ export function registerCommands(inspectorBackend) {
       ],
       ['identifier']);
   inspectorBackend.registerCommand('Page.bringToFront', [], []);
-  inspectorBackend.registerEnum('Page.CaptureScreenshotRequestFormat', {Jpeg: 'jpeg', Png: 'png'});
+  inspectorBackend.registerEnum('Page.CaptureScreenshotRequestFormat', {Jpeg: 'jpeg', Png: 'png', Webp: 'webp'});
   inspectorBackend.registerCommand(
       'Page.captureScreenshot',
       [
@@ -2944,7 +3071,7 @@ export function registerCommands(inspectorBackend) {
   // Profiler.
   inspectorBackend.registerEvent('Profiler.consoleProfileFinished', ['id', 'location', 'profile', 'title']);
   inspectorBackend.registerEvent('Profiler.consoleProfileStarted', ['id', 'location', 'title']);
-  inspectorBackend.registerEvent('Profiler.preciseCoverageDeltaUpdate', ['timestamp', 'occassion', 'result']);
+  inspectorBackend.registerEvent('Profiler.preciseCoverageDeltaUpdate', ['timestamp', 'occasion', 'result']);
   inspectorBackend.registerCommand('Profiler.disable', [], []);
   inspectorBackend.registerCommand('Profiler.enable', [], []);
   inspectorBackend.registerCommand('Profiler.getBestEffortCoverage', [], ['result']);
@@ -3116,7 +3243,8 @@ export function registerCommands(inspectorBackend) {
         {'name': 'userGesture', 'type': 'boolean', 'optional': true},
         {'name': 'awaitPromise', 'type': 'boolean', 'optional': true},
         {'name': 'executionContextId', 'type': 'number', 'optional': true},
-        {'name': 'objectGroup', 'type': 'string', 'optional': true}
+        {'name': 'objectGroup', 'type': 'string', 'optional': true},
+        {'name': 'throwOnSideEffect', 'type': 'boolean', 'optional': true}
       ],
       ['result', 'exceptionDetails']);
   inspectorBackend.registerCommand(

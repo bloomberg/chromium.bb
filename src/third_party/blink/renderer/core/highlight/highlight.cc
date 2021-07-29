@@ -11,14 +11,11 @@
 
 namespace blink {
 
-Highlight* Highlight::Create(const String& name,
-                             HeapVector<Member<AbstractRange>>& ranges) {
-  return MakeGarbageCollected<Highlight>(name, ranges);
+Highlight* Highlight::Create(const HeapVector<Member<AbstractRange>>& ranges) {
+  return MakeGarbageCollected<Highlight>(ranges);
 }
 
-Highlight::Highlight(const String& name,
-                     HeapVector<Member<AbstractRange>>& ranges)
-    : name_(name) {
+Highlight::Highlight(const HeapVector<Member<AbstractRange>>& ranges) {
   for (const auto& range : ranges)
     highlight_ranges_.insert(range);
 }
@@ -27,18 +24,22 @@ Highlight::~Highlight() = default;
 
 void Highlight::Trace(blink::Visitor* visitor) const {
   visitor->Trace(highlight_ranges_);
+  visitor->Trace(highlight_registry_);
   ScriptWrappable::Trace(visitor);
 }
 
 Highlight* Highlight::addForBinding(ScriptState*,
                                     AbstractRange* range,
                                     ExceptionState&) {
-  highlight_ranges_.insert(range);
+  if (highlight_ranges_.insert(range).is_new_entry && times_registered_)
+    highlight_registry_->ScheduleRepaint();
   return this;
 }
 
 void Highlight::clearForBinding(ScriptState*, ExceptionState&) {
   highlight_ranges_.clear();
+  if (times_registered_)
+    highlight_registry_->ScheduleRepaint();
 }
 
 bool Highlight::deleteForBinding(ScriptState*,
@@ -47,6 +48,8 @@ bool Highlight::deleteForBinding(ScriptState*,
   auto iterator = highlight_ranges_.find(range);
   if (iterator != highlight_ranges_.end()) {
     highlight_ranges_.erase(iterator);
+    if (times_registered_)
+      highlight_registry_->ScheduleRepaint();
     return true;
   }
   return false;
@@ -55,11 +58,29 @@ bool Highlight::deleteForBinding(ScriptState*,
 bool Highlight::hasForBinding(ScriptState*,
                               AbstractRange* range,
                               ExceptionState&) const {
-  return highlight_ranges_.Contains(range);
+  return Contains(range);
 }
 
 wtf_size_t Highlight::size() const {
   return highlight_ranges_.size();
+}
+
+bool Highlight::Contains(AbstractRange* range) const {
+  return highlight_ranges_.Contains(range);
+}
+
+void Highlight::RegisterIn(HighlightRegistry* highlight_registry) {
+  // TODO(crbug.com/1225034): This check will fail if the Highlight is added to
+  // HighlightRegistries of multiple same-domain iframes.
+  DCHECK(!times_registered_ || highlight_registry_ == highlight_registry);
+  highlight_registry_ = highlight_registry;
+  ++times_registered_;
+}
+
+void Highlight::Deregister() {
+  DCHECK(times_registered_);
+  if (!--times_registered_)
+    highlight_registry_ = nullptr;
 }
 
 Highlight::IterationSource::IterationSource(const Highlight& highlight)

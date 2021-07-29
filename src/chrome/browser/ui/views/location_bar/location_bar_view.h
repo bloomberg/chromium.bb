@@ -25,7 +25,7 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/location_bar/permission_request_chip.h"
+#include "chrome/browser/ui/views/location_bar/permission_chip.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/security_state/core/security_state.h"
@@ -144,8 +144,15 @@ class LocationBarView : public LocationBar,
   // Shows |text| as an inline autocompletion.  This is useful for IMEs, where
   // we can't show the autocompletion inside the actual OmniboxView.  See
   // comments on |ime_inline_autocomplete_view_|.
+  void SetImePrefixAutocompletion(const std::u16string& text);
+  std::u16string GetImePrefixAutocompletion() const;
   void SetImeInlineAutocompletion(const std::u16string& text);
   std::u16string GetImeInlineAutocompletion() const;
+
+  // Sets the additional omnibox text. E.g. the title corresponding to the URL
+  // displayed in the OmniboxView.
+  void SetOmniboxAdditionalText(const std::u16string& text);
+  std::u16string GetOmniboxAdditionalText() const;
 
   // Select all of the text. Needed when the user tabs through controls
   // in the toolbar in full keyboard accessibility mode.
@@ -158,11 +165,6 @@ class LocationBarView : public LocationBar,
   }
 
   OmniboxViewViews* omnibox_view() { return omnibox_view_; }
-
-  // Sets the additional omnibox text. E.g. the title corresponding to the URL
-  // displayed in the OmniboxView.
-  void SetOmniboxAdditionalText(const std::u16string& text);
-  std::u16string GetOmniboxAdditionalText() const;
 
   // Updates the controller, and, if |contents| is non-null, restores saved
   // state that the tab holds.
@@ -180,6 +182,11 @@ class LocationBarView : public LocationBar,
   // Creates and displays an instance of PermissionRequestChip.
   PermissionChip* DisplayChip(
       permissions::PermissionPrompt::Delegate* delegate);
+
+  // Creates and displays an instance of PermissionQuietChip.
+  PermissionChip* DisplayQuietChip(
+      permissions::PermissionPrompt::Delegate* delegate,
+      bool should_expand);
 
   // Removes previously displayed PermissionChip.
   void FinalizeChip();
@@ -264,6 +271,9 @@ class LocationBarView : public LocationBar,
       geolocation_permission_observation_{this};
 #endif
 
+  // Adds `chip` as the first child view.
+  PermissionChip* AddChip(std::unique_ptr<PermissionChip> chip);
+
   // Returns the amount of space required to the left of the omnibox text.
   int GetMinimumLeadingWidth() const;
 
@@ -304,6 +314,11 @@ class LocationBarView : public LocationBar,
   // Called when the page info bubble is closed.
   void OnPageInfoBubbleClosed(views::Widget::ClosedReason closed_reason,
                               bool reload_prompt);
+
+  // Helper to set the texts of labels adjacent to the omnibox:
+  // `ime_prefix_autocomplete_view_`, `ime_inline_autocomplete_view_`, and
+  // `omnibox_additional_text_view_`.
+  void SetOmniboxAdjacentText(views::Label* label, const std::u16string& text);
 
   // LocationBar:
   GURL GetDestinationURL() const override;
@@ -412,10 +427,11 @@ class LocationBarView : public LocationBar,
   // search icon, EV HTTPS bubble, etc.
   LocationIconView* location_icon_view_ = nullptr;
 
-  // A view to show inline autocompletion when an IME is active.  In this case,
+  // Views to show inline autocompletion when an IME is active.  In this case,
   // we shouldn't change the text or selection inside the OmniboxView itself,
   // since this will conflict with the IME's control over the text.  So instead
   // we show any autocompletion in a separate field after the OmniboxView.
+  views::Label* ime_prefix_autocomplete_view_ = nullptr;
   views::Label* ime_inline_autocomplete_view_ = nullptr;
 
   // The complementary omnibox label displaying the selected suggestion's title
@@ -455,9 +471,6 @@ class LocationBarView : public LocationBar,
   // Whether we're in popup mode. This value also controls whether the location
   // bar is read-only.
   const bool is_popup_mode_;
-
-  // The focus ring, if one is in use.
-  views::FocusRing* focus_ring_ = nullptr;
 
   bool is_initialized_ = false;
 

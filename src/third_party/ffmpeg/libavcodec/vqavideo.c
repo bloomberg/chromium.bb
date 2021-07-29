@@ -171,17 +171,17 @@ static av_cold int vqa_decode_init(AVCodecContext *avctx)
     s->codebook_size = MAX_CODEBOOK_SIZE;
     s->codebook = av_malloc(s->codebook_size);
     if (!s->codebook)
-        goto fail;
+        return AVERROR(ENOMEM);
     s->next_codebook_buffer = av_malloc(s->codebook_size);
     if (!s->next_codebook_buffer)
-        goto fail;
+        return AVERROR(ENOMEM);
 
     /* allocate decode buffer */
     s->decode_buffer_size = (s->width / s->vector_width) *
         (s->height / s->vector_height) * 2;
     s->decode_buffer = av_mallocz(s->decode_buffer_size);
     if (!s->decode_buffer)
-        goto fail;
+        return AVERROR(ENOMEM);
 
     /* initialize the solid-color vectors */
     if (s->vector_height == 4) {
@@ -198,11 +198,6 @@ static av_cold int vqa_decode_init(AVCodecContext *avctx)
     s->next_codebook_buffer_index = 0;
 
     return 0;
-fail:
-    av_freep(&s->codebook);
-    av_freep(&s->next_codebook_buffer);
-    av_freep(&s->decode_buffer);
-    return AVERROR(ENOMEM);
 }
 
 #define CHECK_COUNT() \
@@ -642,7 +637,7 @@ static const AVCodecDefault vqa_defaults[] = {
     { NULL },
 };
 
-AVCodec ff_vqa_decoder = {
+const AVCodec ff_vqa_decoder = {
     .name           = "vqavideo",
     .long_name      = NULL_IF_CONFIG_SMALL("Westwood Studios VQA (Vector Quantized Animation) video"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -653,4 +648,5 @@ AVCodec ff_vqa_decoder = {
     .decode         = vqa_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
     .defaults       = vqa_defaults,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

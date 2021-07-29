@@ -25,6 +25,7 @@
 #include "components/autofill_assistant/browser/service/service.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/wait_for_document_operation.h"
+#include "components/autofill_assistant/browser/web/element_action_util.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
 #include "components/autofill_assistant/browser/web/element_store.h"
 #include "components/autofill_assistant/browser/web/web_controller.h"
@@ -69,7 +70,7 @@ ScriptExecutor::ScriptExecutor(
     const std::string& global_payload,
     const std::string& script_payload,
     ScriptExecutor::Listener* listener,
-    std::map<std::string, ScriptStatusProto>* scripts_state,
+    std::map<std::string, ScriptStatus>* scripts_state,
     const std::vector<std::unique_ptr<Script>>* ordered_interrupts,
     ScriptExecutorDelegate* delegate)
     : script_path_(script_path),
@@ -80,7 +81,9 @@ ScriptExecutor::ScriptExecutor(
       listener_(listener),
       delegate_(delegate),
       ordered_interrupts_(ordered_interrupts),
-      scripts_state_(scripts_state) {
+      scripts_state_(scripts_state),
+      element_store_(
+          std::make_unique<ElementStore>(delegate->GetWebContents())) {
   DCHECK(delegate_);
   DCHECK(ordered_interrupts_);
 }
@@ -100,7 +103,7 @@ void ScriptExecutor::Run(const UserData* user_data,
 #else
   DVLOG(2) << "Starting script " << script_path_;
 #endif
-  (*scripts_state_)[script_path_] = SCRIPT_STATUS_RUNNING;
+  (*scripts_state_)[script_path_] = ScriptStatus::RUNNING;
 
   DCHECK(user_data);
   user_data_ = user_data;
@@ -131,7 +134,7 @@ const UserData* ScriptExecutor::GetUserData() const {
   return user_data_;
 }
 
-UserModel* ScriptExecutor::GetUserModel() {
+UserModel* ScriptExecutor::GetUserModel() const {
   return delegate_->GetUserModel();
 }
 
@@ -300,7 +303,7 @@ void ScriptExecutor::SetStatusMessage(const std::string& message) {
   delegate_->SetStatusMessage(message);
 }
 
-std::string ScriptExecutor::GetStatusMessage() {
+std::string ScriptExecutor::GetStatusMessage() const {
   return delegate_->GetStatusMessage();
 }
 
@@ -308,7 +311,7 @@ void ScriptExecutor::SetBubbleMessage(const std::string& message) {
   delegate_->SetBubbleMessage(message);
 }
 
-std::string ScriptExecutor::GetBubbleMessage() {
+std::string ScriptExecutor::GetBubbleMessage() const {
   return delegate_->GetBubbleMessage();
 }
 
@@ -481,10 +484,10 @@ void ScriptExecutor::OnChosen(UserAction::Callback callback,
 }
 
 void ScriptExecutor::FillAddressForm(
-    const autofill::AutofillProfile* profile,
+    std::unique_ptr<autofill::AutofillProfile> profile,
     const Selector& selector,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  delegate_->GetWebController()->FillAddressForm(profile, selector,
+  delegate_->GetWebController()->FillAddressForm(std::move(profile), selector,
                                                  std::move(callback));
 }
 
@@ -506,16 +509,9 @@ void ScriptExecutor::RetrieveElementFormAndFieldData(
       selector, std::move(callback));
 }
 
-void ScriptExecutor::ScrollToElementPosition(
-    const Selector& selector,
-    const TopPadding& top_padding,
-    std::unique_ptr<ElementFinder::Result> container,
-    const ElementFinder::Result& element,
-    base::OnceCallback<void(const ClientStatus&)> callback) {
-  last_focused_element_selector_ = selector;
-  last_focused_element_top_padding_ = top_padding;
-  delegate_->GetWebController()->ScrollToElementPosition(
-      std::move(container), element, top_padding, std::move(callback));
+void ScriptExecutor::StoreScrolledToElement(
+    const ElementFinder::Result& element) {
+  last_focused_element_ = element.dom_object;
 }
 
 void ScriptExecutor::SetTouchableElementArea(
@@ -635,7 +631,7 @@ void ScriptExecutor::Close() {
   should_stop_script_ = true;
 }
 
-autofill::PersonalDataManager* ScriptExecutor::GetPersonalDataManager() {
+autofill::PersonalDataManager* ScriptExecutor::GetPersonalDataManager() const {
   return delegate_->GetPersonalDataManager();
 }
 
@@ -643,23 +639,23 @@ WebsiteLoginManager* ScriptExecutor::GetWebsiteLoginManager() const {
   return delegate_->GetWebsiteLoginManager();
 }
 
-content::WebContents* ScriptExecutor::GetWebContents() {
+content::WebContents* ScriptExecutor::GetWebContents() const {
   return delegate_->GetWebContents();
 }
 
 ElementStore* ScriptExecutor::GetElementStore() const {
-  return delegate_->GetElementStore();
+  return element_store_.get();
 }
 
 WebController* ScriptExecutor::GetWebController() const {
   return delegate_->GetWebController();
 }
 
-std::string ScriptExecutor::GetEmailAddressForAccessTokenAccount() {
+std::string ScriptExecutor::GetEmailAddressForAccessTokenAccount() const {
   return delegate_->GetEmailAddressForAccessTokenAccount();
 }
 
-std::string ScriptExecutor::GetLocale() {
+std::string ScriptExecutor::GetLocale() const {
   return delegate_->GetLocale();
 }
 
@@ -685,7 +681,7 @@ void ScriptExecutor::SetViewportMode(ViewportMode mode) {
   delegate_->SetViewportMode(mode);
 }
 
-ViewportMode ScriptExecutor::GetViewportMode() {
+ViewportMode ScriptExecutor::GetViewportMode() const {
   return delegate_->GetViewportMode();
 }
 
@@ -694,7 +690,7 @@ void ScriptExecutor::SetPeekMode(
   delegate_->SetPeekMode(peek_mode);
 }
 
-ConfigureBottomSheetProto::PeekMode ScriptExecutor::GetPeekMode() {
+ConfigureBottomSheetProto::PeekMode ScriptExecutor::GetPeekMode() const {
   return delegate_->GetPeekMode();
 }
 
@@ -824,11 +820,6 @@ bool ScriptExecutor::MaybeShowSlowWarning(const std::string& message,
   return true;
 }
 
-void ScriptExecutor::DispatchJsEvent(
-    base::OnceCallback<void(const ClientStatus&)> callback) const {
-  delegate_->GetWebController()->DispatchJsEvent(std::move(callback));
-}
-
 base::WeakPtr<ActionDelegate> ScriptExecutor::GetWeakPtr() const {
   return weak_ptr_factory_.GetWeakPtr();
 }
@@ -931,7 +922,7 @@ void ScriptExecutor::RunCallback(bool success) {
 void ScriptExecutor::RunCallbackWithResult(const Result& result) {
   DCHECK(callback_);
   (*scripts_state_)[script_path_] =
-      result.success ? SCRIPT_STATUS_SUCCESS : SCRIPT_STATUS_FAILURE;
+      result.success ? ScriptStatus::SUCCESS : ScriptStatus::FAILURE;
   std::move(callback_).Run(result);
 }
 
@@ -1212,7 +1203,7 @@ void ScriptExecutor::WaitForDomOperation::RunChecks(
 
       interrupt->precondition->Check(
           delegate_->GetCurrentURL(), batch_element_checker_.get(),
-          *delegate_->GetTriggerContext(), *main_script_->scripts_state_,
+          *delegate_->GetTriggerContext(),
           base::BindOnce(&WaitForDomOperation::OnPreconditionCheckDone,
                          weak_ptr_factory_.GetWeakPtr(),
                          interrupt->handle.path));
@@ -1349,25 +1340,31 @@ void ScriptExecutor::WaitForDomOperation::RestoreStatusMessage() {
 void ScriptExecutor::WaitForDomOperation::RestorePreInterruptScroll() {
   if (!saved_pre_interrupt_state_)
     return;
+  if (!main_script_->last_focused_element_.has_value())
+    return;
 
-  if (!main_script_->last_focused_element_selector_.empty()) {
-    auto actions =
-        std::make_unique<action_delegate_util::ElementActionVector>();
-    action_delegate_util::AddStepIgnoreTiming(
-        base::BindOnce(&ActionDelegate::WaitUntilDocumentIsInReadyState,
-                       main_script_->GetWeakPtr(),
-                       delegate_->GetSettings().document_ready_check_timeout,
-                       DOCUMENT_INTERACTIVE),
-        actions.get());
-    actions->emplace_back(base::BindOnce(
-        &ActionDelegate::ScrollToElementPosition, main_script_->GetWeakPtr(),
-        main_script_->last_focused_element_selector_,
-        main_script_->last_focused_element_top_padding_, nullptr));
-    action_delegate_util::FindElementAndPerform(
-        main_script_, main_script_->last_focused_element_selector_,
-        base::BindOnce(&action_delegate_util::PerformAll, std::move(actions)),
-        base::DoNothing());
+  auto element = std::make_unique<ElementFinder::Result>();
+  if (!main_script_->GetElementStore()
+           ->RestoreElement(*main_script_->last_focused_element_, element.get())
+           .ok()) {
+    return;
   }
+
+  auto actions = std::make_unique<element_action_util::ElementActionVector>();
+  action_delegate_util::AddStepIgnoreTiming(
+      base::BindOnce(&ActionDelegate::WaitUntilDocumentIsInReadyState,
+                     main_script_->GetWeakPtr(),
+                     delegate_->GetSettings().document_ready_check_timeout,
+                     DOCUMENT_INTERACTIVE),
+      actions.get());
+  actions->emplace_back(
+      base::BindOnce(&WebController::ScrollIntoViewIfNeeded,
+                     main_script_->GetWebController()->GetWeakPtr(),
+                     /* center= */ true));
+  element_action_util::TakeElementAndPerform(
+      base::BindOnce(&element_action_util::PerformAll, std::move(actions)),
+      /* done= */ base::DoNothing(), /* element_status= */ OkClientStatus(),
+      std::move(element));
 }
 
 ScriptExecutor::CurrentActionData::CurrentActionData() = default;

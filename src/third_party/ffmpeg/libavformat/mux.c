@@ -22,6 +22,7 @@
 #include "avformat.h"
 #include "internal.h"
 #include "libavcodec/internal.h"
+#include "libavcodec/packet_internal.h"
 #include "libavutil/opt.h"
 #include "libavutil/dict.h"
 #include "libavutil/pixdesc.h"
@@ -132,7 +133,7 @@ enum AVChromaLocation ff_choose_chroma_location(AVFormatContext *s, AVStream *st
 
 }
 
-int avformat_alloc_output_context2(AVFormatContext **avctx, ff_const59 AVOutputFormat *oformat,
+int avformat_alloc_output_context2(AVFormatContext **avctx, const AVOutputFormat *oformat,
                                    const char *format, const char *filename)
 {
     AVFormatContext *s = avformat_alloc_context();
@@ -174,11 +175,6 @@ int avformat_alloc_output_context2(AVFormatContext **avctx, ff_const59 AVOutputF
         s->priv_data = NULL;
 
     if (filename) {
-#if FF_API_FORMAT_FILENAME
-FF_DISABLE_DEPRECATION_WARNINGS
-        av_strlcpy(s->filename, filename, sizeof(s->filename));
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
         if (!(s->url = av_strdup(filename)))
             goto nomem;
 
@@ -246,29 +242,10 @@ static int init_muxer(AVFormatContext *s, AVDictionary **options)
         (ret = av_opt_set_dict2(s->priv_data, &tmp, AV_OPT_SEARCH_CHILDREN)) < 0)
         goto fail;
 
-#if FF_API_FORMAT_FILENAME
-FF_DISABLE_DEPRECATION_WARNINGS
-    if (!s->url && !(s->url = av_strdup(s->filename))) {
-FF_ENABLE_DEPRECATION_WARNINGS
-#else
     if (!s->url && !(s->url = av_strdup(""))) {
-#endif
         ret = AVERROR(ENOMEM);
         goto fail;
     }
-
-#if FF_API_LAVF_AVCTX
-FF_DISABLE_DEPRECATION_WARNINGS
-    if (s->nb_streams && s->streams[0]->codec->flags & AV_CODEC_FLAG_BITEXACT) {
-        if (!(s->flags & AVFMT_FLAG_BITEXACT)) {
-            av_log(s, AV_LOG_WARNING,
-                   "The AVFormatContext is not in set to bitexact mode, only "
-                   "the AVCodecContext. If this is not intended, set "
-                   "AVFormatContext.flags |= AVFMT_FLAG_BITEXACT.\n");
-        }
-    }
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
 
     // some sanity checks
     if (s->nb_streams == 0 && !(of->flags & AVFMT_NOSTREAMS)) {
@@ -280,20 +257,6 @@ FF_ENABLE_DEPRECATION_WARNINGS
     for (i = 0; i < s->nb_streams; i++) {
         st  = s->streams[i];
         par = st->codecpar;
-
-#if FF_API_LAVF_AVCTX
-FF_DISABLE_DEPRECATION_WARNINGS
-        if (st->codecpar->codec_type == AVMEDIA_TYPE_UNKNOWN &&
-            st->codec->codec_type    != AVMEDIA_TYPE_UNKNOWN) {
-            av_log(s, AV_LOG_WARNING, "Using AVStream.codec to pass codec "
-                   "parameters to muxers is deprecated, use AVStream.codecpar "
-                   "instead.\n");
-            ret = avcodec_parameters_from_context(st->codecpar, st->codec);
-            if (ret < 0)
-                goto fail;
-        }
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
 
         if (!st->time_base.num) {
             /* fall back on the default timebase values */
@@ -540,7 +503,7 @@ fail:
 #define AV_PKT_FLAG_UNCODED_FRAME 0x2000
 
 
-#if FF_API_COMPUTE_PKT_FIELDS2 && FF_API_LAVF_AVCTX
+#if FF_API_COMPUTE_PKT_FIELDS2
 FF_DISABLE_DEPRECATION_WARNINGS
 //FIXME merge with compute_pkt_fields
 static int compute_muxer_pkt_fields(AVFormatContext *s, AVStream *st, AVPacket *pkt)
@@ -620,7 +583,7 @@ static int compute_muxer_pkt_fields(AVFormatContext *s, AVStream *st, AVPacket *
     case AVMEDIA_TYPE_AUDIO:
         frame_size = (pkt->flags & AV_PKT_FLAG_UNCODED_FRAME) ?
                      (*(AVFrame **)pkt->data)->nb_samples :
-                     av_get_audio_frame_duration(st->codec, pkt->size);
+                     av_get_audio_frame_duration2(st->codecpar, pkt->size);
 
         /* HACK/FIXME, we skip the initial 0 size packets as they are most
          * likely equal to the encoder delay, but it would be better if we
@@ -778,7 +741,7 @@ static int check_packet(AVFormatContext *s, AVPacket *pkt)
 
 static int prepare_input_packet(AVFormatContext *s, AVStream *st, AVPacket *pkt)
 {
-#if !FF_API_COMPUTE_PKT_FIELDS2 || !FF_API_LAVF_AVCTX
+#if !FF_API_COMPUTE_PKT_FIELDS2
     /* sanitize the timestamps */
     if (!(s->oformat->flags & AVFMT_NOTIMESTAMPS)) {
 
@@ -830,11 +793,11 @@ int ff_interleave_add_packet(AVFormatContext *s, AVPacket *pkt,
                              int (*compare)(AVFormatContext *, const AVPacket *, const AVPacket *))
 {
     int ret;
-    AVPacketList **next_point, *this_pktl;
+    PacketList **next_point, *this_pktl;
     AVStream *st = s->streams[pkt->stream_index];
     int chunked  = s->max_chunk_size || s->max_chunk_duration;
 
-    this_pktl    = av_malloc(sizeof(AVPacketList));
+    this_pktl    = av_malloc(sizeof(PacketList));
     if (!this_pktl) {
         av_packet_unref(pkt);
         return AVERROR(ENOMEM);
@@ -931,7 +894,7 @@ static int interleave_compare_dts(AVFormatContext *s, const AVPacket *next,
 int ff_interleave_packet_per_dts(AVFormatContext *s, AVPacket *out,
                                  AVPacket *pkt, int flush)
 {
-    AVPacketList *pktl;
+    PacketList *pktl;
     int stream_count = 0;
     int noninterleaved_count = 0;
     int i, ret;
@@ -968,7 +931,7 @@ int ff_interleave_packet_per_dts(AVFormatContext *s, AVPacket *out,
 
         for (i = 0; i < s->nb_streams; i++) {
             int64_t last_dts;
-            const AVPacketList *last = s->streams[i]->internal->last_in_packet_buffer;
+            const PacketList *last = s->streams[i]->internal->last_in_packet_buffer;
 
             if (!last)
                 continue;
@@ -1064,7 +1027,7 @@ int ff_get_muxer_ts_offset(AVFormatContext *s, int stream_index, int64_t *offset
 
 const AVPacket *ff_interleaved_peek(AVFormatContext *s, int stream)
 {
-    AVPacketList *pktl = s->internal->packet_buffer;
+    PacketList *pktl = s->internal->packet_buffer;
     while (pktl) {
         if (pktl->pkt.stream_index == stream) {
             return &pktl->pkt;
@@ -1139,7 +1102,7 @@ static int write_packet_common(AVFormatContext *s, AVStream *st, AVPacket *pkt, 
 
     guess_pkt_duration(s, st, pkt);
 
-#if FF_API_COMPUTE_PKT_FIELDS2 && FF_API_LAVF_AVCTX
+#if FF_API_COMPUTE_PKT_FIELDS2
     if ((ret = compute_muxer_pkt_fields(s, st, pkt)) < 0 && !(s->oformat->flags & AVFMT_NOTIMESTAMPS))
         return ret;
 #endif
@@ -1210,7 +1173,7 @@ static int write_packets_common(AVFormatContext *s, AVPacket *pkt, int interleav
 
 int av_write_frame(AVFormatContext *s, AVPacket *in)
 {
-    AVPacket local_pkt, *pkt = &local_pkt;
+    AVPacket *pkt = s->internal->pkt;
     int ret;
 
     if (!in) {
@@ -1231,6 +1194,7 @@ int av_write_frame(AVFormatContext *s, AVPacket *in)
          * The following avoids copying in's data unnecessarily.
          * Copying side data is unavoidable as a bitstream filter
          * may change it, e.g. free it on errors. */
+        av_packet_unref(pkt);
         pkt->buf  = NULL;
         pkt->data = in->data;
         pkt->size = in->size;
@@ -1272,14 +1236,14 @@ int av_interleaved_write_frame(AVFormatContext *s, AVPacket *pkt)
 int av_write_trailer(AVFormatContext *s)
 {
     int i, ret1, ret = 0;
-    AVPacket pkt = {0};
-    av_init_packet(&pkt);
+    AVPacket *pkt = s->internal->pkt;
 
+    av_packet_unref(pkt);
     for (i = 0; i < s->nb_streams; i++) {
         if (s->streams[i]->internal->bsfc) {
-            ret1 = write_packets_from_bsfs(s, s->streams[i], &pkt, 1/*interleaved*/);
+            ret1 = write_packets_from_bsfs(s, s->streams[i], pkt, 1/*interleaved*/);
             if (ret1 < 0)
-                av_packet_unref(&pkt);
+                av_packet_unref(pkt);
             if (ret >= 0)
                 ret = ret1;
         }
@@ -1353,7 +1317,7 @@ static void uncoded_frame_free(void *unused, uint8_t *data)
 static int write_uncoded_frame_internal(AVFormatContext *s, int stream_index,
                                         AVFrame *frame, int interleaved)
 {
-    AVPacket pkt, *pktp;
+    AVPacket *pkt = s->internal->pkt;
 
     av_assert0(s->oformat);
     if (!s->oformat->write_uncoded_frame) {
@@ -1362,18 +1326,17 @@ static int write_uncoded_frame_internal(AVFormatContext *s, int stream_index,
     }
 
     if (!frame) {
-        pktp = NULL;
+        pkt = NULL;
     } else {
         size_t   bufsize = sizeof(frame) + AV_INPUT_BUFFER_PADDING_SIZE;
         AVFrame **framep = av_mallocz(bufsize);
 
         if (!framep)
             goto fail;
-        pktp = &pkt;
-        av_init_packet(&pkt);
-        pkt.buf = av_buffer_create((void *)framep, bufsize,
+        av_packet_unref(pkt);
+        pkt->buf = av_buffer_create((void *)framep, bufsize,
                                    uncoded_frame_free, NULL, 0);
-        if (!pkt.buf) {
+        if (!pkt->buf) {
             av_free(framep);
     fail:
             av_frame_free(&frame);
@@ -1381,17 +1344,17 @@ static int write_uncoded_frame_internal(AVFormatContext *s, int stream_index,
         }
         *framep = frame;
 
-        pkt.data         = (void *)framep;
-        pkt.size         = sizeof(frame);
-        pkt.pts          =
-        pkt.dts          = frame->pts;
-        pkt.duration     = frame->pkt_duration;
-        pkt.stream_index = stream_index;
-        pkt.flags |= AV_PKT_FLAG_UNCODED_FRAME;
+        pkt->data         = (void *)framep;
+        pkt->size         = sizeof(frame);
+        pkt->pts          =
+        pkt->dts          = frame->pts;
+        pkt->duration     = frame->pkt_duration;
+        pkt->stream_index = stream_index;
+        pkt->flags |= AV_PKT_FLAG_UNCODED_FRAME;
     }
 
-    return interleaved ? av_interleaved_write_frame(s, pktp) :
-                         av_write_frame(s, pktp);
+    return interleaved ? av_interleaved_write_frame(s, pkt) :
+                         av_write_frame(s, pkt);
 }
 
 int av_write_uncoded_frame(AVFormatContext *s, int stream_index,

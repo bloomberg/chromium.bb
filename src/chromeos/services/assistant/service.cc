@@ -28,7 +28,7 @@
 #include "chromeos/services/assistant/assistant_interaction_logger.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
-#include "chromeos/services/assistant/public/cpp/assistant_client.h"
+#include "chromeos/services/assistant/public/cpp/assistant_browser_delegate.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
@@ -39,6 +39,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/scope_set.h"
 #include "components/user_manager/known_user.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -48,7 +49,6 @@ namespace assistant {
 
 namespace {
 
-constexpr char kScopeAuthGcm[] = "https://www.googleapis.com/auth/gcm";
 constexpr char kScopeAssistant[] =
     "https://www.googleapis.com/auth/assistant-sdk-prototype";
 
@@ -191,7 +191,7 @@ Service::Service(std::unique_ptr<network::PendingSharedURLLoaderFactory>
   DCHECK(identity_manager_);
   chromeos::PowerManagerClient* power_manager_client =
       context_->power_manager_client();
-  power_manager_observer_.Add(power_manager_client);
+  power_manager_observation_.Observe(power_manager_client);
   power_manager_client->RequestStatusUpdate();
 }
 
@@ -265,7 +265,7 @@ void Service::OnSessionActivated(bool activated) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   session_active_ = activated;
 
-  AssistantClient::Get()->OnAssistantStatusChanged(
+  AssistantBrowserDelegate::Get()->OnAssistantStatusChanged(
       ToAssistantStatus(assistant_manager_service_->GetState()));
   UpdateListeningState();
 }
@@ -332,7 +332,7 @@ void Service::OnStateChanged(AssistantManagerService::State new_state) {
   if (new_state == AssistantManagerService::State::RUNNING)
     DVLOG(1) << "Assistant is running";
 
-  AssistantClient::Get()->OnAssistantStatusChanged(
+  AssistantBrowserDelegate::Get()->OnAssistantStatusChanged(
       ToAssistantStatus(new_state));
   UpdateListeningState();
 }
@@ -433,7 +433,7 @@ void Service::RequestAccessToken() {
 
   signin::ScopeSet scopes;
   scopes.insert(kScopeAssistant);
-  scopes.insert(kScopeAuthGcm);
+  scopes.insert(GaiaConstants::kGCMGroupServerOAuth2Scope);
 
   access_token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
       account_info.account_id, "cros_assistant", scopes,
@@ -525,7 +525,8 @@ void Service::StopAssistantManagerService() {
 
   assistant_manager_service_->Stop();
   weak_ptr_factory_.InvalidateWeakPtrs();
-  AssistantClient::Get()->OnAssistantStatusChanged(AssistantStatus::NOT_READY);
+  AssistantBrowserDelegate::Get()->OnAssistantStatusChanged(
+      AssistantStatus::NOT_READY);
 }
 
 void Service::AddAshSessionObserver() {

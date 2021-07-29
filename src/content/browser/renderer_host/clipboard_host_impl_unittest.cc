@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
@@ -13,6 +14,7 @@
 #include "base/test/bind.h"
 #include "content/browser/renderer_host/clipboard_host_impl.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "skia/ext/skia_utils_base.h"
@@ -24,6 +26,7 @@
 #include "ui/base/clipboard/test/clipboard_test_util.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/data_transfer_policy/data_transfer_policy_controller.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/skia_util.h"
 
 namespace ui {
@@ -34,12 +37,12 @@ namespace content {
 namespace {
 
 // A ClipboardHostImpl that mocks out the dependency on RenderFrameHost.
-class ClipboardHostImplNoRFH : public ClipboardHostImpl {
+class FakeClipboardHostImpl : public ClipboardHostImpl {
  public:
-  ClipboardHostImplNoRFH(
+  FakeClipboardHostImpl(
+      RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver)
-      : ClipboardHostImpl(/*render_frame_host=*/nullptr),
-        receiver_(this, std::move(receiver)) {}
+      : ClipboardHostImpl(render_frame_host, std::move(receiver)) {}
 
   void StartIsPasteContentAllowedRequest(
       uint64_t seqno,
@@ -57,8 +60,6 @@ class ClipboardHostImplNoRFH : public ClipboardHostImpl {
   using ClipboardHostImpl::kIsPasteContentAllowedRequestTooOld;
   using ClipboardHostImpl::PasteIfPolicyAllowed;
   using ClipboardHostImpl::PerformPasteIfContentAllowed;
-
-  mojo::Receiver<blink::mojom::ClipboardHost> receiver_;
 };
 
 class PolicyControllerTest : public ui::DataTransferPolicyController {
@@ -66,13 +67,15 @@ class PolicyControllerTest : public ui::DataTransferPolicyController {
   PolicyControllerTest() = default;
   ~PolicyControllerTest() override = default;
 
-  MOCK_METHOD2(IsClipboardReadAllowed,
+  MOCK_METHOD3(IsClipboardReadAllowed,
                bool(const ui::DataTransferEndpoint* const data_src,
-                    const ui::DataTransferEndpoint* const data_dst));
+                    const ui::DataTransferEndpoint* const data_dst,
+                    const absl::optional<size_t> size));
 
-  MOCK_METHOD4(PasteIfAllowed,
+  MOCK_METHOD5(PasteIfAllowed,
                void(const ui::DataTransferEndpoint* const data_src,
                     const ui::DataTransferEndpoint* const data_dst,
+                    const absl::optional<size_t> size,
                     content::WebContents* web_contents,
                     base::OnceCallback<void(bool)> callback));
 
@@ -84,32 +87,43 @@ class PolicyControllerTest : public ui::DataTransferPolicyController {
 
 }  // namespace
 
-class ClipboardHostImplTest : public ::testing::Test {
+class ClipboardHostImplTest : public RenderViewHostTestHarness {
  protected:
   ClipboardHostImplTest()
       : clipboard_(ui::TestClipboard::CreateForCurrentThread()) {
-    ClipboardHostImpl::Create(/*render_frame_host=*/nullptr,
-                              remote_.BindNewPipeAndPassReceiver());
   }
 
   ~ClipboardHostImplTest() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
 
+  void SetUp() override {
+    RenderViewHostTestHarness::SetUp();
+    SetContents(CreateTestWebContents());
+    ClipboardHostImpl::Create(web_contents()->GetMainFrame(),
+                              remote_.BindNewPipeAndPassReceiver());
+  }
+
   mojo::Remote<blink::mojom::ClipboardHost>& mojo_clipboard() {
     return remote_;
+  }
+
+  // Re-creates the system clipboard and returns the previous clipboard.
+  std::unique_ptr<ui::Clipboard> DeleteAndRecreateClipboard() {
+    auto original_clipboard = ui::Clipboard::TakeForCurrentThread();
+    clipboard_ = ui::TestClipboard::CreateForCurrentThread();
+    return original_clipboard;
   }
 
   ui::Clipboard* system_clipboard() { return clipboard_; }
 
  private:
-  const BrowserTaskEnvironment task_environment_;
-  ui::Clipboard* const clipboard_;
+  ui::Clipboard* clipboard_;
   mojo::Remote<blink::mojom::ClipboardHost> remote_;
 };
 
 // Test that it actually works.
-TEST_F(ClipboardHostImplTest, SimpleImage) {
+TEST_F(ClipboardHostImplTest, SimpleImage_ReadBitmap) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(3, 2);
   bitmap.eraseARGB(255, 0, 255, 0);
@@ -130,6 +144,47 @@ TEST_F(ClipboardHostImplTest, SimpleImage) {
 
   SkBitmap actual = ui::clipboard_test_util::ReadImage(system_clipboard());
   EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap, actual));
+}
+
+TEST_F(ClipboardHostImplTest, SimpleImage_ReadPng) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(3, 2);
+  bitmap.eraseARGB(255, 0, 255, 0);
+  mojo_clipboard()->WriteImage(bitmap);
+  uint64_t sequence_number =
+      system_clipboard()->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste);
+  mojo_clipboard()->CommitWrite();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_NE(sequence_number, system_clipboard()->GetSequenceNumber(
+                                 ui::ClipboardBuffer::kCopyPaste));
+  EXPECT_FALSE(system_clipboard()->IsFormatAvailable(
+      ui::ClipboardFormatType::GetPlainTextType(),
+      ui::ClipboardBuffer::kCopyPaste, /* data_dst=*/nullptr));
+  EXPECT_TRUE(system_clipboard()->IsFormatAvailable(
+      ui::ClipboardFormatType::GetBitmapType(), ui::ClipboardBuffer::kCopyPaste,
+      /*data_dst=*/nullptr));
+  EXPECT_TRUE(system_clipboard()->IsFormatAvailable(
+      ui::ClipboardFormatType::GetPngType(), ui::ClipboardBuffer::kCopyPaste,
+      /*data_dst=*/nullptr));
+
+  std::vector<uint8_t> png =
+      ui::clipboard_test_util::ReadPng(system_clipboard());
+  SkBitmap actual;
+  gfx::PNGCodec::Decode(png.data(), png.size(), &actual);
+  EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap, actual));
+}
+
+TEST_F(ClipboardHostImplTest, DoesNotCacheClipboard) {
+  uint64_t unused_sequence_number;
+  mojo_clipboard()->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste,
+                                      &unused_sequence_number);
+
+  DeleteAndRecreateClipboard();
+
+  // This shouldn't crash after the original ui::Clipboard is gone.
+  mojo_clipboard()->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste,
+                                      &unused_sequence_number);
 }
 
 TEST_F(ClipboardHostImplTest, IsPasteContentAllowedRequest_AddCallback) {
@@ -202,18 +257,26 @@ TEST_F(ClipboardHostImplTest, IsPasteContentAllowedRequest_IsObsolete) {
       base::TimeDelta::FromMicroseconds(1)));
 }
 
-class ClipboardHostImplScanTest : public ::testing::Test {
+class ClipboardHostImplScanTest : public RenderViewHostTestHarness {
  protected:
   ClipboardHostImplScanTest()
-      : clipboard_(ui::TestClipboard::CreateForCurrentThread()),
-        fake_clipboard_host_impl_(remote_.BindNewPipeAndPassReceiver()) {}
+      : RenderViewHostTestHarness(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        clipboard_(ui::TestClipboard::CreateForCurrentThread()) {}
+
+  void SetUp() override {
+    RenderViewHostTestHarness::SetUp();
+    SetContents(CreateTestWebContents());
+    fake_clipboard_host_impl_.reset(new FakeClipboardHostImpl(
+        web_contents()->GetMainFrame(), remote_.BindNewPipeAndPassReceiver()));
+  }
 
   ~ClipboardHostImplScanTest() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
 
-  ClipboardHostImplNoRFH* clipboard_host_impl() {
-    return &fake_clipboard_host_impl_;
+  FakeClipboardHostImpl* clipboard_host_impl() {
+    return fake_clipboard_host_impl_.get();
   }
 
   mojo::Remote<blink::mojom::ClipboardHost>& mojo_clipboard() {
@@ -222,14 +285,10 @@ class ClipboardHostImplScanTest : public ::testing::Test {
 
   ui::Clipboard* system_clipboard() { return clipboard_; }
 
-  BrowserTaskEnvironment* task_environment() { return &task_environment_; }
-
  private:
-  BrowserTaskEnvironment task_environment_{
-      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   mojo::Remote<blink::mojom::ClipboardHost> remote_;
   ui::Clipboard* const clipboard_;
-  ClipboardHostImplNoRFH fake_clipboard_host_impl_;
+  std::unique_ptr<FakeClipboardHostImpl> fake_clipboard_host_impl_;
 };
 
 TEST_F(ClipboardHostImplScanTest, PasteIfPolicyAllowed_EmptyData) {
@@ -241,7 +300,7 @@ TEST_F(ClipboardHostImplScanTest, PasteIfPolicyAllowed_EmptyData) {
       ui::ClipboardFormatType::GetPlainTextType(), "",
       base::BindLambdaForTesting(
           [&count](
-              ClipboardHostImplNoRFH::ClipboardPasteContentAllowed allowed) {
+              FakeClipboardHostImpl::ClipboardPasteContentAllowed allowed) {
             ++count;
           }));
 
@@ -288,7 +347,7 @@ TEST_F(ClipboardHostImplScanTest, CleanupObsoleteScanRequests) {
   // Make sure an appropriate amount of time passes to make the request old.
   // It should be cleaned up.
   task_environment()->FastForwardBy(
-      ClipboardHostImplNoRFH::kIsPasteContentAllowedRequestTooOld +
+      FakeClipboardHostImpl::kIsPasteContentAllowedRequestTooOld +
       base::TimeDelta::FromMicroseconds(1));
   clipboard_host_impl()->CleanupObsoleteRequests();
   EXPECT_EQ(
@@ -305,7 +364,7 @@ TEST_F(ClipboardHostImplScanTest, IsPastePolicyAllowed_NoController) {
       ui::ClipboardFormatType::GetPlainTextType(), "data",
       base::BindLambdaForTesting(
           [&is_policy_callback_called](
-              ClipboardHostImplNoRFH::ClipboardPasteContentAllowed allowed) {
+              FakeClipboardHostImpl::ClipboardPasteContentAllowed allowed) {
             is_policy_callback_called = true;
           }));
   base::RunLoop().RunUntilIdle();
@@ -330,6 +389,7 @@ TEST_F(ClipboardHostImplScanTest, IsPastePolicyAllowed_NotAllowed) {
       .WillOnce(
           testing::Invoke([](const ui::DataTransferEndpoint* const data_src,
                              const ui::DataTransferEndpoint* const data_dst,
+                             const absl::optional<size_t> size,
                              content::WebContents* web_contents,
                              base::OnceCallback<void(bool)> callback) {
             std::move(callback).Run(false);
@@ -340,7 +400,7 @@ TEST_F(ClipboardHostImplScanTest, IsPastePolicyAllowed_NotAllowed) {
       ui::ClipboardFormatType::GetPlainTextType(), "data",
       base::BindLambdaForTesting(
           [&is_policy_callback_called](
-              ClipboardHostImplNoRFH::ClipboardPasteContentAllowed allowed) {
+              FakeClipboardHostImpl::ClipboardPasteContentAllowed allowed) {
             is_policy_callback_called = true;
           }));
   base::RunLoop().RunUntilIdle();
@@ -362,6 +422,7 @@ TEST_F(ClipboardHostImplScanTest, IsPastePolicyAllowed_Allowed) {
       .WillOnce(
           testing::Invoke([](const ui::DataTransferEndpoint* const data_src,
                              const ui::DataTransferEndpoint* const data_dst,
+                             const absl::optional<size_t> size,
                              content::WebContents* web_contents,
                              base::OnceCallback<void(bool)> callback) {
             std::move(callback).Run(true);
@@ -372,7 +433,7 @@ TEST_F(ClipboardHostImplScanTest, IsPastePolicyAllowed_Allowed) {
       ui::ClipboardFormatType::GetPlainTextType(), "data",
       base::BindLambdaForTesting(
           [&is_policy_callback_called](
-              ClipboardHostImplNoRFH::ClipboardPasteContentAllowed allowed) {
+              FakeClipboardHostImpl::ClipboardPasteContentAllowed allowed) {
             is_policy_callback_called = true;
           }));
   base::RunLoop().RunUntilIdle();

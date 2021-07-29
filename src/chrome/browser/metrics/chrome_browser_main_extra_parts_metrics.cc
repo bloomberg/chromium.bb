@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -16,7 +17,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/partition_alloc_buildflags.h"
 #include "base/rand_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/task_traits.h"
@@ -300,6 +300,8 @@ void RecordLinuxDistro() {
     } else if (distro_tokens.size() >= 2 && distro_tokens[1] == "Mint") {
       // Format: Linux Mint RR
       distro_result = UMA_LINUX_DISTRO_MINT;
+      if (distro_tokens.size() >= 3)
+        RecordLinuxDistroSpecific(distro_tokens[2], 1, "Linux.Distro.Mint");
     } else if (distro_tokens.size() >= 4 && distro_tokens[0] == "Red" &&
                distro_tokens[1] == "Hat" && distro_tokens[2] == "Enterprise" &&
                distro_tokens[3] == "Linux") {
@@ -510,16 +512,18 @@ bool IsDomainJoined() {
 }
 #endif  // !defined(OS_ANDROID)
 
+void RecordDisplayHDRStatus(const display::Display& display) {
+  base::UmaHistogramBoolean("Hardware.Display.SupportsHDR",
+                            display.color_spaces().SupportsHDR());
+}
+
 }  // namespace
 
 ChromeBrowserMainExtraPartsMetrics::ChromeBrowserMainExtraPartsMetrics()
-    : display_count_(0), is_screen_observer_(false) {
-}
+    : display_count_(0) {}
 
-ChromeBrowserMainExtraPartsMetrics::~ChromeBrowserMainExtraPartsMetrics() {
-  if (is_screen_observer_)
-    display::Screen::GetScreen()->RemoveObserver(this);
-}
+ChromeBrowserMainExtraPartsMetrics::~ChromeBrowserMainExtraPartsMetrics() =
+    default;
 
 void ChromeBrowserMainExtraPartsMetrics::PreProfileInit() {
   RecordMicroArchitectureStats();
@@ -658,7 +662,8 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
   //    Update to fraction X of the non-enterprise population.
   //    Note, USE_BACKUP_REF_PTR_FAKE is only used to fake that the feature is
   //    enabled for the purpose of this Finch setting, while in fact there are
-  //    no behavior changes.
+  //    no behavior changes. Note, however, PCScan will be kept away from the
+  //    fake experiment binary, just as it would be from a regular one.
   // 3) The control group is established in fraction X of non-enterprise
   //    popluation via Finch (PartitionAllocBackupRefPtrControl). Since this
   //    Finch is applicable only to 1-X of the non-enterprise population, we
@@ -760,11 +765,16 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   }
 #endif  // defined(OS_WIN)
 
-  display_count_ = display::Screen::GetScreen()->GetNumDisplays();
+  auto* screen = display::Screen::GetScreen();
+  display_count_ = screen->GetNumDisplays();
   base::UmaHistogramCounts100("Hardware.Display.Count.OnStartup",
                               display_count_);
-  display::Screen::GetScreen()->AddObserver(this);
-  is_screen_observer_ = true;
+
+  for (const auto& display : screen->GetAllDisplays()) {
+    RecordDisplayHDRStatus(display);
+  }
+
+  display_observer_.emplace(this);
 
 #if !defined(OS_ANDROID)
   metrics::BeginFirstWebContentsProfiling();
@@ -807,11 +817,20 @@ void ChromeBrowserMainExtraPartsMetrics::PreMainMessageLoopRun() {
 void ChromeBrowserMainExtraPartsMetrics::OnDisplayAdded(
     const display::Display& new_display) {
   EmitDisplaysChangedMetric();
+  RecordDisplayHDRStatus(new_display);
 }
 
 void ChromeBrowserMainExtraPartsMetrics::OnDisplayRemoved(
     const display::Display& old_display) {
   EmitDisplaysChangedMetric();
+}
+
+void ChromeBrowserMainExtraPartsMetrics::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  if (changed_metrics & DisplayObserver::DISPLAY_METRIC_COLOR_SPACE) {
+    RecordDisplayHDRStatus(display);
+  }
 }
 
 void ChromeBrowserMainExtraPartsMetrics::EmitDisplaysChangedMetric() {

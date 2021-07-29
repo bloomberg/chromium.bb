@@ -69,7 +69,7 @@ constexpr char kType[] = "type";
 
 constexpr int kIntentPrefixLength = 2;
 
-const char* GetArcIntentAction(const std::string& action) {
+const char* ConvertAppServiceToArcIntentAction(const std::string& action) {
   if (action == apps_util::kIntentActionMain) {
     return arc::kIntentActionMain;
   } else if (action == apps_util::kIntentActionView) {
@@ -199,7 +199,7 @@ base::flat_map<std::string, std::string> CreateArcIntentExtras(
   return extras;
 }
 
-arc::mojom::IntentInfoPtr CreateArcIntent(
+arc::mojom::IntentInfoPtr ConvertAppServiceToArcIntent(
     const apps::mojom::IntentPtr& intent) {
   arc::mojom::IntentInfoPtr arc_intent;
   if (!intent->action.has_value() && !intent->url.has_value() &&
@@ -209,7 +209,8 @@ arc::mojom::IntentInfoPtr CreateArcIntent(
 
   arc_intent = arc::mojom::IntentInfo::New();
   if (intent->action.has_value()) {
-    arc_intent->action = GetArcIntentAction(intent->action.value());
+    arc_intent->action =
+        ConvertAppServiceToArcIntentAction(intent->action.value());
   } else {
     arc_intent->action = arc::kIntentActionView;
   }
@@ -239,6 +240,20 @@ arc::mojom::IntentInfoPtr CreateArcIntent(
   return arc_intent;
 }
 
+const char* ConvertArcToAppServiceIntentAction(const std::string& arc_action) {
+  if (arc_action == arc::kIntentActionMain) {
+    return apps_util::kIntentActionMain;
+  } else if (arc_action == arc::kIntentActionView) {
+    return apps_util::kIntentActionView;
+  } else if (arc_action == arc::kIntentActionSend) {
+    return apps_util::kIntentActionSend;
+  } else if (arc_action == arc::kIntentActionSendMultiple) {
+    return apps_util::kIntentActionSendMultiple;
+  }
+
+  return nullptr;
+}
+
 std::string CreateLaunchIntent(const std::string& package_name,
                                const apps::mojom::IntentPtr& intent) {
   // If |intent| has |ui_bypassed|, |url| or |data|, it is too complex to
@@ -253,10 +268,11 @@ std::string CreateLaunchIntent(const std::string& package_name,
   // Convert action.
   std::string action;
   if (intent->action.has_value()) {
-    action = GetArcIntentAction(intent->action.value());
+    action = ConvertAppServiceToArcIntentAction(intent->action.value());
   }
-  ret += base::StringPrintf("%s=%s;", arc::kAction,
-                            GetArcIntentAction(intent->action.value()));
+  ret += base::StringPrintf(
+      "%s=%s;", arc::kAction,
+      ConvertAppServiceToArcIntentAction(intent->action.value()));
 
   // Convert categories.
   if (intent->categories.has_value()) {
@@ -316,7 +332,7 @@ std::string CreateLaunchIntent(const std::string& package_name,
   return ret;
 }
 
-arc::IntentFilter CreateArcIntentFilter(
+arc::IntentFilter ConvertAppServiceToArcIntentFilter(
     const std::string& package_name,
     const apps::mojom::IntentFilterPtr& intent_filter) {
   std::vector<std::string> actions;
@@ -361,7 +377,8 @@ arc::IntentFilter CreateArcIntentFilter(
         break;
       case apps::mojom::ConditionType::kAction:
         for (auto& condition_value : condition->condition_values) {
-          actions.push_back(GetArcIntentAction(condition_value->value));
+          actions.push_back(
+              ConvertAppServiceToArcIntentAction(condition_value->value));
         }
         break;
       case apps::mojom::ConditionType::kMimeType:
@@ -377,23 +394,19 @@ arc::IntentFilter CreateArcIntentFilter(
                            std::move(schemes), std::move(mime_types));
 }
 
-apps::mojom::IntentFilterPtr ConvertArcIntentFilter(
+apps::mojom::IntentFilterPtr ConvertArcToAppServiceIntentFilter(
     const arc::IntentFilter& arc_intent_filter) {
   auto intent_filter = apps::mojom::IntentFilter::New();
 
   if (base::FeatureList::IsEnabled(features::kIntentHandlingSharing)) {
     std::vector<apps::mojom::ConditionValuePtr> action_condition_values;
     for (auto& arc_action : arc_intent_filter.actions()) {
-      std::string action;
-      if (arc_action == arc::kIntentActionView) {
-        action = apps_util::kIntentActionView;
-      } else if (arc_action == arc::kIntentActionSend) {
-        action = apps_util::kIntentActionSend;
-      } else if (arc_action == arc::kIntentActionSendMultiple) {
-        action = apps_util::kIntentActionSendMultiple;
-      } else {
+      const char* action = ConvertArcToAppServiceIntentAction(arc_action);
+
+      if (!action) {
         continue;
       }
+
       action_condition_values.push_back(apps_util::MakeConditionValue(
           action, apps::mojom::PatternMatchType::kNone));
     }

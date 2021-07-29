@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/bluetooth_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
@@ -157,6 +158,7 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"bluetoothPairDevicePageTitle",
        IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE},
       {"bluetoothRemove", IDS_SETTINGS_BLUETOOTH_REMOVE},
+      {"bluetoothManaged", IDS_SETTINGS_BLUETOOTH_MANAGED},
       {"bluetoothPrimaryUserControlled",
        IDS_SETTINGS_BLUETOOTH_PRIMARY_USER_CONTROLLED},
       {"bluetoothDeviceWithConnectionStatus",
@@ -192,6 +194,10 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
   chromeos::bluetooth_dialog::AddLocalizedStrings(html_source);
+}
+
+void BluetoothSection::AddHandlers(content::WebUI* web_ui) {
+  web_ui->AddMessageHandler(std::make_unique<BluetoothHandler>());
 }
 
 int BluetoothSection::GetSectionNameMessageId() const {

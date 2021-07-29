@@ -16,10 +16,12 @@
 #include "net/base/load_flags.h"
 #include "net/base/schemeful_site.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/url_request_job.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -284,6 +286,10 @@ bool NavigationEarlyHintsManager::WasPreloadLinkHeaderReceived() const {
   return was_preload_link_header_received_;
 }
 
+std::vector<GURL> NavigationEarlyHintsManager::TakePreloadedResourceURLs() {
+  return std::move(preloaded_urls_);
+}
+
 bool NavigationEarlyHintsManager::HasInflightPreloads() const {
   return inflight_preloads_.size() > 0;
 }
@@ -300,19 +306,15 @@ void NavigationEarlyHintsManager::WaitForPreloadsFinishedForTesting(
 void NavigationEarlyHintsManager::MaybePreloadHintedResource(
     const network::mojom::LinkHeaderPtr& link,
     const network::ResourceRequest& navigation_request) {
-  // Subframes aren't supported. To support subframes, this needs to know the
-  // origin of the top frame to create an appropriate IsolationInfo.
-  if (!navigation_request.is_main_frame)
-    return;
+  DCHECK(navigation_request.is_main_frame);
 
   was_preload_link_header_received_ = true;
 
   if (!base::FeatureList::IsEnabled(features::kEarlyHintsPreloadForNavigation))
     return;
 
-  if (!link->href.SchemeIsHTTPOrHTTPS()) {
+  if (!link->href.SchemeIsHTTPOrHTTPS())
     return;
-  }
 
   if (inflight_preloads_.contains(link->href) ||
       preloaded_resources_.contains(link->href)) {
@@ -332,7 +334,8 @@ void NavigationEarlyHintsManager::MaybePreloadHintedResource(
   request.url = link->href;
   request.site_for_cookies = site_for_cookies;
   request.request_initiator = top_frame_origin;
-  request.referrer = navigation_request.url;
+  request.referrer = net::URLRequestJob::ComputeReferrerForPolicy(
+      navigation_request.referrer_policy, navigation_request.url, request.url);
   request.referrer_policy = navigation_request.referrer_policy;
   request.load_flags = net::LOAD_NORMAL;
   request.resource_type =
@@ -368,6 +371,8 @@ void NavigationEarlyHintsManager::MaybePreloadHintedResource(
 
   inflight_preloads_[request.url] = std::make_unique<InflightPreload>(
       std::move(loader), std::move(loader_client));
+
+  preloaded_urls_.push_back(request.url);
 }
 
 void NavigationEarlyHintsManager::OnPreloadComplete(

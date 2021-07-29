@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <algorithm>
 #include <memory>
 
 #include "base/feature_list.h"
@@ -17,12 +18,13 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -109,18 +111,14 @@ int BackupDatabase(sqlite3* src, sqlite3* dst, const char* db_name) {
   return rc;
 }
 
-// Be very strict on attachment point.  SQLite can handle a much wider
-// character set with appropriate quoting, but Chromium code should
-// just use clean names to start with.
-bool ValidAttachmentPoint(const char* attachment_point) {
-  for (size_t i = 0; attachment_point[i]; ++i) {
-    if (!(base::IsAsciiDigit(attachment_point[i]) ||
-          base::IsAsciiAlpha(attachment_point[i]) ||
-          attachment_point[i] == '_')) {
-      return false;
-    }
-  }
-  return true;
+bool ValidAttachmentPoint(base::StringPiece attachment_point) {
+  // SQLite could handle a much wider character set, with appropriate quoting.
+  //
+  // Chrome's constraint is easy to remember, and sufficient for the few
+  // existing use cases. ATTACH is a discouraged feature, so no new use cases
+  // are expected.
+  return base::ranges::all_of(attachment_point,
+                              [](char ch) { return base::IsAsciiLower(ch); });
 }
 
 // Helper to get the sqlite3_file* associated with the "main" database.
@@ -239,6 +237,8 @@ static_assert(DatabaseOptions::kDefaultPageSize == SQLITE_DEFAULT_PAGE_SIZE,
               "DatabaseOptions::kDefaultPageSize must match the value "
               "configured into SQLite");
 
+// DatabaseOptions::explicit_locking needs to be set to false for historical
+// reasons.
 Database::Database() : Database({.exclusive_locking = false}) {}
 
 Database::Database(DatabaseOptions options)
@@ -255,18 +255,6 @@ Database::~Database() {
 
 void Database::DisableMmapByDefault() {
   enable_mmap_by_default_ = false;
-}
-
-void Database::RecordEvent(Events event, size_t count) {
-  for (size_t i = 0; i < count; ++i) {
-    UMA_HISTOGRAM_ENUMERATION("Sqlite.Stats2", event, EVENT_MAX_VALUE);
-  }
-
-  if (stats_histogram_) {
-    for (size_t i = 0; i < count; ++i) {
-      stats_histogram_->Add(event);
-    }
-  }
 }
 
 bool Database::Open(const base::FilePath& path) {
@@ -330,10 +318,8 @@ void Database::CloseInternal(bool forced) {
     }
 
     int rc = sqlite3_close(db_);
-    if (rc != SQLITE_OK) {
-      base::UmaHistogramSparse("Sqlite.CloseFailure", rc);
+    if (rc != SQLITE_OK)
       DLOG(DCHECK) << "sqlite3_close failed: " << GetErrorMessage();
-    }
   }
   db_ = nullptr;
 }
@@ -658,32 +644,24 @@ size_t Database::GetAppropriateMmapSize() {
 
   // Progress information is tracked in the [meta] table for databases which use
   // sql::MetaTable, otherwise it is tracked in a special view.
-  // TODO(shess): Move all cases to the view implementation.
+  // TODO(pwnall): Migrate all databases to using a meta table.
   int64_t mmap_ofs = 0;
-  if (mmap_alt_status_) {
-    if (!GetMmapAltStatus(&mmap_ofs)) {
-      RecordOneEvent(EVENT_MMAP_STATUS_FAILURE_READ);
+  if (options_.mmap_alt_status_discouraged) {
+    if (!GetMmapAltStatus(&mmap_ofs))
       return 0;
-    }
   } else {
     // If [meta] doesn't exist, yet, it's a new database, assume the best.
     // sql::MetaTable::Init() will preload kMmapSuccess.
-    if (!MetaTable::DoesTableExist(this)) {
-      RecordOneEvent(EVENT_MMAP_META_MISSING);
+    if (!MetaTable::DoesTableExist(this))
       return kMmapEverything;
-    }
 
-    if (!MetaTable::GetMmapStatus(this, &mmap_ofs)) {
-      RecordOneEvent(EVENT_MMAP_META_FAILURE_READ);
+    if (!MetaTable::GetMmapStatus(this, &mmap_ofs))
       return 0;
-    }
   }
 
   // Database read failed in the past, don't memory map.
-  if (mmap_ofs == MetaTable::kMmapFailure) {
-    RecordOneEvent(EVENT_MMAP_FAILED);
+  if (mmap_ofs == MetaTable::kMmapFailure)
     return 0;
-  }
 
   if (mmap_ofs != MetaTable::kMmapSuccess) {
     // Continue reading from previous offset.
@@ -698,10 +676,8 @@ size_t Database::GetAppropriateMmapSize() {
     // to limit checking to 20MB per run of Chromium.
     sqlite3_file* file = nullptr;
     sqlite3_int64 db_size = 0;
-    if (SQLITE_OK != GetSqlite3FileAndSize(db_, &file, &db_size)) {
-      RecordOneEvent(EVENT_MMAP_VFS_FAILURE);
+    if (SQLITE_OK != GetSqlite3FileAndSize(db_, &file, &db_size))
       return 0;
-    }
 
     // Read the data left, or |g_reads_allowed|, whichever is smaller.
     // |g_reads_allowed| limits the total amount of I/O to spend verifying data
@@ -748,20 +724,13 @@ size_t Database::GetAppropriateMmapSize() {
         DCHECK(mmap_ofs > 0 || mmap_ofs == MetaTable::kMmapFailure);
       }
 
-      if (mmap_alt_status_) {
-        if (!SetMmapAltStatus(mmap_ofs)) {
-          RecordOneEvent(EVENT_MMAP_STATUS_FAILURE_UPDATE);
+      if (options_.mmap_alt_status_discouraged) {
+        if (!SetMmapAltStatus(mmap_ofs))
           return 0;
-        }
       } else {
-        if (!MetaTable::SetMmapStatus(this, mmap_ofs)) {
-          RecordOneEvent(EVENT_MMAP_META_FAILURE_UPDATE);
+        if (!MetaTable::SetMmapStatus(this, mmap_ofs))
           return 0;
-        }
       }
-
-      if (mmap_ofs == MetaTable::kMmapFailure)
-        RecordOneEvent(EVENT_MMAP_FAILED_NEW);
     }
   }
 
@@ -807,16 +776,15 @@ bool Database::Raze() {
     return false;
   }
 
-  sql::Database null_db;
+  sql::Database null_db(sql::DatabaseOptions{
+      .exclusive_locking = true,
+      .page_size = options_.page_size,
+      .cache_size = 0,
+  });
   if (!null_db.OpenInMemory()) {
     DLOG(DCHECK) << "Unable to open in-memory database.";
     return false;
   }
-
-  const std::string page_size_sql =
-      base::StringPrintf("PRAGMA page_size=%d", options_.page_size);
-  if (!null_db.Execute(page_size_sql.c_str()))
-    return false;
 
 #if defined(OS_ANDROID)
   // Android compiles with SQLITE_DEFAULT_AUTOVACUUM.  Unfortunately,
@@ -861,7 +829,6 @@ bool Database::Raze() {
 
   const char* kMain = "main";
   int rc = BackupDatabase(null_db.db_, db_, kMain);
-  base::UmaHistogramSparse("Sqlite.RazeDatabase", rc);
 
   // The destination database was locked.
   if (rc == SQLITE_BUSY) {
@@ -884,13 +851,11 @@ bool Database::Raze() {
 
     rc = file->pMethods->xTruncate(file, 0);
     if (rc != SQLITE_OK) {
-      base::UmaHistogramSparse("Sqlite.RazeDatabaseTruncate", rc);
       DLOG(DCHECK) << "Failed to truncate file.";
       return false;
     }
 
     rc = BackupDatabase(null_db.db_, db_, kMain);
-    base::UmaHistogramSparse("Sqlite.RazeDatabase2", rc);
 
     DCHECK_EQ(rc, SQLITE_DONE) << "Failed retrying Raze().";
   }
@@ -901,6 +866,8 @@ bool Database::Raze() {
     // TODO(shuagga@microsoft.com): Need a guarantee here that there is no other
     // database connection open.
     ignore_result(Execute("PRAGMA journal_mode=TRUNCATE;"));
+    const std::string page_size_sql = base::StrCat(
+        {"PRAGMA page_size=", base::NumberToString(options_.page_size)});
     if (!Execute(page_size_sql.c_str())) {
       return false;
     }
@@ -912,7 +879,6 @@ bool Database::Raze() {
     }
 
     rc = BackupDatabase(null_db.db_, db_, kMain);
-    base::UmaHistogramSparse("Sqlite.RazeDatabase2", rc);
 
     DCHECK_EQ(rc, SQLITE_DONE) << "Failed retrying Raze().";
   }
@@ -1106,32 +1072,31 @@ void Database::RollbackAllTransactions() {
 }
 
 bool Database::AttachDatabase(const base::FilePath& other_db_path,
-                              const char* attachment_point,
+                              base::StringPiece attachment_point,
                               InternalApiToken) {
   TRACE_EVENT0("sql", "Database::AttachDatabase");
 
   DCHECK(ValidAttachmentPoint(attachment_point));
 
-  Statement s(GetUniqueStatement("ATTACH DATABASE ? AS ?"));
+  Statement statement(GetUniqueStatement("ATTACH ? AS ?"));
 #if OS_WIN
-  s.BindString16(0, base::AsStringPiece16(other_db_path.value()));
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-  s.BindString(0, other_db_path.value());
+  statement.BindString16(0, base::AsStringPiece16(other_db_path.value()));
 #else
-#error Unsupported platform
+  statement.BindString(0, other_db_path.value());
 #endif
-  s.BindString(1, attachment_point);
-  return s.Run();
+  statement.BindString(1, attachment_point);
+  return statement.Run();
 }
 
-bool Database::DetachDatabase(const char* attachment_point, InternalApiToken) {
+bool Database::DetachDatabase(base::StringPiece attachment_point,
+                              InternalApiToken) {
   TRACE_EVENT0("sql", "Database::DetachDatabase");
 
   DCHECK(ValidAttachmentPoint(attachment_point));
 
-  Statement s(GetUniqueStatement("DETACH DATABASE ?"));
-  s.BindString(0, attachment_point);
-  return s.Run();
+  Statement statement(GetUniqueStatement("DETACH ?"));
+  statement.BindString(0, attachment_point);
+  return statement.Run();
 }
 
 // TODO(shess): Consider changing this to execute exactly one statement.  If a
@@ -1207,12 +1172,20 @@ bool Database::Execute(const char* sql) {
   if (error != SQLITE_OK)
     error = OnSqliteError(error, nullptr, sql);
 
-  // This needs to be a FATAL log because the error case of arriving here is
-  // that there's a malformed SQL statement. This can arise in development if
-  // a change alters the schema but not all queries adjust.  This can happen
-  // in production if the schema is corrupted.
-  DCHECK_NE(error, SQLITE_ERROR)
-      << "SQL Error in " << sql << ", " << GetErrorMessage();
+#if DCHECK_IS_ON()
+  // Report SQL compilation errors. On developer machines, the errors are most
+  // likely caused by invalid SQL in an under-development feature. In
+  // production, SQL compilation errors are caused by database schema
+  // corruption.
+  //
+  // DCHECK would not be appropriate here, because on-disk data is always
+  // subject to corruption, so Chrome cannot assume that the database schema
+  // will remain intact.
+  if (error == SQLITE_ERROR) {
+    DLOG(ERROR) << "SQL compilation error: " << GetErrorMessage()
+                << ". Statement: " << sql;
+  }
+#endif  // DCHECK_IS_ON()
   return error == SQLITE_OK;
 }
 
@@ -1279,11 +1252,23 @@ scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
   int rc = sqlite3_prepare_v3(db_, sql, /* nByte= */ -1, /* prepFlags= */ 0,
                               &sqlite_statement, /* pzTail= */ nullptr);
   if (rc != SQLITE_OK) {
-    // This is evidence of a syntax error in the incoming SQL.
-    DCHECK_NE(rc, SQLITE_ERROR) << "SQL compile error " << GetErrorMessage();
-
-    // It could also be database corruption.
     OnSqliteError(rc, nullptr, sql);
+
+#if DCHECK_IS_ON()
+    // Report SQL compilation errors. On developer machines, the errors are most
+    // likely caused by invalid SQL in an under-development feature. In
+    // production, SQL compilation errors are caused by database schema
+    // corruption.
+    //
+    // DCHECK would not be appropriate here, because on-disk data is always
+    // subject to corruption, so Chrome cannot assume that the database schema
+    // will remain intact.
+    if (rc == SQLITE_ERROR) {
+      DLOG(ERROR) << "SQL compilation error: " << GetErrorMessage()
+                  << ". Statement: " << sql;
+    }
+#endif  // DCHECK_IS_ON()
+
     return base::MakeRefCounted<StatementRef>(nullptr, nullptr, false);
   }
   return base::MakeRefCounted<StatementRef>(tracking_db, sqlite_statement,
@@ -1337,19 +1322,20 @@ bool Database::IsSQLValid(const char* sql) {
   return true;
 }
 
-bool Database::DoesIndexExist(const char* index_name) const {
+bool Database::DoesIndexExist(base::StringPiece index_name) const {
   return DoesSchemaItemExist(index_name, "index");
 }
 
-bool Database::DoesTableExist(const char* table_name) const {
+bool Database::DoesTableExist(base::StringPiece table_name) const {
   return DoesSchemaItemExist(table_name, "table");
 }
 
-bool Database::DoesViewExist(const char* view_name) const {
+bool Database::DoesViewExist(base::StringPiece view_name) const {
   return DoesSchemaItemExist(view_name, "view");
 }
 
-bool Database::DoesSchemaItemExist(const char* name, const char* type) const {
+bool Database::DoesSchemaItemExist(base::StringPiece name,
+                                   base::StringPiece type) const {
   static const char kSql[] =
       "SELECT 1 FROM sqlite_master WHERE type=? AND name=?";
   Statement statement(GetUntrackedStatement(kSql));
@@ -1460,14 +1446,6 @@ bool Database::OpenInternal(const std::string& file_name,
 
   EnsureSqliteInitialized();
 
-  // Setup the stats histograms immediately rather than allocating lazily.
-  // Databases which won't exercise all of these probably shouldn't exist.
-  if (!histogram_tag_.empty()) {
-    stats_histogram_ = base::LinearHistogram::FactoryGet(
-        "Sqlite.Stats2." + histogram_tag_, 1, EVENT_MAX_VALUE,
-        EVENT_MAX_VALUE + 1, base::HistogramBase::kUmaTargetedHistogramFlag);
-  }
-
   // If |poisoned_| is set, it means an error handler called
   // RazeAndClose().  Until regular Close() is called, the caller
   // should be treating the database as open, but is_open() currently
@@ -1496,10 +1474,6 @@ bool Database::OpenInternal(const std::string& file_name,
     // available, fetch manually.
     err = sqlite3_extended_errcode(db_);
 
-    // Histogram failures specific to initial open for debugging
-    // purposes.
-    base::UmaHistogramSparse("Sqlite.OpenFailure", err);
-
     OnSqliteError(err, nullptr, "-- sqlite3_open()");
     bool was_poisoned = poisoned_;
     Close();
@@ -1520,6 +1494,12 @@ bool Database::OpenInternal(const std::string& file_name,
       return false;
   }
 
+  // The use of triggers is discouraged for Chrome code. Thanks to this
+  // configuration change, triggers are not executed. CREATE TRIGGER and DROP
+  // TRIGGER still succeed.
+  err = sqlite3_db_config(db_, SQLITE_DBCONFIG_ENABLE_TRIGGER, 0, nullptr);
+  DCHECK_EQ(err, SQLITE_OK) << "sqlite3_db_config() should not fail";
+
   // Enable extended result codes to provide more color on I/O errors.
   // Not having extended result codes is not a fatal problem, as
   // Chromium code does not attempt to handle I/O errors anyhow.  The
@@ -1537,7 +1517,6 @@ bool Database::OpenInternal(const std::string& file_name,
   // be razed.
   err = ExecuteAndReturnErrorCode("PRAGMA auto_vacuum");
   if (err != SQLITE_OK) {
-    base::UmaHistogramSparse("Sqlite.OpenProbeFailure", err);
     OnSqliteError(err, nullptr, "PRAGMA auto_vacuum");
 
     // Retry or bail out if the error handler poisoned the handle.
@@ -1676,53 +1655,39 @@ void Database::set_histogram_tag(const std::string& tag) {
   histogram_tag_ = tag;
 }
 
-void Database::AddTaggedHistogram(const std::string& name, int sample) const {
-  if (histogram_tag_.empty())
-    return;
-
-  // TODO(shess): The histogram macros create a bit of static storage
-  // for caching the histogram object.  This code shouldn't execute
-  // often enough for such caching to be crucial.  If it becomes an
-  // issue, the object could be cached alongside histogram_prefix_.
-  std::string full_histogram_name = name + "." + histogram_tag_;
-  base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
-      full_histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag);
-  if (histogram)
-    histogram->Add(sample);
-}
-
-int Database::OnSqliteError(int err,
-                            sql::Statement* stmt,
+int Database::OnSqliteError(int sqlite_error_code,
+                            sql::Statement* statement,
                             const char* sql) const {
   TRACE_EVENT0("sql", "Database::OnSqliteError");
 
-  base::UmaHistogramSparse("Sqlite.Error", err);
-  AddTaggedHistogram("Sqlite.Error", err);
+  bool is_expected_error = IsExpectedSqliteError(sqlite_error_code);
+  if (!is_expected_error) {
+    // Log unexpected errors.
+    if (!sql && statement)
+      sql = statement->GetSQLStatement();
+    if (!sql)
+      sql = "(SQL unknown)";
 
-  // Always log the error.
-  if (!sql && stmt)
-    sql = stmt->GetSQLStatement();
-  if (!sql)
-    sql = "-- unknown";
-
-  std::string id = histogram_tag_;
-  if (id.empty())
-    id = DbPath().BaseName().AsUTF8Unsafe();
-  LOG(ERROR) << id << " sqlite error " << err << ", errno " << GetLastErrno()
-             << ": " << GetErrorMessage() << ", sql: " << sql;
+    std::string id = histogram_tag_;
+    if (id.empty())
+      id = DbPath().BaseName().AsUTF8Unsafe();
+    LOG(ERROR) << id << " SQLite error: code " << sqlite_error_code << " errno "
+               << GetLastErrno() << ": " << GetErrorMessage()
+               << " sql: " << sql;
+  }
 
   if (!error_callback_.is_null()) {
     // Fire from a copy of the callback in case of reentry into
     // re/set_error_callback().
     // TODO(shess): <http://crbug.com/254584>
-    ErrorCallback(error_callback_).Run(err, stmt);
-    return err;
+    ErrorCallback(error_callback_).Run(sqlite_error_code, statement);
+    return sqlite_error_code;
   }
 
   // The default handling is to assert on debug and to ignore on release.
-  if (!IsExpectedSqliteError(err))
+  if (!is_expected_error)
     DLOG(DCHECK) << GetErrorMessage();
-  return err;
+  return sqlite_error_code;
 }
 
 bool Database::FullIntegrityCheck(std::vector<std::string>* messages) {

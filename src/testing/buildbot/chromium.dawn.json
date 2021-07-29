@@ -7,6 +7,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -32,7 +33,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -59,7 +60,63 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--no-xvfb",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--enable-backend-validation",
+          "--disable-toggles=use_tint_generator",
+          "--no-xvfb",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation",
+          "--enable-toggles=use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -87,6 +144,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -165,6 +223,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -196,6 +255,7 @@
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
         ],
@@ -230,6 +290,7 @@
           "--additional-driver-flag=--enable-dawn-backend-validation",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
         ],
@@ -263,6 +324,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -288,7 +350,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -315,7 +377,63 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--no-xvfb",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--enable-backend-validation",
+          "--disable-toggles=use_tint_generator",
+          "--no-xvfb",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation",
+          "--enable-toggles=use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -343,6 +461,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -421,6 +540,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -452,6 +572,7 @@
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
         ],
@@ -486,6 +607,7 @@
           "--additional-driver-flag=--enable-dawn-backend-validation",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
         ],
@@ -519,6 +641,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -544,7 +667,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -571,7 +694,63 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--no-xvfb",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--enable-backend-validation",
+          "--disable-toggles=use_tint_generator",
+          "--no-xvfb",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation",
+          "--enable-toggles=use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -599,6 +778,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -677,6 +857,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -708,6 +889,7 @@
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
         ],
@@ -742,6 +924,7 @@
           "--additional-driver-flag=--enable-dawn-backend-validation",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
         ],
@@ -775,6 +958,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -800,7 +984,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -827,7 +1011,63 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--no-xvfb",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--enable-backend-validation",
+          "--disable-toggles=use_tint_generator",
+          "--no-xvfb",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation",
+          "--enable-toggles=use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -855,6 +1095,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--no-xvfb",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
@@ -933,6 +1174,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -964,6 +1206,7 @@
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
         ],
@@ -998,6 +1241,7 @@
           "--additional-driver-flag=--enable-dawn-backend-validation",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--no-xvfb",
           "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
         ],
@@ -1033,6 +1277,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1060,7 +1305,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1089,7 +1334,67 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "display_attached": "1",
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.14.6",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--enable-backend-validation",
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "display_attached": "1",
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.14.6",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1119,6 +1424,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1201,6 +1507,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -1235,6 +1542,7 @@
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -1271,6 +1579,7 @@
           "--additional-driver-flag=--enable-dawn-backend-validation",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -1306,6 +1615,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1321,7 +1631,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1331,7 +1641,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1348,7 +1658,34 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "display_attached": "1",
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1359,6 +1696,35 @@
       {
         "args": [
           "--enable-backend-validation",
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "display_attached": "1",
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.15.7"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1375,7 +1741,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1386,6 +1752,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1402,7 +1769,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1427,7 +1794,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1450,7 +1817,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1462,6 +1829,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -1481,7 +1849,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1494,6 +1862,7 @@
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -1514,7 +1883,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1528,6 +1897,7 @@
           "--additional-driver-flag=--enable-dawn-backend-validation",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -1548,7 +1918,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1557,10 +1927,12 @@
       }
     ]
   },
+  "Dawn Mac x64 Experimental Release (AMD)": {},
   "Dawn Mac x64 Release (AMD)": {
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1588,7 +1960,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1617,7 +1989,67 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "display_attached": "1",
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.14.6",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--enable-backend-validation",
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "display_attached": "1",
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.14.6",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1647,6 +2079,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1729,6 +2162,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -1763,6 +2197,7 @@
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -1799,6 +2234,7 @@
           "--additional-driver-flag=--enable-dawn-backend-validation",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -1834,6 +2270,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1849,7 +2286,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1859,7 +2296,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1876,7 +2313,34 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "display_attached": "1",
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1887,6 +2351,35 @@
       {
         "args": [
           "--enable-backend-validation",
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "display_attached": "1",
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.15.7"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1903,7 +2396,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1914,6 +2407,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -1930,7 +2424,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1955,7 +2449,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1978,7 +2472,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1990,6 +2484,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -2009,7 +2504,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2022,6 +2517,7 @@
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -2042,7 +2538,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2056,6 +2552,7 @@
           "--additional-driver-flag=--enable-dawn-backend-validation",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -2076,7 +2573,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2089,6 +2586,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2118,7 +2616,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2149,7 +2647,39 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            },
+            {
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2240,6 +2770,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -2276,6 +2807,7 @@
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -2315,6 +2847,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2339,7 +2872,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2365,7 +2898,61 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--enable-backend-validation=partial",
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation=partial",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2392,6 +2979,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2467,6 +3055,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -2498,6 +3087,7 @@
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -2531,6 +3121,7 @@
           "--additional-driver-flag=--enable-dawn-backend-validation=partial",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -2563,6 +3154,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2587,7 +3179,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2613,7 +3205,61 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--enable-backend-validation",
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2640,6 +3286,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2715,6 +3362,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -2746,6 +3394,7 @@
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -2779,6 +3428,7 @@
           "--additional-driver-flag=--enable-dawn-backend-validation",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -2811,6 +3461,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2835,7 +3486,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2861,7 +3512,61 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--enable-backend-validation=partial",
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation=partial",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2888,6 +3593,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -2963,6 +3669,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -2994,6 +3701,7 @@
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3027,6 +3735,7 @@
           "--additional-driver-flag=--enable-dawn-backend-validation=partial",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3059,6 +3768,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3083,7 +3793,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3109,7 +3819,61 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--enable-backend-validation",
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3136,6 +3900,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3211,6 +3976,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -3242,6 +4008,7 @@
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3275,6 +4042,7 @@
           "--additional-driver-flag=--enable-dawn-backend-validation",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
           "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3309,6 +4077,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3333,7 +4102,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3359,7 +4128,61 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--enable-backend-validation=partial",
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation=partial",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3386,6 +4209,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3461,6 +4285,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -3491,7 +4316,8 @@
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
-          "--additional-driver-flag=--use-gpu-in-tests"
+          "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -3523,7 +4349,8 @@
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation=partial",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
-          "--additional-driver-flag=--use-gpu-in-tests"
+          "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -3555,6 +4382,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3579,7 +4407,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3605,7 +4433,61 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--enable-backend-validation",
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3632,6 +4514,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3707,6 +4590,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -3737,7 +4621,8 @@
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
-          "--additional-driver-flag=--use-gpu-in-tests"
+          "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -3769,7 +4654,8 @@
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
-          "--additional-driver-flag=--use-gpu-in-tests"
+          "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -3801,6 +4687,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3825,7 +4712,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3851,7 +4738,61 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--enable-backend-validation=partial",
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation=partial",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3878,6 +4819,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -3953,6 +4895,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -3983,7 +4926,8 @@
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
-          "--additional-driver-flag=--use-gpu-in-tests"
+          "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4015,7 +4959,8 @@
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation=partial",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
-          "--additional-driver-flag=--use-gpu-in-tests"
+          "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4047,6 +4992,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -4071,7 +5017,7 @@
       },
       {
         "args": [
-          "--enable-toggles=skip_validation",
+          "--enable-toggles=skip_validation,use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -4097,7 +5043,61 @@
       },
       {
         "args": [
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
           "--enable-backend-validation",
+          "--disable-toggles=use_tint_generator",
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--exclusive-device-type-preference=discrete,integrated"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "dawn_end2end_validation_layers_spirv_cross_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-27.21.14.5148",
+              "os": "Windows-10-18363",
+              "pool": "chromium.tests.gpu"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "dawn_end2end_tests",
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+      },
+      {
+        "args": [
+          "--enable-backend-validation",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -4124,6 +5124,7 @@
       {
         "args": [
           "--use-wire",
+          "--enable-toggles=use_tint_generator",
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0",
           "--exclusive-device-type-preference=discrete,integrated"
@@ -4199,6 +5200,7 @@
     "isolated_scripts": [
       {
         "args": [
+          "--enable-toggles=use_tint_generator",
           "--override-steps=1",
           "--gtest-benchmark-name=dawn_perf_tests",
           "-v"
@@ -4229,7 +5231,8 @@
           "--jobs=1",
           "--order=natural",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
-          "--additional-driver-flag=--use-gpu-in-tests"
+          "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4261,7 +5264,8 @@
           "--order=natural",
           "--additional-driver-flag=--enable-dawn-backend-validation",
           "--additional-driver-flag=--disable-dawn-features=disallow_unsafe_apis",
-          "--additional-driver-flag=--use-gpu-in-tests"
+          "--additional-driver-flag=--use-gpu-in-tests",
+          "--additional-driver-flag=--enable-dawn-features=use_tint_generator"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {

@@ -23,6 +23,7 @@
 #include "components/crx_file/id_util.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/onc/onc_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace onc {
@@ -143,6 +144,8 @@ std::unique_ptr<base::DictionaryValue> Validator::MapObject(
       valid = ValidateIPsec(repaired.get());
     } else if (&signature == &kOpenVPNSignature) {
       valid = ValidateOpenVPN(repaired.get());
+    } else if (&signature == &kWireGuardSignature) {
+      valid = ValidateWireGuard(repaired.get());
     } else if (&signature == &kThirdPartyVPNSignature) {
       valid = ValidateThirdPartyVPN(repaired.get());
     } else if (&signature == &kARCVPNSignature) {
@@ -288,16 +291,16 @@ bool Validator::ValidateRecommendedField(
     return true;
   }
 
-  std::unique_ptr<base::ListValue> repaired_recommended(new base::ListValue);
+  base::ListValue repaired_recommended;
   for (const auto& entry : recommended_list->GetList()) {
-    std::string field_name;
-    if (!entry.GetAsString(&field_name)) {
+    const std::string* field_name = entry.GetIfString();
+    if (!field_name) {
       NOTREACHED();  // The types of field values are already verified.
       continue;
     }
 
     const OncFieldSignature* field_signature =
-        GetFieldSignature(object_signature, field_name);
+        GetFieldSignature(object_signature, *field_name);
 
     bool found_error = false;
     std::string error_cause;
@@ -313,7 +316,7 @@ bool Validator::ValidateRecommendedField(
     if (found_error) {
       path_.push_back(::onc::kRecommended);
       std::ostringstream msg;
-      msg << "The " << error_cause << " field '" << field_name
+      msg << "The " << error_cause << " field '" << *field_name
           << "' cannot be recommended.";
       AddValidationIssue(error_on_wrong_recommended_, msg.str());
       path_.pop_back();
@@ -322,18 +325,19 @@ bool Validator::ValidateRecommendedField(
       continue;
     }
 
-    repaired_recommended->AppendString(field_name);
+    repaired_recommended.AppendString(*field_name);
   }
 
-  result->Set(::onc::kRecommended, std::move(repaired_recommended));
+  result->SetKey(::onc::kRecommended, std::move(repaired_recommended));
   return true;
 }
 
 bool Validator::ValidateClientCertFields(bool allow_cert_type_none,
                                          base::DictionaryValue* result) {
-  std::vector<const char*> valid_cert_types = {::onc::client_cert::kRef,
-                                               ::onc::client_cert::kPattern,
-                                               ::onc::client_cert::kPKCS11Id};
+  std::vector<const char*> valid_cert_types = {
+      ::onc::client_cert::kRef, ::onc::client_cert::kPattern,
+      ::onc::client_cert::kProvisioningProfileId,
+      ::onc::client_cert::kPKCS11Id};
   if (allow_cert_type_none)
     valid_cert_types.push_back(::onc::client_cert::kClientCertTypeNone);
 
@@ -350,7 +354,10 @@ bool Validator::ValidateClientCertFields(bool allow_cert_type_none,
 
   bool all_required_exist = true;
 
-  if (cert_type == ::onc::client_cert::kPattern)
+  if (cert_type == ::onc::client_cert::kProvisioningProfileId)
+    all_required_exist &= RequireField(
+        *result, ::onc::client_cert::kClientCertProvisioningProfileId);
+  else if (cert_type == ::onc::client_cert::kPattern)
     all_required_exist &=
         RequireField(*result, ::onc::client_cert::kClientCertPattern);
   else if (cert_type == ::onc::client_cert::kRef)
@@ -404,12 +411,12 @@ bool Validator::FieldExistsAndHasNoValidValue(
     const base::DictionaryValue& object,
     const std::string& field_name,
     const std::vector<const char*>& valid_values) {
-  std::string actual_value;
-  if (!object.GetStringWithoutPathExpansion(field_name, &actual_value))
+  const std::string* actual_value = object.FindStringKey(field_name);
+  if (!actual_value)
     return false;
 
   path_.push_back(field_name);
-  const bool valid = IsValidValue(actual_value, valid_values);
+  const bool valid = IsValidValue(*actual_value, valid_values);
   path_.pop_back();
   return !valid;
 }
@@ -418,15 +425,15 @@ bool Validator::FieldExistsAndIsNotInRange(const base::DictionaryValue& object,
                                            const std::string& field_name,
                                            int lower_bound,
                                            int upper_bound) {
-  int actual_value;
-  if (!object.GetIntegerWithoutPathExpansion(field_name, &actual_value) ||
-      (lower_bound <= actual_value && actual_value <= upper_bound)) {
+  absl::optional<int> actual_value = object.FindIntKey(field_name);
+  if (!actual_value || (lower_bound <= actual_value.value() &&
+                        actual_value.value() <= upper_bound)) {
     return false;
   }
 
   path_.push_back(field_name);
   std::ostringstream msg;
-  msg << "Found value '" << actual_value
+  msg << "Found value '" << actual_value.value()
       << "', but expected a value in the range [" << lower_bound << ", "
       << upper_bound << "] (boundaries inclusive)";
   AddValidationIssue(true /* is_error */, msg.str());
@@ -436,17 +443,17 @@ bool Validator::FieldExistsAndIsNotInRange(const base::DictionaryValue& object,
 
 bool Validator::FieldExistsAndIsEmpty(const base::DictionaryValue& object,
                                       const std::string& field_name) {
-  const base::Value* value = NULL;
-  if (!object.GetWithoutPathExpansion(field_name, &value))
+  const base::Value* value = object.FindKey(field_name);
+  if (!value)
     return false;
 
-  std::string str;
+  const std::string* str = value->GetIfString();
   const base::ListValue* list = NULL;
-  if (value->GetAsString(&str)) {
-    if (!str.empty())
+  if (str) {
+    if (!(*str).empty())
       return false;
   } else if (value->GetAsList(&list)) {
-    if (!list->empty())
+    if (!list->GetList().empty())
       return false;
   } else {
     NOTREACHED();
@@ -495,12 +502,12 @@ bool Validator::ListFieldContainsValidValues(
   if (object.GetListWithoutPathExpansion(field_name, &list)) {
     path_.push_back(field_name);
     for (const auto& entry : list->GetList()) {
-      std::string value;
-      if (!entry.GetAsString(&value)) {
+      const std::string* value = entry.GetIfString();
+      if (!value) {
         NOTREACHED();  // The types of field values are already verified.
         continue;
       }
-      if (!IsValidValue(value, valid_values)) {
+      if (!IsValidValue(*value, valid_values)) {
         path_.pop_back();
         return false;
       }
@@ -514,10 +521,9 @@ bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
   const std::string kInvalidLength = "Invalid length";
 
   // Check SSID validity.
-  std::string ssid_string;
-  if (object->GetStringWithoutPathExpansion(::onc::wifi::kSSID, &ssid_string) &&
-      (ssid_string.size() <= 0 ||
-       ssid_string.size() > kMaximumSSIDLengthInBytes)) {
+  std::string* ssid_string = object->FindStringKey(::onc::wifi::kSSID);
+  if (ssid_string && (ssid_string->size() <= 0 ||
+                      ssid_string->size() > kMaximumSSIDLengthInBytes)) {
     path_.push_back(::onc::wifi::kSSID);
     std::ostringstream msg;
     msg << kInvalidLength;
@@ -534,41 +540,41 @@ bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
   }
 
   // Check HexSSID validity.
-  std::string hex_ssid_string;
-  if (object->GetStringWithoutPathExpansion(::onc::wifi::kHexSSID,
-                                            &hex_ssid_string)) {
-    std::string decoded_ssid;
-    if (!base::HexStringToString(hex_ssid_string, &decoded_ssid)) {
-      path_.push_back(::onc::wifi::kHexSSID);
-      std::ostringstream msg;
-      msg << "Not a valid hex representation: '" << hex_ssid_string << "'";
-      AddValidationIssue(true /* is_error */, msg.str());
-      path_.pop_back();
-      return false;
-    }
-    if (decoded_ssid.size() <= 0 ||
-        decoded_ssid.size() > kMaximumSSIDLengthInBytes) {
-      path_.push_back(::onc::wifi::kHexSSID);
-      std::ostringstream msg;
-      msg << kInvalidLength;
-      AddValidationIssue(true /* is_error */, msg.str());
-      path_.pop_back();
-      return false;
-    }
+  std::string* hex_ssid_string = object->FindStringKey(::onc::wifi::kHexSSID);
+  if (!hex_ssid_string)
+    return true;
 
-    // If both SSID and HexSSID are set, check whether they are consistent, i.e.
-    // HexSSID contains the UTF-8 encoding of SSID. If not, remove the SSID
-    // field.
-    if (ssid_string.length() > 0) {
-      if (ssid_string != decoded_ssid) {
-        path_.push_back(::onc::wifi::kSSID);
-        std::ostringstream msg;
-        msg << "Fields '" << ::onc::wifi::kSSID << "' and '"
-            << ::onc::wifi::kHexSSID << "' contain inconsistent values.";
-        AddValidationIssue(false /* is_error */, msg.str());
-        path_.pop_back();
-        object->RemoveKey(::onc::wifi::kSSID);
-      }
+  std::string decoded_ssid;
+  if (!base::HexStringToString(*hex_ssid_string, &decoded_ssid)) {
+    path_.push_back(::onc::wifi::kHexSSID);
+    std::ostringstream msg;
+    msg << "Not a valid hex representation: '" << *hex_ssid_string << "'";
+    AddValidationIssue(true /* is_error */, msg.str());
+    path_.pop_back();
+    return false;
+  }
+  if (decoded_ssid.size() <= 0 ||
+      decoded_ssid.size() > kMaximumSSIDLengthInBytes) {
+    path_.push_back(::onc::wifi::kHexSSID);
+    std::ostringstream msg;
+    msg << kInvalidLength;
+    AddValidationIssue(true /* is_error */, msg.str());
+    path_.pop_back();
+    return false;
+  }
+
+  // If both SSID and HexSSID are set, check whether they are consistent, i.e.
+  // HexSSID contains the UTF-8 encoding of SSID. If not, remove the SSID
+  // field.
+  if (ssid_string && ssid_string->length() > 0) {
+    if (*ssid_string != decoded_ssid) {
+      path_.push_back(::onc::wifi::kSSID);
+      std::ostringstream msg;
+      msg << "Fields '" << ::onc::wifi::kSSID << "' and '"
+          << ::onc::wifi::kHexSSID << "' contain inconsistent values.";
+      AddValidationIssue(false /* is_error */, msg.str());
+      path_.pop_back();
+      object->RemoveKey(::onc::wifi::kSSID);
     }
   }
   return true;
@@ -588,18 +594,19 @@ bool Validator::RequireField(const base::DictionaryValue& dict,
 bool Validator::CheckGuidIsUniqueAndAddToSet(const base::DictionaryValue& dict,
                                              const std::string& key_guid,
                                              std::set<std::string>* guids) {
-  std::string guid;
-  if (dict.GetStringWithoutPathExpansion(key_guid, &guid)) {
-    if (guids->count(guid) != 0) {
-      path_.push_back(key_guid);
-      std::ostringstream msg;
-      msg << "Found a duplicate GUID '" << guid << "'.";
-      AddValidationIssue(true /* is_error */, msg.str());
-      path_.pop_back();
-      return false;
-    }
-    guids->insert(guid);
+  const std::string* guid = dict.FindStringKey(key_guid);
+  if (!guid)
+    return true;
+
+  if (guids->count(*guid) != 0) {
+    path_.push_back(key_guid);
+    std::ostringstream msg;
+    msg << "Found a duplicate GUID '" << *guid << "'.";
+    AddValidationIssue(true /* is_error */, msg.str());
+    path_.pop_back();
+    return false;
   }
+  guids->insert(*guid);
   return true;
 }
 
@@ -664,8 +671,7 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
 
   bool all_required_exist = RequireField(*result, ::onc::network_config::kGUID);
 
-  bool remove = false;
-  result->GetBooleanWithoutPathExpansion(::onc::kRemove, &remove);
+  bool remove = result->FindBoolKey(::onc::kRemove).value_or(false);
   if (!remove) {
     all_required_exist &= RequireField(*result, ::onc::network_config::kName) &&
                           RequireField(*result, ::onc::network_config::kType);
@@ -825,6 +831,7 @@ bool Validator::ValidateVPN(base::DictionaryValue* result) {
       ::onc::vpn::kIPsec,
       ::onc::vpn::kTypeL2TP_IPsec,
       ::onc::vpn::kOpenVPN,
+      ::onc::vpn::kWireGuard,
   };
 
   if (!managed_onc_) {
@@ -844,6 +851,8 @@ bool Validator::ValidateVPN(base::DictionaryValue* result) {
   } else if (type == ::onc::vpn::kTypeL2TP_IPsec) {
     all_required_exist &= RequireField(*result, ::onc::vpn::kIPsec) &&
                           RequireField(*result, ::onc::vpn::kL2TP);
+  } else if (type == ::onc::vpn::kWireGuard) {
+    all_required_exist &= RequireField(*result, ::onc::vpn::kWireGuard);
   } else if (type == ::onc::vpn::kThirdPartyVpn) {
     all_required_exist &= RequireField(*result, ::onc::vpn::kThirdPartyVpn);
   } else if (type == ::onc::vpn::kArcVpn) {
@@ -969,6 +978,29 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
   bool all_required_exist =
       RequireField(*result, ::onc::client_cert::kClientCertType);
 
+  return !error_on_missing_field_ || all_required_exist;
+}
+
+bool Validator::ValidateWireGuard(base::DictionaryValue* result) {
+  const base::Value* peers = result->FindKey(::onc::wireguard::kPeers);
+  std::ostringstream msg;
+  if (!peers->is_list()) {
+    msg << "A " << ::onc::wireguard::kPeers
+        << " list is required but not present.";
+    AddValidationIssue(true /* is_error */, msg.str());
+    return false;
+  }
+  for (const base::Value& p : peers->GetList()) {
+    if (!p.FindKey(::onc::wireguard::kPublicKey)) {
+      msg << ::onc::wireguard::kPublicKey
+          << " field is required for each peer.";
+      AddValidationIssue(true /* is_error */, msg.str());
+      return false;
+    }
+  }
+
+  const bool all_required_exist =
+      RequireField(*result, ::onc::wireguard::kEndpoint);
   return !error_on_missing_field_ || all_required_exist;
 }
 
@@ -1149,8 +1181,7 @@ bool Validator::ValidateCertificate(base::DictionaryValue* result) {
 
   bool all_required_exist = RequireField(*result, ::onc::certificate::kGUID);
 
-  bool remove = false;
-  result->GetBooleanWithoutPathExpansion(::onc::kRemove, &remove);
+  bool remove = result->FindBoolKey(::onc::kRemove).value_or(false);
   if (remove) {
     path_.push_back(::onc::kRemove);
     std::ostringstream msg;

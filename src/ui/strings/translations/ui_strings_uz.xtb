@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Internet aloqasini tekshirish</translation>
 <translation id="2388990488038464401">Bu raqamga telefoningizdan chaqiruv bajarilsinmi?</translation>
+<translation id="2435457462613246316">Parolni ko‘rsatish</translation>
 <translation id="24452542372838207">Bildirishnomani yoyish</translation>
 <translation id="2445449901874883781">Koʻproq oynalar</translation>
 <translation id="2482878487686419369">Bildirishnomalar</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 yil oldin}other{# yil oldin}}</translation>
 <translation id="2878511608894704031">Hammasini tozalash</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 kundan keyin}other{# kundan keyin}}</translation>
+<translation id="2922712708897119705"><ph name="COLUMN_NAME" /> ustuni kamayish tartibida saralandi.</translation>
 <translation id="2931838996092594335">bosish</translation>
 <translation id="2981684127883932071">Takliflar chiqarildi</translation>
 <translation id="3036649622769666520">Ochiq fayllar</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Menyu</translation>
 <translation id="3909791450649380159">&amp;Kesib olish</translation>
 <translation id="3990502903496589789">O‘ng cheti</translation>
+<translation id="3994749195054421561"><ph name="COLUMN_NAME" /> ustuni oshib borish tartibida saralandi.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 ta yangi bildirishnoma}other{# ta yangi bildirishnoma}}</translation>
 <translation id="4202807286478387388">borish</translation>
 <translation id="4250229828105606438">Skrinshot</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Vaqtincha xotiradan olib tashlash</translation>
 <translation id="4316910396681052118">BARCHA ILOVALAR</translation>
 <translation id="4491109536499578614">Tasvir</translation>
+<translation id="4565377596337484307">Parolni berkitish</translation>
 <translation id="4588090240171750605">O‘ngga aylantirish</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Bahosi: <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Ilova tavsiyasi</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Sahifa: <ph name="SELECTED_PAGE" /> / <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Qidiruv oynasidagi matnni tozalash</translation>
 <translation id="6040143037577758943">Yopish</translation>
+<translation id="6117103120090651229">Markaziy tugma</translation>
 <translation id="6119846243427417423">faollashtirish</translation>
 <translation id="6129953537138746214">Bo‘shliq</translation>
 <translation id="6134259848159370930">Qurilma, ilovalar, sozlamalar va internetdan qidirish.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Barcha ilovalarni ko‘rish</translation>
 <translation id="6165508094623778733">Batafsil</translation>
 <translation id="6166852626429024716">Qurilma, ilovalar va internetdan qidirish...</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> tanlandi.</translation>
 <translation id="6264365405983206840">&amp;Barchasini tanlash</translation>
 <translation id="6351032674660237738">ILOVA TAKLIFLARI</translation>
 <translation id="6364916375976753737">Chapga o‘tkazish</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 daqiqa qoldi}other{# daqiqa qoldi}}</translation>
 <translation id="7430878839542012341">Bu qidiruv qaydi tarixingizdan olib tashlansinmi?</translation>
+<translation id="7437971918971306061"><ph name="COLUMN_NAME" /> ustuni saralanmagan.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Kulgichlar</translation>
 <translation id="7620655452534002301">Olib tashlandi.</translation>

@@ -173,6 +173,7 @@ component("wtf") {
     "text/text_stream.cc",
     "text/text_stream.h",
     "text/unicode.h",
+    "text/unicode_string.h",
     "text/utf8.cc",
     "text/utf8.h",
     "text/wtf_string.cc",
@@ -183,7 +184,6 @@ component("wtf") {
     "threading.cc",
     "threading.h",
     "threading_primitives.h",
-    "tree_node.h",
     "type_traits.h",
     "uuid.cc",
     "uuid.h",
@@ -214,6 +214,7 @@ component("wtf") {
 
   deps = [
     ":buildflags",
+    "//base/allocator:buildflags",
     "//build:chromeos_buildflags",
 
     # TODO(tkent): WTF should not depend on it.
@@ -337,7 +338,6 @@ source_set("wtf_unittests_sources") {
     "text/text_encoding_test.cc",
     "text/wtf_string_test.cc",
     "threading_primitives_test.cc",
-    "tree_node_test.cc",
     "type_traits_test.cc",
     "uuid_test.cc",
     "vector_backed_linked_list_test.cc",

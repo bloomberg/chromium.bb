@@ -39,8 +39,10 @@
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "ui/gfx/geometry/size.h"
+#include "url/origin.h"
 
 namespace content {
 namespace {
@@ -95,11 +97,11 @@ class BackgroundFetchServiceTest
   class ScopedCustomBackgroundFetchService {
    public:
     ScopedCustomBackgroundFetchService(BackgroundFetchServiceTest* test,
-                                       const url::Origin& origin)
+                                       const blink::StorageKey& storage_key)
         : scoped_service_(&test->service_,
                           std::make_unique<BackgroundFetchServiceImpl>(
                               test->context_,
-                              origin,
+                              storage_key,
                               /* render_frame_tree_node_id= */ 0,
                               /* wc_getter= */ base::NullCallback())) {}
 
@@ -150,7 +152,7 @@ class BackgroundFetchServiceTest
                   blink::mojom::BackgroundFetchOptionsPtr options,
                   const SkBitmap& icon) {
     BackgroundFetchRegistrationId registration_id(
-        service_worker_registration_id, origin(), developer_id,
+        service_worker_registration_id, storage_key(), developer_id,
         kExampleUniqueId);
 
     base::RunLoop run_loop;
@@ -280,7 +282,7 @@ class BackgroundFetchServiceTest
     BackgroundFetchTestBase::SetUp();
 
     context_ = base::MakeRefCounted<BackgroundFetchContext>(
-        browser_context(), storage_partition(),
+        storage_partition(),
         base::WrapRefCounted(embedded_worker_test_helper()->context_wrapper()),
         /* quota_manager_proxy= */ nullptr, devtools_context());
     context_->SetDataManagerForTesting(
@@ -304,7 +306,7 @@ class BackgroundFetchServiceTest
 
     context_->InitializeOnCoreThread();
     service_ = std::make_unique<BackgroundFetchServiceImpl>(
-        context_, origin(),
+        context_, storage_key(),
         /* render_frame_tree_node_id= */ 0,
         /* wc_getter= */
         base::BindRepeating(
@@ -1107,7 +1109,8 @@ TEST_F(BackgroundFetchServiceTest, GetDeveloperIds) {
   // the service worker registration is correct.
   {
     ScopedCustomBackgroundFetchService scoped_bogus_url_service(
-        this, url::Origin::Create(GURL("https://www.bogus-origin.com")));
+        this, blink::StorageKey(
+                  url::Origin::Create(GURL("https://www.bogus-origin.com"))));
     blink::mojom::BackgroundFetchError error;
     std::vector<std::string> developer_ids;
 

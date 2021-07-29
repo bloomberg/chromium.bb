@@ -47,14 +47,6 @@ enum NotificationType {
   // TODO(https://crbug.com/1174781): Remove.
   NOTIFICATION_APP_TERMINATING = NOTIFICATION_CHROME_START,
 
-#if defined(OS_MAC)
-  // This notification is sent when the app has no key window, such as when
-  // all windows are closed but the app is still active. No source or details
-  // are provided.
-  // TODO(https://crbug.com/1174783): Remove.
-  NOTIFICATION_NO_KEY_WINDOW,
-#endif
-
   // Authentication ----------------------------------------------------------
 
   // This is sent when a login prompt is shown.  The source is the
@@ -99,11 +91,6 @@ enum NotificationType {
   // TODO(https://crbug.com/796051): Remove.
   NOTIFICATION_PRINT_JOB_EVENT,
 
-  // Sent when a PrintJob has been released.
-  // Source is the WebContents that holds the print job.
-  // TODO(https://crbug.com/1174788): Remove.
-  NOTIFICATION_PRINT_JOB_RELEASED,
-
   // Misc --------------------------------------------------------------------
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -130,21 +117,6 @@ enum NotificationType {
   //    NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE
   // TODO(https://crbug.com/1174793): Remove.
   NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-
-  // Sent when the screen lock state has changed. The source is
-  // ScreenLocker and the details is a bool specifing that the
-  // screen is locked. When details is a false, the source object
-  // is being deleted, so the receiver shouldn't use the screen locker
-  // object.
-  // TODO(https://crbug.com/1174796): Remove.
-  NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-#endif
-
-#if defined(TOOLKIT_VIEWS)
-  // Notification that the nested loop using during tab dragging has returned.
-  // Used for testing.
-  // TODO(https://crbug.com/1174797): Remove.
-  NOTIFICATION_TAB_DRAG_LOOP_DONE,
 #endif
 
   // Sent when the applications in the NTP app launcher have been reordered.

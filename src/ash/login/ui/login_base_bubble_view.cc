@@ -18,6 +18,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -47,7 +48,7 @@ constexpr base::TimeDelta kBubbleAnimationDuration =
 // associated bubble in response.
 class LoginBubbleHandler : public ui::EventHandler {
  public:
-  LoginBubbleHandler(LoginBaseBubbleView* bubble) : bubble_(bubble) {
+  explicit LoginBubbleHandler(LoginBaseBubbleView* bubble) : bubble_(bubble) {
     Shell::Get()->AddPreTargetHandler(this);
   }
 
@@ -310,10 +311,10 @@ gfx::Rect LoginBaseBubbleView::GetWorkArea() const {
 
 void LoginBaseBubbleView::ScheduleAnimation(bool visible) {
   if (GetBubbleOpener()) {
-    GetBubbleOpener()->ink_drop()->AnimateToState(
-        visible ? views::InkDropState::ACTIVATED
-                : views::InkDropState::DEACTIVATED,
-        nullptr /*event*/);
+    views::InkDrop::Get(GetBubbleOpener())
+        ->AnimateToState(visible ? views::InkDropState::ACTIVATED
+                                 : views::InkDropState::DEACTIVATED,
+                         nullptr /*event*/);
   }
 
   if (layer())

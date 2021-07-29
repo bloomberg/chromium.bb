@@ -13,7 +13,9 @@
 #include "chrome/browser/chromeos/input_method/suggestions_collector.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chromeos/services/ime/public/cpp/suggestions.h"
-#include "chromeos/services/ime/public/mojom/input_engine.mojom-forward.h"
+#include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "chromeos/services/ime/public/mojom/input_method.mojom.h"
+#include "chromeos/services/ime/public/mojom/input_method_host.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -80,7 +82,7 @@ class NativeInputMethodEngine
 
  private:
   class ImeObserver : public InputMethodEngineBase::Observer,
-                      public ime::mojom::InputChannel {
+                      public ime::mojom::InputMethodHost {
    public:
     // |ime_base_observer| is to forward events to extension during this
     // migration. It will be removed when the official extension is completely
@@ -127,33 +129,17 @@ class NativeInputMethodEngine
         const std::vector<std::string>& suggestions) override;
     void OnInputMethodOptionsChanged(const std::string& engine_id) override;
 
-    // mojom::InputChannel:
-    void ProcessMessage(const std::vector<uint8_t>& message,
-                        ProcessMessageCallback callback) override;
-    void OnInputMethodChanged(const std::string& engine_id) override {}
-    void OnFocus(ime::mojom::InputFieldInfoPtr input_field_info) override {}
-    void OnBlur() override {}
-    void OnSurroundingTextChanged(
-        const std::string& text,
-        uint32_t offset,
-        ime::mojom::SelectionRangePtr selection_range) override {}
-    void OnCompositionCanceled() override {}
-    void ProcessKeypressForRulebased(
-        ime::mojom::PhysicalKeyEventPtr event,
-        ProcessKeypressForRulebasedCallback callback) override {}
-    void OnKeyEvent(ime::mojom::PhysicalKeyEventPtr event,
-                    OnKeyEventCallback callback) override {}
-    void ResetForRulebased() override {}
-    void GetRulebasedKeypressCountForTesting(
-        GetRulebasedKeypressCountForTestingCallback callback) override {}
+    // ime::mojom::InputMethodHost:
     void CommitText(
-        const std::string& text,
+        const std::u16string& text,
         ime::mojom::CommitTextCursorBehavior cursor_behavior) override;
-    void SetComposition(const std::string& text) override;
-    void SetCompositionRange(uint32_t start_byte_index,
-                             uint32_t end_byte_index) override;
+    void SetComposition(
+        const std::u16string& text,
+        std::vector<ime::mojom::CompositionSpanPtr> spans) override;
+    void SetCompositionRange(uint32_t start_index, uint32_t end_index) override;
     void FinishComposition() override;
-    void DeleteSurroundingText(uint32_t before, uint32_t after) override;
+    void DeleteSurroundingText(uint32_t num_before_cursor,
+                               uint32_t num_after_cursor) override;
     void HandleAutocorrect(
         ime::mojom::AutocorrectSpanPtr autocorrect_span) override;
     void RequestSuggestions(ime::mojom::SuggestionsRequestPtr request,
@@ -171,30 +157,17 @@ class NativeInputMethodEngine
     void FlushForTesting();
 
     // Returns whether this is connected to the input engine.
-    bool IsConnectedForTesting() const { return remote_to_engine_.is_bound(); }
+    bool IsConnectedForTesting() const { return input_method_.is_bound(); }
 
     void OnProfileWillBeDestroyed();
 
    private:
-    // Called when this is connected to the input engine. |bound| indicates
-    // the success of the connection.
-    void OnConnected(base::Time start, std::string engine_id, bool bound);
-
-    // Called when there's a connection error.
-    void OnError(base::Time start);
-
-    // Called when a rule-based key press is processed by Mojo.
-    void OnRuleBasedKeyEventResponse(
-        base::Time start,
-        ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback,
-        ime::mojom::KeypressResponseForRulebasedPtr response);
-
     PrefService* prefs_ = nullptr;
 
     std::unique_ptr<InputMethodEngineBase::Observer> ime_base_observer_;
     mojo::Remote<ime::mojom::InputEngineManager> remote_manager_;
-    mojo::Receiver<ime::mojom::InputChannel> receiver_from_engine_;
-    mojo::Remote<ime::mojom::InputChannel> remote_to_engine_;
+    mojo::Remote<ime::mojom::InputMethod> input_method_;
+    mojo::Receiver<ime::mojom::InputMethodHost> host_receiver_{this};
 
     std::unique_ptr<AssistiveSuggester> assistive_suggester_;
     std::unique_ptr<AutocorrectManager> autocorrect_manager_;

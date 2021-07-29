@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -107,9 +108,20 @@ class ArcMetricsService : public KeyedService,
   void ReportArcCorePriAbiMigFailedTries(uint32_t failed_attempts) override;
   void ReportArcCorePriAbiMigDowngradeDelay(base::TimeDelta delay) override;
   void ReportArcCorePriAbiMigBootTime(base::TimeDelta duration) override;
+  void ReportArcSystemHealthUpgrade(base::TimeDelta duration,
+                                    bool packages_deleted) override;
   void ReportClipboardDragDropEvent(
       mojom::ArcClipboardDragDropEvent event_type) override;
   void ReportAnr(mojom::AnrPtr anr) override;
+  void ReportLowLatencyStylusLibApiUsage(
+      mojom::LowLatencyStylusLibApiId api_id) override;
+  void ReportLowLatencyStylusLibPredictionTarget(
+      mojom::LowLatencyStylusLibPredictionTargetPtr prediction_target) override;
+  void ReportEntireFixupMetrics(base::TimeDelta duration,
+                                uint32_t number_of_directories,
+                                uint32_t number_of_failures) override;
+  void ReportPerAppFixupMetrics(base::TimeDelta duration,
+                                uint32_t number_of_directories) override;
 
   // wm::ActivationChangeObserver overrides.
   // Records to UMA when a user has interacted with an ARC app window.

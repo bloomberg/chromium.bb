@@ -54,6 +54,8 @@ class SharingUiController {
   virtual sync_pb::SharingSpecificFields::EnabledFeatures GetRequiredFeature()
       const = 0;
   virtual const gfx::VectorIcon& GetVectorIcon() const = 0;
+  // If true, shows a loading icon on omnibox when sending out the message.
+  virtual bool ShouldShowLoadingIcon() const;
   virtual std::u16string GetTextForTooltipAndAccessibleName() const = 0;
   // Get the name of the feature to be used as a prefix for the metric name.
   virtual SharingFeatureName GetFeatureMetricsPrefix() const = 0;

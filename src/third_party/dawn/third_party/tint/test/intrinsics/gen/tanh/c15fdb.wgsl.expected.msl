@@ -1,0 +1,27 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void tanh_c15fdb() {
+  float res = tanh(1.0f);
+}
+
+vertex tint_symbol vertex_main() {
+  tanh_c15fdb();
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  tanh_c15fdb();
+  return;
+}
+
+kernel void compute_main() {
+  tanh_c15fdb();
+  return;
+}
+

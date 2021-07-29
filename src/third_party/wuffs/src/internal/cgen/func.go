@@ -229,12 +229,14 @@ func (g *gen) writeFuncPrototype(b *buffer, n *a.Func) error {
 func (g *gen) writeFuncImpl(b *buffer, n *a.Func) error {
 	k := g.funks[n.QQID()]
 
-	b.printf("// -------- func %s.%s\n\n", g.pkgName, n.QQID().Str(g.tm))
-
-	caMacro, _, caAttribute, err := cpuArchCNames(n.Asserts())
+	caMacro, caName, caAttribute, err := cpuArchCNames(n.Asserts())
 	if err != nil {
 		return err
 	}
+	if caName != "" {
+		b.printf("// ‼ WUFFS MULTI-FILE SECTION +%s\n", caName)
+	}
+	b.printf("// -------- func %s.%s\n\n", g.pkgName, n.QQID().Str(g.tm))
 	if caMacro != "" {
 		b.printf("#if defined(WUFFS_BASE__CPU_ARCH__%s)\n", caMacro)
 	}
@@ -269,7 +271,7 @@ func (g *gen) writeFuncImpl(b *buffer, n *a.Func) error {
 		if n.Effect().Coroutine() {
 			b.writex(k.bBodySuspend)
 		} else if k.hasGotoOK {
-			b.writes("\ngoto ok;\nok:\n") // The goto avoids the "unused label" warning.
+			b.writes("\nok:\n")
 		}
 	}
 
@@ -277,6 +279,9 @@ func (g *gen) writeFuncImpl(b *buffer, n *a.Func) error {
 	b.writes("}\n")
 	if caMacro != "" {
 		b.printf("#endif  // defined(WUFFS_BASE__CPU_ARCH__%s)\n", caMacro)
+	}
+	if caName != "" {
+		b.printf("// ‼ WUFFS MULTI-FILE SECTION -%s\n", caName)
 	}
 	b.writes("\n")
 	return nil
@@ -287,6 +292,9 @@ func (g *gen) gatherFuncImpl(_ *buffer, n *a.Func) error {
 	if n.Public() && n.Effect().Coroutine() {
 		g.numPublicCoroutines[n.Receiver()]++
 		coroID = g.numPublicCoroutines[n.Receiver()]
+		if coroID >= 0x8000 {
+			return fmt.Errorf("too many coroutines for %q", n.Receiver().Str(g.tm))
+		}
 	}
 
 	g.currFunk = funk{
@@ -493,11 +501,17 @@ func (g *gen) writeFuncImplBody(b *buffer) error {
 }
 
 func (g *gen) writeFuncImplBodySuspend(b *buffer) error {
+	if (g.currFunk.coroSuspPoint > 0) || g.currFunk.astFunc.Effect().Coroutine() {
+		if !g.currFunk.hasGotoOK {
+			b.writes("\ngoto ok;") // Avoid the "unused label" warning.
+		}
+		b.writes("\nok:\n")
+	}
+
 	if g.currFunk.coroSuspPoint > 0 {
 		// We've reached the end of the function body. Reset the coroutine
 		// suspension point so that the next call to this function starts at
 		// the top.
-		b.writes("\ngoto ok;\nok:\n") // The goto avoids the "unused label" warning.
 		b.printf("self->private_impl.%s%s[0] = 0;\n",
 			pPrefix, g.currFunk.astFunc.FuncName().Str(g.tm))
 		b.writes("goto exit;\n}\n\n") // Close the coroutine switch.
@@ -515,9 +529,6 @@ func (g *gen) writeFuncImplBodySuspend(b *buffer) error {
 			return err
 		}
 		b.writes("\n")
-
-	} else if g.currFunk.astFunc.Effect().Coroutine() {
-		b.writes("\ngoto ok;\nok:\n") // The goto avoids the "unused label" warning.
 	}
 	return nil
 }

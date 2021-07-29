@@ -102,6 +102,10 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_palette.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "components/full_restore/features.h"
+#endif
+
 #if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
 #include "chrome/browser/sessions/app_session_service.h"
 #include "chrome/browser/sessions/app_session_service_factory.h"
@@ -182,13 +186,11 @@ class SessionRestoreTest : public InProcessBrowserTest {
 #endif
   }
 
-  Browser* QuitBrowserAndRestore(Browser* browser, int expected_tab_count) {
-    return QuitBrowserAndRestoreWithURL(
-        browser, expected_tab_count, GURL(), true);
+  Browser* QuitBrowserAndRestore(Browser* browser) {
+    return QuitBrowserAndRestoreWithURL(browser, GURL(), true);
   }
 
   Browser* QuitBrowserAndRestoreWithURL(Browser* browser,
-                                        int expected_tab_count,
                                         const GURL& url,
                                         bool no_memory_pressure) {
     Profile* profile = browser->profile();
@@ -308,7 +310,7 @@ class SmartSessionRestoreTest : public SessionRestoreTest,
       case content::NOTIFICATION_LOAD_START: {
         content::NavigationController* controller =
             content::Source<content::NavigationController>(source).ptr();
-        web_contents_.push_back(controller->GetWebContents());
+        web_contents_.push_back(controller->DeprecatedGetWebContents());
         if (web_contents_.size() == num_tabs_)
           message_loop_runner_->Quit();
         break;
@@ -385,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoredTabsShouldHaveWindow) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Restart and session restore the tabs.
-  Browser* restored = QuitBrowserAndRestore(browser(), 3);
+  Browser* restored = QuitBrowserAndRestore(browser());
   TabStripModel* tab_strip_model = restored->tab_strip_model();
   const int tabs = tab_strip_model->count();
   ASSERT_EQ(3, tabs);
@@ -418,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
 
   // Restart and session restore the tabs.
   content::DOMMessageQueue message_queue;
-  Browser* restored = QuitBrowserAndRestore(browser(), 3);
+  Browser* restored = QuitBrowserAndRestore(browser());
   for (int i = 0; i < 2; ++i) {
     std::string message;
     EXPECT_TRUE(message_queue.WaitForMessage(&message));
@@ -460,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoredTabsHaveCorrectInitialSize) {
 
   // Restart and session restore the tabs.
   content::DOMMessageQueue message_queue;
-  Browser* restored = QuitBrowserAndRestore(browser(), 3);
+  Browser* restored = QuitBrowserAndRestore(browser());
   for (int i = 0; i < 2; ++i) {
     std::string message;
     EXPECT_TRUE(message_queue.WaitForMessage(&message));
@@ -502,6 +504,16 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoredTabsHaveCorrectInitialSize) {
 // not do session restore if an incognito window is already open.
 // (http://crbug.com/120927)
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NoSessionRestoreNewWindowChromeOS) {
+  // When the full restore feature is enabled, session restore does occur when a
+  // user opens a browser window. So set the pref as default, open the New Tab
+  // page for this test, to verify that session restore does not occur.
+  Profile* profile = browser()->profile();
+  SessionStartupPref current_pref = SessionStartupPref::GetStartupPref(profile);
+  if (full_restore::features::IsFullRestoreEnabled()) {
+    SessionStartupPref pref(SessionStartupPref::DEFAULT);
+    SessionStartupPref::SetStartupPref(profile, pref);
+  }
+
   GURL url(ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(FILE_PATH_LITERAL("title1.html"))));
@@ -563,7 +575,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NormalAndPopup) {
 
   // Restart and make sure we have two windows.
   CloseBrowserSynchronously(popup);
-  QuitBrowserAndRestore(browser(), 1);
+  QuitBrowserAndRestore(browser());
   ASSERT_EQ(2u, active_browser_list_->size());
   EXPECT_EQ(Browser::TYPE_NORMAL, active_browser_list_->get(0)->type());
   EXPECT_EQ(Browser::TYPE_POPUP, active_browser_list_->get(1)->type());
@@ -764,7 +776,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   for (size_t i = 0; i < tab.navigations.size(); ++i) {
     ASSERT_FALSE(tab.navigations[i].timestamp().is_null());
     tab.navigations[i].set_index(i);
-    tab.navigations[i].set_encoded_page_state("");
   }
 
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
@@ -906,7 +917,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, Basic) {
   ui_test_utils::NavigateToURL(browser(), GetUrl1());
   ui_test_utils::NavigateToURL(browser(), GetUrl2());
 
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(GetUrl2(),
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
@@ -1000,7 +1011,7 @@ class SessionRestoreTabGroupsTest : public SessionRestoreTest,
     SessionRestoreTest::SetUpOnMainThread();
   }
 
-  Browser* QuitBrowserAndRestore(Browser* browser, int expected_tab_count) {
+  Browser* QuitBrowserAndRestore(Browser* browser) {
     // The test parameter determines whether to do a command reset.
     if (GetParam()) {
       SessionService* const session_service =
@@ -1008,8 +1019,7 @@ class SessionRestoreTabGroupsTest : public SessionRestoreTest,
       session_service->ResetFromCurrentBrowsers();
     }
 
-    return SessionRestoreTest::QuitBrowserAndRestore(browser,
-                                                     expected_tab_count);
+    return SessionRestoreTest::QuitBrowserAndRestore(browser);
   }
 
  private:
@@ -1037,7 +1047,7 @@ IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, TabsWithGroups) {
       CheckTabGrouping(browser()->tab_strip_model(), group_spec));
   const auto groups = GetTabGroups(browser()->tab_strip_model());
 
-  Browser* new_browser = QuitBrowserAndRestore(browser(), kNumTabs);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(kNumTabs, new_browser->tab_strip_model()->count());
   ASSERT_NO_FATAL_FAILURE(
       CheckTabGrouping(new_browser->tab_strip_model(), group_spec));
@@ -1067,7 +1077,7 @@ IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, GroupMetadataRestored) {
       u"Foo", tab_groups::TabGroupColorId::kBlue, true);
   tsm->group_model()->GetTabGroup(group2)->SetVisualData(group2_data);
 
-  Browser* const new_browser = QuitBrowserAndRestore(browser(), 5);
+  Browser* const new_browser = QuitBrowserAndRestore(browser());
   TabStripModel* const new_tsm = new_browser->tab_strip_model();
   ASSERT_EQ(5, new_tsm->count());
 
@@ -1112,7 +1122,7 @@ IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest,
       CheckTabGrouping(browser()->tab_strip_model(), group_spec));
   const auto orig_groups = GetTabGroups(browser()->tab_strip_model());
 
-  Browser* const new_browser = QuitBrowserAndRestore(browser(), 5);
+  Browser* const new_browser = QuitBrowserAndRestore(browser());
   TabStripModel* const new_tsm = new_browser->tab_strip_model();
   ASSERT_EQ(kNumTabs, new_tsm->count());
   ASSERT_NO_FATAL_FAILURE(CheckTabGrouping(new_tsm, group_spec));
@@ -1143,7 +1153,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreAfterDelete) {
       }));
   EXPECT_EQ(3, controller.GetEntryCount());
 
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   content::NavigationController& new_controller =
       new_browser->tab_strip_model()->GetActiveWebContents()->GetController();
   EXPECT_EQ(3, new_controller.GetEntryCount());
@@ -1208,8 +1218,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NoMemoryPressureLoadsAllTabs) {
       browser(), GURL(url::kAboutBlankURL),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-  Browser* restored =
-      QuitBrowserAndRestoreWithURL(browser(), 1, GURL(), true);
+  Browser* restored = QuitBrowserAndRestoreWithURL(browser(), GURL(), true);
   TabStripModel* tab_strip_model = restored->tab_strip_model();
 
   ASSERT_EQ(1u, active_browser_list_->size());
@@ -1235,8 +1244,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MemoryPressureLoadsNotAllTabs) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   // Restore the brwoser, but instead of directly waiting, we issue a critical
   // memory pressure event and finish then the loading.
-  Browser* restored =
-      QuitBrowserAndRestoreWithURL(browser(), 1, GURL(), false);
+  Browser* restored = QuitBrowserAndRestoreWithURL(browser(), GURL(), false);
 
   TabStripModel* tab_strip_model = restored->tab_strip_model();
 
@@ -1258,7 +1266,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUI) {
   EXPECT_TRUE(content::BINDINGS_POLICY_MOJO_WEB_UI &
               old_tab->GetMainFrame()->GetEnabledBindings());
 
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   content::WebContents* new_tab =
       new_browser->tab_strip_model()->GetActiveWebContents();
@@ -1281,7 +1289,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MAYBE_RestoreWebUISettings) {
   EXPECT_TRUE(old_tab->GetMainFrame()->GetEnabledBindings() &
               content::BINDINGS_POLICY_WEB_UI);
 
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   content::WebContents* new_tab =
       new_browser->tab_strip_model()->GetActiveWebContents();
@@ -1296,7 +1304,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoresForwardAndBackwardNavs) {
   ui_test_utils::NavigateToURL(browser(), GetUrl3());
 
   GoBack(browser());
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(GetUrl2(),
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
@@ -1330,7 +1338,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
   ui_test_utils::NavigateToURL(browser(), GetUrl2());
 
   GoBack(browser());
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(1, new_browser->tab_strip_model()->count());
 
@@ -1360,7 +1368,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TwoTabsSecondSelected) {
       browser(), GetUrl2(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 2);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
 
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(2, new_browser->tab_strip_model()->count());
@@ -1381,7 +1389,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, OnErrorWritingSessionCommands) {
       SessionServiceFactory::GetForProfile(browser()->profile());
   session_service->OnErrorWritingSessionCommands();
 
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 2);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(2, new_browser->tab_strip_model()->count());
   ASSERT_EQ(1, new_browser->tab_strip_model()->active_index());
@@ -1400,7 +1408,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ClosedTabStaysClosed) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   chrome::CloseTab(browser());
 
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
 
   AssertOneWindowWithOneTab(new_browser);
   ASSERT_EQ(GetUrl1(),
@@ -1519,7 +1527,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ActiveIndexUpdatedAtClose) {
       0,
       TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 2);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
 
   ASSERT_EQ(GetUrl2(),
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
@@ -1539,7 +1547,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ActiveIndexUpdatedAtInsert) {
   navigate_params.disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
   ui_test_utils::NavigateToURL(&navigate_params);
 
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 3);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
 
   ASSERT_EQ(GetUrl1(),
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
@@ -1572,7 +1580,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
 
   // Restore the session, which should bring back the first window with
   // GetUrl1().
-  Browser* new_browser = QuitBrowserAndRestore(app_window, 1);
+  Browser* new_browser = QuitBrowserAndRestore(app_window);
 
   AssertOneWindowWithOneTab(new_browser);
 
@@ -1600,7 +1608,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TwoWindowsCloseOneRestoreOnlyOne) {
 
   // Restart and make sure we have only one window with one tab and the url
   // is GetUrl1().
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
 
   AssertOneWindowWithOneTab(new_browser);
 
@@ -1633,7 +1641,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ShareProcessesOnRestore) {
   int expected_process_count = RenderProcessHostCount();
 
   // Restart.
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 3);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
 
   ASSERT_EQ(3, new_browser->tab_strip_model()->count());
 
@@ -1660,7 +1668,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, PersistAndRestoreUserAgentOverride) {
   ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
 
   // Kill the original browser then open a new one to trigger a restore.
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(2, new_browser->tab_strip_model()->count());
   ASSERT_EQ(1, new_browser->tab_strip_model()->active_index());
@@ -1701,7 +1709,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
   Profile* profile = browser()->profile();
 
   // This will also initiate a session restore, but we're not interested in it.
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(2, new_browser->tab_strip_model()->count());
   ASSERT_EQ(0, new_browser->tab_strip_model()->active_index());
@@ -1714,10 +1722,11 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
   ui_test_utils::NavigateToURL(new_browser, GetUrl3());
 
   // Restore the session again, clobbering the existing tab.
-  SessionRestore::RestoreSession(
-      profile, new_browser,
-      SessionRestore::CLOBBER_CURRENT_TAB | SessionRestore::SYNCHRONOUS,
-      std::vector<GURL>());
+  SessionRestore::RestoreSession(profile, new_browser,
+                                 SessionRestore::CLOBBER_CURRENT_TAB |
+                                     SessionRestore::SYNCHRONOUS |
+                                     SessionRestore::RESTORE_BROWSER,
+                                 std::vector<GURL>());
 
   // The pinned tab is the selected tab.
   ASSERT_EQ(2, new_browser->tab_strip_model()->count());
@@ -1747,7 +1756,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
 
   // Restore the session by calling chrome::Navigate().
   Browser* new_browser =
-      QuitBrowserAndRestoreWithURL(browser(), 3, GetUrl3(), true);
+      QuitBrowserAndRestoreWithURL(browser(), GetUrl3(), true);
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(3, new_browser->tab_strip_model()->count());
   // Navigated url should be the active tab.
@@ -1776,7 +1785,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreAfterAutoSubframe) {
   }
 
   // Restore the session.
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(1, new_browser->tab_strip_model()->count());
 
@@ -1801,7 +1810,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ClobberRestoreTest) {
   Profile* profile = browser()->profile();
 
   // This will also initiate a session restore, but we're not interested in it.
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(2, new_browser->tab_strip_model()->count());
   ASSERT_EQ(1, new_browser->tab_strip_model()->active_index());
@@ -1815,10 +1824,11 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ClobberRestoreTest) {
       new_browser->tab_strip_model()->GetWebContentsAt(0));
 
   // Restore the session again, clobbering the existing tab.
-  SessionRestore::RestoreSession(
-      profile, new_browser,
-      SessionRestore::CLOBBER_CURRENT_TAB | SessionRestore::SYNCHRONOUS,
-      std::vector<GURL>());
+  SessionRestore::RestoreSession(profile, new_browser,
+                                 SessionRestore::CLOBBER_CURRENT_TAB |
+                                     SessionRestore::SYNCHRONOUS |
+                                     SessionRestore::RESTORE_BROWSER,
+                                 std::vector<GURL>());
 
   // Wait until the existing tab finished closing.
   existing_tab_destroyed_watcher.Wait();
@@ -1840,7 +1850,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorage) {
   ASSERT_TRUE(controller->GetDefaultSessionStorageNamespace());
   std::string session_storage_id =
       controller->GetDefaultSessionStorageNamespace()->id();
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(GetUrl1(),
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
@@ -1886,7 +1896,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorageAfterTabReplace) {
       controller->GetDefaultSessionStorageNamespace()->should_persist());
 
   // Quit and restore. Check that no extra tabs were created.
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   EXPECT_EQ(1, new_browser->tab_strip_model()->count());
 }
@@ -1917,7 +1927,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabWithDownloadDoesNotGetRestored) {
         download_manager, 1,
         content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT);
 
-    Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+    Browser* new_browser = QuitBrowserAndRestore(browser());
     ASSERT_EQ(1, new_browser->tab_strip_model()->count());
 
     // In addition to restarting the browser, create a new download in a new
@@ -2305,7 +2315,7 @@ IN_PROC_BROWSER_TEST_F(MultiOriginSessionRestoreTest, SecFetchSite) {
   EXPECT_EQ("none", GetContent(browser(), 2));
 
   // Kill the original browser then open a new one to trigger a restore.
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
 
   // Verify again (after session restore) that all the tabs have seen the
@@ -2353,7 +2363,7 @@ IN_PROC_BROWSER_TEST_F(MultiOriginSessionRestoreTest, BackToAboutBlank1) {
   ASSERT_TRUE(old_popup->GetController().CanGoBack());
 
   // Kill the original browser then open a new one to trigger a restore.
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(2, new_browser->tab_strip_model()->count());
   content::WebContents* new_popup = GetTab(new_browser, 1);
@@ -2404,7 +2414,7 @@ IN_PROC_BROWSER_TEST_F(MultiOriginSessionRestoreTest,
   ASSERT_TRUE(old_tab->GetController().CanGoBack());
 
   // Kill the original browser then open a new one to trigger a restore.
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(1, new_browser->tab_strip_model()->count());
   content::WebContents* new_tab = GetTab(new_browser, 0);
@@ -2450,7 +2460,7 @@ IN_PROC_BROWSER_TEST_F(MultiOriginSessionRestoreTest, BackToAboutBlank2) {
   }
 
   // Kill the original browser then open a new one to trigger a restore.
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(2, new_browser->tab_strip_model()->count());
   content::WebContents* new_popup = GetTab(new_browser, 1);
@@ -2536,7 +2546,7 @@ IN_PROC_BROWSER_TEST_F(MultiOriginSessionRestoreTest,
 
   // Kill the original browser then open a new one to trigger a restore.
   ASSERT_TRUE(old_tab->GetController().CanGoBack());
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  Browser* new_browser = QuitBrowserAndRestore(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(1, new_browser->tab_strip_model()->count());
   content::WebContents* new_tab =
@@ -2598,7 +2608,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
       histogram_tester.GetAllSamples(kTimeSinceTabClosedUntilRestored).size(),
       0U);
 
-  QuitBrowserAndRestoreWithURL(browser(), 1, GURL(), true);
+  QuitBrowserAndRestoreWithURL(browser(), GURL(), true);
 
   EXPECT_EQ(
       histogram_tester.GetAllSamples(kTimeSinceTabClosedUntilRestored).size(),
@@ -2628,7 +2638,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
                 .size(),
             0U);
 
-  QuitBrowserAndRestoreWithURL(browser(), 1, GURL(), true);
+  QuitBrowserAndRestoreWithURL(browser(), GURL(), true);
 
   EXPECT_EQ(histogram_tester.GetAllSamples(kTimeSinceWindowClosedUntilRestored)
                 .size(),
@@ -2769,7 +2779,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
   // We perform session restore under memory pressure so the tab is not restored
   // in the background.
   Browser* new_browser = QuitBrowserAndRestoreWithURL(
-      browser(), 2, GURL(), /*no_memory_pressure=*/false);
+      browser(), GURL(), /*no_memory_pressure=*/false);
   wc = new_browser->tab_strip_model()->GetWebContentsAt(0);
   EXPECT_EQ(2, new_browser->tab_strip_model()->count());
   EXPECT_NE(0, new_browser->tab_strip_model()->active_index());
@@ -2854,7 +2864,7 @@ IN_PROC_BROWSER_TEST_F(
   // We perform session restore under memory pressure so the tab is not restored
   // in the background.
   Browser* new_browser = QuitBrowserAndRestoreWithURL(
-      browser(), 2, GURL(), /*no_memory_pressure=*/false);
+      browser(), GURL(), /*no_memory_pressure=*/false);
   wc = new_browser->tab_strip_model()->GetWebContentsAt(0);
   EXPECT_EQ(2, new_browser->tab_strip_model()->count());
   EXPECT_NE(0, new_browser->tab_strip_model()->active_index());
@@ -2888,6 +2898,63 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(WaitForLoadStop(wc));
   EXPECT_TRUE(back_observer.has_committed());
   EXPECT_FALSE(back_observer.was_same_document());
+}
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, OmitFromSessionRestore) {
+  // Tests start with one browser window; navigate it to url 1.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GetUrl1(), WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(
+      GetUrl1(),
+      browser()->tab_strip_model()->GetWebContentsAt(0)->GetLastCommittedURL());
+
+  // Make a second window; navigate it to url 2.
+  Browser* browser2 = CreateBrowser(browser()->profile());
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser2, GetUrl2(), WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  ASSERT_EQ(1, browser2->tab_strip_model()->count());
+  EXPECT_EQ(
+      GetUrl2(),
+      browser2->tab_strip_model()->GetWebContentsAt(0)->GetLastCommittedURL());
+
+  // Make a third window that is omitted from session restore; navigate it to
+  // url 3.
+  Browser::CreateParams params(browser()->profile(), true);
+  params.omit_from_session_restore = true;
+  Browser* browser3 = Browser::Create(params);
+  content::WebContents* tab = chrome::AddSelectedTabWithURL(
+      browser3, GURL(GetUrl3()), ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  content::TestNavigationObserver observer(tab);
+  observer.Wait();
+  ASSERT_EQ(1, browser3->tab_strip_model()->count());
+  EXPECT_EQ(
+      GetUrl3(),
+      browser3->tab_strip_model()->GetWebContentsAt(0)->GetLastCommittedURL());
+
+  // Simulate an exit by shutting down the session service. If we don't do this
+  // the first two window closes are treated as though the user closed the
+  // windows and won't be restored.
+  SessionServiceFactory::ShutdownForProfile(browser()->profile());
+
+  // Then close all the browsers and "restart" Chromium.
+  CloseBrowserSynchronously(browser3);
+  CloseBrowserSynchronously(browser2);
+  QuitBrowserAndRestore(browser());
+
+  // The first two browsers with url1 and url2 should be back, but the browser
+  // with url3 shouldn't.
+  ASSERT_EQ(2u, active_browser_list_->size());
+  EXPECT_EQ(GetUrl1(), active_browser_list_->get(0)
+                           ->tab_strip_model()
+                           ->GetWebContentsAt(0)
+                           ->GetLastCommittedURL());
+  EXPECT_EQ(GetUrl2(), active_browser_list_->get(1)
+                           ->tab_strip_model()
+                           ->GetWebContentsAt(0)
+                           ->GetLastCommittedURL());
 }
 
 #if BUILDFLAG(ENABLE_APP_SESSION_SERVICE)
@@ -2971,9 +3038,11 @@ IN_PROC_BROWSER_TEST_F(AppSessionRestoreTest, MAYBE_BasicAppSessionRestore) {
   // We need to start up the services again before restoring.
   StartupServices(profile);
 
-  SessionRestore::RestoreSession(
-      profile, nullptr,
-      SessionRestore::SYNCHRONOUS | SessionRestore::RESTORE_APPS, {});
+  SessionRestore::RestoreSession(profile, nullptr,
+                                 SessionRestore::SYNCHRONOUS |
+                                     SessionRestore::RESTORE_APPS |
+                                     SessionRestore::RESTORE_BROWSER,
+                                 {});
 
   // We should get +1 browser +1 app.
   // Ensure the apps are the same, and ensure the browsers are the same.
@@ -3111,9 +3180,11 @@ IN_PROC_BROWSER_TEST_F(AppSessionRestoreTest, MAYBE_RestoreAppMinimized) {
 
   StartupServices(profile);
 
-  SessionRestore::RestoreSession(
-      profile, nullptr,
-      SessionRestore::SYNCHRONOUS | SessionRestore::RESTORE_APPS, {});
+  SessionRestore::RestoreSession(profile, nullptr,
+                                 SessionRestore::SYNCHRONOUS |
+                                     SessionRestore::RESTORE_APPS |
+                                     SessionRestore::RESTORE_BROWSER,
+                                 {});
 
   // It opens up the browser and the app.
   app_browser = nullptr;
@@ -3181,9 +3252,11 @@ IN_PROC_BROWSER_TEST_F(AppSessionRestoreTest, MAYBE_RestoreMaximizedApp) {
   // We need to start up the services again before restoring.
   StartupServices(profile);
 
-  SessionRestore::RestoreSession(
-      profile, nullptr,
-      SessionRestore::SYNCHRONOUS | SessionRestore::RESTORE_APPS, {});
+  SessionRestore::RestoreSession(profile, nullptr,
+                                 SessionRestore::SYNCHRONOUS |
+                                     SessionRestore::RESTORE_APPS |
+                                     SessionRestore::RESTORE_BROWSER,
+                                 {});
 
   app_browser = nullptr;
   Browser* normal_browser = nullptr;
@@ -3259,8 +3332,9 @@ IN_PROC_BROWSER_TEST_F(AppSessionRestoreTest,
   ASSERT_EQ(0u, BrowserList::GetInstance()->size());
 
   // Now restore.
-  SessionRestore::RestoreSession(profile, nullptr, SessionRestore::SYNCHRONOUS,
-                                 {});
+  SessionRestore::RestoreSession(
+      profile, nullptr,
+      SessionRestore::SYNCHRONOUS | SessionRestore::RESTORE_BROWSER, {});
 
   // There's just one window open at the moment.
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
@@ -3432,8 +3506,9 @@ IN_PROC_BROWSER_TEST_F(AppSessionRestoreTest, NoAppRestore) {
   StartupServices(profile);
 
   // Now restore.
-  SessionRestore::RestoreSession(profile, nullptr, SessionRestore::SYNCHRONOUS,
-                                 {});
+  SessionRestore::RestoreSession(
+      profile, nullptr,
+      SessionRestore::SYNCHRONOUS | SessionRestore::RESTORE_BROWSER, {});
 
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
 

@@ -23,7 +23,9 @@ namespace ash {
 class AppListView;
 class AppListViewDelegate;
 class ContentsView;
+class ResultSelectionController;
 class SearchModel;
+class SearchResultBaseView;
 
 // Subclass of SearchBoxViewBase. SearchBoxModel is its data model
 // that controls what icon to display, what placeholder text to use for
@@ -37,7 +39,12 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
                 AppListView* app_list_view = nullptr);
   ~SearchBoxView() override;
 
-  void Init(bool is_tablet_mode);
+  void Init();
+
+  // Must be called before the user interacts with the search box. Cannot be
+  // part of Init() because the controller isn't available until after Init()
+  // is called.
+  void SetResultSelectionController(ResultSelectionController* controller);
 
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);
@@ -63,7 +70,6 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   void OnSearchBoxActiveChanged(bool active) override;
 
   // Overridden from views::View:
-  void OnKeyEvent(ui::KeyEvent* event) override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
@@ -96,7 +102,7 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   void OnWallpaperColorsChanged();
 
   // Sets the autocomplete text if autocomplete conditions are met.
-  void ProcessAutocomplete();
+  void ProcessAutocomplete(SearchResultBaseView* first_result_view);
 
   // Updates the search box with |new_query| and starts a new search.
   void UpdateQuery(const std::u16string& new_query);
@@ -113,6 +119,9 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
     a11y_selection_on_search_result_ = value;
   }
 
+  ResultSelectionController* result_selection_controller_for_test() {
+    return result_selection_controller_;
+  }
   void set_highlight_range_for_test(const gfx::Range& range) {
     highlight_range_ = range;
   }
@@ -169,19 +178,25 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // The key most recently pressed.
   ui::KeyboardCode last_key_pressed_ = ui::VKEY_UNKNOWN;
 
-  AppListViewDelegate* view_delegate_;   // Not owned.
+  AppListViewDelegate* const view_delegate_;
   SearchModel* search_model_ = nullptr;  // Owned by the profile-keyed service.
 
-  // Owned by views hierarchy.
-  AppListView* app_list_view_;
+  // Owned by views hierarchy. May be null for bubble launcher.
+  AppListView* const app_list_view_;
+
+  // Owned by views hierarchy. May be null for bubble launcher.
   ContentsView* contents_view_ = nullptr;
 
   // Whether tablet mode is active.
-  bool is_tablet_mode_ = false;
+  bool is_tablet_mode_;
 
   // Set by SearchResultPageView when the accessibility selection moves to a
   // search result view.
   bool a11y_selection_on_search_result_ = false;
+
+  // Owned by SearchResultPageView (for fullscreen launcher) or
+  // AppListBubbleSearchPage (for bubble launcher).
+  ResultSelectionController* result_selection_controller_ = nullptr;
 
   base::WeakPtrFactory<SearchBoxView> weak_ptr_factory_{this};
 

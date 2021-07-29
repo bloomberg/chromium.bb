@@ -34,6 +34,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
+#include "ui/views/cascading_property.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/native_cursor.h"
@@ -75,6 +76,10 @@ gfx::Range StripAcceleratorChars(int flags, std::u16string* text) {
 }  // namespace
 
 namespace views {
+
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(CascadingProperty<SkColor>,
+                                   kCascadingLabelEnabledColor,
+                                   nullptr)
 
 Label::Label() : Label(std::u16string()) {}
 
@@ -122,6 +127,9 @@ void Label::SetText(const std::u16string& new_text) {
   ClearDisplayText();
   OnPropertyChanged(&full_text_ + kLabelText,
                     kPropertyEffectsPreferredSizeChanged);
+  if (accessible_name_.empty()) {
+    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+  }
   stored_selection_range_ = gfx::Range::InvalidRange();
 }
 
@@ -1208,8 +1216,10 @@ void Label::ApplyTextColors() const {
 void Label::UpdateColorsFromTheme() {
   ui::NativeTheme* theme = GetNativeTheme();
   if (!enabled_color_set_) {
-    requested_enabled_color_ =
-        style::GetColor(*this, text_context_, text_style_);
+    const absl::optional<SkColor> cascading_color =
+        GetCascadingProperty(this, kCascadingLabelEnabledColor);
+    requested_enabled_color_ = cascading_color.value_or(
+        style::GetColor(*this, text_context_, text_style_));
   }
   if (!background_color_set_) {
     background_color_ =

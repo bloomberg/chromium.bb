@@ -29,7 +29,7 @@ from telemetry.internal.util import format_for_logging
 
 
 DEVTOOLS_ACTIVE_PORT_FILE = 'DevToolsActivePort'
-
+UI_DEVTOOLS_ACTIVE_PORT_FILE = 'UIDevToolsActivePort'
 
 class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
   """The backend for controlling a locally-executed browser instance, on Linux,
@@ -105,6 +105,20 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     browser_target = lines[1] if len(lines) >= 2 else None
     return devtools_port, browser_target
 
+  def _FindUIDevtoolsPort(self):
+    devtools_file_path = os.path.join(self.profile_directory,
+                                      UI_DEVTOOLS_ACTIVE_PORT_FILE)
+    if not os.path.isfile(devtools_file_path):
+      raise EnvironmentError('UIDevTools file does not exist yet')
+    lines = None
+    if os.stat(devtools_file_path).st_size > 0:
+      with open(devtools_file_path) as f:
+        lines = [line.rstrip() for line in f]
+    if not lines:
+      raise EnvironmentError('UIDevTools file empty')
+    devtools_port = int(lines[0])
+    return devtools_port
+
   def Start(self, startup_args):
     assert not self._proc, 'Must call Close() before Start()'
 
@@ -150,7 +164,7 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     self.LogStartCommand(cmd, env)
 
     if not self.browser_options.show_stdout:
-      self._tmp_output_file = tempfile.NamedTemporaryFile('w', 0)
+      self._tmp_output_file = tempfile.NamedTemporaryFile('w')
       self._proc = subprocess.Popen(
           cmd, stdout=self._tmp_output_file, stderr=subprocess.STDOUT, env=env)
     else:
@@ -300,9 +314,6 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
 
     self._symbolized_minidump_paths.add(minidump_path)
     return (True, stack)
-
-  def __del__(self):
-    self.Close()
 
   def _TryCooperativeShutdown(self):
     if self.browser.platform.IsCooperativeShutdownSupported():

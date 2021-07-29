@@ -11,21 +11,26 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/types/id_type.h"
 #include "base/unguessable_token.h"
-#include "base/util/type_safety/id_type.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
+#include "gpu/ipc/common/gpu_param_traits_macros.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message.h"
+#include "media/gpu/ipc/common/media_param_traits.h"
 #include "printing/mojom/print.mojom-shared.h"
+#include "services/device/public/mojom/screen_orientation_lock_types.mojom-shared.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
+#include "third_party/blink/public/mojom/widget/device_emulation_params.mojom-shared.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "tools/ipc_fuzzer/fuzzer/fuzzer.h"
 #include "tools/ipc_fuzzer/fuzzer/rand_util.h"
@@ -541,7 +546,7 @@ struct FuzzTraits<base::ListValue> {
         }
         case base::Value::Type::LIST: {
           base::ListValue* list_weak = nullptr;
-          if (p->GetList(index, &list_weak)) {
+          if (p->GetList()[index].GetAsList(&list_weak)) {
             FuzzParam(list_weak, fuzzer);
           } else {
             auto list = std::make_unique<base::ListValue>();
@@ -734,26 +739,6 @@ struct FuzzTraits<ContentSettingsPattern> {
   static bool Fuzz(ContentSettingsPattern* p, Fuzzer* fuzzer) {
     // TODO(mbarbella): This can crash if a pattern is generated from a random
     // string. We could carefully generate a pattern or fix pattern generation.
-    return true;
-  }
-};
-
-template <>
-struct FuzzTraits<ExtensionMsg_PermissionSetStruct> {
-  static bool Fuzz(ExtensionMsg_PermissionSetStruct* p,
-                       Fuzzer* fuzzer) {
-    // TODO(mbarbella): This should actually do something.
-    return true;
-  }
-};
-
-template <>
-struct FuzzTraits<extensions::URLPatternSet> {
-  static bool Fuzz(extensions::URLPatternSet* p, Fuzzer* fuzzer) {
-    std::set<URLPattern> patterns = p->patterns();
-    if (!FuzzParam(&patterns, fuzzer))
-      return false;
-    *p = extensions::URLPatternSet(patterns);
     return true;
   }
 };
@@ -1044,8 +1029,8 @@ struct FuzzTraits<gfx::Vector2dF> {
 };
 
 template <typename TypeMarker, typename WrappedType, WrappedType kInvalidValue>
-struct FuzzTraits<util::IdType<TypeMarker, WrappedType, kInvalidValue>> {
-  using param_type = util::IdType<TypeMarker, WrappedType, kInvalidValue>;
+struct FuzzTraits<base::IdType<TypeMarker, WrappedType, kInvalidValue>> {
+  using param_type = base::IdType<TypeMarker, WrappedType, kInvalidValue>;
   static bool Fuzz(param_type* id, Fuzzer* fuzzer) {
     WrappedType raw_value = id->GetUnsafeValue();
     if (!FuzzParam(&raw_value, fuzzer))
@@ -1698,29 +1683,6 @@ struct FuzzTraits<url::Origin> {
     }
 
     *p = std::move(origin).value();
-    return true;
-  }
-};
-
-template <>
-struct FuzzTraits<URLPattern> {
-  static bool Fuzz(URLPattern* p, Fuzzer* fuzzer) {
-    int valid_schemes = p->valid_schemes();
-    std::string host = p->host();
-    std::string port = p->port();
-    std::string path = p->path();
-    if (!FuzzParam(&valid_schemes, fuzzer))
-      return false;
-    if (!FuzzParam(&host, fuzzer))
-      return false;
-    if (!FuzzParam(&port, fuzzer))
-      return false;
-    if (!FuzzParam(&path, fuzzer))
-      return false;
-    *p = URLPattern(valid_schemes);
-    p->SetHost(host);
-    p->SetPort(port);
-    p->SetPath(path);
     return true;
   }
 };

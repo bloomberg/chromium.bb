@@ -8,8 +8,6 @@
 #ifndef LIBANGLE_RENDERER_CL_CLDEVICECL_H_
 #define LIBANGLE_RENDERER_CL_CLDEVICECL_H_
 
-#include "libANGLE/renderer/cl/cl_types.h"
-
 #include "libANGLE/renderer/CLDeviceImpl.h"
 
 namespace rx
@@ -20,9 +18,9 @@ class CLDeviceCL : public CLDeviceImpl
   public:
     ~CLDeviceCL() override;
 
-    cl_device_id getNative();
+    cl_device_id getNative() const;
 
-    Info createInfo() const override;
+    Info createInfo(cl::DeviceType type) const override;
 
     cl_int getInfoUInt(cl::DeviceInfo name, cl_uint *value) const override;
     cl_int getInfoULong(cl::DeviceInfo name, cl_ulong *value) const override;
@@ -32,21 +30,20 @@ class CLDeviceCL : public CLDeviceImpl
 
     cl_int createSubDevices(const cl_device_partition_property *properties,
                             cl_uint numDevices,
-                            PtrList &implList,
+                            CreateFuncs &createFuncs,
                             cl_uint *numDevicesRet) override;
 
-    static CLDeviceCL *Create(CLPlatformCL &platform, CLDeviceCL *parent, cl_device_id device);
-
   private:
-    CLDeviceCL(CLPlatformCL &platform, CLDeviceCL *parent, cl_device_id device, cl_version version);
+    CLDeviceCL(const cl::Device &device, cl_device_id native);
 
-    const cl_device_id mDevice;
-    const cl_version mVersion;
+    const cl_device_id mNative;
+
+    friend class CLPlatformCL;
 };
 
-inline cl_device_id CLDeviceCL::getNative()
+inline cl_device_id CLDeviceCL::getNative() const
 {
-    return mDevice;
+    return mNative;
 }
 
 }  // namespace rx

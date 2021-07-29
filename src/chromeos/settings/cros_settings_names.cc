@@ -102,6 +102,11 @@ const char kReportDeviceVersionInfo[] =
 const char kReportDeviceActivityTimes[] =
     "cros.device_status.report_activity_times";
 
+// A boolean pref that indicates whether device sound volume should be recorded
+// and reported along with device policy requests.
+const char kReportDeviceAudioStatus[] =
+    "cros.device_status.report_audio_status";
+
 // A boolean pref that determines whether the board status should be
 // included in status reports to the device management server.
 const char kReportDeviceBoardStatus[] =
@@ -133,10 +138,22 @@ const char kReportDeviceBacklightInfo[] =
 // along with device policy requests.
 const char kReportDeviceLocation[] = "cros.device_status.report_location";
 
+// Determines whether the device reports static network configuration info such
+// as MAC Address, MEID, and MEI in device status reports to the device
+// management server.
+const char kReportDeviceNetworkConfiguration[] =
+    "cros.device_status.report_network_configuration";
+
 // Determines whether the device reports network interface types and addresses
 // in device status reports to the device management server.
 const char kReportDeviceNetworkInterfaces[] =
     "cros.device_status.report_network_interfaces";
+
+// Determines whether the device reports dynamic network information such
+// connection state, signal strength, and IP Address in device status reports
+// and to management server.
+const char kReportDeviceNetworkStatus[] =
+    "cros.device_status.report_network_status";
 
 // A boolean pref that determines whether the device power status should be
 // included in status reports to the device management server.
@@ -212,6 +229,9 @@ const char kReportDeviceSystemInfo[] =
 // A boolean pref that determines whether the user's print job history is
 // reported.
 const char kReportDevicePrintJobs[] = "cros.device_status.report_print_jobs";
+
+// A boolean pref that determines whether the login/logout events are reported.
+const char kReportDeviceLoginLogout[] = "cros.reporting.report_login_logout";
 
 // Determines whether heartbeats should be sent to the policy service via
 // the GCM channel.
@@ -404,6 +424,11 @@ const char kCastReceiverName[] = "cros.device.cast_receiver.name";
 // use ARC.
 const char kUnaffiliatedArcAllowed[] = "cros.device.unaffiliated_arc_allowed";
 
+// A boolean pref that indicates whether users are allowed to configure the
+// device hostname.
+const char kDeviceHostnameUserConfigurable[] =
+    "cros.device.hostname_user_configurable";
+
 // String that is used as a template for generating device hostname (that is
 // used in DHCP requests).
 // If the string contains either ASSET_ID, SERIAL_NUM or MAC_ADDR values,
@@ -435,8 +460,6 @@ const char kDeviceUnaffiliatedCrostiniAllowed[] =
 // A boolean pref that indicates whether PluginVm is allowed to run on this
 // device.
 const char kPluginVmAllowed[] = "cros.device.plugin_vm_allowed";
-// A string pref that specifies PluginVm license key for this device.
-const char kPluginVmLicenseKey[] = "cros.device.plugin_vm_license_key";
 
 // A boolean pref that indicates whether Borealis is allowed to run on this
 // device.
@@ -509,4 +532,12 @@ const char kUsbDetachableAllowlistKeyPid[] = "pid";
 const char kDeviceAllowedBluetoothServices[] =
     "cros.device.allowed_bluetooth_services";
 
+// A dictionary pref specifying the recurring schedule for device reboot.
+const char kDeviceScheduledReboot[] = "cros.device.device_scheduled_reboot";
+
+// A boolean specifying whether Chrome should operate in restricted managed
+// guest session mode (block features that generate sensitive data and are not
+// taken care of via clean-up mechanism in the managed guest session).
+const char kRestrictedManagedGuestSessionEnabled[] =
+    "cros.device.restricted_managed_guest_session_enabled";
 }  // namespace chromeos

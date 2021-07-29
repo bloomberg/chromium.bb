@@ -16,8 +16,8 @@
 namespace openscreen {
 namespace cast {
 
-// Tracks device queries and their extracted Cast app IDs and their
-// availabilities on discovered devices.
+// Tracks receiver queries and their extracted Cast app IDs and their
+// availabilities on discovered receivers.
 // Example usage:
 ///
 // (1) A page is interested in a Cast URL (e.g. by creating a
@@ -28,24 +28,24 @@ namespace cast {
 //   auto new_app_ids = tracker.RegisterSource(source.value());
 //
 // (2) The set of app IDs returned by the tracker can then be used by the caller
-// to send an app availability request to each of the discovered devices.
+// to send an app availability request to each of the discovered receivers.
 //
-// (3) Once the caller knows the availability value for a (device, app) pair, it
-// may inform the tracker to update its results:
+// (3) Once the caller knows the availability value for a (receiver, app) pair,
+// it may inform the tracker to update its results:
 //   auto affected_sources =
-//       tracker.UpdateAppAvailability(device_id, app_id, {availability, now});
+//       tracker.UpdateAppAvailability(receiver_id, app_id, {availability,
+//       now});
 //
 // (4) The tracker returns a subset of discovered sources that were affected by
-// the update. The caller can then call |GetAvailableDevices()| to get the
+// the update. The caller can then call |GetAvailableReceivers()| to get the
 // updated results for each affected source.
 //
-// (5a): At any time, the caller may call |RemoveResultsForDevice()| to remove
-// cached results pertaining to the device, when it detects that a device is
+// (5a): At any time, the caller may call |RemoveResultsForReceiver()| to remove
+// cached results pertaining to the receiver, when it detects that a receiver is
 // removed or no longer valid.
 //
-// (5b): At any time, the caller may call |GetAvailableDevices()| (even before
+// (5b): At any time, the caller may call |GetAvailableReceivers()| (even before
 // the source is registered) to determine if there are cached results available.
-// TODO(crbug.com/openscreen/112): Device -> Receiver renaming.
 class CastAppAvailabilityTracker {
  public:
   // The result of an app availability request and the time when it is obtained.
@@ -69,40 +69,40 @@ class CastAppAvailabilityTracker {
   void UnregisterSource(const std::string& source_id);
   void UnregisterSource(const CastMediaSource& source);
 
-  // Updates the availability of |app_id| on |device_id| to |availability|.
+  // Updates the availability of |app_id| on |receiver_id| to |availability|.
   // Returns a list of registered CastMediaSources for which the set of
-  // available devices might have been updated by this call. The caller should
-  // call |GetAvailableDevices| with the returned CastMediaSources to get the
+  // available receivers might have been updated by this call. The caller should
+  // call |GetAvailableReceivers| with the returned CastMediaSources to get the
   // updated lists.
   std::vector<CastMediaSource> UpdateAppAvailability(
-      const std::string& device_id,
+      const std::string& receiver_id,
       const std::string& app_id,
       AppAvailability availability);
 
-  // Removes all results associated with |device_id|, i.e. when the device
+  // Removes all results associated with |receiver_id|, i.e. when the receiver
   // becomes invalid.  Returns a list of registered CastMediaSources for which
-  // the set of available devices might have been updated by this call. The
-  // caller should call |GetAvailableDevices| with the returned CastMediaSources
-  // to get the updated lists.
-  std::vector<CastMediaSource> RemoveResultsForDevice(
-      const std::string& device_id);
+  // the set of available receivers might have been updated by this call. The
+  // caller should call |GetAvailableReceivers| with the returned
+  // CastMediaSources to get the updated lists.
+  std::vector<CastMediaSource> RemoveResultsForReceiver(
+      const std::string& receiver_id);
 
-  // Returns a list of registered CastMediaSources supported by |device_id|.
+  // Returns a list of registered CastMediaSources supported by |receiver_id|.
   std::vector<CastMediaSource> GetSupportedSources(
-      const std::string& device_id) const;
+      const std::string& receiver_id) const;
 
-  // Returns the availability for |app_id| on |device_id| and the time at which
-  // the availability was determined. If availability is kUnknown, then the time
-  // may be null (e.g. if an availability request was never sent).
-  AppAvailability GetAvailability(const std::string& device_id,
+  // Returns the availability for |app_id| on |receiver_id| and the time at
+  // which the availability was determined. If availability is kUnknown, then
+  // the time may be null (e.g. if an availability request was never sent).
+  AppAvailability GetAvailability(const std::string& receiver_id,
                                   const std::string& app_id) const;
 
   // Returns a list of registered app IDs.
   std::vector<std::string> GetRegisteredApps() const;
 
-  // Returns a list of device IDs compatible with |source|, using the current
+  // Returns a list of receiver IDs compatible with |source|, using the current
   // availability info.
-  std::vector<std::string> GetAvailableDevices(
+  std::vector<std::string> GetAvailableReceivers(
       const CastMediaSource& source) const;
 
  private:
@@ -115,7 +115,7 @@ class CastAppAvailabilityTracker {
   // App IDs tracked and the number of registered sources containing them.
   std::map<std::string, int> registration_count_by_app_id_;
 
-  // IDs and app availabilities of known devices.
+  // IDs and app availabilities of known receivers.
   std::map<std::string, AppAvailabilityMap> app_availabilities_;
 };
 

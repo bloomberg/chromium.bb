@@ -18,6 +18,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/sessions/content/session_tab_helper.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/test/navigation_simulator.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
@@ -89,7 +90,8 @@ class LoadingPredictorTabHelperTest : public ChromeRenderViewHostTestHarness {
   // Owned by |loading_predictor_|.
   StrictMock<MockLoadingDataCollector>* mock_collector_;
   // Owned elsewhere.
-  MockOptimizationGuideKeyedService* mock_optimization_guide_keyed_service_;
+  NiceMock<MockOptimizationGuideKeyedService>*
+      mock_optimization_guide_keyed_service_;
   // Owned by |web_contents()|.
   LoadingPredictorTabHelper* tab_helper_;
 };
@@ -98,14 +100,14 @@ void LoadingPredictorTabHelperTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
   CreateSessionServiceTabHelper(web_contents());
   mock_optimization_guide_keyed_service_ =
-      static_cast<MockOptimizationGuideKeyedService*>(
+      static_cast<NiceMock<MockOptimizationGuideKeyedService>*>(
           OptimizationGuideKeyedServiceFactory::GetInstance()
               ->SetTestingFactoryAndUse(
                   profile(),
                   base::BindRepeating([](content::BrowserContext* context)
                                           -> std::unique_ptr<KeyedService> {
-                    return std::make_unique<MockOptimizationGuideKeyedService>(
-                        context);
+                    return std::make_unique<
+                        NiceMock<MockOptimizationGuideKeyedService>>(context);
                   })));
   LoadingPredictorTabHelper::CreateForWebContents(web_contents());
   tab_helper_ = LoadingPredictorTabHelper::FromWebContents(web_contents());
@@ -702,6 +704,8 @@ class LoadingPredictorTabHelperOptimizationGuideDeciderWithPrefetchTest
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
 };
 
 // Tests that document on load completed is recorded with correct navigation

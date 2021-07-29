@@ -6,6 +6,7 @@ import '../../legacy/legacy.js'; // Required for <x-link>.
 
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
+import markdownLinkStyles from './markdownLink.css.js';
 
 import {getMarkdownLink} from './MarkdownLinksMap.js';
 
@@ -20,11 +21,15 @@ export interface MarkdownLinkData {
  * This makes sure that all links are accounted for and no bad links are introduced to devtools via markdown.
  */
 export class MarkdownLink extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-markdown-link`;
+  static readonly litTagName = LitHtml.literal`devtools-markdown-link`;
 
   private readonly shadow = this.attachShadow({mode: 'open'});
   private linkText: string = '';
   private linkUrl: string = '';
+
+  connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [markdownLinkStyles];
+  }
 
   set data(data: MarkdownLinkData) {
     const {key, title} = data;
@@ -37,16 +42,6 @@ export class MarkdownLink extends HTMLElement {
   private render(): void {
     // clang-format off
     const output = LitHtml.html`
-      <style>
-        .devtools-link {
-          color: var(--color-link);
-          text-decoration: none;
-        }
-
-        .devtools-link:hover {
-          text-decoration: underline;
-        }
-      </style>
       <x-link class="devtools-link" href=${this.linkUrl}>${this.linkText}</x-link>
     `;
     LitHtml.render(output, this.shadow);

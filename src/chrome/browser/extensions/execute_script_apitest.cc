@@ -17,6 +17,12 @@ namespace extensions {
 using ContextType = ExtensionApiTest::ContextType;
 
 class ExecuteScriptApiTestBase : public ExtensionApiTest {
+ public:
+  ExecuteScriptApiTestBase() = default;
+  ~ExecuteScriptApiTestBase() override = default;
+  ExecuteScriptApiTestBase(const ExecuteScriptApiTestBase&) = delete;
+  ExecuteScriptApiTestBase& operator=(const ExecuteScriptApiTestBase&) = delete;
+
  protected:
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
@@ -29,10 +35,16 @@ class ExecuteScriptApiTestBase : public ExtensionApiTest {
 
 class ExecuteScriptApiTest : public ExecuteScriptApiTestBase,
                              public testing::WithParamInterface<ContextType> {
+ public:
+  ExecuteScriptApiTest() = default;
+  ~ExecuteScriptApiTest() override = default;
+  ExecuteScriptApiTest(const ExecuteScriptApiTest&) = delete;
+  ExecuteScriptApiTest& operator=(const ExecuteScriptApiTest&) = delete;
+
  protected:
   bool RunTest(const char* extension_name, bool allow_file_access = false) {
     return RunExtensionTest(
-        {.name = extension_name},
+        extension_name, {},
         {.allow_file_access = allow_file_access,
          .load_as_service_worker = GetParam() == ContextType::kServiceWorker});
   }
@@ -69,12 +81,6 @@ IN_PROC_BROWSER_TEST_P(ExecuteScriptApiTest, ExecuteScriptPermissions) {
 
 // If failing, mark disabled and update http://crbug.com/84760.
 IN_PROC_BROWSER_TEST_P(ExecuteScriptApiTest, ExecuteScriptFileAfterClose) {
-  // TODO(https://crbug.com/1166287): Flaky for Service Worker-based
-  // extension on ASAN bots.
-#if defined(ADDRESS_SANITIZER)
-  if (GetParam() == ContextType::kServiceWorker)
-    return;
-#endif
   ASSERT_TRUE(RunTest("executescript/file_after_close")) << message_;
 }
 
@@ -109,7 +115,7 @@ IN_PROC_BROWSER_TEST_P(ExecuteScriptApiTest, ExecuteScriptCallback) {
 }
 
 IN_PROC_BROWSER_TEST_P(ExecuteScriptApiTest, ExecuteScriptRemoveCSS) {
-  ASSERT_TRUE(RunExtensionTest("executescript/remove_css")) << message_;
+  ASSERT_TRUE(RunTest("executescript/remove_css")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_P(ExecuteScriptApiTest, UserGesture) {
@@ -171,8 +177,8 @@ class DestructiveScriptTest : public ExecuteScriptApiTestBase,
         "test.html?" + test_host + "#bucketcount=" +
         base::NumberToString(kDestructiveScriptTestBucketCount) +
         "&bucketindex=" + base::NumberToString(GetParam());
-    return RunExtensionTest(
-        {.name = "executescript/destructive", .page_url = page_url.c_str()});
+    return RunExtensionTest("executescript/destructive",
+                            {.page_url = page_url.c_str()});
   }
 };
 

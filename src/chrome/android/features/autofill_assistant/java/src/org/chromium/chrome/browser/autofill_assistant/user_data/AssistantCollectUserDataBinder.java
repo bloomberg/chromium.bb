@@ -15,11 +15,12 @@ import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
 import org.chromium.chrome.browser.autofill.settings.AddressEditor;
 import org.chromium.chrome.browser.autofill.settings.CardEditor;
 import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel.AddressModel;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel.ContactModel;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel.LoginChoiceModel;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel.PaymentInstrumentModel;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSection.Delegate;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionContainer;
-import org.chromium.chrome.browser.payments.AutofillAddress;
-import org.chromium.chrome.browser.payments.AutofillContact;
-import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.chrome.browser.payments.ContactEditor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.version.ChromeVersionInfo;
@@ -171,27 +172,18 @@ class AssistantCollectUserDataBinder
             view.mInfoSection.setListener(collectUserDataDelegate != null
                             ? collectUserDataDelegate::onTextLinkClicked
                             : null);
-            view.mContactDetailsSection.setListener(collectUserDataDelegate != null
-                            ? collectUserDataDelegate::onContactInfoChanged
-                            : null);
-            view.mContactDetailsSection.setCompletenessDelegate(collectUserDataDelegate != null
-                            ? collectUserDataDelegate::isContactComplete
-                            : null);
-            view.mPaymentMethodSection.setListener(collectUserDataDelegate != null
-                            ? collectUserDataDelegate::onPaymentMethodChanged
-                            : null);
-            view.mPaymentMethodSection.setCompletenessDelegate(collectUserDataDelegate != null
-                            ? collectUserDataDelegate::isPaymentInstrumentComplete
-                            : null);
-            view.mShippingAddressSection.setListener(collectUserDataDelegate != null
-                            ? collectUserDataDelegate::onShippingAddressChanged
-                            : null);
-            view.mShippingAddressSection.setCompletenessDelegate(collectUserDataDelegate != null
-                            ? collectUserDataDelegate::isShippingAddressComplete
-                            : null);
-            view.mLoginSection.setListener(collectUserDataDelegate != null
-                            ? collectUserDataDelegate::onLoginChoiceChanged
-                            : null);
+            view.mContactDetailsSection.setListener(collectUserDataDelegate == null
+                            ? null
+                            : collectUserDataDelegate::onContactInfoChanged);
+            view.mPaymentMethodSection.setListener(collectUserDataDelegate == null
+                            ? null
+                            : collectUserDataDelegate::onPaymentMethodChanged);
+            view.mShippingAddressSection.setListener(collectUserDataDelegate == null
+                            ? null
+                            : collectUserDataDelegate::onShippingAddressChanged);
+            view.mLoginSection.setListener(collectUserDataDelegate == null
+                            ? null
+                            : collectUserDataDelegate::onLoginChoiceChanged);
             view.mDateRangeStartSection.setDelegate(dateStartDelegate);
             view.mDateRangeEndSection.setDelegate(dateEndDelegate);
             view.mPrependedSections.setDelegate(collectUserDataDelegate != null
@@ -269,7 +261,7 @@ class AssistantCollectUserDataBinder
         if (propertyKey == AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS
                 || propertyKey == AssistantCollectUserDataModel.WEB_CONTENTS) {
             if (model.get(AssistantCollectUserDataModel.REQUEST_PAYMENT)) {
-                List<AutofillPaymentInstrument> paymentInstruments;
+                List<PaymentInstrumentModel> paymentInstruments;
                 if (model.get(AssistantCollectUserDataModel.WEB_CONTENTS) == null) {
                     paymentInstruments = Collections.emptyList();
                 } else {
@@ -297,21 +289,17 @@ class AssistantCollectUserDataBinder
                         model.get(AssistantCollectUserDataModel.AVAILABLE_BILLING_ADDRESSES));
             }
             return true;
-        } else if (propertyKey == AssistantCollectUserDataModel.REQUIRE_BILLING_POSTAL_CODE
-                || propertyKey == AssistantCollectUserDataModel.BILLING_POSTAL_CODE_MISSING_TEXT) {
-            view.mPaymentMethodSection.setRequiresBillingPostalCode(
-                    model.get(AssistantCollectUserDataModel.REQUIRE_BILLING_POSTAL_CODE));
-            view.mPaymentMethodSection.setBillingPostalCodeMissingText(
-                    model.get(AssistantCollectUserDataModel.BILLING_POSTAL_CODE_MISSING_TEXT));
-            return true;
-        } else if (propertyKey == AssistantCollectUserDataModel.CREDIT_CARD_EXPIRED_TEXT) {
-            view.mPaymentMethodSection.setCreditCardExpiredText(
-                    model.get(AssistantCollectUserDataModel.CREDIT_CARD_EXPIRED_TEXT));
-            return true;
         } else if (propertyKey == AssistantCollectUserDataModel.AVAILABLE_LOGINS) {
             if (model.get(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE)) {
-                view.mLoginSection.onLoginsChanged(
-                        model.get(AssistantCollectUserDataModel.AVAILABLE_LOGINS));
+                List<AssistantLoginChoice> loginChoices =
+                        model.get(AssistantCollectUserDataModel.AVAILABLE_LOGINS);
+                if (loginChoices != null) {
+                    List<LoginChoiceModel> loginChoiceModels = new ArrayList<>();
+                    for (AssistantLoginChoice loginChoice : loginChoices) {
+                        loginChoiceModels.add(new LoginChoiceModel(loginChoice));
+                    }
+                    view.mLoginSection.onLoginsChanged(loginChoiceModels);
+                }
             }
             return true;
         } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_START_OPTIONS) {
@@ -477,37 +465,43 @@ class AssistantCollectUserDataBinder
      */
     private boolean updateSectionSelectedItem(
             AssistantCollectUserDataModel model, PropertyKey propertyKey, ViewHolder view) {
+        // These changes are sent by the controller, do not notify it when selecting the added item.
+        // This prevents creating a loop.
         if (propertyKey == AssistantCollectUserDataModel.SELECTED_SHIPPING_ADDRESS) {
-            if (model.get(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS)) {
-                AutofillAddress shippingAddress =
-                        model.get(AssistantCollectUserDataModel.SELECTED_SHIPPING_ADDRESS);
-                if (shippingAddress != null) {
-                    view.mShippingAddressSection.addOrUpdateItem(
-                            shippingAddress, /* select= */ true);
-                }
-                // No need to reset selection if null, this will be handled by setItems().
+            if (!model.get(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS)) {
+                return true;
             }
+            AddressModel shippingAddress =
+                    model.get(AssistantCollectUserDataModel.SELECTED_SHIPPING_ADDRESS);
+            if (shippingAddress != null) {
+                view.mShippingAddressSection.addOrUpdateItem(
+                        shippingAddress, /* select= */ true, /* notify= */ false);
+            }
+            // No need to reset selection if null, this will be handled by setItems().
             return true;
         } else if (propertyKey == AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT) {
-            if (model.get(AssistantCollectUserDataModel.REQUEST_PAYMENT)) {
-                AutofillPaymentInstrument paymentInstrument =
-                        model.get(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT);
-                if (paymentInstrument != null) {
-                    view.mPaymentMethodSection.addOrUpdateItem(
-                            paymentInstrument, /* select= */ true);
-                }
-                // No need to reset selection if null, this will be handled by setItems().
+            if (!model.get(AssistantCollectUserDataModel.REQUEST_PAYMENT)) {
+                return true;
             }
+            PaymentInstrumentModel paymentInstrument =
+                    model.get(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT);
+            if (paymentInstrument != null) {
+                view.mPaymentMethodSection.addOrUpdateItem(
+                        paymentInstrument, /* select= */ true, /* notify= */ false);
+            }
+            // No need to reset selection if null, this will be handled by setItems().
             return true;
         } else if (propertyKey == AssistantCollectUserDataModel.SELECTED_CONTACT_DETAILS) {
-            if (shouldShowContactDetails(model)) {
-                AutofillContact contact =
-                        model.get(AssistantCollectUserDataModel.SELECTED_CONTACT_DETAILS);
-                if (contact != null) {
-                    view.mContactDetailsSection.addOrUpdateItem(contact, /* select= */ true);
-                }
-                // No need to reset selection if null, this will be handled by setItems().
+            if (!shouldShowContactDetails(model)) {
+                return true;
             }
+            ContactModel contact =
+                    model.get(AssistantCollectUserDataModel.SELECTED_CONTACT_DETAILS);
+            if (contact != null) {
+                view.mContactDetailsSection.addOrUpdateItem(
+                        contact, /* select= */ true, /* notify= */ false);
+            }
+            // No need to reset selection if null, this will be handled by setItems().
             return true;
         } else if (propertyKey == AssistantCollectUserDataModel.TERMS_STATUS) {
             int termsStatus = model.get(AssistantCollectUserDataModel.TERMS_STATUS);
@@ -515,8 +509,17 @@ class AssistantCollectUserDataBinder
             view.mTermsAsCheckboxSection.setTermsStatus(termsStatus);
             return true;
         } else if (propertyKey == AssistantCollectUserDataModel.SELECTED_LOGIN) {
-            view.mLoginSection.addOrUpdateItem(
-                    model.get(AssistantCollectUserDataModel.SELECTED_LOGIN), true);
+            if (!model.get(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE)) {
+                return true;
+            }
+            AssistantLoginChoice loginChoice =
+                    model.get(AssistantCollectUserDataModel.SELECTED_LOGIN);
+            if (loginChoice != null) {
+                view.mLoginSection.addOrUpdateItem(new LoginChoiceModel(loginChoice),
+                        /* select= */ true,
+                        /* notify= */ false);
+            }
+            // No need to reset selection if null, this will be handled by setItems().
             return true;
         }
         return false;

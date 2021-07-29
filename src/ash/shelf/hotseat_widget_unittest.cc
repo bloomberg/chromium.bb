@@ -8,9 +8,10 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/assistant/assistant_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/focus_cycler.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/test/assistant_test_api.h"
@@ -178,7 +179,7 @@ class HotseatWidgetTest
     // toggle overview.
     if (!navigation_buttons_shown_in_tablet_mode_ &&
         Shell::Get()->tablet_mode_controller()->InTabletMode()) {
-      Shell::Get()->overview_controller()->StartOverview();
+      EnterOverview();
       return;
     }
 
@@ -198,7 +199,7 @@ class HotseatWidgetTest
     // toggle overview.
     if (!navigation_buttons_shown_in_tablet_mode_ &&
         Shell::Get()->tablet_mode_controller()->InTabletMode()) {
-      Shell::Get()->overview_controller()->EndOverview();
+      ExitOverview();
       return;
     }
 
@@ -769,8 +770,7 @@ TEST_P(HotseatWidgetTest, SwipeUpOnShelfShowsHotseatInSplitView) {
 
   // Go into split view mode by first going into overview, and then snapping
   // the open window on one side.
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
@@ -1243,13 +1243,13 @@ TEST_P(HotseatWidgetTest, InAppToOverviewChangesStateOnceAutohiddenShelf) {
   {
     HotseatStateWatcher watcher(GetShelfLayoutManager());
     // Enter overview by using the controller.
-    Shell::Get()->overview_controller()->StartOverview();
+    EnterOverview();
     WaitForOverviewAnimation(/*enter=*/true);
 
     watcher.CheckEqual({HotseatState::kExtended});
   }
 
-  Shell::Get()->overview_controller()->EndOverview();
+  ExitOverview();
   WaitForOverviewAnimation(/*enter=*/false);
 
   // Test in-app -> overview again with the autohide shown shelf.
@@ -1260,7 +1260,7 @@ TEST_P(HotseatWidgetTest, InAppToOverviewChangesStateOnceAutohiddenShelf) {
   {
     HotseatStateWatcher watcher(GetShelfLayoutManager());
     // Enter overview by using the controller.
-    Shell::Get()->overview_controller()->StartOverview();
+    EnterOverview();
     WaitForOverviewAnimation(/*enter=*/true);
 
     watcher.CheckEqual({});
@@ -1276,11 +1276,11 @@ TEST_P(HotseatWidgetTest,
   TabletModeControllerTestApi().EnterTabletMode();
   DisplayWorkAreaChangeCounter counter;
 
-  Shell::Get()->overview_controller()->StartOverview();
+  EnterOverview();
   WaitForOverviewAnimation(/*enter=*/true);
   EXPECT_EQ(0, counter.count());
 
-  Shell::Get()->overview_controller()->StartOverview();
+  EnterOverview();
   WaitForOverviewAnimation(/*enter=*/true);
   EXPECT_EQ(0, counter.count());
 }
@@ -1441,7 +1441,7 @@ TEST_P(HotseatWidgetTest, ExitOverviewWithClickOnHotseat) {
   // This point will not be visible.
   auto* overview_controller = Shell::Get()->overview_controller();
   auto* hotseat_widget = GetPrimaryShelf()->hotseat_widget();
-  overview_controller->StartOverview();
+  EnterOverview();
   ASSERT_TRUE(overview_controller->InOverviewSession());
   ASSERT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
   gfx::Point far_left_point =
@@ -1771,7 +1771,7 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInOverview) {
   wm::ActivateWindow(window.get());
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
 
   Shelf* const shelf = GetPrimaryShelf();
 
@@ -1821,7 +1821,7 @@ TEST_P(HotseatWidgetTest, SwipeOnHotseatInSplitViewWithOverview) {
   wm::ActivateWindow(window.get());
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
 
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());

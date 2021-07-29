@@ -18,10 +18,13 @@
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_menu_button.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_navigation_button_container.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_toolbar_button_container.h"
+#include "chrome/browser/ui/views/web_apps/frame_toolbar/window_controls_overlay_toggle_button.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_utils.h"
+#include "ui/views/window/hit_test_utils.h"
 
 WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
                                                BrowserView* browser_view)
@@ -79,6 +82,10 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
       << "This should be the first ToolbarButtorProvider or a replacement for "
          "an existing instance of this class during a window frame refresh.";
   browser_view_->SetToolbarButtonProvider(this);
+
+  if (browser_view_->IsWindowControlsOverlayEnabled()) {
+    OnWindowControlsOverlayEnabledChanged();
+  }
 }
 
 WebAppFrameToolbarView::~WebAppFrameToolbarView() = default;
@@ -148,11 +155,10 @@ std::pair<int, int> WebAppFrameToolbarView::LayoutInContainer(
 void WebAppFrameToolbarView::LayoutForWindowControlsOverlay(
     gfx::Rect available_rect) {
   DCHECK(!left_container_);
-  center_container_->SetVisible(false);
-
-  // BrowserView paints to a layer, so this must do the same to ensure that it
-  // paints on top of the BrowserView.
-  SetPaintToLayer();
+  // The center_container_ might have been laid out by the frame view such that
+  // it interferes with hit testing in the ToolbarButtonContainer. Ensure that
+  // its bounds are cleared when laying out WCO.
+  center_container_->SetBounds(0, 0, 0, 0);
 
   const int width = std::min(available_rect.width(),
                              right_container_->GetPreferredSize().width());
@@ -166,10 +172,7 @@ WebAppFrameToolbarView::GetExtensionsToolbarContainer() {
 }
 
 gfx::Size WebAppFrameToolbarView::GetToolbarButtonSize() const {
-  constexpr int kFocusModeButtonSize = 34;
-  int size = browser_view_->browser()->is_focus_mode()
-                 ? kFocusModeButtonSize
-                 : GetLayoutConstant(WEB_APP_MENU_BUTTON_SIZE);
+  const int size = GetLayoutConstant(WEB_APP_MENU_BUTTON_SIZE);
   return gfx::Size(size, size);
 }
 
@@ -252,6 +255,29 @@ bool WebAppFrameToolbarView::DoesIntersectRect(const View* target,
       gfx::ToEnclosingRect(rect_in_center_container_coords_f);
 
   return !center_container_->HitTestRect(rect_in_client_view_coords);
+}
+
+void WebAppFrameToolbarView::OnWindowControlsOverlayEnabledChanged() {
+  if (browser_view_->IsWindowControlsOverlayEnabled()) {
+    SetBackground(views::CreateSolidBackground(
+        paint_as_active_ ? active_background_color_
+                         : inactive_background_color_));
+
+    // BrowserView paints to a layer, so this view must do the same to ensure
+    // that it paints on top of the BrowserView.
+    SetPaintToLayer();
+    views::SetHitTestComponent(this, static_cast<int>(HTCAPTION));
+  } else {
+    SetBackground(nullptr);
+    DestroyLayer();
+    views::SetHitTestComponent(this, static_cast<int>(HTNOWHERE));
+  }
+}
+
+void WebAppFrameToolbarView::SetWindowControlsOverlayToggleVisible(
+    bool visible) {
+  right_container_->window_controls_overlay_toggle_button()->SetVisible(
+      visible);
 }
 
 PageActionIconController*

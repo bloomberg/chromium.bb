@@ -6,7 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/html_to_js.gni")
 import("../settings.gni")
 
-js_type_check("closure_compile_module") {
+js_type_check("closure_compile") {
   is_polymer3 = true
   closure_flags = settings_closure_flags
   deps = [
@@ -24,10 +24,10 @@ js_type_check("closure_compile_module") {
     ":multi_store_id_handler",
     ":multi_store_password_ui_entry",
     ":password_check",
-    ":password_check_behavior",
     ":password_check_edit_dialog",
     ":password_check_edit_disclaimer_dialog",
     ":password_check_list_item",
+    ":password_check_mixin",
     ":password_edit_dialog",
     ":password_list_item",
     ":password_manager_proxy",
@@ -41,7 +41,7 @@ js_type_check("closure_compile_module") {
     ":passwords_section",
     ":payments_list",
     ":payments_section",
-    ":show_password_behavior",
+    ":show_password_mixin",
     ":upi_id_list_entry",
   ]
 }
@@ -59,7 +59,8 @@ js_library("address_edit_dialog") {
 
 js_library("autofill_page") {
   deps = [
-    ":password_check_behavior",
+    ":password_check_mixin",
+    "..:hats_browser_proxy",
     "..:open_window_proxy",
     "..:route",
     "..:router",
@@ -118,7 +119,6 @@ js_library("credit_card_edit_dialog") {
 js_library("credit_card_list_entry") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
   ]
   externs_list = [ "$externs_path/autofill_private.js" ]
 }
@@ -126,7 +126,7 @@ js_library("credit_card_list_entry") {
 js_library("password_check") {
   deps = [
     ":blocking_request_manager",
-    ":password_check_behavior",
+    ":password_check_mixin",
     ":password_manager_proxy",
     "..:route",
     "../prefs:prefs_behavior",
@@ -136,7 +136,7 @@ js_library("password_check") {
   ]
 }
 
-js_library("password_check_behavior") {
+js_library("password_check_mixin") {
   deps = [
     ":password_manager_proxy",
     "//ui/webui/resources/js:plural_string_proxy",
@@ -167,13 +167,12 @@ js_library("password_check_list_item") {
     "..:open_window_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
 js_library("password_edit_dialog") {
   deps = [
-    ":show_password_behavior",
+    ":show_password_mixin",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
   ]
@@ -214,7 +213,7 @@ js_library("password_remove_confirmation_dialog") {
 js_library("password_list_item") {
   deps = [
     ":blocking_request_manager",
-    ":show_password_behavior",
+    ":show_password_mixin",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js/cr/ui:focus_row_behavior.m",
@@ -243,7 +242,6 @@ js_library("passwords_list_handler") {
 js_library("password_move_multiple_passwords_to_account_dialog") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
@@ -257,7 +255,6 @@ js_library("password_move_to_account_dialog") {
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
@@ -298,13 +295,12 @@ js_library("passwords_section") {
     ":password_list_item",
     ":password_manager_proxy",
     ":passwords_list_handler",
-    "..:global_scroll_target_behavior",
+    "..:global_scroll_target_mixin",
     "..:route",
     "../people_page:profile_info_browser_proxy",
     "../people_page:sync_browser_proxy",
     "../prefs:prefs_behavior",
     "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer",
-    "//third_party/polymer/v3_0/components-chromium/iron-a11y-keys-behavior:iron-a11y-keys-behavior",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:i18n_behavior.m",
@@ -327,11 +323,11 @@ js_library("passwords_device_section") {
     ":password_manager_proxy",
     ":password_move_multiple_passwords_to_account_dialog",
     ":passwords_list_handler",
+    "..:global_scroll_target_mixin",
     "..:i18n_setup",
     "..:open_window_proxy",
     "..:route",
     "../people_page:sync_browser_proxy",
-    "//third_party/polymer/v3_0/components-chromium/iron-a11y-keys-behavior:iron-a11y-keys-behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:util.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
@@ -359,13 +355,12 @@ js_library("payments_section") {
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js:web_ui_listener_behavior.m",
     "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
   ]
   externs_list = [ "$externs_path/autofill_private.js" ]
 }
 
-js_library("show_password_behavior") {
+js_library("show_password_mixin") {
   deps = [
     ":blocking_request_manager",
     ":multi_store_password_ui_entry",
@@ -394,7 +389,6 @@ js_library("merge_exceptions_store_copies_behavior") {
 js_library("upi_id_list_entry") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 

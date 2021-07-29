@@ -30,7 +30,6 @@
 #include "base/auto_reset.h"
 #include "third_party/blink/public/common/security_context/insecure_request_policy.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/radio_node_list_or_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_submit_event_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_element_radionodelist.h"
@@ -73,9 +72,26 @@
 
 namespace blink {
 
+namespace {
+
+bool HasFormInBetween(const Node* root, const Node* descendant) {
+  DCHECK(descendant->IsDescendantOf(root));
+  DCHECK(!IsA<HTMLFormElement>(descendant));
+  for (ContainerNode* parent = descendant->parentNode();
+       parent && parent != root; parent = parent->parentNode()) {
+    if (DynamicTo<HTMLFormElement>(parent)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
+
 HTMLFormElement::HTMLFormElement(Document& document)
     : HTMLElement(html_names::kFormTag, document),
       listed_elements_are_dirty_(false),
+      listed_elements_including_shadow_trees_are_dirty_(false),
       image_elements_are_dirty_(false),
       has_elements_associated_by_parser_(false),
       has_elements_associated_by_form_attribute_(false),
@@ -93,6 +109,7 @@ void HTMLFormElement::Trace(Visitor* visitor) const {
   visitor->Trace(past_names_map_);
   visitor->Trace(radio_button_group_scope_);
   visitor->Trace(listed_elements_);
+  visitor->Trace(listed_elements_including_shadow_trees_);
   visitor->Trace(image_elements_);
   HTMLElement::Trace(visitor);
 }
@@ -636,6 +653,8 @@ void HTMLFormElement::ParseAttribute(
 void HTMLFormElement::Associate(ListedElement& e) {
   listed_elements_are_dirty_ = true;
   listed_elements_.clear();
+  listed_elements_including_shadow_trees_are_dirty_ = true;
+  listed_elements_including_shadow_trees_.clear();
   if (e.ToHTMLElement().FastHasAttribute(html_names::kFormAttr))
     has_elements_associated_by_form_attribute_ = true;
 }
@@ -643,6 +662,8 @@ void HTMLFormElement::Associate(ListedElement& e) {
 void HTMLFormElement::Disassociate(ListedElement& e) {
   listed_elements_are_dirty_ = true;
   listed_elements_.clear();
+  listed_elements_including_shadow_trees_are_dirty_ = true;
+  listed_elements_including_shadow_trees_.clear();
   RemoveFromPastNamesMap(e.ToHTMLElement());
 }
 
@@ -679,31 +700,67 @@ HTMLFormControlsCollection* HTMLFormElement::elements() {
 }
 
 void HTMLFormElement::CollectListedElements(
-    Node& root,
-    ListedElement::List& elements) const {
-  elements.clear();
+    const Node& root,
+    ListedElement::List& elements,
+    ListedElement::List* elements_including_shadow_trees,
+    bool in_shadow_tree) const {
+  DCHECK(!in_shadow_tree || elements_including_shadow_trees);
+  if (!in_shadow_tree)
+    elements.clear();
   for (HTMLElement& element : Traversal<HTMLElement>::StartsAfter(root)) {
-    ListedElement* listed_element = ListedElement::From(element);
-    if (listed_element && listed_element->Form() == this)
-      elements.push_back(listed_element);
+    if (ListedElement* listed_element = ListedElement::From(element)) {
+      // If there is a <form> in between |root| and |listed_element|, then we
+      // shouldn't include it in |elements_including_shadow_trees| in order to
+      // prevent multiple forms from "owning" the same |listed_element| as shown
+      // by their |elements_including_shadow_trees|. |elements| doesn't have
+      // this problem because it can check |listed_element->Form()|.
+      if (in_shadow_tree && !HasFormInBetween(&root, &element)) {
+        elements_including_shadow_trees->push_back(listed_element);
+      } else if (listed_element->Form() == this) {
+        elements.push_back(listed_element);
+        if (elements_including_shadow_trees)
+          elements_including_shadow_trees->push_back(listed_element);
+      }
+    }
+    if (elements_including_shadow_trees && element.AuthorShadowRoot() &&
+        !HasFormInBetween(&root, &element)) {
+      const Node& shadow = *element.AuthorShadowRoot();
+      CollectListedElements(shadow, elements, elements_including_shadow_trees,
+                            /*in_shadow_tree=*/true);
+    }
   }
 }
 
 // This function should be const conceptually. However we update some fields
 // because of lazy evaluation.
-const ListedElement::List& HTMLFormElement::ListedElements() const {
-  if (!listed_elements_are_dirty_)
-    return listed_elements_;
-  HTMLFormElement* mutable_this = const_cast<HTMLFormElement*>(this);
-  Node* scope = mutable_this;
-  if (has_elements_associated_by_parser_)
-    scope = &NodeTraversal::HighestAncestorOrSelf(*mutable_this);
-  if (isConnected() && has_elements_associated_by_form_attribute_)
-    scope = &GetTreeScope().RootNode();
-  DCHECK(scope);
-  CollectListedElements(*scope, mutable_this->listed_elements_);
-  mutable_this->listed_elements_are_dirty_ = false;
-  return listed_elements_;
+const ListedElement::List& HTMLFormElement::ListedElements(
+    bool include_shadow_trees) const {
+  if (!RuntimeEnabledFeatures::AutofillShadowDOMEnabled())
+    include_shadow_trees = false;
+  bool collect_shadow_inputs =
+      include_shadow_trees && listed_elements_including_shadow_trees_are_dirty_;
+
+  if (listed_elements_are_dirty_ || collect_shadow_inputs) {
+    HTMLFormElement* mutable_this = const_cast<HTMLFormElement*>(this);
+    Node* scope = mutable_this;
+    if (has_elements_associated_by_parser_)
+      scope = &NodeTraversal::HighestAncestorOrSelf(*mutable_this);
+    if (isConnected() && has_elements_associated_by_form_attribute_)
+      scope = &GetTreeScope().RootNode();
+    DCHECK(scope);
+    mutable_this->listed_elements_.clear();
+    mutable_this->listed_elements_including_shadow_trees_.clear();
+    CollectListedElements(
+        *scope, mutable_this->listed_elements_,
+        collect_shadow_inputs
+            ? &mutable_this->listed_elements_including_shadow_trees_
+            : nullptr);
+    mutable_this->listed_elements_are_dirty_ = false;
+    mutable_this->listed_elements_including_shadow_trees_are_dirty_ =
+        !collect_shadow_inputs;
+  }
+  return include_shadow_trees ? listed_elements_including_shadow_trees_
+                              : listed_elements_;
 }
 
 void HTMLFormElement::CollectImageElements(
@@ -876,27 +933,8 @@ void HTMLFormElement::FinishParsingChildren() {
   did_finish_parsing_children_ = true;
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 V8UnionElementOrRadioNodeList* HTMLFormElement::AnonymousNamedGetter(
     const AtomicString& name) {
-  RadioNodeListOrElement return_value;
-  // Delegate to the old IDL union implementation for the time being.
-  AnonymousNamedGetter(name, return_value);
-  if (return_value.IsElement()) {
-    return MakeGarbageCollected<V8UnionElementOrRadioNodeList>(
-        return_value.GetAsElement());
-  }
-  if (return_value.IsRadioNodeList()) {
-    return MakeGarbageCollected<V8UnionElementOrRadioNodeList>(
-        return_value.GetAsRadioNodeList());
-  }
-  return nullptr;
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
-void HTMLFormElement::AnonymousNamedGetter(
-    const AtomicString& name,
-    RadioNodeListOrElement& return_value) {
   // Call getNamedElements twice, first time check if it has a value
   // and let HTMLFormElement update its cache.
   // See issue: 867404
@@ -904,7 +942,7 @@ void HTMLFormElement::AnonymousNamedGetter(
     HeapVector<Member<Element>> elements;
     GetNamedElements(name, elements);
     if (elements.IsEmpty())
-      return;
+      return nullptr;
   }
 
   // Second call may return different results from the first call,
@@ -930,11 +968,10 @@ void HTMLFormElement::AnonymousNamedGetter(
     }
   }
   if (elements.size() == 1) {
-    return_value.SetElement(elements.at(0));
-    return;
+    return MakeGarbageCollected<V8UnionElementOrRadioNodeList>(elements[0]);
   }
-
-  return_value.SetRadioNodeList(GetRadioNodeList(name, only_match_img));
+  return MakeGarbageCollected<V8UnionElementOrRadioNodeList>(
+      GetRadioNodeList(name, only_match_img));
 }
 
 void HTMLFormElement::InvalidateDefaultButtonStyle() const {
@@ -947,6 +984,10 @@ void HTMLFormElement::InvalidateDefaultButtonStyle() const {
       html_form_control->PseudoStateChanged(CSSSelector::kPseudoDefault);
     }
   }
+}
+
+void HTMLFormElement::InvalidateListedElementsIncludingShadowTrees() {
+  listed_elements_including_shadow_trees_are_dirty_ = true;
 }
 
 }  // namespace blink

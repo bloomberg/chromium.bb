@@ -2593,7 +2593,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
                     }
                 }
             }
-            st->need_parsing = AVSTREAM_PARSE_HEADERS;
+            st->internal->need_parsing = AVSTREAM_PARSE_HEADERS;
             if (material_track->sequence->origin) {
                 av_dict_set_int(&st->metadata, "material_track_origin", material_track->sequence->origin, 0);
             }
@@ -2658,7 +2658,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
                 else if (descriptor->bits_per_sample == 32)
                     st->codecpar->codec_id = AV_CODEC_ID_PCM_S32BE;
             } else if (st->codecpar->codec_id == AV_CODEC_ID_MP2) {
-                st->need_parsing = AVSTREAM_PARSE_FULL;
+                st->internal->need_parsing = AVSTREAM_PARSE_FULL;
             }
             st->codecpar->bits_per_coded_sample = av_get_bits_per_sample(st->codecpar->codec_id);
         } else if (st->codecpar->codec_type == AVMEDIA_TYPE_DATA) {
@@ -2692,7 +2692,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
         }
         if (st->codecpar->codec_type != AVMEDIA_TYPE_DATA && source_track->wrapping != FrameWrapped) {
             /* TODO: decode timestamps */
-            st->need_parsing = AVSTREAM_PARSE_TIMESTAMPS;
+            st->internal->need_parsing = AVSTREAM_PARSE_TIMESTAMPS;
         }
     }
 
@@ -2889,21 +2889,32 @@ static int mxf_metadataset_init(MXFMetadataSet *ctx, enum MXFMetadataSetType typ
 static int mxf_read_local_tags(MXFContext *mxf, KLVPacket *klv, MXFMetadataReadFunc *read_child, int ctx_size, enum MXFMetadataSetType type)
 {
     AVIOContext *pb = mxf->fc->pb;
-    MXFMetadataSet *ctx = ctx_size ? av_mallocz(ctx_size) : mxf;
     uint64_t klv_end = avio_tell(pb) + klv->length;
+    MXFMetadataSet *meta;
+    void *ctx;
 
-    if (!ctx)
-        return AVERROR(ENOMEM);
-    if (ctx_size)
-        mxf_metadataset_init(ctx, type);
-    while (avio_tell(pb) + 4 < klv_end && !avio_feof(pb)) {
+    if (ctx_size) {
+        meta = av_mallocz(ctx_size);
+        if (!meta)
+            return AVERROR(ENOMEM);
+        ctx  = meta;
+        mxf_metadataset_init(meta, type);
+    } else {
+        meta = NULL;
+        ctx  = mxf;
+    }
+    while (avio_tell(pb) + 4ULL < klv_end && !avio_feof(pb)) {
         int ret;
         int tag = avio_rb16(pb);
         int size = avio_rb16(pb); /* KLV specified by 0x53 */
         int64_t next = avio_tell(pb);
         UID uid = {0};
-        if (next < 0 || next > INT64_MAX - size)
+        if (next < 0 || next > INT64_MAX - size) {
+            if (meta) {
+                mxf_free_metadataset(&meta, 1);
+            }
             return next < 0 ? next : AVERROR_INVALIDDATA;
+        }
         next += size;
 
         av_log(mxf->fc, AV_LOG_TRACE, "local tag %#04x size %d\n", tag, size);
@@ -2922,19 +2933,20 @@ static int mxf_read_local_tags(MXFContext *mxf, KLVPacket *klv, MXFMetadataReadF
                 }
             }
         }
-        if (ctx_size && tag == 0x3C0A) {
-            avio_read(pb, ctx->uid, 16);
+        if (meta && tag == 0x3C0A) {
+            avio_read(pb, meta->uid, 16);
         } else if ((ret = read_child(ctx, pb, tag, size, uid, -1)) < 0) {
-            if (ctx_size)
-                mxf_free_metadataset(&ctx, 1);
+            if (meta) {
+                mxf_free_metadataset(&meta, 1);
+            }
             return ret;
         }
 
         /* Accept the 64k local set limit being exceeded (Avid). Don't accept
          * it extending past the end of the KLV though (zzuf5.mxf). */
         if (avio_tell(pb) > klv_end) {
-            if (ctx_size) {
-                mxf_free_metadataset(&ctx, 1);
+            if (meta) {
+                mxf_free_metadataset(&meta, 1);
             }
 
             av_log(mxf->fc, AV_LOG_ERROR,
@@ -2944,7 +2956,7 @@ static int mxf_read_local_tags(MXFContext *mxf, KLVPacket *klv, MXFMetadataReadF
         } else if (avio_tell(pb) <= next)   /* only seek forward, else this can loop for a long time */
             avio_seek(pb, next, SEEK_SET);
     }
-    return ctx_size ? mxf_add_metadata_set(mxf, &ctx) : 0;
+    return meta ? mxf_add_metadata_set(mxf, &meta) : 0;
 }
 
 /**
@@ -3648,7 +3660,7 @@ static int mxf_read_packet(AVFormatContext *s, AVPacket *pkt)
                 if (next_ofs <= 0) {
                     // If we have no way to packetize the data, then return it in chunks...
                     if (klv.next_klv - klv.length == pos && max_data_size > MXF_MAX_CHUNK_SIZE) {
-                        st->need_parsing = AVSTREAM_PARSE_FULL;
+                        st->internal->need_parsing = AVSTREAM_PARSE_FULL;
                         avpriv_request_sample(s, "Huge KLV without proper index in non-frame wrapped essence");
                     }
                     size = FFMIN(max_data_size, MXF_MAX_CHUNK_SIZE);
@@ -3899,7 +3911,7 @@ static const AVClass demuxer_class = {
     .category   = AV_CLASS_CATEGORY_DEMUXER,
 };
 
-AVInputFormat ff_mxf_demuxer = {
+const AVInputFormat ff_mxf_demuxer = {
     .name           = "mxf",
     .long_name      = NULL_IF_CONFIG_SMALL("MXF (Material eXchange Format)"),
     .flags          = AVFMT_SEEK_TO_PTS,

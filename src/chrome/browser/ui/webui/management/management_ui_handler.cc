@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,7 +28,6 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/managed_ui.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/strings/grit/components_strings.h"
@@ -46,20 +44,19 @@
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/ash/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/ash/policy/dlp/dlp_rules_manager_factory.h"
+#include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
+#include "chrome/browser/ash/policy/networking/policy_cert_service.h"
+#include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
-#include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/status_collector/status_collector.h"
-#include "chrome/browser/chromeos/policy/status_uploader.h"
-#include "chrome/browser/chromeos/policy/system_log_uploader.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/uploading/status_uploader.h"
+#include "chrome/browser/chromeos/policy/uploading/system_log_uploader.h"
 #include "chrome/browser/ui/webui/management/management_ui_handler_chromeos.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/chromium_strings.h"
@@ -174,6 +171,7 @@ const char kManagementReportExtensions[] = "managementReportExtensions";
 const char kManagementReportAndroidApplications[] =
     "managementReportAndroidApplications";
 const char kManagementReportPrintJobs[] = "managementReportPrintJobs";
+const char kManagementReportLoginLogout[] = "managementReportLoginLogout";
 const char kManagementReportDlpEvents[] = "managementReportDlpEvents";
 const char kManagementPrinting[] = "managementPrinting";
 const char kManagementCrostini[] = "managementCrostini";
@@ -223,7 +221,8 @@ enum class DeviceReportingType {
   kUsername,
   kExtensions,
   kAndroidApplication,
-  kDlpEvents
+  kDlpEvents,
+  kLoginLogout
 };
 
 // Corresponds to DeviceReportingType in management_browser_proxy.js
@@ -257,6 +256,8 @@ std::string ToJSDeviceReportingType(const DeviceReportingType& type) {
       return "android application";
     case DeviceReportingType::kDlpEvents:
       return "dlp events";
+    case DeviceReportingType::kLoginLogout:
+      return "login-logout";
     default:
       NOTREACHED() << "Unknown device reporting type";
       return "device";
@@ -615,8 +616,7 @@ void ManagementUIHandler::AddDeviceReportingInfo(
   }
 
   if (g_browser_process->local_state()->GetBoolean(
-          enterprise_reporting::kCloudReportingEnabled) &&
-      base::FeatureList::IsEnabled(features::kEnterpriseReportingInChromeOS)) {
+          enterprise_reporting::kCloudReportingEnabled)) {
     AddDeviceReportingElement(report_sources,
                               kManagementExtensionReportUsername,
                               DeviceReportingType::kUsername);
@@ -625,6 +625,14 @@ void ManagementUIHandler::AddDeviceReportingInfo(
     AddDeviceReportingElement(report_sources,
                               kManagementReportAndroidApplications,
                               DeviceReportingType::kAndroidApplication);
+  }
+
+  bool report_login_logout = false;
+  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kReportDeviceLoginLogout,
+                                            &report_login_logout);
+  if (report_login_logout) {
+    AddDeviceReportingElement(report_sources, kManagementReportLoginLogout,
+                              DeviceReportingType::kLoginLogout);
   }
 }
 
@@ -812,7 +820,7 @@ base::Value ManagementUIHandler::GetThreatProtectionInfo(Profile* profile) {
   if (enterprise_manager.empty())
     enterprise_manager = GetAccountManager(profile);
 #else
-  std::string enterprise_manager = GetAccountManager(profile);
+  std::string enterprise_manager = connectors_service->GetManagementDomain();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   base::Value result(base::Value::Type::DICTIONARY);

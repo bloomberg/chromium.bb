@@ -5,6 +5,7 @@
 #include "net/url_request/url_request_http_job.h"
 
 #include <algorithm>
+#include <iterator>
 #include <utility>
 #include <vector>
 
@@ -29,6 +30,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/http_user_agent_settings.h"
@@ -47,6 +49,7 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
+#include "net/cookies/same_party_context.h"
 #include "net/filter/brotli_source_stream.h"
 #include "net/filter/filter_source_stream.h"
 #include "net/filter/gzip_source_stream.h"
@@ -157,14 +160,14 @@ void RecordCTHistograms(const net::SSLInfo& ssl_info) {
 
 net::CookieOptions CreateCookieOptions(
     net::CookieOptions::SameSiteCookieContext same_site_context,
-    net::CookieOptions::SamePartyCookieContextType same_party_context,
+    const net::SamePartyContext& same_party_context,
     const net::IsolationInfo& isolation_info,
     bool is_in_nontrivial_first_party_set) {
   net::CookieOptions options;
   options.set_return_excluded_cookies();
   options.set_include_httponly();
   options.set_same_site_cookie_context(same_site_context);
-  options.set_same_party_cookie_context_type(same_party_context);
+  options.set_same_party_context(same_party_context);
   if (isolation_info.party_context().has_value()) {
     // Count the top-frame site since it's not in the party_context.
     options.set_full_party_context_size(isolation_info.party_context()->size() +
@@ -342,6 +345,10 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   DCHECK(!response_info_);
   DCHECK_EQ(0, num_cookie_lines_left_);
   DCHECK(request_->maybe_stored_cookies().empty());
+  request_->net_log().AddEntryWithBoolParams(
+      NetLogEventType::URL_REQUEST_HTTP_JOB_NOTIFY_HEADERS_COMPLETE,
+      NetLogEventPhase::NONE, "ready_to_restart_for_auth",
+      transaction_->IsReadyToRestartForAuth());
 
   response_info_ = transaction_->GetResponseInfo();
 
@@ -584,7 +591,7 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
     bool is_in_nontrivial_first_party_set =
         delegate && delegate->IsInNontrivialFirstPartySet(request_site);
     CookieOptions options = CreateCookieOptions(
-        same_site_context, request_->same_party_cookie_context_type(),
+        same_site_context, request_->same_party_context(),
         request_->isolation_info(), is_in_nontrivial_first_party_set);
 
     UMA_HISTOGRAM_ENUMERATION(
@@ -608,80 +615,85 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
     const CookieAccessResultList& excluded_list) {
   DCHECK(request_->maybe_sent_cookies().empty());
 
-  bool can_get_cookies =
-      (request_info_.privacy_mode == PRIVACY_MODE_DISABLED && CanGetCookies());
-  if (!cookies_with_access_result_list.empty() && can_get_cookies) {
-    std::string cookie_line =
-        CanonicalCookie::BuildCookieLine(cookies_with_access_result_list);
-    UMA_HISTOGRAM_COUNTS_10000("Cookie.HeaderLength", cookie_line.length());
-    request_info_.extra_headers.SetHeader(HttpRequestHeaders::kCookie,
-                                          cookie_line);
+  CookieAccessResultList maybe_included_cookies =
+      cookies_with_access_result_list;
+  CookieAccessResultList excluded_cookies = excluded_list;
 
-    // TODO(crbug.com/1031664): Reduce the number of times the cookie list is
-    // iterated over. Get metrics for every cookie which is included.
-    for (const auto& c : cookies_with_access_result_list) {
-      bool request_is_secure = request_->url().SchemeIsCryptographic();
-      net::CookieSourceScheme cookie_scheme = c.cookie.SourceScheme();
-      CookieRequestScheme cookie_request_schemes;
+  if (request_info_.privacy_mode != PRIVACY_MODE_DISABLED) {
+    // If cookies are blocked (without our needing to consult the delegate), we
+    // move them to `excluded_cookies` and ensure that they have the correct
+    // exclusion reason.
+    excluded_cookies.insert(
+        excluded_cookies.end(),
+        std::make_move_iterator(maybe_included_cookies.begin()),
+        std::make_move_iterator(maybe_included_cookies.end()));
+    maybe_included_cookies.clear();
+    for (auto& cookie : excluded_cookies) {
+      cookie.access_result.status.AddExclusionReason(
+          CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+    }
+  } else {
+    AnnotateAndMoveUserBlockedCookies(maybe_included_cookies, excluded_cookies);
+    if (!maybe_included_cookies.empty()) {
+      std::string cookie_line =
+          CanonicalCookie::BuildCookieLine(maybe_included_cookies);
+      UMA_HISTOGRAM_COUNTS_10000("Cookie.HeaderLength", cookie_line.length());
+      request_info_.extra_headers.SetHeader(HttpRequestHeaders::kCookie,
+                                            cookie_line);
 
-      switch (cookie_scheme) {
-        case net::CookieSourceScheme::kSecure:
-          cookie_request_schemes =
-              request_is_secure
-                  ? CookieRequestScheme::kSecureSetSecureRequest
-                  : CookieRequestScheme::kSecureSetNonsecureRequest;
-          break;
+      // TODO(crbug.com/1031664): Reduce the number of times the cookie list
+      // is iterated over. Get metrics for every cookie which is included.
+      for (const auto& c : maybe_included_cookies) {
+        bool request_is_secure = request_->url().SchemeIsCryptographic();
+        net::CookieSourceScheme cookie_scheme = c.cookie.SourceScheme();
+        CookieRequestScheme cookie_request_schemes;
 
-        case net::CookieSourceScheme::kNonSecure:
-          cookie_request_schemes =
-              request_is_secure
-                  ? CookieRequestScheme::kNonsecureSetSecureRequest
-                  : CookieRequestScheme::kNonsecureSetNonsecureRequest;
-          break;
+        switch (cookie_scheme) {
+          case net::CookieSourceScheme::kSecure:
+            cookie_request_schemes =
+                request_is_secure
+                    ? CookieRequestScheme::kSecureSetSecureRequest
+                    : CookieRequestScheme::kSecureSetNonsecureRequest;
+            break;
 
-        case net::CookieSourceScheme::kUnset:
-          cookie_request_schemes = CookieRequestScheme::kUnsetCookieScheme;
-          break;
+          case net::CookieSourceScheme::kNonSecure:
+            cookie_request_schemes =
+                request_is_secure
+                    ? CookieRequestScheme::kNonsecureSetSecureRequest
+                    : CookieRequestScheme::kNonsecureSetNonsecureRequest;
+            break;
+
+          case net::CookieSourceScheme::kUnset:
+            cookie_request_schemes = CookieRequestScheme::kUnsetCookieScheme;
+            break;
+        }
+
+        UMA_HISTOGRAM_ENUMERATION("Cookie.CookieSchemeRequestScheme",
+                                  cookie_request_schemes);
       }
-
-      UMA_HISTOGRAM_ENUMERATION("Cookie.CookieSchemeRequestScheme",
-                                cookie_request_schemes);
     }
   }
 
-  // Report status for things in |excluded_list| and
-  // |cookies_with_access_result_list|
-  // after the delegate got a chance to block them.
-  CookieAccessResultList maybe_sent_cookies = excluded_list;
+  CookieAccessResultList maybe_sent_cookies = std::move(excluded_cookies);
+  maybe_sent_cookies.insert(
+      maybe_sent_cookies.end(),
+      std::make_move_iterator(maybe_included_cookies.begin()),
+      std::make_move_iterator(maybe_included_cookies.end()));
+  maybe_included_cookies.clear();
 
   // If the cookie was excluded due to the fix for crbug.com/1166211, this
   // applies a warning to the status that will show up in the netlog.
   // TODO(crbug.com/1166211): Remove once no longer needed.
   if (options.same_site_cookie_context().AffectedByBugfix1166211()) {
     for (auto& cookie_with_access_result : maybe_sent_cookies) {
-      options.same_site_cookie_context()
-          .MaybeApplyBugfix1166211WarningToStatusAndLogHistogram(
-              cookie_with_access_result.access_result.status);
+      if (!cookie_with_access_result.access_result.status
+               .HasOnlyExclusionReason(CookieInclusionStatus::ExclusionReason::
+                                           EXCLUDE_USER_PREFERENCES)) {
+        options.same_site_cookie_context()
+            .MaybeApplyBugfix1166211WarningToStatusAndLogHistogram(
+                cookie_with_access_result.access_result.status);
+      }
     }
-  }
-
-  if (!can_get_cookies) {
-    for (CookieAccessResultList::iterator it = maybe_sent_cookies.begin();
-         it != maybe_sent_cookies.end(); ++it) {
-      it->access_result.status.AddExclusionReason(
-          CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
-    }
-  }
-
-  for (const auto& cookie_with_access_result :
-       cookies_with_access_result_list) {
-    CookieAccessResult access_result = cookie_with_access_result.access_result;
-    if (!can_get_cookies) {
-      access_result.status.AddExclusionReason(
-          CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
-    }
-    maybe_sent_cookies.push_back(
-        {cookie_with_access_result.cookie, access_result});
   }
 
   if (request_->net_log().IsCapturing()) {
@@ -705,7 +717,9 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
 
 void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   DCHECK(set_cookie_access_result_list_.empty());
-  DCHECK_EQ(0, num_cookie_lines_left_);
+  // TODO(crbug.com/1186863): Turn this CHECK into DCHECK once the investigation
+  // is done.
+  CHECK_EQ(0, num_cookie_lines_left_);
 
   // End of the call started in OnStartCompleted.
   OnCallToDelegateComplete();
@@ -750,7 +764,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   bool is_in_nontrivial_first_party_set =
       delegate && delegate->IsInNontrivialFirstPartySet(request_site);
   CookieOptions options = CreateCookieOptions(
-      same_site_context, request_->same_party_cookie_context_type(),
+      same_site_context, request_->same_party_context(),
       request_->isolation_info(), is_in_nontrivial_first_party_set);
 
   UMA_HISTOGRAM_ENUMERATION(
@@ -1425,10 +1439,18 @@ void URLRequestHttpJob::RecordTimer() {
   // bound to connections and which connections offer resumption. We look at all
   // TLS 1.3 responses for an apples-to-apples comparison.
   //
+  // Additionally record metrics for Google hosts. Most Google hosts are known
+  // to implement 0-RTT, so this gives more targeted metrics as we initially
+  // roll out client support.
+  //
   // TODO(https://crbug.com/641225): Remove these metrics after launching 0-RTT.
   if (transaction_ && transaction_->GetResponseInfo() &&
       IsTLS13OverTCP(*transaction_->GetResponseInfo())) {
     base::UmaHistogramMediumTimes("Net.HttpTimeToFirstByte.TLS13", to_start);
+    if (HasGoogleHost(request()->url())) {
+      base::UmaHistogramMediumTimes("Net.HttpTimeToFirstByte.TLS13.Google",
+                                    to_start);
+    }
   }
 }
 
@@ -1499,6 +1521,10 @@ void URLRequestHttpJob::RecordCompletionHistograms(CompletionCause reason) {
     // 0-RTT.
     if (IsTLS13OverTCP(*response_info_)) {
       base::UmaHistogramTimes("Net.HttpJob.TotalTime.TLS13", total_time);
+      if (is_https_google) {
+        base::UmaHistogramTimes("Net.HttpJob.TotalTime.TLS13.Google",
+                                total_time);
+      }
     }
 
     UMA_HISTOGRAM_CUSTOM_COUNTS("Net.HttpJob.PrefilterBytesRead",

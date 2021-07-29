@@ -19,6 +19,7 @@ group("docs") {
     "./icon_button",
     "./icon_component",
     "./issue_counter",
+    "./issue_link_icon",
     "./layout_pane",
     "./legacy_color_invert",
     "./linear_memory_inspector",
@@ -28,10 +29,13 @@ group("docs") {
     "./markdown_view",
     "./perf_piechart",
     "./report",
+    "./request_link_icon",
     "./style_property_editor",
     "./survey_link",
     "./theme_colors",
     "./tree_outline",
+    "./trust_tokens_view",
+    "./user_agent_client_hints",
     "./webvitals",
   ]
 }

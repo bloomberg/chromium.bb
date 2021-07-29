@@ -69,8 +69,8 @@ class CORE_EXPORT SVGImageForContainer final : public Image {
         image, container_size_without_zoom, zoom, url));
   }
 
-  IntSize Size() const override;
-  FloatSize SizeAsFloat(RespectImageOrientationEnum) const override;
+  IntSize SizeWithConfig(SizeConfig) const override;
+  FloatSize SizeWithConfigAsFloat(SizeConfig) const override;
 
   bool HasIntrinsicSize() const override { return image_->HasIntrinsicSize(); }
 
@@ -92,12 +92,9 @@ class CORE_EXPORT SVGImageForContainer final : public Image {
 
  protected:
   void DrawPattern(GraphicsContext&,
-                   const FloatRect&,
-                   const FloatSize&,
-                   const FloatPoint&,
-                   SkBlendMode,
-                   const FloatRect&,
-                   const FloatSize& repeat_spacing,
+                   const cc::PaintFlags&,
+                   const FloatRect& dest_rect,
+                   const ImageTilingInfo&,
                    RespectImageOrientationEnum) override;
 
  private:

@@ -204,12 +204,12 @@ class PagePopupChromeClient final : public EmptyChromeClient {
         timeline->GetAnimationTimeline());
   }
 
-  const ScreenInfo& GetScreenInfo(LocalFrame&) const override {
+  const display::ScreenInfo& GetScreenInfo(LocalFrame&) const override {
     // LocalFrame is ignored since there is only 1 frame in a popup.
     return popup_->GetScreenInfo();
   }
 
-  const ScreenInfos& GetScreenInfos(LocalFrame&) const override {
+  const display::ScreenInfos& GetScreenInfos(LocalFrame&) const override {
     // LocalFrame is ignored since there is only 1 frame in a popup.
     return popup_->GetScreenInfos();
   }
@@ -250,6 +250,13 @@ class PagePopupChromeClient final : public EmptyChromeClient {
                                 const String& tooltip_text,
                                 TextDirection dir) override {
     popup_->widget_base_->UpdateTooltipUnderCursor(tooltip_text, dir);
+  }
+
+  void UpdateTooltipFromKeyboard(LocalFrame&,
+                                 const String& tooltip_text,
+                                 TextDirection dir,
+                                 const gfx::Rect& bounds) override {
+    popup_->widget_base_->UpdateTooltipFromKeyboard(tooltip_text, dir, bounds);
   }
 
   void InjectGestureScrollEvent(LocalFrame& local_frame,
@@ -411,10 +418,8 @@ void WebPagePopupImpl::Initialize(WebViewImpl* opener_web_view,
   DCHECK(frame->DomWindow());
   DCHECK_EQ(popup_client_->OwnerElement().GetDocument().ExistingAXObjectCache(),
             frame->GetDocument()->ExistingAXObjectCache());
-  if (AXObjectCache* cache = frame->GetDocument()->ExistingAXObjectCache()) {
-    cache->InitializePopup(frame->GetDocument());
+  if (AXObjectCache* cache = frame->GetDocument()->ExistingAXObjectCache())
     cache->ChildrenChanged(&popup_client_->OwnerElement());
-  }
 
   page_->AnimationHostInitialized(*widget_base_->AnimationHost(), nullptr);
 
@@ -444,7 +449,7 @@ void WebPagePopupImpl::DidSetBounds() {
 
 void WebPagePopupImpl::InitializeCompositing(
     scheduler::WebAgentGroupScheduler& agent_group_scheduler,
-    const ScreenInfos& screen_infos,
+    const display::ScreenInfos& screen_infos,
     const cc::LayerTreeSettings* settings) {
   // Careful Initialize() is called after InitializeCompositing, so don't do
   // much work here.
@@ -515,19 +520,19 @@ void WebPagePopupImpl::ApplyVisualProperties(
   widget_base_->UpdateVisualProperties(visual_properties);
 }
 
-const ScreenInfo& WebPagePopupImpl::GetScreenInfo() {
+const display::ScreenInfo& WebPagePopupImpl::GetScreenInfo() {
   return widget_base_->GetScreenInfo();
 }
 
-const ScreenInfos& WebPagePopupImpl::GetScreenInfos() {
+const display::ScreenInfos& WebPagePopupImpl::GetScreenInfos() {
   return widget_base_->screen_infos();
 }
 
-const ScreenInfo& WebPagePopupImpl::GetOriginalScreenInfo() {
+const display::ScreenInfo& WebPagePopupImpl::GetOriginalScreenInfo() {
   return widget_base_->GetScreenInfo();
 }
 
-const ScreenInfos& WebPagePopupImpl::GetOriginalScreenInfos() {
+const display::ScreenInfos& WebPagePopupImpl::GetOriginalScreenInfos() {
   return widget_base_->screen_infos();
 }
 
@@ -706,9 +711,8 @@ void WebPagePopupImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
   PageWidgetDelegate::Animate(*page_, base::TimeTicks::Now());
 }
 
-bool WebPagePopupImpl::WillHandleGestureEvent(const WebGestureEvent& event) {
-  return false;
-}
+void WebPagePopupImpl::WillHandleGestureEvent(const WebGestureEvent& event,
+                                              bool* suppress) {}
 
 void WebPagePopupImpl::WillHandleMouseEvent(const WebMouseEvent& event) {}
 
@@ -970,9 +974,6 @@ void WebPagePopupImpl::ClosePopup() {
   }
 
   closing_ = true;
-
-  if (AXObjectCache* cache = MainFrame().GetDocument()->ExistingAXObjectCache())
-    cache->DisposePopup(MainFrame().GetDocument());
 
   {
     // This function can be called in EventDispatchForbiddenScope for the main

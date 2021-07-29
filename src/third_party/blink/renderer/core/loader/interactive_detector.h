@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_INTERACTIVE_DETECTOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_INTERACTIVE_DETECTOR_H_
 
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -29,6 +28,8 @@ class UkmRecorder;
 }  // namespace ukm
 
 namespace blink {
+
+CORE_EXPORT extern const base::Feature kFixFirstInputDelayForDesktop;
 
 class Document;
 class Event;
@@ -60,14 +61,14 @@ class CORE_EXPORT InteractiveDetector
   class CORE_EXPORT NetworkActivityChecker {
    public:
     explicit NetworkActivityChecker(Document* document) : document_(document) {}
+    NetworkActivityChecker(const NetworkActivityChecker&) = delete;
+    NetworkActivityChecker& operator=(const NetworkActivityChecker&) = delete;
 
     virtual int GetActiveConnections();
     virtual ~NetworkActivityChecker() = default;
 
    private:
     WeakPersistent<Document> document_;
-
-    DISALLOW_COPY_AND_ASSIGN(NetworkActivityChecker);
   };
 
   static InteractiveDetector* From(Document&);
@@ -76,6 +77,8 @@ class CORE_EXPORT InteractiveDetector
   static const char* SupplementName();
 
   explicit InteractiveDetector(Document&, NetworkActivityChecker*);
+  InteractiveDetector(const InteractiveDetector&) = delete;
+  InteractiveDetector& operator=(const InteractiveDetector&) = delete;
   ~InteractiveDetector() override = default;
 
   // Calls to base::TimeTicks::Now().since_origin().InSecondsF() is expensive,
@@ -120,7 +123,9 @@ class CORE_EXPORT InteractiveDetector
   absl::optional<base::TimeDelta> GetFirstScrollDelay() const;
 
   // Process an input event, updating first_input_delay and
-  // first_input_timestamp if needed.
+  // first_input_timestamp if needed. The event types we care about are
+  // pointerdown, pointerup, mousedown, keydown, click, mouseup. And we
+  // check the event types in the caller of this function.
   void HandleForInputDelay(const Event&,
                            base::TimeTicks event_platform_timestamp,
                            base::TimeTicks processing_start);
@@ -240,13 +245,13 @@ class CORE_EXPORT InteractiveDetector
   // for the previous pointer down. Only non-zero if we've received a pointer
   // down event, and haven't yet reported the first input delay.
   base::TimeDelta pending_pointerdown_delay_;
+  base::TimeDelta pending_mousedown_delay_;
   // The timestamp of a pending pointerdown event. Valid in the same cases as
   // pending_pointerdown_delay_.
   base::TimeTicks pending_pointerdown_timestamp_;
+  base::TimeTicks pending_mousedown_timestamp_;
 
   ukm::UkmRecorder* ukm_recorder_;
-
-  DISALLOW_COPY_AND_ASSIGN(InteractiveDetector);
 };
 
 }  // namespace blink

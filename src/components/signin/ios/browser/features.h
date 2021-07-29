@@ -9,14 +9,18 @@
 
 namespace signin {
 
-// Features to trigger the startup sign-in promo at boot.
-extern const base::Feature kForceStartupSigninPromo;
-
 // This feature simplify sign-out UI in the account table view.
 extern const base::Feature kSimplifySignOutIOS;
 
 // Returns true if the startup sign-in promo should be displayed at boot.
 bool ForceStartupSigninPromo();
+
+// Returns true if extended sync promos should be disabled unconditionally.
+bool ForceDisableExtendedSyncPromos();
+
+// Returns true if the Chrome client can read the extended sync promo
+// capability.
+bool ExtendedSyncPromosCapabilityEnabled();
 
 // Feature controlling whether to restore GAIA cookies when the user explicitly
 // requests to sign in to a Google service.

@@ -6,7 +6,6 @@
 #define CHROMECAST_RENDERER_CAST_CONTENT_RENDERER_CLIENT_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -14,6 +13,7 @@
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/common/mojom/application_media_capabilities.mojom.h"
 #include "chromecast/renderer/cast_activity_url_filter_manager.h"
+#include "chromecast/renderer/feature_manager_on_associated_interface.h"
 #include "chromecast/renderer/identification_settings_manager_store.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "media/base/audio_codecs.h"
@@ -53,7 +53,7 @@ class CastContentRendererClient
 
   // ContentRendererClient implementation:
   void RenderThreadStarted() override;
-  void RenderViewCreated(content::RenderView* render_view) override;
+  void WebViewCreated(blink::WebView* web_view) override;
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
   void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
   void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
@@ -94,6 +94,11 @@ class CastContentRendererClient
   CastActivityUrlFilterManager* activity_url_filter_manager() {
     return activity_url_filter_manager_.get();
   }
+
+  // TODO(guohuideng): Move |feature_manager_on_associated_interface_| to
+  // private when we can.
+  FeatureManagerOnAssociatedInterface*
+      main_frame_feature_manager_on_associated_interface_{nullptr};
 
  private:
   // mojom::ApplicationMediaCapabilitiesObserver implementation:

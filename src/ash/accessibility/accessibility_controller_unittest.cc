@@ -8,12 +8,12 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_observer.h"
-#include "ash/accessibility/magnifier/docked_magnifier_controller_impl.h"
+#include "ash/accessibility/magnifier/docked_magnifier_controller.h"
 #include "ash/accessibility/sticky_keys/sticky_keys_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
+#include "ash/constants/ash_constants.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/keyboard/ui/keyboard_util.h"
-#include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_pref_service_provider.h"
 #include "ash/shell.h"
@@ -24,6 +24,7 @@
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "ui/accessibility/aura/aura_window_properties.h"
 #include "ui/message_center/message_center.h"
 
 using message_center::MessageCenter;
@@ -56,6 +57,7 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilityCursorHighlightEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityDictationEnabled));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityDictationLocale));
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilityFocusHighlightEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityHighContrastEnabled));
@@ -1053,7 +1055,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
 
   AccessibilityControllerImpl* accessibility =
       Shell::Get()->accessibility_controller();
-  DockedMagnifierControllerImpl* docked_magnifier =
+  DockedMagnifierController* docked_magnifier =
       Shell::Get()->docked_magnifier_controller();
 
   SessionControllerImpl* session = Shell::Get()->session_controller();
@@ -1200,6 +1202,33 @@ TEST_P(AccessibilityControllerSigninTest, SwitchAccessPrefsSyncToSignIn) {
   // has no effect on the user profile.
   signin_prefs->Set(kAccessibilitySwitchAccessEnabled, base::Value(false));
   EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilitySwitchAccessEnabled));
+}
+
+TEST_P(AccessibilityControllerSigninTest,
+       UpdatesNonLoginWindowVisibilityOnLogin) {
+  aura::Window* container =
+      Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                          kShellWindowId_NonLockScreenContainersContainer);
+
+  BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
+  EXPECT_TRUE(
+      container->GetProperty(ui::kAXConsiderInvisibleAndIgnoreChildren));
+
+  UnblockUserSession();
+  EXPECT_FALSE(
+      container->GetProperty(ui::kAXConsiderInvisibleAndIgnoreChildren));
+
+  BlockUserSession(BLOCKED_BY_LOGIN_SCREEN);
+  EXPECT_TRUE(
+      container->GetProperty(ui::kAXConsiderInvisibleAndIgnoreChildren));
+
+  UnblockUserSession();
+  EXPECT_FALSE(
+      container->GetProperty(ui::kAXConsiderInvisibleAndIgnoreChildren));
+
+  BlockUserSession(BLOCKED_BY_USER_ADDING_SCREEN);
+  EXPECT_TRUE(
+      container->GetProperty(ui::kAXConsiderInvisibleAndIgnoreChildren));
 }
 
 }  // namespace ash

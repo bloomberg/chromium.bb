@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
+#include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
 
 #include <memory>
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/system/sys_info.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_chromeos_version_info.h"
 #include "base/test/task_environment.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
+#include "chrome/browser/ash/policy/handlers/minimum_version_policy_test_helpers.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
-#include "chrome/browser/chromeos/policy/minimum_version_policy_test_helpers.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/common/pref_names.h"
@@ -69,7 +69,7 @@ class UpdateRequiredNotificationTest
   MOCK_CONST_METHOD0(IsLoginSessionState, bool());
   MOCK_CONST_METHOD0(IsKioskMode, bool());
   MOCK_CONST_METHOD0(IsLoginInProgress, bool());
-  MOCK_CONST_METHOD0(IsEnterpriseManaged, bool());
+  MOCK_CONST_METHOD0(IsDeviceEnterpriseManaged, bool());
   MOCK_CONST_METHOD0(IsUserLoggedIn, bool());
 
   void SetCurrentVersionString(const std::string& version);
@@ -120,7 +120,8 @@ class UpdateRequiredNotificationTest
 
 UpdateRequiredNotificationTest::UpdateRequiredNotificationTest()
     : local_state_(TestingBrowserProcess::GetGlobal()) {
-  ON_CALL(*this, IsEnterpriseManaged).WillByDefault(testing::Return(true));
+  ON_CALL(*this, IsDeviceEnterpriseManaged)
+      .WillByDefault(testing::Return(true));
   ON_CALL(*this, IsUserLoggedIn).WillByDefault(testing::Return(true));
 }
 
@@ -366,8 +367,8 @@ TEST_F(UpdateRequiredNotificationTest, LastHourEolNotifications) {
 }
 
 TEST_F(UpdateRequiredNotificationTest, ChromeboxNotifications) {
-  base::SysInfo::SetChromeOSVersionInfoForTest("DEVICETYPE=CHROMEBOX",
-                                               base::Time::Now());
+  base::test::ScopedChromeOSVersionInfo version("DEVICETYPE=CHROMEBOX",
+                                                base::Time::Now());
   // Set device state to end of life reached.
   update_engine()->set_eol_date(base::DefaultClock::GetInstance()->Now() -
                                 base::TimeDelta::FromDays(kLongWarningInDays));

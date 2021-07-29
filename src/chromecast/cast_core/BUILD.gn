@@ -4,20 +4,156 @@
 
 import("//chromecast/chromecast.gni")
 
-cast_source_set("cast_core") {
+cast_source_set("grpc_support") {
+  sources = [
+    "grpc_method.cc",
+    "grpc_method.h",
+    "grpc_server.cc",
+    "grpc_server.h",
+    "simple_async_grpc.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//third_party/grpc:grpc++",
+  ]
+}
+
+cast_source_set("grpc_impl") {
+  sources = [
+    "runtime_application_service_grpc_impl.cc",
+    "runtime_application_service_grpc_impl.h",
+    "runtime_message_port_application_service_grpc_impl.cc",
+    "runtime_message_port_application_service_grpc_impl.h",
+    "runtime_service_grpc_impl.cc",
+    "runtime_service_grpc_impl.h",
+  ]
+
+  public_deps = [
+    ":grpc_support",
+    "//base",
+    "//third_party/grpc:grpc++",
+    "//third_party/openscreen/src/cast/cast_core/api:runtime_application_service_proto",
+    "//third_party/openscreen/src/cast/cast_core/api:runtime_message_port_application_service_proto",
+    "//third_party/openscreen/src/cast/cast_core/api:runtime_service_proto",
+  ]
+}
+
+cast_source_set("renderer") {
+  sources = [
+    "cast_runtime_content_renderer_client.cc",
+    "cast_runtime_content_renderer_client.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/renderer",
+    "//components/cast_streaming/renderer",
+    "//content/public/renderer",
+    "//media",
+  ]
+}
+
+cast_source_set("browser") {
+  sources = [
+    "cast_runtime_content_browser_client.cc",
+    "cast_runtime_content_browser_client.h",
+  ]
+
+  deps = [
+    ":runtime_service",
+    "//base",
+    "//chromecast/browser",
+    "//chromecast/common:cors_exempt_headers",
+  ]
+
+  if (chromecast_branding == "public") {
+    sources += [ "cast_runtime_content_browser_client_simple.cc" ]
+  }
+}
+
+cast_source_set("streaming_receiver_session_client") {
+  sources = [
+    "streaming_receiver_session_client.cc",
+    "streaming_receiver_session_client.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//chromecast/browser:public",
+    "//components/cast/message_port",
+    "//components/cast_streaming/browser",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/shared:platform_info_serializer",
+    "//components/cast/message_port:message_port_core",
+    "//components/cast_streaming/public",
+    "//components/cast_streaming/public/mojom",
+    "//content/public/browser",
+    "//mojo/public/cpp/bindings",
+    "//third_party/blink/public/common:headers",
+  ]
+}
+
+cast_source_set("runtime_service") {
   sources = [
     "cast_runtime_service.cc",
     "cast_runtime_service.h",
   ]
 
-  if (!enable_cast_media_runtime) {
+  if (chromecast_branding == "public") {
     sources += [ "cast_runtime_service_simple.cc" ]
   }
 
   deps = [
     "//base",
+    "//chromecast:chromecast_buildflags",
     "//chromecast/service",
   ]
 
   public_deps = [ "//chromecast/media/cma/backend/proxy:headers" ]
+}
+
+cast_source_set("cast_core") {
+  sources = []
+  deps = [ ":runtime_service" ]
+
+  if (enable_cast_media_runtime) {
+    deps += [
+      ":browser",
+      ":renderer",
+    ]
+  }
+}
+
+if (enable_cast_media_runtime) {
+  cast_executable("core_runtime_simple") {
+    sources = [ "cast_runtime_main.cc" ]
+
+    deps = [
+      ":cast_core",
+      "//chromecast/app",
+      "//chromecast/base:default_create_sys_info",
+      "//chromecast/browser:simple_main_parts",
+      "//chromecast/utility:simple_client",
+      "//content/public/app",
+    ]
+  }
+}
+
+test("cast_cast_core_unittests") {
+  sources = [ "streaming_receiver_session_client_unittest.cc" ]
+
+  deps = [
+    ":streaming_receiver_session_client",
+    "//base/test:test_support",
+    "//chromecast/shared:platform_info_serializer",
+    "//components/cast_streaming/browser",
+    "//components/cast_streaming/public/mojom",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//testing/gtest:gtest_main",
+  ]
 }

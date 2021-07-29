@@ -7,6 +7,8 @@
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
+#include <memory>
+
 #include "include/cef_app.h"
 
 @class EventHandler;
@@ -19,11 +21,11 @@ class MainMessageLoopExternalPumpMac : public MainMessageLoopExternalPump {
   ~MainMessageLoopExternalPumpMac();
 
   // MainMessageLoopStd methods:
-  void Quit() OVERRIDE;
-  int Run() OVERRIDE;
+  void Quit() override;
+  int Run() override;
 
   // MainMessageLoopExternalPump methods:
-  void OnScheduleMessagePumpWork(int64 delay_ms) OVERRIDE;
+  void OnScheduleMessagePumpWork(int64 delay_ms) override;
 
   // Internal methods used for processing the event callbacks. They are public
   // for simplicity but should not be used directly.
@@ -32,9 +34,9 @@ class MainMessageLoopExternalPumpMac : public MainMessageLoopExternalPump {
 
  protected:
   // MainMessageLoopExternalPump methods:
-  void SetTimer(int64 delay_ms) OVERRIDE;
-  void KillTimer() OVERRIDE;
-  bool IsTimerPending() OVERRIDE { return timer_ != nil; }
+  void SetTimer(int64 delay_ms) override;
+  void KillTimer() override;
+  bool IsTimerPending() override { return timer_ != nil; }
 
  private:
   // Owner thread that will run events.
@@ -173,9 +175,9 @@ void MainMessageLoopExternalPumpMac::KillTimer() {
 }
 
 // static
-scoped_ptr<MainMessageLoopExternalPump> MainMessageLoopExternalPump::Create() {
-  return scoped_ptr<MainMessageLoopExternalPump>(
-      new MainMessageLoopExternalPumpMac());
+std::unique_ptr<MainMessageLoopExternalPump>
+MainMessageLoopExternalPump::Create() {
+  return std::make_unique<MainMessageLoopExternalPumpMac>();
 }
 
 }  // namespace client

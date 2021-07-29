@@ -300,15 +300,6 @@ TEST(AudioBufferTest, ReadBitstream) {
   EXPECT_EQ(frames, bus->GetBitstreamFrames());
   EXPECT_EQ(data_size, bus->GetBitstreamDataSize());
   VerifyBitstreamAudioBus(bus.get(), data_size, 1, 1);
-
-#if GTEST_HAS_DEATH_TEST
-  auto vector_backing = AudioBus::Create(channels, frames);
-  std::vector<float*> wrapped_channels =
-      WrapChannelsAsVector(vector_backing.get());
-
-  // ReadAllFrames() does not support bitstream formats.
-  EXPECT_DCHECK_DEATH(buffer->ReadAllFrames(wrapped_channels));
-#endif  // GTEST_HAS_DEATH_TEST
 }
 
 TEST(AudioBufferTest, ReadU8) {
@@ -327,12 +318,6 @@ TEST(AudioBufferTest, ReadU8) {
   bus->Zero();
   for (int i = 0; i < frames; ++i)
     buffer->ReadFrames(1, i, i, bus.get());
-  VerifyBus(bus.get(), frames, 0, 1.0f / 127.0f);
-
-  // Verify ReadAllFrames() works for U8.
-  bus->Zero();
-  std::vector<float*> wrapped_channels = WrapChannelsAsVector(bus.get());
-  buffer->ReadAllFrames(wrapped_channels);
   VerifyBus(bus.get(), frames, 0, 1.0f / 127.0f);
 }
 
@@ -355,13 +340,6 @@ TEST(AudioBufferTest, ReadS16) {
     buffer->ReadFrames(1, i, i, bus.get());
   VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int16_t>::max(),
             1.0f / std::numeric_limits<int16_t>::max());
-
-  // Verify ReadAllFrames() works for S16.
-  bus->Zero();
-  std::vector<float*> wrapped_channels = WrapChannelsAsVector(bus.get());
-  buffer->ReadAllFrames(wrapped_channels);
-  VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int16_t>::max(),
-            1.0f / std::numeric_limits<int16_t>::max());
 }
 
 TEST(AudioBufferTest, ReadS32) {
@@ -374,21 +352,14 @@ TEST(AudioBufferTest, ReadS32) {
                                kSampleRate, 1, 1, frames, start_time);
   std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
   buffer->ReadFrames(frames, 0, 0, bus.get());
-  VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int32_t>::max(),
-            1.0f / std::numeric_limits<int32_t>::max());
+  constexpr float kIncrement =
+      1.0f / static_cast<float>(std::numeric_limits<int32_t>::max());
+  VerifyBus(bus.get(), frames, kIncrement, kIncrement);
 
   // Read second 10 frames.
   bus->Zero();
   buffer->ReadFrames(10, 10, 0, bus.get());
-  VerifyBus(bus.get(), 10, 11.0f / std::numeric_limits<int32_t>::max(),
-            1.0f / std::numeric_limits<int32_t>::max());
-
-  // Verify ReadAllFrames() works for S32.
-  bus->Zero();
-  std::vector<float*> wrapped_channels = WrapChannelsAsVector(bus.get());
-  buffer->ReadAllFrames(wrapped_channels);
-  VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int32_t>::max(),
-            1.0f / std::numeric_limits<int32_t>::max());
+  VerifyBus(bus.get(), 10, 11.0f * kIncrement, kIncrement);
 }
 
 TEST(AudioBufferTest, ReadF32) {
@@ -412,12 +383,36 @@ TEST(AudioBufferTest, ReadF32) {
   bus->Zero();
   buffer->ReadFrames(10, 10, 0, bus.get());
   VerifyBus(bus.get(), 10, 11, 1, ValueType::kFloat);
+}
 
-  // Verify ReadAllFrames() works for F32.
+TEST(AudioBufferTest, ReadU8Planar) {
+  const ChannelLayout channel_layout = CHANNEL_LAYOUT_4_0;
+  const int channels = ChannelLayoutToChannelCount(channel_layout);
+  const int frames = 20;
+  constexpr float kIncrement = 1.0f / 127.0f;
+  constexpr float kStart = 0;
+  const base::TimeDelta start_time;
+  scoped_refptr<AudioBuffer> buffer =
+      MakeAudioBuffer<uint8_t>(kSampleFormatPlanarU8, channel_layout, channels,
+                               kSampleRate, 128, 1, frames, start_time);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
+  buffer->ReadFrames(10, 0, 0, bus.get());
+  VerifyBus(bus.get(), 10, kStart, kIncrement);
+
+  // Read all the frames backwards, one by one. ch[0] should be 20, 19, ...
   bus->Zero();
-  std::vector<float*> wrapped_channels = WrapChannelsAsVector(bus.get());
-  buffer->ReadAllFrames(wrapped_channels);
-  VerifyBus(bus.get(), frames, 1, 1, ValueType::kFloat);
+  for (int i = frames - 1; i >= 0; --i)
+    buffer->ReadFrames(1, i, i, bus.get());
+  VerifyBus(bus.get(), frames, kStart, kIncrement);
+
+  // Read 0 frames with different offsets. Existing data in AudioBus should be
+  // unchanged.
+  buffer->ReadFrames(0, 0, 0, bus.get());
+  VerifyBus(bus.get(), frames, kStart, kIncrement);
+  buffer->ReadFrames(0, 0, 10, bus.get());
+  VerifyBus(bus.get(), frames, kStart, kIncrement);
+  buffer->ReadFrames(0, 10, 0, bus.get());
+  VerifyBus(bus.get(), frames, kStart, kIncrement);
 }
 
 TEST(AudioBufferTest, ReadS16Planar) {
@@ -451,13 +446,37 @@ TEST(AudioBufferTest, ReadS16Planar) {
   buffer->ReadFrames(0, 10, 0, bus.get());
   VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int16_t>::max(),
             1.0f / std::numeric_limits<int16_t>::max());
+}
 
-  // Verify ReadAllFrames() works for S16Planar.
+TEST(AudioBufferTest, ReadS32Planar) {
+  const ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
+  const int channels = ChannelLayoutToChannelCount(channel_layout);
+  const int frames = 20;
+  constexpr float kIncrement =
+      1.0f / static_cast<float>(std::numeric_limits<int32_t>::max());
+  constexpr float kStart = kIncrement;
+  const base::TimeDelta start_time;
+  scoped_refptr<AudioBuffer> buffer =
+      MakeAudioBuffer<int32_t>(kSampleFormatPlanarS32, channel_layout, channels,
+                               kSampleRate, 1, 1, frames, start_time);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
+  buffer->ReadFrames(10, 0, 0, bus.get());
+  VerifyBus(bus.get(), 10, kStart, kIncrement);
+
+  // Read all the frames backwards, one by one. ch[0] should be 20, 19, ...
   bus->Zero();
-  std::vector<float*> wrapped_channels = WrapChannelsAsVector(bus.get());
-  buffer->ReadAllFrames(wrapped_channels);
-  VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int16_t>::max(),
-            1.0f / std::numeric_limits<int16_t>::max());
+  for (int i = frames - 1; i >= 0; --i)
+    buffer->ReadFrames(1, i, i, bus.get());
+  VerifyBus(bus.get(), frames, kStart, kIncrement);
+
+  // Read 0 frames with different offsets. Existing data in AudioBus should be
+  // unchanged.
+  buffer->ReadFrames(0, 0, 0, bus.get());
+  VerifyBus(bus.get(), frames, kStart, kIncrement);
+  buffer->ReadFrames(0, 0, 10, bus.get());
+  VerifyBus(bus.get(), frames, kStart, kIncrement);
+  buffer->ReadFrames(0, 10, 0, bus.get());
+  VerifyBus(bus.get(), frames, kStart, kIncrement);
 }
 
 TEST(AudioBufferTest, ReadF32Planar) {
@@ -486,12 +505,6 @@ TEST(AudioBufferTest, ReadF32Planar) {
   bus->Zero();
   buffer->ReadFrames(20, 50, 0, bus.get());
   VerifyBus(bus.get(), 20, 51, 1, ValueType::kFloat);
-
-  // Verify ReadAllFrames() works for F32Planar.
-  bus->Zero();
-  std::vector<float*> wrapped_channels = WrapChannelsAsVector(bus.get());
-  buffer->ReadAllFrames(wrapped_channels);
-  VerifyBus(bus.get(), frames, 1, 1, ValueType::kFloat);
 }
 
 TEST(AudioBufferTest, WrapOrCopyToAudioBus) {
@@ -547,10 +560,6 @@ TEST(AudioBufferTest, EmptyBuffer) {
   std::vector<float*> wrapped_channels = WrapChannelsAsVector(bus.get());
   for (float* wrapped_channel : wrapped_channels)
     memset(wrapped_channel, 123, frames * sizeof(float));
-
-  // Verify ReadAllFrames() overrites empty buffers.
-  buffer->ReadAllFrames(wrapped_channels);
-  VerifyBus(bus.get(), frames, 0, 0);
 }
 
 TEST(AudioBufferTest, TrimEmptyBuffer) {

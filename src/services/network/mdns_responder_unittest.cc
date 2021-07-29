@@ -152,13 +152,9 @@ class MockFailingMdnsSocketFactory : public net::MDnsSocketFactory {
   // primitive but failed sending;
   int FailToSend(const std::string& packet,
                  const std::string& address,
-                 net::CompletionRepeatingCallback callback) {
+                 net::CompletionOnceCallback callback) {
     OnSendTo(packet);
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            [](net::CompletionRepeatingCallback callback) { callback.Run(-1); },
-            callback));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(callback), -1));
     return -1;
   }
 
@@ -167,17 +163,14 @@ class MockFailingMdnsSocketFactory : public net::MDnsSocketFactory {
   // called.
   int MaybeBlockSend(const std::string& packet,
                      const std::string& address,
-                     net::CompletionRepeatingCallback callback) {
+                     net::CompletionOnceCallback callback) {
     OnSendTo(packet);
     if (block_send_) {
       blocked_packet_size_ = packet.size();
       blocked_send_callback_ = std::move(callback);
     } else {
       task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce([](net::CompletionRepeatingCallback callback,
-                            size_t packet_size) { callback.Run(packet_size); },
-                         callback, packet.size()));
+          FROM_HERE, base::BindOnce(std::move(callback), packet.size()));
     }
     return -1;
   }
@@ -190,7 +183,7 @@ class MockFailingMdnsSocketFactory : public net::MDnsSocketFactory {
   void ResumeSend() {
     DCHECK(block_send_);
     block_send_ = false;
-    blocked_send_callback_.Run(blocked_packet_size_);
+    std::move(blocked_send_callback_).Run(blocked_packet_size_);
   }
 
   // Emulates the asynchronous contract of invoking |callback| in the RecvFrom
@@ -198,20 +191,16 @@ class MockFailingMdnsSocketFactory : public net::MDnsSocketFactory {
   int FailToRecv(net::IOBuffer* buffer,
                  int size,
                  net::IPEndPoint* address,
-                 net::CompletionRepeatingCallback callback) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(
-                               [](net::CompletionRepeatingCallback callback) {
-                                 callback.Run(net::ERR_FAILED);
-                               },
-                               callback));
+                 net::CompletionOnceCallback callback) {
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), net::ERR_FAILED));
     return net::ERR_IO_PENDING;
   }
 
  private:
   bool block_send_ = false;
   size_t blocked_packet_size_ = 0;
-  net::CompletionRepeatingCallback blocked_send_callback_;
+  net::CompletionOnceCallback blocked_send_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
@@ -223,7 +212,7 @@ class MockFailingMdnsSocketFactory : public net::MDnsSocketFactory {
 // the NSEC records are placed in the Answer section with the address records in
 // the Answer section.
 TEST(CreateMdnsResponseTest, SingleARecordAnswer) {
-  const char response_data[]{
+  const uint8_t response_data[]{
       0x00, 0x00,  // mDNS response ID mus be zero.
       0x84, 0x00,  // flags, response with authoritative answer
       0x00, 0x00,  // number of questions
@@ -251,7 +240,8 @@ TEST(CreateMdnsResponseTest, SingleARecordAnswer) {
                                // length 1, bitmap with bit 1 set
   };
 
-  std::string expected_response(response_data, sizeof(response_data));
+  std::string expected_response(reinterpret_cast<const char*>(response_data),
+                                sizeof(response_data));
   std::string actual_response = CreateResolutionResponse(
       kDefaultTtl,
       {{"www.example.com", net::IPAddress(0xc0, 0xa8, 0x00, 0x01)}});
@@ -259,7 +249,7 @@ TEST(CreateMdnsResponseTest, SingleARecordAnswer) {
 }
 
 TEST(CreateMdnsResponseTest, SingleARecordGoodbye) {
-  const char response_data[]{
+  const uint8_t response_data[]{
       0x00, 0x00,  // mDNS response ID mus be zero.
       0x84, 0x00,  // flags, response with authoritative answer
       0x00, 0x00,  // number of questions
@@ -276,7 +266,8 @@ TEST(CreateMdnsResponseTest, SingleARecordGoodbye) {
       0xc0, 0xa8, 0x00, 0x01,  // 192.168.0.1
   };
 
-  std::string expected_response(response_data, sizeof(response_data));
+  std::string expected_response(reinterpret_cast<const char*>(response_data),
+                                sizeof(response_data));
   std::string actual_response = CreateResolutionResponse(
       base::TimeDelta(),
       {{"www.example.com", net::IPAddress(0xc0, 0xa8, 0x00, 0x01)}});
@@ -284,7 +275,7 @@ TEST(CreateMdnsResponseTest, SingleARecordGoodbye) {
 }
 
 TEST(CreateMdnsResponseTest, SingleQuadARecordAnswer) {
-  const char response_data[] = {
+  const uint8_t response_data[] = {
       0x00, 0x00,  // mDNS response ID mus be zero.
       0x84, 0x00,  // flags, response with authoritative answer
       0x00, 0x00,  // number of questions
@@ -311,7 +302,8 @@ TEST(CreateMdnsResponseTest, SingleQuadARecordAnswer) {
       0x08,  // type bit map of type AAAA: window block 0, bitmap
              // length 4, bitmap with bit 28 set
   };
-  std::string expected_response(response_data, sizeof(response_data));
+  std::string expected_response(reinterpret_cast<const char*>(response_data),
+                                sizeof(response_data));
   std::string actual_response = CreateResolutionResponse(
       kDefaultTtl,
       {{"example.org",
@@ -321,7 +313,7 @@ TEST(CreateMdnsResponseTest, SingleQuadARecordAnswer) {
 }
 
 TEST(CreateMdnsResponseTest, SingleNsecRecordAnswer) {
-  const char response_data[] = {
+  const uint8_t response_data[] = {
       0x00, 0x00,  // mDNS response ID mus be zero.
       0x84, 0x00,  // flags, response with authoritative answer
       0x00, 0x00,  // number of questions
@@ -348,7 +340,8 @@ TEST(CreateMdnsResponseTest, SingleNsecRecordAnswer) {
       0x00, 0x04,              // rdlength, 32 bits
       0xc0, 0xa8, 0x00, 0x01,  // 192.168.0.1
   };
-  std::string expected_response(response_data, sizeof(response_data));
+  std::string expected_response(reinterpret_cast<const char*>(response_data),
+                                sizeof(response_data));
   std::string actual_response = CreateNegativeResponse(
       {{"www.example.com", net::IPAddress(0xc0, 0xa8, 0x00, 0x01)}});
   EXPECT_EQ(expected_response, actual_response);
@@ -356,7 +349,7 @@ TEST(CreateMdnsResponseTest, SingleNsecRecordAnswer) {
 
 TEST(CreateMdnsResponseTest,
      SingleTxtRecordAnswerToMdnsNameGeneratorServiceQuery) {
-  const char response_data[] = {
+  const uint8_t response_data[] = {
       0x00, 0x00,  // mDNS response ID mus be zero.
       0x84, 0x00,  // flags, response with authoritative answer
       0x00, 0x00,  // number of questions
@@ -376,7 +369,8 @@ TEST(CreateMdnsResponseTest,
       'a',  'l',  0x15, 'n',  'a',  'm', 'e',  '1', '=', 'w', 'w', 'w',
       '.',  'e',  'x',  'a',  'm',  'p', 'l',  'e', '.', 'c', 'o', 'm',
       0x09, 't',  'x',  't',  'v',  'e', 'r',  's', '=', '1'};
-  std::string expected_response(response_data, sizeof(response_data));
+  std::string expected_response(reinterpret_cast<const char*>(response_data),
+                                sizeof(response_data));
   std::string actual_response = CreateResponseToMdnsNameGeneratorServiceQuery(
       kDefaultTtl, {"1.local", "www.example.com"});
   EXPECT_EQ(expected_response, actual_response);
@@ -996,8 +990,7 @@ TEST_F(MdnsResponderTest, AnnouncementRetriedAfterSendFailure) {
         ON_CALL(*socket, SendToInternal(_, _, _))
             .WillByDefault(Invoke(&failing_socket_factory_,
                                   &MockFailingMdnsSocketFactory::FailToSend));
-        ON_CALL(*socket, RecvFromInternal(_, _, _, _))
-            .WillByDefault(Return(-1));
+        ON_CALL(*socket, RecvFrom(_, _, _, _)).WillByDefault(Return(-1));
 
         sockets->push_back(std::move(socket));
       };
@@ -1372,7 +1365,7 @@ TEST_F(MdnsResponderTest, ManagerCanRestartAfterAllSocketHandlersFailToRead) {
                 net::ADDRESS_FAMILY_IPV4);
 
         ON_CALL(*socket, SendToInternal(_, _, _)).WillByDefault(Return(0));
-        ON_CALL(*socket, RecvFromInternal(_, _, _, _))
+        ON_CALL(*socket, RecvFrom(_, _, _, _))
             .WillByDefault(Invoke(&failing_socket_factory_,
                                   &MockFailingMdnsSocketFactory::FailToRecv));
 
@@ -1406,8 +1399,7 @@ TEST_F(MdnsResponderTest, IncompleteSendBlocksFollowingSends) {
             .WillByDefault(
                 Invoke(&failing_socket_factory_,
                        &MockFailingMdnsSocketFactory::MaybeBlockSend));
-        ON_CALL(*socket, RecvFromInternal(_, _, _, _))
-            .WillByDefault(Return(-1));
+        ON_CALL(*socket, RecvFrom(_, _, _, _)).WillByDefault(Return(-1));
 
         sockets->push_back(std::move(socket));
       };

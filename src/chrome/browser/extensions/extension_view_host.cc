@@ -18,6 +18,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/notification_source.h"
@@ -178,7 +179,7 @@ content::WebContents* ExtensionViewHost::OpenURLFromTab(
   }
 }
 
-bool ExtensionViewHost::ShouldTransferNavigation(
+bool ExtensionViewHost::ShouldAllowRendererInitiatedCrossProcessNavigation(
     bool is_main_frame_navigation) {
   // Block navigations that cause main frame of an extension pop-up (or
   // background page) to navigate to non-extension content (i.e. to web
@@ -215,7 +216,7 @@ bool ExtensionViewHost::PreHandleGestureEvent(
   return blink::WebInputEvent::IsPinchGestureEventType(event.GetType());
 }
 
-content::ColorChooser* ExtensionViewHost::OpenColorChooser(
+std::unique_ptr<content::ColorChooser> ExtensionViewHost::OpenColorChooser(
     content::WebContents* web_contents,
     SkColor initial_color,
     const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {

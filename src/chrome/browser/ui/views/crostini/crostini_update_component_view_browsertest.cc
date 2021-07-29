@@ -71,8 +71,6 @@ class CrostiniUpdateComponentViewBrowserTest
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrostiniUpdateComponentViewBrowserTest);
 };
 
 // Test the dialog is actually launched.

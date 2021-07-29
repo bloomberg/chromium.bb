@@ -36,17 +36,17 @@ TEST_P(ComputeStorageBufferBarrierTests, AddIncrement) {
             data : array<u32, 100>;
         };
 
-        [[group(0), binding(0)]] var<storage> buf : [[access(read_write)]] Buf;
+        [[group(0), binding(0)]] var<storage, read_write> buf : Buf;
 
-        [[stage(compute)]]
+        [[stage(compute), workgroup_size(1)]]
         fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
             buf.data[GlobalInvocationID.x] = buf.data[GlobalInvocationID.x] + 0x1234u;
         }
     )");
 
     wgpu::ComputePipelineDescriptor pipelineDesc = {};
-    pipelineDesc.computeStage.module = module;
-    pipelineDesc.computeStage.entryPoint = "main";
+    pipelineDesc.compute.module = module;
+    pipelineDesc.compute.entryPoint = "main";
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDesc);
 
     wgpu::BindGroup bindGroup =
@@ -82,27 +82,22 @@ TEST_P(ComputeStorageBufferBarrierTests, AddPingPong) {
         device, data.data(), bufferSize, wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc);
 
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
-        // TODO(crbug.com/tint/386):  Use the same struct.
-        [[block]] struct Src {
+        [[block]] struct Buf {
             data : array<u32, 100>;
         };
 
-        [[block]] struct Dst {
-            data : array<u32, 100>;
-        };
+        [[group(0), binding(0)]] var<storage, read_write> src : Buf;
+        [[group(0), binding(1)]] var<storage, read_write> dst : Buf;
 
-        [[group(0), binding(0)]] var<storage> src : [[access(read_write)]] Src;
-        [[group(0), binding(1)]] var<storage> dst : [[access(read_write)]] Dst;
-
-        [[stage(compute)]]
+        [[stage(compute), workgroup_size(1)]]
         fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
             dst.data[GlobalInvocationID.x] = src.data[GlobalInvocationID.x] + 0x1234u;
         }
     )");
 
     wgpu::ComputePipelineDescriptor pipelineDesc = {};
-    pipelineDesc.computeStage.module = module;
-    pipelineDesc.computeStage.entryPoint = "main";
+    pipelineDesc.compute.module = module;
+    pipelineDesc.compute.entryPoint = "main";
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDesc);
 
     wgpu::BindGroup bindGroupA = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
@@ -153,27 +148,22 @@ TEST_P(ComputeStorageBufferBarrierTests, StorageAndReadonlyStoragePingPongInOneP
         device, data.data(), bufferSize, wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc);
 
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
-        // TODO(crbug.com/tint/386):  Use the same struct.
-        [[block]] struct Src {
+        [[block]] struct Buf {
             data : array<u32, 100>;
         };
 
-        [[block]] struct Dst {
-            data : array<u32, 100>;
-        };
+        [[group(0), binding(0)]] var<storage, read> src : Buf;
+        [[group(0), binding(1)]] var<storage, read_write> dst : Buf;
 
-        [[group(0), binding(0)]] var<storage> src : [[access(read)]] Src;
-        [[group(0), binding(1)]] var<storage> dst : [[access(read_write)]] Dst;
-
-        [[stage(compute)]]
+        [[stage(compute), workgroup_size(1)]]
         fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
             dst.data[GlobalInvocationID.x] = src.data[GlobalInvocationID.x] + 0x1234u;
         }
     )");
 
     wgpu::ComputePipelineDescriptor pipelineDesc = {};
-    pipelineDesc.computeStage.module = module;
-    pipelineDesc.computeStage.entryPoint = "main";
+    pipelineDesc.compute.module = module;
+    pipelineDesc.compute.entryPoint = "main";
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDesc);
 
     wgpu::BindGroup bindGroupA = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
@@ -231,9 +221,9 @@ TEST_P(ComputeStorageBufferBarrierTests, UniformToStorageAddPingPong) {
         };
 
         [[group(0), binding(0)]] var<uniform> src : Buf;
-        [[group(0), binding(1)]] var<storage> dst : [[access(read_write)]] Buf;
+        [[group(0), binding(1)]] var<storage, read_write> dst : Buf;
 
-        [[stage(compute)]]
+        [[stage(compute), workgroup_size(1)]]
         fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
             dst.data[GlobalInvocationID.x] = src.data[GlobalInvocationID.x] +
                 vec4<u32>(0x1234u, 0x1234u, 0x1234u, 0x1234u);
@@ -241,8 +231,8 @@ TEST_P(ComputeStorageBufferBarrierTests, UniformToStorageAddPingPong) {
     )");
 
     wgpu::ComputePipelineDescriptor pipelineDesc = {};
-    pipelineDesc.computeStage.module = module;
-    pipelineDesc.computeStage.entryPoint = "main";
+    pipelineDesc.compute.module = module;
+    pipelineDesc.compute.entryPoint = "main";
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDesc);
 
     wgpu::BindGroup bindGroupA = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
@@ -299,9 +289,9 @@ TEST_P(ComputeStorageBufferBarrierTests, UniformToStorageAddPingPongInOnePass) {
         };
 
         [[group(0), binding(0)]] var<uniform> src : Buf;
-        [[group(0), binding(1)]] var<storage> dst : [[access(read_write)]] Buf;
+        [[group(0), binding(1)]] var<storage, read_write> dst : Buf;
 
-        [[stage(compute)]]
+        [[stage(compute), workgroup_size(1)]]
         fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
             dst.data[GlobalInvocationID.x] = src.data[GlobalInvocationID.x] +
                 vec4<u32>(0x1234u, 0x1234u, 0x1234u, 0x1234u);
@@ -309,8 +299,8 @@ TEST_P(ComputeStorageBufferBarrierTests, UniformToStorageAddPingPongInOnePass) {
     )");
 
     wgpu::ComputePipelineDescriptor pipelineDesc = {};
-    pipelineDesc.computeStage.module = module;
-    pipelineDesc.computeStage.entryPoint = "main";
+    pipelineDesc.compute.module = module;
+    pipelineDesc.compute.entryPoint = "main";
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDesc);
 
     wgpu::BindGroup bindGroupA = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
@@ -351,36 +341,36 @@ TEST_P(ComputeStorageBufferBarrierTests, UniformToStorageAddPingPongInOnePass) {
 TEST_P(ComputeStorageBufferBarrierTests, IndirectBufferCorrectBarrier) {
     // For some reason SPIRV-Cross crashes when translating the step3 shader to HLSL. Suppress the
     // failure since we'll remove SPIRV-Cross at some point.
-    DAWN_SKIP_TEST_IF(IsD3D12() && !HasToggleEnabled("use_tint_generator"));
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && !HasToggleEnabled("use_tint_generator"));
 
     wgpu::ComputePipelineDescriptor step2PipelineDesc;
-    step2PipelineDesc.computeStage.entryPoint = "main";
-    step2PipelineDesc.computeStage.module = utils::CreateShaderModule(device, R"(
+    step2PipelineDesc.compute.entryPoint = "main";
+    step2PipelineDesc.compute.module = utils::CreateShaderModule(device, R"(
         [[block]] struct Buf {
             data : array<u32, 3>;
         };
-        [[group(0), binding(0)]] var<storage> buf : [[access(read_write)]] Buf;
+        [[group(0), binding(0)]] var<storage, read_write> buf : Buf;
 
-        [[stage(compute)]] fn main() {
+        [[stage(compute), workgroup_size(1)]] fn main() {
             buf.data = array<u32, 3>(1u, 1u, 1u);
         }
     )");
     wgpu::ComputePipeline step2Pipeline = device.CreateComputePipeline(&step2PipelineDesc);
 
     wgpu::ComputePipelineDescriptor step3PipelineDesc;
-    step3PipelineDesc.computeStage.entryPoint = "main";
-    step3PipelineDesc.computeStage.module = utils::CreateShaderModule(device, R"(
+    step3PipelineDesc.compute.entryPoint = "main";
+    step3PipelineDesc.compute.module = utils::CreateShaderModule(device, R"(
         [[block]] struct Buf {
             data : array<u32, 3>;
         };
-        [[group(0), binding(0)]] var<storage> buf : [[access(read)]] Buf;
+        [[group(0), binding(0)]] var<storage, read> buf : Buf;
 
         [[block]] struct Result {
             data : u32;
         };
-        [[group(0), binding(1)]] var<storage> result : [[access(read_write)]] Result;
+        [[group(0), binding(1)]] var<storage, read_write> result : Result;
 
-        [[stage(compute)]] fn main() {
+        [[stage(compute), workgroup_size(1)]] fn main() {
             result.data = 2u;
             if (buf.data[0] == 1u && buf.data[1] == 1u && buf.data[2] == 1u) {
                 result.data = 1u;

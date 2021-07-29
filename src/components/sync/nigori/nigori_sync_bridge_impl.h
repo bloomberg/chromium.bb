@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/sync/engine/nigori/key_derivation_params.h"
@@ -32,7 +31,6 @@ class NigoriLocalData;
 
 namespace syncer {
 
-class Encryptor;
 class KeyDerivationParams;
 class NigoriStorage;
 class PendingLocalNigoriCommit;
@@ -49,11 +47,9 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
                              public NigoriSyncBridge,
                              public SyncEncryptionHandler {
  public:
-  // |encryptor| must be not null and must outlive this object.
   NigoriSyncBridgeImpl(
       std::unique_ptr<NigoriLocalChangeProcessor> processor,
       std::unique_ptr<NigoriStorage> storage,
-      const Encryptor* encryptor,
       const base::RepeatingCallback<std::string()>& random_salt_generator,
       const std::string& packed_explicit_passphrase_key,
       const std::string& packed_keystore_keys);
@@ -92,7 +88,6 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   KeyDerivationParams GetCustomPassphraseKeyDerivationParamsForTesting() const;
 
   static std::string PackExplicitPassphraseKeyForTesting(
-      const Encryptor& encryptor,
       const CryptographerImpl& cryptographer);
 
  private:
@@ -174,8 +169,6 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // them already and |passphrase_type| isn't KEYSTORE_PASSPHRASE. This
   // function only updates local state and doesn't trigger a commit.
   void MaybePopulateKeystoreKeysIntoCryptographer();
-
-  const Encryptor* const encryptor_;
 
   const std::unique_ptr<NigoriLocalChangeProcessor> processor_;
   const std::unique_ptr<NigoriStorage> storage_;

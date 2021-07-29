@@ -20,6 +20,8 @@ include_rules = [
     "+media/renderers",
     "+media/video",
 
+    "+third_party/libaom",
+    "+third_party/libvpx",
     "+third_party/libyuv",
 
     "+ui/gfx/color_space.h",
@@ -40,5 +42,8 @@ specific_include_rules = {
   ],
   "video_frame_test\.cc": [
     "+components/viz/test/test_context_provider.h",
-  ]
+  ],
+  "video_frame_monitor_test\.cc": [
+    "+base/run_loop.h",
+  ],
 }

@@ -15,8 +15,8 @@
 #include "components/safe_browsing/content/renderer/phishing_classifier/features.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/phishing_classifier.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/scorer.h"
-#include "components/safe_browsing/core/fbs/client_model_generated.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/fbs/client_model_generated.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -151,7 +151,7 @@ class PhishingClassifierDelegateTest : public ChromeRenderViewTest {
   void SetUp() override {
     ChromeRenderViewTest::SetUp();
 
-    content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+    content::RenderFrame* render_frame = GetMainRenderFrame();
     classifier_ = new StrictMock<MockPhishingClassifier>(render_frame);
     delegate_ = PhishingClassifierDelegate::Create(render_frame, classifier_);
   }

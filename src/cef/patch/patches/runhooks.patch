@@ -1,3 +1,16 @@
+diff --git .vpython3 .vpython3
+index 14faab39343e..0aeeb03f79bd 100644
+--- .vpython3
++++ .vpython3
+@@ -204,7 +204,7 @@ wheel <
+ 
+ wheel <
+   name: "infra/python/wheels/py-py2_py3"
+-  version: "version:1.5.3"
++  version: "version:1.10.0"
+ >
+ 
+ wheel <
 diff --git build/toolchain/win/setup_toolchain.py build/toolchain/win/setup_toolchain.py
 index c1d2fa2ce0aa..d1d215f35ac1 100644
 --- build/toolchain/win/setup_toolchain.py
@@ -26,7 +39,7 @@ index c1d2fa2ce0aa..d1d215f35ac1 100644
      if (cpu != 'x64'):
        # x64 is default target CPU thus any other CPU requires a target set
 diff --git build/vs_toolchain.py build/vs_toolchain.py
-index c3b1182b75b4..04a472b149d4 100755
+index ecf0971ab134..bf9086652444 100755
 --- build/vs_toolchain.py
 +++ build/vs_toolchain.py
 @@ -102,9 +102,16 @@ def SetEnvironmentAndGetRuntimeDllDirs():

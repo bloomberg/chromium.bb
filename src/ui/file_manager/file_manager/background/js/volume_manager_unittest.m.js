@@ -5,22 +5,22 @@
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {installMockChrome, MockCommandLinePrivate} from '../../common/js/mock_chrome.m.js';
-import {MockDirectoryEntry, MockFileEntry, MockFileSystem} from '../../common/js/mock_entry.m.js';
-import {assertRejected, reportPromise} from '../../common/js/test_error_reporting.m.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
+import {installMockChrome, MockCommandLinePrivate} from '../../common/js/mock_chrome.js';
+import {MockDirectoryEntry, MockFileEntry, MockFileSystem} from '../../common/js/mock_entry.js';
+import {assertRejected, reportPromise} from '../../common/js/test_error_reporting.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 
-import {VolumeInfoImpl} from './volume_info_impl.m.js';
-import {volumeManagerFactory} from './volume_manager_factory.m.js';
-import {VolumeManagerImpl} from './volume_manager_impl.m.js';
-import {volumeManagerUtil} from './volume_manager_util.m.js';
+import {VolumeInfoImpl} from './volume_info_impl.js';
+import {volumeManagerFactory} from './volume_manager_factory.js';
+import {VolumeManagerImpl} from './volume_manager_impl.js';
+import {volumeManagerUtil} from './volume_manager_util.js';
 
 let mockChrome;
 let createVolumeInfoOriginal;
 
 export function setUp() {
   loadTimeData.getString = id => id;
-  loadTimeData.resetForTesting();
+  loadTimeData.resetForTesting({});
 
   // Set up mock of chrome.fileManagerPrivate APIs.
   mockChrome = {

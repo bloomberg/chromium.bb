@@ -11,6 +11,7 @@
 #include "include/effects/SkDashPathEffect.h"
 #include "include/pathops/SkPathOps.h"
 #include "src/core/SkClipOpPriv.h"
+#include "src/core/SkPathEffectBase.h"
 #include "src/core/SkRectPriv.h"
 #include "src/gpu/geometry/GrStyledShape.h"
 #include "tests/Test.h"
@@ -1155,7 +1156,7 @@ void test_path_effect_makes_rrect(skiatest::Reporter* reporter, const Geo& geo) 
      * This path effect takes any input path and turns it into a rrect. It passes through stroke
      * info.
      */
-    class RRectPathEffect : SkPathEffect {
+    class RRectPathEffect : SkPathEffectBase {
     public:
         static const SkRRect& RRect() {
             static const SkRRect kRRect = SkRRect::MakeRectXY(SkRect::MakeWH(12, 12), 3, 5);
@@ -1168,7 +1169,7 @@ void test_path_effect_makes_rrect(skiatest::Reporter* reporter, const Geo& geo) 
 
     protected:
         bool onFilterPath(SkPath* dst, const SkPath& src, SkStrokeRec*,
-                          const SkRect* cullR) const override {
+                          const SkRect* cullR, const SkMatrix&) const override {
             dst->reset();
             dst->addRRect(RRect());
             return true;
@@ -1245,7 +1246,7 @@ void test_unknown_path_effect(skiatest::Reporter* reporter, const Geo& geo) {
     /**
      * This path effect just adds two lineTos to the input path.
      */
-    class AddLineTosPathEffect : SkPathEffect {
+    class AddLineTosPathEffect : SkPathEffectBase {
     public:
         static sk_sp<SkPathEffect> Make() { return sk_sp<SkPathEffect>(new AddLineTosPathEffect); }
         Factory getFactory() const override { return nullptr; }
@@ -1253,7 +1254,7 @@ void test_unknown_path_effect(skiatest::Reporter* reporter, const Geo& geo) {
 
     protected:
         bool onFilterPath(SkPath* dst, const SkPath& src, SkStrokeRec*,
-                          const SkRect* cullR) const override {
+                          const SkRect* cullR, const SkMatrix&) const override {
             *dst = src;
             // To avoid triggering data-based keying of paths with few verbs we add many segments.
             for (int i = 0; i < 100; ++i) {
@@ -1291,7 +1292,7 @@ void test_make_hairline_path_effect(skiatest::Reporter* reporter, const Geo& geo
     /**
      * This path effect just changes the stroke rec to hairline.
      */
-    class MakeHairlinePathEffect : SkPathEffect {
+    class MakeHairlinePathEffect : SkPathEffectBase {
     public:
         static sk_sp<SkPathEffect> Make() {
             return sk_sp<SkPathEffect>(new MakeHairlinePathEffect);
@@ -1301,7 +1302,7 @@ void test_make_hairline_path_effect(skiatest::Reporter* reporter, const Geo& geo
 
     protected:
         bool onFilterPath(SkPath* dst, const SkPath& src, SkStrokeRec* strokeRec,
-                          const SkRect* cullR) const override {
+                          const SkRect* cullR, const SkMatrix&) const override {
             *dst = src;
             strokeRec->setHairlineStyle();
             return true;
@@ -1376,7 +1377,7 @@ void test_path_effect_makes_empty_shape(skiatest::Reporter* reporter, const Geo&
     /**
      * This path effect returns an empty path (possibly inverted)
      */
-    class EmptyPathEffect : SkPathEffect {
+    class EmptyPathEffect : SkPathEffectBase {
     public:
         static sk_sp<SkPathEffect> Make(bool invert) {
             return sk_sp<SkPathEffect>(new EmptyPathEffect(invert));
@@ -1385,7 +1386,7 @@ void test_path_effect_makes_empty_shape(skiatest::Reporter* reporter, const Geo&
         const char* getTypeName() const override { return nullptr; }
     protected:
         bool onFilterPath(SkPath* dst, const SkPath& src, SkStrokeRec*,
-                          const SkRect* cullR) const override {
+                          const SkRect* cullR, const SkMatrix&) const override {
             dst->reset();
             if (fInvert) {
                 dst->toggleInverseFillType();
@@ -1467,14 +1468,14 @@ void test_path_effect_fails(skiatest::Reporter* reporter, const Geo& geo) {
     /**
      * This path effect always fails to apply.
      */
-    class FailurePathEffect : SkPathEffect {
+    class FailurePathEffect : SkPathEffectBase {
     public:
         static sk_sp<SkPathEffect> Make() { return sk_sp<SkPathEffect>(new FailurePathEffect); }
         Factory getFactory() const override { return nullptr; }
         const char* getTypeName() const override { return nullptr; }
     protected:
         bool onFilterPath(SkPath* dst, const SkPath& src, SkStrokeRec*,
-                          const SkRect* cullR) const override {
+                          const SkRect* cullR, const SkMatrix&) const override {
             return false;
         }
     private:
@@ -1740,7 +1741,7 @@ void test_rrect(skiatest::Reporter* r, const SkRRect& rrect) {
     Key exampleInvHairlineCaseKey;
     make_key(&exampleInvHairlineCaseKey, exampleInvHairlineCase);
 
-    // These are dummy initializations to suppress warnings.
+    // These initializations suppress warnings.
     SkRRect queryRR = SkRRect::MakeEmpty();
     SkPathDirection queryDir = SkPathDirection::kCW;
     unsigned queryStart = ~0U;

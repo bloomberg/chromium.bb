@@ -5,7 +5,13 @@
 #ifndef SERVICES_NETWORK_PUBLIC_CPP_IP_ADDRESS_SPACE_UTIL_H_
 #define SERVICES_NETWORK_PUBLIC_CPP_IP_ADDRESS_SPACE_UTIL_H_
 
+#include <vector>
+
 #include "services/network/public/mojom/ip_address_space.mojom.h"
+#include "services/network/public/mojom/parsed_headers.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+class GURL;
 
 namespace net {
 
@@ -43,6 +49,53 @@ mojom::IPAddressSpace COMPONENT_EXPORT(NETWORK_CPP)
 bool COMPONENT_EXPORT(NETWORK_CPP)
     IsLessPublicAddressSpace(mojom::IPAddressSpace lhs,
                              mojom::IPAddressSpace rhs);
+
+// Represents optional parameters of CalculateClientAddressSpace().
+// This is effectively a subset of network::mojom::URLResponseHead.
+// WARNING: This struct just keeps references to parameters and does not own
+// them nor make copy of them. Parameters must outlive this struct. For example,
+// passing net::IPEndPoint() as `remote_endpoint` is invalid.
+struct COMPONENT_EXPORT(NETWORK_CPP) CalculateClientAddressSpaceParams {
+  CalculateClientAddressSpaceParams(
+      const std::vector<GURL>& url_list_via_service_worker,
+      const mojom::ParsedHeadersPtr& parsed_headers,
+      const net::IPEndPoint& remote_endpoint);
+  ~CalculateClientAddressSpaceParams();
+
+  const std::vector<GURL>& url_list_via_service_worker;
+  const mojom::ParsedHeadersPtr& parsed_headers;
+  const net::IPEndPoint& remote_endpoint;
+};
+
+// Given a request URL and `params`, this function calculates the
+// IPAddressSpace which should be associated with documents or worker global
+// scopes (collectively: request clients) instantiated from this resource.
+//
+// `params` is optional. If `params` contain values, values must be valid and
+// `params.value().parsed_headers` must be populated with the result of
+// parsing the corresponding response headers.
+//
+// WARNING: This function is defined here for proximity with related code and
+// the data structures involved. However since it deals with higher-level
+// concepts too (documents and worker global scopes), it should probably only be
+// used at the content/ layer or above.
+//
+// See: https://wicg.github.io/cors-rfc1918/#address-space
+mojom::IPAddressSpace COMPONENT_EXPORT(NETWORK_CPP) CalculateClientAddressSpace(
+    const GURL& url,
+    absl::optional<CalculateClientAddressSpaceParams> params);
+
+// Given a response URL and the IP endpoint the requested resource was fetched
+// from, this function calculates the IPAddressSpace of the requested resource.
+//
+// As opposed to CalculateClientAddressSpace(), this function is used to
+// determine the address space of the *target* of a fetch, for comparison with
+// that of the client of the fetch.
+//
+// See: https://wicg.github.io/cors-rfc1918/#integration-fetch
+mojom::IPAddressSpace COMPONENT_EXPORT(NETWORK_CPP)
+    CalculateResourceAddressSpace(const GURL& url,
+                                  const net::IPEndPoint& endpoint);
 
 }  // namespace network
 

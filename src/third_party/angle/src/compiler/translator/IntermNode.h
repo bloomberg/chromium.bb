@@ -25,7 +25,7 @@
 #include "compiler/translator/Common.h"
 #include "compiler/translator/ConstantUnion.h"
 #include "compiler/translator/ImmutableString.h"
-#include "compiler/translator/Operator.h"
+#include "compiler/translator/Operator_autogen.h"
 #include "compiler/translator/SymbolUniqueId.h"
 #include "compiler/translator/Types.h"
 #include "compiler/translator/tree_util/Visit.h"
@@ -146,6 +146,7 @@ class TIntermTyped : public TIntermNode
     // should only be used after nodes have been replaced with their folded versions returned
     // from fold(). hasConstantValue() returns true if getConstantValue() will return a value.
     virtual bool hasConstantValue() const;
+    virtual bool isConstantNullValue() const;
     virtual const TConstantUnion *getConstantValue() const;
 
     // True if executing the expression represented by this node affects state, like values of
@@ -170,6 +171,7 @@ class TIntermTyped : public TIntermNode
     bool isVector() const { return getType().isVector(); }
     bool isScalar() const { return getType().isScalar(); }
     bool isScalarInt() const { return getType().isScalarInt(); }
+    bool isPrecise() const { return getType().isPrecise(); }
     const char *getBasicString() const { return getType().getBasicString(); }
 
     unsigned int getOutermostArraySize() const { return getType().getOutermostArraySize(); }
@@ -303,7 +305,6 @@ class TIntermExpression : public TIntermTyped
   protected:
     TType *getTypePointer() { return &mType; }
     void setType(const TType &t) { mType = t; }
-    void setTypePreservePrecision(const TType &t);
 
     TIntermExpression(const TIntermExpression &node) = default;
 
@@ -328,6 +329,7 @@ class TIntermConstantUnion : public TIntermExpression
     TIntermTyped *deepCopy() const override { return new TIntermConstantUnion(*this); }
 
     bool hasConstantValue() const override;
+    bool isConstantNullValue() const override;
     const TConstantUnion *getConstantValue() const override;
 
     bool hasSideEffects() const override { return false; }
@@ -362,7 +364,9 @@ class TIntermConstantUnion : public TIntermExpression
     bool replaceChildNode(TIntermNode *, TIntermNode *) override { return false; }
 
     TConstantUnion *foldUnaryNonComponentWise(TOperator op);
-    TConstantUnion *foldUnaryComponentWise(TOperator op, TDiagnostics *diagnostics);
+    TConstantUnion *foldUnaryComponentWise(TOperator op,
+                                           const TFunction *function,
+                                           TDiagnostics *diagnostics);
 
     static const TConstantUnion *FoldBinary(TOperator op,
                                             const TConstantUnion *leftArray,
@@ -404,8 +408,7 @@ class TIntermOperator : public TIntermExpression
     bool isMultiplication() const;
     bool isConstructor() const;
 
-    // Returns true for calls mapped to EOpCall*, false for built-ins that have their own specific
-    // ops.
+    // Returns true for calls mapped to EOpCall*, false for all built-ins.
     bool isFunctionCall() const;
 
     bool hasSideEffects() const override { return isAssignment(); }
@@ -495,18 +498,12 @@ class TIntermBinary : public TIntermOperator
     TIntermTyped *getRight() const { return mRight; }
     TIntermTyped *fold(TDiagnostics *diagnostics) override;
 
-    void setAddIndexClamp() { mAddIndexClamp = true; }
-    bool getAddIndexClamp() const { return mAddIndexClamp; }
-
     // This method is only valid for EOpIndexDirectStruct. It returns the name of the field.
     const ImmutableString &getIndexStructFieldName() const;
 
   protected:
     TIntermTyped *mLeft;
     TIntermTyped *mRight;
-
-    // If set to true, wrap any EOpIndexIndirect with a clamp to bounds.
-    bool mAddIndexClamp;
 
   private:
     void promote();
@@ -605,6 +602,7 @@ class TIntermAggregate : public TIntermOperator, public TIntermAggregateBase
     TIntermAggregate *shallowCopy() const;
 
     bool hasConstantValue() const override;
+    bool isConstantNullValue() const override;
     const TConstantUnion *getConstantValue() const override;
 
     TIntermAggregate *getAsAggregate() override { return this; }
@@ -658,13 +656,13 @@ class TIntermAggregate : public TIntermOperator, public TIntermAggregateBase
 
     void setPrecisionFromChildren();
 
-    void setPrecisionForBuiltInOp();
+    void setPrecisionForMathBuiltInOp();
 
     // Returns true if precision was set according to special rules for this built-in.
     bool setPrecisionForSpecialBuiltInOp();
 
-    // Used for built-in functions under EOpCallBuiltInFunction. The function name in the symbol
-    // info needs to be set before calling this.
+    // Used for non-math built-in functions. The function name in the symbol info needs to be set
+    // before calling this.
     void setBuiltInFunctionPrecision();
 };
 
@@ -674,6 +672,7 @@ class TIntermBlock : public TIntermNode, public TIntermAggregateBase
 {
   public:
     TIntermBlock() : TIntermNode(), mIsTreeRoot(false) {}
+    TIntermBlock(std::initializer_list<TIntermNode *> stmts);
     ~TIntermBlock() override {}
 
     TIntermBlock *getAsBlock() override { return this; }
@@ -784,6 +783,9 @@ class TIntermDeclaration : public TIntermNode, public TIntermAggregateBase
 {
   public:
     TIntermDeclaration() : TIntermNode() {}
+    TIntermDeclaration(const TVariable *var, TIntermTyped *initExpr);
+    TIntermDeclaration(std::initializer_list<const TVariable *> declarators);
+    TIntermDeclaration(std::initializer_list<TIntermTyped *> declarators);
     ~TIntermDeclaration() override {}
 
     TIntermDeclaration *getAsDeclarationNode() override { return this; }

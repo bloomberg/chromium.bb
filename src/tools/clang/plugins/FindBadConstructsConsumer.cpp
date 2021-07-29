@@ -332,7 +332,7 @@ void FindBadConstructsConsumer::CheckEnumMaxValue(EnumDecl* decl) {
   if (max_enumerators.find(max_value) == max_enumerators.end()) {
     ReportIfSpellingLocNotIgnored(max_value->getLocation(),
                                   diag_bad_enum_max_value_)
-        << max_seen.toString(10);
+        << toString(max_seen, 10);
   } else if (max_enumerators.size() < 2) {
     ReportIfSpellingLocNotIgnored(decl->getLocation(),
                                   diag_enum_max_value_unique_);

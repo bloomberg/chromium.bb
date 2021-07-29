@@ -9,6 +9,7 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #import "components/signin/ios/browser/features.h"
+#import "components/signin/public/base/signin_pref_names.h"
 #import "components/sync/driver/mock_sync_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
@@ -16,7 +17,7 @@
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
-#import "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_mock.h"
@@ -26,6 +27,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -61,7 +63,7 @@ class SettingsTableViewControllerMICETest
     ChromeTableViewControllerTest::SetUp();
 
     TestChromeBrowserState::Builder builder;
-    builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
+    builder.AddTestingFactory(SyncServiceFactory::GetInstance(),
                               base::BindRepeating(&CreateMockSyncService));
     builder.AddTestingFactory(
         SyncSetupServiceFactory::GetInstance(),
@@ -83,8 +85,7 @@ class SettingsTableViewControllerMICETest
         SyncSetupServiceFactory::GetForBrowserState(
             chrome_browser_state_.get()));
     sync_service_mock_ = static_cast<syncer::MockSyncService*>(
-        ProfileSyncServiceFactory::GetForBrowserState(
-            chrome_browser_state_.get()));
+        SyncServiceFactory::GetForBrowserState(chrome_browser_state_.get()));
 
     auth_service_ = static_cast<AuthenticationServiceFake*>(
         AuthenticationServiceFactory::GetInstance()->GetForBrowserState(
@@ -120,7 +121,7 @@ class SettingsTableViewControllerMICETest
   }
 
   void SetupSyncServiceEnabledExpectations() {
-    ON_CALL(*sync_setup_service_mock_, IsSyncEnabled())
+    ON_CALL(*sync_setup_service_mock_, CanSyncFeatureStart())
         .WillByDefault(Return(true));
     ON_CALL(*sync_setup_service_mock_, IsSyncingAllDataTypes())
         .WillByDefault(Return(true));
@@ -212,12 +213,87 @@ TEST_F(SettingsTableViewControllerMICETest, SyncPasswordError) {
 }
 
 // Verifies that the Sync icon displays the off state when the user has
-// completed the sign-in and sync flow then explcitly turned off the Sync
+// completed the sign-in and sync flow then explicitly turned off the Sync
 // setting.
 TEST_F(SettingsTableViewControllerMICETest, TurnsSyncOffAfterFirstSetup) {
   ON_CALL(*sync_service_mock_->GetMockUserSettings(), IsFirstSetupComplete())
       .WillByDefault(Return(true));
-  ON_CALL(*sync_setup_service_mock_, IsSyncEnabled())
+  ON_CALL(*sync_setup_service_mock_, CanSyncFeatureStart())
+      .WillByDefault(Return(false));
+  auth_service_->SignIn(fake_identity_);
+
+  CreateController();
+  CheckController();
+
+  NSArray* account_items = [controller().tableViewModel
+      itemsInSectionWithIdentifier:SettingsSectionIdentifier::
+                                       SettingsSectionIdentifierAccount];
+  ASSERT_EQ(3U, account_items.count);
+
+  TableViewDetailIconItem* sync_item =
+      static_cast<TableViewDetailIconItem*>(account_items[1]);
+  ASSERT_NSEQ(l10n_util::GetNSString(IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE),
+              sync_item.text);
+  ASSERT_NSEQ(nil, sync_item.detailText);
+  // Check that there is no sign-in promo when there is a sync error.
+  ASSERT_FALSE([controller().tableViewModel
+      hasSectionForSectionIdentifier:SettingsSectionIdentifier::
+                                         SettingsSectionIdentifierSignIn]);
+}
+
+// Verifies that the Sync icon displays the off state (and no detail text) when
+// the user has completed the sign-in and sync flow then explicitly turned off
+// all data types in the Sync settings.
+// This case can only happen for pre-MICE users who migrated with MICE.
+TEST_F(SettingsTableViewControllerMICETest,
+       DisablesAllSyncSettingsAfterFirstSetup) {
+  ON_CALL(*sync_service_mock_->GetMockUserSettings(), GetSelectedTypes())
+      .WillByDefault(Return(syncer::UserSelectableTypeSet()));
+  ON_CALL(*sync_service_mock_->GetMockUserSettings(), IsFirstSetupComplete())
+      .WillByDefault(Return(true));
+  ON_CALL(*sync_setup_service_mock_, CanSyncFeatureStart())
+      .WillByDefault(Return(true));
+  auth_service_->SignIn(fake_identity_);
+
+  CreateController();
+  CheckController();
+
+  NSArray* account_items = [controller().tableViewModel
+      itemsInSectionWithIdentifier:SettingsSectionIdentifier::
+                                       SettingsSectionIdentifierAccount];
+  ASSERT_EQ(3U, account_items.count);
+
+  TableViewDetailIconItem* sync_item =
+      static_cast<TableViewDetailIconItem*>(account_items[1]);
+  ASSERT_NSEQ(l10n_util::GetNSString(IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE),
+              sync_item.text);
+  ASSERT_EQ(nil, sync_item.detailText);
+}
+
+// Verifies that the sign-in setting item is replaced by the managed sign-in
+// item if sign-in is disabled through the "Allow Chrome Sign-in" option.
+TEST_F(SettingsTableViewControllerMICETest, SigninDisabled) {
+  chrome_browser_state_->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
+  CreateController();
+  CheckController();
+
+  NSArray* signin_items = [controller().tableViewModel
+      itemsInSectionWithIdentifier:SettingsSectionIdentifier::
+                                       SettingsSectionIdentifierSignIn];
+  ASSERT_EQ(1U, signin_items.count);
+
+  TableViewImageItem* signin_item =
+      static_cast<TableViewImageItem*>(signin_items[0]);
+  ASSERT_NSEQ(signin_item.title,
+              l10n_util::GetNSString(IDS_IOS_NOT_SIGNED_IN_SETTING_TITLE));
+  ASSERT_NE(signin_item.image, nil);
+}
+
+// Verifies that the Sync icon displays the off state (with OFF in detail text)
+// when the user has not agreed on sync. This case is possible when using MICE
+// web sign-in.
+TEST_F(SettingsTableViewControllerMICETest, SyncSetupNotComplete) {
+  ON_CALL(*sync_service_mock_->GetMockUserSettings(), IsFirstSetupComplete())
       .WillByDefault(Return(false));
   auth_service_->SignIn(fake_identity_);
 
@@ -235,33 +311,4 @@ TEST_F(SettingsTableViewControllerMICETest, TurnsSyncOffAfterFirstSetup) {
               sync_item.text);
   ASSERT_NSEQ(l10n_util::GetNSString(IDS_IOS_SETTING_OFF),
               sync_item.detailText);
-}
-
-// Verifies that the Sync icon displays the off state (and no detail text) when
-// the user has completed the sign-in and sync flow then explcitly turned off
-// all data types in the Sync settings.
-// This case can only happen for pre-MICE users who migrated with MICE.
-TEST_F(SettingsTableViewControllerMICETest,
-       DisablesAllSyncSettingsAfterFirstSetup) {
-  ON_CALL(*sync_service_mock_->GetMockUserSettings(), GetSelectedTypes())
-      .WillByDefault(Return(syncer::UserSelectableTypeSet()));
-  ON_CALL(*sync_service_mock_->GetMockUserSettings(), IsFirstSetupComplete())
-      .WillByDefault(Return(true));
-  ON_CALL(*sync_setup_service_mock_, IsSyncEnabled())
-      .WillByDefault(Return(true));
-  auth_service_->SignIn(fake_identity_);
-
-  CreateController();
-  CheckController();
-
-  NSArray* account_items = [controller().tableViewModel
-      itemsInSectionWithIdentifier:SettingsSectionIdentifier::
-                                       SettingsSectionIdentifierAccount];
-  ASSERT_EQ(3U, account_items.count);
-
-  TableViewDetailIconItem* sync_item =
-      static_cast<TableViewDetailIconItem*>(account_items[1]);
-  ASSERT_NSEQ(l10n_util::GetNSString(IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE),
-              sync_item.text);
-  ASSERT_EQ(nil, sync_item.detailText);
 }

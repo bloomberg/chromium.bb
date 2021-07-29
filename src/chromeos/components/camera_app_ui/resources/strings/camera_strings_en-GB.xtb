@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">Print</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> is unplugged.</translation>
 <translation id="1473110567575736769">Three seconds timer</translation>
+<translation id="1478594628797167447">Scanner</translation>
+<translation id="1545749641540134597">Scan QR Code</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Nothing recorded</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> active</translation>
 <translation id="2144806332417375165">Custom video parameters</translation>
+<translation id="2175927920773552910">QR code</translation>
+<translation id="2268107369530950373">Switch to scanner mode</translation>
 <translation id="229579744168541441">Export to disk</translation>
 <translation id="2320741269052147773">Pan left</translation>
 <translation id="2501278716633472235">Go back</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">Microphone</translation>
 <translation id="3240426699337459095">Link copied</translation>
 <translation id="3259149966178251584">Camera resolution</translation>
+<translation id="3448774564454087943">Video hasn't been saved as it's too short</translation>
 <translation id="3517926952904427380">Unable to take portrait photo</translation>
 <translation id="3569311554794739032">Do you really want to remove <ph name="FILE" />?</translation>
 <translation id="3733597664308256288">Additional camera controls available. Search + right arrow to access.</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">Photo</translation>
 <translation id="4649291346448517080">Unable to save the file</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">Multistream video recording</translation>
 <translation id="5057360777601936059">Your camera is currently unavailable.
         Please check if the camera is properly connected.</translation>
 <translation id="5152121255775685072">Go to gallery</translation>
+<translation id="5268823927180092501">Enable document mode on all cameras</translation>
 <translation id="5422455049771430511">Your photos and videos have a new home</translation>
 <translation id="5671277269877808209">Square</translation>
+<translation id="5753488212459587150">Enable expert mode</translation>
 <translation id="5775960006311140197">Expert mode</translation>
 <translation id="5869546221129391014">Grid</translation>
 <translation id="5975083100439434680">Zoom out</translation>

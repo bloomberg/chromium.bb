@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
@@ -110,10 +110,10 @@ class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
     identity_test_env_adaptor_->identity_test_env()->SetPrimaryAccount(
-        "test@gmail.com");
+        "test@gmail.com", signin::ConsentLevel::kSync);
 
     sync_service_ = static_cast<syncer::TestSyncService*>(
-        ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        SyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile(), base::BindRepeating(&BuildTestSyncService)));
     user_settings_ = sync_service_->GetUserSettings();
 
@@ -140,11 +140,12 @@ class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
     const TestWebUI::CallData& call_data = *web_ui_.call_data().back();
     EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
 
-    std::string event;
-    EXPECT_TRUE(call_data.arg1()->GetAsString(&event));
-    EXPECT_EQ(event, "os-sync-prefs-changed");
+    const std::string* event = call_data.arg1()->GetIfString();
+    EXPECT_TRUE(event);
+    EXPECT_EQ(*event, "os-sync-prefs-changed");
 
-    EXPECT_TRUE(call_data.arg2()->GetAsBoolean(feature_enabled));
+    EXPECT_TRUE(call_data.arg2()->is_bool());
+    *feature_enabled = call_data.arg2()->GetBool();
     EXPECT_TRUE(call_data.arg3()->GetAsDictionary(os_sync_prefs));
   }
 

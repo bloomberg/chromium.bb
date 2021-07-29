@@ -9,9 +9,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/cxx17_backports.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
-#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -268,11 +268,10 @@ class PasswordControllerTest : public ChromeWebTest {
                  providers:@[ [passwordController_ suggestionProvider] ]];
       accessoryMediator_ =
           [[FormInputAccessoryMediator alloc] initWithConsumer:nil
-                                                      delegate:nil
+                                                       handler:nil
                                                   webStateList:nullptr
                                            personalDataManager:nullptr
                                                  passwordStore:nullptr
-                                                      appState:nil
                                           securityAlertHandler:nil
                                         reauthenticationModule:nil];
       [accessoryMediator_ injectWebState:web_state()];
@@ -1323,16 +1322,15 @@ TEST_F(PasswordControllerTest, SendingToStoreDynamicallyAddedFormsOnFocus) {
   bool get_logins_called = false;
   bool* p_get_logins_called = &get_logins_called;
 
-  password_manager::PasswordStore::FormDigest expected_form_digest(
+  password_manager::PasswordFormDigest expected_form_digest(
       password_manager::PasswordForm::Scheme::kHtml, "https://chromium.test/",
       GURL("https://chromium.test/"));
   // TODO(crbug.com/949519): replace WillRepeatedly with WillOnce when the old
   // parser is gone.
   EXPECT_CALL(*store_, GetLogins(expected_form_digest, _))
       .WillRepeatedly(testing::Invoke(
-          [&get_logins_called](
-              const password_manager::PasswordStore::FormDigest&,
-              password_manager::PasswordStoreConsumer*) {
+          [&get_logins_called](const password_manager::PasswordFormDigest&,
+                               password_manager::PasswordStoreConsumer*) {
             get_logins_called = true;
           }));
 

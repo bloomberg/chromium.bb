@@ -27,7 +27,6 @@ if (is_android) {
   import("//build/config/sanitizers/sanitizers.gni")
 } else if (is_fuchsia) {
   import("//build/config/chromecast_build.gni")
-  import("//build/config/coverage/coverage.gni")
   import("//build/config/fuchsia/generate_runner_scripts.gni")
   import("//build/config/fuchsia/package.gni")
   import("//third_party/fuchsia-sdk/sdk/build/cmc.gni")
@@ -324,10 +323,7 @@ template("test") {
     if (defined(invoker.additional_manifest_fragments)) {
       manifest_fragments += invoker.additional_manifest_fragments
     }
-    if (use_clang_coverage) {
-      manifest_fragments +=
-          [ "//build/config/fuchsia/add_DebugData_service.test-cmx" ]
-    }
+
     combined_manifest = "${target_name}.test-cmx"
     cmc_merge(combined_manifest) {
       sources = manifest_fragments
@@ -339,6 +335,7 @@ template("test") {
       is_test_exe = true
       forward_variables_from(invoker,
                              [
+                               "use_run_test_component",
                                "use_test_server",
                                "package_deps",
                                "visibility",
@@ -494,24 +491,32 @@ template("test") {
         "$root_out_dir/gen.runtime/" + get_label_info(target_name, "dir") +
         "/" + get_label_info(target_name, "name") + ".runtime_deps"
 
-    generate_runner_script(_gen_runner_target) {
-      generated_script = "$root_build_dir/bin/run_" + invoker.target_name
-      test_exe = invoker.target_name
-      runtime_deps_file = _runtime_deps_file
-
-      if (is_chromeos_lacros) {
-        # At build time, Lacros tests don't know whether they'll run on VM or
-        # HW, and instead, these flags are specified at runtime when invoking
-        # the generated runner script.
-        skip_generating_board_args = true
+    _generated_script = "$root_build_dir/bin/run_" + invoker.target_name
+    if (is_skylab) {
+      generate_skylab_runner_script(_gen_runner_target) {
+        generated_script = _generated_script
+        test_exe = invoker.target_name
       }
+    } else {
+      generate_runner_script(_gen_runner_target) {
+        generated_script = _generated_script
+        test_exe = invoker.target_name
+        runtime_deps_file = _runtime_deps_file
 
-      if (tests_have_location_tags) {
-        data = [ "//testing/location_tags.json" ]
-      }
+        if (is_chromeos_lacros) {
+          # At build time, Lacros tests don't know whether they'll run on VM or
+          # HW, and instead, these flags are specified at runtime when invoking
+          # the generated runner script.
+          skip_generating_board_args = true
+        }
 
-      if (use_rts) {
-        data_deps = [ ":${invoker.target_name}__rts_filters" ]
+        if (tests_have_location_tags) {
+          data = [ "//testing/location_tags.json" ]
+        }
+
+        if (use_rts) {
+          data_deps = [ ":${invoker.target_name}__rts_filters" ]
+        }
       }
     }
 
@@ -581,7 +586,7 @@ template("test") {
       ]
 
       if (_use_ash_chrome) {
-        executable_args += [ "--ash-chrome-path=ash_clang_x64/chrome" ]
+        executable_args += [ "--ash-chrome-path=ash_clang_x64/test_ash_chrome" ]
       }
 
       if (is_asan) {
@@ -621,8 +626,7 @@ template("test") {
       write_runtime_deps = _runtime_deps_file
       deps += [ ":$_gen_runner_target" ]
       if (_use_ash_chrome && also_build_ash_chrome) {
-        data_deps +=
-            [ "//chrome:chrome(//build/toolchain/linux:ash_clang_x64)" ]
+        data_deps += [ "//chrome/test:test_ash_chrome(//build/toolchain/linux:ash_clang_x64)" ]
       }
 
       if (use_rts) {

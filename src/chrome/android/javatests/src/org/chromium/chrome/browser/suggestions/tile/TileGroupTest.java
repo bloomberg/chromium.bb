@@ -41,17 +41,16 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
-import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.test.util.ViewUtils;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -273,7 +272,7 @@ public class TileGroupTest {
 
         SiteSuggestion exploreTile = new SiteSuggestion("chrome-native://explore",
                 new GURL("chrome-native://explore"), "", TileTitleSource.UNKNOWN,
-                TileSource.EXPLORE, TileSectionType.PERSONALIZED, new Date());
+                TileSource.EXPLORE, TileSectionType.PERSONALIZED);
         currentSuggestions.add(exploreTile);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mMostVisitedSites.setTileSuggestions(currentSuggestions));

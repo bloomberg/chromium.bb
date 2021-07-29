@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
@@ -24,7 +25,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -276,8 +276,8 @@ std::unique_ptr<base::DictionaryValue> DownloadItemToJSON(
   json->SetString(kMimeKey, download_item->GetMimeType());
   json->SetString(kStartTimeKey,
                   base::TimeToISO8601(download_item->GetStartTime()));
-  json->SetDouble(kBytesReceivedKey, download_item->GetReceivedBytes());
-  json->SetDouble(kTotalBytesKey, download_item->GetTotalBytes());
+  json->SetDoubleKey(kBytesReceivedKey, download_item->GetReceivedBytes());
+  json->SetDoubleKey(kTotalBytesKey, download_item->GetTotalBytes());
   json->SetBoolean(kDownloadsApiIncognitoKey,
                    browser_context->IsOffTheRecord());
   if (download_item->GetState() == DownloadItem::INTERRUPTED) {
@@ -311,7 +311,7 @@ std::unique_ptr<base::DictionaryValue> DownloadItemToJSON(
       json->SetString(kByExtensionNameKey, extension->name());
   }
   // TODO(benjhayden): Implement fileSize.
-  json->SetDouble(kFileSizeKey, download_item->GetTotalBytes());
+  json->SetDoubleKey(kFileSizeKey, download_item->GetTotalBytes());
   return std::unique_ptr<base::DictionaryValue>(json);
 }
 
@@ -1864,11 +1864,9 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(
         if (!data->json().HasKey(iter.key()) ||
             (data->json().Get(iter.key(), &old_value) &&
              iter.value() != *old_value)) {
-          delta->Set(iter.key() + ".current",
-                     base::Value::ToUniquePtrValue(iter.value().Clone()));
+          delta->SetPath(iter.key() + ".current", iter.value().Clone());
           if (old_value) {
-            delta->Set(iter.key() + ".previous",
-                       base::Value::ToUniquePtrValue(old_value->Clone()));
+            delta->SetPath(iter.key() + ".previous", old_value->Clone());
           }
           changed = true;
         }
@@ -1883,8 +1881,7 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(
           IsDownloadDeltaField(iter.key())) {
         // estimatedEndTime disappears after completion, but bytesReceived
         // stays.
-        delta->Set(iter.key() + ".previous",
-                   base::Value::ToUniquePtrValue(iter.value().Clone()));
+        delta->SetPath(iter.key() + ".previous", iter.value().Clone());
         changed = true;
       }
     }
@@ -1945,9 +1942,9 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
   // https://crbug.com/726022.
   Profile* restrict_to_browser_context =
       (include_incognito && !profile_->IsOffTheRecord()) ? nullptr : profile_;
-  auto event =
-      std::make_unique<Event>(histogram_value, event_name, args->TakeList(),
-                              restrict_to_browser_context);
+  auto event = std::make_unique<Event>(histogram_value, event_name,
+                                       std::move(*args).TakeList(),
+                                       restrict_to_browser_context);
   event->will_dispatch_callback = std::move(will_dispatch_callback);
   EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
 }

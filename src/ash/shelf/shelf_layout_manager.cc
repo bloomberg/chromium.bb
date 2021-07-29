@@ -13,10 +13,10 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -52,6 +52,7 @@
 #include "ash/wm/workspace/workspace_types.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -364,7 +365,8 @@ ShelfLayoutManager::ScopedVisibilityLock::~ScopedVisibilityLock() {
 ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
     : shelf_widget_(shelf_widget),
       shelf_(shelf),
-      is_background_blur_enabled_(features::IsBackgroundBlurEnabled()) {
+      is_background_blur_enabled_(features::IsBackgroundBlurEnabled()),
+      is_app_list_bubble_enabled_(features::IsAppListBubbleEnabled()) {
   DCHECK(shelf_widget_);
   DCHECK(shelf_);
 }
@@ -379,7 +381,6 @@ ShelfLayoutManager::~ShelfLayoutManager() {
 
   for (auto& observer : observers_)
     observer.WillDeleteShelfLayoutManager();
-  display::Screen::GetScreen()->RemoveObserver(this);
   auto* shell = Shell::Get();
   shell->locale_update_controller()->RemoveObserver(this);
   shell->RemoveShellObserver(this);
@@ -403,7 +404,6 @@ void ShelfLayoutManager::InitObservers() {
   state_.session_state = shell->session_controller()->GetSessionState();
   shelf_background_type_ = GetShelfBackgroundType();
   wallpaper_controller_observation_.Observe(shell->wallpaper_controller());
-  display::Screen::GetScreen()->AddObserver(this);
 
   // DesksController could be null when virtual desks feature is not enabled.
   if (DesksController::Get())
@@ -884,7 +884,9 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   const bool app_list_is_visible =
       Shell::Get()->app_list_controller() &&
       Shell::Get()->app_list_controller()->IsVisible(display_.id());
-  if (app_list_is_visible) {
+  // If the AppListBubble is enabled, the AppList is just another bubble, the
+  // shelf does not need to react to it in clamshell mode.
+  if (!is_app_list_bubble_enabled_ && app_list_is_visible) {
     // When auto-hide shelf is enabled, shelf cannot be considered maximized.
     if (maximized && state_.visibility_state != SHELF_AUTO_HIDE)
       return ShelfBackgroundType::kMaximizedWithAppList;

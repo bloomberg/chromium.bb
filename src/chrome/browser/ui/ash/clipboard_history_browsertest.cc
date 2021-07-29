@@ -505,13 +505,10 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
 
   // Verify that the first menu item's delete button shows. In addition, the
   // delete button's inkdrop highlight should fade in or be visible.
-  const ash::ClipboardHistoryDeleteButton* delete_button =
-      static_cast<const ash::ClipboardHistoryDeleteButton*>(
-          first_history_item_view->GetViewByID(
-              ash::ClipboardHistoryUtil::kDeleteButtonViewID));
+  const views::View* const delete_button = first_history_item_view->GetViewByID(
+      ash::ClipboardHistoryUtil::kDeleteButtonViewID);
   ASSERT_TRUE(delete_button->GetVisible());
-  EXPECT_TRUE(const_cast<ash::ClipboardHistoryDeleteButton*>(delete_button)
-                  ->ink_drop()
+  EXPECT_TRUE(views::InkDrop::Get(const_cast<views::View*>(delete_button))
                   ->GetInkDrop()
                   ->IsHighlightFadingInOrVisible());
 
@@ -856,7 +853,9 @@ class ClipboardHistoryBrowserTest : public InProcessBrowserTest {
 // Verifies that the images rendered from the copied web contents should
 // show in the clipboard history menu. Switching the auto resize mode is covered
 // in this test case.
-IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest, VerifyHTMLRendering) {
+// Flaky: crbug/1224777
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest,
+                       DISABLED_VerifyHTMLRendering) {
   // Load the web page which contains images and text.
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/image-and-text.html"));
@@ -1163,9 +1162,9 @@ class FakeDataTransferPolicyController
   ~FakeDataTransferPolicyController() override = default;
 
   // ui::DataTransferPolicyController:
-  bool IsClipboardReadAllowed(
-      const ui::DataTransferEndpoint* const data_src,
-      const ui::DataTransferEndpoint* const data_dst) override {
+  bool IsClipboardReadAllowed(const ui::DataTransferEndpoint* const data_src,
+                              const ui::DataTransferEndpoint* const data_dst,
+                              const absl::optional<size_t> size) override {
     // The multipaste menu should have access to any clipboard data.
     if (data_dst && data_dst->type() == ui::EndpointType::kClipboardHistory)
       return true;
@@ -1178,6 +1177,7 @@ class FakeDataTransferPolicyController
 
   void PasteIfAllowed(const ui::DataTransferEndpoint* const data_src,
                       const ui::DataTransferEndpoint* const data_dst,
+                      const absl::optional<size_t> size,
                       content::WebContents* web_contents,
                       base::OnceCallback<void(bool)> callback) override {}
 

@@ -78,6 +78,9 @@ public class CustomTabToolbarColorController {
     public static int computeToolbarColorType(BrowserServicesIntentDataProvider intentDataProvider,
             boolean useTabThemeColor, @Nullable Tab tab) {
         if (intentDataProvider.isOpenedByChrome()) {
+            if (intentDataProvider.getColorProvider().hasCustomToolbarColor()) {
+                return ToolbarColorType.INTENT_TOOLBAR_COLOR;
+            }
             return (tab == null) ? ToolbarColorType.DEFAULT_COLOR : ToolbarColorType.THEME_COLOR;
         }
 
@@ -89,8 +92,9 @@ public class CustomTabToolbarColorController {
             return ToolbarColorType.THEME_COLOR;
         }
 
-        return intentDataProvider.hasCustomToolbarColor() ? ToolbarColorType.INTENT_TOOLBAR_COLOR
-                                                          : ToolbarColorType.DEFAULT_COLOR;
+        return intentDataProvider.getColorProvider().hasCustomToolbarColor()
+                ? ToolbarColorType.INTENT_TOOLBAR_COLOR
+                : ToolbarColorType.DEFAULT_COLOR;
     }
 
     /**
@@ -170,7 +174,7 @@ public class CustomTabToolbarColorController {
             case ToolbarColorType.DEFAULT_COLOR:
                 return getDefaultColor();
             case ToolbarColorType.INTENT_TOOLBAR_COLOR:
-                return mIntentDataProvider.getToolbarColor();
+                return mIntentDataProvider.getColorProvider().getToolbarColor();
         }
         return getDefaultColor();
     }

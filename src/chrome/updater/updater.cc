@@ -4,12 +4,16 @@
 
 #include "chrome/updater/updater.h"
 
+#include <algorithm>
+#include <iterator>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/task/single_thread_task_executor.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "chrome/updater/app/app.h"
 #include "chrome/updater/app/app_install.h"
@@ -20,6 +24,7 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/crash_client.h"
 #include "chrome/updater/crash_reporter.h"
+#include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
 #include "components/crash/core/common/crash_key.h"
@@ -48,13 +53,13 @@
 //   arguments for --install.
 
 namespace updater {
-
 namespace {
 
 // The log file is created in DIR_LOCAL_APP_DATA or DIR_APP_DATA.
-void InitLogging(const base::CommandLine& command_line) {
+void InitLogging(UpdaterScope updater_scope) {
   logging::LoggingSettings settings;
-  absl::optional<base::FilePath> log_dir = GetBaseDirectory();
+  const absl::optional<base::FilePath> log_dir =
+      GetBaseDirectory(updater_scope);
   if (!log_dir) {
     LOG(ERROR) << "Error getting base dir.";
     return;
@@ -67,26 +72,50 @@ void InitLogging(const base::CommandLine& command_line) {
                        true,    // enable_thread_id
                        true,    // enable_timestamp
                        false);  // enable_tickcount
-  VLOG(1) << "Version " << kUpdaterVersion << ", log file "
-          << settings.log_file_path;
 }
 
-void InitializeCrashReporting() {
+void ReinitializeLoggingAfterCrashHandler(UpdaterScope updater_scope) {
+  // Initializing the logging more than two times is not supported. In this
+  // case, logging has been initialized once in the updater main, and the
+  // the second time by the crash handler.
+  // Reinitializing the log is not possible if the vlog switch is
+  // already present on the command line. The code in this function relies
+  // on undocumented behavior of the logging object, and it could break.
+  base::CommandLine::ForCurrentProcess()->RemoveSwitch(kLoggingModuleSwitch);
+  InitLogging(updater_scope);
+}
+
+void InitializeCrashReporting(UpdaterScope updater_scope) {
   crash_reporter::InitializeCrashKeys();
   static crash_reporter::CrashKeyString<16> crash_key_process_type(
       "process_type");
   crash_key_process_type.Set("updater");
-  if (CrashClient::GetInstance()->InitializeCrashReporting())
-    VLOG(1) << "Crash reporting initialized.";
-  else
+  if (!CrashClient::GetInstance()->InitializeCrashReporting(updater_scope)) {
     VLOG(1) << "Crash reporting is not available.";
-  StartCrashReporter(kUpdaterVersion);
+    return;
+  }
+  VLOG(1) << "Crash reporting initialized.";
 }
 
-}  // namespace
+int HandleUpdaterCommands(UpdaterScope updater_scope,
+                          const base::CommandLine* command_line) {
+  // Used for unit test purposes. There is no need to run with a crash handler.
+  if (command_line->HasSwitch(kTestSwitch))
+    return 0;
 
-int HandleUpdaterCommands(const base::CommandLine* command_line) {
-  DCHECK(!command_line->HasSwitch(kCrashHandlerSwitch));
+  if (command_line->HasSwitch(kCrashHandlerSwitch)) {
+    const int retval = CrashReporterMain();
+
+    // The crash handler mutates the logging object, so the updater process
+    // stops logging to the log file aftern `CrashReporterMain()` returns.
+    ReinitializeLoggingAfterCrashHandler(updater_scope);
+    return retval;
+  }
+
+  // Starts and connects to the external crash handler as early as possible.
+  StartCrashReporter(updater_scope, kUpdaterVersion);
+
+  InitializeCrashReporting(updater_scope);
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
 
   if (command_line->HasSwitch(kCrashMeSwitch)) {
@@ -119,8 +148,9 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
 
   if (command_line->HasSwitch(kUninstallSwitch) ||
       command_line->HasSwitch(kUninstallSelfSwitch) ||
-      command_line->HasSwitch(kUninstallIfUnusedSwitch))
+      command_line->HasSwitch(kUninstallIfUnusedSwitch)) {
     return MakeAppUninstall()->Run();
+  }
 
   if (command_line->HasSwitch(kWakeSwitch)) {
     return MakeAppWake()->Run();
@@ -130,25 +160,48 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
   return -1;
 }
 
+// Returns the string literal corresponding to an updater command, which
+// is present on the updater process command line. Returns an empty string
+// if the command is not found.
+const char* GetUpdaterCommand(const base::CommandLine* command_line) {
+  // Contains the literals which are associated with specific updater commands.
+  const char* commands[] = {
+      kComServiceSwitch,
+      kCrashHandlerSwitch,
+      kInstallSwitch,
+      kServerSwitch,
+      kTagSwitch,
+      kTestSwitch,
+      kUninstallIfUnusedSwitch,
+      kUninstallSelfSwitch,
+      kUninstallSwitch,
+      kUpdateSwitch,
+      kWakeSwitch,
+  };
+  const char** it = std::find_if(
+      std::begin(commands), std::end(commands),
+      [command_line](auto cmd) { return command_line->HasSwitch(cmd); });
+  return it != std::end(commands) ? *it : "";
+}
+
+}  // namespace
+
 int UpdaterMain(int argc, const char* const* argv) {
   base::PlatformThread::SetName("UpdaterMain");
   base::AtExitManager exit_manager;
 
   base::CommandLine::Init(argc, argv);
-  const auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(kTestSwitch))
-    return 0;
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
 
-  InitLogging(*command_line);
+  const UpdaterScope updater_scope = GetUpdaterScope();
+  InitLogging(updater_scope);
 
-  VLOG(1) << "Command line: " << command_line->GetCommandLineString();
-  if (command_line->HasSwitch(kCrashHandlerSwitch))
-    return CrashReporterMain();
-
-  InitializeCrashReporting();
-
-  const int retval = HandleUpdaterCommands(command_line);
-  DVLOG(1) << __func__ << " returned " << retval << ".";
+  VLOG(1) << "Version " << kUpdaterVersion
+          << ", command line: " << command_line->GetCommandLineString();
+  const int retval = HandleUpdaterCommands(updater_scope, command_line);
+  DVLOG(1) << __func__ << " (--" << GetUpdaterCommand(command_line) << ")"
+           << " returned " << retval << ".";
   return retval;
 }
 

@@ -143,6 +143,8 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       Element*,
       PseudoId);
 
+  Element* FindContainerForElement(Element*, const AtomicString&);
+
   void ComputeFont(Element&, ComputedStyle*, const CSSPropertyValueSet&);
 
   // FIXME: Rename to reflect the purpose, like didChangeFontSize or something.
@@ -161,6 +163,14 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                                       const CSSPropertyName&,
                                       const CSSValue&);
 
+  // Compute FilterOperations from the specified CSSValue, using the provided
+  // Font to resolve any font-relative units.
+  //
+  // Triggers loading of any external references held by |CSSValue|.
+  FilterOperations ComputeFilterOperations(Element*,
+                                           const Font&,
+                                           const CSSValue&);
+
   scoped_refptr<ComputedStyle> StyleForInterpolations(
       Element& element,
       ActiveInterpolationsMap& animations);
@@ -174,6 +184,10 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       Element& element,
       const ComputedStyle& base_style,
       ActiveInterpolationsMap& transition_interpolations);
+
+  // Check if the BODY or HTML element's display or containment stops
+  // propagation of BODY style to HTML and viewport.
+  bool ShouldStopBodyPropagation(const Element& body_or_html);
 
   void Trace(Visitor*) const;
 

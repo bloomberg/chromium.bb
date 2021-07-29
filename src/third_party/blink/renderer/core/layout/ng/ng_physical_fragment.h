@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_refptr.h"
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
@@ -132,6 +133,9 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsOutOfFlowPositioned() const {
     return IsBox() && BoxType() == NGBoxType::kOutOfFlowPositioned;
   }
+  bool IsFixedPositioned() const {
+    return IsCSSBox() && layout_object_->IsFixedPositioned();
+  }
   bool IsFloatingOrOutOfFlowPositioned() const {
     return IsFloating() || IsOutOfFlowPositioned();
   }
@@ -176,6 +180,8 @@ class CORE_EXPORT NGPhysicalFragment
            layout_object_->IsRubyBase();
   }
 
+  bool IsSvgText() const { return layout_object_->IsNGSVGText(); }
+
   bool IsTableNGPart() const { return is_table_ng_part_; }
 
   bool IsTableNG() const {
@@ -194,6 +200,8 @@ class CORE_EXPORT NGPhysicalFragment
     return IsTableNGPart() && layout_object_->IsTableCell() &&
            !layout_object_->IsTableCellLegacy();
   }
+
+  bool IsGridNG() const { return layout_object_->IsLayoutNGGrid(); }
 
   bool IsTextControlContainer() const;
   bool IsTextControlPlaceholder() const;
@@ -331,18 +339,6 @@ class CORE_EXPORT NGPhysicalFragment
     return IsCSSBox() && layout_object_->ShouldClipOverflowAlongBothAxis();
   }
 
-  bool IsFragmentationContextRoot() const {
-    // We have no bit that tells us whether this is a fragmentation context
-    // root, so some additional checking is necessary here, to make sure that
-    // we're actually establishing one. We check that we're not a custom layout
-    // box, as specifying columns on such a box has no effect. Note that
-    // specifying columns together with a display value of e.g. 'flex', 'grid'
-    // or 'table' also has no effect, but we don't need to check for that here,
-    // since such display types don't create a block flow (block container).
-    return IsCSSBox() && Style().SpecifiesColumns() && IsBlockFlow() &&
-           !layout_object_->IsLayoutNGCustom();
-  }
-
   // Return whether we can traverse this fragment and its children directly, for
   // painting, hit-testing and other layout read operations. If false is
   // returned, we need to traverse the layout object tree instead.
@@ -352,7 +348,9 @@ class CORE_EXPORT NGPhysicalFragment
 
   // This fragment is hidden for paint purpose, but exists for querying layout
   // information. Used for `text-overflow: ellipsis`.
-  bool IsHiddenForPaint() const { return is_hidden_for_paint_; }
+  bool IsHiddenForPaint() const {
+    return is_hidden_for_paint_ || layout_object_->IsTruncated();
+  }
 
   // Return true if this fragment is monolithic, as far as block fragmentation
   // is concerned.
@@ -463,16 +461,22 @@ class CORE_EXPORT NGPhysicalFragment
   };
   typedef int DumpFlags;
 
+  // Dump the fragment tree, optionally mark |target| if it's found. If not
+  // found, the subtree established by |target| will be dumped as well.
   String DumpFragmentTree(DumpFlags,
+                          const NGPhysicalFragment* target = nullptr,
                           absl::optional<PhysicalOffset> = absl::nullopt,
                           unsigned indent = 2) const;
 
-  static String DumpFragmentTree(const LayoutObject& root, DumpFlags);
-
-#if DCHECK_IS_ON()
-  void ShowFragmentTree() const;
-  static void ShowFragmentTree(const LayoutObject& root);
-#endif
+  // Dump the fragment tree, starting at |root| (searching inside legacy
+  // subtrees to find all fragments), optionally mark |target| if it's found. If
+  // not found, the subtree established by |target| will be dumped as well.
+  //
+  // Note that if we're in the middle of layout somewhere inside the subtree,
+  // behavior is undefined.
+  static String DumpFragmentTree(const LayoutObject& root,
+                                 DumpFlags,
+                                 const NGPhysicalFragment* target = nullptr);
 
   // Same as |base::span<const NGLink>|, except that:
   // * Each |NGLink| has the latest generation of post-layout. See
@@ -686,5 +690,24 @@ inline void NGPhysicalFragment::CheckType() const {}
 #endif
 
 }  // namespace blink
+
+#if DCHECK_IS_ON()
+// Outside the blink namespace for ease of invocation from a debugger.
+
+// Output the fragment tree to the log.
+// See DumpFragmentTree().
+CORE_EXPORT void ShowFragmentTree(const blink::NGPhysicalFragment*);
+
+// Output the fragment tree(s) inside |root| to the log.
+// See DumpFragmentTree(const LayoutObject& ...).
+CORE_EXPORT void ShowFragmentTree(
+    const blink::LayoutObject& root,
+    const blink::NGPhysicalFragment* target = nullptr);
+
+// Output the fragment tree(s) from the entire document to the log.
+// See DumpFragmentTree(const LayoutObject& ...).
+CORE_EXPORT void ShowEntireFragmentTree(
+    const blink::NGPhysicalFragment* target);
+#endif  // DCHECK_IS_ON()
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_FRAGMENT_H_

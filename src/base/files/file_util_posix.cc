@@ -27,7 +27,9 @@
 #include "base/base_switches.h"
 #include "base/bits.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/stack.h"
+#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -37,7 +39,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -945,7 +946,8 @@ bool AllocateFileRegion(File* file, int64_t offset, size_t size) {
   // does support sparse files. It does, however, have the functionality
   // available via fcntl.
   // See also: https://openradar.appspot.com/32720223
-  fstore_t params = {F_ALLOCATEALL, F_PEOFPOSMODE, offset, size, 0};
+  fstore_t params = {F_ALLOCATEALL, F_PEOFPOSMODE, offset,
+                     static_cast<off_t>(size), 0};
   if (fcntl(file->GetPlatformFile(), F_PREALLOCATE, &params) != -1)
     return true;
   DPLOG(ERROR) << "F_PREALLOCATE";

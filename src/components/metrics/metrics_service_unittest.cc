@@ -17,7 +17,6 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
-#include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/platform_thread.h"
@@ -469,7 +468,7 @@ TEST_F(MetricsServiceTest, FirstLogCreatedBeforeUnsentLogsSent) {
   // is never deserialized to proto, so we're just passing some dummy content.
   ASSERT_EQ(0u, test_log_store->initial_log_count());
   ASSERT_EQ(0u, test_log_store->ongoing_log_count());
-  test_log_store->StoreLog("blah_blah", MetricsLog::ONGOING_LOG, absl::nullopt);
+  test_log_store->StoreLog("blah_blah", MetricsLog::ONGOING_LOG, LogMetadata());
   // Note: |initial_log_count()| refers to initial stability logs, so the above
   // log is counted an ongoing log (per its type).
   ASSERT_EQ(0u, test_log_store->initial_log_count());

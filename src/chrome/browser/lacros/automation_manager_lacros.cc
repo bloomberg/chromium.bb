@@ -4,12 +4,10 @@
 
 #include "chrome/browser/lacros/automation_manager_lacros.h"
 
-#include "base/pickle.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chromeos/lacros/lacros_chrome_service_impl.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "extensions/browser/api/automation_internal/automation_internal_api.h"
-#include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_tree_id.h"
 
 AutomationManagerLacros::AutomationManagerLacros() {
@@ -40,26 +38,35 @@ void AutomationManagerLacros::DispatchAccessibilityEvents(
     std::vector<ui::AXTreeUpdate> updates,
     const gfx::Point& mouse_location,
     std::vector<ui::AXEvent> events) {
-  if (!automation_remote_)
+  if (!tree_id.token())
     return;
 
-  ExtensionMsg_AccessibilityEventBundleParams event_bundle;
-  event_bundle.tree_id = tree_id;
-  event_bundle.updates = std::move(updates);
-  event_bundle.mouse_location = mouse_location;
-  event_bundle.events = std::move(events);
-  base::Pickle pickle;
-  IPC::ParamTraits<ExtensionMsg_AccessibilityEventBundleParams>::Write(
-      &pickle, event_bundle);
-  std::string result(static_cast<const char*>(pickle.data()), pickle.size());
-  automation_remote_->ReceiveEventPrototype(std::move(result), false,
-                                            base::UnguessableToken::Create(),
-                                            std::string());
+  // TODO: we probably don't want to check every time but only once and cache
+  // the value(s). Also, we need to check all accessibility enums, structs
+  // reachable from AXTreeUpdate and AXEvent.
+  int remote_version =
+      chromeos::LacrosChromeServiceImpl::Get()->GetInterfaceVersion(
+          crosapi::mojom::Automation::Uuid_);
+  if (remote_version < 0 ||
+      crosapi::mojom::Automation::kDispatchAccessibilityEventsMinVersion >
+          static_cast<uint32_t>(remote_version)) {
+    return;
+  }
+
+  DCHECK(automation_remote_);
+  automation_remote_->DispatchAccessibilityEvents(*tree_id.token(), updates,
+                                                  mouse_location, events);
 }
 
 void AutomationManagerLacros::DispatchAccessibilityLocationChange(
     const ExtensionMsg_AccessibilityLocationChangeParams& params) {
-  // TODO(https://crbug.com/1185764): Implement me.
+  ui::AXTreeID tree_id = params.tree_id;
+  if (!tree_id.token())
+    return;
+
+  DCHECK(automation_remote_);
+  automation_remote_->DispatchAccessibilityLocationChange(
+      *tree_id.token(), params.id, params.new_location);
 }
 
 void AutomationManagerLacros::DispatchTreeDestroyedEvent(
@@ -68,9 +75,7 @@ void AutomationManagerLacros::DispatchTreeDestroyedEvent(
   if (!tree_id.token())
     return;
 
-  if (!automation_remote_)
-    return;
-
+  DCHECK(automation_remote_);
   automation_remote_->DispatchTreeDestroyedEvent(*(tree_id.token()));
 }
 
@@ -78,15 +83,14 @@ void AutomationManagerLacros::DispatchActionResult(
     const ui::AXActionData& data,
     bool result,
     content::BrowserContext* browser_context) {
-  if (!automation_remote_)
-    return;
-
+  DCHECK(automation_remote_);
   automation_remote_->DispatchActionResult(data, result);
 }
+
 void AutomationManagerLacros::DispatchGetTextLocationDataResult(
     const ui::AXActionData& data,
     const absl::optional<gfx::Rect>& rect) {
-  // TODO(https://crbug.com/1185764): Implement me.
+  // Unsupported by Laros.
 }
 
 void AutomationManagerLacros::Enable() {
@@ -99,16 +103,19 @@ void AutomationManagerLacros::EnableTree(const base::UnguessableToken& token) {
       tree_id, /*extension_id=*/"");
 }
 
-void AutomationManagerLacros::PerformActionPrototype(
+void AutomationManagerLacros::Disable() {
+  AutomationManagerAura::GetInstance()->Disable();
+}
+
+void AutomationManagerLacros::PerformActionDeprecated(
     const base::UnguessableToken& token,
     int32_t automation_node_id,
     const std::string& action_type,
     int32_t request_id,
-    base::Value optional_args) {
-  ui::AXTreeID tree_id = ui::AXTreeID::FromToken(token);
-  const base::DictionaryValue& dict =
-      base::Value::AsDictionaryValue(optional_args);
+    base::Value optional_args) {}
+
+void AutomationManagerLacros::PerformAction(
+    const ui::AXActionData& action_data) {
   extensions::AutomationInternalPerformActionFunction::PerformAction(
-      tree_id, automation_node_id, action_type, request_id, dict,
-      /*extension_id=*/"", /*extension=*/nullptr, /*automation_info=*/nullptr);
+      action_data, /*extension=*/nullptr, /*automation_info=*/nullptr);
 }

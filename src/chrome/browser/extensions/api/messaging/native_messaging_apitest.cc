@@ -34,19 +34,32 @@ namespace {
 using ContextType = ExtensionApiTest::ContextType;
 
 class NativeMessagingApiTestBase : public ExtensionApiTest {
+ public:
+  NativeMessagingApiTestBase() = default;
+  ~NativeMessagingApiTestBase() override = default;
+  NativeMessagingApiTestBase(const NativeMessagingApiTestBase&) = delete;
+  NativeMessagingApiTestBase& operator=(const NativeMessagingApiTestBase&) =
+      delete;
+
  protected:
   extensions::ScopedTestNativeMessagingHost test_host_;
 };
 
 class NativeMessagingApiTest : public NativeMessagingApiTestBase,
                                public testing::WithParamInterface<ContextType> {
+ public:
+  NativeMessagingApiTest() = default;
+  ~NativeMessagingApiTest() override = default;
+  NativeMessagingApiTest(const NativeMessagingApiTest&) = delete;
+  NativeMessagingApiTest& operator=(const NativeMessagingApiTest&) = delete;
+
  protected:
   bool RunTest(const char* extension_name) {
     if (GetParam() == ContextType::kPersistentBackground)
-      return RunExtensionTest({.name = extension_name});
+      return RunExtensionTest(extension_name);
     std::string lazy_exension_name = base::StrCat({extension_name, "/lazy"});
     return RunExtensionTest(
-        {.name = lazy_exension_name.c_str()},
+        lazy_exension_name.c_str(), {},
         {.load_as_service_worker = GetParam() == ContextType::kServiceWorker});
   }
 };

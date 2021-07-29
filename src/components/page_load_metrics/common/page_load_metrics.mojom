@@ -158,6 +158,11 @@ struct PageLoadTiming {
   // from the cache.
   array<BackForwardCacheTiming> back_forward_cache_timings;
 
+  // Time relative to navigation_start that the prerender activation navigation
+  // was initiated. This is set for prerendered page loads that were later
+  // activated.
+  mojo_base.mojom.TimeDelta? activation_start;
+
   // Time between user input and navigation start. This is set for navigations
   // where the input start timing is known; currently when the navigation is
   // initiated by a link click in the renderer, or from the desktop omnibox.
@@ -299,9 +304,6 @@ struct FrameRenderDataUpdate {
 
   // New layout shifts with timestamps.
   array<LayoutShift> new_layout_shifts;
-
-  // Recent input timestamps for layout shift tracking.
-  array<mojo_base.mojom.TimeTicks> input_timestamps;
 };
 
 // Metrics about the time spent in tasks (cpu time) by a frame.

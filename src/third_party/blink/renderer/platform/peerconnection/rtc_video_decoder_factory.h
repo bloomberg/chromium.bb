@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VIDEO_DECODER_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VIDEO_DECODER_FACTORY_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/platform/peerconnection/gpu_codec_support_waiter.h"
 #include "third_party/webrtc/api/video_codecs/video_decoder_factory.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
@@ -30,6 +29,8 @@ class RTCVideoDecoderFactory : public webrtc::VideoDecoderFactory {
       media::DecoderFactory* decoder_factory,
       scoped_refptr<base::SequencedTaskRunner> media_task_runner,
       const gfx::ColorSpace& render_color_space);
+  RTCVideoDecoderFactory(const RTCVideoDecoderFactory&) = delete;
+  RTCVideoDecoderFactory& operator=(const RTCVideoDecoderFactory&) = delete;
   ~RTCVideoDecoderFactory() override;
 
   // Runs on Chrome_libJingle_WorkerThread. The child thread is blocked while
@@ -38,6 +39,10 @@ class RTCVideoDecoderFactory : public webrtc::VideoDecoderFactory {
       const webrtc::SdpVideoFormat& format) override;
 
   std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override;
+
+  webrtc::VideoDecoderFactory::CodecSupport QueryCodecSupport(
+      const webrtc::SdpVideoFormat& format,
+      absl::optional<std::string> scalability_mode) const override;
 
  private:
   void CheckAndWaitDecoderSupportStatusIfNeeded() const;
@@ -48,8 +53,6 @@ class RTCVideoDecoderFactory : public webrtc::VideoDecoderFactory {
   gfx::ColorSpace render_color_space_;
 
   std::unique_ptr<GpuCodecSupportWaiter> gpu_codec_support_waiter_;
-
-  DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderFactory);
 };
 
 }  // namespace blink

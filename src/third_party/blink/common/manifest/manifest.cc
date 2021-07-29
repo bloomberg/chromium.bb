@@ -40,7 +40,7 @@ Manifest::Manifest(const Manifest& other) = default;
 Manifest::~Manifest() = default;
 
 bool Manifest::IsEmpty() const {
-  return !name && !short_name && start_url.is_empty() &&
+  return !name && !short_name && !id && start_url.is_empty() &&
          display == blink::mojom::DisplayMode::kUndefined &&
          display_override.empty() &&
          orientation == device::mojom::ScreenOrientationLockType::DEFAULT &&
@@ -48,7 +48,7 @@ bool Manifest::IsEmpty() const {
          related_applications.empty() && file_handlers.empty() &&
          !prefer_related_applications && !theme_color && !background_color &&
          !gcm_sender_id && scope.is_empty() && protocol_handlers.empty() &&
-         url_handlers.empty() && !note_taking.has_value();
+         url_handlers.empty() && !note_taking.has_value() && !isolated_storage;
 }
 
 }  // namespace blink

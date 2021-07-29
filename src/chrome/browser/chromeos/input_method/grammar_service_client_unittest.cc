@@ -14,9 +14,10 @@
 #include "chromeos/services/machine_learning/public/mojom/grammar_checker.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
-#include "components/spellcheck/common/spellcheck_result.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/grammar_fragment.h"
+#include "ui/gfx/range/range.h"
 
 namespace chromeos {
 namespace {
@@ -37,8 +38,6 @@ TEST_F(GrammarServiceClientTest, ReturnsEmptyResultWhenSpellCheckIsDiabled) {
 
   auto profile = std::make_unique<TestingProfile>();
   profile->GetPrefs()->SetBoolean(spellcheck::prefs::kSpellCheckEnable, false);
-  profile->GetPrefs()->SetBoolean(
-      spellcheck::prefs::kSpellCheckUseSpellingService, false);
 
   GrammarServiceClient client;
   base::RunLoop().RunUntilIdle();
@@ -46,7 +45,7 @@ TEST_F(GrammarServiceClientTest, ReturnsEmptyResultWhenSpellCheckIsDiabled) {
   client.RequestTextCheck(
       profile.get(), u"cat",
       base::BindOnce(
-          [](bool success, const std::vector<SpellCheckResult>& results) {
+          [](bool success, const std::vector<ui::GrammarFragment>& results) {
             EXPECT_FALSE(success);
             EXPECT_TRUE(results.empty());
           }));
@@ -62,8 +61,6 @@ TEST_F(GrammarServiceClientTest, ParsesResults) {
 
   auto profile = std::make_unique<TestingProfile>();
   profile->GetPrefs()->SetBoolean(spellcheck::prefs::kSpellCheckEnable, true);
-  profile->GetPrefs()->SetBoolean(
-      spellcheck::prefs::kSpellCheckUseSpellingService, true);
 
   // Construct fake output
   machine_learning::mojom::GrammarCheckerResultPtr result =
@@ -81,6 +78,11 @@ TEST_F(GrammarServiceClientTest, ParsesResults) {
   candidate->fragments.emplace_back(std::move(fragment));
   result->candidates.emplace_back(std::move(candidate));
   fake_service_connection.SetOutputGrammarCheckerResult(result);
+
+  std::vector<machine_learning::mojom::TextLanguagePtr> languages;
+  languages.push_back(
+      machine_learning::mojom::TextLanguage::New("en", /*confidence=*/1));
+  fake_service_connection.SetOutputLanguages(languages);
 
   GrammarServiceClient client;
   base::RunLoop().RunUntilIdle();
@@ -88,20 +90,17 @@ TEST_F(GrammarServiceClientTest, ParsesResults) {
   client.RequestTextCheck(
       profile.get(), u"fake input",
       base::BindOnce(
-          [](bool success, const std::vector<SpellCheckResult>& results) {
+          [](bool success, const std::vector<ui::GrammarFragment>& results) {
             EXPECT_TRUE(success);
             ASSERT_EQ(results.size(), 1U);
-            EXPECT_EQ(results[0].decoration, SpellCheckResult::GRAMMAR);
-            EXPECT_EQ(results[0].location, 3);
-            EXPECT_EQ(results[0].length, 5);
-            ASSERT_EQ(results[0].replacements.size(), 1U);
-            EXPECT_EQ(results[0].replacements[0], u"fake replacement");
+            EXPECT_EQ(results[0].range, gfx::Range(3, 8));
+            EXPECT_EQ(results[0].suggestion, "fake replacement");
           }));
 
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(GrammarServiceClientTest, ParsesResultsForLongQuery) {
+TEST_F(GrammarServiceClientTest, RejectsNonEnglishQuery) {
   machine_learning::FakeServiceConnectionImpl fake_service_connection;
   machine_learning::ServiceConnection::UseFakeServiceConnectionForTesting(
       &fake_service_connection);
@@ -109,25 +108,34 @@ TEST_F(GrammarServiceClientTest, ParsesResultsForLongQuery) {
 
   auto profile = std::make_unique<TestingProfile>();
   profile->GetPrefs()->SetBoolean(spellcheck::prefs::kSpellCheckEnable, true);
-  profile->GetPrefs()->SetBoolean(
-      spellcheck::prefs::kSpellCheckUseSpellingService, true);
 
   // Construct fake output
-  machine_learning::mojom::GrammarCheckerResultPtr result =
-      machine_learning::mojom::GrammarCheckerResult::New();
-  result->status = machine_learning::mojom::GrammarCheckerResult::Status::OK;
-  machine_learning::mojom::GrammarCheckerCandidatePtr candidate =
-      machine_learning::mojom::GrammarCheckerCandidate::New();
-  candidate->text = "fake output";
-  candidate->score = 0.5f;
-  machine_learning::mojom::GrammarCorrectionFragmentPtr fragment =
-      machine_learning::mojom::GrammarCorrectionFragment::New();
-  fragment->offset = 3;
-  fragment->length = 5;
-  fragment->replacement = "fake replacement";
-  candidate->fragments.emplace_back(std::move(fragment));
-  result->candidates.emplace_back(std::move(candidate));
-  fake_service_connection.SetOutputGrammarCheckerResult(result);
+  std::vector<machine_learning::mojom::TextLanguagePtr> languages;
+  languages.push_back(
+      machine_learning::mojom::TextLanguage::New("jp", /* confidence */ 1));
+  fake_service_connection.SetOutputLanguages(languages);
+
+  GrammarServiceClient client;
+  base::RunLoop().RunUntilIdle();
+
+  client.RequestTextCheck(
+      profile.get(), u"fake input",
+      base::BindOnce(
+          [](bool success, const std::vector<ui::GrammarFragment>& results) {
+            EXPECT_FALSE(success);
+          }));
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(GrammarServiceClientTest, RejectsLongQueries) {
+  machine_learning::FakeServiceConnectionImpl fake_service_connection;
+  machine_learning::ServiceConnection::UseFakeServiceConnectionForTesting(
+      &fake_service_connection);
+  machine_learning::ServiceConnection::GetInstance()->Initialize();
+
+  auto profile = std::make_unique<TestingProfile>();
+  profile->GetPrefs()->SetBoolean(spellcheck::prefs::kSpellCheckEnable, true);
 
   GrammarServiceClient client;
   base::RunLoop().RunUntilIdle();
@@ -141,16 +149,8 @@ TEST_F(GrammarServiceClientTest, ParsesResultsForLongQuery) {
   client.RequestTextCheck(
       profile.get(), long_text,
       base::BindOnce(
-          [](bool success, const std::vector<SpellCheckResult>& results) {
-            EXPECT_TRUE(success);
-            ASSERT_EQ(results.size(), 1U);
-            EXPECT_EQ(results[0].decoration, SpellCheckResult::GRAMMAR);
-            // The fake grammar check result is set to return offset=3, so here
-            // getting the location as 203 verifies the trimming.
-            EXPECT_EQ(results[0].location, 203);
-            EXPECT_EQ(results[0].length, 5);
-            ASSERT_EQ(results[0].replacements.size(), 1U);
-            EXPECT_EQ(results[0].replacements[0], u"fake replacement");
+          [](bool success, const std::vector<ui::GrammarFragment>& results) {
+            EXPECT_FALSE(success);
           }));
 
   base::RunLoop().RunUntilIdle();

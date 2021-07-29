@@ -35,23 +35,6 @@ static void ToMockDeviceLostCallback(const char* message, void* userdata) {
     self->StartExpectDeviceError();
 }
 
-class MockFenceOnCompletionCallback {
-  public:
-    MOCK_METHOD(void, Call, (WGPUFenceCompletionStatus status, void* userdata));
-};
-
-static std::unique_ptr<MockFenceOnCompletionCallback> mockFenceOnCompletionCallback;
-static void ToMockFenceOnCompletionFails(WGPUFenceCompletionStatus status, void* userdata) {
-    EXPECT_EQ(WGPUFenceCompletionStatus_DeviceLost, status);
-    mockFenceOnCompletionCallback->Call(status, userdata);
-    mockFenceOnCompletionCallback = nullptr;
-}
-static void ToMockFenceOnCompletionSucceeds(WGPUFenceCompletionStatus status, void* userdata) {
-    EXPECT_EQ(WGPUFenceCompletionStatus_Success, status);
-    mockFenceOnCompletionCallback->Call(status, userdata);
-    mockFenceOnCompletionCallback = nullptr;
-}
-
 class MockQueueWorkDoneCallback {
   public:
     MOCK_METHOD(void, Call, (WGPUQueueWorkDoneStatus status, void* userdata));
@@ -68,15 +51,13 @@ class DeviceLostTest : public DawnTest {
   protected:
     void SetUp() override {
         DawnTest::SetUp();
-        DAWN_SKIP_TEST_IF(UsesWire());
+        DAWN_TEST_UNSUPPORTED_IF(UsesWire());
         mockDeviceLostCallback = std::make_unique<MockDeviceLostCallback>();
-        mockFenceOnCompletionCallback = std::make_unique<MockFenceOnCompletionCallback>();
         mockQueueWorkDoneCallback = std::make_unique<MockQueueWorkDoneCallback>();
     }
 
     void TearDown() override {
         mockDeviceLostCallback = nullptr;
-        mockFenceOnCompletionCallback = nullptr;
         mockQueueWorkDoneCallback = nullptr;
         DawnTest::TearDown();
     }
@@ -129,13 +110,13 @@ TEST_P(DeviceLostTest, GetBindGroupLayoutFails) {
             pos : vec4<f32>;
         };
         [[group(0), binding(0)]] var<uniform> ubo : UniformBuffer;
-        [[stage(compute)]] fn main() {
+        [[stage(compute), workgroup_size(1)]] fn main() {
         })");
 
     wgpu::ComputePipelineDescriptor descriptor;
     descriptor.layout = nullptr;
-    descriptor.computeStage.module = csModule;
-    descriptor.computeStage.entryPoint = "main";
+    descriptor.compute.module = csModule;
+    descriptor.compute.entryPoint = "main";
 
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&descriptor);
 
@@ -188,7 +169,7 @@ TEST_P(DeviceLostTest, CreateComputePipelineFails) {
 
     wgpu::ComputePipelineDescriptor descriptor = {};
     descriptor.layout = nullptr;
-    descriptor.computeStage.module = nullptr;
+    descriptor.compute.module = nullptr;
     ASSERT_DEVICE_ERROR(device.CreateComputePipeline(&descriptor));
 }
 
@@ -196,8 +177,8 @@ TEST_P(DeviceLostTest, CreateComputePipelineFails) {
 TEST_P(DeviceLostTest, CreateRenderPipelineFails) {
     SetCallbackAndLoseForTesting();
 
-    utils::ComboRenderPipelineDescriptor2 descriptor;
-    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline2(&descriptor));
+    utils::ComboRenderPipelineDescriptor descriptor;
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
 }
 
 // Tests that CreateSampler fails when device is lost
@@ -416,67 +397,6 @@ TEST_P(DeviceLostTest, CommandEncoderFinishFails) {
     ASSERT_DEVICE_ERROR(encoder.Finish());
 }
 
-// Test that CreateFenceFails when device is lost
-TEST_P(DeviceLostTest, CreateFenceFails) {
-    SetCallbackAndLoseForTesting();
-
-    EXPECT_DEPRECATION_WARNING(ASSERT_DEVICE_ERROR(queue.CreateFence()));
-}
-
-// Test that queue signal fails when device is lost
-TEST_P(DeviceLostTest, QueueSignalFenceFails) {
-    wgpu::Fence fence;
-    EXPECT_DEPRECATION_WARNING(fence = queue.CreateFence());
-
-    SetCallbackAndLoseForTesting();
-
-    ASSERT_DEVICE_ERROR(queue.Signal(fence, 3));
-
-    // callback should have device lost status
-    EXPECT_CALL(*mockFenceOnCompletionCallback, Call(WGPUFenceCompletionStatus_DeviceLost, nullptr))
-        .Times(1);
-    ASSERT_DEVICE_ERROR(fence.OnCompletion(2u, ToMockFenceOnCompletionFails, nullptr));
-
-    // completed value should not have changed from initial value
-    EXPECT_EQ(fence.GetCompletedValue(), 0u);
-}
-
-// Test that Fence On Completion fails after device is lost
-TEST_P(DeviceLostTest, FenceOnCompletionFails) {
-    wgpu::Fence fence;
-    EXPECT_DEPRECATION_WARNING(fence = queue.CreateFence());
-
-    queue.Signal(fence, 2);
-
-    SetCallbackAndLoseForTesting();
-    // callback should have device lost status
-    EXPECT_CALL(*mockFenceOnCompletionCallback, Call(WGPUFenceCompletionStatus_DeviceLost, nullptr))
-        .Times(1);
-    ASSERT_DEVICE_ERROR(fence.OnCompletion(2u, ToMockFenceOnCompletionFails, nullptr));
-    ASSERT_DEVICE_ERROR(device.Tick());
-
-    // completed value is the last value signaled (all previous GPU operations are as if completed)
-    EXPECT_EQ(fence.GetCompletedValue(), 2u);
-}
-
-// Test that Fence::OnCompletion callbacks with device lost status when device is lost after calling
-// OnCompletion
-TEST_P(DeviceLostTest, FenceOnCompletionBeforeLossFails) {
-    wgpu::Fence fence;
-    EXPECT_DEPRECATION_WARNING(fence = queue.CreateFence());
-
-    queue.Signal(fence, 2);
-
-    // callback should have device lost status
-    EXPECT_CALL(*mockFenceOnCompletionCallback, Call(WGPUFenceCompletionStatus_DeviceLost, nullptr))
-        .Times(1);
-    fence.OnCompletion(2u, ToMockFenceOnCompletionFails, nullptr);
-    SetCallbackAndLoseForTesting();
-    ASSERT_DEVICE_ERROR(device.Tick());
-
-    EXPECT_EQ(fence.GetCompletedValue(), 2u);
-}
-
 // Test that QueueOnSubmittedWorkDone fails after device is lost.
 TEST_P(DeviceLostTest, QueueOnSubmittedWorkDoneFails) {
     SetCallbackAndLoseForTesting();
@@ -497,36 +417,6 @@ TEST_P(DeviceLostTest, QueueOnSubmittedWorkDoneBeforeLossFails) {
 
     SetCallbackAndLoseForTesting();
     ASSERT_DEVICE_ERROR(device.Tick());
-}
-
-// Regression test for the Null backend not properly setting the completedSerial when
-// WaitForIdleForDestruction is called, causing the fence signaling to not be retired and an
-// ASSERT to fire.
-TEST_P(DeviceLostTest, AfterSubmitAndSerial) {
-    queue.Submit(0, nullptr);
-
-    wgpu::Fence fence;
-    EXPECT_DEPRECATION_WARNING(fence = queue.CreateFence());
-
-    queue.Signal(fence, 1);
-    SetCallbackAndLoseForTesting();
-}
-
-// Test that when you Signal, then Tick, then device lost, the fence completed value would be 2
-TEST_P(DeviceLostTest, FenceSignalTickOnCompletion) {
-    wgpu::Fence fence;
-    EXPECT_DEPRECATION_WARNING(fence = queue.CreateFence());
-
-    queue.Signal(fence, 2);
-    WaitForAllOperations();
-
-    // callback should have device lost status
-    EXPECT_CALL(*mockFenceOnCompletionCallback, Call(WGPUFenceCompletionStatus_Success, nullptr))
-        .Times(1);
-    fence.OnCompletion(2u, ToMockFenceOnCompletionSucceeds, nullptr);
-    SetCallbackAndLoseForTesting();
-
-    EXPECT_EQ(fence.GetCompletedValue(), 2u);
 }
 
 // Test that LostForTesting can only be called on one time
@@ -558,12 +448,12 @@ TEST_P(DeviceLostTest, DeviceLostDoesntCallUncapturedError) {
 // before the callback of Create*PipelineAsync() is called.
 TEST_P(DeviceLostTest, DeviceLostBeforeCreatePipelineAsyncCallback) {
     wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
-        [[stage(compute)]] fn main() {
+        [[stage(compute), workgroup_size(1)]] fn main() {
         })");
 
     wgpu::ComputePipelineDescriptor descriptor;
-    descriptor.computeStage.module = csModule;
-    descriptor.computeStage.entryPoint = "main";
+    descriptor.compute.module = csModule;
+    descriptor.compute.entryPoint = "main";
 
     auto callback = [](WGPUCreatePipelineAsyncStatus status, WGPUComputePipeline returnPipeline,
                        const char* message, void* userdata) {
@@ -572,6 +462,42 @@ TEST_P(DeviceLostTest, DeviceLostBeforeCreatePipelineAsyncCallback) {
 
     device.CreateComputePipelineAsync(&descriptor, callback, nullptr);
     SetCallbackAndLoseForTesting();
+}
+
+// This is a regression test for crbug.com/1212385 where Dawn didn't clean up all
+// references to bind group layouts such that the cache was non-empty at the end
+// of shut down.
+TEST_P(DeviceLostTest, FreeBindGroupAfterDeviceLossWithPendingCommands) {
+    wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Storage}});
+
+    wgpu::BufferDescriptor bufferDesc;
+    bufferDesc.size = sizeof(float);
+    bufferDesc.usage = wgpu::BufferUsage::Storage;
+    wgpu::Buffer buffer = device.CreateBuffer(&bufferDesc);
+
+    wgpu::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, buffer, 0, sizeof(float)}});
+
+    // Advance the pending command serial. We only a need a couple of these to repro the bug,
+    // but include extra so this does not become a change-detecting test if the specific serial
+    // value is sensitive.
+    queue.Submit(0, nullptr);
+    queue.Submit(0, nullptr);
+    queue.Submit(0, nullptr);
+    queue.Submit(0, nullptr);
+    queue.Submit(0, nullptr);
+    queue.Submit(0, nullptr);
+
+    SetCallbackAndLoseForTesting();
+
+    // Releasing the bing group places the bind group layout into a queue in the Vulkan backend
+    // for recycling of descriptor sets. So, after these release calls there is still one last
+    // reference to the BGL which wouldn't be freed until the pending serial passes.
+    // Since the device is lost, destruction will clean up immediately without waiting for the
+    // serial. The implementation needs to be sure to clear these BGL references. At the end of
+    // Device shut down, we ASSERT that the BGL cache is empty.
+    bgl = nullptr;
+    bg = nullptr;
 }
 
 DAWN_INSTANTIATE_TEST(DeviceLostTest,

@@ -1,0 +1,12 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol_1 {
+  float4 value [[position]] [[invariant]];
+};
+
+vertex tint_symbol_1 tint_symbol() {
+  tint_symbol_1 const tint_symbol_2 = {.value=float4()};
+  return tint_symbol_2;
+}
+

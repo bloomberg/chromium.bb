@@ -13,7 +13,9 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_ruby_run.h"
+#include "third_party/blink/renderer/core/layout/layout_ruby_text.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -56,7 +58,7 @@ inline PhysicalRect ComputeBoxRect(const NGInlineCursor& cursor,
                                    const PhysicalOffset& paint_offset,
                                    const PhysicalOffset& parent_offset) {
   PhysicalRect box_rect;
-  if (const auto* svg_data = cursor.CurrentItem()->SVGFragmentData())
+  if (const auto* svg_data = cursor.CurrentItem()->SvgFragmentData())
     box_rect = PhysicalRect::FastAndLossyFromFloatRect(svg_data->rect);
   else
     box_rect = cursor.CurrentItem()->RectInContainerFragment();
@@ -89,6 +91,9 @@ bool ShouldPaintEmphasisMark(const ComputedStyle& style,
                              const LayoutObject& layout_object) {
   if (style.GetTextEmphasisMark() == TextEmphasisMark::kNone)
     return false;
+  // Note: We set text-emphasis-style:none for combined text and we paint
+  // emphasis mark at left/right side of |LayoutNGTextCombine|.
+  DCHECK(!IsA<LayoutNGTextCombine>(layout_object.Parent()));
   const LayoutObject* containing_block = layout_object.ContainingBlock();
   if (!containing_block || !containing_block->IsRubyBase())
     return true;
@@ -144,10 +149,20 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   const LayoutObject* layout_object = text_item.GetLayoutObject();
   const Document& document = layout_object->GetDocument();
   const bool is_printing = document.Printing();
+  // Don't paint selections when rendering a mask, clip-path (as a mask),
+  // pattern or feImage (element reference.)
+  const bool is_rendering_resource = paint_info.IsRenderingResourceSubtree();
+  const auto* const text_combine =
+      DynamicTo<LayoutNGTextCombine>(layout_object->Parent());
+#if DCHECK_IS_ON()
+  if (UNLIKELY(text_combine))
+    LayoutNGTextCombine::AssertStyleIsValid(style);
+#endif
 
   // Determine whether or not we're selected.
   absl::optional<NGHighlightPainter::SelectionPaintState> selection;
-  if (UNLIKELY(!is_printing && paint_info.phase != PaintPhase::kTextClip &&
+  if (UNLIKELY(!is_printing && !is_rendering_resource &&
+               paint_info.phase != PaintPhase::kTextClip &&
                layout_object->IsSelected())) {
     const NGInlineCursor& root_inline_cursor =
         InlineCursorForBlockFlow(cursor_, &inline_cursor_for_block_flow_);
@@ -167,16 +182,23 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   }
 
   PhysicalRect box_rect = ComputeBoxRect(cursor_, paint_offset, parent_offset_);
+  if (UNLIKELY(text_combine)) {
+    box_rect.offset.left =
+        text_combine->AdjustTextLeftForPaint(box_rect.offset.left);
+  }
+
   IntRect visual_rect;
-  const LayoutSVGInlineText* svg_inline_text = nullptr;
+  const auto* const svg_inline_text =
+      DynamicTo<LayoutSVGInlineText>(layout_object);
   float scaling_factor = 1.0f;
-  if (text_item.Type() == NGFragmentItem::kSVGText) {
-    svg_inline_text = To<LayoutSVGInlineText>(layout_object);
+  if (UNLIKELY(svg_inline_text)) {
+    DCHECK_EQ(text_item.Type(), NGFragmentItem::kSvgText);
     scaling_factor = svg_inline_text->ScalingFactor();
     DCHECK_NE(scaling_factor, 0.0f);
     visual_rect = EnclosingIntRect(
         svg_inline_text->Parent()->VisualRectInLocalSVGCoordinates());
   } else {
+    DCHECK_NE(text_item.Type(), NGFragmentItem::kSvgText);
     PhysicalRect ink_overflow = text_item.SelfInkOverflow();
     ink_overflow.Move(box_rect.offset);
     visual_rect = EnclosingIntRect(ink_overflow);
@@ -190,7 +212,7 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
       AsDisplayItemClient(cursor_, selection.has_value());
 
   // Ensure the selection bounds are recorded on the paint chunk regardless of
-  // whether the diplay item that contains the actual selection painting is
+  // whether the display item that contains the actual selection painting is
   // reused.
   absl::optional<SelectionBoundsRecorder> selection_recorder;
   if (UNLIKELY(selection && paint_info.phase == PaintPhase::kForeground &&
@@ -209,12 +231,14 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   }
 
   if (paint_info.phase != PaintPhase::kTextClip) {
-    if (DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, display_item_client, paint_info.phase)) {
-      return;
+    if (LIKELY(!paint_info.context.InDrawingRecorder())) {
+      if (DrawingRecorder::UseCachedDrawingIfPossible(
+              paint_info.context, display_item_client, paint_info.phase)) {
+        return;
+      }
+      recorder.emplace(paint_info.context, display_item_client,
+                       paint_info.phase, visual_rect);
     }
-    recorder.emplace(paint_info.context, display_item_client, paint_info.phase,
-                     visual_rect);
   }
 
   if (UNLIKELY(text_item.IsSymbolMarker())) {
@@ -238,14 +262,8 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   // Determine text colors.
 
   Node* node = layout_object->GetNode();
-  DCHECK(!svg_inline_text ||
-         (!IsA<SVGElement>(node) && IsA<SVGElement>(node->parentNode())));
   TextPaintStyle text_style =
-      svg_inline_text
-          ? TextPainterBase::SvgTextPaintingStyle(
-                document, SVGLengthContext(To<SVGElement>(node->parentNode())),
-                style, paint_info)
-          : TextPainterBase::TextPaintingStyle(document, style, paint_info);
+      TextPainterBase::TextPaintingStyle(document, style, paint_info);
   // TODO(crbug.com/1179585): Support SVG Paint Servers (e.g. Gradient, Pattern)
   if (UNLIKELY(selection)) {
     selection->ComputeSelectionStyle(document, style, node, paint_info,
@@ -253,35 +271,54 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   }
 
   // Set our font.
-  const Font& font =
-      svg_inline_text ? svg_inline_text->ScaledFont() : style.GetFont();
+  const Font& font = UNLIKELY(svg_inline_text)
+                         ? svg_inline_text->ScaledFont()
+                         : UNLIKELY(text_combine)
+                               ? text_combine->UsesCompressedFont()
+                                     ? text_combine->CompressedFont()
+                                     : style.GetFont()
+                               : style.GetFont();
   const SimpleFontData* font_data = font.PrimaryFont();
   DCHECK(font_data);
 
   const bool paint_marker_backgrounds =
       paint_info.phase != PaintPhase::kSelectionDragImage &&
       paint_info.phase != PaintPhase::kTextClip && !is_printing;
-  absl::optional<GraphicsContextStateSaver> state_saver;
+  GraphicsContextStateSaver state_saver(context, /*save_and_restore=*/false);
   absl::optional<AffineTransform> rotation;
   const WritingMode writing_mode = style.GetWritingMode();
   const bool is_horizontal = IsHorizontalWritingMode(writing_mode);
-  int ascent = font_data ? font_data->GetFontMetrics().Ascent() : 0;
-  PhysicalOffset text_origin(box_rect.offset.left,
-                             box_rect.offset.top + ascent);
-  if (svg_inline_text && scaling_factor != 1.0f) {
-    state_saver.emplace(context);
-    context.Scale(1 / scaling_factor, 1 / scaling_factor);
-  }
-  if (text_item.HasSVGTransformForPaint()) {
-    if (!state_saver)
-      state_saver.emplace(context);
-    context.ConcatCTM(text_item.BuildSVGTransformForPaint());
-  }
+  const int ascent = font_data ? font_data->GetFontMetrics().Ascent() : 0;
+  PhysicalOffset text_origin(
+      box_rect.offset.left,
+      UNLIKELY(text_combine)
+          ? text_combine->AdjustTextTopForPaint(box_rect.offset.top)
+          : box_rect.offset.top + ascent);
+
   NGTextPainter text_painter(context, font, fragment_paint_info, visual_rect,
                              text_origin, box_rect, is_horizontal);
   NGHighlightPainter highlight_painter(
       text_painter, paint_info, cursor_, *cursor_.CurrentItem(),
       box_rect.offset, style, std::move(selection), is_printing);
+
+  if (svg_inline_text) {
+    NGTextPainter::SvgTextPaintState& svg_state = text_painter.SetSvgState(
+        *svg_inline_text, style, paint_info.IsRenderingClipPathAsMaskImage());
+
+    if (scaling_factor != 1.0f) {
+      state_saver.SaveIfNeeded();
+      context.Scale(1 / scaling_factor, 1 / scaling_factor);
+      svg_state.EnsureShaderTransform().Scale(scaling_factor);
+    }
+    if (text_item.HasSvgTransformForPaint()) {
+      state_saver.SaveIfNeeded();
+      const auto fragment_transform = text_item.BuildSvgTransformForPaint();
+      context.ConcatCTM(fragment_transform);
+      DCHECK(fragment_transform.IsInvertible());
+      svg_state.EnsureShaderTransform().PreMultiply(
+          fragment_transform.Inverse());
+    }
+  }
 
   // 1. Paint backgrounds for document markers that don’t participate in the CSS
   // highlight overlay system, such as composition highlights. They use physical
@@ -289,21 +326,25 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   highlight_painter.Paint(NGHighlightPainter::kBackground);
 
   if (!is_horizontal) {
-    if (!state_saver)
-      state_saver.emplace(context);
+    state_saver.SaveIfNeeded();
     // Because we rotate the GraphicsContext to match the logical direction,
     // transpose the |box_rect| to match to it.
     box_rect.size = PhysicalSize(box_rect.Height(), box_rect.Width());
-    rotation.emplace(TextPainterBase::Rotation(
-        box_rect, writing_mode != WritingMode::kSidewaysLr
-                      ? TextPainterBase::kClockwise
-                      : TextPainterBase::kCounterclockwise));
+    rotation.emplace(TextPainterBase::Rotation(box_rect, writing_mode));
     context.ConcatCTM(*rotation);
+    if (NGTextPainter::SvgTextPaintState* state = text_painter.GetSvgState()) {
+      DCHECK(rotation->IsInvertible());
+      state->EnsureShaderTransform().PreMultiply(rotation->Inverse());
+    }
   }
 
   if (UNLIKELY(highlight_painter.Selection())) {
     PhysicalRect before_rotation =
         highlight_painter.Selection()->ComputeSelectionRect(box_rect.offset);
+    if (scaling_factor != 1.0f) {
+      before_rotation.offset.Scale(1 / scaling_factor);
+      before_rotation.size.Scale(1 / scaling_factor);
+    }
 
     // The selection rect is given in physical coordinates, so we need to map
     // them into our now-possibly-rotated space before calling any methods
@@ -344,6 +385,7 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
         &has_line_through_decoration);
     text_painter.Paint(start_offset, end_offset, length, text_style, node_id);
     if (has_line_through_decoration) {
+      DCHECK(!text_combine);
       text_painter.PaintDecorationsOnlyLineThrough(
           text_item, paint_info, style, text_style, box_rect, absl::nullopt);
     }
@@ -375,6 +417,7 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
                                                      text_style, node_id);
 
     if (has_line_through_decoration) {
+      DCHECK(!text_combine);
       text_painter.PaintDecorationsOnlyLineThrough(
           text_item, paint_info, style, text_style, box_rect,
           highlight_painter.SelectionDecoration());

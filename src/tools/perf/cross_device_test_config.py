@@ -28,8 +28,6 @@ TARGET_DEVICES = {
             'css_transitions_triggered_style_element': 4,
             'canvas_animation_no_clear': 4
         },
-        'system_health.common_mobile': 3,
-        'system_health.memory_mobile': 3,
     },
     'android-pixel2-perf': {
         'system_health.common_mobile': 3,
@@ -64,5 +62,13 @@ TARGET_DEVICES = {
             'Speedometer2': 28,
         },
         'blink_perf.shadow_dom': 31
+    },
+    'android-pixel2-perf-calibration': {
+        'system_health.common_mobile': {
+            'browse:news:cnn:2021': 50,
+        },
+        'system_health.memory_mobile': {
+            'browse:news:cnn:2021': 50,
+        },
     }
 }

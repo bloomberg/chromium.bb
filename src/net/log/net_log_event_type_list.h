@@ -2647,6 +2647,9 @@ EVENT_TYPE(AUTH_BOUND_TO_CONTROLLER)
 //      "scheme": <scheme>
 //      "net_error": <Net Error. Only present in case of error.>
 //      "challenge": <challenge string, if NetLogCaptureIncludesSensitive>
+//      "origin": <the origin of the server or proxy which issued the challenge>
+//      "allows_default_credentials": <whether the default credentials may be
+//                                     used for the origin>
 //  }
 EVENT_TYPE(AUTH_HANDLER_CREATE_RESULT)
 
@@ -2673,6 +2676,13 @@ EVENT_TYPE(AUTH_GENERATE_TOKEN)
 //       "authorization_result": <One of "accept", "reject", "stale", "invalid",
 //                                "different_realm" depending on the outcome of
 //                                the handling the challenge>
+//  }
+//
+// The END phase has the following parameters:
+//  {
+//      "net_error": <The error code.>
+//      "has_handle": <Whether it has an auth handler.>
+//      "has_valid_identity": <Whether it has a valid identity.>
 //  }
 EVENT_TYPE(AUTH_HANDLE_CHALLENGE)
 
@@ -2861,6 +2871,10 @@ EVENT_TYPE(SPECIFIC_NETWORK_SOON_TO_DISCONNECT)
 //                                       networks.>
 //   }
 EVENT_TYPE(SPECIFIC_NETWORK_MADE_DEFAULT)
+
+// This event is emitted whenever CertDatabase determines that the certificate
+// database has changed.
+EVENT_TYPE(CERTIFICATE_DATABASE_CHANGED)
 
 // ------------------------------------------------------------------------
 // Exponential back-off throttling events
@@ -3918,3 +3932,15 @@ EVENT_TYPE(TRUST_TOKEN_OPERATION_BEGIN_REDEMPTION)
 EVENT_TYPE(TRUST_TOKEN_OPERATION_FINALIZE_REDEMPTION)
 
 EVENT_TYPE(TRUST_TOKEN_OPERATION_BEGIN_SIGNING)
+
+// Temporarily added to for https://crbug.com/1186863. Logged at
+// net::URLRequestJob::NotifyHeadersComplete.
+EVENT_TYPE(URL_REQUEST_JOB_NOTIFY_HEADERS_COMPLETE_NEEDS_AUTH)
+
+// Temporarily added to for https://crbug.com/1186863. Logged at
+// net::URLRequestHttpJob::NotifyHeadersComplete.
+// The following parameters are attached:
+//   {
+//     "ready_to_restart_for_auth": <boolean>,
+//   }
+EVENT_TYPE(URL_REQUEST_HTTP_JOB_NOTIFY_HEADERS_COMPLETE)

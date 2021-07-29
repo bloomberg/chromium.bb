@@ -28,6 +28,7 @@
 #include "src/core/SkDrawProcs.h"
 #include "src/core/SkMaskFilterBase.h"
 #include "src/core/SkMatrixUtils.h"
+#include "src/core/SkPathEffectBase.h"
 #include "src/core/SkPathPriv.h"
 #include "src/core/SkRasterClip.h"
 #include "src/core/SkRectPriv.h"
@@ -437,13 +438,13 @@ void SkDraw::drawPoints(SkCanvas::PointMode mode, size_t count,
                     // most likely a dashed line - see if it is one of the ones
                     // we can accelerate
                     SkStrokeRec rec(paint);
-                    SkPathEffect::PointData pointData;
+                    SkPathEffectBase::PointData pointData;
 
                     SkPath path = SkPath::Line(pts[0], pts[1]);
 
                     SkRect cullRect = SkRect::Make(fRC->getBounds());
 
-                    if (paint.getPathEffect()->asPoints(&pointData, path, rec, ctm, &cullRect)) {
+                    if (as_PEB(paint.getPathEffect())->asPoints(&pointData, path, rec, ctm, &cullRect)) {
                         // 'asPoints' managed to find some fast path
 
                         SkPaint newP(paint);
@@ -470,7 +471,7 @@ void SkDraw::drawPoints(SkCanvas::PointMode mode, size_t count,
                             // The rest of the dashed line can just be drawn as points
                             SkASSERT(pointData.fSize.fX == SkScalarHalf(newP.getStrokeWidth()));
 
-                            if (SkPathEffect::PointData::kCircles_PointFlag & pointData.fFlags) {
+                            if (SkPathEffectBase::PointData::kCircles_PointFlag & pointData.fFlags) {
                                 newP.setStrokeCap(SkPaint::kRound_Cap);
                             } else {
                                 newP.setStrokeCap(SkPaint::kButt_Cap);
@@ -491,7 +492,7 @@ void SkDraw::drawPoints(SkCanvas::PointMode mode, size_t count,
                             break;
                         } else {
                             // The rest of the dashed line must be drawn as rects
-                            SkASSERT(!(SkPathEffect::PointData::kCircles_PointFlag &
+                            SkASSERT(!(SkPathEffectBase::PointData::kCircles_PointFlag &
                                       pointData.fFlags));
 
                             SkRect r;
@@ -546,9 +547,9 @@ static inline SkPoint compute_stroke_size(const SkPaint& paint, const SkMatrix& 
     return SkPoint::Make(SkScalarAbs(size.fX), SkScalarAbs(size.fY));
 }
 
-static bool easy_rect_join(const SkPaint& paint, const SkMatrix& matrix,
+static bool easy_rect_join(const SkRect& rect, const SkPaint& paint, const SkMatrix& matrix,
                            SkPoint* strokeSize) {
-    if (SkPaint::kMiter_Join != paint.getStrokeJoin() ||
+    if (rect.isEmpty() || SkPaint::kMiter_Join != paint.getStrokeJoin() ||
         paint.getStrokeMiter() < SK_ScalarSqrt2) {
         return false;
     }
@@ -557,7 +558,8 @@ static bool easy_rect_join(const SkPaint& paint, const SkMatrix& matrix,
     return true;
 }
 
-SkDraw::RectType SkDraw::ComputeRectType(const SkPaint& paint,
+SkDraw::RectType SkDraw::ComputeRectType(const SkRect& rect,
+                                         const SkPaint& paint,
                                          const SkMatrix& matrix,
                                          SkPoint* strokeSize) {
     RectType rtype;
@@ -576,7 +578,7 @@ SkDraw::RectType SkDraw::ComputeRectType(const SkPaint& paint,
         rtype = kFill_RectType;
     } else if (zeroWidth) {
         rtype = kHair_RectType;
-    } else if (easy_rect_join(paint, matrix, strokeSize)) {
+    } else if (easy_rect_join(rect, paint, matrix, strokeSize)) {
         rtype = kStroke_RectType;
     } else {
         rtype = kPath_RectType;
@@ -622,7 +624,7 @@ void SkDraw::drawRect(const SkRect& prePaintRect, const SkPaint& paint,
 
     SkMatrix ctm = fMatrixProvider->localToDevice();
     SkPoint strokeSize;
-    RectType rtype = ComputeRectType(paint, ctm, &strokeSize);
+    RectType rtype = ComputeRectType(prePaintRect, paint, ctm, &strokeSize);
 
     if (kPath_RectType == rtype) {
         draw_rect_as_path(*this, prePaintRect, paint, matrixProvider);
@@ -802,19 +804,6 @@ DRAW_PATH:
     this->drawPath(path, paint, nullptr, true);
 }
 
-SkScalar SkDraw::ComputeResScaleForStroking(const SkMatrix& matrix) {
-    // Not sure how to handle perspective differently, so we just don't try (yet)
-    SkScalar sx = SkPoint::Length(matrix[SkMatrix::kMScaleX], matrix[SkMatrix::kMSkewY]);
-    SkScalar sy = SkPoint::Length(matrix[SkMatrix::kMSkewX],  matrix[SkMatrix::kMScaleY]);
-    if (SkScalarsAreFinite(sx, sy)) {
-        SkScalar scale = std::max(sx, sy);
-        if (scale > 0) {
-            return scale;
-        }
-    }
-    return 1;
-}
-
 void SkDraw::drawDevPath(const SkPath& devPath, const SkPaint& paint, bool drawCoverage,
                          SkBlitter* customBlitter, bool doFill) const {
     if (SkPathPriv::TooBigForMath(devPath)) {
@@ -913,17 +902,16 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
             matrixProvider = preConcatMatrixProvider.init(*matrixProvider, *prePathMatrix);
         }
     }
-    // at this point we're done with prePathMatrix
-    SkDEBUGCODE(prePathMatrix = (const SkMatrix*)0x50FF8001;)
 
     SkTCopyOnFirstWrite<SkPaint> paint(origPaint);
 
     {
         SkScalar coverage;
         if (SkDrawTreatAsHairline(origPaint, matrixProvider->localToDevice(), &coverage)) {
+            const auto bm = origPaint.asBlendMode();
             if (SK_Scalar1 == coverage) {
                 paint.writable()->setStrokeWidth(0);
-            } else if (SkBlendMode_SupportsCoverageAsAlpha(origPaint.getBlendMode())) {
+            } else if (bm && SkBlendMode_SupportsCoverageAsAlpha(bm.value())) {
                 U8CPU newAlpha;
 #if 0
                 newAlpha = SkToU8(SkScalarRoundToInt(coverage *
@@ -949,7 +937,7 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
             cullRectPtr = &cullRect;
         }
         doFill = paint->getFillPath(*pathPtr, tmpPath, cullRectPtr,
-                                    ComputeResScaleForStroking(fMatrixProvider->localToDevice()));
+                                    fMatrixProvider->localToDevice());
         pathPtr = tmpPath;
     }
 

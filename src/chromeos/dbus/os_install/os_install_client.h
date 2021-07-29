@@ -9,7 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace dbus {
 class Bus;
@@ -41,7 +41,10 @@ class COMPONENT_EXPORT(OS_INSTALL) OsInstallClient {
                                const std::string& service_log) = 0;
   };
 
-  using StartOsInstallCallback = DBusMethodCallback<Status>;
+  class TestInterface {
+   public:
+    virtual void UpdateStatus(Status status) = 0;
+  };
 
   OsInstallClient(const OsInstallClient&) = delete;
   OsInstallClient& operator=(const OsInstallClient&) = delete;
@@ -64,10 +67,11 @@ class COMPONENT_EXPORT(OS_INSTALL) OsInstallClient {
   // Returns true if this object has the given observer.
   virtual bool HasObserver(const Observer* observer) const = 0;
 
-  // Start the installation process. If starting the installation
-  // works this will respond with the InProgress status; updates are
-  // sent back via the OsInstallStatusChanged signal.
-  virtual void StartOsInstall(StartOsInstallCallback callback) = 0;
+  virtual TestInterface* GetTestInterface() = 0;
+
+  // Start the installation process. Status updates can be monitored
+  // by adding an Observer.
+  virtual void StartOsInstall() = 0;
 
  protected:
   OsInstallClient();
@@ -75,5 +79,10 @@ class COMPONENT_EXPORT(OS_INSTALL) OsInstallClient {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+using ::chromeos::OsInstallClient;
+}  // namespace ash
 
 #endif  // CHROMEOS_DBUS_OS_INSTALL_OS_INSTALL_CLIENT_H_

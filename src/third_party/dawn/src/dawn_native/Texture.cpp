@@ -19,6 +19,7 @@
 #include "common/Assert.h"
 #include "common/Constants.h"
 #include "common/Math.h"
+#include "dawn_native/Adapter.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/EnumMaskIterator.h"
 #include "dawn_native/PassResourceUsage.h"
@@ -26,7 +27,8 @@
 
 namespace dawn_native {
     namespace {
-        // TODO(jiawei.shao@intel.com): implement texture view format compatibility rule
+        // WebGPU currently does not have texture format reinterpretation. If it does, the
+        // code to check for it might go here.
         MaybeError ValidateTextureViewFormatCompatibility(const TextureBase* texture,
                                                           const TextureViewDescriptor* descriptor) {
             if (texture->GetFormat().format != descriptor->format) {
@@ -43,7 +45,7 @@ namespace dawn_native {
             return {};
         }
 
-        // TODO(jiawei.shao@intel.com): support validation on all texture view dimensions
+        // TODO(crbug.com/dawn/814): Implement for 1D texture.
         bool IsTextureViewDimensionCompatibleWithTextureDimension(
             wgpu::TextureViewDimension textureViewDimension,
             wgpu::TextureDimension textureDimension) {
@@ -63,7 +65,7 @@ namespace dawn_native {
             }
         }
 
-        // TODO(jiawei.shao@intel.com): support validation on all texture view dimensions
+        // TODO(crbug.com/dawn/814): Implement for 1D texture.
         bool IsArrayLayerValidForTextureViewDimension(
             wgpu::TextureViewDimension textureViewDimension,
             uint32_t textureViewArrayLayer) {
@@ -102,7 +104,6 @@ namespace dawn_native {
             }
         }
 
-        // TODO(jiawei.shao@intel.com): support more sample count.
         MaybeError ValidateSampleCount(const TextureDescriptor* descriptor, const Format* format) {
             if (!IsValidSampleCount(descriptor->sampleCount)) {
                 return DAWN_VALIDATION_ERROR("The sample count of the texture is not supported.");
@@ -264,17 +265,9 @@ namespace dawn_native {
         DAWN_TRY(ValidateTextureDimension(descriptor->dimension));
         DAWN_TRY(ValidateSampleCount(descriptor, format));
 
-        // TODO(jiawei.shao@intel.com): check stuff based on the dimension
         if (descriptor->size.width == 0 || descriptor->size.height == 0 ||
             descriptor->size.depthOrArrayLayers == 0 || descriptor->mipLevelCount == 0) {
             return DAWN_VALIDATION_ERROR("Cannot create an empty texture");
-        }
-
-        // Disallow 1D and 3D textures as unsafe until they are fully implemented.
-        if (descriptor->dimension != wgpu::TextureDimension::e2D &&
-            device->IsToggleEnabled(Toggle::DisallowUnsafeAPIs)) {
-            return DAWN_VALIDATION_ERROR(
-                "1D and 3D textures are disallowed because they are not fully implemented");
         }
 
         if (descriptor->dimension != wgpu::TextureDimension::e2D && format->isCompressed) {
@@ -289,6 +282,17 @@ namespace dawn_native {
         }
 
         DAWN_TRY(ValidateTextureSize(descriptor, format));
+
+        if (device->IsToggleEnabled(Toggle::DisallowUnsafeAPIs) && format->HasStencil() &&
+            descriptor->mipLevelCount > 1 &&
+            device->GetAdapter()->GetBackendType() == wgpu::BackendType::Metal) {
+            // TODO(crbug.com/dawn/838): Implement a workaround for this issue.
+            // Readbacks from the non-zero mip of a stencil texture may contain
+            // garbage data.
+            return DAWN_VALIDATION_ERROR(
+                "crbug.com/dawn/838: Stencil textures with more than one mip level are "
+                "disabled on Metal.");
+        }
 
         return {};
     }
@@ -312,13 +316,6 @@ namespace dawn_native {
             return DAWN_VALIDATION_ERROR("1D texture views aren't supported (yet).");
         }
 
-        // Disallow 3D views as unsafe until they are fully implemented.
-        if (descriptor->dimension == wgpu::TextureViewDimension::e3D &&
-            device->IsToggleEnabled(Toggle::DisallowUnsafeAPIs)) {
-            return DAWN_VALIDATION_ERROR(
-                "3D views are disallowed because they are not fully implemented");
-        }
-
         DAWN_TRY(ValidateTextureFormat(descriptor->format));
 
         DAWN_TRY(ValidateTextureAspect(descriptor->aspect));
@@ -326,7 +323,6 @@ namespace dawn_native {
             return DAWN_VALIDATION_ERROR("Texture does not have selected aspect for texture view.");
         }
 
-        // TODO(jiawei.shao@intel.com): check stuff based on resource limits
         if (descriptor->arrayLayerCount == 0 || descriptor->mipLevelCount == 0) {
             return DAWN_VALIDATION_ERROR("Cannot create an empty texture view");
         }
@@ -366,11 +362,7 @@ namespace dawn_native {
                     break;
 
                 case wgpu::TextureDimension::e2D:
-                    if (texture->GetArrayLayers() > 1u && desc.arrayLayerCount == 0) {
-                        desc.dimension = wgpu::TextureViewDimension::e2DArray;
-                    } else {
-                        desc.dimension = wgpu::TextureViewDimension::e2D;
-                    }
+                    desc.dimension = wgpu::TextureViewDimension::e2D;
                     break;
 
                 case wgpu::TextureDimension::e3D:
@@ -384,7 +376,22 @@ namespace dawn_native {
             desc.format = texture->GetFormat().format;
         }
         if (desc.arrayLayerCount == 0) {
-            desc.arrayLayerCount = texture->GetArrayLayers() - desc.baseArrayLayer;
+            switch (desc.dimension) {
+                case wgpu::TextureViewDimension::e1D:
+                case wgpu::TextureViewDimension::e2D:
+                case wgpu::TextureViewDimension::e3D:
+                    desc.arrayLayerCount = 1;
+                    break;
+                case wgpu::TextureViewDimension::Cube:
+                    desc.arrayLayerCount = 6;
+                    break;
+                case wgpu::TextureViewDimension::e2DArray:
+                case wgpu::TextureViewDimension::CubeArray:
+                    desc.arrayLayerCount = texture->GetArrayLayers() - desc.baseArrayLayer;
+                    break;
+                default:
+                    UNREACHABLE();
+            }
         }
         if (desc.mipLevelCount == 0) {
             desc.mipLevelCount = texture->GetNumMipLevels() - desc.baseMipLevel;
@@ -392,6 +399,8 @@ namespace dawn_native {
         return desc;
     }
 
+    // WebGPU only supports sample counts of 1 and 4. We could expand to more based on
+    // platform support, but it would probably be an extension.
     bool IsValidSampleCount(uint32_t sampleCount) {
         switch (sampleCount) {
             case 1:
@@ -443,7 +452,6 @@ namespace dawn_native {
         return mDimension;
     }
 
-    // TODO(jiawei.shao@intel.com): return more information about texture format
     const Format& TextureBase::GetFormat() const {
         ASSERT(!IsError());
         return mFormat;
@@ -468,7 +476,7 @@ namespace dawn_native {
     }
     uint32_t TextureBase::GetArrayLayers() const {
         ASSERT(!IsError());
-        // TODO(cwallez@chromium.org): Update for 1D textures when they are supported.
+        // TODO(crbug.com/dawn/814): Update for 1D textures when they are supported.
         ASSERT(mDimension != wgpu::TextureDimension::e1D);
         if (mDimension == wgpu::TextureDimension::e3D) {
             return 1;
@@ -581,8 +589,10 @@ namespace dawn_native {
 
         // Compressed Textures will have paddings if their width or height is not a multiple of
         // 4 at non-zero mipmap levels.
-        if (mFormat.isCompressed) {
-            // TODO(jiawei.shao@intel.com): check if there are any overflows.
+        if (mFormat.isCompressed && level != 0) {
+            // If |level| is non-zero, then each dimension of |extent| is at most half of
+            // the max texture dimension. Computations here which add the block width/height
+            // to the extent cannot overflow.
             const TexelBlockInfo& blockInfo = mFormat.GetAspectInfo(wgpu::TextureAspect::All).block;
             extent.width = (extent.width + blockInfo.width - 1) / blockInfo.width * blockInfo.width;
             extent.height =
@@ -596,10 +606,12 @@ namespace dawn_native {
                                                      const Origin3D& origin,
                                                      const Extent3D& extent) const {
         const Extent3D virtualSizeAtLevel = GetMipLevelVirtualSize(level);
-        uint32_t clampedCopyExtentWidth = (origin.x + extent.width > virtualSizeAtLevel.width)
+        ASSERT(origin.x <= virtualSizeAtLevel.width);
+        ASSERT(origin.y <= virtualSizeAtLevel.height);
+        uint32_t clampedCopyExtentWidth = (extent.width > virtualSizeAtLevel.width - origin.x)
                                               ? (virtualSizeAtLevel.width - origin.x)
                                               : extent.width;
-        uint32_t clampedCopyExtentHeight = (origin.y + extent.height > virtualSizeAtLevel.height)
+        uint32_t clampedCopyExtentHeight = (extent.height > virtualSizeAtLevel.height - origin.y)
                                                ? (virtualSizeAtLevel.height - origin.y)
                                                : extent.height;
         return {clampedCopyExtentWidth, clampedCopyExtentHeight, extent.depthOrArrayLayers};

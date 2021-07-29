@@ -29,15 +29,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build
   # and whatever else without interference from each other.
-  'build_revision': '1343ce81aab4e198c313b113ce278393187dc65c',
+  'build_revision': 'e6942ef1c557b2ae17d993ebf83d8b3c10cf3061',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling buildtools
   # and whatever else without interference from each other.
-  'buildtools_revision': 'e72cd4587a1b833ecf559e4524b69a359cc87697',
+  'buildtools_revision': 'be7dcbc36110b9381f228b8e4ca73ca1db9bf21a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'a934af88835906e8c2843972dfac6295bd5dafc8',
+  'catapult_revision': 'e8292371ff453eadd9803a2e9cb218a86e635b69',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang format
   # and whatever else without interference from each other.
@@ -45,7 +45,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang
   # and whatever else without interference from each other.
-  'clang_revision': 'ba668f13d135f1d01faf9b03c9a05f5877ac3f51',
+  'clang_revision': 'ccc7ba229ab7e050d8276a442cf1f9ad25c846cc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang_dsymutil
   # and whatever else without interference from each other.
@@ -53,39 +53,39 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling code_coverage
   # and whatever else without interference from each other.
-  'code_coverage_revision': '2b88a25be87f060acdf508e7415da47b99eca476',
+  'code_coverage_revision': '308d3d2d2c9d18ba3c2933e68a7e4162b0522043',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling depot_tools
   # and whatever else without interference from each other.
-  'depot_tools_revision': '5009fd68acadc05b4695afc71f86491278135ac3',
+  'depot_tools_revision': 'ac6f623a29dac2d7b67b9439339dff859c2110c0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '82fd32d67426f4d58663d3d382478473c95ac27c',
+  'freetype_revision': 'd3dc2da9b27af5b90575d62989389cc65fe7977c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling GN CIPD package version
   # and whatever else without interference from each other.
-  'gn_version': 'git_revision:6771ce569fb4803dad7a427aa2e2c23e960b917e',
+  'gn_version': 'git_revision:31f2bba8aafa8015ca5761100a21f17c2d741062',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling gtest
   # and whatever else without interference from each other.
-  'gtest_revision': '23ef29555ef4789f555f1ba8c51b4c52975f0907',
+  'gtest_revision': '4ec4cd23f486bf70efcc5d2caa40f24368f752e3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling icu
   # and whatever else without interference from each other.
-  'icu_revision': 'cd9f9a9495b1978ded709c248e467e7f5a74ea0a',
+  'icu_revision': 'a0718d4f121727e30b8d52c7a189ebf5ab52421f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling instrumented_lib
   # and whatever else without interference from each other.
-  'instrumented_lib_revision': '084aee04777db574038af9e9d33ca5caed577462',
+  'instrumented_lib_revision': '4ae2535e8e894c3cd81d46aacdaf151b5df30709',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling jinja2
   # and whatever else without interference from each other.
-  'jinja2_revision': '11b6b3e5971d760bd2d310f77643f55a818a6d25',
+  'jinja2_revision': '7c54c1f227727e0c4c1d3dc19dd71cd601a2db95',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling jpeg_turbo
   # and whatever else without interference from each other.
-  'jpeg_turbo_revision': '24e310554f07c0fdb8ee52e3e708e4f3e9eb6e20',
+  'jpeg_turbo_revision': 'b7bef8c05b7cdb1a038ae271a2c2b6647af4c879',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libc++
   # and whatever else without interference from each other.
@@ -95,31 +95,31 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libc++abi
   # and whatever else without interference from each other.
-  'libcxxabi_revision': '5f51521620a9229a8e7956a5a302031d3fc28b5f',
+  'libcxxabi_revision': 'e5f25a39b9decc487902de82f39ae56b4d634d7c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libunwind
   # and whatever else without interference from each other.
-  'libunwind_revision': '5844fc6769a95bab0653d8bd785d1f7aff8c9ff3',
+  'libunwind_revision': '950faeeabc1ee25569e62ec4ce749f013169482d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling markupsafe
   # and whatever else without interference from each other.
-  'markupsafe_revision': '0944e71f4b2cb9a871bcbe353f95e889b64a611a',
+  'markupsafe_revision': '1b882ef6372b58bfd55a3285f37ed801be9137cd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nasm_source
   # and whatever else without interference from each other.
-  'nasm_source_revision': '19f3fad68da99277b2882939d3b2fa4c4b8d51d9',
+  'nasm_source_revision': 'e9be5fd6d723a435ca2da162f9e0ffcb688747c1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling pdfium_tests
   # and whatever else without interference from each other.
-  'pdfium_tests_revision': '61bf033292709e29941375f45183db852e74977c',
+  'pdfium_tests_revision': 'b67d79fef155c0c44be240a4fde07f15adac5a4f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling skia
   # and whatever else without interference from each other.
-  'skia_revision': '958a9395e6cace433a6a56d159799a5937ddc499',
+  'skia_revision': '10e7e77909c5be806180b789421d1d2c6d03a96a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling tools_memory
   # and whatever else without interference from each other.
-  'tools_memory_revision': '71214b910decfe2e7cfc8b0ffc072a1b97da2d36',
+  'tools_memory_revision': '7235d59a2b9a370731802970c0ea3fa1a4933289',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling trace_event
   # and whatever else without interference from each other.
@@ -127,11 +127,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling v8
   # and whatever else without interference from each other.
-  'v8_revision': '9b3386186a11519a57f7368d5f2a354c7204ae86',
+  'v8_revision': '52ce5a351cf8d8919e728248dbf739e9cbec05ff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling zlib
   # and whatever else without interference from each other.
-  'zlib_revision': 'eb9ce8c993117f27ea0e5bccc0f2fee2a5323066',
+  'zlib_revision': '00ade15d946d72f75c786dc2e66c419a9d99e2ad',
 }
 
 deps = {

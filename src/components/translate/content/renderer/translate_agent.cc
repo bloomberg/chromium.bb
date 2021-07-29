@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -178,6 +179,8 @@ void TranslateAgent::PageCaptured(const std::u16string& contents) {
       url.SchemeIs(url::kFtpScheme)) {
     return;
   }
+
+  page_contents_length_ = contents.size();
 
   WebLanguageDetectionDetails web_detection_details =
       WebLanguageDetectionDetails::CollectLanguageDetectionDetails(document);
@@ -491,6 +494,7 @@ void TranslateAgent::CheckTranslateStatus() {
     // Check JavaScript performance counters for UMA reports.
     ReportTimeToTranslate(
         ExecuteScriptAndGetDoubleResult("cr.googleTranslate.translationTime"));
+    ReportTranslatedLanguageDetectionContentLength(page_contents_length_);
 
     // Notify the browser we are done.
     std::move(translate_callback_pending_)

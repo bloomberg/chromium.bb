@@ -80,8 +80,8 @@ class AppServiceImpl : public apps::mojom::AppService {
                  bool report_abuse) override;
   void PauseApp(apps::mojom::AppType app_type,
                 const std::string& app_id) override;
-  void UnpauseApps(apps::mojom::AppType app_type,
-                   const std::string& app_id) override;
+  void UnpauseApp(apps::mojom::AppType app_type,
+                  const std::string& app_id) override;
   void StopApp(apps::mojom::AppType app_type,
                const std::string& app_id) override;
   void GetMenuModel(apps::mojom::AppType app_type,
@@ -110,6 +110,9 @@ class AppServiceImpl : public apps::mojom::AppService {
   void SetResizeLocked(apps::mojom::AppType app_type,
                        const std::string& app_id,
                        apps::mojom::OptionalBool locked) override;
+  void SetWindowMode(apps::mojom::AppType app_type,
+                     const std::string& app_id,
+                     apps::mojom::WindowMode window_mode) override;
 
   // Retern the preferred_apps_ for testing.
   PreferredAppsList& GetPreferredAppsForTesting();

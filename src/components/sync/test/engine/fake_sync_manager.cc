@@ -136,10 +136,6 @@ FakeSyncManager::GetModelTypeConnectorProxy() {
   return std::make_unique<FakeModelTypeConnector>();
 }
 
-WeakHandle<JsBackend> FakeSyncManager::GetJsBackend() {
-  return WeakHandle<JsBackend>();
-}
-
 WeakHandle<DataTypeDebugInfoListener> FakeSyncManager::GetDebugInfoListener() {
   return WeakHandle<DataTypeDebugInfoListener>();
 }
@@ -194,12 +190,8 @@ void FakeSyncManager::UpdateInvalidationClientId(const std::string&) {
   NOTIMPLEMENTED();
 }
 
-void FakeSyncManager::UpdateSingleClientStatus(bool single_client) {
-  // Do nothing.
-}
-
-void FakeSyncManager::UpdateActiveDeviceFCMRegistrationTokens(
-    std::vector<std::string> fcm_registration_tokens) {
+void FakeSyncManager::UpdateActiveDevicesInvalidationInfo(
+    ActiveDevicesInvalidationInfo active_devices_invalidation_info) {
   // Do nothing.
 }
 

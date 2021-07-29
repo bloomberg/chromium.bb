@@ -29,6 +29,7 @@ source_set("data") {
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/browser/ui/util:url_with_title",
     "//ios/web/common:user_agent",
     "//ios/web/public",
     "//ios/web/public:web_state_observer",

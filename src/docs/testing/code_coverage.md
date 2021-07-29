@@ -231,6 +231,7 @@ code coverage report:
 ```
 $ llvm-cov show -output-dir=out/report -format=html \
     -instr-profile=out/report/coverage.profdata \
+    -compilation-dir=out/coverage \
     -object=out/coverage/url_unittests \
     out/coverage/crypto_unittests
 ```
@@ -305,12 +306,12 @@ reported usually grows after that.
 ### How can I improve [coverage dashboard]?
 
 The code for the service and dashboard currently lives along with findit at
-[this location](https://chromium.googlesource.com/infra/infra/+/master/appengine/findit/)
+[this location](https://chromium.googlesource.com/infra/infra/+/main/appengine/findit/)
 because of significant shared logic.
 
 The code used by the bots that generate the coverage data lives (among other
 places) in the
-[code coverage recipe module](https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/code_coverage/).
+[code coverage recipe module](https://chromium.googlesource.com/chromium/tools/build/+/main/scripts/slave/recipe_modules/code_coverage/).
 
 ### Why is coverage for X not reported or unreasonably low, even though there is a test for X?
 

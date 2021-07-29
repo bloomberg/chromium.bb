@@ -18,6 +18,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/media/audio_stream_monitor.h"
@@ -51,6 +52,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/fake_local_frame.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
@@ -78,6 +80,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/skia_util.h"
 #include "url/url_constants.h"
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/lacros/lacros_test_helper.h"
+#endif
 
 namespace content {
 namespace {
@@ -138,6 +144,11 @@ class WebContentsImplTest : public RenderViewHostImplTestHarness {
   }
 
  private:
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Instantiate LacrosService for WakeLock support.
+  chromeos::ScopedLacrosServiceTestHelper scoped_lacros_service_test_helper_;
+#endif
+
   ScopedWebUIControllerFactoryRegistration factory_registration_{
       ContentWebUIControllerFactory::GetInstance()};
 };
@@ -364,9 +375,7 @@ TEST_F(WebContentsImplTest, UpdateTitleBeforeFirstNavigation) {
 TEST_F(WebContentsImplTest, SetMainFrameMimeType) {
   ASSERT_TRUE(controller().IsInitialNavigation());
   std::string mime = "text/html";
-  RenderViewHostImpl* rvh =
-      static_cast<RenderViewHostImpl*>(main_test_rfh()->GetRenderViewHost());
-  rvh->SetContentsMimeType(mime);
+  main_test_rfh()->GetPage().SetContentsMimeType(mime);
   EXPECT_EQ(mime, contents()->GetContentsMimeType());
 }
 
@@ -1101,6 +1110,13 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationPreempted) {
 // TODO(avi,creis): Consider changing this behavior to better match the user's
 // intent.
 TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
+  // The test wants to cover the case where the old page gets deleted, so that
+  // back navigations can be stopped at ReadyToCommit timing. Disable
+  // back/forward cache to ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+  const bool will_change_site_instance =
+      IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled();
   // Start with a web ui page, which gets a new RVH with WebUI bindings.
   GURL url1(std::string(kChromeUIScheme) + "://" +
             std::string(kChromeUIGpuHost));
@@ -1137,14 +1153,14 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   SiteInstance* instance3 = contents()->GetSiteInstance();
 
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
-  if (CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+  if (will_change_site_instance) {
     // If same-site ProactivelySwapBrowsingInstance or main-frame RenderDocument
     // is enabled, the RFH should change.
     EXPECT_NE(google_rfh, main_test_rfh());
   } else {
     EXPECT_EQ(google_rfh, main_test_rfh());
   }
-  if (CanSameSiteMainFrameNavigationsChangeSiteInstances()) {
+  if (will_change_site_instance) {
     // When ProactivelySwapBrowsingInstance is enabled on same-site navigations,
     // the SiteInstance will change.
     EXPECT_NE(instance2, instance3);
@@ -1162,11 +1178,11 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   back_navigation1->Start();
 
   auto* first_pending_rfh = contents()->GetSpeculativePrimaryMainFrame();
-  GlobalFrameRoutingId first_pending_rfh_id;
-  if (CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+  GlobalRenderFrameHostId first_pending_rfh_id;
+  if (will_change_site_instance) {
     EXPECT_TRUE(contents()->CrossProcessNavigationPending());
     EXPECT_TRUE(first_pending_rfh);
-    first_pending_rfh_id = first_pending_rfh->GetGlobalFrameRoutingId();
+    first_pending_rfh_id = first_pending_rfh->GetGlobalId();
   } else {
     EXPECT_FALSE(contents()->CrossProcessNavigationPending());
     EXPECT_FALSE(first_pending_rfh);
@@ -1181,15 +1197,14 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_TRUE(contents()->GetSpeculativePrimaryMainFrame());
   EXPECT_EQ(entry1, controller().GetPendingEntry());
-  if (CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+  if (will_change_site_instance) {
     // When ProactivelySwapBrowsingInstance or RenderDocument is enabled on
     // same-site main frame navigation, the first back navigation will create a
     // speculative RFH even though it's a same-site navigation, and the
     // speculative RFH will be overwritten by the second back-navigation that
     // will also create a speculative RFH.
-    EXPECT_NE(first_pending_rfh_id, contents()
-                                        ->GetSpeculativePrimaryMainFrame()
-                                        ->GetGlobalFrameRoutingId());
+    EXPECT_NE(first_pending_rfh_id,
+              contents()->GetSpeculativePrimaryMainFrame()->GetGlobalId());
     // Calling Commit() on the first back navigation below will cause a DCHECK
     // failure because we've already called DidFinishNavigaition on it, so we
     // will call it on the second back navigation instead.
@@ -1206,7 +1221,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_FALSE(controller().GetPendingEntry());
   EXPECT_EQ(google_rfh, main_test_rfh());
-  if (CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+  if (will_change_site_instance) {
     // We committed the second back navigation and landed on the first page.
     EXPECT_EQ(url1, controller().GetLastCommittedEntry()->GetURL());
   } else {
@@ -1227,9 +1242,15 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
 // Tests that if we go back twice (same-site then cross-site), and the cross-
 // site RFH commits first, we ignore the now-swapped-out RFH's commit.
 TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
-  // This test assumes no interaction with the back-forward cache. Indeed, it
+  // The test assumes the previous page gets deleted after navigation. Disable
+  // back/forward cache to ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+  const bool will_change_site_instance =
+      IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled();
+  // This test assumes no interaction with the back/forward cache. Indeed, it
   // isn't possible to perform the second back navigation in between the
-  // ReadyToCommit and Commit of the first back-forward cache one. Both steps
+  // ReadyToCommit and Commit of the first back/forward cache one. Both steps
   // are combined with it, nothing can happen in between.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
       BackForwardCache::TEST_ASSUMES_NO_CACHING);
@@ -1270,7 +1291,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
   SiteInstance* instance3 = contents()->GetSiteInstance();
 
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
-  if (CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+  if (will_change_site_instance) {
     // If same-site ProactivelySwapBrowsingInstance or main-frame RenderDocument
     // is enabled, the RFH should change.
     EXPECT_NE(google_rfh, main_test_rfh());
@@ -1278,7 +1299,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
   } else {
     EXPECT_EQ(google_rfh, main_test_rfh());
   }
-  if (CanSameSiteMainFrameNavigationsChangeSiteInstances()) {
+  if (will_change_site_instance) {
     // When ProactivelySwapBrowsingInstance is enabled on same-site navigations,
     // the SiteInstance will change.
     EXPECT_NE(instance2, instance3);
@@ -1294,7 +1315,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
   auto back_navigation1 =
       NavigationSimulator::CreateHistoryNavigation(-1, contents());
   back_navigation1->ReadyToCommit();
-  if (CanSameSiteMainFrameNavigationsChangeSiteInstances()) {
+  if (will_change_site_instance) {
     EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   } else {
     EXPECT_FALSE(contents()->CrossProcessNavigationPending());
@@ -2507,7 +2528,7 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
 
   // Simulate that the first visually non-empty paint has occurred. This will
   // propagate the current theme color to the delegates.
-  RenderViewHostTester::SimulateFirstPaint(test_rvh());
+  rfh->GetPage().OnFirstVisuallyNonEmptyPaint();
 
   EXPECT_EQ(SK_ColorRED, contents()->GetThemeColor());
   EXPECT_EQ(1, observer.theme_color_change_calls());
@@ -2646,8 +2667,7 @@ TEST_F(WebContentsImplTest, StartingSandboxFlags) {
 TEST_F(WebContentsImplTest, DidFirstVisuallyNonEmptyPaint) {
   TestWebContentsObserver observer(contents());
 
-  RenderWidgetHostOwnerDelegate* rwhod = test_rvh();
-  rwhod->RenderWidgetDidFirstVisuallyNonEmptyPaint();
+  contents()->GetPrimaryPage().OnFirstVisuallyNonEmptyPaint();
 
   EXPECT_TRUE(observer.observed_did_first_visually_non_empty_paint());
 }

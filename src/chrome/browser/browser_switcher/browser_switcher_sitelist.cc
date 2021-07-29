@@ -36,16 +36,67 @@ struct NoCopyUrl {
   base::StringPiece spec_without_port;
 };
 
-// Returns true if |input| contains |token|, ignoring case for ASCII
-// characters.
-bool StringContainsInsensitiveASCII(base::StringPiece input,
-                                    base::StringPiece token) {
-  const char* found =
-      std::search(input.begin(), input.end(), token.begin(), token.end(),
-                  [](char a, char b) {
+// Find the position of |token| inside |input|, if present. Ignore case for
+// ASCII characters.
+//
+// If |token| is not in |input|, return a pointer to the null-byte at the end
+// of |input|.
+const char* StringFindInsensitiveASCII(base::StringPiece input,
+                                       base::StringPiece token) {
+  return std::search(input.begin(), input.end(), token.begin(), token.end(),
+                     [](char a, char b) {
+                       return base::ToLowerASCII(a) == base::ToLowerASCII(b);
+                     });
+}
+
+// Find the position of |token| inside |input|, much like StringPiece::find().
+// Search case-sensitively if |case_sensitive_ascii| is true, or
+// case-insensitively otherwise.
+//
+// Returns StringPiece::npos if not found.
+size_t StringFind(base::StringPiece input,
+                  base::StringPiece token,
+                  bool case_sensitive_ascii) {
+  if (case_sensitive_ascii) {
+    return input.find(token);
+  } else {
+    const char* pos = StringFindInsensitiveASCII(input, token);
+    if (pos == input.end())
+      return base::StringPiece::npos;
+    return pos - input.data();
+  }
+}
+
+// Case-insensitively compare the hostname of |host_and_port| with the hostname
+// pattern |pattern|. Only matches if |pattern| is at the end of the string AND
+// at a domain name boundary.
+bool MatchesHostNameAtEnd(base::StringPiece host_and_port,
+                          base::StringPiece pattern) {
+  // Use reverse_iterator to search from the *end* of the string.
+  std::reverse_iterator<const char*> found =
+      std::search(host_and_port.rbegin(), host_and_port.rend(),
+                  pattern.rbegin(), pattern.rend(), [](char a, char b) {
                     return base::ToLowerASCII(a) == base::ToLowerASCII(b);
                   });
-  return found != input.end();
+  if (found == host_and_port.rend())
+    return false;
+
+  const char* beginning = found.base() - pattern.size();
+  const char* end = found.base();
+
+  // The match should be at a domain boundary, i.e. preceded by:
+  //   (a) the beginning of the string, or
+  //   (b) a dot.
+  if (beginning != host_and_port.begin() && *(beginning - 1) != '.')
+    return false;
+
+  // The match should be at the end, i.e. followed by:
+  //   (a) the end of the string, or
+  //   (b) a port number.
+  if (*end != '\0' && *end != ':')
+    return false;
+
+  return true;
 }
 
 // Checks if the omitted prefix for a non-fully specific prefix is one of the
@@ -60,29 +111,48 @@ bool IsInverted(base::StringPiece pattern) {
   return (!pattern.empty() && pattern[0] == '!');
 }
 
-bool UrlMatchesPattern(const NoCopyUrl& url, base::StringPiece pattern) {
+bool UrlMatchesPattern(const NoCopyUrl& url,
+                       base::StringPiece pattern,
+                       ParsingMode parsing_mode) {
   if (pattern == "*") {
     // Wildcard, always match.
     return true;
   }
   if (pattern.find('/') != base::StringPiece::npos) {
-    // Check prefix using the normalized URL. Case sensitive, but with
-    // case-insensitive scheme/hostname.
-    size_t pos = url.spec.find(pattern);
+    // Check that the prefix is valid. The URL's hostname/scheme have already
+    // been case-normalized, so that part of the URL is always case-insensitive.
+    bool case_sensitive = parsing_mode == ParsingMode::kDefault;
+    size_t pos = StringFind(url.spec, pattern, case_sensitive);
     if (pos != base::StringPiece::npos &&
         IsValidPrefix(base::StringPiece(url.spec.data(), pos))) {
       return true;
     }
     if (!url.spec_without_port.empty()) {
-      pos = url.spec_without_port.find(pattern);
+      pos = StringFind(url.spec_without_port, pattern, case_sensitive);
       return pos != base::StringPiece::npos &&
              IsValidPrefix(
                  base::StringPiece(url.spec_without_port.data(), pos));
     }
     return false;
   }
+
   // Compare hosts and ports, case-insensitive.
-  return StringContainsInsensitiveASCII(url.host_and_port, pattern);
+  switch (parsing_mode) {
+    case ParsingMode::kIESiteListMode:
+      return MatchesHostNameAtEnd(url.host_and_port, pattern);
+
+    case ParsingMode::kDefault: {
+      // Simple substring search.
+      const char* it = StringFindInsensitiveASCII(url.host_and_port, pattern);
+      return it != url.host_and_port.end();
+    }
+
+    default:
+      // This should've been caught in
+      // BrowserSwitcherPrefs::ParsingModeChanged().
+      NOTREACHED();
+      return false;
+  }
 }
 
 // Checks whether |patterns| contains a pattern that matches |url|, and returns
@@ -93,7 +163,8 @@ bool UrlMatchesPattern(const NoCopyUrl& url, base::StringPiece pattern) {
 // inverted matches.
 base::StringPiece MatchUrlToList(const NoCopyUrl& url,
                                  const std::vector<std::string>& patterns,
-                                 bool contains_inverted_matches) {
+                                 bool contains_inverted_matches,
+                                 ParsingMode parsing_mode) {
   base::StringPiece reason;
   for (const std::string& pattern : patterns) {
     if (pattern.size() <= reason.size())
@@ -101,7 +172,8 @@ base::StringPiece MatchUrlToList(const NoCopyUrl& url,
     bool inverted = IsInverted(pattern);
     if (inverted && !contains_inverted_matches)
       continue;
-    if (UrlMatchesPattern(url, (inverted ? pattern.substr(1) : pattern))) {
+    if (UrlMatchesPattern(url, (inverted ? pattern.substr(1) : pattern),
+                          parsing_mode)) {
       reason = pattern;
     }
   }
@@ -226,11 +298,16 @@ Decision BrowserSwitcherSitelistImpl::GetDecisionImpl(const GURL& url) const {
   std::string host_and_port = base::StrCat({url.host(), port});
   NoCopyUrl no_copy_url = {host_and_port, url.spec(), spec_without_port};
 
+  ParsingMode parsing_mode = prefs_->GetParsingMode();
+
   base::StringPiece reason_to_go = std::max(
       {
-          MatchUrlToList(no_copy_url, prefs_->GetRules().sitelist, true),
-          MatchUrlToList(no_copy_url, ieem_sitelist_.sitelist, true),
-          MatchUrlToList(no_copy_url, external_sitelist_.sitelist, true),
+          MatchUrlToList(no_copy_url, prefs_->GetRules().sitelist, true,
+                         parsing_mode),
+          MatchUrlToList(no_copy_url, ieem_sitelist_.sitelist, true,
+                         parsing_mode),
+          MatchUrlToList(no_copy_url, external_sitelist_.sitelist, true,
+                         parsing_mode),
       },
       StringSizeCompare);
 
@@ -242,9 +319,12 @@ Decision BrowserSwitcherSitelistImpl::GetDecisionImpl(const GURL& url) const {
 
   base::StringPiece reason_to_stay = std::max(
       {
-          MatchUrlToList(no_copy_url, prefs_->GetRules().greylist, false),
-          MatchUrlToList(no_copy_url, ieem_sitelist_.greylist, false),
-          MatchUrlToList(no_copy_url, external_sitelist_.greylist, false),
+          MatchUrlToList(no_copy_url, prefs_->GetRules().greylist, false,
+                         parsing_mode),
+          MatchUrlToList(no_copy_url, ieem_sitelist_.greylist, false,
+                         parsing_mode),
+          MatchUrlToList(no_copy_url, external_sitelist_.greylist, false,
+                         parsing_mode),
       },
       StringSizeCompare);
 

@@ -1,5 +1,4 @@
-[numthreads(1, 1, 1)]
-void main() {
+void main_1() {
   float3 v = float3(0.0f, 0.0f, 0.0f);
   const float x_14 = v.y;
   const float3 x_16 = v;
@@ -9,3 +8,8 @@ void main() {
   return;
 }
 
+[numthreads(1, 1, 1)]
+void main() {
+  main_1();
+  return;
+}

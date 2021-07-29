@@ -134,6 +134,11 @@ class Encoder {
     ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 
+  void Control(int ctrl_id, struct aom_ext_part_funcs *arg) {
+    const aom_codec_err_t res = aom_codec_control(&encoder_, ctrl_id, arg);
+    ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
+  }
+
 #if CONFIG_AV1_ENCODER
   void Control(int ctrl_id, aom_active_map_t *arg) {
     const aom_codec_err_t res = aom_codec_control(&encoder_, ctrl_id, arg);
@@ -215,6 +220,12 @@ class EncoderTest {
 
   // Hook to be called on every first pass stats packet.
   virtual void StatsPktHook(const aom_codec_cx_pkt_t * /*pkt*/) {}
+
+  // Calculates SSIM at frame level.
+  virtual void CalculateFrameLevelSSIM(const aom_image_t * /*img_src*/,
+                                       const aom_image_t * /*img_enc*/,
+                                       aom_bit_depth_t /*bit_depth*/,
+                                       unsigned int /*input_bit_depth*/) {}
 
   // Hook to determine whether the encode loop should continue.
   virtual bool Continue() const {

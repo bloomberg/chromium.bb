@@ -17,7 +17,6 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 #include "content/browser/loader/file_url_loader_factory.h"
@@ -43,6 +42,7 @@
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_client.mojom.h"
@@ -91,7 +91,7 @@ void SharedWorkerServiceImpl::EnumerateSharedWorkers(Observer* observer) {
 bool SharedWorkerServiceImpl::TerminateWorker(
     const GURL& url,
     const std::string& name,
-    const storage::StorageKey& storage_key) {
+    const blink::StorageKey& storage_key) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   SharedWorkerHost* worker_host =
@@ -114,7 +114,7 @@ void SharedWorkerServiceImpl::SetURLLoaderFactoryForTesting(
 }
 
 void SharedWorkerServiceImpl::ConnectToWorker(
-    GlobalFrameRoutingId client_render_frame_host_id,
+    GlobalRenderFrameHostId client_render_frame_host_id,
     blink::mojom::SharedWorkerInfoPtr info,
     mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
@@ -134,7 +134,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
 
   // Enforce same-origin policy.
   // data: URLs are not considered a different origin.
-  storage::StorageKey storage_key(render_frame_host->GetLastCommittedOrigin());
+  const blink::StorageKey& storage_key = render_frame_host->storage_key();
   bool is_cross_origin = !info->url.SchemeIs(url::kDataScheme) &&
                          url::Origin::Create(info->url) != storage_key.origin();
   if (is_cross_origin &&
@@ -234,7 +234,7 @@ void SharedWorkerServiceImpl::NotifyBeforeWorkerDestroyed(
 
 void SharedWorkerServiceImpl::NotifyClientAdded(
     const blink::SharedWorkerToken& token,
-    GlobalFrameRoutingId client_render_frame_host_id) {
+    GlobalRenderFrameHostId client_render_frame_host_id) {
   auto insertion_result = shared_worker_client_counts_.insert(
       {{token, client_render_frame_host_id}, 0});
 
@@ -251,7 +251,7 @@ void SharedWorkerServiceImpl::NotifyClientAdded(
 
 void SharedWorkerServiceImpl::NotifyClientRemoved(
     const blink::SharedWorkerToken& token,
-    GlobalFrameRoutingId client_render_frame_host_id) {
+    GlobalRenderFrameHostId client_render_frame_host_id) {
   auto it = shared_worker_client_counts_.find(
       std::make_pair(token, client_render_frame_host_id));
   DCHECK(it != shared_worker_client_counts_.end());
@@ -325,7 +325,8 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
   auto insertion_result =
       worker_hosts_.insert(std::make_unique<SharedWorkerHost>(
           this, instance, std::move(site_instance),
-          std::move(content_security_policies)));
+          std::move(content_security_policies),
+          creator.cross_origin_embedder_policy()));
   DCHECK(insertion_result.second);
   SharedWorkerHost* host = insertion_result.first->get();
 
@@ -447,7 +448,7 @@ void SharedWorkerServiceImpl::StartWorker(
 SharedWorkerHost* SharedWorkerServiceImpl::FindMatchingSharedWorkerHost(
     const GURL& url,
     const std::string& name,
-    const storage::StorageKey& storage_key) {
+    const blink::StorageKey& storage_key) {
   for (auto& host : worker_hosts_) {
     if (host->instance().Matches(url, name, storage_key))
       return host.get();

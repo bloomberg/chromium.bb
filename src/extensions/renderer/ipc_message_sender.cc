@@ -94,8 +94,8 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     DCHECK(!context->IsForServiceWorker());
     DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
 
-    render_thread_->Send(new ExtensionHostMsg_AddLazyListener(
-        context->GetExtensionID(), event_name));
+    GetEventRouter()->AddLazyListenerForMainThread(context->GetExtensionID(),
+                                                   event_name);
   }
 
   void SendRemoveUnfilteredLazyEventListenerIPC(
@@ -104,8 +104,8 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     DCHECK(!context->IsForServiceWorker());
     DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
 
-    render_thread_->Send(new ExtensionHostMsg_RemoveLazyListener(
-        context->GetExtensionID(), event_name));
+    GetEventRouter()->RemoveLazyListenerForMainThread(context->GetExtensionID(),
+                                                      event_name);
   }
 
   void SendAddFilteredEventListenerIPC(ScriptContext* context,
@@ -115,8 +115,8 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     DCHECK(!context->IsForServiceWorker());
     DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
 
-    render_thread_->Send(new ExtensionHostMsg_AddFilteredListener(
-        context->GetExtensionID(), event_name, absl::nullopt, filter, is_lazy));
+    GetEventRouter()->AddFilteredListenerForMainThread(
+        context->GetExtensionID(), event_name, filter.Clone(), is_lazy);
   }
 
   void SendRemoveFilteredEventListenerIPC(ScriptContext* context,
@@ -126,9 +126,9 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     DCHECK(!context->IsForServiceWorker());
     DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
 
-    render_thread_->Send(new ExtensionHostMsg_RemoveFilteredListener(
-        context->GetExtensionID(), event_name, absl::nullopt, filter,
-        remove_lazy_listener));
+    GetEventRouter()->RemoveFilteredListenerForMainThread(
+        context->GetExtensionID(), event_name, filter.Clone(),
+        remove_lazy_listener);
   }
 
   void SendOpenMessageChannel(ScriptContext* script_context,
@@ -192,6 +192,22 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
   void SendPostMessageToPort(const PortId& port_id,
                              const Message& message) override {
     render_thread_->Send(new ExtensionHostMsg_PostMessage(port_id, message));
+  }
+
+  void SendActivityLogIPC(
+      const ExtensionId& extension_id,
+      ActivityLogCallType call_type,
+      const ExtensionHostMsg_APIActionOrEvent_Params& params) override {
+    switch (call_type) {
+      case ActivityLogCallType::APICALL:
+        render_thread_->Send(new ExtensionHostMsg_AddAPIActionToActivityLog(
+            extension_id, params));
+        break;
+      case ActivityLogCallType::EVENT:
+        render_thread_->Send(
+            new ExtensionHostMsg_AddEventToActivityLog(extension_id, params));
+        break;
+    }
   }
 
  private:
@@ -292,9 +308,8 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     DCHECK(context->IsForServiceWorker());
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
 
-    dispatcher_->Send(new ExtensionHostMsg_AddLazyServiceWorkerListener(
-        context->GetExtensionID(), event_name,
-        context->service_worker_scope()));
+    dispatcher_->SendAddEventLazyListener(
+        context->GetExtensionID(), context->service_worker_scope(), event_name);
   }
 
   void SendRemoveUnfilteredLazyEventListenerIPC(
@@ -303,9 +318,8 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     DCHECK(context->IsForServiceWorker());
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
 
-    dispatcher_->Send(new ExtensionHostMsg_RemoveLazyServiceWorkerListener(
-        context->GetExtensionID(), event_name,
-        context->service_worker_scope()));
+    dispatcher_->SendRemoveEventLazyListener(
+        context->GetExtensionID(), context->service_worker_scope(), event_name);
   }
 
   void SendAddFilteredEventListenerIPC(ScriptContext* context,
@@ -316,12 +330,11 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
     DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
               context->service_worker_version_id());
-    ServiceWorkerIdentifier sw_identifier;
-    sw_identifier.scope = context->service_worker_scope();
-    sw_identifier.thread_id = content::WorkerThread::GetCurrentId();
-    sw_identifier.version_id = context->service_worker_version_id();
-    dispatcher_->Send(new ExtensionHostMsg_AddFilteredListener(
-        context->GetExtensionID(), event_name, sw_identifier, filter, is_lazy));
+
+    dispatcher_->SendAddEventFilteredListener(
+        context->GetExtensionID(), context->service_worker_scope(), event_name,
+        context->service_worker_version_id(),
+        content::WorkerThread::GetCurrentId(), filter.Clone(), is_lazy);
   }
 
   void SendRemoveFilteredEventListenerIPC(ScriptContext* context,
@@ -332,13 +345,12 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
     DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
               context->service_worker_version_id());
-    ServiceWorkerIdentifier sw_identifier;
-    sw_identifier.scope = context->service_worker_scope();
-    sw_identifier.thread_id = content::WorkerThread::GetCurrentId();
-    sw_identifier.version_id = context->service_worker_version_id();
-    dispatcher_->Send(new ExtensionHostMsg_RemoveFilteredListener(
-        context->GetExtensionID(), event_name, sw_identifier, filter,
-        remove_lazy_listener));
+
+    dispatcher_->SendRemoveEventFilteredListener(
+        context->GetExtensionID(), context->service_worker_scope(), event_name,
+        context->service_worker_version_id(),
+        content::WorkerThread::GetCurrentId(), filter.Clone(),
+        remove_lazy_listener);
   }
 
   void SendOpenMessageChannel(ScriptContext* script_context,
@@ -397,6 +409,22 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
   void SendPostMessageToPort(const PortId& port_id,
                              const Message& message) override {
     dispatcher_->Send(new ExtensionHostMsg_PostMessage(port_id, message));
+  }
+
+  void SendActivityLogIPC(
+      const ExtensionId& extension_id,
+      ActivityLogCallType call_type,
+      const ExtensionHostMsg_APIActionOrEvent_Params& params) override {
+    switch (call_type) {
+      case ActivityLogCallType::APICALL:
+        dispatcher_->Send(new ExtensionHostMsg_AddAPIActionToActivityLog(
+            extension_id, params));
+        break;
+      case ActivityLogCallType::EVENT:
+        dispatcher_->Send(
+            new ExtensionHostMsg_AddEventToActivityLog(extension_id, params));
+        break;
+    }
   }
 
  private:

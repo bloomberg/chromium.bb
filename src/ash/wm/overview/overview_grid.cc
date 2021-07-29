@@ -11,7 +11,6 @@
 
 #include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/metrics/histogram_macros.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -954,7 +953,7 @@ void OverviewGrid::OnSplitViewStateChanged(
       (split_view_controller->InClamshellSplitViewMode() &&
        overview_session_->IsEmpty())) {
     overview_session_->RestoreWindowActivation(false);
-    overview_controller->EndOverview();
+    overview_controller->EndOverview(OverviewEndAction::kSplitView);
     return;
   }
 
@@ -1035,40 +1034,43 @@ void OverviewGrid::CalculateWindowListAnimationStates(
       NOTREACHED();
   }
 
-  // Create a copy of |window_list_| which has always on top windows in the
-  // front.
+  auto is_always_on_top_item = [](OverviewItem* item) -> bool {
+    DCHECK(item);
+    return item->GetWindow()->GetProperty(aura::client::kZOrderingKey) !=
+           ui::ZOrderLevel::kNormal;
+  };
+
+  // Create a copy of `window_list_` which has the selected item and
+  // always on top windows in the front.
+  std::vector<OverviewItem*> always_on_top_items;
+  std::vector<OverviewItem*> regular_items;
+  for (const std::unique_ptr<OverviewItem>& item : window_list_) {
+    OverviewItem* item_ptr = item.get();
+    DCHECK(item_ptr);
+    // Skip the selected item, it will be inserted into the front.
+    if (item_ptr == selected_item)
+      continue;
+
+    if (is_always_on_top_item(item_ptr))
+      always_on_top_items.push_back(item_ptr);
+    else
+      regular_items.push_back(item_ptr);
+  }
+
+  // Construct `items` so they are ordered like so.
+  //   1) Always on top window that is selected.
+  //   2) Always on top window.
+  //   3) Selected window which is not always on top.
+  //   4) Regular window.
+  // Windows in the same group maintain their ordering from `window_list`.
   std::vector<OverviewItem*> items;
-  std::transform(
-      window_list_.begin(), window_list_.end(), std::back_inserter(items),
-      [](const std::unique_ptr<OverviewItem>& item) -> OverviewItem* {
-        return item.get();
-      });
-  // Sort items by:
-  // 1) Selected items that are always on top windows.
-  // 2) Other always on top windows.
-  // 3) Selected items that are not always on top windows.
-  // 4) Other not always on top windows.
-  // Preserves ordering if the category is the same.
-  std::sort(items.begin(), items.end(),
-            [&selected_item](OverviewItem* a, OverviewItem* b) {
-              // NB: This treats all non-normal z-ordered windows the same. If
-              // Aura ever adopts z-order levels, this will need to be changed.
-              const bool a_on_top =
-                  a->GetWindow()->GetProperty(aura::client::kZOrderingKey) !=
-                  ui::ZOrderLevel::kNormal;
-              const bool b_on_top =
-                  b->GetWindow()->GetProperty(aura::client::kZOrderingKey) !=
-                  ui::ZOrderLevel::kNormal;
-              if (selected_item && a_on_top && b_on_top)
-                return a == selected_item;
-              if (a_on_top)
-                return true;
-              if (b_on_top)
-                return false;
-              if (selected_item)
-                return a == selected_item;
-              return false;
-            });
+  if (selected_item && is_always_on_top_item(selected_item))
+    items.insert(items.begin(), selected_item);
+  items.insert(items.end(), always_on_top_items.begin(),
+               always_on_top_items.end());
+  if (selected_item && !is_always_on_top_item(selected_item))
+    items.insert(items.end(), selected_item);
+  items.insert(items.end(), regular_items.begin(), regular_items.end());
 
   SkRegion occluded_region;
   auto* split_view_controller = SplitViewController::Get(root_window_);
@@ -1413,13 +1415,12 @@ void OverviewGrid::StartScroll() {
   total_bounds.Inset(GetGridInsetsImpl(total_bounds));
 
   float rightmost_window_right = 0;
-  items_scrolling_bounds_.resize(window_list_.size());
-  for (size_t i = 0; i < items_scrolling_bounds_.size(); ++i) {
-    const gfx::RectF bounds = window_list_[i]->target_bounds();
+  for (const auto& item : window_list_) {
+    const gfx::RectF bounds = item->target_bounds();
     if (rightmost_window_right < bounds.right())
       rightmost_window_right = bounds.right();
 
-    items_scrolling_bounds_[i] = bounds;
+    item->set_scrolling_bounds(bounds);
   }
 
   // |rightmost_window_right| may have been modified by an earlier scroll.
@@ -1446,14 +1447,17 @@ bool OverviewGrid::UpdateScrollOffset(float delta) {
     return in_range;
 
   // Update the bounds of the items which are currently visible on screen.
-  DCHECK_EQ(items_scrolling_bounds_.size(), window_list_.size());
-  for (size_t i = 0; i < items_scrolling_bounds_.size(); ++i) {
-    const gfx::RectF previous_bounds = items_scrolling_bounds_[i];
-    items_scrolling_bounds_[i].Offset(new_scroll_offset - scroll_offset_, 0.f);
-    const gfx::RectF new_bounds = items_scrolling_bounds_[i];
+  for (const auto& item : window_list_) {
+    absl::optional<gfx::RectF> scrolling_bounds_optional =
+        item->scrolling_bounds();
+    DCHECK(scrolling_bounds_optional);
+    const gfx::RectF previous_bounds = scrolling_bounds_optional.value();
+    gfx::RectF new_bounds = previous_bounds;
+    new_bounds.Offset(new_scroll_offset - scroll_offset_, 0.f);
+    item->set_scrolling_bounds(new_bounds);
     if (gfx::RectF(GetGridEffectiveBounds()).Intersects(new_bounds) ||
         gfx::RectF(GetGridEffectiveBounds()).Intersects(previous_bounds)) {
-      window_list_[i]->SetBounds(new_bounds, OVERVIEW_ANIMATION_NONE);
+      item->SetBounds(new_bounds, OVERVIEW_ANIMATION_NONE);
     }
   }
 
@@ -1467,7 +1471,8 @@ bool OverviewGrid::UpdateScrollOffset(float delta) {
 void OverviewGrid::EndScroll() {
   Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
       kOcclusionUnpauseDurationForScroll);
-  items_scrolling_bounds_.clear();
+  for (const auto& item : window_list_)
+    item->set_scrolling_bounds(absl::nullopt);
   presentation_time_recorder_.reset();
 
   if (!overview_session_->is_shutting_down())
@@ -1781,7 +1786,7 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
                       ? right_edge_map[y]
                       : total_bounds.x() + scroll_offset_;
     right_edge_map[y] = x + width;
-    DCHECK_LE(int{right_edge_map.size()}, kTabletLayoutRow);
+    DCHECK_LE(static_cast<int>(right_edge_map.size()), kTabletLayoutRow);
 
     const gfx::RectF bounds(x, y, width, height);
     rects.push_back(bounds);

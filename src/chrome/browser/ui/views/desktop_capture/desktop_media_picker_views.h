@@ -64,10 +64,28 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   bool Accept() override;
   bool Cancel() override;
   bool ShouldShowCloseButton() const override;
-  void DeleteDelegate() override;
 
  private:
   friend class DesktopMediaPickerViewsTestApi;
+
+  struct DisplaySurfaceCategory {
+    DisplaySurfaceCategory(
+        DesktopMediaList::Type type,
+        std::unique_ptr<DesktopMediaListController> controller,
+        bool audio_checked);
+
+    DisplaySurfaceCategory(DisplaySurfaceCategory&& other);
+
+    ~DisplaySurfaceCategory();
+
+    DesktopMediaList::Type type;
+    std::unique_ptr<DesktopMediaListController> controller;
+    bool audio_checked;
+  };
+
+  static bool AudioSupported(DesktopMediaList::Type type);
+
+  void SetAudioCheckboxAt(int index);
 
   void OnSourceTypeSwitched(int index);
 
@@ -79,6 +97,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   DesktopMediaList::Type GetSelectedSourceListType() const;
 
   content::WebContents* const web_contents_;
+  const bool audio_requested_;
 
   DesktopMediaPickerViews* parent_;
 
@@ -87,8 +106,8 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   views::Checkbox* audio_share_checkbox_ = nullptr;
 
   views::TabbedPane* tabbed_pane_ = nullptr;
-  std::vector<std::unique_ptr<DesktopMediaListController>> list_controllers_;
-  std::vector<DesktopMediaList::Type> source_types_;
+  std::vector<DisplaySurfaceCategory> categories_;
+  int previously_selected_category_ = 0;
 
   DialogSource dialog_source_;
 

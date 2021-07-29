@@ -1,11 +1,11 @@
 // Implements the wpt-embedded test runner (see also: wpt/cts.html).
 
-import { DefaultTestFileLoader } from '../framework/file_loader.js';
-import { prettyPrintLog } from '../framework/logging/log_message.js';
-import { Logger } from '../framework/logging/logger.js';
-import { parseQuery } from '../framework/query/parseQuery.js';
-import { parseExpectationsForTestQuery, relativeQueryString } from '../framework/query/query.js';
-import { assert } from '../framework/util/util.js';
+import { DefaultTestFileLoader } from '../internal/file_loader.js';
+import { prettyPrintLog } from '../internal/logging/log_message.js';
+import { Logger } from '../internal/logging/logger.js';
+import { parseQuery } from '../internal/query/parseQuery.js';
+import { parseExpectationsForTestQuery, relativeQueryString } from '../internal/query/query.js';
+import { assert } from '../util/util.js';
 
 import { optionEnabled } from './helper/options.js';
 import { TestWorker } from './helper/test_worker.js';
@@ -47,7 +47,7 @@ setup({
         )
       : [];
 
-  const log = new Logger(false);
+  const log = new Logger();
 
   for (const testcase of testcases) {
     const name = testcase.query.toString();

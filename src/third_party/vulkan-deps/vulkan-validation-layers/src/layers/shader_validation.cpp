@@ -464,7 +464,7 @@ bool CoreChecks::ValidateSpecializationOffsets(VkPipelineShaderStageCreateInfo c
             if (spec->pMapEntries[i].offset >= spec->dataSize) {
                 skip |= LogError(device, "VUID-VkSpecializationInfo-offset-00773",
                                  "Specialization entry %u (for constant id %u) references memory outside provided specialization "
-                                 "data (bytes %u.." PRINTF_SIZE_T_SPECIFIER "; " PRINTF_SIZE_T_SPECIFIER " bytes provided)..",
+                                 "data (bytes %u.." PRINTF_SIZE_T_SPECIFIER "; " PRINTF_SIZE_T_SPECIFIER " bytes provided).",
                                  i, spec->pMapEntries[i].constantID, spec->pMapEntries[i].offset,
                                  spec->pMapEntries[i].offset + spec->dataSize - 1, spec->dataSize);
 
@@ -473,7 +473,7 @@ bool CoreChecks::ValidateSpecializationOffsets(VkPipelineShaderStageCreateInfo c
             if (spec->pMapEntries[i].offset + spec->pMapEntries[i].size > spec->dataSize) {
                 skip |= LogError(device, "VUID-VkSpecializationInfo-pMapEntries-00774",
                                  "Specialization entry %u (for constant id %u) references memory outside provided specialization "
-                                 "data (bytes %u.." PRINTF_SIZE_T_SPECIFIER "; " PRINTF_SIZE_T_SPECIFIER " bytes provided)..",
+                                 "data (bytes %u.." PRINTF_SIZE_T_SPECIFIER "; " PRINTF_SIZE_T_SPECIFIER " bytes provided).",
                                  i, spec->pMapEntries[i].constantID, spec->pMapEntries[i].offset,
                                  spec->pMapEntries[i].offset + spec->pMapEntries[i].size - 1, spec->dataSize);
             }
@@ -832,6 +832,8 @@ bool CoreChecks::ValidateShaderStageInputOutputLimits(SHADER_MODULE_STATE const 
 
     // XXX TODO: Would be nice to rewrite this to use CollectInterfaceByLocation (or something similar),
     // but that doesn't include builtins.
+    // When rewritten, using the CreatePipelineExceedVertexMaxComponentsWithBuiltins test it would be nice to also let the user know
+    // how many components were from builtins as it might not be obvious
     for (auto &var : variables) {
         // Check if the variable is a patch. Patches can also be members of blocks,
         // but if they are then the top-level arrayness has already been stripped
@@ -1335,6 +1337,38 @@ bool CoreChecks::ValidateCooperativeMatrix(SHADER_MODULE_STATE const *src, VkPip
     return skip;
 }
 
+bool CoreChecks::ValidateShaderResolveQCOM(SHADER_MODULE_STATE const *src, VkPipelineShaderStageCreateInfo const *pStage,
+                                           const PIPELINE_STATE *pipeline) const {
+    bool skip = false;
+
+    // If the pipeline's subpass description contains flag VK_SUBPASS_DESCRIPTION_FRAGMENT_REGION_BIT_QCOM,
+    // then the fragment shader must not enable the SPIRV SampleRateShading capability.
+    if (pStage->stage == VK_SHADER_STAGE_FRAGMENT_BIT) {
+        for (auto insn : *src) {
+            switch (insn.opcode()) {
+                case spv::OpCapability:
+                    if (insn.word(1) == spv::CapabilitySampleRateShading) {
+                        auto subpass_flags =
+                            (pipeline->rp_state == nullptr)
+                                ? 0
+                                : pipeline->rp_state->createInfo.pSubpasses[pipeline->graphicsPipelineCI.subpass].flags;
+                        if ((subpass_flags & VK_SUBPASS_DESCRIPTION_FRAGMENT_REGION_BIT_QCOM) != 0) {
+                            skip |=
+                                LogError(pipeline->pipeline(), kVUID_Core_Shader_ResolveQCOM_InvalidCapability,
+                                         "Invalid Pipeline CreateInfo State: fragment shader enables SampleRateShading capability "
+                                         "and the subpass flags includes VK_SUBPASS_DESCRIPTION_FRAGMENT_REGION_BIT_QCOM.");
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    return skip;
+}
+
 bool CoreChecks::ValidateExecutionModes(SHADER_MODULE_STATE const *src, spirv_inst_iter entrypoint) const {
     auto entrypoint_id = entrypoint.word(2);
 
@@ -1702,7 +1736,7 @@ bool CoreChecks::ValidatePropertiesAndFeatures(SHADER_MODULE_STATE const *module
 }
 
 bool CoreChecks::ValidatePipelineShaderStage(VkPipelineShaderStageCreateInfo const *pStage, const PIPELINE_STATE *pipeline,
-                                             const PIPELINE_STATE::StageState &stage_state, const SHADER_MODULE_STATE *module,
+                                             const PipelineStageState &stage_state, const SHADER_MODULE_STATE *module,
                                              const spirv_inst_iter &entrypoint, bool check_point_size) const {
     bool skip = false;
 
@@ -1724,9 +1758,40 @@ bool CoreChecks::ValidatePipelineShaderStage(VkPipelineShaderStageCreateInfo con
         id_value_map.reserve(specialization_info->mapEntryCount);
         for (auto i = 0u; i < specialization_info->mapEntryCount; ++i) {
             auto const &map_entry = specialization_info->pMapEntries[i];
+            auto itr = module->spec_const_map.find(map_entry.constantID);
+            // "If a constantID value is not a specialization constant ID used in the shader, that map entry does not affect the
+            // behavior of the pipeline."
+            if (itr != module->spec_const_map.cend()) {
+                // Make sure map_entry.size matches the spec constant's size
+                uint32_t spec_const_size = decoration_set::kInvalidValue;
+                const auto def_ins = module->get_def(itr->second);
+                const auto type_ins = module->get_def(def_ins.word(1));
+                // Specialization constants can only be of type bool, scalar integer, or scalar floating point
+                switch (type_ins.opcode()) {
+                    case spv::OpTypeBool:
+                        // "If the specialization constant is of type boolean, size must be the byte size of VkBool32"
+                        spec_const_size = sizeof(VkBool32);
+                        break;
+                    case spv::OpTypeInt:
+                    case spv::OpTypeFloat:
+                        spec_const_size = type_ins.word(2) / 8;
+                        break;
+                    default:
+                        // spirv-val should catch if SpecId is not used on a OpSpecConstantTrue/OpSpecConstantFalse/OpSpecConstant
+                        // and OpSpecConstant is validated to be a OpTypeInt or OpTypeFloat
+                        break;
+                }
 
-            // Expect only scalar types.
-            assert(map_entry.size == 1 || map_entry.size == 2 || map_entry.size == 4 || map_entry.size == 8);
+                if (map_entry.size != spec_const_size) {
+                    skip |=
+                        LogError(device, "VUID-VkSpecializationMapEntry-constantID-00776",
+                                 "Specialization constant (ID = %" PRIu32 ", entry = %" PRIu32
+                                 ") has invalid size %zu in shader module %s. Expected size is %" PRIu32 " from shader definition.",
+                                 map_entry.constantID, i, map_entry.size,
+                                 report_data->FormatHandle(module->vk_shader_module()).c_str(), spec_const_size);
+                }
+            }
+
             if ((map_entry.offset + map_entry.size) <= specialization_info->dataSize) {
                 auto entry = id_value_map.emplace(map_entry.constantID, std::vector<uint32_t>(map_entry.size > 4 ? 2 : 1));
                 memcpy(entry.first->second.data(), specialization_data + map_entry.offset, map_entry.size);
@@ -1772,7 +1837,7 @@ bool CoreChecks::ValidatePipelineShaderStage(VkPipelineShaderStageCreateInfo con
     // Check the entrypoint
     if (entrypoint == module->end()) {
         skip |=
-            LogError(device, "VUID-VkPipelineShaderStageCreateInfo-pName-00707", "No entrypoint found named `%s` for stage %s..",
+            LogError(device, "VUID-VkPipelineShaderStageCreateInfo-pName-00707", "No entrypoint found named `%s` for stage %s.",
                      pStage->pName, string_VkShaderStageFlagBits(pStage->stage));
     }
     if (skip) return true;  // no point continuing beyond here, any analysis is just going to be garbage.
@@ -1807,6 +1872,9 @@ bool CoreChecks::ValidatePipelineShaderStage(VkPipelineShaderStageCreateInfo con
     }
     if (enabled_features.fragment_shading_rate_features.primitiveFragmentShadingRate) {
         skip |= ValidatePrimitiveRateShaderState(pipeline, module, entrypoint, pStage->stage);
+    }
+    if (device_extensions.vk_qcom_render_pass_shader_resolve != kNotEnabled) {
+        skip |= ValidateShaderResolveQCOM(module, pStage, pipeline);
     }
 
     // "layout must be consistent with the layout of the * shader"
@@ -2317,6 +2385,8 @@ bool CoreChecks::PreCallValidateCreateShaderModule(VkDevice device, const VkShad
     } else {
         auto cache = GetValidationCacheInfo(pCreateInfo);
         uint32_t hash = 0;
+        // If app isn't using a shader validation cache, use the default one from CoreChecks
+        if (!cache) cache = CastFromHandle<ValidationCache *>(core_validation_cache);
         if (cache) {
             hash = ValidationCache::MakeShaderHash(pCreateInfo);
             if (cache->Contains(hash)) return false;
@@ -2416,7 +2486,7 @@ spv_target_env PickSpirvEnv(uint32_t api_version, bool spirv_1_4) {
     return SPV_ENV_VULKAN_1_0;
 }
 
-void AdjustValidatorOptions(const DeviceExtensions device_extensions, const DeviceFeatures enabled_features,
+void AdjustValidatorOptions(const DeviceExtensions &device_extensions, const DeviceFeatures &enabled_features,
                             spvtools::ValidatorOptions &options) {
     if (device_extensions.vk_khr_relaxed_block_layout) {
         options.SetRelaxBlockLayout(true);

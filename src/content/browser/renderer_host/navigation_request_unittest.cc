@@ -24,6 +24,7 @@
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace content {
@@ -76,15 +77,12 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
   }
 
   void TearDown() override {
-    // Release the |request_| before destroying the WebContents, to match
-    // the WebContentsObserverConsistencyChecker expectations.
-    request_.reset();
     RenderViewHostImplTestHarness::TearDown();
   }
 
   void CancelDeferredNavigation(
       NavigationThrottle::ThrottleCheckResult result) {
-    request_->CancelDeferredNavigationInternal(result);
+    GetNavigationRequest()->CancelDeferredNavigationInternal(result);
   }
 
   // Helper function to call WillStartRequest on |handle|. If this function
@@ -96,11 +94,11 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
 
     // It's safe to use base::Unretained since the NavigationRequest is owned by
     // the NavigationRequestTest.
-    request_->set_complete_callback_for_testing(
+    GetNavigationRequest()->set_complete_callback_for_testing(
         base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
                        base::Unretained(this)));
 
-    request_->WillStartRequest();
+    GetNavigationRequest()->WillStartRequest();
   }
 
   // Helper function to call WillRedirectRequest on |handle|. If this function
@@ -114,13 +112,13 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
 
     // It's safe to use base::Unretained since the NavigationRequest is owned by
     // the NavigationRequestTest.
-    request_->set_complete_callback_for_testing(
+    GetNavigationRequest()->set_complete_callback_for_testing(
         base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
                        base::Unretained(this)));
 
-    request_->WillRedirectRequest(GURL(),
-                                  WebExposedIsolationInfo::CreateNonIsolated(),
-                                  nullptr /* post_redirect_process */);
+    GetNavigationRequest()->WillRedirectRequest(
+        GURL(), WebExposedIsolationInfo::CreateNonIsolated(),
+        nullptr /* post_redirect_process */);
   }
 
   // Helper function to call WillFailRequest on |handle|. If this function
@@ -131,15 +129,15 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
       const absl::optional<net::SSLInfo> ssl_info = absl::nullopt) {
     was_callback_called_ = false;
     callback_result_ = NavigationThrottle::DEFER;
-    request_->set_net_error(net_error_code);
+    GetNavigationRequest()->set_net_error(net_error_code);
 
     // It's safe to use base::Unretained since the NavigationRequest is owned by
     // the NavigationRequestTest.
-    request_->set_complete_callback_for_testing(
+    GetNavigationRequest()->set_complete_callback_for_testing(
         base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
                        base::Unretained(this)));
 
-    request_->WillFailRequest();
+    GetNavigationRequest()->WillFailRequest();
   }
 
   // Whether the callback was called.
@@ -150,7 +148,9 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     return callback_result_;
   }
 
-  NavigationRequest::NavigationState state() { return request_->state(); }
+  NavigationRequest::NavigationState state() {
+    return GetNavigationRequest()->state();
+  }
 
   bool call_counts_match(TestNavigationThrottle* throttle,
                          int start,
@@ -172,10 +172,10 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
   TestNavigationThrottle* CreateTestNavigationThrottle(
       NavigationThrottle::ThrottleCheckResult result) {
     TestNavigationThrottle* test_throttle =
-        new TestNavigationThrottle(request_.get());
+        new TestNavigationThrottle(GetNavigationRequest());
     test_throttle->SetResponseForAllMethods(TestNavigationThrottle::SYNCHRONOUS,
                                             result);
-    request_->RegisterThrottleForTesting(
+    GetNavigationRequest()->RegisterThrottleForTesting(
         std::unique_ptr<TestNavigationThrottle>(test_throttle));
     return test_throttle;
   }
@@ -196,13 +196,13 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
   // TODO(zetamoo): Use NavigationSimulator instead of creating
   // NavigationRequest and NavigationHandleImpl.
   void CreateNavigationHandle() {
-    auto common_params = CreateCommonNavigationParams();
+    auto common_params = blink::CreateCommonNavigationParams();
     common_params->initiator_origin =
         url::Origin::Create(GURL("https://initiator.example.com"));
-    auto commit_params = CreateCommitNavigationParams();
+    auto commit_params = blink::CreateCommitNavigationParams();
     commit_params->frame_policy =
         main_test_rfh()->frame_tree_node()->pending_frame_policy();
-    request_ = NavigationRequest::CreateBrowserInitiated(
+    auto request = NavigationRequest::CreateBrowserInitiated(
         main_test_rfh()->frame_tree_node(), std::move(common_params),
         std::move(commit_params), false /* browser-initiated */,
         false /* was_opener_suppressed */, nullptr /* initiator_frame_token */,
@@ -210,7 +210,9 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
         std::string() /* extra_headers */, nullptr /* frame_entry */,
         nullptr /* entry */, nullptr /* post_body */,
         nullptr /* navigation_ui_data */, absl::nullopt /* impression */);
-    request_->StartNavigation(true);
+    main_test_rfh()->frame_tree_node()->CreatedNavigationRequest(
+        std::move(request));
+    GetNavigationRequest()->StartNavigation();
   }
 
  private:
@@ -224,7 +226,11 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     return true;
   }
 
-  std::unique_ptr<NavigationRequest> request_;
+  // This must be called after CreateNavigationHandle().
+  NavigationRequest* GetNavigationRequest() {
+    return main_test_rfh()->frame_tree_node()->navigation_request();
+  }
+
   bool was_callback_called_ = false;
   NavigationThrottle::ThrottleCheckResult callback_result_;
 };
@@ -237,7 +243,7 @@ TEST_F(NavigationRequestTest, SimpleDataChecksRedirectAndProcess) {
   auto navigation =
       NavigationSimulatorImpl::CreateRendererInitiated(kUrl1, main_rfh());
   navigation->Start();
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
@@ -246,7 +252,7 @@ TEST_F(NavigationRequestTest, SimpleDataChecksRedirectAndProcess) {
   navigation->set_http_connection_info(
       net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1);
   navigation->Redirect(kUrl2);
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1,
@@ -255,7 +261,7 @@ TEST_F(NavigationRequestTest, SimpleDataChecksRedirectAndProcess) {
   navigation->set_http_connection_info(
       net::HttpResponseInfo::CONNECTION_INFO_QUIC_35);
   navigation->ReadyToCommit();
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_QUIC_35,
@@ -282,14 +288,14 @@ TEST_F(NavigationRequestTest, SimpleDataChecksFailure) {
   auto navigation =
       NavigationSimulatorImpl::CreateRendererInitiated(kUrl, main_rfh());
   navigation->Start();
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
             navigation->GetNavigationHandle()->GetConnectionInfo());
 
   navigation->Fail(net::ERR_CERT_DATE_INVALID);
-  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->request_context_type());
   EXPECT_EQ(net::ERR_CERT_DATE_INVALID,

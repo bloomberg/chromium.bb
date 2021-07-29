@@ -15,21 +15,27 @@ sys.path.extend(os.path.join(_REPO_PATH, p) for p in _IMPORT_SUBFOLDERS)
 
 import licenses
 from checkdeps import DepsChecker
-from cpp_checker import CppChecker
-from rules import Rule
+
+# Opt-in to using Python3 instead of Python2, as part of the ongoing Python2
+# deprecation. For more information, see
+# https://issuetracker.google.com/173766869.
+USE_PYTHON3 = True
 
 # Rather than pass this to all of the checks, we override the global excluded
 # list with this one.
 _EXCLUDED_PATHS = (
   # Exclude all of third_party/ except for BUILD.gns that we maintain.
   r'third_party[\\\/].*(?<!BUILD.gn)$',
+
   # Exclude everything under third_party/chromium_quic/{src|build}
   r'third_party/chromium_quic/(src|build)/.*',
+
   # Output directories (just in case)
   r'.*\bDebug[\\\/].*',
   r'.*\bRelease[\\\/].*',
   r'.*\bxcodebuild[\\\/].*',
   r'.*\bout[\\\/].*',
+
   # There is no point in processing a patch file.
   r'.+\.diff$',
   r'.+\.patch$',
@@ -125,7 +131,7 @@ def _CheckNoexceptOnMove(filename, clean_lines, linenum, error):
 def _CheckChangeLintsClean(input_api, output_api):
     """Checks that all '.cc' and '.h' files pass cpplint.py."""
     cpplint = input_api.cpplint
-    # Access to a protected member _XX of a client class
+    # Directive that allows access to a protected member _XX of a client class.
     # pylint: disable=protected-access
     cpplint._cpplint_state.ResetErrorCounts()
 
@@ -167,31 +173,35 @@ def _CommonChecks(input_api, output_api):
         input_api.canned_checks.CheckChangeHasNoCrAndHasOnlyOneEol(
             input_api, output_api))
 
-    # Gender inclusivity
+    # Ensure code change is gender inclusive.
     results.extend(
         input_api.canned_checks.CheckGenderNeutral(input_api, output_api))
 
-    # TODO(bug) format required
+    # Ensure code change to do items uses TODO(bug) or TODO(user) format.
+    #  TODO(bug) is generally preferred.
     results.extend(
         input_api.canned_checks.CheckChangeTodoHasOwner(input_api, output_api))
 
-    # Linter.
+    # Ensure code change passes linter cleanly.
     results.extend(_CheckChangeLintsClean(input_api, output_api))
 
-    # clang-format
+    # Ensure code change has already had clang-format ran.
     results.extend(
         input_api.canned_checks.CheckPatchFormatted(input_api,
                                                     output_api,
                                                     bypass_warnings=False))
 
-    # GN formatting
+    # Ensure code change has had GN formatting ran.
     results.extend(
         input_api.canned_checks.CheckGNFormatted(input_api, output_api))
 
-    # buildtools/checkdeps
+    # Run buildtools/checkdeps on code change.
     results.extend(_CheckDeps(input_api, output_api))
 
-    # tools/licenses
+    # Run tools/licenses on code change.
+    # TODO(https://crbug.com/1215335): licenses check is confused by our
+    # buildtools checkout that doesn't actually check out the libraries.
+    licenses.PRUNE_PATHS.add(os.path.join('buildtools', 'third_party'));
     results.extend(_CheckLicenses(input_api, output_api))
 
     return results
@@ -201,8 +211,9 @@ def CheckChangeOnUpload(input_api, output_api):
     input_api.DEFAULT_FILES_TO_SKIP = _EXCLUDED_PATHS
     # We always run the OnCommit checks, as well as some additional checks.
     results = CheckChangeOnCommit(input_api, output_api)
-    results.extend(
-        input_api.canned_checks.CheckChangedLUCIConfigs(input_api, output_api))
+    # TODO(crbug.com/1220846): Open Screen needs a `main` config_set.
+    #results.extend(
+    #    input_api.canned_checks.CheckChangedLUCIConfigs(input_api, output_api))
     return results
 
 

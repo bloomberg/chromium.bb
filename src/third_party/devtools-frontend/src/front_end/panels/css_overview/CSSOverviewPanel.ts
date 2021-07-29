@@ -42,10 +42,10 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
 
   private constructor() {
     super('css_overview');
-    this.registerRequiredCSS('panels/css_overview/cssOverview.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/css_overview/cssOverview.css');
     this.element.classList.add('css-overview-panel');
 
-    const [model] = SDK.SDKModel.TargetManager.instance().models(CSSOverviewModel);
+    const [model] = SDK.TargetManager.TargetManager.instance().models(CSSOverviewModel);
     this._model = (model as CSSOverviewModel);
 
     this._controller = new OverviewController();
@@ -102,7 +102,7 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
   }
 
   _requestNodeHighlight(evt: Common.EventTarget.EventTargetEvent): void {
-    this._model.highlightNode((evt.data as number));
+    this._model.highlightNode((evt.data as Protocol.DOM.BackendNodeId));
   }
 
   _renderInitialView(): void {

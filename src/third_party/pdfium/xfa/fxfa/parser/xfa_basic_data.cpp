@@ -40,7 +40,7 @@
 #include "fxjs/xfa/cjx_treelist.h"
 #include "fxjs/xfa/cjx_wsdlconnection.h"
 #include "fxjs/xfa/cjx_xfa.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 #include "xfa/fxfa/fxfa_basic.h"
 
 namespace {
@@ -171,13 +171,13 @@ XFA_PACKETINFO XFA_GetPacketByIndex(XFA_PacketType ePacket) {
 }
 
 Optional<XFA_PACKETINFO> XFA_GetPacketByName(WideStringView wsName) {
-  uint32_t hash = FX_HashCode_GetW(wsName, false);
+  uint32_t hash = FX_HashCode_GetW(wsName);
   auto* elem = std::lower_bound(
       std::begin(g_PacketTable), std::end(g_PacketTable), hash,
       [](const PacketRecord& a, uint32_t hash) { return a.hash < hash; });
   if (elem != std::end(g_PacketTable) && elem->name == wsName)
     return XFA_GetPacketByIndex(elem->packet_type);
-  return {};
+  return pdfium::nullopt;
 }
 
 ByteStringView XFA_ElementToName(XFA_Element elem) {
@@ -185,7 +185,7 @@ ByteStringView XFA_ElementToName(XFA_Element elem) {
 }
 
 XFA_Element XFA_GetElementByName(WideStringView name) {
-  uint32_t hash = FX_HashCode_GetW(name, false);
+  uint32_t hash = FX_HashCode_GetW(name);
   auto* elem = std::lower_bound(
       std::begin(kElementRecords), std::end(kElementRecords), hash,
       [](const ElementRecord& a, uint32_t hash) { return a.hash < hash; });
@@ -202,7 +202,7 @@ ByteStringView XFA_AttributeToName(XFA_Attribute attr) {
 }
 
 Optional<XFA_ATTRIBUTEINFO> XFA_GetAttributeByName(WideStringView name) {
-  uint32_t hash = FX_HashCode_GetW(name, false);
+  uint32_t hash = FX_HashCode_GetW(name);
   auto* elem = std::lower_bound(
       std::begin(kAttributeRecords), std::end(kAttributeRecords), hash,
       [](const AttributeRecord& a, uint32_t hash) { return a.hash < hash; });
@@ -224,11 +224,12 @@ ByteStringView XFA_AttributeValueToName(XFA_AttributeValue item) {
 }
 
 Optional<XFA_AttributeValue> XFA_GetAttributeValueByName(WideStringView name) {
-  auto* it = std::lower_bound(std::begin(kAttributeValueRecords),
-                              std::end(kAttributeValueRecords),
-                              FX_HashCode_GetW(name, false),
-                              [](const AttributeValueRecord& arg,
-                                 uint32_t hash) { return arg.uHash < hash; });
+  auto* it =
+      std::lower_bound(std::begin(kAttributeValueRecords),
+                       std::end(kAttributeValueRecords), FX_HashCode_GetW(name),
+                       [](const AttributeValueRecord& arg, uint32_t hash) {
+                         return arg.uHash < hash;
+                       });
   if (it == std::end(kAttributeValueRecords))
     return pdfium::nullopt;
 
@@ -244,7 +245,7 @@ Optional<XFA_SCRIPTATTRIBUTEINFO> XFA_GetScriptAttributeByName(
     WideStringView attribute_name) {
   Optional<XFA_ATTRIBUTEINFO> attr = XFA_GetAttributeByName(attribute_name);
   if (!attr.has_value())
-    return {};
+    return pdfium::nullopt;
 
   while (element != XFA_Element::Unknown) {
     auto compound_key = std::make_pair(element, attr.value().attribute);
@@ -266,5 +267,5 @@ Optional<XFA_SCRIPTATTRIBUTEINFO> XFA_GetScriptAttributeByName(
     }
     element = kElementRecords[static_cast<size_t>(element)].parent;
   }
-  return {};
+  return pdfium::nullopt;
 }

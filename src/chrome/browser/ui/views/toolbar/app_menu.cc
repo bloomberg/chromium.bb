@@ -65,6 +65,7 @@
 #include "ui/native_theme/themed_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -107,13 +108,14 @@ const int kZoomLabelHorizontalPadding = 2;
 
 // Returns true if |command_id| identifies a bookmark menu item.
 bool IsBookmarkCommand(int command_id) {
-  return command_id >= IDC_FIRST_BOOKMARK_MENU;
+  return command_id >= IDC_FIRST_UNBOUNDED_MENU &&
+         (command_id % AppMenuModel::kNumUnboundedMenuTypes == 0);
 }
 
 // Returns true if |command_id| identifies a recent tabs menu item.
 bool IsRecentTabsCommand(int command_id) {
-  return command_id >= AppMenuModel::kMinRecentTabsCommandId &&
-         command_id <= AppMenuModel::kMaxRecentTabsCommandId;
+  return command_id >= IDC_FIRST_UNBOUNDED_MENU &&
+         (command_id % AppMenuModel::kNumUnboundedMenuTypes == 1);
 }
 
 // Combination border/background for the buttons contained in the menu. The
@@ -426,7 +428,9 @@ class AppMenu::CutCopyPasteView : public AppMenuView {
   gfx::Size CalculatePreferredSize() const override {
     // Returned height doesn't matter as MenuItemView forces everything to the
     // height of the menuitemview.
-    return {GetMaxChildViewPreferredWidth() * int{children().size()}, 0};
+    return {
+        GetMaxChildViewPreferredWidth() * static_cast<int>(children().size()),
+        0};
   }
 
   void Layout() override {
@@ -710,17 +714,23 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
     model_->SetMenuModelDelegate(nullptr);
   }
 
-  const gfx::FontList* GetLabelFontListAt(int index) const {
-    return model_->GetLabelFontListAt(index);
+  const gfx::FontList* GetLabelFontListForCommandId(int command_id) const {
+    ui::MenuModel* model = model_;
+    int index = -1;
+    AppMenuModel::GetModelAndIndexForCommandId(command_id, &model, &index);
+    DCHECK_GT(index, -1);
+    return model->GetLabelFontListAt(index);
   }
 
   // ui::MenuModelDelegate implementation:
 
-  void OnIconChanged(int index) override {
-    int command_id = model_->GetCommandIdAt(index);
+  void OnIconChanged(int command_id) override {
+    ui::MenuModel* model = model_;
+    int index;
+    model_->GetModelAndIndexForCommandId(command_id, &model, &index);
     views::MenuItemView* item = menu_item_->GetMenuItemByID(command_id);
     DCHECK(item);
-    item->SetIcon(model_->GetIconAt(index));
+    item->SetIcon(model->GetIconAt(index));
   }
 
   void OnMenuStructureChanged() override {
@@ -729,20 +739,22 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
       menu_item_->RemoveAllMenuItems();
 
       // Remove all elements in |AppMenu::command_id_to_entry_| that map to
-      // |model_|.
+      // |model_| or any sub menu models.
+      base::flat_set<int> descendant_command_ids;
+      GetDescendantCommandIds(model_, &descendant_command_ids);
       auto iter = app_menu_->command_id_to_entry_.begin();
       while (iter != app_menu_->command_id_to_entry_.end()) {
-        if (iter->second.first == model_)
+        if (descendant_command_ids.find(iter->first) !=
+            descendant_command_ids.end()) {
           app_menu_->command_id_to_entry_.erase(iter++);
-        else
+        } else {
           ++iter;
+        }
       }
     }
 
     // Add all menu items from |model| to submenu.
-    for (int i = 0; i < model_->GetItemCount(); ++i) {
-      app_menu_->AddMenuItem(menu_item_, i, model_, i, model_->GetTypeAt(i));
-    }
+    BuildMenu(menu_item_, model_);
 
     // In case recent tabs submenu was open when items were changing, force a
     // ChildrenChanged().
@@ -750,9 +762,41 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
   }
 
  private:
-  AppMenu* app_menu_;
-  ui::MenuModel* model_;
-  views::MenuItemView* menu_item_;
+  AppMenu* const app_menu_;
+  ui::MenuModel* const model_;
+  views::MenuItemView* const menu_item_;
+
+  // Recursive helper function for OnMenuStructureChanged() which builds the
+  // |menu| and all descendant submenus.
+  void BuildMenu(MenuItemView* menu, ui::MenuModel* model) {
+    DCHECK(menu);
+    DCHECK(model);
+    const int item_count = model->GetItemCount();
+    for (int i = 0; i < item_count; ++i) {
+      MenuItemView* const item =
+          app_menu_->AddMenuItem(menu, i, model, i, model->GetTypeAt(i));
+      if (model->GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU ||
+          model->GetTypeAt(i) == ui::MenuModel::TYPE_ACTIONABLE_SUBMENU) {
+        DCHECK(item);
+        DCHECK(item->GetType() == MenuItemView::Type::kSubMenu ||
+               item->GetType() == MenuItemView::Type::kActionableSubMenu);
+        BuildMenu(item, model->GetSubmenuModelAt(i));
+      }
+    }
+  }
+
+  // Populates out_set with all command ids referenced by the model, including
+  // those referenced by sub menu models.
+  void GetDescendantCommandIds(MenuModel* model, base::flat_set<int>* out_set) {
+    const int item_count = model->GetItemCount();
+    for (int i = 0; i < item_count; i++) {
+      out_set->insert(model->GetCommandIdAt(i));
+      if (model->GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU ||
+          model->GetTypeAt(i) == ui::MenuModel::TYPE_ACTIONABLE_SUBMENU) {
+        GetDescendantCommandIds(model->GetSubmenuModelAt(i), out_set);
+      }
+    }
+  }
 };
 
 // AppMenu ------------------------------------------------------------------
@@ -815,8 +859,8 @@ bool AppMenu::IsShowing() const {
 void AppMenu::GetLabelStyle(int command_id, LabelStyle* style) const {
   if (IsRecentTabsCommand(command_id)) {
     const gfx::FontList* font_list =
-        recent_tabs_menu_model_delegate_->GetLabelFontListAt(
-            ModelIndexFromCommandId(command_id));
+        recent_tabs_menu_model_delegate_->GetLabelFontListForCommandId(
+            command_id);
     // Only fill in |*color| if there's a font list - otherwise this method will
     // override the color for every recent tab item, not just the header.
     if (font_list) {
@@ -1060,7 +1104,9 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
   for (int i = 0, max = model->GetItemCount(); i < max; ++i) {
     // Add the menu item at the end.
     int menu_index =
-        parent->HasSubmenu() ? int{parent->GetSubmenu()->children().size()} : 0;
+        parent->HasSubmenu()
+            ? static_cast<int>(parent->GetSubmenu()->children().size())
+            : 0;
     MenuItemView* item =
         AddMenuItem(parent, menu_index, model, i, model->GetTypeAt(i));
 
@@ -1143,7 +1189,6 @@ MenuItemView* AppMenu::AddMenuItem(MenuItemView* parent,
   DCHECK(command_id > -1 ||
          (command_id == -1 &&
           model->GetTypeAt(model_index) == MenuModel::TYPE_SEPARATOR));
-  DCHECK_LT(command_id, IDC_FIRST_BOOKMARK_MENU);
 
   if (command_id > -1) {  // Don't add separators to |command_id_to_entry_|.
     // All command ID's should be unique except for IDC_SHOW_HISTORY which is

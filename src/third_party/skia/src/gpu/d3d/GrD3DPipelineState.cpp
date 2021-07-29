@@ -15,6 +15,7 @@
 #include "src/gpu/d3d/GrD3DPipeline.h"
 #include "src/gpu/d3d/GrD3DRootSignature.h"
 #include "src/gpu/d3d/GrD3DTexture.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLXferProcessor.h"
@@ -54,13 +55,8 @@ void GrD3DPipelineState::setAndBindConstants(GrD3DGpu* gpu,
         }
     }
 
-    {
-        SkIPoint offset;
-        GrTexture* dstTexture = programInfo.pipeline().peekDstTexture(&offset);
-
-        fXferProcessor->setData(fDataManager, programInfo.pipeline().getXferProcessor(),
-                                dstTexture, offset);
-    }
+    programInfo.pipeline().setDstTextureUniforms(fDataManager, &fBuiltinUniformHandles);
+    fXferProcessor->setData(fDataManager, programInfo.pipeline().getXferProcessor());
 
     D3D12_GPU_VIRTUAL_ADDRESS constantsAddress = fDataManager.uploadConstants(gpu);
     gpu->currentCommandList()->setGraphicsRootConstantBufferView(
@@ -69,13 +65,7 @@ void GrD3DPipelineState::setAndBindConstants(GrD3DGpu* gpu,
 }
 
 void GrD3DPipelineState::setRenderTargetState(const GrRenderTarget* rt, GrSurfaceOrigin origin) {
-    // Load the RT height uniform if it is needed to y-flip gl_FragCoord.
-    if (fBuiltinUniformHandles.fRTHeightUni.isValid() &&
-        fRenderTargetState.fRenderTargetSize.fHeight != rt->height()) {
-        fDataManager.set1f(fBuiltinUniformHandles.fRTHeightUni, SkIntToScalar(rt->height()));
-    }
-
-    // set RT adjustment
+    // Set RT adjustment and RT flip
     SkISize dimensions = rt->dimensions();
     SkASSERT(fBuiltinUniformHandles.fRTAdjustmentUni.isValid());
     if (fRenderTargetState.fRenderTargetOrigin != origin ||
@@ -83,9 +73,17 @@ void GrD3DPipelineState::setRenderTargetState(const GrRenderTarget* rt, GrSurfac
         fRenderTargetState.fRenderTargetSize = dimensions;
         fRenderTargetState.fRenderTargetOrigin = origin;
 
-        float rtAdjustmentVec[4];
-        fRenderTargetState.getRTAdjustmentVec(rtAdjustmentVec);
-        fDataManager.set4fv(fBuiltinUniformHandles.fRTAdjustmentUni, 1, rtAdjustmentVec);
+        // The client will mark a swap buffer as kTopLeft when making a SkSurface because
+        // D3D's framebuffer space has (0, 0) at the top left. This agrees with Skia's device
+        // coords. However, in NDC (-1, -1) is the bottom left. So we flip when origin is kTopLeft.
+        bool flip = (origin == kTopLeft_GrSurfaceOrigin);
+        std::array<float, 4> v = SkSL::Compiler::GetRTAdjustVector(dimensions, flip);
+        fDataManager.set4fv(fBuiltinUniformHandles.fRTAdjustmentUni, 1, v.data());
+        if (fBuiltinUniformHandles.fRTFlipUni.isValid()) {
+            // Note above that framebuffer space has origin top left. So we need !flip here.
+            std::array<float, 2> d = SkSL::Compiler::GetRTFlipVector(rt->height(), !flip);
+            fDataManager.set2fv(fBuiltinUniformHandles.fRTFlipUni, 1, d.data());
+        }
     }
 }
 
@@ -109,6 +107,14 @@ void GrD3DPipelineState::setAndBindTextures(GrD3DGpu* gpu,
         gpu->currentCommandList()->addSampledTextureRef(texture);
     }
 
+    if (GrTexture* dstTexture = pipeline.peekDstTexture()) {
+        auto texture = static_cast<GrD3DTexture*>(dstTexture);
+        shaderResourceViews[currTextureBinding] = texture->shaderResourceView();
+        samplers[currTextureBinding++] = gpu->resourceProvider().findOrCreateCompatibleSampler(
+                                               GrSamplerState::Filter::kNearest);
+        gpu->currentCommandList()->addSampledTextureRef(texture);
+    }
+
     pipeline.visitTextureEffects([&](const GrTextureEffect& te) {
         GrSamplerState samplerState = te.samplerState();
         auto* texture = static_cast<GrD3DTexture*>(te.texture());
@@ -117,14 +123,6 @@ void GrD3DPipelineState::setAndBindTextures(GrD3DGpu* gpu,
                 gpu->resourceProvider().findOrCreateCompatibleSampler(samplerState);
         gpu->currentCommandList()->addSampledTextureRef(texture);
     });
-
-    if (GrTexture* dstTexture = pipeline.peekDstTexture()) {
-        auto texture = static_cast<GrD3DTexture*>(dstTexture);
-        shaderResourceViews[currTextureBinding] = texture->shaderResourceView();
-        samplers[currTextureBinding++] = gpu->resourceProvider().findOrCreateCompatibleSampler(
-                                               GrSamplerState::Filter::kNearest);
-        gpu->currentCommandList()->addSampledTextureRef(texture);
-    }
 
     SkASSERT(fNumSamplers == currTextureBinding);
 

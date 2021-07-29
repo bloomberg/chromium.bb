@@ -121,7 +121,8 @@ void AccessContextAuditService::RecordStorageAPIAccess(
     const url::Origin& storage_origin,
     AccessContextAuditDatabase::StorageAPIType type,
     const url::Origin& top_frame_origin) {
-  // Opaque top frame origins are not supported.
+  // Opaque top frame origins are only supported for storing cross-site storage
+  // access records after history deletions.
   if (top_frame_origin.opaque())
     return;
   DCHECK(!storage_origin.opaque());
@@ -318,8 +319,9 @@ void AccessContextAuditService::OnURLsDeleted(
     const history::DeletionInfo& deletion_info) {
   if (deletion_info.IsAllHistory()) {
     database_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&AccessContextAuditDatabase::RemoveAllRecords,
-                                  database_));
+        FROM_HERE,
+        base::BindOnce(&AccessContextAuditDatabase::RemoveAllRecordsHistory,
+                       database_));
     return;
   }
 
@@ -332,7 +334,7 @@ void AccessContextAuditService::OnURLsDeleted(
     database_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
-            &AccessContextAuditDatabase::RemoveAllRecordsForTimeRange,
+            &AccessContextAuditDatabase::RemoveAllRecordsForTimeRangeHistory,
             database_, deletion_info.time_range().begin(),
             deletion_info.time_range().end()));
   }

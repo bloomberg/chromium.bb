@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
+#include "base/values.h"
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
 #include "components/webapps/common/web_page_metadata.mojom-forward.h"
@@ -29,6 +30,11 @@ using SquareSizePx = int;
 // Iterates in ascending order (checked in SortedSizesPxIsAscending test).
 using SortedSizesPx = base::flat_set<SquareSizePx, std::less<>>;
 using IconPurpose = blink::mojom::ManifestImageResource_Purpose;
+constexpr std::array<IconPurpose,
+                     static_cast<int>(IconPurpose::kMaxValue) -
+                         static_cast<int>(IconPurpose::kMinValue) + 1>
+    kIconPurposes{IconPurpose::ANY, IconPurpose::MONOCHROME,
+                  IconPurpose::MASKABLE};
 
 // Icon bitmaps for each IconPurpose.
 struct IconBitmaps {
@@ -101,6 +107,7 @@ struct WebApplicationIconInfo {
   ~WebApplicationIconInfo();
   WebApplicationIconInfo& operator=(const WebApplicationIconInfo&);
   WebApplicationIconInfo& operator=(WebApplicationIconInfo&&) noexcept;
+  base::Value AsDebugValue() const;
 
   GURL url;
   absl::optional<SquareSizePx> square_size_px;
@@ -117,6 +124,7 @@ struct WebApplicationShortcutsMenuItemInfo {
     ~Icon();
     Icon& operator=(const Icon&);
     Icon& operator=(Icon&&);
+    base::Value AsDebugValue() const;
 
     GURL url;
     SquareSizePx square_size_px = 0;
@@ -137,6 +145,8 @@ struct WebApplicationShortcutsMenuItemInfo {
       IconPurpose purpose) const;
   void SetShortcutIconInfosForPurpose(IconPurpose purpose,
                                       std::vector<Icon> shortcut_icon_infos);
+
+  base::Value AsDebugValue() const;
 
   // Title of shortcut item in App Icon Shortcut Menu.
   std::u16string name;
@@ -261,14 +271,13 @@ struct WebApplicationInfo {
   // The URL protocols/schemes that the app can handle.
   std::vector<blink::Manifest::ProtocolHandler> protocol_handlers;
 
-  // URL within scope to launch for a "new note" action. Valid iff this is
-  // considered a note-taking app.
-  // TODO(crbug.com/1185678): Parse this from the manifest.
-  GURL note_taking_new_note_url;
-
   // The app intends to act as a URL handler for URLs described by this
   // information.
   apps::UrlHandlers url_handlers;
+
+  // URL within scope to launch for a "new note" action. Valid iff this is
+  // considered a note-taking app.
+  GURL note_taking_new_note_url;
 
   // User preference as to whether to auto run the app on OS login.
   // Currently only supported in Windows platform.
@@ -278,10 +287,10 @@ struct WebApplicationInfo {
   // scope.
   blink::mojom::CaptureLinks capture_links =
       blink::mojom::CaptureLinks::kUndefined;
-};
 
-std::ostream& operator<<(std::ostream& out,
-                         const WebApplicationIconInfo& icon_info);
+  // Whether the app should be loaded in a dedicated storage partition.
+  bool is_storage_isolated = false;
+};
 
 bool operator==(const IconSizes& icon_sizes1, const IconSizes& icon_sizes2);
 
@@ -293,8 +302,5 @@ bool operator==(const WebApplicationShortcutsMenuItemInfo::Icon& icon1,
 
 bool operator==(const WebApplicationShortcutsMenuItemInfo& shortcut_info1,
                 const WebApplicationShortcutsMenuItemInfo& shortcut_info2);
-
-std::ostream& operator<<(std::ostream& out,
-                         const WebApplicationShortcutsMenuItemInfo& info);
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APPLICATION_INFO_H_

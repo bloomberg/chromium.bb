@@ -12,6 +12,7 @@
 #include "chromeos/ui/base/window_state_type.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
@@ -67,6 +68,10 @@ struct COMPONENT_EXPORT(FULL_RESTORE) AppRestoreData {
   // Clears the window's information.
   void ClearWindowInfo();
 
+  // Gets the app launch information.
+  std::unique_ptr<AppLaunchInfo> GetAppLaunchInfo(const std::string& app_id,
+                                                  int window_id) const;
+
   // Gets the window information.
   std::unique_ptr<WindowInfo> GetWindowInfo() const;
 
@@ -78,9 +83,11 @@ struct COMPONENT_EXPORT(FULL_RESTORE) AppRestoreData {
   absl::optional<int32_t> container;
   absl::optional<int32_t> disposition;
   absl::optional<int64_t> display_id;
-  absl::optional<GURL> url;
+  absl::optional<std::vector<GURL>> urls;
+  absl::optional<int32_t> active_tab_index;
   absl::optional<apps::mojom::IntentPtr> intent;
   absl::optional<std::vector<base::FilePath>> file_paths;
+  absl::optional<bool> app_type_browser;
 
   // Window's information.
   absl::optional<int32_t> activation_index;
@@ -89,10 +96,13 @@ struct COMPONENT_EXPORT(FULL_RESTORE) AppRestoreData {
   absl::optional<gfx::Rect> restore_bounds;
   absl::optional<gfx::Rect> current_bounds;
   absl::optional<chromeos::WindowStateType> window_state_type;
+  absl::optional<ui::WindowShowState> pre_minimized_show_state_type;
 
   // Extra ARC window's information.
   absl::optional<gfx::Size> minimum_size;
   absl::optional<gfx::Size> maximum_size;
+  absl::optional<std::u16string> title;
+  absl::optional<gfx::Rect> bounds_in_root;
   absl::optional<uint32_t> primary_color;
   absl::optional<uint32_t> status_bar_color;
 };

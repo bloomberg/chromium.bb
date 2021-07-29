@@ -50,12 +50,15 @@ const base::Feature kEnablePowerManager{"ChromeOSAssistantEnablePowerManager",
 const base::Feature kEnableLibAssistantBetaBackend{
     "LibAssistantBetaBackend", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnableMediaSessionIntegration{
-    "AssistantEnableMediaSessionIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Disable voice match for test purpose.
 const base::Feature kDisableVoiceMatch{"DisableVoiceMatch",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableLibAssistantSandbox{
+    "LibAssistantSandbox", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableLibAssistantV2{"LibAssistantV2",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAppSupportEnabled() {
   return base::FeatureList::IsEnabled(
@@ -90,10 +93,6 @@ bool IsLauncherChipIntegrationEnabled() {
   return base::FeatureList::IsEnabled(kAssistantLauncherChipIntegration);
 }
 
-bool IsMediaSessionIntegrationEnabled() {
-  return base::FeatureList::IsEnabled(kEnableMediaSessionIntegration);
-}
-
 bool IsPowerManagerEnabled() {
   return base::FeatureList::IsEnabled(kEnablePowerManager);
 }
@@ -118,6 +117,14 @@ bool IsVoiceMatchDisabled() {
 
 bool IsWaitSchedulingEnabled() {
   return base::FeatureList::IsEnabled(kAssistantWaitScheduling);
+}
+
+bool IsLibAssistantSandboxEnabled() {
+  return base::FeatureList::IsEnabled(kEnableLibAssistantSandbox);
+}
+
+bool IsLibAssistantV2Enabled() {
+  return base::FeatureList::IsEnabled(kEnableLibAssistantV2);
 }
 
 }  // namespace features

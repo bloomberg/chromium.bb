@@ -28,13 +28,15 @@ class CastSocket : public TlsConnection::Client {
  public:
   class Client {
    public:
-    virtual ~Client() = default;
 
     // Called when a terminal error on |socket| has occurred.
     virtual void OnError(CastSocket* socket, Error error) = 0;
 
     virtual void OnMessage(CastSocket* socket,
                            ::cast::channel::CastMessage message) = 0;
+
+   protected:
+    virtual ~Client();
   };
 
   CastSocket(std::unique_ptr<TlsConnection> connection, Client* client);

@@ -80,6 +80,7 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
                            UpdateTransformWhenContainerBoundsChange);
   FRIEND_TEST_ALL_PREFIXES(AccessibilityBridgeTest,
                            OffsetContainerBookkeepingIsUpdated);
+  FRIEND_TEST_ALL_PREFIXES(AccessibilityBridgeTest, OneUpdatePerNode);
 
   // Represents a connection between two AXTrees that are in different frames.
   struct TreeConnection {
@@ -131,9 +132,14 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
   // in tests.
   float GetDeviceScaleFactor();
 
+  // Helper method to add a node to its offset container's offset children
+  // mapping.
+  void AddNodeToOffsetMapping(const ui::AXTree* tree,
+                              const ui::AXNodeData& node_data);
+
   // Helper method to remove a node id from its offset container's offset
   // children mapping.
-  void RemoveNodeFromOffsetMapping(ui::AXTree* tree,
+  void RemoveNodeFromOffsetMapping(const ui::AXTree* tree,
                                    const ui::AXNodeData& node_data);
 
   // Helper method to return the node in focus. Returns nullptr if the main
@@ -150,16 +156,26 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
 
   // Helper method to get the most recently updated fuchsia representation of
   // the node. Note that it differs from |GetNodeIfChangingInUpdate| because
-  // here a node will be created to be part of the update if it is not. Returns
-  // nullptr if the node does not exist.
-  fuchsia::accessibility::semantics::Node* GetUpdatedNode(
+  // here a node will be created to be part of the update if it is not. If
+  // |replace_existing| is set to true, then this method will overwrite the
+  // existing update for the node (if one exists).
+  //
+  // Returns nullptr if the node does not exist.
+  fuchsia::accessibility::semantics::Node* EnsureAndGetUpdatedNode(
       const ui::AXTreeID& tree_id,
-      ui::AXNodeID node_id);
+      ui::AXNodeID node_id,
+      bool replace_existing);
 
   // Returns the node in focus in this frame or in one of its descendants if the
   // node in focus points to a child frame.
   absl::optional<AXNodeID> GetFocusFromThisOrDescendantFrame(
       const ui::AXSerializableTree* tree) const;
+
+  // Enqueues |node_id| for deletion in the subsequent tree update.
+  void AppendToDeleteList(uint32_t node_id);
+
+  // Enqueues changes to |node| in the subsequent tree update.
+  void AppendToUpdateList(fuchsia::accessibility::semantics::Node node);
 
   // content::WebContentsObserver implementation.
   void AccessibilityEventReceived(
@@ -177,6 +193,7 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
                               OnSemanticsModeChangedCallback callback) final;
 
   // ui::AXTreeObserver implementation.
+  void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeDeleted(ui::AXTree* tree, int32_t node_id) override;
   void OnAtomicUpdateFinished(
@@ -196,7 +213,7 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
       ax_trees_;
 
   // Maps frames to AXTrees.
-  base::flat_map<content::GlobalFrameRoutingId, ui::AXTreeID>
+  base::flat_map<content::GlobalRenderFrameHostId, ui::AXTreeID>
       frame_id_to_tree_id_;
 
   // Keeps track of semantic trees connections.
@@ -214,9 +231,9 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
   // Whether semantic updates are enabled.
   bool enable_semantic_updates_ = false;
 
-  // Cache for pending data to be sent to the Semantic Tree between commits.
-  std::vector<uint32_t> to_delete_;
-  std::vector<fuchsia::accessibility::semantics::Node> to_update_;
+  // Buffer for pending data to be sent to the Semantic Tree between commits.
+  std::vector<std::vector<uint32_t>> to_delete_;
+  std::vector<std::vector<fuchsia::accessibility::semantics::Node>> to_update_;
   bool commit_inflight_ = false;
 
   // Maintain a map from AXNode IDs to a list of the AXNode IDs of descendant

@@ -5,8 +5,9 @@
 #include <memory>
 #include <numeric>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/ax_node.h"
@@ -204,6 +205,12 @@ TEST(AXGeneratedTreeTest, TestTreeGeneratorWithPermutations) {
 // that the destination tree can unserialize it and create a valid tree,
 // and that after updating all nodes the resulting tree now matches the
 // intended tree.
+//
+// Sheriffs: this test is actually very stable and reliable, but it's
+// cpu-bound so under extremely heavy load it sometimes times out even
+// though it only takes 1 - 2 seconds to run under normal load.
+// Please don't disable unless it's actually flaking frequently (e.g.,
+// every day). Check Flake Portal first.
 TEST(AXGeneratedTreeTest, SerializeGeneratedTrees) {
   // Do a more exhaustive test in release mode. If you're modifying
   // the algorithm you may want to try even larger tree sizes if you
@@ -293,8 +300,21 @@ TEST(AXGeneratedTreeTest, SerializeGeneratedTrees) {
   }
 }
 
+// Sheriffs: this test is actually very stable and reliable, but it's
+// cpu-bound so under extremely heavy load it sometimes times out even
+// though it only takes 1 - 2 seconds to run under normal load.
+// Please don't disable unless it's actually flaking frequently (e.g.,
+// every day). Check Flake Portal first.
 TEST(AXGeneratedTreeTest, GeneratedTreesWithIgnoredNodes) {
+  // Do a more exhaustive test in release mode. If you're modifying
+  // the algorithm you may want to try even larger tree sizes if you
+  // can afford the time.
+#ifdef NDEBUG
   int max_tree_size = 5;
+#else
+  LOG(WARNING) << "Debug build, only testing trees with 4 nodes and not 5.";
+  int max_tree_size = 4;
+#endif
 
   TreeGenerator generator(max_tree_size, false);
   int unique_tree_count = generator.UniqueTreeCount();

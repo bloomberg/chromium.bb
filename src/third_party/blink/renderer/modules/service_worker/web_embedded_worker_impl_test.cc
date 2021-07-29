@@ -19,6 +19,8 @@
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-blink.h"
+#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -83,7 +85,7 @@ class FakeWebURLLoader final : public WebURLLoader {
     // Don't handle other requests intentionally to emulate ongoing load.
   }
 
-  void SetDefersLoading(DeferType defers) override {}
+  void Freeze(WebLoaderFreezeMode) override {}
   void DidChangePriority(WebURLRequest::Priority, int) override {}
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForBodyLoader()
       override {

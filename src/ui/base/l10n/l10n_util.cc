@@ -13,6 +13,7 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/message_formatter.h"
@@ -23,7 +24,6 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -237,11 +237,7 @@ static const char* const kAcceptLanguageList[] = {
 // for on the current platform. Guaranteed to be in sorted order and guaranteed
 // to have no duplicates.
 //
-// Note that this could have false positives at runtime on Android and iOS:
-// - On Android, some locales aren't shipped (|android_apk_omitted_locales| in
-//   GN), and some locales files are dynamically shipped in app bundles
-//   (|android_bundle_only_locales|). Both of these lists are included in
-//   this variable.
+// Note that this could have false positives at runtime on iOS:
 // - On iOS, some locales aren't shipped (|ios_unsupported_locales|) as they are
 //   not supported by the operating system. These locales are included in this
 //   variable.

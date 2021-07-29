@@ -8,7 +8,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ui/profile_picker.h"
-#include "chrome/browser/ui/ui_features.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,45 +49,6 @@ class ViewVisibilityChangedWaiter : public views::ViewObserver {
   base::ScopedObservation<views::View, views::ViewObserver> observation_{this};
 };
 
-// Waits until a first non empty paint for given committed `url`.
-class FirstVisuallyNonEmptyPaintObserver : public content::WebContentsObserver {
- public:
-  explicit FirstVisuallyNonEmptyPaintObserver(content::WebContents* contents,
-                                              const GURL& url)
-      : content::WebContentsObserver(contents), url_(url) {}
-
-  // Waits for the first paint.
-  void Wait() {
-    if (IsExitConditionSatisfied()) {
-      return;
-    }
-    run_loop_.Run();
-    EXPECT_TRUE(IsExitConditionSatisfied())
-        << web_contents()->GetLastCommittedURL() << " != " << url_;
-  }
-
- private:
-  // WebContentsObserver:
-  void DidFirstVisuallyNonEmptyPaint() override {
-    if (IsExitConditionSatisfied())
-      run_loop_.Quit();
-  }
-
-  void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) override {
-    if (IsExitConditionSatisfied())
-      run_loop_.Quit();
-  }
-
-  bool IsExitConditionSatisfied() {
-    return (web_contents()->GetLastCommittedURL() == url_ &&
-            web_contents()->CompletedFirstVisuallyNonEmptyPaint());
-  }
-
-  base::RunLoop run_loop_{base::RunLoop::Type::kNestableTasksAllowed};
-  GURL url_;
-};
-
 // Waits until a view is deleted.
 class ViewDeletedWaiter : public views::ViewObserver {
  public:
@@ -114,9 +75,7 @@ class ViewDeletedWaiter : public views::ViewObserver {
 
 }  // namespace
 
-ProfilePickerTestBase::ProfilePickerTestBase() {
-  feature_list_.InitAndEnableFeature(features::kNewProfilePicker);
-}
+ProfilePickerTestBase::ProfilePickerTestBase() = default;
 
 ProfilePickerTestBase::~ProfilePickerTestBase() = default;
 
@@ -144,10 +103,16 @@ void ProfilePickerTestBase::WaitForLayoutWithoutToolbar() {
       .Wait();
 }
 
-void ProfilePickerTestBase::WaitForFirstPaint(content::WebContents* contents,
-                                              const GURL& url) {
+void ProfilePickerTestBase::WaitForLoadStop(content::WebContents* contents,
+                                            const GURL& url) {
   DCHECK(contents);
-  FirstVisuallyNonEmptyPaintObserver(contents, url).Wait();
+  if (contents->GetLastCommittedURL() == url && !contents->IsLoading())
+    return;
+
+  ui_test_utils::UrlLoadObserver url_observer(
+      url, content::NotificationService::AllSources());
+  url_observer.Wait();
+  EXPECT_EQ(contents->GetLastCommittedURL(), url);
 }
 
 void ProfilePickerTestBase::WaitForPickerClosed() {

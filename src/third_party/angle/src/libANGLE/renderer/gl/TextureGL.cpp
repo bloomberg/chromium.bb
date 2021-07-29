@@ -187,7 +187,7 @@ angle::Result TextureGL::setImage(const gl::Context *context,
 
         gl::Box area(0, 0, 0, size.width, size.height, size.depth);
         return setSubImageRowByRowWorkaround(context, target, level, area, format, type, unpack,
-                                             unpackBuffer, pixels);
+                                             unpackBuffer, 0, pixels);
     }
 
     if (features.unpackLastRowSeparatelyForPaddingInclusion.enabled)
@@ -335,7 +335,7 @@ angle::Result TextureGL::setSubImage(const gl::Context *context,
         unpack.rowLength != 0 && unpack.rowLength < area.width)
     {
         return setSubImageRowByRowWorkaround(context, target, level, area, format, type, unpack,
-                                             unpackBuffer, pixels);
+                                             unpackBuffer, 0, pixels);
     }
 
     if (features.unpackLastRowSeparatelyForPaddingInclusion.enabled)
@@ -354,6 +354,13 @@ angle::Result TextureGL::setSubImage(const gl::Context *context,
             return setSubImagePaddingWorkaround(context, target, level, area, format, type, unpack,
                                                 unpackBuffer, pixels);
         }
+    }
+
+    if (features.uploadTextureDataInChunks.enabled)
+    {
+        return setSubImageRowByRowWorkaround(
+            context, target, level, area, format, type, unpack, unpackBuffer,
+            angle::FeaturesGL::kUploadTextureDataInChunksUploadSize, pixels);
     }
 
     if (nativegl::UseTexImage2D(getType()))
@@ -385,14 +392,18 @@ angle::Result TextureGL::setSubImageRowByRowWorkaround(const gl::Context *contex
                                                        GLenum type,
                                                        const gl::PixelUnpackState &unpack,
                                                        const gl::Buffer *unpackBuffer,
+                                                       size_t maxBytesUploadedPerChunk,
                                                        const uint8_t *pixels)
 {
-    ContextGL *contextGL         = GetImplAs<ContextGL>(context);
-    const FunctionsGL *functions = GetFunctionsGL(context);
-    StateManagerGL *stateManager = GetStateManagerGL(context);
+    ContextGL *contextGL              = GetImplAs<ContextGL>(context);
+    const FunctionsGL *functions      = GetFunctionsGL(context);
+    StateManagerGL *stateManager      = GetStateManagerGL(context);
+    const angle::FeaturesGL &features = GetFeaturesGL(context);
 
-    gl::PixelUnpackState directUnpack;
-    directUnpack.alignment = 1;
+    gl::PixelUnpackState directUnpack = unpack;
+    directUnpack.skipRows             = 0;
+    directUnpack.skipPixels           = 0;
+    directUnpack.skipImages           = 0;
     ANGLE_TRY(stateManager->setPixelUnpackState(context, directUnpack));
     ANGLE_TRY(stateManager->setPixelUnpackBuffer(context, unpackBuffer));
 
@@ -409,33 +420,48 @@ angle::Result TextureGL::setSubImageRowByRowWorkaround(const gl::Context *contex
     ANGLE_CHECK_GL_MATH(contextGL, glFormat.computeSkipBytes(type, rowBytes, imageBytes, unpack,
                                                              useTexImage3D, &skipBytes));
 
+    GLint rowsPerChunk =
+        std::min(std::max(static_cast<GLint>(maxBytesUploadedPerChunk / rowBytes), 1), area.height);
+    if (maxBytesUploadedPerChunk > 0 && rowsPerChunk < area.height)
+    {
+        ANGLE_PERF_WARNING(contextGL->getDebug(), GL_DEBUG_SEVERITY_LOW,
+                           "Chunking upload of texture data to work around driver hangs.");
+    }
+
+    nativegl::TexSubImageFormat texSubImageFormat =
+        nativegl::GetTexSubImageFormat(functions, features, format, type);
+
     const uint8_t *pixelsWithSkip = pixels + skipBytes;
     if (useTexImage3D)
     {
         for (GLint image = 0; image < area.depth; ++image)
         {
             GLint imageByteOffset = image * imageBytes;
-            for (GLint row = 0; row < area.height; ++row)
+            for (GLint row = 0; row < area.height; row += rowsPerChunk)
             {
+                GLint height             = std::min(rowsPerChunk, area.height - row);
                 GLint byteOffset         = imageByteOffset + row * rowBytes;
                 const GLubyte *rowPixels = pixelsWithSkip + byteOffset;
                 ANGLE_GL_TRY(context,
-                             functions->texSubImage3D(ToGLenum(target), static_cast<GLint>(level),
-                                                      area.x, row + area.y, image + area.z,
-                                                      area.width, 1, 1, format, type, rowPixels));
+                             functions->texSubImage3D(
+                                 ToGLenum(target), static_cast<GLint>(level), area.x, row + area.y,
+                                 image + area.z, area.width, height, 1, texSubImageFormat.format,
+                                 texSubImageFormat.type, rowPixels));
             }
         }
     }
     else
     {
         ASSERT(nativegl::UseTexImage2D(getType()));
-        for (GLint row = 0; row < area.height; ++row)
+        for (GLint row = 0; row < area.height; row += rowsPerChunk)
         {
+            GLint height             = std::min(rowsPerChunk, area.height - row);
             GLint byteOffset         = row * rowBytes;
             const GLubyte *rowPixels = pixelsWithSkip + byteOffset;
             ANGLE_GL_TRY(context, functions->texSubImage2D(
                                       ToGLenum(target), static_cast<GLint>(level), area.x,
-                                      row + area.y, area.width, 1, format, type, rowPixels));
+                                      row + area.y, area.width, height, texSubImageFormat.format,
+                                      texSubImageFormat.type, rowPixels));
         }
     }
     return angle::Result::Continue;
@@ -1370,21 +1396,7 @@ angle::Result TextureGL::bindTexImage(const gl::Context *context, egl::Surface *
 
 angle::Result TextureGL::releaseTexImage(const gl::Context *context)
 {
-    ASSERT(getType() == gl::TextureType::_2D || getType() == gl::TextureType::Rectangle);
-
-    const angle::FeaturesGL &features = GetFeaturesGL(context);
-    if (!features.resettingTexturesGeneratesErrors.enabled)
-    {
-        // Not all Surface implementations reset the size of mip 0 when releasing, do it manually
-        const FunctionsGL *functions = GetFunctionsGL(context);
-        StateManagerGL *stateManager = GetStateManagerGL(context);
-
-        stateManager->bindTexture(getType(), mTextureID);
-        ASSERT(nativegl::UseTexImage2D(getType()));
-        ANGLE_GL_TRY(context, functions->texImage2D(ToGLenum(getType()), 0, GL_RGBA, 0, 0, 0,
-                                                    GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
-    }
-
+    ANGLE_TRY(recreateTexture(context));
     return angle::Result::Continue;
 }
 
@@ -1425,13 +1437,14 @@ angle::Result TextureGL::syncState(const gl::Context *context,
 
     stateManager->bindTexture(getType(), mTextureID);
 
+    gl::Texture::DirtyBits syncDirtyBits = dirtyBits | mLocalDirtyBits;
     if (dirtyBits[gl::Texture::DIRTY_BIT_BASE_LEVEL] || dirtyBits[gl::Texture::DIRTY_BIT_MAX_LEVEL])
     {
         // Don't know if the previous base level was using any workarounds, always re-sync the
         // workaround dirty bits
-        mLocalDirtyBits |= GetLevelWorkaroundDirtyBits();
+        syncDirtyBits |= GetLevelWorkaroundDirtyBits();
     }
-    for (auto dirtyBit : (dirtyBits | mLocalDirtyBits))
+    for (auto dirtyBit : syncDirtyBits)
     {
 
         switch (dirtyBit)
@@ -1596,6 +1609,7 @@ angle::Result TextureGL::syncState(const gl::Context *context,
         }
     }
 
+    mAllModifiedDirtyBits |= syncDirtyBits;
     mLocalDirtyBits.reset();
     return angle::Result::Continue;
 }
@@ -1757,6 +1771,33 @@ bool TextureGL::hasEmulatedAlphaChannel(const gl::ImageIndex &index) const
 {
     return getLevelInfo(index.getTargetOrFirstCubeFace(), index.getLevelIndex())
         .emulatedAlphaChannel;
+}
+
+angle::Result TextureGL::recreateTexture(const gl::Context *context)
+{
+    const FunctionsGL *functions = GetFunctionsGL(context);
+    StateManagerGL *stateManager = GetStateManagerGL(context);
+
+    stateManager->bindTexture(getType(), mTextureID);
+    stateManager->deleteTexture(mTextureID);
+
+    functions->genTextures(1, &mTextureID);
+    stateManager->bindTexture(getType(), mTextureID);
+
+    mLevelInfo.clear();
+    mLevelInfo.resize(GetMaxLevelInfoCountForTextureType(getType()));
+
+    mAppliedSwizzle = gl::SwizzleState();
+    mAppliedSampler = gl::SamplerState::CreateDefaultForTarget(getType());
+
+    mAppliedBaseLevel = 0;
+    mAppliedBaseLevel = gl::kInitialMaxLevel;
+
+    mLocalDirtyBits = mAllModifiedDirtyBits;
+
+    onStateChange(angle::SubjectMessage::SubjectChanged);
+
+    return angle::Result::Continue;
 }
 
 angle::Result TextureGL::syncTextureStateSwizzle(const gl::Context *context,
@@ -2036,11 +2077,22 @@ angle::Result TextureGL::initializeContents(const gl::Context *context,
 
         if (nativegl::UseTexImage2D(getType()))
         {
-            ANGLE_GL_TRY(context,
-                         functions->texSubImage2D(ToGLenum(imageIndex.getTarget()),
-                                                  imageIndex.getLevelIndex(), 0, 0, desc.size.width,
-                                                  desc.size.height, nativeSubImageFormat.format,
-                                                  nativeSubImageFormat.type, zero->data()));
+            if (features.uploadTextureDataInChunks.enabled)
+            {
+                gl::Box area(0, 0, 0, desc.size.width, desc.size.height, 1);
+                ANGLE_TRY(setSubImageRowByRowWorkaround(
+                    context, imageIndex.getTarget(), imageIndex.getLevelIndex(), area,
+                    nativeSubImageFormat.format, nativeSubImageFormat.type, unpackState, nullptr,
+                    angle::FeaturesGL::kUploadTextureDataInChunksUploadSize, zero->data()));
+            }
+            else
+            {
+                ANGLE_GL_TRY(context,
+                             functions->texSubImage2D(
+                                 ToGLenum(imageIndex.getTarget()), imageIndex.getLevelIndex(), 0, 0,
+                                 desc.size.width, desc.size.height, nativeSubImageFormat.format,
+                                 nativeSubImageFormat.type, zero->data()));
+            }
         }
         else
         {

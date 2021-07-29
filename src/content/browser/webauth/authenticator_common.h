@@ -58,29 +58,7 @@ class BrowserContext;
 class RenderFrameHost;
 class WebAuthRequestSecurityChecker;
 
-namespace client_data {
-// These enumerate the possible values for the `type` member of
-// CollectedClientData. See
-// https://w3c.github.io/webauthn/#dom-collectedclientdata-type
-CONTENT_EXPORT extern const char kCreateType[];
-CONTENT_EXPORT extern const char kGetType[];
-}  // namespace client_data
-
 enum class RequestExtension;
-
-// Builds the CollectedClientData[1] dictionary with the given values,
-// serializes it to JSON, and returns the resulting string. For legacy U2F
-// requests coming from the CryptoToken U2F extension, modifies the object key
-// 'type' as required[2].
-// [1] https://w3c.github.io/webauthn/#dictdef-collectedclientdata
-// [2]
-// https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#client-data
-CONTENT_EXPORT std::string SerializeWebAuthnCollectedClientDataToJson(
-    const std::string& type,
-    const std::string& origin,
-    base::span<const uint8_t> challenge,
-    bool is_cross_origin,
-    bool use_legacy_u2f_type_key = false);
 
 // Common code for any WebAuthn Authenticator interfaces.
 class CONTENT_EXPORT AuthenticatorCommon {
@@ -218,9 +196,9 @@ class CONTENT_EXPORT AuthenticatorCommon {
   // a unit testing fake. InitDiscoveryFactory() must be called before this
   // accessor. It gets reset at the end of each request by Cleanup().
   device::FidoDiscoveryFactory* discovery_factory();
-  void InitDiscoveryFactory();
+  void InitDiscoveryFactory(bool is_u2f_api_request);
 
-  const GlobalFrameRoutingId render_frame_host_id_;
+  const GlobalRenderFrameHostId render_frame_host_id_;
   std::unique_ptr<device::FidoRequestHandlerBase> request_;
   std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
   device::FidoDiscoveryFactory* discovery_factory_testing_override_ = nullptr;
@@ -241,8 +219,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
   absl::optional<std::string> app_id_;
   absl::optional<device::CtapMakeCredentialRequest>
       ctap_make_credential_request_;
-  absl::optional<device::MakeCredentialRequestHandler::Options>
-      make_credential_options_;
+  absl::optional<device::MakeCredentialOptions> make_credential_options_;
   absl::optional<device::CtapGetAssertionRequest> ctap_get_assertion_request_;
   absl::optional<device::CtapGetAssertionOptions> ctap_get_assertion_options_;
   // awaiting_attestation_response_ is true if the embedder has been queried

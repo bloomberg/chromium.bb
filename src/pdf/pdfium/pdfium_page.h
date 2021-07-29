@@ -15,7 +15,6 @@
 #include "base/gtest_prod_util.h"
 #include "pdf/page_orientation.h"
 #include "pdf/pdf_engine.h"
-#include "ppapi/cpp/private/pdf.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_doc.h"
@@ -33,12 +32,11 @@ namespace chrome_pdf {
 
 class PDFiumEngine;
 class Thumbnail;
-struct AccessibilityLinkInfo;
 struct AccessibilityHighlightInfo;
 struct AccessibilityImageInfo;
+struct AccessibilityLinkInfo;
 struct AccessibilityTextFieldInfo;
 struct AccessibilityTextRunInfo;
-struct AccessibilityTextStyleInfo;
 
 // Wrapper around a page from the document.
 class PDFiumPage {
@@ -367,13 +365,6 @@ class PDFiumPage {
   // Calculates the set of character indices on which text runs need to be
   // broken for page objects such as links and images.
   void CalculatePageObjectTextRunBreaks();
-  // Set text run style information based on a character of the text run.
-  void CalculateTextRunStyleInfo(int char_index,
-                                 AccessibilityTextStyleInfo& style_info);
-  // Returns a boolean indicating if the character at index `char_index` has the
-  // same text style as the text run.
-  bool AreTextStyleEqual(int char_index,
-                         const AccessibilityTextStyleInfo& style);
 
   // Key    :  Marked content id for the image element as specified in the
   //           struct tree.

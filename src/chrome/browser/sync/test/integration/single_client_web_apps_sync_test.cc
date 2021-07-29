@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/user_selectable_type.h"
-#include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/test/fake_server/fake_server_verifier.h"
 #include "content/public/test/browser_test.h"
@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsOsSyncTest,
                        DisablingOsSyncFeatureDisablesDataType) {
   ASSERT_TRUE(chromeos::features::IsSplitSettingsSyncEnabled());
   ASSERT_TRUE(SetupSync());
-  syncer::ProfileSyncService* service = GetSyncService(0);
+  syncer::SyncServiceImpl* service = GetSyncService(0);
   syncer::SyncUserSettings* settings = service->GetUserSettings();
 
   EXPECT_TRUE(settings->IsOsSyncFeatureEnabled());
@@ -150,7 +150,7 @@ class SingleClientWebAppsSyncTest : public SyncTest {
 IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
                        DisablingSelectedTypeDisablesModelType) {
   ASSERT_TRUE(SetupSync());
-  syncer::ProfileSyncService* service = GetSyncService(0);
+  syncer::SyncServiceImpl* service = GetSyncService(0);
   syncer::SyncUserSettings* settings = service->GetUserSettings();
   ASSERT_TRUE(settings->GetSelectedTypes().Has(UserSelectableType::kApps));
   EXPECT_TRUE(service->GetActiveDataTypes().Has(syncer::WEB_APPS));
@@ -163,7 +163,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
 IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
                        AppWithValidIdSyncInstalled) {
   GURL url("https://example.com/");
-  const std::string app_id = web_app::GenerateAppIdFromURL(url);
+  const std::string app_id =
+      web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, url);
   InjectWebAppEntityToFakeServer(app_id, url);
   ASSERT_TRUE(SetupSync());
   AwaitWebAppQuiescence();
@@ -177,7 +178,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
 IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
                        PRE_BookmarkAppNotSyncInstalled) {
   std::string url = "https://example.com/";
-  const std::string app_id = web_app::GenerateAppIdFromURL(GURL(url));
+  const std::string app_id =
+      web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(url));
   InjectBookmarkAppEntityToFakeServer(app_id, url);
   ASSERT_TRUE(SetupSync());
   AwaitWebAppQuiescence();
@@ -193,7 +195,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
 IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
                        BookmarkAppNotSyncInstalled) {
   std::string url = "https://example.com/";
-  const std::string app_id = web_app::GenerateAppIdFromURL(GURL(url));
+  const std::string app_id =
+      web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(url));
   ASSERT_TRUE(SetupSync());
   AwaitWebAppQuiescence();
   auto* web_app_registrar = web_app::WebAppProvider::Get(GetProfile(0))
@@ -263,8 +266,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
   const web_app::AppId installed_app_id =
       apps_helper::InstallWebApp(GetProfile(0), info);
 
-  const std::string expected_app_id =
-      web_app::GenerateAppIdFromURL(GURL("https://example.com/explicit_id"));
+  const std::string expected_app_id = web_app::GenerateAppId(
+      /*manifest_id=*/absl::nullopt, GURL("https://example.com/explicit_id"));
   EXPECT_EQ(expected_app_id, installed_app_id);
 }
 
@@ -293,8 +296,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
   const web_app::AppId installed_app_id =
       apps_helper::InstallWebApp(GetProfile(0), info);
 
-  const std::string expected_app_id =
-      web_app::GenerateAppIdFromURL(GURL("https://example.com/"));
+  const std::string expected_app_id = web_app::GenerateAppId(
+      /*manifest_id=*/absl::nullopt, GURL("https://example.com/"));
   EXPECT_EQ(expected_app_id, installed_app_id);
 }
 }  // namespace

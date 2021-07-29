@@ -7,6 +7,7 @@
 #include "build/buildflag.h"
 #include "chromeos/assistant/internal/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/services/libassistant/grpc/assistant_client.h"
 #include "chromeos/services/libassistant/public/cpp/assistant_timer.h"
 #include "libassistant/shared/internal_api/alarm_timer_manager.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
@@ -184,19 +185,18 @@ void TimerController::ResumeTimer(const std::string& id) {
     alarm_timer_manager_->ResumeTimer(id);
 }
 
-void TimerController::OnAssistantManagerRunning(
-    assistant_client::AssistantManager* assistant_manager,
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
-  alarm_timer_manager_ = assistant_manager_internal->GetAlarmTimerManager();
+void TimerController::OnAssistantClientRunning(
+    AssistantClient* assistant_client) {
+  alarm_timer_manager_ =
+      assistant_client->assistant_manager_internal()->GetAlarmTimerManager();
 
   timer_listener_ =
       std::make_unique<TimerListener>(alarm_timer_manager_, delegate_.get());
   timer_listener_->Start();
 }
 
-void TimerController::OnDestroyingAssistantManager(
-    assistant_client::AssistantManager* assistant_manager,
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
+void TimerController::OnDestroyingAssistantClient(
+    AssistantClient* assistant_client) {
   alarm_timer_manager_ = nullptr;
 
   if (timer_listener_) {

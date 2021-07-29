@@ -4,25 +4,36 @@
 
 #include "ash/display/cursor_window_controller.h"
 
+#include <string>
+
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/constants/ash_constants.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/display/display_util.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
+#include "base/strings/stringprintf.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_lookup.h"
+#include "ui/base/cursor/cursor_size.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/layout.h"
+#include "ui/base/resource/scale_factor.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -64,13 +75,21 @@ class CursorWindowControllerTest : public AshTestBase {
     return cursor_window_controller_->display_.id();
   }
 
+  void SetCursorSize(ui::CursorSize size) {
+    cursor_window_controller_->SetCursorSize(size);
+  }
+
+  void SetLargeCursorSizeInDip(int large_cursor_size_in_dip) {
+    cursor_window_controller_->SetLargeCursorSizeInDip(
+        large_cursor_size_in_dip);
+  }
+
   void SetCursorCompositionEnabled(bool enabled) {
     // Cursor compositing will be enabled when high contrast mode is turned on.
     // Cursor compositing will be disabled when high contrast mode is the only
     // feature using it and is turned off.
     Shell::Get()->accessibility_controller()->high_contrast().SetEnabled(
         enabled);
-    Shell::Get()->UpdateCursorCompositingEnabled();
   }
 
   CursorWindowController* cursor_window_controller() {
@@ -170,25 +189,50 @@ TEST_F(CursorWindowControllerTest, VisibilityTest) {
   EXPECT_TRUE(GetCursorWindow()->IsVisible());
 }
 
-// Make sure that composition cursor stays big even when
-// the DSF becomes 1x as a result of zooming out.
-TEST_F(CursorWindowControllerTest, DSF) {
-  UpdateDisplay("1000x500*2");
-  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+// Test that the composited cursor matches the native cursor in size.
+TEST_F(CursorWindowControllerTest, CursorSize) {
+  for (int dsf : {1, 2}) {
+    std::string display_specs = base::StringPrintf("1000x500*%d", dsf);
+    UpdateDisplay(display_specs);
+    int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+    display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                           primary_id);
+    for (float zoom_factor : {0.5f, 1.0f, 1.5f, 2.0f}) {
+      display_manager()->UpdateZoomFactor(primary_id, zoom_factor);
+      auto display = display::Screen::GetScreen()->GetPrimaryDisplay();
+      const float ui_scale = display.device_scale_factor();
 
-  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                         primary_id);
-  SetCursorCompositionEnabled(true);
-  ASSERT_EQ(
-      2.0f,
-      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
-  EXPECT_TRUE(GetCursorImage().HasRepresentation(2.0f));
+      ui::Cursor cursor(ui::mojom::CursorType::kPointer);
+      // This would be done by NativeCursorManagerAsh::SetCursor().
+      cursor.set_image_scale_factor(ui::GetScaleForResourceScaleFactor(
+          ui::GetSupportedScaleFactor(ui_scale)));
 
-  display_manager()->UpdateZoomFactor(primary_id, 0.5f);
-  ASSERT_EQ(
-      1.0f,
-      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
-  EXPECT_TRUE(GetCursorImage().HasRepresentation(2.0f));
+      // Normal size.
+      SetCursorSize(ui::CursorSize::kNormal);
+
+      // Both checks are needed. To ensure that the cursor isn't scaled, besides
+      // checking that its size isn't changed, the image needs to be available
+      // for the current display scale.
+      EXPECT_EQ(GetCursorImage().GetRepresentation(ui_scale).pixel_size(),
+                gfx::SkISizeToSize(ui::GetCursorBitmap(cursor).dimensions()));
+      EXPECT_TRUE(GetCursorImage().HasRepresentation(ui_scale));
+
+      // Large size.
+      SetCursorSize(ui::CursorSize::kLarge);
+      for (const auto kLargeSizeInDips :
+           {kDefaultLargeCursorSize / 2, kDefaultLargeCursorSize}) {
+        SetLargeCursorSizeInDip(kLargeSizeInDips);
+        EXPECT_EQ(
+            GetCursorImage().GetRepresentation(ui_scale).pixel_size().width(),
+            kLargeSizeInDips * dsf);
+        EXPECT_TRUE(GetCursorImage().HasRepresentation(ui_scale));
+      }
+
+      // TODO(https://crbug.com/1149906): test custom cursors when
+      // WebCursor::GetNativeCursor() is moved to CursorLoader, as ash cannot
+      // depend on //content.
+    }
+  }
 }
 
 // Test that cursor compositing is enabled if at least one of the features that
@@ -203,12 +247,10 @@ TEST_F(CursorWindowControllerTest, ShouldEnableCursorCompositing) {
 
   // Enable large cursor, cursor compositing should be enabled.
   prefs->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, true);
-  Shell::Get()->UpdateCursorCompositingEnabled();
   EXPECT_TRUE(cursor_window_controller()->is_cursor_compositing_enabled());
 
   // Disable large cursor, cursor compositing should be disabled.
   prefs->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, false);
-  Shell::Get()->UpdateCursorCompositingEnabled();
   EXPECT_FALSE(cursor_window_controller()->is_cursor_compositing_enabled());
 }
 

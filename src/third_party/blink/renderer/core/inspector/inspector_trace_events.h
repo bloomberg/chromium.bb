@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
@@ -69,6 +68,7 @@ class Resource;
 class ResourceError;
 struct ResourceLoaderOptions;
 class ResourceRequest;
+class ResourceRequestHead;
 class ResourceResponse;
 class StyleChangeReasonForTracing;
 class StyleImage;
@@ -86,6 +86,8 @@ class CORE_EXPORT InspectorTraceEvents
     : public GarbageCollected<InspectorTraceEvents> {
  public:
   InspectorTraceEvents() = default;
+  InspectorTraceEvents(const InspectorTraceEvents&) = delete;
+  InspectorTraceEvents& operator=(const InspectorTraceEvents&) = delete;
 
   void WillSendRequest(DocumentLoader*,
                        const KURL& fetch_context_url,
@@ -136,9 +138,6 @@ class CORE_EXPORT InspectorTraceEvents
   void FrameStartedLoading(LocalFrame*);
 
   void Trace(Visitor*) const {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InspectorTraceEvents);
 };
 
 // Helper macros for emitting devtools.timeline events, taking the name of the
@@ -322,6 +321,14 @@ void Data(perfetto::TracedValue context,
           uint64_t identifier,
           LocalFrame*,
           const ResourceRequest&,
+          RenderBlockingBehavior);
+}
+
+namespace inspector_change_render_blocking_behavior_event {
+void Data(perfetto::TracedValue context,
+          DocumentLoader*,
+          uint64_t identifier,
+          const ResourceRequestHead&,
           RenderBlockingBehavior);
 }
 

@@ -5,7 +5,6 @@
 import("//build/buildflag_header.gni")
 import("//build/config/chrome_build.gni")  # For branding_file_path.
 import("//build/config/chromeos/ui_mode.gni")
-import("//build/config/chromeos/ui_mode.gni")
 import("//build/util/process_version.gni")
 import("//chrome/browser/downgrade/buildflags.gni")
 import("//chrome/common/features.gni")
@@ -20,10 +19,6 @@ import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 import("//tools/grit/grit_rule.gni")
-
-if (enable_pdf) {
-  assert(enable_plugins, "PDF support requires plugins be enabled.")
-}
 
 grit("resources") {
   source = "common_resources.grd"
@@ -43,6 +38,7 @@ buildflag_header("buildflags") {
     "ENABLE_BACKGROUND_MODE=$enable_background_mode",
     "ENABLE_BACKGROUND_CONTENTS=$enable_background_contents",
     "ENABLE_BASIC_PRINT_DIALOG=$enable_basic_print_dialog",
+    "ENABLE_CHROME_NOTIFICATIONS=$enable_chrome_notifications",
     "ENABLE_CLICK_TO_CALL=$enable_click_to_call",
     "ENABLE_DOWNGRADE_PROCESSING=$enable_downgrade_processing",
     "ENABLE_HANGOUT_SERVICES_EXTENSION=$enable_hangout_services_extension",
@@ -173,6 +169,7 @@ static_library("common") {
     "//chrome/common/profiler",
     "//chrome/common/search:mojo_bindings",
     "//chrome/installer/util:with_no_strings",
+    "//chromeos/components/chromebox_for_meetings/buildflags",
     "//components/cast_certificate",
     "//components/cdm/common",
     "//components/client_hints/common",
@@ -203,7 +200,7 @@ static_library("common") {
     "//components/policy/core/common",
     "//components/prefs",
     "//components/safe_browsing:buildflags",
-    "//components/safe_browsing/core/web_ui:constants",
+    "//components/safe_browsing/core/common",
     "//components/services/app_service/public/cpp:app_share_target",
     "//components/services/heap_profiling/public/cpp",
     "//components/strings",
@@ -252,6 +249,10 @@ static_library("common") {
     "//components/no_state_prefetch/common:mojo_bindings",
     "//components/page_load_metrics/common:common",
   ]
+
+  if (enable_pdf) {
+    deps += [ "//components/pdf/common" ]
+  }
 
   if (enable_plugins) {
     public_deps += [ "//ppapi/shared_impl" ]
@@ -357,7 +358,10 @@ static_library("common") {
       "extensions/api/input_ime/input_components_handler.h",
     ]
     public_deps += [ "//ash/keyboard/ui" ]
-    deps += [ "//ash/constants" ]
+    deps += [
+      "//ash/constants",
+      "//chrome/common/chromeos/extensions",
+    ]
   }
 
   if (enable_nacl) {
@@ -394,7 +398,7 @@ static_library("common") {
       }
       if (is_win) {
         sources += [
-          "chrome_utility_printing_messages.h",
+          "chrome_utility_printing_param_traits_macros.h",
           "service_process_util_win.cc",
         ]
 
@@ -409,7 +413,6 @@ static_library("common") {
       "media/chrome_media_drm_bridge_client.cc",
       "media/chrome_media_drm_bridge_client.h",
     ]
-    deps += [ "//components/embedder_support/android/common:url_constants" ]
   } else {
     # Non-Android.
     public_deps += [ "//chrome/common/importer" ]
@@ -791,4 +794,26 @@ mojom("available_offline_content_mojom") {
 mojom("offline_page_auto_fetcher_mojom") {
   sources = [ "offline_page_auto_fetcher.mojom" ]
   public_deps = [ "//url/mojom:url_mojom_gurl" ]
+}
+
+if (enable_basic_printing && is_win) {
+  mojom("cloud_print_utility_mojom") {
+    sources = [ "cloud_print_utility.mojom" ]
+    cpp_typemaps = [
+      {
+        types = [
+          {
+            mojom = "chrome.mojom.PrinterCapsAndDefaults"
+            cpp = "::printing::PrinterCapsAndDefaults"
+          },
+          {
+            mojom = "chrome.mojom.PrinterSemanticCapsAndDefaults"
+            cpp = "::printing::PrinterSemanticCapsAndDefaults"
+          },
+        ]
+        traits_headers = [ "chrome_utility_printing_param_traits_macros.h" ]
+        traits_public_deps = [ ":common" ]
+      },
+    ]
+  }
 }

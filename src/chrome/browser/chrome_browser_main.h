@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/threading/hang_watcher.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_process_singleton.h"
@@ -43,6 +44,8 @@ class TraceEventSystemStatsMonitor;
 
 class ChromeBrowserMainParts : public content::BrowserMainParts {
  public:
+  ChromeBrowserMainParts(const ChromeBrowserMainParts&) = delete;
+  ChromeBrowserMainParts& operator=(const ChromeBrowserMainParts&) = delete;
   ~ChromeBrowserMainParts() override;
 
   // Add additional ChromeBrowserMainExtraParts.
@@ -147,6 +150,9 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // it is destroyed last.
   std::unique_ptr<ShutdownWatcherHelper> shutdown_watcher_;
 
+  // HangWatcher based equivalent to |shutdown_watcher_|
+  absl::optional<base::WatchHangsInScope> watch_hangs_scope_;
+
   std::unique_ptr<WebUsbDetector> web_usb_detector_;
 #endif  // !defined(OS_ANDROID)
 
@@ -199,8 +205,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   base::FilePath user_data_dir_;
 
   StartupData* startup_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainParts);
 };
 
 #endif  // CHROME_BROWSER_CHROME_BROWSER_MAIN_H_

@@ -679,6 +679,13 @@ public class WebViewBrowserActivity extends AppCompatActivity {
         } else if (itemId == R.id.menu_devui) {
             launchWebViewDevUI();
             return true;
+        } else if (itemId == R.id.menu_hide) {
+            if (mWebView.getVisibility() == View.VISIBLE) {
+                mWebView.setVisibility(View.INVISIBLE);
+            } else {
+                mWebView.setVisibility(View.VISIBLE);
+            }
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -704,6 +711,7 @@ public class WebViewBrowserActivity extends AppCompatActivity {
         settings.setGeolocationEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setDomStorageEnabled(true);
+        settings.setAllowFileAccess(true);
 
         // Default layout behavior for chrome on android.
         settings.setUseWideViewPort(true);

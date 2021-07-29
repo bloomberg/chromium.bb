@@ -67,6 +67,14 @@ CanvasKit._extraInitializations.push(function() {
     return rv;
   };
 
+  CanvasKit.Font.prototype.getGlyphIntercepts = function(glyphs, positions, top, bottom) {
+    var gPtr = copy1dArray(glyphs, 'HEAPU16');
+    var pPtr = copy1dArray(positions, 'HEAPF32');
+    return this._getGlyphIntercepts(gPtr, glyphs.length, !wasMalloced(glyphs),
+                                    pPtr, positions.length, !wasMalloced(positions),
+                                    top, bottom);
+  };
+
   // Glyphs should be a Uint16Array of glyph ids, e.g. provided by Font.getGlyphIDs.
   // If using a Malloc'd array, be sure to use CanvasKit.MallocGlyphIDs() to get the right type.
   // The return value will be a Float32Array that has one width per input glyph.
@@ -120,7 +128,7 @@ CanvasKit._extraInitializations.push(function() {
     return fm;
   };
 
-  // fontData should be an arrayBuffer
+  // TODO(kjlubick) Remove this deprecated API
   CanvasKit.FontMgr.prototype.MakeTypefaceFromData = function(fontData) {
     var data = new Uint8Array(fontData);
 
@@ -133,6 +141,52 @@ CanvasKit._extraInitializations.push(function() {
       return null;
     }
     return font;
+  };
+
+  CanvasKit.Typeface.MakeFreeTypeFaceFromData = function(fontData) {
+    var data = new Uint8Array(fontData);
+
+    var fptr = copy1dArray(data, 'HEAPU8');
+    var font = CanvasKit.Typeface._MakeFreeTypeFaceFromData(fptr, data.byteLength);
+    if (!font) {
+      Debug('Could not decode font data');
+      // We do not need to free the data since the C++ will do that for us
+      // when the font is deleted (or fails to decode);
+      return null;
+    }
+    return font;
+  };
+
+  CanvasKit.Typeface.prototype.getGlyphIDs = function(str, numGlyphIDs, optionalOutputArray) {
+    if (!numGlyphIDs) {
+      numGlyphIDs = str.length;
+    }
+    // lengthBytesUTF8 and stringToUTF8Array are defined in the emscripten
+    // JS.  See https://kripken.github.io/emscripten-site/docs/api_reference/preamble.js.html#stringToUTF8
+    // Add 1 for null terminator
+    var strBytes = lengthBytesUTF8(str) + 1;
+    var strPtr = CanvasKit._malloc(strBytes);
+    stringToUTF8(str, strPtr, strBytes); // This includes the null terminator
+
+    var bytesPerGlyph = 2;
+    var glyphPtr = CanvasKit._malloc(numGlyphIDs * bytesPerGlyph);
+    // We don't need to compute the id for the null terminator, so subtract 1.
+    var actualIDs = this._getGlyphIDs(strPtr, strBytes - 1, numGlyphIDs, glyphPtr);
+    CanvasKit._free(strPtr);
+    if (actualIDs < 0) {
+      Debug('Could not get glyphIDs');
+      CanvasKit._free(glyphPtr);
+      return null;
+    }
+    var glyphs = new Uint16Array(CanvasKit.HEAPU8.buffer, glyphPtr, actualIDs);
+    if (optionalOutputArray) {
+      optionalOutputArray.set(glyphs);
+      CanvasKit._free(glyphPtr);
+      return optionalOutputArray;
+    }
+    var rv = Uint16Array.from(glyphs);
+    CanvasKit._free(glyphPtr);
+    return rv;
   };
 
   CanvasKit.TextBlob.MakeOnPath = function(str, path, font, initialOffset) {
@@ -156,7 +210,7 @@ CanvasKit._extraInitializations.push(function() {
     var ids = font.getGlyphIDs(str);
     var widths = font.getGlyphWidths(ids);
 
-    var rsx = new CanvasKit.RSXFormBuilder();
+    var rsx = [];
     var meas = new CanvasKit.ContourMeasureIter(path, false, 1);
     var cont = meas.next();
     var dist = initialOffset;
@@ -192,13 +246,12 @@ CanvasKit._extraInitializations.push(function() {
       dist += width/2;
     }
     var retVal = this.MakeFromRSXform(str, rsx, font);
-    rsx.delete();
     cont && cont.delete();
     meas.delete();
     return retVal;
   };
 
-  CanvasKit.TextBlob.MakeFromRSXform = function(str, rsxBuilderOrArray, font) {
+  CanvasKit.TextBlob.MakeFromRSXform = function(str, rsxForms, font) {
     // lengthBytesUTF8 and stringToUTF8Array are defined in the emscripten
     // JS.  See https://kripken.github.io/emscripten-site/docs/api_reference/preamble.js.html#stringToUTF8
     // Add 1 for null terminator
@@ -207,12 +260,7 @@ CanvasKit._extraInitializations.push(function() {
     // Add 1 for the null terminator.
     stringToUTF8(str, strPtr, strLen);
 
-    var rPtr = nullptr;
-    if (rsxBuilderOrArray.build) {
-      rPtr = rsxBuilderOrArray.build();
-    } else {
-      rPtr = copy1dArray(rsxBuilderOrArray, 'HEAPF32');
-    }
+    var rPtr = copy1dArray(rsxForms, 'HEAPF32');
 
     var blob = CanvasKit.TextBlob._MakeFromRSXform(strPtr, strLen - 1, rPtr, font);
     CanvasKit._free(strPtr);
@@ -225,17 +273,12 @@ CanvasKit._extraInitializations.push(function() {
 
   // Glyphs should be a Uint32Array of glyph ids, e.g. provided by Font.getGlyphIDs.
   // If using a Malloc'd array, be sure to use CanvasKit.MallocGlyphIDs() to get the right type.
-  CanvasKit.TextBlob.MakeFromRSXformGlyphs = function(glyphs, rsxBuilderOrArray, font) {
+  CanvasKit.TextBlob.MakeFromRSXformGlyphs = function(glyphs, rsxForms, font) {
     // Currently on the C++ side, glyph ids are 16bit, but there is an effort to change that.
     var glyphPtr = copy1dArray(glyphs, 'HEAPU16');
     var bytesPerGlyph = 2;
 
-    var rPtr = nullptr;
-    if (rsxBuilderOrArray.build) {
-      rPtr = rsxBuilderOrArray.build();
-    } else {
-      rPtr = copy1dArray(rsxBuilderOrArray, 'HEAPF32');
-    }
+    var rPtr = copy1dArray(rsxForms, 'HEAPF32');
 
     var blob = CanvasKit.TextBlob._MakeFromRSXformGlyphs(glyphPtr, glyphs.length * bytesPerGlyph, rPtr, font);
     freeArraysThatAreNotMallocedByUsers(glyphPtr, glyphs);

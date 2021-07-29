@@ -12,6 +12,8 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/ink_drop.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 
 namespace ash {
@@ -46,9 +48,8 @@ SkPath GetSystemButtonHighlightPath(const views::View* view) {
 
 SystemLabelButton::SystemLabelButton(PressedCallback callback,
                                      const std::u16string& text,
-                                     DisplayType display_type,
                                      bool multiline)
-    : LabelButton(std::move(callback), text), display_type_(display_type) {
+    : LabelButton(std::move(callback), text) {
   SetImageLabelSpacing(kSystemButtonImageLabelSpacing);
   if (multiline) {
     label()->SetMultiLine(true);
@@ -58,11 +59,12 @@ SystemLabelButton::SystemLabelButton(PressedCallback callback,
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   SetTextSubpixelRenderingEnabled(false);
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
 
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetInstallFocusRingOnFocus(true);
-  focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
+  views::FocusRing::Get(this)->SetColor(
+      ShelfConfig::Get()->shelf_focus_border_color());
   views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
                                                 kSystemButtonBorderRadius);
 }
@@ -83,29 +85,14 @@ gfx::Insets SystemLabelButton::GetInsets() const {
 
 void SystemLabelButton::OnThemeChanged() {
   views::LabelButton::OnThemeChanged();
-  if (display_type_ == DisplayType::ALERT_WITH_ICON) {
-    SetImage(
-        views::Button::STATE_NORMAL,
-        CreateVectorIcon(
-            kLockScreenAlertIcon,
-            AshColorProvider::Get()->GetContentLayerColor(
-                AshColorProvider::ContentLayerType::kButtonIconColorPrimary)));
-  }
-  bool is_alert = display_type_ == DisplayType::ALERT_WITH_ICON ||
-                  display_type_ == DisplayType::ALERT_NO_ICON;
-  SetAlertMode(is_alert);
+  SetBackgroundAndFont(alert_mode_);
 }
 
-void SystemLabelButton::SetDisplayType(DisplayType display_type) {
-  // We only support transitions from a non-icon display type to another.
-  DCHECK(display_type_ != DisplayType::ALERT_WITH_ICON);
-  DCHECK(display_type != DisplayType::ALERT_WITH_ICON);
-  display_type_ = display_type;
-  bool alert_mode = display_type == DisplayType::ALERT_NO_ICON;
-  SetAlertMode(alert_mode);
-}
+void SystemLabelButton::SetBackgroundAndFont(bool alert_mode) {
+  // Do not check if alert mode has already been set since the variable might
+  // have been initialized by default while the colors have not been set yet.
+  alert_mode_ = alert_mode;
 
-void SystemLabelButton::SetAlertMode(bool alert_mode) {
   background_color_ = AshColorProvider::Get()->GetControlsLayerColor(
       alert_mode
           ? AshColorProvider::ControlsLayerType::kControlBackgroundColorAlert
@@ -128,9 +115,11 @@ void SystemLabelButton::SetAlertMode(bool alert_mode) {
       AshColorProvider::Get()->GetBaseLayerColor(kBubbleLayerType));
   const AshColorProvider::RippleAttributes ripple_attributes =
       AshColorProvider::Get()->GetRippleAttributes(effective_background_color);
-  ink_drop()->SetBaseColor(ripple_attributes.base_color);
-  ink_drop()->SetVisibleOpacity(ripple_attributes.inkdrop_opacity);
-  ink_drop()->SetHighlightOpacity(ripple_attributes.highlight_opacity);
+  views::InkDrop::Get(this)->SetBaseColor(ripple_attributes.base_color);
+  views::InkDrop::Get(this)->SetVisibleOpacity(
+      ripple_attributes.inkdrop_opacity);
+  views::InkDrop::Get(this)->SetHighlightOpacity(
+      ripple_attributes.highlight_opacity);
 }
 
 }  // namespace ash

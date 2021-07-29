@@ -36,8 +36,11 @@ class MediaDeviceIDSalt;
 class PrefService;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-namespace chromeos {
+namespace ash {
 class KioskTest;
+}
+
+namespace chromeos {
 class LocaleChangeGuard;
 class Preferences;
 class SupervisedUserTestBase;
@@ -49,6 +52,7 @@ class SequencedTaskRunner;
 }
 
 namespace policy {
+class AsyncPolicyProvider;
 class ConfigurationPolicyProvider;
 class ProfilePolicyConnector;
 }  // namespace policy
@@ -177,7 +181,7 @@ class ProfileImpl : public Profile {
 
  private:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  friend class chromeos::KioskTest;
+  friend class ash::KioskTest;
   friend class chromeos::SupervisedUserTestBase;
 #endif
   friend class Profile;
@@ -204,13 +208,13 @@ class ProfileImpl : public Profile {
   void LoadPrefsForNormalStartup(bool async_prefs);
 
   // Does final initialization. Should be called after prefs were loaded.
-  void DoFinalInit();
+  void DoFinalInit(CreateMode create_mode);
 
   // Switch locale (when possible) and proceed to OnLocaleReady().
   void OnPrefsLoaded(CreateMode create_mode, bool success);
 
   // Does final prefs initialization and calls Init().
-  void OnLocaleReady();
+  void OnLocaleReady(CreateMode create_mode);
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   void StopCreateSessionServiceTimer();
@@ -267,6 +271,9 @@ class ProfileImpl : public Profile {
       active_directory_policy_manager_;
 #else
   std::unique_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager_;
+#endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  std::unique_ptr<policy::AsyncPolicyProvider> user_policy_provider_;
 #endif
 
   std::unique_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;

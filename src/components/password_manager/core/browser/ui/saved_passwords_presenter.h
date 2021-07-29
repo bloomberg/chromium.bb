@@ -30,7 +30,7 @@ struct PasswordForm;
 // in the new password to be checked, whereas other password edit operations
 // (such as visiting a change password form and then updating the password in
 // Chrome) should not trigger a check.
-class SavedPasswordsPresenter : public PasswordStore::Observer,
+class SavedPasswordsPresenter : public PasswordStoreInterface::Observer,
                                 public PasswordStoreConsumer {
  public:
   using SavedPasswordsView = base::span<const PasswordForm>;
@@ -56,8 +56,8 @@ class SavedPasswordsPresenter : public PasswordStore::Observer,
   };
 
   explicit SavedPasswordsPresenter(
-      scoped_refptr<PasswordStore> profile_store,
-      scoped_refptr<PasswordStore> account_store = nullptr);
+      scoped_refptr<PasswordStoreInterface> profile_store,
+      scoped_refptr<PasswordStoreInterface> account_store = nullptr);
   ~SavedPasswordsPresenter() override;
 
   // Initializes the presenter and makes it issue the first request for all
@@ -114,16 +114,18 @@ class SavedPasswordsPresenter : public PasswordStore::Observer,
 
  private:
   using DuplicatePasswordsMap = std::multimap<std::string, PasswordForm>;
-  // PasswordStore::Observer
-  void OnLoginsChanged(const PasswordStoreChangeList& changes) override;
-  void OnLoginsChangedIn(PasswordStore* store,
-                         const PasswordStoreChangeList& changes) override;
+  // PasswordStoreInterface::Observer
+  void OnLoginsChanged(PasswordStoreInterface* store,
+                       const PasswordStoreChangeList& changes) override;
+  void OnLoginsRetained(
+      PasswordStoreInterface* store,
+      const std::vector<PasswordForm>& retained_passwords) override;
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<PasswordForm>> results) override;
   void OnGetPasswordStoreResultsFrom(
-      PasswordStore* store,
+      PasswordStoreInterface* store,
       std::vector<std::unique_ptr<PasswordForm>> results) override;
 
   // Notify observers about changes in the compromised credentials.
@@ -133,11 +135,11 @@ class SavedPasswordsPresenter : public PasswordStore::Observer,
   // Returns the `profile_store_` or `account_store_` if `form` is stored in the
   // profile store or the account store accordingly. This function should be
   // used only for credential stored in a single store.
-  PasswordStore& GetStoreFor(const PasswordForm& form);
+  PasswordStoreInterface& GetStoreFor(const PasswordForm& form);
 
   // The password stores containing the saved passwords.
-  scoped_refptr<PasswordStore> profile_store_;
-  scoped_refptr<PasswordStore> account_store_;
+  scoped_refptr<PasswordStoreInterface> profile_store_;
+  scoped_refptr<PasswordStoreInterface> account_store_;
 
   // Cache of the most recently obtained saved passwords. Profile store
   // passwords are always stored first, and then account store passwords if any.

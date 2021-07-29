@@ -101,7 +101,7 @@ TabGroupHeader::TabGroupHeader(TabStrip* tab_strip,
 
   // Enable keyboard focus.
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  focus_ring_ = views::FocusRing::Install(this);
+  views::FocusRing::Install(this);
   views::HighlightPathGenerator::Install(
       this,
       std::make_unique<TabGroupHighlightPathGenerator>(title_chip_, title_));
@@ -165,9 +165,15 @@ bool TabGroupHeader::OnMousePressed(const ui::MouseEvent& event) {
   if (editor_bubble_tracker_.is_open())
     return false;
 
-  tab_strip_->MaybeStartDrag(this, event, tab_strip_->GetSelectionModel());
+  // Allow a right click from touch to drag, which corresponds to a long click.
+  if (event.IsOnlyLeftMouseButton() ||
+      (event.IsOnlyRightMouseButton() && event.flags() & ui::EF_FROM_TOUCH)) {
+    tab_strip_->MaybeStartDrag(this, event, tab_strip_->GetSelectionModel());
 
-  return true;
+    return true;
+  }
+
+  return false;
 }
 
 bool TabGroupHeader::OnMouseDragged(const ui::MouseEvent& event) {
@@ -439,8 +445,8 @@ void TabGroupHeader::VisualsChanged() {
                       text_height);
   }
 
-  if (focus_ring_)
-    focus_ring_->Layout();
+  if (views::FocusRing::Get(this))
+    views::FocusRing::Get(this)->Layout();
 }
 
 void TabGroupHeader::RemoveObserverFromWidget(views::Widget* widget) {

@@ -7,9 +7,9 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <memory>
 #include <string>
 
-#include "include/base/cef_scoped_ptr.h"
 #include "tests/cefclient/browser/browser_window.h"
 #include "tests/cefclient/browser/root_window.h"
 
@@ -26,25 +26,25 @@ class RootWindowGtk : public RootWindow, public BrowserWindow::Delegate {
 
   // RootWindow methods.
   void Init(RootWindow::Delegate* delegate,
-            const RootWindowConfig& config,
-            const CefBrowserSettings& settings) OVERRIDE;
+            std::unique_ptr<RootWindowConfig> config,
+            const CefBrowserSettings& settings) override;
   void InitAsPopup(RootWindow::Delegate* delegate,
                    bool with_controls,
                    bool with_osr,
                    const CefPopupFeatures& popupFeatures,
                    CefWindowInfo& windowInfo,
                    CefRefPtr<CefClient>& client,
-                   CefBrowserSettings& settings) OVERRIDE;
-  void Show(ShowMode mode) OVERRIDE;
-  void Hide() OVERRIDE;
-  void SetBounds(int x, int y, size_t width, size_t height) OVERRIDE;
-  void Close(bool force) OVERRIDE;
-  void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
-  float GetDeviceScaleFactor() const OVERRIDE;
-  CefRefPtr<CefBrowser> GetBrowser() const OVERRIDE;
-  ClientWindowHandle GetWindowHandle() const OVERRIDE;
-  bool WithWindowlessRendering() const OVERRIDE;
-  bool WithExtension() const OVERRIDE;
+                   CefBrowserSettings& settings) override;
+  void Show(ShowMode mode) override;
+  void Hide() override;
+  void SetBounds(int x, int y, size_t width, size_t height) override;
+  void Close(bool force) override;
+  void SetDeviceScaleFactor(float device_scale_factor) override;
+  float GetDeviceScaleFactor() const override;
+  CefRefPtr<CefBrowser> GetBrowser() const override;
+  ClientWindowHandle GetWindowHandle() const override;
+  bool WithWindowlessRendering() const override;
+  bool WithExtension() const override;
 
  private:
   void CreateBrowserWindow(const std::string& startup_url);
@@ -52,18 +52,18 @@ class RootWindowGtk : public RootWindow, public BrowserWindow::Delegate {
                         bool initially_hidden);
 
   // BrowserWindow::Delegate methods.
-  void OnBrowserCreated(CefRefPtr<CefBrowser> browser) OVERRIDE;
-  void OnBrowserWindowClosing() OVERRIDE;
-  void OnBrowserWindowDestroyed() OVERRIDE;
-  void OnSetAddress(const std::string& url) OVERRIDE;
-  void OnSetTitle(const std::string& title) OVERRIDE;
-  void OnSetFullscreen(bool fullscreen) OVERRIDE;
-  void OnAutoResize(const CefSize& new_size) OVERRIDE;
+  void OnBrowserCreated(CefRefPtr<CefBrowser> browser) override;
+  void OnBrowserWindowClosing() override;
+  void OnBrowserWindowDestroyed() override;
+  void OnSetAddress(const std::string& url) override;
+  void OnSetTitle(const std::string& title) override;
+  void OnSetFullscreen(bool fullscreen) override;
+  void OnAutoResize(const CefSize& new_size) override;
   void OnSetLoadingState(bool isLoading,
                          bool canGoBack,
-                         bool canGoForward) OVERRIDE;
+                         bool canGoForward) override;
   void OnSetDraggableRegions(
-      const std::vector<CefDraggableRegion>& regions) OVERRIDE;
+      const std::vector<CefDraggableRegion>& regions) override;
 
   void NotifyMoveOrResizeStarted();
   void NotifySetFocus();
@@ -130,7 +130,7 @@ class RootWindowGtk : public RootWindow, public BrowserWindow::Delegate {
   bool with_extension_;
   bool is_popup_;
   CefRect start_rect_;
-  scoped_ptr<BrowserWindow> browser_window_;
+  std::unique_ptr<BrowserWindow> browser_window_;
   bool initialized_;
 
   // Main window.

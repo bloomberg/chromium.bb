@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/signin/internal/identity_manager/account_fetcher_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
 #include "components/signin/internal/identity_manager/primary_account_manager.h"
@@ -23,8 +24,8 @@
 #include "google_apis/gaia/gaia_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/account_manager/account_manager.h"
 #include "components/account_manager_core/account.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -44,7 +45,7 @@ void UpdateRefreshTokenForAccount(
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    ash::AccountManager* account_manager,
+    account_manager::AccountManager* account_manager,
 #endif
     IdentityManager* identity_manager,
     const CoreAccountId& account_id,
@@ -157,9 +158,11 @@ CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
 
 void SetRefreshTokenForPrimaryAccount(IdentityManager* identity_manager,
                                       const std::string& token_value) {
-  DCHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kSync));
+  // Primary account for ConsentLevel::kSync (if one exists) is always the
+  // same as the one with ConsentLevel::kSignin.
+  DCHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kSignin));
   CoreAccountId account_id =
-      identity_manager->GetPrimaryAccountId(ConsentLevel::kSync);
+      identity_manager->GetPrimaryAccountId(ConsentLevel::kSignin);
   SetRefreshTokenForAccount(identity_manager, account_id, token_value);
 }
 
@@ -188,14 +191,13 @@ AccountInfo MakePrimaryAccountAvailable(IdentityManager* identity_manager,
   CoreAccountInfo account_info =
       SetPrimaryAccount(identity_manager, email, consent_level);
   SetRefreshTokenForPrimaryAccount(identity_manager);
-  absl::optional<AccountInfo> primary_account_info =
-      identity_manager
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              account_info.account_id);
+  AccountInfo primary_account_info =
+      identity_manager->FindExtendedAccountInfoByAccountId(
+          account_info.account_id);
   // Ensure that extended information for the account is available after setting
   // the refresh token.
-  DCHECK(primary_account_info.has_value());
-  return primary_account_info.value();
+  DCHECK(!primary_account_info.IsEmpty());
+  return primary_account_info;
 }
 
 void RevokeSyncConsent(IdentityManager* identity_manager) {
@@ -453,6 +455,11 @@ void WaitForErrorStateOfRefreshTokenUpdatedForAccount(
 void DisableAccessTokenFetchRetries(IdentityManager* identity_manager) {
   identity_manager->GetTokenService()
       ->set_max_authorization_token_fetch_retries_for_testing(0);
+}
+
+void EnableAccountCapabilitiesFetches(IdentityManager* identity_manager) {
+  identity_manager->GetAccountFetcherService()
+      ->EnableAccountCapabilitiesFetcherForTest(true);
 }
 
 #if defined(OS_ANDROID)

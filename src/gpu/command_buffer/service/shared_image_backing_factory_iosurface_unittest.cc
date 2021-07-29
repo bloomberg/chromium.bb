@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture.h"
+#include "gpu/command_buffer/service/shared_image_backing_factory_gl_image.h"
 
 #include <memory>
 #include <utility>
@@ -65,9 +65,8 @@ class SharedImageBackingFactoryIOSurfaceTest : public testing::Test {
         base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
     context_state_->InitializeGL(preferences, std::move(feature_info));
 
-    backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
+    backing_factory_ = std::make_unique<SharedImageBackingFactoryGLImage>(
         preferences, workarounds, GpuFeatureInfo(), &image_factory_,
-        shared_image_manager_.batch_access_manager(),
         /*progress_reporter=*/nullptr);
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
@@ -82,7 +81,7 @@ class SharedImageBackingFactoryIOSurfaceTest : public testing::Test {
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<SharedContextState> context_state_;
-  std::unique_ptr<SharedImageBackingFactoryGLTexture> backing_factory_;
+  std::unique_ptr<SharedImageBackingFactoryGLImage> backing_factory_;
   gles2::MailboxManagerImpl mailbox_manager_;
   SharedImageManager shared_image_manager_;
   std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
@@ -406,8 +405,8 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
                                      memory_type_tracker_.get());
 
   // Create a SharedImageRepresentationDawn.
-  auto dawn_representation =
-      shared_image_representation_factory_->ProduceDawn(mailbox, device.Get());
+  auto dawn_representation = shared_image_representation_factory_->ProduceDawn(
+      mailbox, device.Get(), WGPUBackendType_Metal);
   EXPECT_TRUE(dawn_representation);
 
   // Clear the shared image to green using Dawn.
@@ -531,8 +530,8 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_Dawn_Skia_UnclearTexture) {
   dawnProcSetProcs(&procs);
   {
     auto dawn_representation =
-        shared_image_representation_factory_->ProduceDawn(mailbox,
-                                                          device.Get());
+        shared_image_representation_factory_->ProduceDawn(
+            mailbox, device.Get(), WGPUBackendType_Metal);
     ASSERT_TRUE(dawn_representation);
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
@@ -613,8 +612,8 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, UnclearDawn_SkiaFails) {
   dawnProcSetProcs(&procs);
   {
     auto dawn_representation =
-        shared_image_representation_factory_->ProduceDawn(mailbox,
-                                                          device.Get());
+        shared_image_representation_factory_->ProduceDawn(
+            mailbox, device.Get(), WGPUBackendType_Metal);
     ASSERT_TRUE(dawn_representation);
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(

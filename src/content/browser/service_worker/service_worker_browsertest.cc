@@ -20,7 +20,6 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,7 +30,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "components/services/storage/public/mojom/cache_storage_control.mojom.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
@@ -70,6 +68,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/test_content_browser_client.h"
 #include "media/media_buildflags.h"
 #include "net/cert/cert_status_flags.h"
@@ -84,8 +83,10 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-test-utils.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 
 using blink::mojom::CacheStorageError;
 
@@ -143,10 +144,7 @@ class WorkerStateObserver
   WorkerStateObserver(ServiceWorkerContextWrapper* context,
                       ServiceWorkerVersion::Status target)
       : context_(context), target_(target) {}
-  void Init() {
-    RunOnCoreThread(
-        base::BindOnce(&WorkerStateObserver::InitOnCoreThread, this));
-  }
+  void Init() { context_->AddObserver(this); }
   // ServiceWorkerContextCoreObserver overrides.
   void OnVersionStateChanged(int64_t version_id,
                              const GURL& scope,
@@ -158,8 +156,7 @@ class WorkerStateObserver
       context_->RemoveObserver(this);
       version_id_ = version_id;
       registration_id_ = version->registration_id();
-      RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
-                            base::BindOnce(&WorkerStateObserver::Quit, this));
+      run_loop_.Quit();
     }
   }
   void Wait() { run_loop_.Run(); }
@@ -172,9 +169,6 @@ class WorkerStateObserver
   ~WorkerStateObserver() override = default;
 
  private:
-  void InitOnCoreThread() { context_->AddObserver(this); }
-  void Quit() { run_loop_.Quit(); }
-
   int64_t registration_id_ = blink::mojom::kInvalidServiceWorkerRegistrationId;
   int64_t version_id_ = blink::mojom::kInvalidServiceWorkerVersionId;
 
@@ -182,6 +176,30 @@ class WorkerStateObserver
   ServiceWorkerContextWrapper* context_;
   const ServiceWorkerVersion::Status target_;
   DISALLOW_COPY_AND_ASSIGN(WorkerStateObserver);
+};
+
+class WorkerClientDestroyedObserver : public ServiceWorkerContextCoreObserver {
+ public:
+  explicit WorkerClientDestroyedObserver(ServiceWorkerContextWrapper* context) {
+    // `context` must outlive this observer.
+    scoped_observation_.Observe(context);
+  }
+  ~WorkerClientDestroyedObserver() override = default;
+
+  void WaitUntilDestroyed() { run_loop_.Run(); }
+
+  // ServiceWorkerContextCoreObserver overrides.
+  void OnClientDestroyed(ukm::SourceId client_source_id,
+                         const GURL& url,
+                         blink::mojom::ServiceWorkerClientType type) override {
+    run_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+  base::ScopedObservation<ServiceWorkerContextWrapper,
+                          ServiceWorkerContextCoreObserver>
+      scoped_observation_{this};
 };
 
 std::unique_ptr<net::test_server::HttpResponse> VerifySaveDataHeaderInRequest(
@@ -268,39 +286,57 @@ void StoreString(std::string* result,
   std::move(callback).Run();
 }
 
-int GetInt(const base::DictionaryValue& dict, base::StringPiece path) {
-  int out = 0;
-  EXPECT_TRUE(dict.GetInteger(path, &out));
-  return out;
+int GetInt(const base::DictionaryValue& dict, base::StringPiece key) {
+  absl::optional<int> out = dict.FindIntKey(key);
+  EXPECT_TRUE(out.has_value());
+  return out.value_or(0);
 }
 
 std::string GetString(const base::DictionaryValue& dict,
-                      base::StringPiece path) {
-  std::string out;
-  EXPECT_TRUE(dict.GetString(path, &out));
-  return out;
+                      base::StringPiece key) {
+  const std::string* out = dict.FindStringKey(key);
+  EXPECT_TRUE(out);
+  return out ? *out : std::string();
 }
 
-bool GetBoolean(const base::DictionaryValue& dict, base::StringPiece path) {
-  bool out = false;
-  EXPECT_TRUE(dict.GetBoolean(path, &out));
-  return out;
+bool GetBoolean(const base::DictionaryValue& dict, base::StringPiece key) {
+  absl::optional<bool> out = dict.FindBoolKey(key);
+  EXPECT_TRUE(out.has_value());
+  return out.value_or(false);
 }
 
 bool CheckHeader(const base::DictionaryValue& dict,
                  base::StringPiece header_name,
                  base::StringPiece header_value) {
-  const base::ListValue* headers = nullptr;
-  EXPECT_TRUE(dict.GetList("headers", &headers));
-  for (size_t i = 0; i < headers->GetSize(); ++i) {
-    const base::ListValue* name_value_pair = nullptr;
-    EXPECT_TRUE(headers->GetList(i, &name_value_pair));
-    EXPECT_EQ(2u, name_value_pair->GetSize());
-    std::string name;
-    EXPECT_TRUE(name_value_pair->GetString(0, &name));
-    std::string value;
-    EXPECT_TRUE(name_value_pair->GetString(1, &value));
-    if (name == header_name && value == header_value)
+  const base::Value* headers = dict.FindListKey("headers");
+  if (!headers) {
+    ADD_FAILURE();
+    return false;
+  }
+
+  for (const auto& header : headers->GetList()) {
+    if (!header.is_list()) {
+      ADD_FAILURE();
+      return false;
+    }
+    base::Value::ConstListView name_value_pair = header.GetList();
+    if (name_value_pair.size() != 2u) {
+      ADD_FAILURE();
+      return false;
+    }
+    const std::string* name = name_value_pair[0].GetIfString();
+    if (!name) {
+      ADD_FAILURE();
+      return false;
+    }
+
+    const std::string* value = name_value_pair[1].GetIfString();
+    if (!value) {
+      ADD_FAILURE();
+      return false;
+    }
+
+    if (*name == header_name && *value == header_value)
       return true;
   }
   return false;
@@ -308,15 +344,29 @@ bool CheckHeader(const base::DictionaryValue& dict,
 
 bool HasHeader(const base::DictionaryValue& dict,
                base::StringPiece header_name) {
-  const base::ListValue* headers = nullptr;
-  EXPECT_TRUE(dict.GetList("headers", &headers));
-  for (size_t i = 0; i < headers->GetSize(); ++i) {
-    const base::ListValue* name_value_pair = nullptr;
-    EXPECT_TRUE(headers->GetList(i, &name_value_pair));
-    EXPECT_EQ(2u, name_value_pair->GetSize());
-    std::string name;
-    EXPECT_TRUE(name_value_pair->GetString(0, &name));
-    if (name == header_name)
+  const base::Value* headers = dict.FindListKey("headers");
+  if (!headers) {
+    ADD_FAILURE();
+    return false;
+  }
+
+  for (const auto& header : headers->GetList()) {
+    if (!header.is_list()) {
+      ADD_FAILURE();
+      return false;
+    }
+    base::Value::ConstListView name_value_pair = header.GetList();
+    if (name_value_pair.size() != 2u) {
+      ADD_FAILURE();
+      return false;
+    }
+    const std::string* name = name_value_pair[0].GetIfString();
+    if (!name) {
+      ADD_FAILURE();
+      return false;
+    }
+
+    if (*name == header_name)
       return true;
   }
   return false;
@@ -347,10 +397,7 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
  protected:
   using self = ServiceWorkerBrowserTest;
 
-  ServiceWorkerBrowserTest() {
-    feature_list_.InitWithFeatures({network::features::kCrossOriginIsolated},
-                                   {});
-  }
+  ServiceWorkerBrowserTest() = default;
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
@@ -836,8 +883,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
         wrapper(), ServiceWorkerVersion::ACTIVATED);
     observer->Init();
     GURL url = https_server.GetURL(kPageUrl);
-    wrapper()->UpdateRegistration(
-        url, storage::StorageKey(url::Origin::Create(url)));
+    wrapper()->UpdateRegistration(url,
+                                  blink::StorageKey(url::Origin::Create(url)));
     observer->Wait();
 
     // Wait until the page is appropriately served by the service worker.
@@ -960,7 +1007,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, StartWorkerWhileInstalling) {
   base::RunLoop run_loop;
   GURL full_url = embedded_test_server()->GetURL(kWorkerUrl);
   wrapper()->StartActiveServiceWorker(
-      full_url, storage::StorageKey(url::Origin::Create(full_url)),
+      full_url, blink::StorageKey(url::Origin::Create(full_url)),
       base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
         EXPECT_EQ(status, blink::ServiceWorkerStatusCode::kErrorNotFound);
         run_loop.Quit();
@@ -1983,7 +2030,7 @@ class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
                                     blink::ServiceWorkerStatusCode* status,
                                     base::OnceClosure continuation) {
     wrapper()->FindReadyRegistrationForClientUrl(
-        document_url, storage::StorageKey(url::Origin::Create(document_url)),
+        document_url, blink::StorageKey(url::Origin::Create(document_url)),
         base::BindOnce(
             &ServiceWorkerBlackBoxBrowserTest::DidFindRegistrationOnCoreThread,
             base::Unretained(this), status, std::move(continuation)));
@@ -2112,7 +2159,7 @@ class CacheStorageSideDataSizeChecker
     network::CrossOriginEmbedderPolicy cross_origin_embedder_policy;
     cache_storage_control->AddReceiver(
         cross_origin_embedder_policy, mojo::NullRemote(),
-        url::Origin::Create(origin),
+        blink::StorageKey(url::Origin::Create(origin)),
         storage::mojom::CacheStorageOwner::kCacheAPI,
         cache_storage_remote.InitWithNewPipeAndPassReceiver());
 
@@ -2231,11 +2278,15 @@ class ServiceWorkerV8CodeCacheForCacheStorageTest
     observer->Wait();
   }
 
+  void NavigateToTestPageWithoutWaiting() {
+    EXPECT_TRUE(
+        NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl)));
+  }
+
   void NavigateToTestPage() {
     const std::u16string title = u"Title was changed by the script.";
     TitleWatcher title_watcher(shell()->web_contents(), title);
-    EXPECT_TRUE(
-        NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl)));
+    NavigateToTestPageWithoutWaiting();
     EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   }
 
@@ -2323,38 +2374,15 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CodeCacheForCacheStorageNoneTest,
 namespace {
 
 class CodeCacheHostInterceptor
-    : public blink::mojom::CodeCacheHostInterceptorForTesting,
-      public RenderProcessHostObserver {
+    : public blink::mojom::CodeCacheHostInterceptorForTesting {
  public:
-  CodeCacheHostInterceptor(RenderProcessHost* rph,
-                           CodeCacheHostImpl* code_cache_host_impl)
-      : render_process_host_(rph), code_cache_host_impl_(code_cache_host_impl) {
-    // Intercept messages for the CodeCacheHost.
-    code_cache_host_impl_->receiver().SwapImplForTesting(this);
+  explicit CodeCacheHostInterceptor(CodeCacheHostImpl* code_cache_host_impl)
+      : code_cache_host_impl_(code_cache_host_impl) {}
 
-    // Register with the RenderProcessHost so we can cleanup properly.
-    render_process_host_->AddObserver(this);
-  }
-
-  ~CodeCacheHostInterceptor() override {
-    if (render_process_host_)
-      render_process_host_->RemoveObserver(this);
-  }
+  ~CodeCacheHostInterceptor() override = default;
 
   CodeCacheHost* GetForwardingInterface() override {
     return code_cache_host_impl_;
-  }
-
-  void RenderProcessExited(RenderProcessHost* host,
-                           const ChildProcessTerminationInfo& info) override {
-    DCHECK(host == render_process_host_);
-
-    // The CodeCacheHostImpl will be destroyed when the renderer exits.
-    // Drop our reference to avoid holding a stale pointer.
-    code_cache_host_impl_ = nullptr;
-
-    render_process_host_->RemoveObserver(this);
-    render_process_host_ = nullptr;
   }
 
   void DidGenerateCacheableMetadataInCacheStorage(
@@ -2373,7 +2401,6 @@ class CodeCacheHostInterceptor
   // These can be held as raw pointers since we use the
   // RenderProcessHostObserver interface to clear them before they are
   // destroyed.
-  RenderProcessHost* render_process_host_;
   CodeCacheHostImpl* code_cache_host_impl_;
 };
 
@@ -2384,17 +2411,19 @@ class CacheStorageControlForBadOrigin
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter_remote,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       storage::mojom::CacheStorageOwner owner,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override {
-    // The CodeCacheHostImpl should not try to add a receiver if the origin is
-    // bad.
+    // The CodeCacheHostImpl should not try to add a receiver if the StorageKey
+    // is bad.
     NOTREACHED();
   }
-  void DeleteForOrigin(const url::Origin& origin) override { NOTREACHED(); }
-  void GetAllOriginsInfo(
-      storage::mojom::CacheStorageControl::GetAllOriginsInfoCallback callback)
-      override {
+  void DeleteForStorageKey(const blink::StorageKey& storage_key) override {
+    NOTREACHED();
+  }
+  void GetAllStorageKeysInfo(
+      storage::mojom::CacheStorageControl::GetAllStorageKeysInfoCallback
+          callback) override {
     NOTREACHED();
   }
   void AddObserver(mojo::PendingRemote<storage::mojom::CacheStorageObserver>
@@ -2440,28 +2469,39 @@ class ServiceWorkerV8CodeCacheForCacheStorageBadOriginTest
         RenderProcessHostImpl::CodeCacheHostReceiverHandler());
   }
 
-  void CreateTestCodeCacheHost(RenderProcessHost* rph,
-                               CodeCacheHostImpl* code_cache_host_impl) {
+  void CreateTestCodeCacheHost(
+      CodeCacheHostImpl* code_cache_host_impl,
+      mojo::ReceiverId receiver_id,
+      mojo::UniqueReceiverSet<blink::mojom::CodeCacheHost>& receiver_set) {
     // Override the cache_storage context to assert that CodeCacheHostImpl
     // does not try to access it when given a bad origin.
     code_cache_host_impl->SetCacheStorageControlForTesting(
         cache_storage_control_.get());
 
     // Create an interceptor that passes a bad origin to CodeCacheHostImpl.
-    interceptors_.push_back(
-        std::make_unique<CodeCacheHostInterceptor>(rph, code_cache_host_impl));
+    auto interceptor =
+        std::make_unique<CodeCacheHostInterceptor>(code_cache_host_impl);
+    code_cache_host_interfaces_.emplace_back(
+        receiver_set.SwapImplForTesting(receiver_id, std::move(interceptor))
+            .release(),
+        base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
   }
 
  private:
   std::unique_ptr<CacheStorageControlForBadOrigin> cache_storage_control_;
 
-  // Track the CodeCacheHostIntercptor objects so we can delete them in
-  // the test destructor.
-  std::vector<std::unique_ptr<CodeCacheHostInterceptor>> interceptors_;
+  // Track the original CodeCacheHost interface objects so we can delete them
+  // in the test destructor.
+  std::vector<
+      std::unique_ptr<blink::mojom::CodeCacheHost, base::OnTaskRunnerDeleter>>
+      code_cache_host_interfaces_;
 };
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CodeCacheForCacheStorageBadOriginTest,
                        V8CacheOnCacheStorage) {
+  RenderProcessHostBadMojoMessageWaiter rph_kill_waiter(
+      shell()->web_contents()->GetMainFrame()->GetProcess());
+
   RegisterAndActivateServiceWorker();
 
   // First load: fetch_event_response_via_cache.js returns |cloned_response|.
@@ -2469,12 +2509,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CodeCacheForCacheStorageBadOriginTest,
   NavigateToTestPage();
   WaitUntilSideDataSizeIs(0);
 
-  RenderProcessHostBadMojoMessageWaiter rph_kill_waiter(
-      shell()->web_contents()->GetMainFrame()->GetProcess());
-
   // Second load: This will send an invalid origin for the code cache host and
   // should trigger a process crash.
-  NavigateToTestPage();
+  NavigateToTestPageWithoutWaiting();
 
   EXPECT_EQ("Received bad user message: Bad cache_storage origin.",
             rph_kill_waiter.Wait());
@@ -3248,10 +3285,10 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Combine(testing::Bool(), testing::Bool()));
 
 // Tests with BackForwardCache and KeepActiveFreezing enabled.
-class ServiceWorkerBackForwardCacheBrowserTest
+class ServiceWorkerBackForwardCacheAndKeepActiveFreezingBrowserTest
     : public ServiceWorkerBrowserTest {
  protected:
-  ServiceWorkerBackForwardCacheBrowserTest() {
+  ServiceWorkerBackForwardCacheAndKeepActiveFreezingBrowserTest() {
     feature_list_.InitWithFeaturesAndParameters(
         {{{features::kBackForwardCache,
            {{"TimeToLiveInBackForwardCacheInSeconds", "3600"},
@@ -3295,8 +3332,9 @@ class ServiceWorkerBackForwardCacheBrowserTest
 
 // Tests that a service worker that shares a renderer process with a
 // back-forward cached page and an active page still runs normally.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBackForwardCacheBrowserTest,
-                       ShareProcessWithBackForwardCachedPageAndLivePage) {
+IN_PROC_BROWSER_TEST_F(
+    ServiceWorkerBackForwardCacheAndKeepActiveFreezingBrowserTest,
+    ShareProcessWithBackForwardCachedPageAndLivePage) {
   StartServerAndNavigateToSetup();
 
   GURL url_1(embedded_test_server()->GetURL(
@@ -3387,8 +3425,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBackForwardCacheBrowserTest,
 
 // Tests that a service worker that shares a renderer process with a
 // back-forward cached page and no active pages still runs normally.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBackForwardCacheBrowserTest,
-                       ShareProcessWithBackForwardCachedPageOnly) {
+IN_PROC_BROWSER_TEST_F(
+    ServiceWorkerBackForwardCacheAndKeepActiveFreezingBrowserTest,
+    ShareProcessWithBackForwardCachedPageOnly) {
   StartServerAndNavigateToSetup();
 
   GURL url_1(embedded_test_server()->GetURL(
@@ -3491,6 +3530,106 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
   EXPECT_EQ(rfh_1, current_frame_host());
+}
+
+// Tests with BackForwardCache enabled.
+class ServiceWorkerBackForwardCacheBrowserTest
+    : public ServiceWorkerBrowserTest {
+ protected:
+  ServiceWorkerBackForwardCacheBrowserTest() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kBackForwardCache, {{"enable_same_site", "true"}});
+  }
+
+  RenderFrameHostImpl* current_frame_host() {
+    return static_cast<WebContentsImpl*>(shell()->web_contents())
+        ->GetFrameTree()
+        ->root()
+        ->current_frame_host();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Fails on Android. https://crbug.com/1216619
+#if defined(OS_ANDROID)
+#define MAYBE_EvictionOfBackForwardCacheWithMultipleServiceWorkers \
+  DISABLED_EvictionOfBackForwardCacheWithMultipleServiceWorkers
+#else
+#define MAYBE_EvictionOfBackForwardCacheWithMultipleServiceWorkers \
+  EvictionOfBackForwardCacheWithMultipleServiceWorkers
+#endif
+
+// Regression test for https://crbug.com/1212618.
+IN_PROC_BROWSER_TEST_F(
+    ServiceWorkerBackForwardCacheBrowserTest,
+    MAYBE_EvictionOfBackForwardCacheWithMultipleServiceWorkers) {
+  StartServerAndNavigateToSetup();
+
+  ASSERT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  auto rfh = RenderFrameHostImplWrapper(current_frame_host());
+
+  int first_worker_version_id;
+
+  {
+    // Register the first service worker.
+    WorkerRunningStatusObserver observer(public_context());
+    EXPECT_EQ(
+        "DONE",
+        EvalJs(current_frame_host(),
+               "register('skip_waiting_and_clients_claim_worker.js', '/');"));
+    observer.WaitUntilRunning();
+    first_worker_version_id = observer.version_id();
+  }
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/service_worker/"
+                                              "create_service_worker.html?1")));
+  EXPECT_TRUE(rfh->IsInBackForwardCache());
+
+  {
+    // Register the second service worker. `rfh` and the current frame host
+    // will be controlled by this new service worker. It doesn't await for
+    // navigator.serviceWorker.ready.
+    WorkerRunningStatusObserver observer(public_context());
+    EXPECT_EQ("DONE",
+              EvalJs(current_frame_host(),
+                     "registerWithoutAwaitingReady('clients_claim_worker.js', "
+                     "'/service_worker/');"));
+    observer.WaitUntilRunning();
+  }
+
+  {
+    // `update()` invokes ServiceWorkerContainerHost::UpdateController() which
+    // should updates controllees for the first service worker version and the
+    // second service worker version. It will cause the BFCache eviction and
+    // which causes the ServiceWorkerContainerHost to be destroyed.
+    WorkerClientDestroyedObserver observer(wrapper());
+    EXPECT_EQ("DONE", EvalJs(current_frame_host(), "update('/');"));
+    observer.WaitUntilDestroyed();
+  }
+
+  // Try to evict back forward cached controllees in the first service worker
+  // version. Since the ServiceWorkerContainerHost has been destroyed, it should
+  // have been removed from the first service worker's controllee map. If it
+  // hasn't, then calling version->EvictBackForwardCacheControllees() will do a
+  // UAF.
+  scoped_refptr<ServiceWorkerVersion> version =
+      wrapper()->GetLiveVersion(first_worker_version_id);
+  version->EvictBackForwardCachedControllees(
+      BackForwardCacheMetrics::NotRestoredReason::kUnknown);
+
+  {
+    base::RunLoop loop;
+    public_context()->UnregisterServiceWorker(
+        embedded_test_server()->GetURL("/"),
+        base::BindOnce(&ExpectUnregisterResultAndRun, true,
+                       loop.QuitClosure()));
+    loop.Run();
+  }
 }
 
 }  // namespace content

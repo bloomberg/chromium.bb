@@ -6,10 +6,10 @@
 
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#import "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,27 +19,17 @@ namespace {
 
 using UIKitUIUtilTest = PlatformTest;
 
-// Verify the assumption about UIViewController that on iPad and iOS 13 all
-// orientations are supported, and all orientations but Portrait Upside-Down on
-// iOS 12 iPhone and iPod Touch.
+// Verify the assumption about UIViewController that on iPad and iOS 13+ all
+// orientations are supported.
 TEST_F(UIKitUIUtilTest, UIViewControllerSupportedOrientationsTest) {
   UIViewController* viewController =
       [[UIViewController alloc] initWithNibName:nil bundle:nil];
 
-  if (IsIPadIdiom()) {
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
     EXPECT_EQ(UIInterfaceOrientationMaskAll,
               [viewController supportedInterfaceOrientations]);
     return;
   }
-
-  // Running on iPhone iOS 12 or earlier.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EXPECT_EQ(UIInterfaceOrientationMaskAllButUpsideDown,
-              [viewController supportedInterfaceOrientations]);
-    return;
-  }
-
-  // Running on iOS 13 iPhone.
 
   // Starting with iOS 13, the default [UIViewController
   // supportedInterfaceOrientations] returns UIInterfaceOrientationMaskAll.

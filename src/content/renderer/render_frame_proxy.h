@@ -20,7 +20,6 @@
 #include "third_party/blink/public/common/frame/frame_visual_properties.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
-#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_replication_state.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
@@ -70,7 +69,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       AgentSchedulingGroup& agent_scheduling_group,
       RenderFrameImpl* frame_to_replace,
       int routing_id,
-      blink::mojom::TreeScopeType scope,
+      blink::mojom::TreeScopeType tree_scope_type,
       const blink::RemoteFrameToken& proxy_frame_token);
 
   // This method should be used to create a RenderFrameProxy, when there isn't
@@ -93,19 +92,20 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       const absl::optional<blink::FrameToken>& opener_frame_token,
       int render_view_routing_id,
       int parent_routing_id,
+      blink::mojom::TreeScopeType tree_scope_type,
       blink::mojom::FrameReplicationStatePtr replicated_state,
       const base::UnguessableToken& devtools_frame_token,
       mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces);
 
-  // Creates a RenderFrameProxy to be used with a portal owned by |parent|.
-  // |routing_id| is the routing id of this new RenderFrameProxy.
-  static RenderFrameProxy* CreateProxyForPortal(
+  // Creates a RenderFrameProxy to be used with a portal or fenced frame owned
+  // by |parent|. |routing_id| is the routing id of this new RenderFrameProxy.
+  static RenderFrameProxy* CreateProxyForPortalOrFencedFrame(
       AgentSchedulingGroup& agent_scheduling_group,
       RenderFrameImpl* parent,
       int proxy_routing_id,
       const blink::RemoteFrameToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
-      const blink::WebElement& portal_element);
+      const blink::WebElement& frame_owner_element);
 
   // Returns the RenderFrameProxy for the given routing ID.
   static RenderFrameProxy* FromRoutingID(int routing_id);

@@ -50,9 +50,9 @@ const Http2StreamId kConnectionStreamId = 0;
 // 7540 Section 6.5.2 (SETTINGS_MAX_FRAME_SIZE).
 const int kDefaultFramePayloadSizeLimit = 16 * 1024;
 
-// The default value for the initial stream flow control window size, according
-// to RFC 7540 Section 6.9.2.
-const int kDefaultInitialStreamWindowSize = 64 * 1024 - 1;
+// The default value for the initial stream and connection flow control window
+// size, according to RFC 7540 Section 6.9.2.
+const int kInitialFlowControlWindowSize = 64 * 1024 - 1;
 
 // The pseudo-header fields as specified in RFC 7540 Section 8.1.2.3 (request)
 // and Section 8.1.2.4 (response).
@@ -61,6 +61,19 @@ ABSL_CONST_INIT extern const char kHttp2SchemePseudoHeader[];
 ABSL_CONST_INIT extern const char kHttp2AuthorityPseudoHeader[];
 ABSL_CONST_INIT extern const char kHttp2PathPseudoHeader[];
 ABSL_CONST_INIT extern const char kHttp2StatusPseudoHeader[];
+
+enum class FrameType : uint8_t {
+  DATA = 0x0,
+  HEADERS,
+  PRIORITY,
+  RST_STREAM,
+  SETTINGS,
+  PUSH_PROMISE,
+  PING,
+  GOAWAY,
+  WINDOW_UPDATE,
+  CONTINUATION,
+};
 
 // HTTP/2 error codes as specified in RFC 7540 Section 7.
 enum class Http2ErrorCode {
@@ -94,7 +107,8 @@ enum Http2KnownSettingsId : Http2SettingsId {
   INITIAL_WINDOW_SIZE = 0x4,
   MAX_FRAME_SIZE = 0x5,
   MAX_HEADER_LIST_SIZE = 0x6,
-  MAX_SETTING = MAX_HEADER_LIST_SIZE
+  ENABLE_CONNECT_PROTOCOL = 0x8,  // See RFC 8441
+  MAX_SETTING = ENABLE_CONNECT_PROTOCOL
 };
 
 // Returns a human-readable string representation of the given SETTINGS |id| for
@@ -111,6 +125,9 @@ enum class Perspective {
   kClient,
   kServer,
 };
+
+const uint8_t kMetadataFrameType = 0x4d;
+const uint8_t kMetadataEndFlag = 0x04;
 
 }  // namespace adapter
 }  // namespace http2

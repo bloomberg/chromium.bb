@@ -278,7 +278,7 @@ typedef aom_fixed_buf_t *(*aom_codec_get_global_headers_fn_t)(
 typedef aom_image_t *(*aom_codec_get_preview_frame_fn_t)(
     aom_codec_alg_priv_t *ctx);
 
-/*!\brief Decoder algorithm interface interface
+/*!\brief Decoder algorithm interface
  *
  * All decoders \ref MUST expose a variable of this type.
  */

@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
@@ -24,6 +23,8 @@ namespace ui {
 class TestClipboard : public Clipboard {
  public:
   TestClipboard();
+  TestClipboard(const TestClipboard&) = delete;
+  TestClipboard& operator=(const TestClipboard&) = delete;
   ~TestClipboard() override;
 
   // Creates and associates a TestClipboard with the current thread. When no
@@ -90,12 +91,9 @@ class TestClipboard : public Clipboard {
 #if defined(USE_OZONE)
   bool IsSelectionBufferAvailable() const override;
 #endif  // defined(USE_OZONE)
-  void WritePortableRepresentations(
+  void WritePortableAndPlatformRepresentations(
       ClipboardBuffer buffer,
       const ObjectMap& objects,
-      std::unique_ptr<DataTransferEndpoint> data_src) override;
-  void WritePlatformRepresentations(
-      ClipboardBuffer buffer,
       std::vector<Clipboard::PlatformRepresentation> platform_representations,
       std::unique_ptr<DataTransferEndpoint> data_src) override;
   void WriteText(const char* text_data, size_t text_len) override;
@@ -129,7 +127,7 @@ class TestClipboard : public Clipboard {
     base::flat_map<ClipboardFormatType, std::string> data;
     std::string url_title;
     std::string html_src_url;
-    SkBitmap image;
+    std::vector<uint8_t> png;
     std::vector<ui::FileInfo> filenames;
     std::unique_ptr<DataTransferEndpoint> data_src;
   };
@@ -143,8 +141,6 @@ class TestClipboard : public Clipboard {
   ClipboardBuffer default_store_buffer_;
   mutable base::flat_map<ClipboardBuffer, DataStore> stores_;
   base::Time last_modified_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestClipboard);
 };
 
 }  // namespace ui

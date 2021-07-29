@@ -8,14 +8,11 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
-class CounterStyleTest : public PageTestBase,
-                         private ScopedCSSAtRuleCounterStyleForTest {
- public:
-  CounterStyleTest() : ScopedCSSAtRuleCounterStyleForTest(true) {}
-
+class CounterStyleTest : public PageTestBase {
  protected:
   const CounterStyle& GetCounterStyle(const AtomicString& name) {
     if (const CounterStyleMap* document_map =

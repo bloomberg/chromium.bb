@@ -19,7 +19,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
@@ -182,7 +181,7 @@ void AmbientModeHandler::OnEnabledPrefChanged() {
 
 void AmbientModeHandler::HandleRequestSettings(const base::ListValue* args) {
   CHECK(args);
-  CHECK(args->empty());
+  CHECK(args->GetList().empty());
 
   AllowJavascript();
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -23,6 +24,16 @@ class TabStripRegionViewBrowserTest : public InProcessBrowserTest {
       const TabStripRegionViewBrowserTest&) = delete;
   ~TabStripRegionViewBrowserTest() override = default;
 
+  void SetUp() override {
+#if defined(OS_WIN)
+    // Ensure we run our tests with the tab search button placement configured
+    // for the tab strip region view.
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kWin10TabSearchCaptionButton);
+#endif
+    InProcessBrowserTest::SetUp();
+  }
+
   void AppendTab() { chrome::AddTabAt(browser(), GURL(), -1, false); }
 
   BrowserView* browser_view() {
@@ -36,12 +47,15 @@ class TabStripRegionViewBrowserTest : public InProcessBrowserTest {
   TabStrip* tab_strip() { return browser_view()->tabstrip(); }
 
   TabSearchButton* tab_search_button() {
-    return browser_view()->GetTabSearchButton();
+    return tab_strip_region_view()->tab_search_button();
   }
 
   views::View* new_tab_button() {
     return tab_strip_region_view()->new_tab_button();
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(TabStripRegionViewBrowserTest, TestForwardFocus) {

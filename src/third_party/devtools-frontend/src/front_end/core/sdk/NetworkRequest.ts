@@ -40,7 +40,7 @@ import type {Cookie} from './Cookie.js';
 import {Attributes} from './Cookie.js';  // eslint-disable-line no-unused-vars
 import {CookieParser} from './CookieParser.js';
 import {NetworkManager} from './NetworkManager.js';
-import {Type} from './SDKModel.js';
+import {Type} from './Target.js';
 import {ServerTiming} from './ServerTiming.js';
 
 // clang-format off
@@ -187,7 +187,7 @@ export enum MIME_TYPE {
 export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implements
     TextUtils.ContentProvider.ContentProvider {
   _requestId: string;
-  _backendRequestId: string;
+  _backendRequestId?: Protocol.Network.RequestId;
   _documentURL: string;
   _frameId: string;
   _loaderId: string;
@@ -211,6 +211,8 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
   _initialPriority: Protocol.Network.ResourcePriority|null;
   _currentPriority: Protocol.Network.ResourcePriority|null;
   _signedExchangeInfo: Protocol.Network.SignedExchangeInfo|null;
+  _webBundleInfo: WebBundleInfo|null;
+  _webBundleInnerRequestInfo: WebBundleInnerRequestInfo|null;
   _resourceType: Common.ResourceType.ResourceType;
   _contentData: Promise<ContentData>|null;
   _frames: WebSocketFrame[];
@@ -245,6 +247,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
   _finished!: boolean;
   _failed!: boolean;
   _canceled!: boolean;
+  _preserved!: boolean;
   _mimeType!: MIME_TYPE;
   _parsedURL!: Common.ParsedURL.ParsedURL;
   _name!: string|undefined;
@@ -270,14 +273,15 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
   _queryString?: string|null;
   _parsedQueryParameters?: NameValue[];
   _contentDataProvider?: (() => Promise<ContentData>);
+  _isSameSite: boolean|null;
 
-  constructor(
-      requestId: string, url: string, documentURL: string, frameId: string, loaderId: string,
-      initiator: Protocol.Network.Initiator|null) {
+  private constructor(
+      requestId: string, backendRequestId: Protocol.Network.RequestId|undefined, url: string, documentURL: string,
+      frameId: string, loaderId: string, initiator: Protocol.Network.Initiator|null) {
     super();
 
     this._requestId = requestId;
-    this._backendRequestId = requestId;
+    this._backendRequestId = backendRequestId;
     this.setUrl(url);
     this._documentURL = documentURL;
     this._frameId = frameId;
@@ -305,6 +309,8 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
     this._currentPriority = null;
 
     this._signedExchangeInfo = null;
+    this._webBundleInfo = null;
+    this._webBundleInnerRequestInfo = null;
 
     this._resourceType = Common.ResourceType.resourceTypes.Other;
     this._contentData = null;
@@ -339,6 +345,24 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
     this._blockedResponseCookies = [];
 
     this.localizedFailDescription = null;
+    this._isSameSite = null;
+  }
+
+  static create(
+      backendRequestId: Protocol.Network.RequestId, url: string, documentURL: string, frameId: string, loaderId: string,
+      initiator: Protocol.Network.Initiator|null): NetworkRequest {
+    return new NetworkRequest(backendRequestId, backendRequestId, url, documentURL, frameId, loaderId, initiator);
+  }
+
+  static createForWebSocket(
+      backendRequestId: Protocol.Network.RequestId, requestURL: string,
+      initiator?: Protocol.Network.Initiator): NetworkRequest {
+    return new NetworkRequest(backendRequestId, backendRequestId, requestURL, '', '', '', initiator || null);
+  }
+
+  static createWithoutBackendRequest(
+      requestId: string, url: string, documentURL: string, initiator: Protocol.Network.Initiator|null): NetworkRequest {
+    return new NetworkRequest(requestId, undefined, url, documentURL, '', '', initiator);
   }
 
   identityCompare(other: NetworkRequest): number {
@@ -357,7 +381,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
     return this._requestId;
   }
 
-  backendRequestId(): string {
+  backendRequestId(): Protocol.Network.RequestId|undefined {
     return this._backendRequestId;
   }
 
@@ -579,6 +603,14 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
 
   set canceled(x: boolean) {
     this._canceled = x;
+  }
+
+  get preserved(): boolean {
+    return this._preserved;
+  }
+
+  set preserved(x: boolean) {
+    this._preserved = x;
   }
 
   blockedReason(): Protocol.Network.BlockedReason|undefined {
@@ -1190,6 +1222,23 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
     return this._signedExchangeInfo;
   }
 
+
+  setWebBundleInfo(info: WebBundleInfo|null): void {
+    this._webBundleInfo = info;
+  }
+
+  webBundleInfo(): WebBundleInfo|null {
+    return this._webBundleInfo;
+  }
+
+  setWebBundleInnerRequestInfo(info: WebBundleInnerRequestInfo|null): void {
+    this._webBundleInnerRequestInfo = info;
+  }
+
+  webBundleInnerRequestInfo(): WebBundleInnerRequestInfo|null {
+    return this._webBundleInnerRequestInfo;
+  }
+
   async populateImageSource(image: HTMLImageElement): Promise<void> {
     const {content, encoded} = await this.contentData();
     let imageSrc = TextUtils.ContentProvider.contentAsDataURL(content, this._mimeType, encoded);
@@ -1252,7 +1301,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
     return this._isRedirect;
   }
 
-  setRequestIdForTest(requestId: string): void {
+  setRequestIdForTest(requestId: Protocol.Network.RequestId): void {
     this._backendRequestId = requestId;
     this._requestId = requestId;
   }
@@ -1360,6 +1409,14 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
   trustTokenOperationDoneEvent(): Protocol.Network.TrustTokenOperationDoneEvent|undefined {
     return this._trustTokenOperationDoneEvent;
   }
+
+  setIsSameSite(isSameSite: boolean): void {
+    this._isSameSite = isSameSite;
+  }
+
+  isSameSite(): boolean|null {
+    return this._isSameSite;
+  }
 }
 
 // TODO(crbug.com/1167717): Make this a const enum again
@@ -1430,47 +1487,46 @@ export const cookieBlockedReasonToUiString = function(blockedReason: Protocol.Ne
   return '';
 };
 
-export const setCookieBlockedReasonToUiString = function(blockedReason: Protocol.Network.SetCookieBlockedReason):
-    string {
-      switch (blockedReason) {
-        case Protocol.Network.SetCookieBlockedReason.SecureOnly:
-          return i18nString(UIStrings.blockedReasonSecureOnly);
-        case Protocol.Network.SetCookieBlockedReason.SameSiteStrict:
-          return i18nString(UIStrings.blockedReasonSameSiteStrictLax, {PH1: 'SameSite=Strict'});
-        case Protocol.Network.SetCookieBlockedReason.SameSiteLax:
-          return i18nString(UIStrings.blockedReasonSameSiteStrictLax, {PH1: 'SameSite=Lax'});
-        case Protocol.Network.SetCookieBlockedReason.SameSiteUnspecifiedTreatedAsLax:
-          return i18nString(UIStrings.blockedReasonSameSiteUnspecifiedTreatedAsLax);
-        case Protocol.Network.SetCookieBlockedReason.SameSiteNoneInsecure:
-          return i18nString(UIStrings.blockedReasonSameSiteNoneInsecure);
-        case Protocol.Network.SetCookieBlockedReason.UserPreferences:
-          return i18nString(UIStrings.thisSetcookieWasBlockedDueToUser);
-        case Protocol.Network.SetCookieBlockedReason.SyntaxError:
-          return i18nString(UIStrings.thisSetcookieHadInvalidSyntax);
-        case Protocol.Network.SetCookieBlockedReason.SchemeNotSupported:
-          return i18nString(UIStrings.theSchemeOfThisConnectionIsNot);
-        case Protocol.Network.SetCookieBlockedReason.OverwriteSecure:
-          return i18nString(UIStrings.blockedReasonOverwriteSecure);
-        case Protocol.Network.SetCookieBlockedReason.InvalidDomain:
-          return i18nString(UIStrings.blockedReasonInvalidDomain);
-        case Protocol.Network.SetCookieBlockedReason.InvalidPrefix:
-          return i18nString(UIStrings.blockedReasonInvalidPrefix);
-        case Protocol.Network.SetCookieBlockedReason.UnknownError:
-          return i18nString(UIStrings.anUnknownErrorWasEncounteredWhenTrying);
-        case Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteStrict:
-          return i18nString(
-              UIStrings.thisSetcookieWasBlockedBecauseItHadTheSamesiteStrictLax, {PH1: 'SameSite=Strict'});
-        case Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteLax:
-          return i18nString(UIStrings.thisSetcookieWasBlockedBecauseItHadTheSamesiteStrictLax, {PH1: 'SameSite=Lax'});
-        case Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteUnspecifiedTreatedAsLax:
-          return i18nString(UIStrings.thisSetcookieDidntSpecifyASamesite);
-        case Protocol.Network.SetCookieBlockedReason.SamePartyFromCrossPartyContext:
-          return i18nString(UIStrings.thisSetcookieWasBlockedBecauseItHadTheSameparty);
-        case Protocol.Network.SetCookieBlockedReason.SamePartyConflictsWithOtherAttributes:
-          return i18nString(UIStrings.thisSetcookieWasBlockedBecauseItHadTheSamepartyAttribute);
-      }
-      return '';
-    };
+export const setCookieBlockedReasonToUiString = function(
+    blockedReason: Protocol.Network.SetCookieBlockedReason): string {
+  switch (blockedReason) {
+    case Protocol.Network.SetCookieBlockedReason.SecureOnly:
+      return i18nString(UIStrings.blockedReasonSecureOnly);
+    case Protocol.Network.SetCookieBlockedReason.SameSiteStrict:
+      return i18nString(UIStrings.blockedReasonSameSiteStrictLax, {PH1: 'SameSite=Strict'});
+    case Protocol.Network.SetCookieBlockedReason.SameSiteLax:
+      return i18nString(UIStrings.blockedReasonSameSiteStrictLax, {PH1: 'SameSite=Lax'});
+    case Protocol.Network.SetCookieBlockedReason.SameSiteUnspecifiedTreatedAsLax:
+      return i18nString(UIStrings.blockedReasonSameSiteUnspecifiedTreatedAsLax);
+    case Protocol.Network.SetCookieBlockedReason.SameSiteNoneInsecure:
+      return i18nString(UIStrings.blockedReasonSameSiteNoneInsecure);
+    case Protocol.Network.SetCookieBlockedReason.UserPreferences:
+      return i18nString(UIStrings.thisSetcookieWasBlockedDueToUser);
+    case Protocol.Network.SetCookieBlockedReason.SyntaxError:
+      return i18nString(UIStrings.thisSetcookieHadInvalidSyntax);
+    case Protocol.Network.SetCookieBlockedReason.SchemeNotSupported:
+      return i18nString(UIStrings.theSchemeOfThisConnectionIsNot);
+    case Protocol.Network.SetCookieBlockedReason.OverwriteSecure:
+      return i18nString(UIStrings.blockedReasonOverwriteSecure);
+    case Protocol.Network.SetCookieBlockedReason.InvalidDomain:
+      return i18nString(UIStrings.blockedReasonInvalidDomain);
+    case Protocol.Network.SetCookieBlockedReason.InvalidPrefix:
+      return i18nString(UIStrings.blockedReasonInvalidPrefix);
+    case Protocol.Network.SetCookieBlockedReason.UnknownError:
+      return i18nString(UIStrings.anUnknownErrorWasEncounteredWhenTrying);
+    case Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteStrict:
+      return i18nString(UIStrings.thisSetcookieWasBlockedBecauseItHadTheSamesiteStrictLax, {PH1: 'SameSite=Strict'});
+    case Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteLax:
+      return i18nString(UIStrings.thisSetcookieWasBlockedBecauseItHadTheSamesiteStrictLax, {PH1: 'SameSite=Lax'});
+    case Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteUnspecifiedTreatedAsLax:
+      return i18nString(UIStrings.thisSetcookieDidntSpecifyASamesite);
+    case Protocol.Network.SetCookieBlockedReason.SamePartyFromCrossPartyContext:
+      return i18nString(UIStrings.thisSetcookieWasBlockedBecauseItHadTheSameparty);
+    case Protocol.Network.SetCookieBlockedReason.SamePartyConflictsWithOtherAttributes:
+      return i18nString(UIStrings.thisSetcookieWasBlockedBecauseItHadTheSamepartyAttribute);
+  }
+  return '';
+};
 
 export const cookieBlockedReasonToAttribute = function(blockedReason: Protocol.Network.CookieBlockedReason): Attributes|
     null {
@@ -1584,4 +1640,14 @@ export interface ExtraResponseInfo {
   responseHeaders: NameValue[];
   responseHeadersText?: string;
   resourceIPAddressSpace: Protocol.Network.IPAddressSpace;
+}
+
+export interface WebBundleInfo {
+  resourceUrls?: string[];
+  errorMessage?: string;
+}
+
+export interface WebBundleInnerRequestInfo {
+  bundleRequestId?: string;
+  errorMessage?: string;
 }

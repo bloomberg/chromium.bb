@@ -42,18 +42,23 @@ class _Generator(object):
       .Append(cpp_util.GENERATED_FILE_MESSAGE %
               cpp_util.ToPosixPath(self._namespace.source_file))
       .Append()
-      .Append(self._util_cc_helper.GetIncludePath())
+      .Append('#include "%s/%s.h"' %
+              (cpp_util.ToPosixPath(self._namespace.source_file_dir),
+               self._namespace.short_filename))
+      .Append()
+      .Append('#include <memory>')
+      .Append('#include <ostream>')
+      .Append('#include <string>')
+      .Append('#include <utility>')
+      .Append('#include <vector>')
+      .Append()
       .Append('#include "base/check.h"')
       .Append('#include "base/check_op.h"')
       .Append('#include "base/notreached.h"')
       .Append('#include "base/strings/string_number_conversions.h"')
       .Append('#include "base/strings/utf_string_conversions.h"')
       .Append('#include "base/values.h"')
-      .Append('#include "%s/%s.h"' %
-              (cpp_util.ToPosixPath(self._namespace.source_file_dir),
-               self._namespace.short_filename))
-      .Append('#include <set>')
-      .Append('#include <utility>')
+      .Append(self._util_cc_helper.GetIncludePath())
       .Cblock(self._GenerateManifestKeysIncludes())
       .Cblock(self._type_helper.GenerateIncludes(include_soft=True))
       .Append()
@@ -305,10 +310,10 @@ class _Generator(object):
     """
     c = Code()
     value_var = prop.unix_name + '_value'
-    c.Append('const base::Value* %(value_var)s = nullptr;')
+    c.Append('const base::Value* %(value_var)s = %(src)s->FindKey("%(key)s");')
     if prop.optional:
       (c.Sblock(
-          'if (%(src)s->GetWithoutPathExpansion("%(key)s", &%(value_var)s)) {')
+          'if (%(value_var)s) {')
         .Concat(self._GeneratePopulatePropertyFromValue(
             prop, value_var, dst, 'false')))
       underlying_type = self._type_helper.FollowRef(prop.type_)
@@ -323,7 +328,7 @@ class _Generator(object):
       c.Eblock('}')
     else:
       (c.Sblock(
-          'if (!%(src)s->GetWithoutPathExpansion("%(key)s", &%(value_var)s)) {')
+          'if (!%(value_var)s) {')
         .Concat(self._AppendError16('u"\'%%(key)s\' is required"'))
         .Append('return false;')
         .Eblock('}')
@@ -929,34 +934,43 @@ class _Generator(object):
 
     if (underlying_type.property_type.is_fundamental or
         underlying_type.is_serializable_function):
-      if is_ptr:
-        (c.Append('%(cpp_type)s temp;')
-          .Sblock('if (!%s) {' % cpp_util.GetAsFundamentalValue(
-                      self._type_helper.FollowRef(type_), src_var, '&temp'))
+      is_string_or_function = (
+        underlying_type.property_type == PropertyType.STRING
+        or (underlying_type.property_type == PropertyType.FUNCTION
+          and underlying_type.is_serializable_function))
+      c.Append('auto%s temp = %s;' % (
+        '*' if is_string_or_function else '',
+        cpp_util.GetAsFundamentalValue(underlying_type, src_var)
+      ))
+      if is_string_or_function:
+        (c.Sblock('if (!temp) {')
           .Concat(self._AppendError16(
             'u"\'%%(key)s\': expected ' + '%s, got " + %s' % (
                 type_.name,
                 self._util_cc_helper.GetValueTypeString(
                     '%%(src_var)s', True)))))
-        c.Append('%(dst_var)s.reset();')
-        c.Append('return %(failure_value)s;')
-        (c.Eblock('}')
-          .Append('else')
-          .Append('  %(dst_var)s = std::make_unique<%(cpp_type)s>(temp);')
-        )
       else:
-        (c.Sblock('if (!%s) {' % cpp_util.GetAsFundamentalValue(
-                      self._type_helper.FollowRef(type_),
-                      src_var,
-                      '&%s' % dst_var))
+        (c.Sblock('if (!temp.has_value()) {')
           .Concat(self._AppendError16(
             'u"\'%%(key)s\': expected ' + '%s, got " + %s' % (
                 type_.name,
                 self._util_cc_helper.GetValueTypeString(
-                    '%%(src_var)s', True))))
-          .Append('return %(failure_value)s;')
-          .Eblock('}')
-        )
+                    '%%(src_var)s', True)))))
+      if is_ptr:
+        c.Append('%(dst_var)s.reset();')
+      c.Append('return %(failure_value)s;')
+      (c.Eblock('}'))
+      if is_ptr:
+        if is_string_or_function:
+          c.Append('%(dst_var)s = std::make_unique<%(cpp_type)s>(*temp);')
+        else:
+          c.Append('%(dst_var)s = ' +
+            'std::make_unique<%(cpp_type)s>(temp.value());')
+      else:
+        if is_string_or_function:
+          c.Append('%(dst_var)s = *temp;')
+        else:
+          c.Append('%(dst_var)s = temp.value();')
     elif underlying_type.property_type == PropertyType.OBJECT:
       if is_ptr:
         (c.Append('const base::DictionaryValue* dictionary = nullptr;')
@@ -1240,7 +1254,8 @@ class _Generator(object):
     (c.Sblock('std::vector<base::Value> %(function_scope)s'
                   'Create(%(declaration_list)s) {')
       .Append('std::vector<base::Value> create_results;')
-      .Append('create_results.reserve(%d);' % len(params))
+      .Append('create_results.reserve(%d);' % len(params) if len(params)
+              else '')
     )
     declaration_list = []
     for param in params:

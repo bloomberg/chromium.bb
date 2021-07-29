@@ -24,8 +24,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
@@ -388,9 +388,10 @@ bool AuthenticateUser(gfx::NativeWindow window,
   cui.pszCaptionText = base::as_wcstr(product_name);
   cui.hbmBanner = nullptr;
 
-  // Disable hang watching until the end of the function since the user can take
-  // unbounded time to answer the password prompt. (http://crbug.com/806174)
-  base::IgnoreHangsInScope disabler;
+  // Never consider the current scope as hung. The hang watching deadline (if
+  // any) is not valid since the user can take unbounded time to answer the
+  // password prompt (http://crbug.com/806174)
+  base::HangWatcher::InvalidateActiveExpectations();
 
   CredentialBufferValidator validator;
 

@@ -29,14 +29,14 @@ namespace cast {
 // readability of the structs provided in this file by cutting down on the
 // amount of obscuring boilerplate code. For each of the following struct
 // definitions, the following method definitions are shared:
-// (1) ParseAndValidate. Shall return a boolean indicating whether the out
+// (1) TryParse. Shall return a boolean indicating whether the out
 //     parameter is in a valid state after checking bounds and restrictions.
 // (2) ToJson. Should return a proper JSON object. Assumes that IsValid()
 //     has been called already, OSP_DCHECKs if not IsValid().
-// (3) IsValid. Used by both ParseAndValidate and ToJson to ensure that the
+// (3) IsValid. Used by both TryParse and ToJson to ensure that the
 //     object is in a good state.
 struct AudioConstraints {
-  static bool ParseAndValidate(const Json::Value& value, AudioConstraints* out);
+  static bool TryParse(const Json::Value& value, AudioConstraints* out);
   Json::Value ToJson() const;
   bool IsValid() const;
 
@@ -48,7 +48,7 @@ struct AudioConstraints {
 };
 
 struct VideoConstraints {
-  static bool ParseAndValidate(const Json::Value& value, VideoConstraints* out);
+  static bool TryParse(const Json::Value& value, VideoConstraints* out);
   Json::Value ToJson() const;
   bool IsValid() const;
 
@@ -61,7 +61,7 @@ struct VideoConstraints {
 };
 
 struct Constraints {
-  static bool ParseAndValidate(const Json::Value& value, Constraints* out);
+  static bool TryParse(const Json::Value& value, Constraints* out);
   Json::Value ToJson() const;
   bool IsValid() const;
 
@@ -75,7 +75,7 @@ struct Constraints {
 enum class AspectRatioConstraint : uint8_t { kVariable = 0, kFixed };
 
 struct AspectRatio {
-  static bool ParseAndValidate(const Json::Value& value, AspectRatio* out);
+  static bool TryParse(const Json::Value& value, AspectRatio* out);
   bool IsValid() const;
 
   bool operator==(const AspectRatio& other) const {
@@ -87,8 +87,7 @@ struct AspectRatio {
 };
 
 struct DisplayDescription {
-  static bool ParseAndValidate(const Json::Value& value,
-                               DisplayDescription* out);
+  static bool TryParse(const Json::Value& value, DisplayDescription* out);
   Json::Value ToJson() const;
   bool IsValid() const;
 
@@ -100,7 +99,10 @@ struct DisplayDescription {
 };
 
 struct Answer {
+  // TODO(jophba): DEPRECATED, remove separately.
   static bool ParseAndValidate(const Json::Value& value, Answer* out);
+
+  static bool TryParse(const Json::Value& value, Answer* out);
   Json::Value ToJson() const;
   bool IsValid() const;
 

@@ -25,7 +25,7 @@ class Document;
 class GraphicsContext;
 class GraphicsContextStateSaver;
 class Node;
-class SVGLengthContext;
+class TextDecorationOffsetBase;
 struct PaintInfo;
 
 // Base class for text painting. Has no dependencies on the layout tree and thus
@@ -71,10 +71,6 @@ class CORE_EXPORT TextPainterBase {
   static TextPaintStyle TextPaintingStyle(const Document&,
                                           const ComputedStyle&,
                                           const PaintInfo&);
-  static TextPaintStyle SvgTextPaintingStyle(const Document&,
-                                             const SVGLengthContext&,
-                                             const ComputedStyle&,
-                                             const PaintInfo&);
   static TextPaintStyle SelectionPaintingStyle(
       const Document&,
       const ComputedStyle&,
@@ -85,12 +81,9 @@ class CORE_EXPORT TextPainterBase {
   enum RotationDirection { kCounterclockwise, kClockwise };
   static AffineTransform Rotation(const PhysicalRect& box_rect,
                                   RotationDirection);
+  static AffineTransform Rotation(const PhysicalRect& box_rect, WritingMode);
 
  protected:
-  static void AdjustTextStyleForClip(TextPaintStyle&);
-  static void AdjustTextStyleForPrint(const Document&,
-                                      const ComputedStyle&,
-                                      TextPaintStyle&);
   void UpdateGraphicsContext(const TextPaintStyle& style,
                              GraphicsContextStateSaver& saver) {
     UpdateGraphicsContext(graphics_context_, style, horizontal_, saver);
@@ -101,17 +94,42 @@ class CORE_EXPORT TextPainterBase {
       float dilation,
       const Vector<Font::TextIntercept>& text_intercepts);
 
+  // We have two functions to paint text decoations, because we should paint
+  // text and decorations in following order:
+  //   1. Paint text decorations except line through
+  //   2. Paint text
+  //   3. Paint line throguh
+  void PaintDecorationsExceptLineThrough(const TextDecorationOffsetBase&,
+                                         TextDecorationInfo&,
+                                         const PaintInfo&,
+                                         const Vector<AppliedTextDecoration>&,
+                                         const TextPaintStyle& text_style,
+                                         bool* has_line_through_decoration);
+  void PaintDecorationsOnlyLineThrough(TextDecorationInfo&,
+                                       const PaintInfo&,
+                                       const Vector<AppliedTextDecoration>&,
+                                       const TextPaintStyle&);
+
+  // Paints emphasis mark as for ideographic full stop character. Callers of
+  // this function should rotate canvas to paint emphasis mark at left/right
+  // side instead of top/bottom side.
+  // |emphasis_mark_font| is used for painting emphasis mark because |font_|
+  // may be compressed font (width variants).
+  // TODO(yosin): Once legacy inline layout gone, we should move this function
+  // to |NGTextCombinePainter|.
+  void PaintEmphasisMarkForCombinedText(const TextPaintStyle& text_style,
+                                        const Font& emphasis_mark_font);
+
   enum PaintInternalStep { kPaintText, kPaintEmphasisMark };
 
   GraphicsContext& graphics_context_;
   const Font& font_;
-  PhysicalOffset text_origin_;
-  PhysicalRect text_frame_rect_;
-  bool horizontal_;
-  bool has_combined_text_;
+  const PhysicalOffset text_origin_;
+  const PhysicalRect text_frame_rect_;
   AtomicString emphasis_mark_;
-  int emphasis_mark_offset_;
-  int ellipsis_offset_;
+  int emphasis_mark_offset_ = 0;
+  int ellipsis_offset_ = 0;
+  const bool horizontal_;
 };
 
 inline AffineTransform TextPainterBase::Rotation(
@@ -137,6 +155,13 @@ inline AffineTransform TextPainterBase::Rotation(
                                box_rect.Y() - box_rect.X())
              : AffineTransform(0, -1, 1, 0, box_rect.X() - box_rect.Y(),
                                box_rect.X() + box_rect.Bottom());
+}
+
+inline AffineTransform TextPainterBase::Rotation(const PhysicalRect& box_rect,
+                                                 WritingMode writing_mode) {
+  return Rotation(box_rect, writing_mode != WritingMode::kSidewaysLr
+                                ? TextPainterBase::kClockwise
+                                : TextPainterBase::kCounterclockwise);
 }
 
 }  // namespace blink

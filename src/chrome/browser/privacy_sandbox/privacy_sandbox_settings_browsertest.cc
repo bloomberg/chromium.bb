@@ -45,7 +45,8 @@ class PrivacySandboxSettingsBrowserTest : public InProcessBrowserTest {
  public:
   PrivacySandboxSettingsBrowserTest() {
     feature_list()->InitWithFeatures(
-        {features::kPrivacySandboxSettings, features::kConversionMeasurement,
+        {features::kPrivacySandboxSettings,
+         blink::features::kConversionMeasurement,
          blink::features::kInterestCohortAPIOriginTrial},
         {});
   }
@@ -197,6 +198,8 @@ class PrivacySandboxSettingsBrowserPolicyTest
 // policy, but should run if the policy is changed or removed.
 IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsBrowserPolicyTest,
                        DelayedReconciliationCookieSettingsManaged) {
+  privacy_sandbox_settings();
+
   // Policies set in the test constructor should have prevented reconciliation
   // from running immediately.
   EXPECT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(

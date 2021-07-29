@@ -179,7 +179,7 @@ def UpdateHistogramDefinitions(histogram_enum_name, source_enum_values,
              else '')))
 
   # Create item nodes for each of the enum values.
-  for value, label in source_enum_values.iteritems():
+  for value, label in source_enum_values.items():
     new_item_nodes[value] = CreateEnumItemNode(document, value, label)
 
   # Scan existing nodes in |enum_node| for old values and preserve them.
@@ -207,7 +207,7 @@ def UpdateHistogramDefinitions(histogram_enum_name, source_enum_values,
     enum_node.appendChild(comment)
 
   # Add in the new enums.
-  for value in sorted(new_item_nodes.iterkeys()):
+  for value in sorted(new_item_nodes.keys()):
     enum_node.appendChild(new_item_nodes[value])
 
 
@@ -218,7 +218,7 @@ def _GetOldAndUpdatedXml(histogram_enum_name, source_enum_values,
   and returns both in XML format.
   """
   Log('Reading existing histograms from "{0}".'.format(ENUMS_PATH))
-  with open(ENUMS_PATH, 'rb') as f:
+  with open(ENUMS_PATH, 'r', encoding='utf-8') as f:
     histograms_doc = minidom.parse(f)
     f.seek(0)
     xml = f.read()
@@ -302,7 +302,7 @@ def UpdateHistogramFromDict(histogram_enum_name, source_enum_values,
     Log('Cancelled.')
     return
 
-  with open(ENUMS_PATH, 'wb') as f:
+  with open(ENUMS_PATH, 'w', encoding='utf-8') as f:
     f.write(new_xml)
 
   Log('Done.')

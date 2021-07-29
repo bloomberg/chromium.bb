@@ -48,6 +48,10 @@ const UIStrings = {
   *@description Error text for duplicate list widget input in Request Blocking tool
   */
   patternAlreadyExists: 'Pattern already exists.',
+  /**
+  *@description Message to be announced for a when list item is removed from list widget
+  */
+  itemDeleted: 'Item successfully deleted',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/BlockedURLsPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -65,7 +69,7 @@ export class BlockedURLsPane extends UI.Widget.VBox implements
 
   constructor() {
     super(true);
-    this.registerRequiredCSS('panels/network/blockedURLsPane.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/network/blockedURLsPane.css');
 
     this._manager = SDK.NetworkManager.MultitargetNetworkManager.instance();
     this._manager.addEventListener(SDK.NetworkManager.MultitargetNetworkManager.Events.BlockedPatternsChanged, () => {
@@ -86,14 +90,14 @@ export class BlockedURLsPane extends UI.Widget.VBox implements
 
     this._list = new UI.ListWidget.ListWidget(this);
     this._list.element.classList.add('blocked-urls');
-    this._list.registerRequiredCSS('panels/network/blockedURLsPane.css', {enableLegacyPatching: false});
+    this._list.registerRequiredCSS('panels/network/blockedURLsPane.css');
     this._list.setEmptyPlaceholder(this._createEmptyPlaceholder());
     this._list.show(this.contentElement);
 
     this._editor = null;
 
     this._blockedCountForUrl = new Map();
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.NetworkManager.NetworkManager, SDK.NetworkManager.Events.RequestFinished, this._onRequestFinished, this);
 
     this._updateThrottler = new Common.Throttler.Throttler(200);
@@ -163,6 +167,7 @@ export class BlockedURLsPane extends UI.Widget.VBox implements
     const patterns = this._manager.blockedPatterns();
     patterns.splice(index, 1);
     this._manager.setBlockedPatterns(patterns);
+    UI.ARIAUtils.alert(UIStrings.itemDeleted);
   }
 
   beginEdit(pattern: SDK.NetworkManager.BlockedPattern): UI.ListWidget.Editor<SDK.NetworkManager.BlockedPattern> {
@@ -195,22 +200,21 @@ export class BlockedURLsPane extends UI.Widget.VBox implements
     const titles = content.createChild('div', 'blocked-url-edit-row');
     titles.createChild('div').textContent = i18nString(UIStrings.textPatternToBlockMatching);
     const fields = content.createChild('div', 'blocked-url-edit-row');
-    const validator =
-        (_item: SDK.NetworkManager.BlockedPattern, _index: number, input: HTMLInputElement|HTMLSelectElement): {
-          valid: boolean,
-          errorMessage: Common.UIString.LocalizedString|undefined,
-        } => {
-          let valid = true;
-          let errorMessage;
-          if (!input.value) {
-            errorMessage = i18nString(UIStrings.patternInputCannotBeEmpty);
-            valid = false;
-          } else if (this._manager.blockedPatterns().find(pattern => pattern.url === input.value)) {
-            errorMessage = i18nString(UIStrings.patternAlreadyExists);
-            valid = false;
-          }
-          return {valid, errorMessage};
-        };
+    const validator = (_item: SDK.NetworkManager.BlockedPattern, _index: number, input: UI.ListWidget.EditorControl): {
+      valid: boolean,
+      errorMessage: Common.UIString.LocalizedString|undefined,
+    } => {
+      let valid = true;
+      let errorMessage;
+      if (!input.value) {
+        errorMessage = i18nString(UIStrings.patternInputCannotBeEmpty);
+        valid = false;
+      } else if (this._manager.blockedPatterns().find(pattern => pattern.url === input.value)) {
+        errorMessage = i18nString(UIStrings.patternAlreadyExists);
+        valid = false;
+      }
+      return {valid, errorMessage};
+    };
     const urlInput = editor.createInput('url', 'text', '', validator);
     fields.createChild('div', 'blocked-url-edit-value').appendChild(urlInput);
     return editor;

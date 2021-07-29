@@ -63,7 +63,6 @@
 #include "gpu/ipc/service/gpu_channel_test_common.h"
 #include "gpu/ipc/service/image_decode_accelerator_stub.h"
 #include "gpu/ipc/service/image_decode_accelerator_worker.h"
-#include "ipc/ipc_message.h"
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -325,7 +324,10 @@ class ImageDecodeAcceleratorStubTest
         channel->LookupCommandBuffer(kCommandBufferRouteId);
     ASSERT_TRUE(command_buffer);
 
-    // Make sure there are no pending tasks before starting the test.
+    // Make sure there are no pending tasks before starting the test. Command
+    // buffer creation creates some throw-away Mojo endpoints that will post
+    // some tasks.
+    base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(task_environment().MainThreadIsIdle());
   }
 

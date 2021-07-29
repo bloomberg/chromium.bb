@@ -18,7 +18,9 @@ sk_sp<SkImageFilter> SkLocalMatrixImageFilter::Make(const SkMatrix& localM,
     if (localM.isIdentity()) {
         return input;
     }
-    if (!as_IFB(input)->canHandleComplexCTM() && !localM.isScaleTranslate()) {
+    MatrixCapability inputCapability = as_IFB(input)->getCTMCapability();
+    if ((inputCapability == MatrixCapability::kTranslate && !localM.isTranslate()) ||
+        (inputCapability == MatrixCapability::kScaleTranslate && !localM.isScaleTranslate())) {
         // Nothing we can do at this point
         return nullptr;
     }
@@ -45,7 +47,9 @@ void SkLocalMatrixImageFilter::flatten(SkWriteBuffer& buffer) const {
 
 sk_sp<SkSpecialImage> SkLocalMatrixImageFilter::onFilterImage(const Context& ctx,
                                                               SkIPoint* offset) const {
-    Context localCtx = ctx.withNewMapping(ctx.mapping().concatLocal(fLocalM));
+    skif::Mapping newMapping = ctx.mapping();
+    newMapping.concatLocal(fLocalM);
+    Context localCtx = ctx.withNewMapping(newMapping);
     return this->filterInput(0, localCtx, offset);
 }
 

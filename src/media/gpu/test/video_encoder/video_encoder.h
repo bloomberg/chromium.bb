@@ -17,12 +17,15 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "base/time/time.h"
 
 namespace gpu {
 class GpuMemoryBufferFactory;
 }  // namespace gpu
 
 namespace media {
+class VideoBitrateAllocation;
+
 namespace test {
 
 class BitstreamProcessor;
@@ -90,7 +93,7 @@ class VideoEncoder {
   // Flush the encoder.
   void Flush();
   // Updates bitrate based on the specified |bitrate| and |framerate|.
-  void UpdateBitrate(uint32_t bitrate, uint32_t framerate);
+  void UpdateBitrate(const VideoBitrateAllocation& bitrate, uint32_t framerate);
   // Force key frame.
   void ForceKeyFrame();
 

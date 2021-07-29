@@ -19,11 +19,17 @@ import "chromeos/crosapi/mojom/feedback.mojom";
 import "chromeos/crosapi/mojom/file_manager.mojom";
 import "chromeos/crosapi/mojom/holding_space_service.mojom";
 import "chromeos/crosapi/mojom/idle_service.mojom";
+import "chromeos/crosapi/mojom/image_writer.mojom";
 import "chromeos/crosapi/mojom/keystore_service.mojom";
 import "chromeos/crosapi/mojom/local_printer.mojom";
 import "chromeos/crosapi/mojom/message_center.mojom";
 import "chromeos/crosapi/mojom/metrics_reporting.mojom";
+import "chromeos/crosapi/mojom/native_theme.mojom";
+import "chromeos/crosapi/mojom/networking_attributes.mojom";
+import "chromeos/crosapi/mojom/power.mojom";
 import "chromeos/crosapi/mojom/prefs.mojom";
+import "chromeos/crosapi/mojom/remoting.mojom";
+import "chromeos/crosapi/mojom/resource_manager.mojom";
 import "chromeos/crosapi/mojom/screen_manager.mojom";
 import "chromeos/crosapi/mojom/select_file.mojom";
 import "chromeos/crosapi/mojom/system_display.mojom";
@@ -32,6 +38,7 @@ import "chromeos/crosapi/mojom/test_controller.mojom";
 import "chromeos/crosapi/mojom/url_handler.mojom";
 import "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom";
 import "chromeos/crosapi/mojom/video_capture.mojom";
+import "chromeos/crosapi/mojom/web_page_info.mojom";
 import "mojo/public/mojom/base/big_string.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/token.mojom";
@@ -60,8 +67,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 30
-// Next method id: 35
+// Next version: 40
+// Next method id: 45
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -97,6 +104,12 @@ interface Crosapi {
   // Added in M89.
   [MinVersion=7] BindCertDatabase@12(pending_receiver<CertDatabase> receiver);
 
+  // Binds the chrome app publisher service, which allows Lacros to connect its
+  // Chrome apps to the app service.
+  // Added in M93.
+  [MinVersion=38]
+  BindChromeAppPublisher@43(pending_receiver<AppPublisher> receiver);
+
   // Bind the clipboard interface to allow lacros-chrome to interact with the
   // system clipboard.
   [MinVersion=10] BindClipboard@15(pending_receiver<Clipboard> receiver);
@@ -126,7 +139,8 @@ interface Crosapi {
   // Binds the DriveIntegrationService interface for getting information about
   // the local Google Drive mount.
   // Added in M93.
-  [MinVersion=29] BindDriveIntegrationService@34(pending_receiver<DriveIntegrationService> receiver);
+  [MinVersion=29] BindDriveIntegrationService@34(
+      pending_receiver<DriveIntegrationService> receiver);
 
   // Binds the FileManager interface for showing files, folders, etc.
   // Added in M88.
@@ -142,6 +156,11 @@ interface Crosapi {
   // Added in M90.
   [MinVersion=16]
   BindIdleService@21(pending_receiver<IdleService> receiver);
+
+  // Binds the ImageWriter interface for managing removable storage devices.
+  // Added in M93.
+  [MinVersion=37]
+  BindImageWriter@42(pending_receiver<ImageWriter> receiver);
 
   // Binds the KeystoreService interface for challenging keys.
   // Added in M87.
@@ -160,14 +179,29 @@ interface Crosapi {
   // Added in M86.
   BindMessageCenter@3(pending_receiver<MessageCenter> receiver);
 
+  // Binds the NativeThemeService interface for reading native theme changes.
+  // Added in M93.
+  [MinVersion=33]
+  BindNativeThemeService@38(pending_receiver<NativeThemeService> receiver);
+
   // Binds the MetricsReporting interface for metrics reporting consent.
   // Added in M89.
   [MinVersion=8]
   BindMetricsReporting@13(pending_receiver<MetricsReporting> receiver);
 
+  // Binds the networking attributes service which is used by enterprise
+  // extension APIs to query details about the network.
+  [MinVersion=39]
+  BindNetworkingAttributes@44(pending_receiver<NetworkingAttributes> receiver);
+
   // Binds the prefs service which allows get, set, and notify update of prefs.
   // Added in M89.
   [MinVersion=11] BindPrefs@16(pending_receiver<Prefs> receiver);
+
+  // Binds the Remoting service to allow websites running in Lacros to interact
+  // with Chrome Remote Desktop functionality available in ash-chrome.
+  // Added in M93.
+  [MinVersion=32] BindRemoting@37(pending_receiver<Remoting> receiver);
 
   // Binds the ScreenManager interface for interacting with windows, screens and
   // displays.
@@ -210,6 +244,15 @@ interface Crosapi {
   [MinVersion=6] BindMediaSessionAudioFocusDebug@11(
       pending_receiver<media_session.mojom.AudioFocusManagerDebug> receiver);
 
+  // Binds the Power interface for power management.
+  // Added in M93.
+  [MinVersion=35] BindPower@40(pending_receiver<Power> receiver);
+
+  // Binds the Resource Manager interface for querying resource status.
+  // Added in M93.
+  [MinVersion=36] BindResourceManager@41(
+      pending_receiver<ResourceManager> receiver);
+
   // Binds the System Display interface for querying display info.
   // Added in M92.
   [MinVersion=24] BindSystemDisplay@29(
@@ -234,11 +277,17 @@ interface Crosapi {
   [MinVersion=20] BindVideoCaptureDeviceFactory@25(
       pending_receiver<crosapi.mojom.VideoCaptureDeviceFactory> receiver);
 
-  // Binds the app publisher service to allow web app publishing from
+  // Binds the web page info factory interface which allows ash to request web
+  // page info from Lacros.
+  // Added in M93.
+  [MinVersion=34]
+  BindWebPageInfoFactory@39(pending_receiver<WebPageInfoFactory> receiver);
+
+  // Binds the web app publisher service to allow web app publishing from
   // lacros-chrome.
   // Added in M92.
   [MinVersion=22]
-  BindAppPublisher@27(pending_receiver<AppPublisher> receiver);
+  BindWebAppPublisher@27(pending_receiver<AppPublisher> receiver);
 
   // Passes generic browser information such as version, etc into ash in
   // |browser_info| during startup.
@@ -297,6 +346,21 @@ struct DefaultPaths {
   // compatibility, to avoid assumptions about where on disk the directory is
   // located.
   mojo_base.mojom.FilePath downloads@1;
+
+  // The (non-configurable) path of the mount point for drive in ChromeOS. For
+  // example, /media/fuse/drivefs-<hash>. We send the full path for future
+  // compatibility, to avoid assumptions about where on disk the directory is
+  // located.
+  [MinVersion=23] mojo_base.mojom.FilePath? drivefs@2;
+};
+
+// The device specific data needed in Lacros.
+// TODO(igorcov): Include DeviceAttributes here.
+[Stable, Extensible]
+struct DeviceProperties {
+  // The value of device DM token. It is the raw data from the policy, not
+  // encrypted.
+  string device_dm_token@0;
 };
 
 
@@ -341,6 +405,14 @@ enum InitialBrowserAction {
   [MinVersion=2] kOpenNewTabPageWindow = 4,
 };
 
+// Whether / how mlservice on-device handwriting is supported.
+[Stable, Extensible]
+enum OndeviceHandwritingSupport{
+  kUnsupported = 0,
+  kUseRootfs = 1,
+  kUseDlc = 2,
+};
+
 // BrowserInitParams is a set of parameters for initialization of browsers
 // (such as lacros-chrome), which is passed from ash-chrome to a browser.
 // Since ash-chrome and browsers may have different versions, the browsers must
@@ -358,8 +430,8 @@ enum InitialBrowserAction {
 // If ash-chrome is newer than the browser, then some fields may not be
 // processed by the browser.
 //
-// Next version: 20
-// Next id: 20
+// Next version: 24
+// Next id: 23
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -489,6 +561,18 @@ struct BrowserInitParams {
   // on the assumption that Ash is always available as a browser.
   [MinVersion=19]
   bool standalone_browser_is_primary@19;
+
+  [MinVersion=20]
+  NativeThemeInfo? native_theme_info@20;
+
+  // The set of static device specific data.
+  [MinVersion=21]
+  DeviceProperties? device_properties@21;
+
+  [MinVersion=22]
+  // Whether (and how) on-device handwriting recognition is supported, depending
+  // ash-chrome's startup switches.
+  OndeviceHandwritingSupport ondevice_handwriting_support@22;
 };
 
 // BrowserService defines the APIs that live in a browser (such as
@@ -505,16 +589,8 @@ struct BrowserInitParams {
  RenamedFrom="crosapi.mojom.LacrosChromeService"]
 interface BrowserService {
   // Removed method. No longer used.
+  REMOVED_0@0() => (pending_receiver<Crosapi> receiver);
   REMOVED_2@2(BrowserInitParams params);
-
-  // DEPRECATED: in M90. In new versions, Crosapi is the bootstrap interface.
-  // BrowserService should be registered via BrowserServiceHost.
-  // Returns the pending_receiver of Crosapi.
-  // Ash-chrome is expected to call this method on initialization.
-  // The browser may call Crosapi APIs earlier than this invocation.
-  // In the case, the calls are queued, and processed sequentially, when
-  // ash-chrome binds the receiver to the service.
-  RequestCrosapiReceiver@0() => (pending_receiver<Crosapi> receiver);
 
   // Opens a new window in the browser with, currently, the last used profile.
   // The callback is called on the command execution.
@@ -565,9 +641,24 @@ interface BrowserService {
 // split files.
 // This interface is used to register BrowserService provided by a
 // crosapi client.
+//
+// Next MinVersion: 2.
+// Next ID: 2
+//
 [Stable, Uuid="7864a7d6-c74d-4e5f-8589-8cdb99d0c92e"]
 interface BrowserServiceHost {
   // Registers the remote as a BrowserService. Crosapi host (ash-chrome)
   // can make requests to control the registered browser.
   AddBrowserService@0(pending_remote<BrowserService> browser);
+
+  // Requests to relaunch the browser again, soon after its shutdown.
+  // The browser is expected to be terminated sometime soon by itself,
+  // i.e., Crosapi host (ash-chrome) will not forcibly kill the process.
+  // It is important to terminate soon, because otherwise the users may be
+  // surprised of unexpected relaunching on later termination.
+  // If there's multiple requests before termination, they'll be degenerated
+  // into one relaunching.
+  // Added in M93.
+  [MinVersion=1]
+  RequestRelaunch@1();
 };

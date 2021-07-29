@@ -87,7 +87,7 @@ const playbackRates = new WeakMap<HTMLElement, number>();
 
 let animationTimelineInstance: AnimationTimeline;
 
-export class AnimationTimeline extends UI.Widget.VBox implements SDK.SDKModel.SDKModelObserver<AnimationModel> {
+export class AnimationTimeline extends UI.Widget.VBox implements SDK.TargetManager.SDKModelObserver<AnimationModel> {
   _gridWrapper: HTMLElement;
   _grid: Element;
   _playbackRate: number;
@@ -124,7 +124,7 @@ export class AnimationTimeline extends UI.Widget.VBox implements SDK.SDKModel.SD
 
   private constructor() {
     super(true);
-    this.registerRequiredCSS('panels/animation/animationTimeline.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/animation/animationTimeline.css');
     this.element.classList.add('animations-timeline');
 
     this._gridWrapper = this.contentElement.createChild('div', 'grid-overflow-wrapper');
@@ -146,9 +146,9 @@ export class AnimationTimeline extends UI.Widget.VBox implements SDK.SDKModel.SD
     this._previewMap = new Map();
     this._symbol = Symbol('animationTimeline');
     this._animationsMap = new Map();
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DOMModel.DOMModel, SDK.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
-    SDK.SDKModel.TargetManager.instance().observeModels(AnimationModel, this);
+    SDK.TargetManager.TargetManager.instance().observeModels(AnimationModel, this);
     UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this._nodeChanged, this);
   }
 
@@ -160,13 +160,13 @@ export class AnimationTimeline extends UI.Widget.VBox implements SDK.SDKModel.SD
   }
 
   wasShown(): void {
-    for (const animationModel of SDK.SDKModel.TargetManager.instance().models(AnimationModel)) {
+    for (const animationModel of SDK.TargetManager.TargetManager.instance().models(AnimationModel)) {
       this._addEventListeners(animationModel);
     }
   }
 
   willHide(): void {
-    for (const animationModel of SDK.SDKModel.TargetManager.instance().models(AnimationModel)) {
+    for (const animationModel of SDK.TargetManager.TargetManager.instance().models(AnimationModel)) {
       this._removeEventListeners(animationModel);
     }
 
@@ -367,7 +367,7 @@ export class AnimationTimeline extends UI.Widget.VBox implements SDK.SDKModel.SD
 
   _setPlaybackRate(playbackRate: number): void {
     this._playbackRate = playbackRate;
-    for (const animationModel of SDK.SDKModel.TargetManager.instance().models(AnimationModel)) {
+    for (const animationModel of SDK.TargetManager.TargetManager.instance().models(AnimationModel)) {
       animationModel.setPlaybackRate(this._allPaused ? 0 : this._playbackRate);
     }
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.AnimationsPlaybackRateChanged);
@@ -696,7 +696,7 @@ export class AnimationTimeline extends UI.Widget.VBox implements SDK.SDKModel.SD
       if (lastDraw === undefined || gridWidth - lastDraw > 50) {
         lastDraw = gridWidth;
         const label = UI.UIUtils.createSVGChild(this._grid, 'text', 'animation-timeline-grid-label');
-        label.textContent = Number.millisToString(time);
+        label.textContent = i18n.i18n.millisToString(time);
         label.setAttribute('x', (gridWidth + 10).toString());
         label.setAttribute('y', '16');
       }
@@ -788,7 +788,7 @@ export class AnimationTimeline extends UI.Widget.VBox implements SDK.SDKModel.SD
     if (!this._scrubberPlayer) {
       return;
     }
-    this._currentTime.textContent = Number.millisToString(this._scrubberPlayer.currentTime || 0);
+    this._currentTime.textContent = i18n.i18n.millisToString(this._scrubberPlayer.currentTime || 0);
     if (this._scrubberPlayer.playState.toString() === 'pending' || this._scrubberPlayer.playState === 'running') {
       this.element.window().requestAnimationFrame(this._updateScrubber.bind(this));
     } else if (this._scrubberPlayer.playState === 'finished') {
@@ -842,7 +842,7 @@ export class AnimationTimeline extends UI.Widget.VBox implements SDK.SDKModel.SD
     if (this._scrubberPlayer) {
       this._scrubberPlayer.currentTime = currentTime;
     }
-    this._currentTime.textContent = Number.millisToString(Math.round(currentTime));
+    this._currentTime.textContent = i18n.i18n.millisToString(Math.round(currentTime));
 
     if (this._selectedGroup) {
       this._selectedGroup.seekTo(currentTime);

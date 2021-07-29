@@ -7,6 +7,7 @@
 module crosapi.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
+import "ui/gfx/image/mojom/image.mojom";
 
 // Information about an app. See components/services/app_service/README.md.
 
@@ -68,6 +69,8 @@ enum AppType {
   kArc,           // Android app.
   kWeb,           // Web app.
   kSystemWeb,     // System web app.
+  [MinVersion=1]
+  kStandaloneBrowserExtension,     // Extension based app.
 };
 
 // Whether an app is ready to launch, i.e. installed.
@@ -212,4 +215,44 @@ struct CapabilityAccess {
 
   // Whether the app is accessing microphone.
   OptionalBool microphone;
+};
+
+[Stable, Extensible]
+enum IconType {
+  // Sentinel value used in error cases.
+  [Default] kUnknown,
+  // Icon as an uncompressed gfx::ImageSkia with no standard Chrome OS mask.
+  kUncompressed,
+  // Icon as compressed bytes in PNG format with no standard Chrome OS mask.
+  kCompressed,
+  // Icon as an uncompressed gfx::ImageSkia with the standard Chrome OS mask
+  // applied. This is the default suggested icon type.
+  kStandard,
+};
+
+// The icon value for each app.
+[Stable]
+struct IconValue {
+  // The icon format and whether it uses Chrome OS mask.
+  IconType icon_type;
+  // The uncompressed icon data in gfx::ImageSkia format.
+  gfx.mojom.ImageSkia? uncompressed;
+  // The compressed icon data in PNG format.
+  array<uint8>? compressed;
+  // Whether this icon data is a placeholder icon.
+  bool is_placeholder_icon;
+};
+
+// MenuItems are used to populate context menus.
+[Stable]
+struct MenuItems {
+  array<MenuItem> items@0;
+};
+
+// The context menu model for each app. For web apps currently it's the info
+// for shortcut items.
+[Stable]
+struct MenuItem {
+  string label@0;                      // The string label, may be empty.
+  gfx.mojom.ImageSkia? image@1;        // The image icon, may be null.
 };

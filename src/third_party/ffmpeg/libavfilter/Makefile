@@ -19,7 +19,6 @@ OBJS = allfilters.o                                                     \
        framequeue.o                                                     \
        graphdump.o                                                      \
        graphparser.o                                                    \
-       transform.o                                                      \
        video.o                                                          \
 
 OBJS-$(HAVE_THREADS)                         += pthread.o
@@ -136,7 +135,6 @@ OBJS-$(CONFIG_LV2_FILTER)                    += af_lv2.o
 OBJS-$(CONFIG_MCOMPAND_FILTER)               += af_mcompand.o
 OBJS-$(CONFIG_PAN_FILTER)                    += af_pan.o
 OBJS-$(CONFIG_REPLAYGAIN_FILTER)             += af_replaygain.o
-OBJS-$(CONFIG_RESAMPLE_FILTER)               += af_resample.o
 OBJS-$(CONFIG_RUBBERBAND_FILTER)             += af_rubberband.o
 OBJS-$(CONFIG_SIDECHAINCOMPRESS_FILTER)      += af_sidechaincompress.o
 OBJS-$(CONFIG_SIDECHAINGATE_FILTER)          += af_agate.o
@@ -237,14 +235,16 @@ OBJS-$(CONFIG_DEJUDDER_FILTER)               += vf_dejudder.o
 OBJS-$(CONFIG_DELOGO_FILTER)                 += vf_delogo.o
 OBJS-$(CONFIG_DENOISE_VAAPI_FILTER)          += vf_misc_vaapi.o vaapi_vpp.o
 OBJS-$(CONFIG_DESHAKE_OPENCL_FILTER)        += vf_deshake_opencl.o opencl.o \
-                                                opencl/deshake.o
-OBJS-$(CONFIG_DESHAKE_FILTER)                += vf_deshake.o
+                                                opencl/deshake.o transform.o
+OBJS-$(CONFIG_DESHAKE_FILTER)                += vf_deshake.o transform.o
 OBJS-$(CONFIG_DESPILL_FILTER)                += vf_despill.o
 OBJS-$(CONFIG_DETELECINE_FILTER)             += vf_detelecine.o
 OBJS-$(CONFIG_DILATION_FILTER)               += vf_neighbor.o
 OBJS-$(CONFIG_DILATION_OPENCL_FILTER)        += vf_neighbor_opencl.o opencl.o \
                                                 opencl/neighbor.o
 OBJS-$(CONFIG_DISPLACE_FILTER)               += vf_displace.o framesync.o
+OBJS-$(CONFIG_DNN_CLASSIFY_FILTER)           += vf_dnn_classify.o
+OBJS-$(CONFIG_DNN_DETECT_FILTER)             += vf_dnn_detect.o
 OBJS-$(CONFIG_DNN_PROCESSING_FILTER)         += vf_dnn_processing.o
 OBJS-$(CONFIG_DOUBLEWEAVE_FILTER)            += vf_weave.o
 OBJS-$(CONFIG_DRAWBOX_FILTER)                += vf_drawbox.o

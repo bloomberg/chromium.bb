@@ -9,8 +9,9 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/debug/alias.h"
-#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
@@ -149,6 +150,16 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   if (command_line->HasSwitch(switches::kDoubleBufferCompositing))
     capabilities_.number_of_buffers = 2;
   capabilities_.max_frames_pending = capabilities_.number_of_buffers - 1;
+#if defined(OS_ANDROID)
+  if (::features::IncreaseBufferCountForHighFrameRate() &&
+      capabilities_.number_of_buffers == 5) {
+    capabilities_.max_frames_pending = 2;
+    capabilities_.max_frames_pending_120hz = 4;
+  }
+#endif
+  DCHECK_LT(capabilities_.max_frames_pending, capabilities_.number_of_buffers);
+  DCHECK_LT(capabilities_.max_frames_pending_120hz.value_or(0),
+            capabilities_.number_of_buffers);
 
   presenter_->InitializeCapabilities(&capabilities_);
 
@@ -176,7 +187,7 @@ SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
 }
 
 OutputPresenter::Image* SkiaOutputDeviceBufferQueue::GetNextImage() {
-  DCHECK(!available_images_.empty());
+  CHECK(!available_images_.empty());
   auto* image = available_images_.front();
   available_images_.pop_front();
   return image;
@@ -264,12 +275,61 @@ void SkiaOutputDeviceBufferQueue::SchedulePrimaryPlane(
   }
 }
 
+#if defined(USE_OZONE)
+const gpu::Mailbox SkiaOutputDeviceBufferQueue::GetImageMailboxForColor(
+    const SkColor& color) {
+  // Currently the Wayland protocol does not have protocol to support solid
+  // color quads natively as surfaces. Here we create tiny 4x4 image buffers
+  // in the color space of the frame buffer and clear them to the quad's solid
+  // color. These freshly created buffers are then treated like any other
+  // overlay via the mailbox interface.
+  std::unique_ptr<OutputPresenter::Image> solid_color = nullptr;
+  // First try for an existing same color image.
+  auto it = solid_color_cache_.find(color);
+  if (it != solid_color_cache_.end()) {
+    // This is a prefect color match so use this directly.
+    solid_color = std::move(it->second);
+    solid_color_cache_.erase(it);
+  } else {
+    // Try to reuse an existing image even if the color is different.
+    // Only do this if there are more cached images than those in flight (a
+    // sensible upper bound).
+    if (!solid_color_cache_.empty() &&
+        solid_color_cache_.size() > solid_color_images_.size()) {
+      auto it = solid_color_cache_.begin();
+      solid_color = std::move(it->second);
+      solid_color_cache_.erase(it);
+    } else {
+      // Worst case allocate a new image. This definitely will occur on startup.
+      solid_color =
+          presenter_->AllocateSingleImage(color_space_, gfx::Size(4, 4));
+    }
+    solid_color->BeginWriteSkia();
+    solid_color->sk_surface()->getCanvas()->clear(color);
+    solid_color->EndWriteSkia(/*force_flush*/ true);
+  }
+  DCHECK(solid_color);
+  auto image_mailbox = solid_color->skia_representation()->mailbox();
+  solid_color_images_.insert(std::make_pair(
+      image_mailbox, std::make_pair(color, std::move(solid_color))));
+  return image_mailbox;
+}
+
+#endif
 void SkiaOutputDeviceBufferQueue::ScheduleOverlays(
     SkiaOutputSurface::OverlayList overlays) {
   DCHECK(pending_overlay_mailboxes_.empty());
   std::vector<OutputPresenter::ScopedOverlayAccess*> accesses(overlays.size());
   for (size_t i = 0; i < overlays.size(); ++i) {
-    const auto& overlay = overlays[i];
+    auto& overlay = overlays[i];
+
+#if defined(USE_OZONE)
+    // TODO(petermcneeley) : Remove this code when http://crbug/1204102 is done.
+    if (overlay.solid_color.has_value()) {
+      overlay.mailbox = GetImageMailboxForColor(overlay.solid_color.value());
+    }
+#endif
+
     if (!overlay.mailbox.IsSharedImage())
       continue;
 
@@ -457,6 +517,17 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
     it->Unref();
   }
 
+#if defined(USE_OZONE)
+  for (const auto& mailbox : overlay_mailboxes) {
+    auto it = solid_color_images_.find(mailbox);
+    if (it != solid_color_images_.end()) {
+      solid_color_cache_.insert(
+          std::make_pair(it->second.first, std::move(it->second.second)));
+      solid_color_images_.erase(it);
+    }
+  }
+#endif
+
   // Code below can destroy last representation of the overlay shared image. On
   // MacOS it needs context to be current.
 #if defined(OS_APPLE)
@@ -477,7 +548,7 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
       return false;
     if (overlay.IsInUseByWindowServer())
       return false;
-#if defined(OS_APPLE)
+#if defined(OS_APPLE) || defined(USE_OZONE)
     // Right now, only macOS needs to return maliboxes of released overlays, so
     // SkiaRenderer can unlock resources for them.
     released_overlays.push_back(overlay.mailbox());
@@ -536,7 +607,7 @@ bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
 
   if (needs_background_image_ && !background_image_) {
     background_image_ =
-        presenter_->AllocateBackgroundImage(color_space, gfx::Size(4, 4));
+        presenter_->AllocateSingleImage(color_space, gfx::Size(4, 4));
     background_image_is_scheduled_ = false;
   }
 
@@ -555,21 +626,47 @@ bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
 }
 
 bool SkiaOutputDeviceBufferQueue::RecreateImages() {
+  size_t existing_number_of_buffers = images_.size();
   FreeAllSurfaces();
-  images_ = presenter_->AllocateImages(color_space_, image_size_,
-                                       capabilities_.number_of_buffers);
+  size_t number_to_allocate = capabilities_.use_dynamic_frame_buffer_allocation
+                                  ? existing_number_of_buffers
+                                  : capabilities_.number_of_buffers;
+  if (!number_to_allocate)
+    return true;
+
+  images_ =
+      presenter_->AllocateImages(color_space_, image_size_, number_to_allocate);
   for (auto& image : images_) {
     available_images_.push_back(image.get());
   }
 
+  DCHECK(images_.empty() || images_.size() == number_to_allocate);
   return !images_.empty();
 }
 
 SkSurface* SkiaOutputDeviceBufferQueue::BeginPaint(
+    bool allocate_frame_buffer,
     std::vector<GrBackendSemaphore>* end_semaphores) {
+  if (!capabilities_.use_dynamic_frame_buffer_allocation)
+    DCHECK(!allocate_frame_buffer);
+
   primary_plane_waiting_on_paint_ = false;
-  if (!current_image_)
-    current_image_ = GetNextImage();
+
+  if (allocate_frame_buffer) {
+    DCHECK(!current_image_);
+    std::vector<std::unique_ptr<OutputPresenter::Image>> images =
+        presenter_->AllocateImages(color_space_, image_size_, 1u);
+    if (images.size() != 1u) {
+      LOG(ERROR) << "AllocateImages failed " << images.size();
+      return nullptr;
+    }
+    current_image_ = images[0].get();
+    images_.push_back(std::move(images[0]));
+  } else {
+    if (!current_image_)
+      current_image_ = GetNextImage();
+  }
+
   if (!current_image_->sk_surface())
     current_image_->BeginWriteSkia();
   *end_semaphores = current_image_->TakeEndWriteSkiaSemaphores();
@@ -579,6 +676,22 @@ SkSurface* SkiaOutputDeviceBufferQueue::BeginPaint(
 void SkiaOutputDeviceBufferQueue::EndPaint() {
   DCHECK(current_image_);
   current_image_->EndWriteSkia();
+}
+
+void SkiaOutputDeviceBufferQueue::ReleaseOneFrameBuffer() {
+  DCHECK(capabilities_.use_dynamic_frame_buffer_allocation);
+  CHECK_GE(available_images_.size(), 1u);
+  OutputPresenter::Image* image_to_free = available_images_.back();
+  DCHECK_NE(image_to_free, current_image_);
+  DCHECK_NE(image_to_free, submitted_image_);
+  DCHECK_NE(image_to_free, displayed_image_);
+  available_images_.pop_back();
+  for (auto iter = images_.begin(); iter != images_.end(); ++iter) {
+    if (iter->get() == image_to_free) {
+      images_.erase(iter);
+      break;
+    }
+  }
 }
 
 bool SkiaOutputDeviceBufferQueue::OverlayDataComparator::operator()(

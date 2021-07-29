@@ -8,11 +8,11 @@
 #include <set>
 #include <vector>
 
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/web_launch/file_handling_expiry.mojom-forward.h"
 
 class Profile;
@@ -23,6 +23,8 @@ class WebContents;
 
 namespace web_app {
 
+class WebAppRegistrar;
+
 class FileHandlerManager {
  public:
   explicit FileHandlerManager(Profile* profile);
@@ -31,7 +33,7 @@ class FileHandlerManager {
   virtual ~FileHandlerManager();
 
   // |registrar| is used to observe OnWebAppInstalled/Uninstalled events.
-  void SetSubsystems(AppRegistrar* registrar);
+  void SetSubsystems(WebAppRegistrar* registrar);
   void Start();
 
   // Disables OS integrations, such as shortcut creation on Linux or modifying
@@ -106,7 +108,7 @@ class FileHandlerManager {
 
  protected:
   Profile* profile() const { return profile_; }
-  AppRegistrar* registrar() { return registrar_; }
+  WebAppRegistrar* registrar() { return registrar_; }
 
   // Gets all file handlers for |app_id|. |nullptr| if the app has no file
   // handlers or if app_id was uninstalled.
@@ -119,7 +121,7 @@ class FileHandlerManager {
   base::RepeatingCallback<void()> on_file_handling_expiry_updated_for_testing_;
 
   Profile* const profile_;
-  AppRegistrar* registrar_ = nullptr;
+  WebAppRegistrar* registrar_ = nullptr;
 
   void OnOriginTrialExpiryTimeReceived(
       mojo::AssociatedRemote<blink::mojom::FileHandlingExpiry> /*interface*/,

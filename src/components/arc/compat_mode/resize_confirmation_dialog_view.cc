@@ -7,42 +7,21 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "components/exo/shell_surface_base.h"
-#include "components/exo/shell_surface_util.h"
+#include "base/callback_helpers.h"
+#include "components/arc/compat_mode/overlay_dialog.h"
+#include "components/arc/compat_mode/style/arc_color_provider.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/background.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/view_class_properties.h"
+#include "ui/views/widget/widget.h"
 
 namespace arc {
-
-namespace {
-
-std::unique_ptr<views::View> MakeOverlayDialogContainerView(
-    std::unique_ptr<views::View> dialog_view) {
-  constexpr SkColor kScrimColor = SkColorSetA(gfx::kGoogleGrey900, 0x99);
-
-  auto container = views::Builder<views::FlexLayoutView>()
-                       .SetInteriorMargin(gfx::Insets(0, 32))
-                       .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
-                       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
-                       .SetBackground(views::CreateSolidBackground(kScrimColor))
-                       .Build();
-  dialog_view->SetProperty(
-      views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero));
-
-  container->AddChildView(std::move(dialog_view));
-
-  return container;
-}
-
-}  // namespace
 
 ResizeConfirmationDialogView::ResizeConfirmationDialogView(
     ResizeConfirmationCallback callback)
@@ -57,8 +36,7 @@ ResizeConfirmationDialogView::ResizeConfirmationDialogView(
   constexpr int kCornerRadius = 12;
   auto border = std::make_unique<views::BubbleBorder>(
       views::BubbleBorder::NONE, views::BubbleBorder::STANDARD_SHADOW,
-      GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_DialogBackground));
+      GetDialogBackgroundBaseColor());
   border->SetCornerRadius(kCornerRadius);
   SetBackground(std::make_unique<views::BubbleBackground>(border.get()));
   SetBorder(std::move(border));
@@ -92,6 +70,19 @@ gfx::Size ResizeConfirmationDialogView::CalculatePreferredSize() const {
   return size;
 }
 
+void ResizeConfirmationDialogView::AddedToWidget() {
+  auto& view_ax = GetWidget()->GetRootView()->GetViewAccessibility();
+  view_ax.OverrideRole(ax::mojom::Role::kDialog);
+  view_ax.OverrideName(
+      l10n_util::GetStringUTF16(IDS_ASH_ARC_APP_COMPAT_RESIZE_CONFIRM_TITLE));
+}
+
+void ResizeConfirmationDialogView::OnThemeChanged() {
+  views::BoxLayoutView::OnThemeChanged();
+  do_not_ask_checkbox_->SetEnabledTextColors(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_DialogForeground));
+}
+
 std::unique_ptr<views::View> ResizeConfirmationDialogView::MakeContentsView() {
   return views::Builder<views::BoxLayoutView>()
       .SetOrientation(views::BoxLayout::Orientation::kVertical)
@@ -102,6 +93,7 @@ std::unique_ptr<views::View> ResizeConfirmationDialogView::MakeContentsView() {
                .SetText(l10n_util::GetStringUTF16(
                    IDS_ASH_ARC_APP_COMPAT_RESIZE_CONFIRM_BODY))
                .SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT)
+               .SetTextStyle(views::style::STYLE_SECONDARY)
                .SetHorizontalAlignment(gfx::ALIGN_LEFT)
                .SetMultiLine(true),
            views::Builder<views::Checkbox>()
@@ -139,28 +131,24 @@ std::unique_ptr<views::View> ResizeConfirmationDialogView::MakeButtonsView() {
 }
 
 void ResizeConfirmationDialogView::OnButtonClicked(bool accept) {
-  DCHECK(callback_);
+  if (!callback_)
+    return;
   std::move(callback_).Run(accept, do_not_ask_checkbox_->GetChecked());
 }
 
-void ShowResizeConfirmationDialog(aura::Window* parent,
-                                  ResizeConfirmationCallback callback) {
-  auto* shell_surface_base = exo::GetShellSurfaceBaseForWindow(parent);
-  if (!shell_surface_base || shell_surface_base->HasOverlay())
-    return;
+void ResizeConfirmationDialogView::Show(aura::Window* parent,
+                                        ResizeConfirmationCallback callback) {
+  auto remove_overlay =
+      base::BindOnce(&OverlayDialog::CloseIfAny, base::Unretained(parent));
 
-  auto remove_overlay = base::BindOnce(
-      [](aura::Window* window) {
-        auto* shell_surface_base = exo::GetShellSurfaceBaseForWindow(window);
-        if (shell_surface_base && shell_surface_base->HasOverlay())
-          shell_surface_base->RemoveOverlay();
-      },
-      base::Unretained(parent));
-  exo::ShellSurfaceBase::OverlayParams params(MakeOverlayDialogContainerView(
-      std::make_unique<ResizeConfirmationDialogView>(
-          std::move(callback).Then(std::move(remove_overlay)))));
-  params.translucent = true;
-  shell_surface_base->AddOverlay(std::move(params));
+  auto dialog_view = std::make_unique<ResizeConfirmationDialogView>(
+      std::move(callback).Then(std::move(remove_overlay)));
+
+  OverlayDialog::Show(
+      parent,
+      base::BindOnce(&ResizeConfirmationDialogView::OnButtonClicked,
+                     base::Unretained(dialog_view.get()), /*accept=*/false),
+      std::move(dialog_view));
 }
 
 }  // namespace arc

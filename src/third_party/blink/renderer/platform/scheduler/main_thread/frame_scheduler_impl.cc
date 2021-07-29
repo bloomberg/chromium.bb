@@ -30,11 +30,11 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/find_in_page_budget_pool_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_web_scheduling_task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/resource_loading_task_runner_handle_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
-#include "third_party/blink/renderer/platform/scheduler/main_thread/web_scheduling_task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 
@@ -193,6 +193,11 @@ FrameSchedulerImpl::FrameSchedulerImpl(
           "FrameScheduler.KeepActive",
           &tracing_controller_,
           KeepActiveStateToString),
+      waiting_for_dom_content_loaded_(
+          true,
+          "FrameScheduler.WaitingForDOMContentLoaded",
+          &tracing_controller_,
+          YesNoStateToString),
       waiting_for_contentful_paint_(true,
                                     "FrameScheduler.WaitingForContentfulPaint",
                                     &tracing_controller_,
@@ -201,6 +206,10 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                                     "FrameScheduler.WaitingForMeaningfulPaint",
                                     &tracing_controller_,
                                     YesNoStateToString),
+      waiting_for_load_(true,
+                        "FrameScheduler.WaitingForLoad",
+                        &tracing_controller_,
+                        YesNoStateToString),
       loading_power_mode_voter_(
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
               "PowerModeVoter.Loading")) {
@@ -281,8 +290,36 @@ void FrameSchedulerImpl::RemoveThrottleableQueueFromBudgetPools(
                                       task_queue->GetTaskQueue());
   }
 
-  parent_page_scheduler_->RemoveQueueFromWakeUpBudgetPool(
-      task_queue, frame_origin_type_, &lazy_now);
+  parent_page_scheduler_->RemoveQueueFromWakeUpBudgetPool(task_queue,
+                                                          &lazy_now);
+}
+
+void FrameSchedulerImpl::MoveTaskQueuesToCorrectWakeUpBudgetPool() {
+  base::sequence_manager::LazyNow lazy_now(
+      main_thread_scheduler_->tick_clock());
+
+  // The WakeUpBudgetPool is selected based on origin state, frame visibility
+  // and page background state.
+  //
+  // For each throttled queue, check if it should be in a different
+  // WakeUpBudgetPool and make the necessary adjustments.
+  for (const auto& task_queue_and_voter :
+       frame_task_queue_controller_->GetAllTaskQueuesAndVoters()) {
+    auto* task_queue = task_queue_and_voter.first;
+    if (!task_queue->CanBeThrottled())
+      continue;
+
+    auto* new_wake_up_budget_pool = parent_page_scheduler_->GetWakeUpBudgetPool(
+        task_queue, frame_origin_type_, frame_visible_);
+    if (task_queue->GetWakeUpBudgetPool() == new_wake_up_budget_pool) {
+      continue;
+    }
+
+    parent_page_scheduler_->RemoveQueueFromWakeUpBudgetPool(task_queue,
+                                                            &lazy_now);
+    parent_page_scheduler_->AddQueueToWakeUpBudgetPool(
+        task_queue, frame_origin_type_, frame_visible_, &lazy_now);
+  }
 }
 
 void FrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
@@ -291,6 +328,8 @@ void FrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
     return;
   UMA_HISTOGRAM_BOOLEAN("RendererScheduler.IPC.FrameVisibility", frame_visible);
   frame_visible_ = frame_visible;
+
+  MoveTaskQueuesToCorrectWakeUpBudgetPool();
   UpdatePolicy();
 }
 
@@ -305,39 +344,13 @@ void FrameSchedulerImpl::SetCrossOriginToMainFrame(bool cross_origin) {
     return;
   }
 
-  base::sequence_manager::LazyNow lazy_now(
-      main_thread_scheduler_->tick_clock());
-
-  // Remove throttleable TaskQueues from their current WakeUpBudgetPool.
-  //
-  // The WakeUpBudgetPool is selected based on origin. TaskQueues are reinserted
-  // in the appropriate WakeUpBudgetPool at the end of this method, after the
-  // |frame_origin_type_| is updated.
-  for (const auto& task_queue_and_voter :
-       frame_task_queue_controller_->GetAllTaskQueuesAndVoters()) {
-    if (task_queue_and_voter.first->CanBeThrottled()) {
-      parent_page_scheduler_->RemoveQueueFromWakeUpBudgetPool(
-          task_queue_and_voter.first, frame_origin_type_, &lazy_now);
-    }
-  }
-
-  // Update the FrameOriginType.
   if (cross_origin) {
     frame_origin_type_ = FrameOriginType::kCrossOriginToMainFrame;
   } else {
     frame_origin_type_ = FrameOriginType::kSameOriginToMainFrame;
   }
 
-  // Add throttleable TaskQueues to WakeUpBudgetPool that corresponds to the
-  // updated |frame_origin_type_|.
-  for (const auto& task_queue_and_voter :
-       frame_task_queue_controller_->GetAllTaskQueuesAndVoters()) {
-    if (task_queue_and_voter.first->CanBeThrottled()) {
-      parent_page_scheduler_->AddQueueToWakeUpBudgetPool(
-          task_queue_and_voter.first, frame_origin_type_, &lazy_now);
-    }
-  }
-
+  MoveTaskQueuesToCorrectWakeUpBudgetPool();
   UpdatePolicy();
 }
 
@@ -386,12 +399,8 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
       return ThrottleableTaskQueueTraits().SetPrioritisationType(
           QueueTraits::PrioritisationType::kBestEffort);
     case TaskType::kJavascriptTimerDelayedLowNesting:
-      return ThrottleableTaskQueueTraits()
-          .SetPrioritisationType(
-              QueueTraits::PrioritisationType::kJavaScriptTimer)
-          .SetCanBeIntensivelyThrottled(
-              IsIntensiveWakeUpThrottlingEnabled() &&
-              CanIntensivelyThrottleLowNestingLevel());
+      return ThrottleableTaskQueueTraits().SetPrioritisationType(
+          QueueTraits::PrioritisationType::kJavaScriptTimer);
     case TaskType::kJavascriptTimerDelayedHighNesting:
       return ThrottleableTaskQueueTraits()
           .SetPrioritisationType(
@@ -632,16 +641,24 @@ void FrameSchedulerImpl::DidCommitProvisionalLoad(
     loading_power_mode_voter_->ResetVoteAfterTimeout(
         power_scheduler::PowerModeVoter::kStuckLoadingTimeout);
 
+    waiting_for_dom_content_loaded_ = true;
     waiting_for_contentful_paint_ = true;
     waiting_for_meaningful_paint_ = true;
+    waiting_for_load_ = true;
+
+    // If DeprioritizeDOMTimersDuringPageLoading is enabled, UpdatePolicy()
+    // needs to be called to change JavaScript timer task queues to low priority
+    // during reload and other navigations.
+    //
+    // TODO(shaseley): Think about merging this with MainThreadSchedulerImpl's
+    // policy update.
+    if (base::FeatureList::IsEnabled(kDeprioritizeDOMTimersDuringPageLoading)) {
+      UpdatePolicy();
+    }
   }
 
   if (is_main_frame && !is_same_document) {
     task_time_ = base::TimeDelta();
-    // Ignore result here, based on the assumption that
-    // MTSI::DidCommitProvisionalLoad will trigger an update policy.
-    ignore_result(main_thread_scheduler_->agent_scheduling_strategy()
-                      .OnDocumentChangedInMainFrame(*this));
   }
 
   main_thread_scheduler_->DidCommitProvisionalLoad(
@@ -941,7 +958,18 @@ SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
 void FrameSchedulerImpl::OnFirstContentfulPaintInMainFrame() {
   waiting_for_contentful_paint_ = false;
   DCHECK_EQ(GetFrameType(), FrameScheduler::FrameType::kMainFrame);
+  parent_page_scheduler_->OnFirstContentfulPaintInMainFrame();
   main_thread_scheduler_->OnMainFramePaint();
+}
+
+void FrameSchedulerImpl::OnDomContentLoaded() {
+  waiting_for_dom_content_loaded_ = false;
+
+  if (base::FeatureList::IsEnabled(kDeprioritizeDOMTimersDuringPageLoading) &&
+      kDeprioritizeDOMTimersPhase.Get() ==
+          DeprioritizeDOMTimersPhase::kOnDOMContentLoaded) {
+    UpdatePolicy();
+  }
 }
 
 void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
@@ -951,20 +979,20 @@ void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
     return;
 
   main_thread_scheduler_->OnMainFramePaint();
-
-  if (main_thread_scheduler_->agent_scheduling_strategy()
-          .OnMainFrameFirstMeaningfulPaint(*this) ==
-      AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
-    main_thread_scheduler_->OnAgentStrategyUpdated();
-  }
 }
 
 void FrameSchedulerImpl::OnLoad() {
-  if (GetFrameType() == FrameScheduler::FrameType::kMainFrame) {
-    // TODO(talp): Once MTSI::UpdatePolicyLocked is refactored, this can notify
-    // the agent strategy directly and, if necessary, trigger the queue priority
-    // update.
-    main_thread_scheduler_->OnMainFrameLoad(*this);
+  waiting_for_load_ = false;
+
+  // FrameSchedulerImpl::OnFirstContentfulPaint() is NOT guaranteed to be called
+  // during the loading process, so we also try to do the recomputation in case
+  // of the DeprioritizeDOMTimersPhase::kFirstContentfulPaint option.
+  if (base::FeatureList::IsEnabled(kDeprioritizeDOMTimersDuringPageLoading) &&
+      (kDeprioritizeDOMTimersPhase.Get() ==
+           DeprioritizeDOMTimersPhase::kOnLoad ||
+       kDeprioritizeDOMTimersPhase.Get() ==
+           DeprioritizeDOMTimersPhase::kFirstContentfulPaint)) {
+    UpdatePolicy();
   }
 
   loading_power_mode_voter_->ResetVoteAfterTimeout(
@@ -988,18 +1016,15 @@ bool FrameSchedulerImpl::IsOrdinary() const {
 bool FrameSchedulerImpl::ShouldThrottleTaskQueues() const {
   DCHECK(parent_page_scheduler_);
 
+  if (parent_page_scheduler_->ThrottleForegroundTimers())
+    return true;
   if (!RuntimeEnabledFeatures::TimerThrottlingForBackgroundTabsEnabled())
     return false;
   if (parent_page_scheduler_->IsAudioPlaying())
     return false;
   if (!parent_page_scheduler_->IsPageVisible())
     return true;
-  if (base::FeatureList::IsEnabled(kThrottleVisibleNotFocusedTimers) &&
-      !parent_page_scheduler_->IsPageFocused()) {
-    return true;
-  }
-  return RuntimeEnabledFeatures::TimerThrottlingForHiddenFramesEnabled() &&
-         !frame_visible_ && IsCrossOriginToMainFrame();
+  return !frame_visible_ && IsCrossOriginToMainFrame();
 }
 
 bool FrameSchedulerImpl::IsExemptFromBudgetBasedThrottling() const {
@@ -1128,14 +1153,6 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
     }
   }
 
-  // Consult per-agent scheduling strategy to see if it wants to affect queue
-  // priority. Done here to avoid interfering with other policy decisions.
-  absl::optional<TaskQueue::QueuePriority> per_agent_priority =
-      main_thread_scheduler_->agent_scheduling_strategy().QueuePriority(
-          *task_queue);
-  if (per_agent_priority.has_value())
-    return per_agent_priority.value();
-
   if (task_queue->GetPrioritisationType() ==
       MainThreadTaskQueue::QueueTraits::PrioritisationType::kLoadingControl) {
     return main_thread_scheduler_->should_prioritize_loading_with_compositing()
@@ -1158,6 +1175,23 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
       MainThreadTaskQueue::QueueTraits::PrioritisationType::
           kHighPriorityLocalFrame) {
     return TaskQueue::QueuePriority::kHighestPriority;
+  }
+
+  // Deprioritize JS timer tasks to speed up the page loading process.
+  if (base::FeatureList::IsEnabled(kDeprioritizeDOMTimersDuringPageLoading) &&
+      task_queue->GetPrioritisationType() ==
+          MainThreadTaskQueue::QueueTraits::PrioritisationType::
+              kJavaScriptTimer &&
+      waiting_for_load_ &&
+      (kDeprioritizeDOMTimersPhase.Get() ==
+           DeprioritizeDOMTimersPhase::kOnLoad ||
+       (kDeprioritizeDOMTimersPhase.Get() ==
+            DeprioritizeDOMTimersPhase::kOnDOMContentLoaded &&
+        waiting_for_dom_content_loaded_) ||
+       (kDeprioritizeDOMTimersPhase.Get() ==
+            DeprioritizeDOMTimersPhase::kFirstContentfulPaint &&
+        parent_page_scheduler_->IsWaitingForMainFrameContentfulPaint()))) {
+    return TaskQueue::QueuePriority::kLowPriority;
   }
 
   if (task_queue->GetPrioritisationType() ==
@@ -1240,7 +1274,7 @@ void FrameSchedulerImpl::OnTaskQueueCreated(
     }
 
     parent_page_scheduler_->AddQueueToWakeUpBudgetPool(
-        task_queue, frame_origin_type_, &lazy_now);
+        task_queue, frame_origin_type_, frame_visible_, &lazy_now);
 
     if (task_queues_throttled_) {
       MainThreadTaskQueue::ThrottleHandle handle = task_queue->Throttle();
@@ -1342,12 +1376,24 @@ FrameSchedulerImpl::GetDocumentBoundWeakPtr() {
 std::unique_ptr<WebSchedulingTaskQueue>
 FrameSchedulerImpl::CreateWebSchedulingTaskQueue(
     WebSchedulingPriority priority) {
-  // Use QueueTraits here that are the same as postMessage, which is one current
-  // method for scheduling script.
-  scoped_refptr<MainThreadTaskQueue> task_queue =
+  // The QueueTraits for scheduler.postTask() are similar to those of
+  // setTimeout() (deferrable queue traits + throttling for delayed tasks), with
+  // the following differences:
+  //  1. All delayed tasks are intensively throttled (no nesting-level exception
+  //     or policy/flag opt-out)
+  //  2. There is no separate PrioritisationType (prioritization is based on the
+  //     WebSchedulingPriority, which is only set for these task queues)
+  scoped_refptr<MainThreadTaskQueue> immediate_task_queue =
       frame_task_queue_controller_->NewWebSchedulingTaskQueue(
-          PausableTaskQueueTraits(), priority);
-  return std::make_unique<WebSchedulingTaskQueueImpl>(task_queue->AsWeakPtr());
+          DeferrableTaskQueueTraits(), priority);
+  scoped_refptr<MainThreadTaskQueue> delayed_task_queue =
+      frame_task_queue_controller_->NewWebSchedulingTaskQueue(
+          DeferrableTaskQueueTraits()
+              .SetCanBeThrottled(true)
+              .SetCanBeIntensivelyThrottled(true),
+          priority);
+  return std::make_unique<MainThreadWebSchedulingTaskQueueImpl>(
+      immediate_task_queue->AsWeakPtr(), delayed_task_queue->AsWeakPtr());
 }
 
 void FrameSchedulerImpl::OnWebSchedulingTaskQueuePriorityChanged(

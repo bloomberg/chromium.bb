@@ -23,6 +23,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
@@ -446,11 +447,11 @@ void AppWindow::ExitPictureInPicture() {
 }
 
 bool AppWindow::ShouldShowStaleContentOnEviction(content::WebContents* source) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   return true;
 #else
   return false;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 }
 
 bool AppWindow::OnMessageReceived(const IPC::Message& message,
@@ -884,7 +885,7 @@ bool AppWindow::ShouldSuppressDialogs(WebContents* source) {
   return true;
 }
 
-content::ColorChooser* AppWindow::OpenColorChooser(
+std::unique_ptr<content::ColorChooser> AppWindow::OpenColorChooser(
     WebContents* web_contents,
     SkColor initial_color,
     const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {

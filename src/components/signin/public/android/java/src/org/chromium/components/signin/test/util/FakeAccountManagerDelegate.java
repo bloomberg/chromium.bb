@@ -61,11 +61,6 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public boolean isGooglePlayServicesAvailable() {
-        return true;
-    }
-
-    @Override
     public void attachAccountsChangeObserver(AccountsChangeObserver observer) {
         mObserver = observer;
     }
@@ -145,6 +140,11 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
         AccountHolder accountHolder = tryGetAccountHolder(account);
         // Features status is queried asynchronously, so the account could have been removed.
         return accountHolder != null && accountHolder.hasFeature(feature);
+    }
+
+    @Override
+    public @CapabilityResponse int hasCapability(Account account, String capability) {
+        return hasFeature(account, capability) ? CapabilityResponse.YES : CapabilityResponse.NO;
     }
 
     @Override

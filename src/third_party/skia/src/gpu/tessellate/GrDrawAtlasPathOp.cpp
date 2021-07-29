@@ -10,6 +10,8 @@
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrOpsRenderPass.h"
 #include "src/gpu/GrProgramInfo.h"
+#include "src/gpu/GrResourceProvider.h"
+#include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
@@ -17,39 +19,48 @@
 
 namespace {
 
-constexpr static GrGeometryProcessor::Attribute kInstanceAttribs[] = {
-        {"dev_xywh", kInt4_GrVertexAttribType, kInt4_GrSLType},
-        {"atlas_xy", kInt2_GrVertexAttribType, kInt2_GrSLType},
-        {"color", kFloat4_GrVertexAttribType, kHalf4_GrSLType},
-        {"viewmatrix_scaleskew", kFloat4_GrVertexAttribType, kFloat4_GrSLType},
-        {"viewmatrix_trans", kFloat2_GrVertexAttribType, kFloat2_GrSLType}};
-
 class DrawAtlasPathShader : public GrGeometryProcessor {
 public:
-    DrawAtlasPathShader(const GrTextureProxy* atlasProxy, GrSwizzle swizzle, bool usesLocalCoords)
+    DrawAtlasPathShader(bool usesLocalCoords, const GrAtlasInstancedHelper* atlasHelper,
+                        const GrShaderCaps& shaderCaps)
             : GrGeometryProcessor(kDrawAtlasPathShader_ClassID)
-            , fAtlasAccess(GrSamplerState::Filter::kNearest, atlasProxy->backendFormat(), swizzle)
-            , fAtlasDimensions(atlasProxy->backingStoreDimensions())
-            , fUsesLocalCoords(usesLocalCoords) {
-        int numInstanceAttribs = SK_ARRAY_COUNT(kInstanceAttribs);
-        if (!fUsesLocalCoords) {
-            numInstanceAttribs -= 2;
+            , fUsesLocalCoords(usesLocalCoords)
+            , fAtlasHelper(atlasHelper)
+            , fAtlasAccess(GrSamplerState::Filter::kNearest, fAtlasHelper->proxy()->backendFormat(),
+                           fAtlasHelper->atlasSwizzle()) {
+        if (!shaderCaps.vertexIDSupport()) {
+            constexpr static Attribute kUnitCoordAttrib("unitCoord", kFloat2_GrVertexAttribType,
+                                                        kFloat2_GrSLType);
+            this->setVertexAttributes(&kUnitCoordAttrib, 1);
         }
-        this->setInstanceAttributes(kInstanceAttribs, numInstanceAttribs);
+        fAttribs.emplace_back("fillBounds", kFloat4_GrVertexAttribType, kFloat4_GrSLType);
+        if (fUsesLocalCoords) {
+            fAttribs.emplace_back("affineMatrix", kFloat4_GrVertexAttribType, kFloat4_GrSLType);
+            fAttribs.emplace_back("translate", kFloat2_GrVertexAttribType, kFloat2_GrSLType);
+        }
+        SkASSERT(fAttribs.count() == this->colorAttribIdx());
+        fAttribs.emplace_back("color", kFloat4_GrVertexAttribType, kHalf4_GrSLType);
+        fAtlasHelper->appendInstanceAttribs(&fAttribs);
+        SkASSERT(fAttribs.count() <= kMaxInstanceAttribs);
+        this->setInstanceAttributes(fAttribs.data(), fAttribs.count());
         this->setTextureSamplerCnt(1);
     }
 
 private:
+    int colorAttribIdx() const { return fUsesLocalCoords ? 3 : 1; }
     const char* name() const override { return "DrawAtlasPathShader"; }
     void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const override {
-        b->add32(fUsesLocalCoords);
+        b->addBits(1, fUsesLocalCoords, "localCoords");
+        fAtlasHelper->getKeyBits(b);
     }
     const TextureSampler& onTextureSampler(int) const override { return fAtlasAccess; }
     GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override;
 
-    const TextureSampler fAtlasAccess;
-    const SkISize fAtlasDimensions;
     const bool fUsesLocalCoords;
+    const GrAtlasInstancedHelper* const fAtlasHelper;
+    TextureSampler fAtlasAccess;
+    constexpr static int kMaxInstanceAttribs = 6;
+    SkSTArray<kMaxInstanceAttribs, GrGeometryProcessor::Attribute> fAttribs;
 
     class Impl;
 };
@@ -59,50 +70,38 @@ class DrawAtlasPathShader::Impl : public GrGLSLGeometryProcessor {
         const auto& shader = args.fGeomProc.cast<DrawAtlasPathShader>();
         args.fVaryingHandler->emitAttributes(shader);
 
-        GrGLSLVarying atlasCoord(kFloat2_GrSLType);
-        args.fVaryingHandler->addVarying("atlascoord", &atlasCoord);
-
-        GrGLSLVarying color(kHalf4_GrSLType);
-        args.fFragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
-        args.fVaryingHandler->addPassThroughAttribute(
-                kInstanceAttribs[2], args.fOutputColor,
-                GrGLSLVaryingHandler::Interpolation::kCanBeFlat);
-
-        const char* atlasAdjust;
-        fAtlasAdjustUniform = args.fUniformHandler->addUniform(
-                nullptr, kVertex_GrShaderFlag, kFloat2_GrSLType, "atlas_adjust", &atlasAdjust);
+        if (args.fShaderCaps->vertexIDSupport()) {
+            // If we don't have sk_VertexID support then "unitCoord" already came in as a vertex
+            // attrib.
+            args.fVertBuilder->codeAppendf(R"(
+            float2 unitCoord = float2(sk_VertexID & 1, sk_VertexID >> 1);)");
+        }
 
         args.fVertBuilder->codeAppendf(R"(
-                float2 T = float2(sk_VertexID & 1, sk_VertexID >> 1);
-                float2 devtopleft = float2(dev_xywh.xy);
-                float2 devcoord = abs(float2(dev_xywh.zw)) * T + devtopleft;
-                float2 atlascoord = devcoord - devtopleft;
-                if (dev_xywh.w < 0) {  // Negative height indicates that the path is transposed.
-                    atlascoord = atlascoord.yx;
-                }
-                atlascoord += float2(atlas_xy);
-                %s = atlascoord * %s;)",
-                atlasCoord.vsOut(), atlasAdjust);
-
-        gpArgs->fPositionVar.set(kFloat2_GrSLType, "devcoord");
+        float2 devCoord = mix(fillBounds.xy, fillBounds.zw, unitCoord);)");
+        gpArgs->fPositionVar.set(kFloat2_GrSLType, "devCoord");
 
         if (shader.fUsesLocalCoords) {
             args.fVertBuilder->codeAppendf(R"(
-                    float2x2 M = float2x2(viewmatrix_scaleskew);
-                    float2 localcoord = inverse(M) * (devcoord - viewmatrix_trans);)");
-            gpArgs->fLocalCoordVar.set(kFloat2_GrSLType, "localcoord");
+            float2x2 M = float2x2(affineMatrix);
+            float2 localCoord = inverse(M) * (devCoord - translate);)");
+            gpArgs->fLocalCoordVar.set(kFloat2_GrSLType, "localCoord");
         }
 
-        args.fFragBuilder->codeAppendf("half4 %s = ", args.fOutputCoverage);
-        args.fFragBuilder->appendTextureLookup(args.fTexSamplers[0], atlasCoord.fsIn());
-        args.fFragBuilder->codeAppendf(".aaaa;");
+        args.fFragBuilder->codeAppendf("half4 %s = half4(1);", args.fOutputCoverage);
+        shader.fAtlasHelper->injectShaderCode(args, gpArgs->fPositionVar, &fAtlasAdjustUniform);
+
+        args.fFragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
+        args.fVaryingHandler->addPassThroughAttribute(
+                shader.fAttribs[shader.colorAttribIdx()], args.fOutputColor,
+                GrGLSLVaryingHandler::Interpolation::kCanBeFlat);
     }
 
     void setData(const GrGLSLProgramDataManager& pdman,
                  const GrShaderCaps&,
                  const GrGeometryProcessor& geomProc) override {
-        const SkISize& dimensions = geomProc.cast<DrawAtlasPathShader>().fAtlasDimensions;
-        pdman.set2f(fAtlasAdjustUniform, 1.f / dimensions.width(), 1.f / dimensions.height());
+        auto* atlasHelper = geomProc.cast<DrawAtlasPathShader>().fAtlasHelper;
+        atlasHelper->setUniformData(pdman, fAtlasAdjustUniform);
     }
 
     GrGLSLUniformHandler::UniformHandle fAtlasAdjustUniform;
@@ -117,74 +116,104 @@ GrGLSLGeometryProcessor* DrawAtlasPathShader::createGLSLInstance(const GrShaderC
 GrProcessorSet::Analysis GrDrawAtlasPathOp::finalize(const GrCaps& caps, const GrAppliedClip* clip,
                                                      GrClampType clampType) {
     const GrProcessorSet::Analysis& analysis = fProcessors.finalize(
-            fInstanceList.fInstance.fColor, GrProcessorAnalysisCoverage::kSingleChannel, clip,
-            &GrUserStencilSettings::kUnused, caps, clampType, &fInstanceList.fInstance.fColor);
+            fHeadInstance->fColor, GrProcessorAnalysisCoverage::kSingleChannel, clip,
+            &GrUserStencilSettings::kUnused, caps, clampType, &fHeadInstance->fColor);
     fUsesLocalCoords = analysis.usesLocalCoords();
     return analysis;
 }
 
-GrOp::CombineResult GrDrawAtlasPathOp::onCombineIfPossible(
-        GrOp* op, SkArenaAlloc* alloc, const GrCaps&) {
+GrOp::CombineResult GrDrawAtlasPathOp::onCombineIfPossible(GrOp* op, SkArenaAlloc*, const GrCaps&) {
     auto* that = op->cast<GrDrawAtlasPathOp>();
-    SkASSERT(fAtlasProxy == that->fAtlasProxy);
-    SkASSERT(fEnableHWAA == that->fEnableHWAA);
 
-    if (fProcessors != that->fProcessors) {
+    if (!fAtlasHelper.isCompatible(that->fAtlasHelper) ||
+        fProcessors != that->fProcessors) {
         return CombineResult::kCannotCombine;
     }
 
     SkASSERT(fUsesLocalCoords == that->fUsesLocalCoords);
-    auto* copy = alloc->make<InstanceList>(that->fInstanceList);
-    *fInstanceTail = copy;
-    fInstanceTail = (!copy->fNext) ? &copy->fNext : that->fInstanceTail;
+    *fTailInstance = that->fHeadInstance;
+    fTailInstance = that->fTailInstance;
     fInstanceCount += that->fInstanceCount;
     return CombineResult::kMerged;
 }
 
-void GrDrawAtlasPathOp::onPrePrepare(GrRecordingContext*,
-                                     const GrSurfaceProxyView& writeView,
-                                     GrAppliedClip*,
-                                     const GrXferProcessor::DstProxyView&,
-                                     GrXferBarrierFlags renderPassXferBarriers,
-                                     GrLoadOp colorLoadOp) {}
+void GrDrawAtlasPathOp::prepareProgram(const GrCaps& caps, SkArenaAlloc* arena,
+                                       const GrSurfaceProxyView& writeView, bool usesMSAASurface,
+                                       GrAppliedClip&& appliedClip,
+                                       const GrDstProxyView& dstProxyView,
+                                       GrXferBarrierFlags renderPassXferBarriers,
+                                       GrLoadOp colorLoadOp) {
+    SkASSERT(!fProgram);
+    GrPipeline::InitArgs initArgs;
+    if (usesMSAASurface) {
+        initArgs.fInputFlags |= GrPipeline::InputFlags::kHWAntialias;
+    }
+    initArgs.fCaps = &caps;
+    initArgs.fDstProxyView = dstProxyView;
+    initArgs.fWriteSwizzle = writeView.swizzle();
+    auto pipeline = arena->make<GrPipeline>(initArgs, std::move(fProcessors),
+                                            std::move(appliedClip));
+    auto shader = arena->make<DrawAtlasPathShader>(fUsesLocalCoords, &fAtlasHelper,
+                                                   *caps.shaderCaps());
+    fProgram = arena->make<GrProgramInfo>(writeView, pipeline, &GrUserStencilSettings::kUnused,
+                                          shader, GrPrimitiveType::kTriangleStrip, 0,
+                                          renderPassXferBarriers, colorLoadOp);
+}
 
-void GrDrawAtlasPathOp::onPrepare(GrOpFlushState* state) {
-    size_t instanceStride = Instance::Stride(fUsesLocalCoords);
-    if (char* instanceData = (char*)state->makeVertexSpace(
-            instanceStride, fInstanceCount, &fInstanceBuffer, &fBaseInstance)) {
-        SkDEBUGCODE(char* end = instanceData + fInstanceCount * instanceStride);
-        for (const InstanceList* list = &fInstanceList; list; list = list->fNext) {
-            memcpy(instanceData, &list->fInstance, instanceStride);
-            instanceData += instanceStride;
+void GrDrawAtlasPathOp::onPrePrepare(GrRecordingContext* rContext,
+                                     const GrSurfaceProxyView& writeView,
+                                     GrAppliedClip* appliedClip, const GrDstProxyView& dstProxyView,
+                                     GrXferBarrierFlags renderPassXferBarriers,
+                                     GrLoadOp colorLoadOp) {
+    this->prepareProgram(*rContext->priv().caps(), rContext->priv().recordTimeAllocator(),
+                         writeView, writeView.asRenderTargetProxy()->numSamples() > 1,
+                         std::move(*appliedClip), dstProxyView, renderPassXferBarriers,
+                         colorLoadOp);
+    SkASSERT(fProgram);
+    rContext->priv().recordProgramInfo(fProgram);
+}
+
+GR_DECLARE_STATIC_UNIQUE_KEY(gUnitQuadBufferKey);
+
+void GrDrawAtlasPathOp::onPrepare(GrOpFlushState* flushState) {
+    if (!fProgram) {
+        this->prepareProgram(flushState->caps(), flushState->allocator(), flushState->writeView(),
+                             flushState->usesMSAASurface(), flushState->detachAppliedClip(),
+                             flushState->dstProxyView(), flushState->renderPassBarriers(),
+                             flushState->colorLoadOp());
+        SkASSERT(fProgram);
+    }
+
+    // FIXME(skbug.com/12201): Our draw's MSAA state should match the render target, but DDL doesn't
+    // yet communicate DMSAA state to onPrePrepare.
+    SkASSERT(fProgram->pipeline().isHWAntialiasState() == flushState->usesMSAASurface());
+
+    if (GrVertexWriter instanceWriter = flushState->makeVertexSpace(
+                fProgram->geomProc().instanceStride(), fInstanceCount, &fInstanceBuffer,
+                &fBaseInstance)) {
+        for (const Instance* i = fHeadInstance; i; i = i->fNext) {
+            instanceWriter.write(
+                    SkRect::Make(i->fFillBounds),
+                    GrVertexWriter::If(fUsesLocalCoords,
+                                       i->fLocalToDeviceIfUsingLocalCoords),
+                    i->fColor);
+            fAtlasHelper.writeInstanceData(&instanceWriter, &i->fAtlasInstance);
         }
-        SkASSERT(instanceData == end);
+    }
+
+    if (!flushState->caps().shaderCaps()->vertexIDSupport()) {
+        constexpr static SkPoint kUnitQuad[4] = {{0,0}, {0,1}, {1,0}, {1,1}};
+
+        GR_DEFINE_STATIC_UNIQUE_KEY(gUnitQuadBufferKey);
+
+        fVertexBufferIfNoIDSupport = flushState->resourceProvider()->findOrMakeStaticBuffer(
+                GrGpuBufferType::kVertex, sizeof(kUnitQuad), kUnitQuad, gUnitQuadBufferKey);
     }
 }
 
-void GrDrawAtlasPathOp::onExecute(GrOpFlushState* state, const SkRect& chainBounds) {
-    SkASSERT(fAtlasProxy->isInstantiated());
-
-    GrPipeline::InitArgs initArgs;
-    if (fEnableHWAA) {
-        initArgs.fInputFlags |= GrPipeline::InputFlags::kHWAntialias;
-    }
-    initArgs.fCaps = &state->caps();
-    initArgs.fDstProxyView = state->drawOpArgs().dstProxyView();
-    initArgs.fWriteSwizzle = state->drawOpArgs().writeView().swizzle();
-    GrPipeline pipeline(initArgs, std::move(fProcessors), state->detachAppliedClip());
-
-    GrSwizzle swizzle = state->caps().getReadSwizzle(fAtlasProxy->backendFormat(),
-                                                     GrColorType::kAlpha_8);
-
-    DrawAtlasPathShader shader(fAtlasProxy.get(), swizzle, fUsesLocalCoords);
-    SkASSERT(shader.instanceStride() == Instance::Stride(fUsesLocalCoords));
-
-    GrProgramInfo programInfo(state->writeView(), &pipeline, &GrUserStencilSettings::kUnused,
-                              &shader, GrPrimitiveType::kTriangleStrip, 0,
-                              state->renderPassBarriers(), state->colorLoadOp());
-
-    state->bindPipelineAndScissorClip(programInfo, this->bounds());
-    state->bindTextures(shader, *fAtlasProxy, pipeline);
-    state->bindBuffers(nullptr, std::move(fInstanceBuffer), nullptr);
-    state->drawInstanced(fInstanceCount, fBaseInstance, 4, 0);
+void GrDrawAtlasPathOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) {
+    flushState->bindPipelineAndScissorClip(*fProgram, this->bounds());
+    flushState->bindTextures(fProgram->geomProc(), *fAtlasHelper.proxy(), fProgram->pipeline());
+    flushState->bindBuffers(nullptr, std::move(fInstanceBuffer), fVertexBufferIfNoIDSupport);
+    flushState->drawInstanced(fInstanceCount, fBaseInstance, 4, 0);
 }

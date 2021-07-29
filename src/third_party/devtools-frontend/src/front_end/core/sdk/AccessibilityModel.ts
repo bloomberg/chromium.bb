@@ -9,8 +9,9 @@ import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 
 import type {DOMNode} from './DOMModel.js';
 import {DeferredDOMNode} from './DOMModel.js';  // eslint-disable-line no-unused-vars
-import type {Target} from './SDKModel.js';
-import {Capability, SDKModel} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';
+import {Capability} from './Target.js';
+import {SDKModel} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum
@@ -29,7 +30,7 @@ export interface CoreOrProtocolAxProperty {
 export class AccessibilityNode {
   _accessibilityModel: AccessibilityModel;
   _agent: ProtocolProxyApi.AccessibilityApi;
-  _id: string;
+  _id: Protocol.Accessibility.AXNodeId;
   _backendDOMNodeId: number|null;
   _deferredDOMNode: DeferredDOMNode|null;
   _ignored: boolean;
@@ -70,7 +71,7 @@ export class AccessibilityNode {
     this._parentNode = null;
   }
 
-  id(): string {
+  id(): Protocol.Accessibility.AXNodeId {
     return this._id;
   }
 
@@ -247,7 +248,7 @@ export class AccessibilityModel extends SDKModel {
     return axNodes[0];
   }
 
-  async requestAXChildren(nodeId: string): Promise<AccessibilityNode[]> {
+  async requestAXChildren(nodeId: Protocol.Accessibility.AXNodeId): Promise<AccessibilityNode[]> {
     const {nodes} = await this._agent.invoke_getChildAXNodes({id: nodeId});
     if (!nodes) {
       return [];

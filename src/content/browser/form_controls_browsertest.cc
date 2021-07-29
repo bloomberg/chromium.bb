@@ -4,7 +4,6 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/test/pixel_comparator.h"
@@ -35,7 +34,7 @@
 // To rebaseline this test on all platforms:
 // 1. Run a CQ+1 dry run.
 // 2. Click the failing bots for android, windows, mac, and linux.
-// 3. Find the failing interactive_ui_browsertests step.
+// 3. Find the failing content_browsertests step.
 // 4. Click the "Deterministic failure" link for the failing test case.
 // 5. Copy the "Actual pixels" data url and paste into browser.
 // 6. Save the image into your chromium checkout in content/test/data/forms/.
@@ -44,12 +43,6 @@ namespace content {
 
 class FormControlsBrowserTest : public ContentBrowserTest {
  public:
-  FormControlsBrowserTest() {
-    feature_list_.InitWithFeatures(
-        {features::kFormControlsRefresh, features::kCSSColorSchemeUARendering},
-        {});
-  }
-
   void SetUp() override {
     EnablePixelOutput(/*force_device_scale_factor=*/1.f);
     ContentBrowserTest::SetUp();
@@ -71,9 +64,6 @@ class FormControlsBrowserTest : public ContentBrowserTest {
                int screenshot_width,
                int screenshot_height) {
     base::ScopedAllowBlockingForTesting allow_blocking;
-
-    ASSERT_TRUE(features::IsFormControlsRefreshEnabled());
-    ASSERT_TRUE(features::IsCSSColorSchemeUARenderingEnabled());
 
     std::string platform_suffix;
 #if defined(OS_MAC)
@@ -163,9 +153,6 @@ class FormControlsBrowserTest : public ContentBrowserTest {
 #endif  // defined(OS_WIN)
     return false;
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(FormControlsBrowserTest, Checkbox) {

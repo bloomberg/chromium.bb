@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "build/build_config.h"
 
 // TODO(crbug.com/1165828): Clean up feedv1 features.
 
@@ -35,13 +36,12 @@ extern const base::Feature kInterestFeedV2ClicksAndViewsConditionalUpload;
 
 // Feature that allows the client to automatically dismiss the notice card based
 // on the clicks and views on the notice card.
+#if defined(OS_IOS)
 extern const base::Feature kInterestFeedNoticeCardAutoDismiss;
+#endif
 
 // Used for A:B testing of a bug fix (crbug.com/1151391).
 extern const base::Feature kInterestFeedSpinnerAlwaysAnimate;
-
-// Feature that allows the user to share articles from their feed.
-extern const base::Feature kFeedShare;
 
 // Feature that allows users to keep up with and consume web content.
 extern const base::Feature kWebFeed;
@@ -52,6 +52,12 @@ extern const base::Feature kDiscoFeedEndpoint;
 // Feature that enables xsurface to provide the metrics reporting state to an
 // xsurface feed.
 extern const base::Feature kXsurfaceMetricsReporting;
+
+// Whether to log reliability events.
+extern const base::Feature kReliabilityLogging;
+
+// Feature that enables refreshing feeds triggered by the users.
+extern const base::Feature kFeedInteractiveRefresh;
 
 std::string GetFeedReferrerUrl();
 

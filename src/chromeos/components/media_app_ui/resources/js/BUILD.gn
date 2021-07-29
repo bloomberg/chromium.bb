@@ -14,6 +14,8 @@ stage_folder = "$target_gen_dir/stage"
 # This is for files direct from the src/:  input_folder="./".
 copy("stage_static") {
   sources = [
+    "../../../../../ui/file_manager/image_loader/piex_loader.js",
+    "//chromeos/components/system_apps/public/js/sandboxed_load_time_data.js",
     "app_context_test_support.js",
     "error_reporter.js",
     "launch.js",
@@ -21,7 +23,6 @@ copy("stage_static") {
     "piex_module.js",
     "piex_module_loader.js",
     "receiver.js",
-    "sandboxed_load_time_data.js",
   ]
   outputs = [ stage_folder + "/{{source_file_part}}" ]
 }
@@ -29,7 +30,6 @@ copy("stage_static") {
 # This is for files that are generated in "gen/".
 copy("stage_generated") {
   sources = [
-    "$root_gen_dir/ui/file_manager/image_loader/piex_loader.m.js",
     "$target_gen_dir/../../../system_apps/public/js/message_pipe.m.js",
     "$target_gen_dir/../../media_app_ui.mojom-lite.js",
     "$target_gen_dir/message_types.m.js",
@@ -41,7 +41,6 @@ copy("stage_generated") {
     ":modulize",
     "//chromeos/components/media_app_ui:mojo_bindings_js",
     "//chromeos/components/system_apps/public/js:modulize",
-    "//ui/file_manager/image_loader:modulize",
   ]
 }
 
@@ -156,10 +155,7 @@ js_library("piex_module_loader") {
 }
 
 js_library("piex_module") {
-  deps = [ "//ui/file_manager/image_loader:piex_loader.m" ]
-}
-
-js_library("sandboxed_load_time_data") {
+  deps = [ "//ui/file_manager/image_loader:piex_loader" ]
 }
 
 js_library("receiver") {
@@ -168,8 +164,8 @@ js_library("receiver") {
     ":app_context_test_support",
     ":message_types.m",
     ":piex_module_loader",
-    ":sandboxed_load_time_data",
     "//chromeos/components/system_apps/public/js:message_pipe.m",
+    "//chromeos/components/system_apps/public/js:sandboxed_load_time_data",
   ]
 }
 

@@ -163,6 +163,7 @@ TEST_P(SpvBinaryBitTest, EmitExpression) {
   ss << R"(VariableConst{
     x_1
     none
+    undefined
     )"
      << GetParam().ast_type << "\n    {\n      Binary[not set]{"
      << "\n        " << GetParam().ast_lhs << "\n        " << GetParam().ast_op
@@ -208,6 +209,7 @@ TEST_P(SpvBinaryBitGeneralTest, EmitExpression) {
   ss << R"(VariableConst{
     x_1
     none
+    undefined
     )"
      << GetParam().expected;
   auto got = ToString(p->builder(), fe.ast_body());
@@ -1130,10 +1132,11 @@ TEST_F(SpvUnaryBitTest, Not_Int_Int) {
   VariableConst{
     x_1
     none
+    undefined
     __i32
     {
       UnaryOp[not set]{
-        not
+        complement
         ScalarConstructor[not set]{30}
       }
     }
@@ -1156,11 +1159,12 @@ TEST_F(SpvUnaryBitTest, Not_Int_Uint) {
   VariableConst{
     x_1
     none
+    undefined
     __i32
     {
       Bitcast[not set]<__i32>{
         UnaryOp[not set]{
-          not
+          complement
           ScalarConstructor[not set]{10u}
         }
       }
@@ -1184,11 +1188,12 @@ TEST_F(SpvUnaryBitTest, Not_Uint_Int) {
   VariableConst{
     x_1
     none
+    undefined
     __u32
     {
       Bitcast[not set]<__u32>{
         UnaryOp[not set]{
-          not
+          complement
           ScalarConstructor[not set]{30}
         }
       }
@@ -1212,10 +1217,11 @@ TEST_F(SpvUnaryBitTest, Not_Uint_Uint) {
   VariableConst{
     x_1
     none
+    undefined
     __u32
     {
       UnaryOp[not set]{
-        not
+        complement
         ScalarConstructor[not set]{10u}
       }
     }
@@ -1238,10 +1244,11 @@ TEST_F(SpvUnaryBitTest, Not_SignedVec_SignedVec) {
   VariableConst{
     x_1
     none
+    undefined
     __vec_2__i32
     {
       UnaryOp[not set]{
-        not
+        complement
         TypeConstructor[not set]{
           __vec_2__i32
           ScalarConstructor[not set]{30}
@@ -1268,11 +1275,12 @@ TEST_F(SpvUnaryBitTest, Not_SignedVec_UnsignedVec) {
   VariableConst{
     x_1
     none
+    undefined
     __vec_2__i32
     {
       Bitcast[not set]<__vec_2__i32>{
         UnaryOp[not set]{
-          not
+          complement
           TypeConstructor[not set]{
             __vec_2__u32
             ScalarConstructor[not set]{10u}
@@ -1300,11 +1308,12 @@ TEST_F(SpvUnaryBitTest, Not_UnsignedVec_SignedVec) {
   VariableConst{
     x_1
     none
+    undefined
     __vec_2__u32
     {
       Bitcast[not set]<__vec_2__u32>{
         UnaryOp[not set]{
-          not
+          complement
           TypeConstructor[not set]{
             __vec_2__i32
             ScalarConstructor[not set]{30}
@@ -1331,10 +1340,11 @@ TEST_F(SpvUnaryBitTest, Not_UnsignedVec_UnsignedVec) {
   VariableConst{
     x_1
     none
+    undefined
     __vec_2__u32
     {
       UnaryOp[not set]{
-        not
+        complement
         TypeConstructor[not set]{
           __vec_2__u32
           ScalarConstructor[not set]{10u}
@@ -1386,6 +1396,7 @@ TEST_F(SpvUnaryBitTest, BitCount_Uint_Uint) {
   VariableConst{
     x_1
     none
+    undefined
     __u32
     {
       Call[not set]{
@@ -1414,6 +1425,7 @@ TEST_F(SpvUnaryBitTest, BitCount_Uint_Int) {
   VariableConst{
     x_1
     none
+    undefined
     __u32
     {
       Bitcast[not set]<__u32>{
@@ -1444,6 +1456,7 @@ TEST_F(SpvUnaryBitTest, BitCount_Int_Uint) {
   VariableConst{
     x_1
     none
+    undefined
     __i32
     {
       Bitcast[not set]<__i32>{
@@ -1474,6 +1487,7 @@ TEST_F(SpvUnaryBitTest, BitCount_Int_Int) {
   VariableConst{
     x_1
     none
+    undefined
     __i32
     {
       Call[not set]{
@@ -1502,6 +1516,7 @@ TEST_F(SpvUnaryBitTest, BitCount_UintVector_UintVector) {
   VariableConst{
     x_1
     none
+    undefined
     __vec_2__u32
     {
       Call[not set]{
@@ -1530,6 +1545,7 @@ TEST_F(SpvUnaryBitTest, BitCount_UintVector_IntVector) {
   VariableConst{
     x_1
     none
+    undefined
     __vec_2__u32
     {
       Bitcast[not set]<__vec_2__u32>{
@@ -1560,6 +1576,7 @@ TEST_F(SpvUnaryBitTest, BitCount_IntVector_UintVector) {
   VariableConst{
     x_1
     none
+    undefined
     __vec_2__i32
     {
       Bitcast[not set]<__vec_2__i32>{
@@ -1590,6 +1607,7 @@ TEST_F(SpvUnaryBitTest, BitCount_IntVector_IntVector) {
   VariableConst{
     x_1
     none
+    undefined
     __vec_2__i32
     {
       Call[not set]{
@@ -1618,6 +1636,7 @@ TEST_F(SpvUnaryBitTest, BitReverse_Uint_Uint) {
   VariableConst{
     x_1
     none
+    undefined
     __u32
     {
       Call[not set]{
@@ -1674,6 +1693,7 @@ TEST_F(SpvUnaryBitTest, BitReverse_Int_Int) {
   VariableConst{
     x_1
     none
+    undefined
     __i32
     {
       Call[not set]{
@@ -1702,6 +1722,7 @@ TEST_F(SpvUnaryBitTest, BitReverse_UintVector_UintVector) {
   VariableConst{
     x_1
     none
+    undefined
     __vec_2__u32
     {
       Call[not set]{
@@ -1758,6 +1779,7 @@ TEST_F(SpvUnaryBitTest, BitReverse_IntVector_IntVector) {
   VariableConst{
     x_1
     none
+    undefined
     __vec_2__i32
     {
       Call[not set]{

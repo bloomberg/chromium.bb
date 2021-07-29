@@ -9,6 +9,7 @@
 #include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "ash/system/holding_space/holding_space_item_view.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/view_factory.h"
 
 namespace views {
 class ImageView;
@@ -17,7 +18,7 @@ class ImageView;
 namespace ash {
 
 class HoldingSpaceItem;
-class HoldingSpaceItemViewDelegate;
+class HoldingSpaceViewDelegate;
 class RoundedImageView;
 
 class ASH_EXPORT HoldingSpaceItemScreenCaptureView
@@ -25,7 +26,7 @@ class ASH_EXPORT HoldingSpaceItemScreenCaptureView
  public:
   METADATA_HEADER(HoldingSpaceItemScreenCaptureView);
 
-  HoldingSpaceItemScreenCaptureView(HoldingSpaceItemViewDelegate* delegate,
+  HoldingSpaceItemScreenCaptureView(HoldingSpaceViewDelegate* delegate,
                                     const HoldingSpaceItem* item);
   HoldingSpaceItemScreenCaptureView(const HoldingSpaceItemScreenCaptureView&) =
       delete;
@@ -42,9 +43,6 @@ class ASH_EXPORT HoldingSpaceItemScreenCaptureView
 
   void UpdateImage();
 
-  // Overlays a play icon over `image_`.
-  void AddPlayIcon();
-
   // Owned by view hierarchy.
   RoundedImageView* image_ = nullptr;
   views::ImageView* play_icon_ = nullptr;
@@ -52,6 +50,13 @@ class ASH_EXPORT HoldingSpaceItemScreenCaptureView
   base::CallbackListSubscription image_subscription_;
 };
 
+BEGIN_VIEW_BUILDER(/* no export */,
+                   HoldingSpaceItemScreenCaptureView,
+                   HoldingSpaceItemView)
+END_VIEW_BUILDER
+
 }  // namespace ash
+
+DEFINE_VIEW_BUILDER(/* no export */, ash::HoldingSpaceItemScreenCaptureView)
 
 #endif  // ASH_SYSTEM_HOLDING_SPACE_HOLDING_SPACE_ITEM_SCREEN_CAPTURE_VIEW_H_

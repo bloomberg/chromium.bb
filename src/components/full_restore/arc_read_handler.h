@@ -19,6 +19,7 @@ class Window;
 
 namespace full_restore {
 
+struct AppLaunchInfo;
 struct WindowInfo;
 
 // ArcReadHandler is a helper class for FullRestoreReadHandler to handle ARC app
@@ -52,11 +53,19 @@ class COMPONENT_EXPORT(FULL_RESTORE) ArcReadHandler {
   // false.
   bool HasRestoreData(int32_t window_id);
 
+  // Gets the ARC app launch information from the full restore file for `app_id`
+  // and `session_id`.
+  std::unique_ptr<AppLaunchInfo> GetArcAppLaunchInfo(const std::string& app_id,
+                                                     int32_t session_id);
+
   // Gets the window information for |restore_window_id|.
   std::unique_ptr<WindowInfo> GetWindowInfo(int32_t restore_window_id);
 
   // Returns the restore window id for the ARC app's |task_id|.
-  int32_t GetArcRestoreWindowId(int32_t task_id);
+  int32_t GetArcRestoreWindowIdForTaskId(int32_t task_id);
+
+  // Returns the restore window id for the ARC app's `session_id`.
+  int32_t GetArcRestoreWindowIdForSessionId(int32_t session_id);
 
   // Generates the ARC session id (1,000,000,001 - INT_MAX) for restored ARC
   // apps.
@@ -71,6 +80,10 @@ class COMPONENT_EXPORT(FULL_RESTORE) ArcReadHandler {
 
   // Removes AppRestoreData for |restore_window_id|.
   void RemoveAppRestoreData(int32_t restore_window_id);
+
+  // Finds the window from `arc_window_candidates_` for `task_id`, and remove
+  // the window from `arc_window_candidates_`.
+  void UpdateWindowCandidates(int32_t task_id, int32_t restore_window_id);
 
   // The user profile path for ARC app windows.
   base::FilePath profile_path_;
@@ -92,6 +105,12 @@ class COMPONENT_EXPORT(FULL_RESTORE) ArcReadHandler {
   // windows, whose tasks have not been created. Once the task for the window is
   // created, the window is removed from |arc_window_candidates_|.
   std::set<aura::Window*> arc_window_candidates_;
+
+  // ARC app tasks could be created before the window initialized.
+  // `not_restored_task_ids_` is used to record tasks not created by the restore
+  // process. Once the window is created for the task, the window can be removed
+  // from the hidden container.
+  std::set<int32_t> not_restored_task_ids_;
 };
 
 }  // namespace full_restore

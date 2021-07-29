@@ -12,7 +12,6 @@
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
@@ -24,6 +23,7 @@
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -116,6 +116,10 @@ void SetWebAppManifestFields(const WebApplicationInfo& web_app_info,
   DCHECK(!web_app_info.title.empty());
   web_app.SetName(base::UTF16ToUTF8(web_app_info.title));
 
+  if (base::FeatureList::IsEnabled(blink::features::kWebAppEnableManifestId)) {
+    web_app.SetStartUrl(web_app_info.start_url);
+    web_app.SetManifestId(web_app_info.manifest_id);
+  }
   web_app.SetDisplayMode(web_app_info.display_mode);
   web_app.SetDisplayModeOverride(web_app_info.display_override);
 
@@ -155,8 +159,8 @@ void SetWebAppManifestFields(const WebApplicationInfo& web_app_info,
   SetWebAppFileHandlers(web_app_info.file_handlers, web_app);
   web_app.SetShareTarget(web_app_info.share_target);
   SetWebAppProtocolHandlers(web_app_info.protocol_handlers, web_app);
-  web_app.SetNoteTakingNewNoteUrl(web_app_info.note_taking_new_note_url);
   web_app.SetUrlHandlers(web_app_info.url_handlers);
+  web_app.SetNoteTakingNewNoteUrl(web_app_info.note_taking_new_note_url);
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin) &&
       web_app_info.run_on_os_login) {
@@ -170,7 +174,7 @@ void SetWebAppManifestFields(const WebApplicationInfo& web_app_info,
   web_app.SetManifestUrl(web_app_info.manifest_url);
 }
 
-void MaybeDisableOsIntegration(const AppRegistrar* app_registrar,
+void MaybeDisableOsIntegration(const WebAppRegistrar* app_registrar,
                                const AppId& app_id,
                                InstallOsHooksOptions* options) {
 #if !defined(OS_CHROMEOS)  // Deeper OS integration is expected on ChromeOS.
@@ -192,6 +196,15 @@ void MaybeDisableOsIntegration(const AppRegistrar* app_registrar,
     options->os_hooks[OsHookType::kUrlHandlers] = false;
   }
 #endif  // !defined(OS_CHROMEOS)
+}
+
+bool CanWebAppUpdateIdentity(const WebApp* web_app) {
+  if (web_app->IsPolicyInstalledApp() &&
+      base::FeatureList::IsEnabled(
+          features::kWebAppManifestPolicyAppIdentityUpdate)) {
+    return true;
+  }
+  return web_app->IsPreinstalledApp();
 }
 
 }  // namespace web_app

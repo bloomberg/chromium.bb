@@ -78,6 +78,7 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_BeforeFunction_Scalar) {
   VariableConst{
     x_11
     none
+    undefined
     __bool
     {
       ScalarConstructor[not set]{false}
@@ -88,6 +89,7 @@ VariableDeclStatement{
   VariableConst{
     x_12
     none
+    undefined
     __u32
     {
       ScalarConstructor[not set]{0u}
@@ -98,6 +100,7 @@ VariableDeclStatement{
   VariableConst{
     x_13
     none
+    undefined
     __i32
     {
       ScalarConstructor[not set]{0}
@@ -108,6 +111,7 @@ VariableDeclStatement{
   VariableConst{
     x_14
     none
+    undefined
     __f32
     {
       ScalarConstructor[not set]{0.000000}
@@ -126,7 +130,7 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_BeforeFunction_Vector) {
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
 
-     %14 = OpCopyObject %v2uint %4
+     %14 = OpCopyObject %v2bool %4
      %11 = OpCopyObject %v2uint %1
      %12 = OpCopyObject %v2int %2
      %13 = OpCopyObject %v2float %3
@@ -142,6 +146,7 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_BeforeFunction_Vector) {
   VariableConst{
     x_14
     none
+    undefined
     __vec_2__bool
     {
       TypeConstructor[not set]{
@@ -156,6 +161,7 @@ VariableDeclStatement{
   VariableConst{
     x_11
     none
+    undefined
     __vec_2__u32
     {
       TypeConstructor[not set]{
@@ -170,6 +176,7 @@ VariableDeclStatement{
   VariableConst{
     x_12
     none
+    undefined
     __vec_2__i32
     {
       TypeConstructor[not set]{
@@ -184,6 +191,7 @@ VariableDeclStatement{
   VariableConst{
     x_13
     none
+    undefined
     __vec_2__f32
     {
       TypeConstructor[not set]{
@@ -221,6 +229,7 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Scalar) {
   VariableConst{
     x_11
     none
+    undefined
     __bool
     {
       ScalarConstructor[not set]{false}
@@ -231,6 +240,7 @@ VariableDeclStatement{
   VariableConst{
     x_12
     none
+    undefined
     __u32
     {
       ScalarConstructor[not set]{0u}
@@ -241,6 +251,7 @@ VariableDeclStatement{
   VariableConst{
     x_13
     none
+    undefined
     __i32
     {
       ScalarConstructor[not set]{0}
@@ -251,6 +262,7 @@ VariableDeclStatement{
   VariableConst{
     x_14
     none
+    undefined
     __f32
     {
       ScalarConstructor[not set]{0.000000}
@@ -282,6 +294,7 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Vector) {
   VariableConst{
     x_11
     none
+    undefined
     __vec_2__u32
     {
       TypeConstructor[not set]{
@@ -296,6 +309,7 @@ VariableDeclStatement{
   VariableConst{
     x_12
     none
+    undefined
     __vec_2__i32
     {
       TypeConstructor[not set]{
@@ -310,6 +324,7 @@ VariableDeclStatement{
   VariableConst{
     x_13
     none
+    undefined
     __vec_2__f32
     {
       TypeConstructor[not set]{
@@ -343,6 +358,7 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Matrix) {
   VariableConst{
     x_11
     none
+    undefined
     __mat_2_2__f32
     {
       TypeConstructor[not set]{
@@ -385,6 +401,7 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Array) {
   VariableConst{
     x_11
     none
+    undefined
     __array__u32_2
     {
       TypeConstructor[not set]{
@@ -418,6 +435,7 @@ TEST_F(SpvParserTestMiscInstruction, OpUndef_InFunction_Struct) {
   VariableConst{
     x_11
     none
+    undefined
     __type_name_S
     {
       TypeConstructor[not set]{
@@ -495,6 +513,64 @@ INSTANTIATE_TEST_SUITE_P(
         {3, "Identifier[not set]{w}\n", ""},
         {4, "", "vector component index is larger than 3: 4"},
         {99999, "", "vector component index is larger than 3: 99999"}}));
+
+TEST_F(SpvParserTest, ValueFromBlockNotInBlockOrder) {
+  // crbug.com/tint/804
+  const auto assembly = Preamble() + CommonTypes() + R"(
+     %float_42 = OpConstant %float 42.0
+     %cond = OpUndef %bool
+
+     %100 = OpFunction %void None %voidfn
+     %10 = OpLabel
+     OpBranch %30
+
+     ; unreachable
+     %20 = OpLabel
+     %499 = OpFAdd %float %float_42 %float_42
+     %500 = OpFAdd %float %499 %float_42
+     OpBranch %25
+
+     %25 = OpLabel
+     OpBranch %80
+
+
+     %30 = OpLabel
+     OpLoopMerge %90 %80 None
+     OpBranchConditional %cond %90 %40
+
+     %40 = OpLabel
+     OpBranch %90
+
+     %80 = OpLabel ; unreachable continue target
+                ; but "dominated" by %20 and %25
+     %81 = OpFMul %float %500 %float_42 ; %500 is defined in %20
+     OpBranch %30 ; backedge
+
+     %90 = OpLabel
+     OpReturn
+     OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
+  auto fe = p->function_emitter(100);
+  EXPECT_TRUE(fe.EmitBody()) << p->error();
+  const auto got = ToString(p->builder(), fe.ast_body());
+  EXPECT_THAT(got, HasSubstr(R"(VariableDeclStatement{
+      VariableConst{
+        x_81
+        none
+        undefined
+        __f32
+        {
+          Binary[not set]{
+            ScalarConstructor[not set]{0.000000}
+            multiply
+            ScalarConstructor[not set]{42.000000}
+          }
+        }
+      }
+    })"));
+}
 
 // TODO(dneto): OpSizeof : requires Kernel (OpenCL)
 

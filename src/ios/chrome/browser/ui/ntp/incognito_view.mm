@@ -18,7 +18,6 @@
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/common/string_util.h"
-#import "ios/chrome/common/ui/colors/dynamic_color_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -59,9 +58,7 @@ UIFont* TitleFont() {
 
 // Returns the color to use for body text.
 UIColor* BodyTextColor() {
-  return color::DarkModeDynamicColor(
-      [UIColor colorNamed:kTextSecondaryColor], true,
-      [UIColor colorNamed:kTextSecondaryDarkColor]);
+  return [UIColor colorNamed:kTextSecondaryColor];
 }
 
 // Returns a font, scaled to the current dynamic type settings, that is suitable
@@ -183,9 +180,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     UIImageView* incognitoImageView =
         [[UIImageView alloc] initWithImage:incognitoImage];
-    incognitoImageView.tintColor = color::DarkModeDynamicColor(
-        [UIColor colorNamed:kTextPrimaryColor], true,
-        [UIColor colorNamed:kTextPrimaryDarkColor]);
+    incognitoImageView.tintColor = [UIColor colorNamed:kTextPrimaryColor];
     [_stackView addArrangedSubview:incognitoImageView];
     [_stackView setCustomSpacing:kStackViewImageSpacing
                        afterView:incognitoImageView];
@@ -368,13 +363,9 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
 // Adds views containing the text of the incognito page to |_stackView|.
 - (void)addTextSections {
-  UIColor* titleTextColor =
-      color::DarkModeDynamicColor([UIColor colorNamed:kTextPrimaryColor], true,
-                                  [UIColor colorNamed:kTextPrimaryDarkColor]);
+  UIColor* titleTextColor = [UIColor colorNamed:kTextPrimaryColor];
   UIColor* bodyTextColor = BodyTextColor();
-  UIColor* linkTextColor =
-      color::DarkModeDynamicColor([UIColor colorNamed:kBlueColor], true,
-                                  [UIColor colorNamed:kBlueDarkColor]);
+  UIColor* linkTextColor = [UIColor colorNamed:kBlueColor];
 
   // Title.
   UILabel* titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];

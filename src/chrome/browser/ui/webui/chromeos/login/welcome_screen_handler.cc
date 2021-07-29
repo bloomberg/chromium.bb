@@ -22,10 +22,10 @@
 #include "chrome/browser/ash/login/screens/welcome_screen.h"
 #include "chrome/browser/ash/login/ui/input_events_blocker.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -276,7 +276,7 @@ void WelcomeScreenHandler::GetAdditionalParameters(
   if (screen_) {
     if (screen_->language_list() &&
         screen_->language_list_locale() == application_locale) {
-      language_list.reset(screen_->language_list()->DeepCopy());
+      language_list = screen_->language_list()->CreateDeepCopy();
     } else {
       screen_->UpdateLanguageList();
     }
@@ -287,13 +287,13 @@ void WelcomeScreenHandler::GetAdditionalParameters(
 
   const bool enable_layouts = true;
 
-  dict->Set("languageList", std::move(language_list));
-  dict->Set("inputMethodsList",
-            GetAndActivateLoginKeyboardLayouts(
-                application_locale, selected_input_method, enable_layouts));
-  dict->Set("timezoneList", GetTimezoneList());
-  dict->Set("demoModeCountryList",
-            base::Value::ToUniquePtrValue(DemoSession::GetCountryList()));
+  dict->SetKey("languageList",
+               base::Value::FromUniquePtrValue(std::move(language_list)));
+  dict->SetKey("inputMethodsList",
+               GetAndActivateLoginKeyboardLayouts(
+                   application_locale, selected_input_method, enable_layouts));
+  dict->SetKey("timezoneList", GetTimezoneList());
+  dict->SetKey("demoModeCountryList", DemoSession::GetCountryList());
 
   // This switch is set by the session manager if the OS install
   // service is enabled and the OS is running from a USB installer.
@@ -384,28 +384,25 @@ void WelcomeScreenHandler::UpdateA11yState() {
 }
 
 // static
-std::unique_ptr<base::ListValue> WelcomeScreenHandler::GetTimezoneList() {
+base::ListValue WelcomeScreenHandler::GetTimezoneList() {
   std::string current_timezone_id;
   CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
 
-  std::unique_ptr<base::ListValue> timezone_list(new base::ListValue);
+  base::ListValue timezone_list;
   std::unique_ptr<base::ListValue> timezones = system::GetTimezoneList();
-  for (size_t i = 0; i < timezones->GetSize(); ++i) {
-    const base::ListValue* timezone = NULL;
-    CHECK(timezones->GetList(i, &timezone));
+  base::Value::ConstListView timezones_view = timezones->GetList();
+  for (size_t i = 0; i < timezones_view.size(); ++i) {
+    CHECK(timezones_view[i].is_list());
+    base::Value::ConstListView timezone = timezones_view[i].GetList();
 
-    std::string timezone_id;
-    CHECK(timezone->GetString(0, &timezone_id));
+    std::string timezone_id = timezone[0].GetString();
+    std::string timezone_name = timezone[1].GetString();
 
-    std::string timezone_name;
-    CHECK(timezone->GetString(1, &timezone_name));
-
-    std::unique_ptr<base::DictionaryValue> timezone_option(
-        new base::DictionaryValue);
-    timezone_option->SetString("value", timezone_id);
-    timezone_option->SetString("title", timezone_name);
-    timezone_option->SetBoolean("selected", timezone_id == current_timezone_id);
-    timezone_list->Append(std::move(timezone_option));
+    base::Value timezone_option(base::Value::Type::DICTIONARY);
+    timezone_option.SetStringKey("value", timezone_id);
+    timezone_option.SetStringKey("title", timezone_name);
+    timezone_option.SetBoolKey("selected", timezone_id == current_timezone_id);
+    timezone_list.Append(std::move(timezone_option));
   }
 
   return timezone_list;

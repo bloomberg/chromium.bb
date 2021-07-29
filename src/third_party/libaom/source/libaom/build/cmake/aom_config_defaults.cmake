@@ -73,6 +73,11 @@ set_aom_config_var(CONFIG_AV1_ENCODER 1 "Enable AV1 encoder.")
 set_aom_config_var(CONFIG_BIG_ENDIAN 0 "Internal flag.")
 set_aom_config_var(CONFIG_FRAME_PARALLEL_ENCODE 0
                    "Enable frame parallelism during encode.")
+if(CONFIG_FRAME_PARALLEL_ENCODE)
+  set_aom_config_var(
+    CONFIG_FRAME_PARALLEL_ENCODE_2 0
+    "Enable frame parallelism during encode for frames in lower layer depths.")
+endif() # CONFIG_FRAME_PARALLEL_ENCODE
 set_aom_config_var(CONFIG_GCC 0 "Building with GCC (detect).")
 set_aom_config_var(CONFIG_GCOV 0 "Enable gcov support.")
 set_aom_config_var(CONFIG_GPROF 0 "Enable gprof support.")
@@ -130,6 +135,8 @@ set_aom_config_var(CONFIG_INTER_STATS_ONLY 0 "AV1 experiment flag.")
 set_aom_config_var(CONFIG_BITSTREAM_DEBUG 0
                    "AV1 experiment flag for bitstream debugging.")
 set_aom_config_var(CONFIG_RD_DEBUG 0 "AV1 experiment flag.")
+set_aom_config_var(CONFIG_RD_COMMAND 0
+                   "An experiment flag for using external rdmult and q_index.")
 set_aom_config_var(CONFIG_SHARP_SETTINGS 0 "AV1 experiment flag.")
 set_aom_config_var(CONFIG_DISABLE_FULL_PIXEL_SPLIT_8X8 1
                    "Disable full_pixel_motion_search_based_split on BLOCK_8X8.")
@@ -137,8 +144,6 @@ set_aom_config_var(CONFIG_COLLECT_PARTITION_STATS 0
                    "Collect partition timing stats. Can be 1 or 2.")
 set_aom_config_var(CONFIG_COLLECT_COMPONENT_TIMING 0
                    "Collect encoding component timing information.")
-set_aom_config_var(CONFIG_LPF_MASK 0
-                   "Enable the use loop filter bitmasks for optimizations.")
 set_aom_config_var(CONFIG_NN_V2 0 "Fully-connected neural nets ver.2.")
 set_aom_config_var(CONFIG_OPTICAL_FLOW_API 0
                    "AV1 experiment flag for optical flow API.")
@@ -146,6 +151,8 @@ set_aom_config_var(CONFIG_RT_ML_PARTITIONING 0
                    "Build with ML-based partitioning for Real Time.")
 set_aom_config_var(CONFIG_PARTITION_SEARCH_ORDER 0
                    "AV1 experiment with alternative partition search order.")
+set_aom_config_var(CONFIG_BITRATE_ACCURACY 0
+                   "AV1 experiment to improve bitrate accuracy.")
 
 #
 # Variables in this section control optional features of the build system.

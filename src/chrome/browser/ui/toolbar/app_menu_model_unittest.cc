@@ -27,7 +27,7 @@
 #include "ui/gfx/color_palette.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -263,7 +263,7 @@ TEST_F(AppMenuModelTest, DisableSettingsItem) {
     ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
                           policy::policy_prefs::kSystemFeaturesDisableList);
     base::ListValue* list = update.Get();
-    list->Clear();
+    list->ClearList();
   }
   EXPECT_TRUE(model.IsEnabledAt(options_index));
 

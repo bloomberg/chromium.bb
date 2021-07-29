@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_layout_algorithm.h"
@@ -93,7 +94,10 @@ class NGInlineNodeTest : public NGLayoutTest {
     SetupHtml("t", "<div id=t style='font:10px Ahem'>test</div>");
   }
 
-  NGInlineNodeForTest CreateInlineNode() {
+  NGInlineNodeForTest CreateInlineNode(
+      LayoutNGBlockFlow* layout_block_flow = nullptr) {
+    if (layout_block_flow)
+      layout_block_flow_ = layout_block_flow;
     if (!layout_block_flow_)
       SetupHtml("t", "<div id=t style='font:10px'>test</div>");
     NGInlineNodeForTest node(layout_block_flow_);
@@ -309,6 +313,76 @@ TEST_F(NGInlineNodeTest, CollectInlinesMixedTextEndWithON) {
   TEST_ITEM_TYPE_OFFSET_LEVEL(items[4], kText, 10u, 11u, 0u);
   TEST_ITEM_TYPE_OFFSET_LEVEL(items[5], kCloseTag, 11u, 11u, 0u);
   EXPECT_EQ(6u, items.size());
+}
+
+TEST_F(NGInlineNodeTest, CollectInlinesTextCombineBR) {
+  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  InsertStyleElement(
+      "#t { text-combine-upright: all; writing-mode: vertical-rl; }");
+  SetupHtml("t", u"<div id=t>a<br>z</div>");
+  NGInlineNodeForTest node =
+      CreateInlineNode(To<LayoutNGBlockFlow>(layout_object_));
+  node.CollectInlines();
+  EXPECT_EQ("a z", node.Text());
+  Vector<NGInlineItem>& items = node.Items();
+  ASSERT_EQ(3u, items.size());
+  TEST_ITEM_TYPE_OFFSET(items[0], kText, 0u, 1u);
+  TEST_ITEM_TYPE_OFFSET(items[1], kText, 1u, 2u) << "<br> isn't control";
+  TEST_ITEM_TYPE_OFFSET(items[2], kText, 2u, 3u);
+}
+
+// http://crbug.com/1222633
+TEST_F(NGInlineNodeTest, CollectInlinesTextCombineListItemMarker) {
+  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  InsertStyleElement(
+      "#t { text-combine-upright: all; writing-mode: vertical-rl; }");
+  SetupHtml("t", u"<li id=t>ab</li>");
+  // LayoutNGListItem {LI}
+  //   LayoutNGOutsideListMarker {::marker}
+  //      LayoutNGTextCombine (anonymous)
+  //        LayoutText (anonymous) "\x{2022} "
+  //   LayoutNGTextCombine (anonymous)
+  //     LayoutText {#text} "a"
+  NGInlineNodeForTest node = CreateInlineNode(
+      To<LayoutNGTextCombine>(layout_object_->SlowFirstChild()));
+  node.CollectInlines();
+  EXPECT_EQ(u8"\u2022", node.Text());
+  Vector<NGInlineItem>& items = node.Items();
+  ASSERT_EQ(1u, items.size());
+  TEST_ITEM_TYPE_OFFSET(items[0], kText, 0u, 1u);
+  EXPECT_TRUE(items[0].IsSymbolMarker());
+}
+
+TEST_F(NGInlineNodeTest, CollectInlinesTextCombineNewline) {
+  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  InsertStyleElement(
+      "#t { text-combine-upright: all; writing-mode: vertical-rl; }");
+  SetupHtml("t", u"<pre id=t>a\nz</pre>");
+  NGInlineNodeForTest node =
+      CreateInlineNode(To<LayoutNGBlockFlow>(layout_object_));
+  node.CollectInlines();
+  EXPECT_EQ("a z", node.Text());
+  Vector<NGInlineItem>& items = node.Items();
+  ASSERT_EQ(3u, items.size());
+  TEST_ITEM_TYPE_OFFSET(items[0], kText, 0u, 1u);
+  TEST_ITEM_TYPE_OFFSET(items[1], kText, 1u, 2u) << "newline isn't control";
+  TEST_ITEM_TYPE_OFFSET(items[2], kText, 2u, 3u);
+}
+
+TEST_F(NGInlineNodeTest, CollectInlinesTextCombineWBR) {
+  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  InsertStyleElement(
+      "#t { text-combine-upright: all; writing-mode: vertical-rl; }");
+  SetupHtml("t", u"<div id=t>a<wbr>z</div>");
+  NGInlineNodeForTest node =
+      CreateInlineNode(To<LayoutNGBlockFlow>(layout_object_));
+  node.CollectInlines();
+  EXPECT_EQ(u8"a\u200Bz", node.Text());
+  Vector<NGInlineItem>& items = node.Items();
+  ASSERT_EQ(3u, items.size());
+  TEST_ITEM_TYPE_OFFSET(items[0], kText, 0u, 1u);
+  TEST_ITEM_TYPE_OFFSET(items[1], kText, 1u, 2u) << "<wbr> isn't control";
+  TEST_ITEM_TYPE_OFFSET(items[2], kText, 2u, 3u);
 }
 
 TEST_F(NGInlineNodeTest, SegmentASCII) {
@@ -1484,6 +1558,48 @@ TEST_F(NGInlineNodeTest, LetterSpacingUseCounterUnderline) {
   const LayoutObject* span = GetLayoutObjectByElementId("span");
   EXPECT_TRUE(NGInlineNode(p).ShouldReportLetterSpacingUseCounterForTesting(
       span->SlowFirstChild(), /* first_line */ false, p));
+}
+
+TEST_F(NGInlineNodeTest, TextCombineUsesScalingX) {
+  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  LoadAhem();
+  InsertStyleElement(
+      "div {"
+      "  font: 10px/20px Ahem;"
+      "  text-combine-upright: all;"
+      "  writing-mode: vertical-rl;"
+      "}");
+  SetBodyInnerHTML("<div id=t1>0123456789</div><div id=t2>0</div>");
+
+  EXPECT_TRUE(To<LayoutNGTextCombine>(
+                  GetLayoutObjectByElementId("t1")->SlowFirstChild())
+                  ->UsesScaleX())
+      << "We paint combined text '0123456789' with scaling in X-axis.";
+  EXPECT_FALSE(To<LayoutNGTextCombine>(
+                   GetLayoutObjectByElementId("t2")->SlowFirstChild())
+                   ->UsesScaleX())
+      << "We paint combined text '0' without scaling in X-axis.";
+}
+
+// http://crbug.com/1226930
+TEST_F(NGInlineNodeTest, TextCombineWordSpacing) {
+  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  LoadAhem();
+  InsertStyleElement(
+      "div {"
+      "  font: 10px/20px Ahem;"
+      "  letter-spacing: 1px;"
+      "  text-combine-upright: all;"
+      "  word-spacing: 1px;"
+      "  writing-mode: vertical-rl;"
+      "}");
+  SetBodyInnerHTML("<div id=t1>ab</div>");
+  const auto& text =
+      *To<Text>(GetElementById("t1")->firstChild())->GetLayoutObject();
+  const auto& font_description = text.StyleRef().GetFont().GetFontDescription();
+
+  EXPECT_EQ(0, font_description.LetterSpacing());
+  EXPECT_EQ(0, font_description.WordSpacing());
 }
 
 }  // namespace blink

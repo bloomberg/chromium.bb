@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_TASK_PRIORITY_CHANGE_EVENT_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_task_priority.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -27,10 +28,10 @@ class MODULES_EXPORT TaskPriorityChangeEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  AtomicString previousPriority() const;
+  V8TaskPriority previousPriority() const;
 
  private:
-  const AtomicString previous_priority_;
+  const V8TaskPriority previous_priority_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskPriorityChangeEvent);
 };

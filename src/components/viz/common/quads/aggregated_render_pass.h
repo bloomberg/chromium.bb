@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/hash/hash.h"
 #include "base/macros.h"
-#include "base/util/type_safety/id_type.h"
+#include "base/types/id_type.h"
 #include "cc/base/list_container.h"
 #include "cc/paint/filter_operations.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -22,6 +22,7 @@
 #include "components/viz/common/quads/quad_list.h"
 #include "components/viz/common/quads/render_pass_internal.h"
 #include "components/viz/common/viz_common_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/rrect_f.h"
@@ -32,7 +33,7 @@ class AggregatedRenderPass;
 class CompositorRenderPassDrawQuad;
 class AggregatedRenderPassDrawQuad;
 
-using AggregatedRenderPassId = util::IdTypeU64<AggregatedRenderPass>;
+using AggregatedRenderPassId = base::IdTypeU64<AggregatedRenderPass>;
 
 // This class represents a render pass that is a result of aggregating render
 // passes from all of the relevant surfaces. It is _not_ mojo-serializable since
@@ -94,6 +95,8 @@ class VIZ_COMMON_EXPORT AggregatedRenderPass : public RenderPassInternal {
 
   // Indicates current RenderPass is a color conversion pass.
   bool is_color_conversion_pass = false;
+
+  void AsValueInto(base::trace_event::TracedValue* dict) const;
 
  private:
   template <typename DrawQuadType>

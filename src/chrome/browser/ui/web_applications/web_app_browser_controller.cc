@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -18,10 +19,12 @@
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
+#include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -45,6 +48,7 @@ WebAppBrowserController::WebAppBrowserController(Browser* browser)
       provider_(*WebAppProvider::Get(browser->profile())) {
   registrar_observation_.Observe(&provider_.registrar());
   PerformDigitalAssetLinkVerification(browser);
+  DCHECK(HasAppId());
 }
 
 WebAppBrowserController::~WebAppBrowserController() = default;
@@ -62,12 +66,21 @@ bool WebAppBrowserController::IsHostedApp() const {
   return true;
 }
 
-bool WebAppBrowserController::IsWindowControlsOverlayEnabled() const {
-  if (!base::FeatureList::IsEnabled(features::kWebAppWindowControlsOverlay))
-    return false;
-
+bool WebAppBrowserController::AppUsesWindowControlsOverlay() const {
   DisplayMode display = registrar().GetAppEffectiveDisplayMode(GetAppId());
   return display == DisplayMode::kWindowControlsOverlay;
+}
+
+bool WebAppBrowserController::IsWindowControlsOverlayEnabled() const {
+  return AppUsesWindowControlsOverlay() &&
+         registrar().GetWindowControlsOverlayEnabled(GetAppId());
+}
+
+void WebAppBrowserController::ToggleWindowControlsOverlayEnabled() {
+  DCHECK(AppUsesWindowControlsOverlay());
+
+  provider_.registry_controller().SetAppWindowControlsOverlayEnabled(
+      GetAppId(), !registrar().GetWindowControlsOverlayEnabled(GetAppId()));
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -110,7 +123,7 @@ void WebAppBrowserController::SetReadIconCallbackForTesting(
   callback_for_testing_ = std::move(callback);
 }
 
-gfx::ImageSkia WebAppBrowserController::GetWindowAppIcon() const {
+ui::ImageModel WebAppBrowserController::GetWindowAppIcon() const {
   if (app_icon_)
     return *app_icon_;
   app_icon_ = GetFallbackAppIcon();
@@ -135,7 +148,7 @@ gfx::ImageSkia WebAppBrowserController::GetWindowAppIcon() const {
   return *app_icon_;
 }
 
-gfx::ImageSkia WebAppBrowserController::GetWindowIcon() const {
+ui::ImageModel WebAppBrowserController::GetWindowIcon() const {
   return GetWindowAppIcon();
 }
 
@@ -238,24 +251,25 @@ void WebAppBrowserController::OnTabRemoved(content::WebContents* contents) {
   web_app::ClearAppPrefsForWebContents(contents);
 }
 
-const AppRegistrar& WebAppBrowserController::registrar() const {
+const WebAppRegistrar& WebAppBrowserController::registrar() const {
   return provider_.registrar();
 }
 
 void WebAppBrowserController::LoadAppIcon(bool allow_placeholder_icon) const {
-  apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
-      ->LoadIcon(apps::mojom::AppType::kWeb, GetAppId(),
-                 apps::mojom::IconType::kStandard, web_app::kWebAppIconSmall,
-                 allow_placeholder_icon,
-                 base::BindOnce(&WebAppBrowserController::OnLoadIcon,
-                                weak_ptr_factory_.GetWeakPtr()));
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+  proxy->LoadIcon(proxy->AppRegistryCache().GetAppType(GetAppId()), GetAppId(),
+                  apps::mojom::IconType::kStandard, web_app::kWebAppIconSmall,
+                  allow_placeholder_icon,
+                  base::BindOnce(&WebAppBrowserController::OnLoadIcon,
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebAppBrowserController::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
   if (icon_value->icon_type != apps::mojom::IconType::kStandard)
     return;
 
-  app_icon_ = icon_value->uncompressed;
+  app_icon_ = ui::ImageModel::FromImageSkia(icon_value->uncompressed);
 
   if (icon_value->is_placeholder_icon)
     LoadAppIcon(false /* allow_placeholder_icon */);
@@ -266,13 +280,14 @@ void WebAppBrowserController::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
     std::move(callback_for_testing_).Run();
 }
 
-void WebAppBrowserController::OnReadIcon(const SkBitmap& bitmap) {
+void WebAppBrowserController::OnReadIcon(SkBitmap bitmap) {
   if (bitmap.empty()) {
     DLOG(ERROR) << "Failed to read icon for web app";
     return;
   }
 
-  app_icon_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+  app_icon_ =
+      ui::ImageModel::FromImageSkia(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
   if (auto* contents = web_contents())
     contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   if (callback_for_testing_)

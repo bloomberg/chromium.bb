@@ -18,7 +18,6 @@
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 #include "third_party/blink/renderer/modules/xr/xr_viewport.h"
-#include "third_party/blink/renderer/modules/xr/xr_webgl_rendering_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/double_size.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
@@ -41,11 +40,7 @@ const char kCleanFrameWarning[] =
 }  // namespace
 
 XRWebGLLayer* XRWebGLLayer::Create(XRSession* session,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                                    const V8XRWebGLRenderingContext* context,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                                   const XRWebGLRenderingContext& context,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                                    const XRWebGLLayerInit* initializer,
                                    ExceptionState& exception_state) {
   if (session->ended()) {

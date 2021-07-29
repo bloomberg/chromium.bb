@@ -11,6 +11,7 @@
 
 #include "ash/child_accounts/parent_access_controller_impl.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/mock_login_screen_client.h"
@@ -30,8 +31,6 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/mojom/tray_action.mojom.h"
 #include "ash/root_window_controller.h"
@@ -40,6 +39,7 @@
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_button_controller.h"
@@ -56,6 +56,7 @@
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
@@ -937,17 +938,17 @@ TEST_F(LockContentsViewUnitTest, EasyUnlockForceTooltipCreatesTooltipWidget) {
 
   // Show an icon with |autoshow_tooltip| is false. Tooltip bubble is not
   // activated.
-  EasyUnlockIconOptions icon;
-  icon.icon = EasyUnlockIconId::LOCKED;
-  icon.autoshow_tooltip = false;
+  EasyUnlockIconInfo icon_info;
+  icon_info.icon_state = EasyUnlockIconState::LOCKED;
+  icon_info.autoshow_tooltip = false;
   DataDispatcher()->ShowEasyUnlockIcon(users()[0].basic_user_info.account_id,
-                                       icon);
+                                       icon_info);
   EXPECT_FALSE(test_api.tooltip_bubble()->GetVisible());
 
   // Show icon with |autoshow_tooltip| set to true. Tooltip bubble is shown.
-  icon.autoshow_tooltip = true;
+  icon_info.autoshow_tooltip = true;
   DataDispatcher()->ShowEasyUnlockIcon(users()[0].basic_user_info.account_id,
-                                       icon);
+                                       icon_info);
   EXPECT_TRUE(test_api.tooltip_bubble()->GetVisible());
 }
 
@@ -979,18 +980,18 @@ TEST_F(LockContentsViewUnitTest, EasyUnlockIconUpdatedDuringUserSwap) {
 
   // Enables easy unlock icon for |view|.
   auto enable_icon = [&](LoginBigUserView* view) {
-    EasyUnlockIconOptions icon;
-    icon.icon = EasyUnlockIconId::LOCKED;
+    EasyUnlockIconInfo icon_info;
+    icon_info.icon_state = EasyUnlockIconState::LOCKED;
     DataDispatcher()->ShowEasyUnlockIcon(
-        view->GetCurrentUser().basic_user_info.account_id, icon);
+        view->GetCurrentUser().basic_user_info.account_id, icon_info);
   };
 
   // Disables easy unlock icon for |view|.
   auto disable_icon = [&](LoginBigUserView* view) {
-    EasyUnlockIconOptions icon;
-    icon.icon = EasyUnlockIconId::NONE;
+    EasyUnlockIconInfo icon_info;
+    icon_info.icon_state = EasyUnlockIconState::NONE;
     DataDispatcher()->ShowEasyUnlockIcon(
-        view->GetCurrentUser().basic_user_info.account_id, icon);
+        view->GetCurrentUser().basic_user_info.account_id, icon_info);
   };
 
   // Makes |view| the active auth view so it will can show auth methods.
@@ -1022,7 +1023,7 @@ TEST_F(LockContentsViewUnitTest, EasyUnlockIconUpdatedDuringUserSwap) {
   make_active_auth_view(primary);
   EXPECT_TRUE(showing_easy_unlock_icon(primary));
 
-  // Activate icon for secondary. Primary visiblity does not change.
+  // Activate icon for secondary. Primary visibility does not change.
   enable_icon(secondary);
   EXPECT_TRUE(showing_easy_unlock_icon(primary));
 
@@ -2041,6 +2042,61 @@ TEST_F(LockContentsViewUnitTest, OnAuthEnabledForUserChanged) {
   EXPECT_FALSE(disabled_auth_message->GetVisible());
 }
 
+TEST_F(LockContentsViewUnitTest, ShowReasonOnAuthDisabled) {
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetUserCount(1);
+  SetWidget(CreateWidgetWithContent(contents));
+
+  const AccountId& kFirstUserAccountId = users()[0].basic_user_info.account_id;
+  LockContentsView::TestApi contents_test_api(contents);
+  LoginAuthUserView::TestApi auth_test_api(
+      contents_test_api.primary_big_view()->auth_user());
+  LoginPasswordView* password_view = auth_test_api.password_view();
+  LoginPinView* pin_view = auth_test_api.pin_view();
+  views::View* disabled_auth_message = auth_test_api.disabled_auth_message();
+
+  // The password field is shown by default.
+  EXPECT_TRUE(password_view->GetVisible());
+  EXPECT_FALSE(pin_view->GetVisible());
+  EXPECT_FALSE(disabled_auth_message->GetVisible());
+  // Setting auth disabled due to time window limit.
+  DataDispatcher()->DisableAuthForUser(
+      kFirstUserAccountId,
+      AuthDisabledData(
+          ash::AuthDisabledReason::kTimeWindowLimit,
+          base::Time::Now().LocalMidnight() + base::TimeDelta::FromHours(8),
+          base::TimeDelta::FromHours(1), true /*disable_lock_screen_media*/));
+  EXPECT_FALSE(password_view->GetVisible());
+  EXPECT_FALSE(pin_view->GetVisible());
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(IDS_ASH_LOGIN_COME_BACK_MESSAGE, u"8:00 AM"),
+      auth_test_api.GetDisabledAuthMessageContent());
+  // Setting auth disabled due to time usage limit.
+  DataDispatcher()->DisableAuthForUser(
+      kFirstUserAccountId,
+      AuthDisabledData(ash::AuthDisabledReason::kTimeUsageLimit,
+                       base::Time::Now(), base::TimeDelta::FromMinutes(30),
+                       true /*disable_lock_screen_media*/));
+  EXPECT_FALSE(password_view->GetVisible());
+  EXPECT_FALSE(pin_view->GetVisible());
+  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_LOGIN_SCREEN_TIME_USED_MESSAGE,
+                                       u"30 minutes"),
+            auth_test_api.GetDisabledAuthMessageContent());
+  // Setting auth disabled due to time limit override.
+  DataDispatcher()->DisableAuthForUser(
+      kFirstUserAccountId,
+      AuthDisabledData(ash::AuthDisabledReason::kTimeLimitOverride,
+                       base::Time::Now(), base::TimeDelta::FromMinutes(30),
+                       true /*disable_lock_screen_media*/));
+  EXPECT_FALSE(password_view->GetVisible());
+  EXPECT_FALSE(pin_view->GetVisible());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_LOGIN_MANUAL_LOCK_MESSAGE),
+            auth_test_api.GetDisabledAuthMessageContent());
+}
+
 TEST_F(LockContentsViewUnitTest,
        ToggleNoteActionVisibilityOnAuthEnabledChanged) {
   auto* tray_action = Shell::Get()->tray_action();
@@ -2539,7 +2595,7 @@ TEST_F(LockContentsViewUnitTest, RemoveUserFocusMovesBackToPrimaryUser) {
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   base::RunLoop().RunUntilIdle();
   // Focus the remove user bubble, tap twice to remove the user.
-  user_test_api.menu()->RequestFocus();
+  user_test_api.remove_account_dialog()->RequestFocus();
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   base::RunLoop().RunUntilIdle();
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);

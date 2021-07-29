@@ -15,6 +15,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/thread_pool.h"
 #include "base/win/scoped_propvariant.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_config.h"
@@ -149,20 +150,34 @@ HRESULT BuildCdmProperties(const base::UnguessableToken& origin_id,
   return S_OK;
 }
 
+bool IsTypeSupportedInternal(
+    ComPtr<IMFContentDecryptionModuleFactory> cdm_factory,
+    const std::string& key_system,
+    const std::string& content_type) {
+  return cdm_factory->IsTypeSupported(base::UTF8ToWide(key_system).c_str(),
+                                      base::UTF8ToWide(content_type).c_str());
+}
+
+crash_reporter::CrashKeyString<256> g_origin_crash_key("cdm-origin");
+
 }  // namespace
 
 MediaFoundationCdmFactory::MediaFoundationCdmFactory(
     std::unique_ptr<CdmAuxiliaryHelper> helper,
     const base::FilePath& user_data_dir)
-    : helper_(std::move(helper)), user_data_dir_(user_data_dir) {}
+    : helper_(std::move(helper)),
+      user_data_dir_(user_data_dir),
+      cdm_origin_crash_key_(&g_origin_crash_key,
+                            helper_->GetCdmOrigin().Serialize()) {}
 
 MediaFoundationCdmFactory::~MediaFoundationCdmFactory() = default;
 
 void MediaFoundationCdmFactory::SetCreateCdmFactoryCallbackForTesting(
     const std::string& key_system,
     CreateCdmFactoryCB create_cdm_factory_cb) {
-  DCHECK(!create_cdm_factory_cbs_.count(key_system));
-  create_cdm_factory_cbs_[key_system] = std::move(create_cdm_factory_cb);
+  DCHECK(!create_cdm_factory_cbs_for_testing_.count(key_system));
+  create_cdm_factory_cbs_for_testing_[key_system] =
+      std::move(create_cdm_factory_cb);
 }
 
 void MediaFoundationCdmFactory::Create(
@@ -181,25 +196,54 @@ void MediaFoundationCdmFactory::Create(
   DCHECK(cdm_config.allow_persistent_state);
   DCHECK(cdm_config.allow_distinctive_identifier);
 
-  ComPtr<IMFContentDecryptionModule> mf_cdm;
-  if (FAILED(CreateCdmInternal(key_system, cdm_config, mf_cdm))) {
-    BindToCurrentLoop(std::move(cdm_created_cb))
-        .Run(nullptr, "Failed to create CDM");
+  // Don't cache `cdm_origin_id` in this class since user can clear it any time.
+  helper_->GetCdmOriginId(base::BindOnce(
+      &MediaFoundationCdmFactory::OnCdmOriginIdObtained,
+      weak_factory_.GetWeakPtr(), key_system, cdm_config, session_message_cb,
+      session_closed_cb, session_keys_change_cb, session_expiration_update_cb,
+      std::move(cdm_created_cb)));
+}
+
+void MediaFoundationCdmFactory::OnCdmOriginIdObtained(
+    const std::string& key_system,
+    const CdmConfig& cdm_config,
+    const SessionMessageCB& session_message_cb,
+    const SessionClosedCB& session_closed_cb,
+    const SessionKeysChangeCB& session_keys_change_cb,
+    const SessionExpirationUpdateCB& session_expiration_update_cb,
+    CdmCreatedCB cdm_created_cb,
+    const base::UnguessableToken& cdm_origin_id) {
+  if (cdm_origin_id.is_empty()) {
+    std::move(cdm_created_cb).Run(nullptr, "Failed to get the CDM origin ID.");
     return;
   }
 
   auto cdm = base::MakeRefCounted<MediaFoundationCdm>(
-      std::move(mf_cdm), session_message_cb, session_closed_cb,
-      session_keys_change_cb, session_expiration_update_cb);
-  BindToCurrentLoop(std::move(cdm_created_cb)).Run(cdm, "");
+      base::BindRepeating(&MediaFoundationCdmFactory::CreateMfCdm,
+                          weak_factory_.GetWeakPtr(), key_system, cdm_config,
+                          cdm_origin_id),
+      base::BindRepeating(&MediaFoundationCdmFactory::IsTypeSupported,
+                          weak_factory_.GetWeakPtr(), key_system),
+      session_message_cb, session_closed_cb, session_keys_change_cb,
+      session_expiration_update_cb);
+
+  // `cdm_created_cb` should always be run asynchronously.
+  auto bound_cdm_created_cb = BindToCurrentLoop(std::move(cdm_created_cb));
+
+  if (FAILED(cdm->Initialize())) {
+    std::move(bound_cdm_created_cb).Run(nullptr, "Failed to create CDM");
+    return;
+  }
+
+  std::move(bound_cdm_created_cb).Run(cdm, "");
 }
 
 HRESULT MediaFoundationCdmFactory::GetCdmFactory(
     const std::string& key_system,
     Microsoft::WRL::ComPtr<IMFContentDecryptionModuleFactory>& cdm_factory) {
   // Use key system specific `create_cdm_factory_cb` if there's one registered.
-  auto itr = create_cdm_factory_cbs_.find(key_system);
-  if (itr != create_cdm_factory_cbs_.end()) {
+  auto itr = create_cdm_factory_cbs_for_testing_.find(key_system);
+  if (itr != create_cdm_factory_cbs_for_testing_.end()) {
     auto& create_cdm_factory_cb = itr->second;
     if (!create_cdm_factory_cb)
       return E_FAIL;
@@ -214,12 +258,36 @@ HRESULT MediaFoundationCdmFactory::GetCdmFactory(
   return S_OK;
 }
 
-HRESULT MediaFoundationCdmFactory::CreateCdmInternal(
+void MediaFoundationCdmFactory::IsTypeSupported(
+    const std::string& key_system,
+    const std::string& content_type,
+    IsTypeSupportedResultCB is_type_supported_result_cb) {
+  ComPtr<IMFContentDecryptionModuleFactory> cdm_factory;
+  HRESULT hr = GetCdmFactory(key_system, cdm_factory);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to GetCdmFactory. hr=" << hr;
+    std::move(is_type_supported_result_cb).Run(false);
+    return;
+  }
+
+  // Note that IsTypeSupported may take up to 10s, so run it on a separate
+  // thread to unblock the main thread.
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&IsTypeSupportedInternal, cdm_factory, key_system,
+                     content_type),
+      std::move(is_type_supported_result_cb));
+}
+
+HRESULT MediaFoundationCdmFactory::CreateMfCdmInternal(
     const std::string& key_system,
     const CdmConfig& cdm_config,
+    const base::UnguessableToken& cdm_origin_id,
     ComPtr<IMFContentDecryptionModule>& mf_cdm) {
   ComPtr<IMFContentDecryptionModuleFactory> cdm_factory;
   RETURN_IF_FAILED(GetCdmFactory(key_system, cdm_factory));
+
+  DCHECK(!cdm_origin_id.is_empty());
 
   auto key_system_str = base::UTF8ToWide(key_system);
   if (!cdm_factory->IsTypeSupported(key_system_str.c_str(), nullptr)) {
@@ -236,15 +304,8 @@ HRESULT MediaFoundationCdmFactory::CreateCdmInternal(
       key_system_str.c_str(), configurations, ARRAYSIZE(configurations),
       &cdm_access));
 
-  // Don't cache `origin_id` in this class since user can clear it any time.
-  base::UnguessableToken origin_id = helper_->GetCdmOriginId();
-  if (origin_id.is_empty()) {
-    DLOG(ERROR) << "Failed to get CDM origin ID";
-    return E_FAIL;
-  }
-
   // Provide a per-user, per-arch, per-origin and per-key-system path.
-  auto store_path = GetCdmStorePath(user_data_dir_, origin_id, key_system);
+  auto store_path = GetCdmStorePath(user_data_dir_, cdm_origin_id, key_system);
   DVLOG(1) << "store_path=" << store_path;
 
   // Ensure the path exists. If it already exists, this call will do nothing.
@@ -256,12 +317,22 @@ HRESULT MediaFoundationCdmFactory::CreateCdmInternal(
 
   ComPtr<IPropertyStore> cdm_properties;
   ComPtr<IMFContentDecryptionModule> cdm;
-  RETURN_IF_FAILED(BuildCdmProperties(origin_id, store_path, cdm_properties));
+  RETURN_IF_FAILED(
+      BuildCdmProperties(cdm_origin_id, store_path, cdm_properties));
   RETURN_IF_FAILED(
       cdm_access->CreateContentDecryptionModule(cdm_properties.Get(), &cdm));
 
   mf_cdm.Swap(cdm);
   return S_OK;
+}
+
+void MediaFoundationCdmFactory::CreateMfCdm(
+    const std::string& key_system,
+    const CdmConfig& cdm_config,
+    const base::UnguessableToken& cdm_origin_id,
+    HRESULT& hresult,
+    Microsoft::WRL::ComPtr<IMFContentDecryptionModule>& mf_cdm) {
+  hresult = CreateMfCdmInternal(key_system, cdm_config, cdm_origin_id, mf_cdm);
 }
 
 }  // namespace media

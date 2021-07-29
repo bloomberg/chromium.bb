@@ -32,12 +32,14 @@ import static org.junit.Assume.assumeTrue;
 
 import static org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS;
 import static org.chromium.chrome.features.start_surface.StartSurfaceMediator.FEED_VISIBILITY_CONSISTENCY;
-import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
-import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
-import static org.chromium.chrome.test.util.ViewUtils.waitForStableView;
-import static org.chromium.chrome.test.util.ViewUtils.waitForView;
+import static org.chromium.ui.test.util.ViewUtils.VIEW_GONE;
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
+import static org.chromium.ui.test.util.ViewUtils.waitForStableView;
+import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import android.support.test.runner.lifecycle.Stage;
@@ -83,10 +85,13 @@ import org.chromium.chrome.browser.feed.FeedSurfaceMediator;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.gesturenav.GestureNavigationUtils;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
+import org.chromium.chrome.browser.ntp.NewTabPageUtils;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.tile.SuggestionsTileView;
 import org.chromium.chrome.browser.tab.Tab;
@@ -109,7 +114,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
-import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
@@ -119,6 +123,7 @@ import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.ui.test.util.ViewUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -389,6 +394,8 @@ public class StartSurfaceTest {
         "/hide_switch_when_no_incognito_tabs/true/show_last_active_tab_only/true"})
     public void testShow_SingleAsHomepage_SingleTabNoMVTiles() {
         // clang-format on
+        Assume.assumeFalse("https://crbug.com/1205642, https://crbug.com/1214303",
+                !mUseInstantStart && mImmediateReturn && VERSION.SDK_INT == VERSION_CODES.M);
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
@@ -592,6 +599,36 @@ public class StartSurfaceTest {
         pressBack();
         showWatcher.waitForBehavior();
         assertThat(cta.getTabModelSelector().getCurrentModel().getCount(), equalTo(1));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/omnibox_focused_on_new_tab/true"})
+    public void testFinale_webFeedLaunchOrigin_notFocusedOnOmnibox() throws ExecutionException {
+        if (!mImmediateReturn) {
+            StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
+        }
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+        // Launches a new Tab, and verifies the omnibox is not focused.
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> cta.getTabCreator(false).launchUrl(
+                                NewTabPageUtils.encodeNtpUrl(NewTabPageLaunchOrigin.WEB_FEED),
+                                TabLaunchType.FROM_CHROME_UI));
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+        StartSurfaceTestUtils.waitForOverviewVisible(cta);
+        waitForView(withId(R.id.search_box_text));
+        TextView urlBar = cta.findViewById(R.id.url_bar);
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> !StartSurfaceTestUtils.isKeyboardShown(mActivityTestRule)
+                        && !urlBar.isFocused(),
+                MAX_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     @Test
@@ -1405,37 +1442,17 @@ public class StartSurfaceTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/single/omnibox_focused_on_new_tab/true"})
     public void testOmnibox_FocusedOnNewTabInSingleSurface_BackButtonDeleteBlankTab() {
         // clang-format on
-        if (!mImmediateReturn) {
-            StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
-        }
-        StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForTabModel(cta);
-        assertThat(cta.getTabModelSelector().getCurrentModel().getCount(), equalTo(1));
+        backActionDeleteBlankTabForOmniboxFocusedOnNewTabSingleSurface(this::pressBack);
+    }
 
-        // Launches a new Tab from the Start surface, and verifies the omnibox is focused.
-        TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNTP());
-        TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
-        waitForView(withId(R.id.search_box_text));
-        TextView urlBar = cta.findViewById(R.id.url_bar);
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> StartSurfaceTestUtils.isKeyboardShown(mActivityTestRule)
-                        && urlBar.isFocused(),
-                MAX_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-        waitForView(withId(R.id.voice_search_button));
-        Assert.assertTrue(TextUtils.isEmpty(urlBar.getText()));
-        assertEquals(cta.findViewById(R.id.toolbar_buttons).getVisibility(), View.INVISIBLE);
-        ToolbarDataProvider toolbarDataProvider =
-                cta.getToolbarManager().getLocationBarModelForTesting();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            assertTrue(TextUtils.equals(toolbarDataProvider.getCurrentUrl(), UrlConstants.NTP_URL));
-        });
-
-        pressBack();
-        waitForView(withId(R.id.primary_tasks_surface_view));
-        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+    @Test
+    @LargeTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/omnibox_focused_on_new_tab/true"})
+    public void testOmnibox_FocusedOnNewTabInSingleSurface_BackGestureDeleteBlankTab() {
+        // clang-format on
+        backActionDeleteBlankTabForOmniboxFocusedOnNewTabSingleSurface(this::gestureNavigateBack);
     }
 
     @Test
@@ -1663,6 +1680,7 @@ public class StartSurfaceTest {
         }
         StartSurfaceTestUtils.waitForOverviewVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        StartSurfaceTestUtils.waitForTabModel(mActivityTestRule.getActivity());
 
         SiteSuggestion siteToDismiss = mMostVisitedSites.getCurrentSites().get(1);
         final View tileView = getTileViewFor(siteToDismiss);
@@ -1695,18 +1713,19 @@ public class StartSurfaceTest {
         }
         StartSurfaceTestUtils.waitForOverviewVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForTabModel(cta);
 
         SiteSuggestion siteToOpen = mMostVisitedSites.getCurrentSites().get(1);
         final View tileView = getTileViewFor(siteToOpen);
 
         // Open the tile using the context menu.
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
         OverviewModeBehaviorWatcher hideWatcher = TabUiTestHelper.createOverviewHideWatcher(cta);
         invokeContextMenu(tileView, ContextMenuManager.ContextMenuItemId.OPEN_IN_NEW_TAB);
         hideWatcher.waitForBehavior();
         CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
-        // Verifies a new Tab is created.
+        // Verifies a new tab is created.
         TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
     }
 
@@ -1721,19 +1740,60 @@ public class StartSurfaceTest {
         }
         StartSurfaceTestUtils.waitForOverviewVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForTabModel(cta);
 
         SiteSuggestion siteToOpen = mMostVisitedSites.getCurrentSites().get(1);
         final View tileView = getTileViewFor(siteToOpen);
 
-        // Open the tile using the context menu.
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        // Open the incognito tile using the context menu.
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
         OverviewModeBehaviorWatcher hideWatcher = TabUiTestHelper.createOverviewHideWatcher(cta);
         invokeContextMenu(tileView, ContextMenuManager.ContextMenuItemId.OPEN_IN_INCOGNITO_TAB);
         hideWatcher.waitForBehavior();
         CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
-        // Verifies a new Tab is created.
+        // Verifies a new incognito tab is created.
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 1);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    public void testSwipeBackOnStartSurfaceHomePage() throws ExecutionException {
+        // TODO(https://crbug.com/1093632): Requires 2 back press/gesture events now. Make this
+        // work with a single event.
+        Assume.assumeFalse(mImmediateReturn);
+        StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+
+        gestureNavigateBack();
+
+        // Back gesture on the start surface puts Chrome background.
+        ChromeApplicationTestUtils.waitUntilChromeInBackground();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    public void testSwipeBackOnTabOfLaunchTypeStartSurface() throws ExecutionException {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        if (!mImmediateReturn) StartSurfaceTestUtils.pressHomePageButton(cta);
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount = */ 1);
+        Assert.assertEquals("The launched tab should have the launch type FROM_START_SURFACE",
+                TabLaunchType.FROM_START_SURFACE,
+                cta.getActivityTabProvider().get().getLaunchType());
+
+        gestureNavigateBack();
+
+        // Back gesture on the tab should take us back to the start surface homepage.
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
     }
 
     @Test
@@ -1790,6 +1850,42 @@ public class StartSurfaceTest {
         });
     }
 
+    private void backActionDeleteBlankTabForOmniboxFocusedOnNewTabSingleSurface(
+            Runnable backAction) {
+        if (!mImmediateReturn) {
+            StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
+        }
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        assertThat(cta.getTabModelSelector().getCurrentModel().getCount(), equalTo(1));
+
+        // Launches a new Tab from the Start surface, and verifies the omnibox is focused.
+        TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNTP());
+        TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
+        waitForView(withId(R.id.search_box_text));
+        TextView urlBar = cta.findViewById(R.id.url_bar);
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> StartSurfaceTestUtils.isKeyboardShown(mActivityTestRule)
+                        && urlBar.isFocused(),
+                MAX_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        waitForView(withId(R.id.voice_search_button));
+        Assert.assertTrue(TextUtils.isEmpty(urlBar.getText()));
+        assertEquals(cta.findViewById(R.id.toolbar_buttons).getVisibility(), View.INVISIBLE);
+        ToolbarDataProvider toolbarDataProvider =
+                cta.getToolbarManager().getLocationBarModelForTesting();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            assertTrue(TextUtils.equals(toolbarDataProvider.getCurrentUrl(), UrlConstants.NTP_URL));
+        });
+
+        backAction.run();
+
+        waitForView(withId(R.id.primary_tasks_surface_view));
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+    }
+
     private MvTilesLayout getMvTilesLayout() {
         onViewWaiting(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_layout));
         MvTilesLayout mvTilesLayout = mActivityTestRule.getActivity().findViewById(
@@ -1799,6 +1895,8 @@ public class StartSurfaceTest {
     }
 
     private View getTileViewFor(SiteSuggestion suggestion) {
+        onViewWaiting(
+                allOf(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_layout), isDisplayed()));
         View tileView = getMvTilesLayout().getTileViewForTesting(suggestion);
         Assert.assertNotNull("Tile not found for suggestion " + suggestion.url, tileView);
 
@@ -1878,6 +1976,11 @@ public class StartSurfaceTest {
         mActivityTestRule.waitForActivityNativeInitializationComplete();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().onBackPressed());
+    }
+
+    private void gestureNavigateBack() {
+        GestureNavigationUtils navUtils = new GestureNavigationUtils(mActivityTestRule);
+        navUtils.swipeFromLeftEdge();
     }
 
     private List<Tab> getTabsInCurrentTabModel(TabModel currentTabModel) {

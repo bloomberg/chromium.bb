@@ -171,8 +171,8 @@ function(absl_cc_library)
       FILE(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/lib/pkgconfig/absl_${_NAME}.pc" CONTENT "\
 prefix=${CMAKE_INSTALL_PREFIX}\n\
 exec_prefix=\${prefix}\n\
-libdir=\${prefix}/${CMAKE_INSTALL_LIBDIR}\n\
-includedir=\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}\n\
+libdir=${CMAKE_INSTALL_FULL_LIBDIR}\n\
+includedir=${CMAKE_INSTALL_FULL_INCLUDEDIR}\n\
 \n\
 Name: absl_${_NAME}\n\
 Description: Abseil ${_NAME} library\n\
@@ -336,8 +336,8 @@ endfunction()
 #     "awesome_test.cc"
 #   DEPS
 #     absl::awesome
-#     gmock
-#     gtest_main
+#     GTest::gmock
+#     GTest::gtest_main
 # )
 function(absl_cc_test)
   if(NOT BUILD_TESTING)

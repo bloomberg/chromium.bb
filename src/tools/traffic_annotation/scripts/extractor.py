@@ -49,6 +49,11 @@ TEST_ANNOTATION_REGEX = re.compile(
 # Regex that matches a placeholder annotation for a few whitelisted files.
 MISSING_ANNOTATION_REGEX = re.compile(r'\bMISSING_TRAFFIC_ANNOTATION\b')
 
+# Regex that matches placeholder annotations for unsupported platforms that
+# don't require Network Traffic Annotations compliance. (e.g. iOS)
+NO_ANNOTATION_REGEX = re.compile(r'\bNO_TRAFFIC_ANNOTATION_YET\b')
+
+
 class Annotation:
   """A network annotation definition in C++ code."""
 
@@ -156,8 +161,15 @@ def is_inside_comment(string, pos):
 
 def extract_annotations(file_path):
   """Extracts and returns annotations from the file at |file_path|."""
-  with open(file_path) as f:
-    contents = f.read()
+  if sys.version_info.major >= 3:
+    # In Python 3, contents is a unicode string decoded from UTF-8 file
+    # contents.
+    with open(file_path, encoding="utf-8") as f:
+      contents = f.read()
+  else:
+    # In Python 2, contents is a byte-string.
+    with open(file_path) as f:
+      contents = f.read()
 
   defs = []
 
@@ -201,6 +213,19 @@ def extract_annotations(file_path):
     annotation = Annotation(
         file_path, line_number, type_name='Definition', unique_id='missing',
         text='Function called without traffic annotation.')
+    defs.append(annotation)
+
+  # Check for NO_TRAFFIC_ANNOTATION_YET.
+  for re_match in NO_ANNOTATION_REGEX.finditer(contents):
+    if is_inside_comment(re_match.string, re_match.start()):
+      continue
+    line_number = get_line_number_at(contents, re_match.start())
+
+    annotation = Annotation(file_path,
+                            line_number,
+                            type_name='Definition',
+                            unique_id='undefined',
+                            text='Nothing here yet.')
     defs.append(annotation)
 
   return defs

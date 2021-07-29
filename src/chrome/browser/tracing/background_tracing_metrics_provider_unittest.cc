@@ -5,6 +5,8 @@
 #include "chrome/browser/tracing/background_tracing_metrics_provider.h"
 
 #include "base/bind.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/background_tracing_manager.h"
@@ -20,7 +22,8 @@ const char kDummyTrace[] = "Trace bytes as serialized proto";
 
 class BackgroundTracingMetricsProviderTest : public testing::Test {
  public:
-  BackgroundTracingMetricsProviderTest() = default;
+  BackgroundTracingMetricsProviderTest()
+      : local_state_(TestingBrowserProcess::GetGlobal()) {}
 
   void SetUp() override {
     base::DictionaryValue dict;
@@ -46,14 +49,12 @@ class BackgroundTracingMetricsProviderTest : public testing::Test {
     ASSERT_TRUE(
         content::BackgroundTracingManager::GetInstance()->SetActiveScenario(
             std::move(config),
-            base::BindRepeating([](std::unique_ptr<std::string>,
-                                   content::BackgroundTracingManager::
-                                       FinishedProcessingCallback) {}),
             content::BackgroundTracingManager::ANONYMIZE_DATA));
   }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
+  ScopedTestingLocalState local_state_;
 };
 
 TEST_F(BackgroundTracingMetricsProviderTest, NoTraceData) {

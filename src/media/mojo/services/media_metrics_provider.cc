@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
+#include "media/base/key_systems.h"
 #include "media/learning/mojo/mojo_learning_task_controller_service.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
 #include "media/mojo/services/watch_time_recorder.h"
@@ -72,6 +73,13 @@ MediaMetricsProvider::~MediaMetricsProvider() {
   builder.SetIsTopFrame(is_top_frame_);
   builder.SetIsEME(uma_info_.is_eme);
   builder.SetIsMSE(is_mse_);
+  builder.SetRendererType(static_cast<int>(renderer_type_));
+  builder.SetKeySystem(GetKeySystemIntForUKM(key_system_));
+  builder.SetIsHardwareSecure(is_hardware_secure_);
+  builder.SetAudioEncryptionType(
+      static_cast<int>(uma_info_.audio_pipeline_info.encryption_type));
+  builder.SetVideoEncryptionType(
+      static_cast<int>(uma_info_.video_pipeline_info.encryption_type));
   builder.SetFinalPipelineStatus(uma_info_.last_pipeline_status);
   if (!is_mse_) {
     builder.SetURLScheme(static_cast<int64_t>(url_scheme_));
@@ -166,16 +174,15 @@ void MediaMetricsProvider::ReportPipelineUMA() {
 void MediaMetricsProvider::Create(
     BrowsingMode is_incognito,
     FrameStatus is_top_frame,
-    GetSourceIdCallback get_source_id_cb,
-    GetOriginCallback get_origin_cb,
+    ukm::SourceId source_id,
+    learning::FeatureValue origin,
     VideoDecodePerfHistory::SaveCallback save_cb,
     GetLearningSessionCallback learning_session_cb,
     GetRecordAggregateWatchTimeCallback get_record_playback_cb,
     mojo::PendingReceiver<mojom::MediaMetricsProvider> receiver) {
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<MediaMetricsProvider>(
-          is_incognito, is_top_frame, get_source_id_cb.Run(),
-          get_origin_cb.Run(), std::move(save_cb),
+          is_incognito, is_top_frame, source_id, origin, std::move(save_cb),
           std::move(learning_session_cb),
           std::move(get_record_playback_cb).Run()),
       std::move(receiver));
@@ -199,7 +206,7 @@ void MediaMetricsProvider::SetHaveEnough() {
   uma_info_.has_reached_have_enough = true;
 }
 
-void MediaMetricsProvider::SetVideoPipelineInfo(const VideoDecoderInfo& info) {
+void MediaMetricsProvider::SetVideoPipelineInfo(const VideoPipelineInfo& info) {
   auto old_decoder = uma_info_.video_pipeline_info.decoder_type;
   if (old_decoder != VideoDecoderType::kUnknown &&
       old_decoder != info.decoder_type)
@@ -207,7 +214,7 @@ void MediaMetricsProvider::SetVideoPipelineInfo(const VideoDecoderInfo& info) {
   uma_info_.video_pipeline_info = info;
 }
 
-void MediaMetricsProvider::SetAudioPipelineInfo(const AudioDecoderInfo& info) {
+void MediaMetricsProvider::SetAudioPipelineInfo(const AudioPipelineInfo& info) {
   uma_info_.audio_pipeline_info = info;
 }
 
@@ -259,6 +266,18 @@ void MediaMetricsProvider::SetContainerName(
   DCHECK(initialized_);
   DCHECK(!container_name_.has_value());
   container_name_ = container_name;
+}
+
+void MediaMetricsProvider::SetRendererType(RendererType renderer_type) {
+  renderer_type_ = renderer_type;
+}
+
+void MediaMetricsProvider::SetKeySystem(const std::string& key_system) {
+  key_system_ = key_system;
+}
+
+void MediaMetricsProvider::SetIsHardwareSecure() {
+  is_hardware_secure_ = true;
 }
 
 void MediaMetricsProvider::AcquireWatchTimeRecorder(

@@ -161,7 +161,7 @@ void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
 
 base::flat_set<std::string> GetInstalledAppOrigins(
     Profile* profile,
-    const web_app::AppRegistrar& registrar) {
+    const web_app::WebAppRegistrar& registrar) {
   base::flat_set<std::string> origins;
   for (const web_app::AppId& app : registrar.GetAppIds())
     origins.insert(registrar.GetAppScope(app).GetOrigin().spec());
@@ -234,7 +234,7 @@ void ConvertSiteGroupMapToListValue(
     const std::set<std::string>& origin_permission_set,
     base::Value* list_value,
     Profile* profile,
-    const web_app::AppRegistrar& registrar) {
+    const web_app::WebAppRegistrar& registrar) {
   DCHECK_EQ(base::Value::Type::LIST, list_value->type());
   DCHECK(profile);
   base::flat_set<std::string> installed_origins =
@@ -390,8 +390,9 @@ std::string GetCookieSettingDescription(Profile* profile) {
 
 }  // namespace
 
-SiteSettingsHandler::SiteSettingsHandler(Profile* profile,
-                                         web_app::AppRegistrar& app_registrar)
+SiteSettingsHandler::SiteSettingsHandler(
+    Profile* profile,
+    web_app::WebAppRegistrar& app_registrar)
     : profile_(profile), app_registrar_(app_registrar) {}
 
 SiteSettingsHandler::~SiteSettingsHandler() {
@@ -420,6 +421,10 @@ void SiteSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getAllSites",
       base::BindRepeating(&SiteSettingsHandler::HandleGetAllSites,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getCategoryList",
+      base::BindRepeating(&SiteSettingsHandler::HandleGetCategoryList,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getCookieSettingDescription",
@@ -730,14 +735,11 @@ void SiteSettingsHandler::HandleGetDefaultValueForContentType(
 void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   AllowJavascript();
 
-  CHECK_EQ(2U, args->GetList().size());
+  CHECK_EQ(1U, args->GetList().size());
   std::string callback_id = args->GetList()[0].GetString();
-  auto types = args->GetList()[1].GetList();
 
   all_sites_map_.clear();
   origin_permission_set_.clear();
-
-  auto content_types = site_settings::ContentSettingsTypesFromGroupNames(types);
 
   // Incognito contains incognito content settings plus non-incognito content
   // settings. Thus if it exists, just get exceptions for the incognito profile.
@@ -749,6 +751,12 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   DCHECK(profile);
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
+
+  std::vector<ContentSettingsType> content_types =
+      site_settings::GetVisiblePermissionCategories();
+  // Make sure to include cookies, because All Sites handles data storage
+  // cookies as well as regular ContentSettingsTypes.
+  content_types.push_back(ContentSettingsType::COOKIES);
 
   // Retrieve a list of embargoed settings to check separately. This ensures
   // that only settings included in |content_types| will be listed in all sites.
@@ -792,6 +800,24 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   ResolveJavascriptCallback(base::Value(callback_id), result);
 }
 
+void SiteSettingsHandler::HandleGetCategoryList(const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(2U, args->GetList().size());
+  std::string callback_id = args->GetList()[0].GetString();
+  GURL origin(args->GetList()[1].GetString());
+
+  std::vector<ContentSettingsType> content_types =
+      site_settings::GetVisiblePermissionCategoriesForOrigin(profile_, origin);
+
+  base::Value result(base::Value::Type::LIST);
+  for (ContentSettingsType content_type : content_types) {
+    result.Append(site_settings::ContentSettingsTypeToGroupName(content_type));
+  }
+
+  ResolveJavascriptCallback(base::Value(callback_id), result);
+}
+
 void SiteSettingsHandler::HandleGetCookieSettingDescription(
     const base::ListValue* args) {
   AllowJavascript();
@@ -805,12 +831,12 @@ void SiteSettingsHandler::HandleGetRecentSitePermissions(
     const base::ListValue* args) {
   AllowJavascript();
 
-  CHECK_EQ(3U, args->GetList().size());
+  CHECK_EQ(2U, args->GetList().size());
   std::string callback_id = args->GetList()[0].GetString();
-  auto types = args->GetList()[1].GetList();
-  size_t max_sources = base::checked_cast<size_t>(args->GetList()[2].GetInt());
+  size_t max_sources = base::checked_cast<size_t>(args->GetList()[1].GetInt());
 
-  auto content_types = site_settings::ContentSettingsTypesFromGroupNames(types);
+  const std::vector<ContentSettingsType>& content_types =
+      site_settings::GetVisiblePermissionCategories();
   auto recent_site_permissions = site_settings::GetRecentSitePermissions(
       profile_, content_types, max_sources);
 
@@ -969,20 +995,21 @@ void SiteSettingsHandler::HandleGetOriginPermissions(
     const base::ListValue* args) {
   AllowJavascript();
 
-  CHECK_EQ(3U, args->GetSize());
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
-  std::string origin;
-  CHECK(args->GetString(1, &origin));
-  const base::ListValue* types;
-  CHECK(args->GetList(2, &types));
+  base::Value::ConstListView args_list = args->GetList();
+  CHECK_EQ(3U, args_list.size());
+  const base::Value& callback_id = args_list[0];
+  std::string origin = args_list[1].GetString();
+  base::Value::ConstListView types = args_list[2].GetList();
 
   // Note: Invalid URLs will just result in default settings being shown.
   const GURL origin_url(origin);
-  auto exceptions = std::make_unique<base::ListValue>();
-  for (size_t i = 0; i < types->GetSize(); ++i) {
+  base::Value exceptions(base::Value::Type::LIST);
+  for (const auto& type_val : types) {
     std::string type;
-    types->GetString(i, &type);
+    DCHECK(type_val.is_string());
+    const std::string* maybe_type = type_val.GetIfString();
+    if (maybe_type)
+      type = *maybe_type;
     ContentSettingsType content_type =
         site_settings::ContentSettingsTypeFromGroupName(type);
     HostContentSettingsMap* map =
@@ -997,50 +1024,50 @@ void SiteSettingsHandler::HandleGetOriginPermissions(
     std::string content_setting_string =
         content_settings::ContentSettingToString(content_setting);
 
-    auto raw_site_exception = std::make_unique<base::DictionaryValue>();
-    raw_site_exception->SetString(site_settings::kEmbeddingOrigin, origin);
-    raw_site_exception->SetBoolean(site_settings::kIncognito,
-                                   profile_->IsOffTheRecord());
-    raw_site_exception->SetString(site_settings::kOrigin, origin);
-    raw_site_exception->SetString(site_settings::kDisplayName, display_name);
-    raw_site_exception->SetString(site_settings::kSetting,
-                                  content_setting_string);
-    raw_site_exception->SetString(site_settings::kSettingDetail,
-                                  content_settings::GetPermissionDetailString(
-                                      profile_, content_type, origin_url));
-    raw_site_exception->SetString(site_settings::kSource, source_string);
+    base::Value raw_site_exception(base::Value::Type::DICTIONARY);
+    raw_site_exception.SetStringKey(site_settings::kEmbeddingOrigin, origin);
+    raw_site_exception.SetBoolKey(site_settings::kIncognito,
+                                  profile_->IsOffTheRecord());
+    raw_site_exception.SetStringKey(site_settings::kOrigin, origin);
+    raw_site_exception.SetStringKey(site_settings::kDisplayName, display_name);
+    raw_site_exception.SetStringKey(site_settings::kSetting,
+                                    content_setting_string);
+    raw_site_exception.SetStringKey(site_settings::kSettingDetail,
+                                    content_settings::GetPermissionDetailString(
+                                        profile_, content_type, origin_url));
+    raw_site_exception.SetStringKey(site_settings::kSource, source_string);
 
-    exceptions->Append(std::move(raw_site_exception));
+    exceptions.Append(std::move(raw_site_exception));
   }
 
-  ResolveJavascriptCallback(*callback_id, *exceptions);
+  ResolveJavascriptCallback(callback_id, exceptions);
 }
 
 void SiteSettingsHandler::HandleSetOriginPermissions(
     const base::ListValue* args) {
   CHECK_EQ(3U, args->GetSize());
-  std::string origin_string;
-  CHECK(args->GetString(0, &origin_string));
-  const base::ListValue* types;
-  CHECK(args->GetList(1, &types));
-  std::string value;
-  CHECK(args->GetString(2, &value));
+  std::string origin_string = args->GetList()[0].GetString();
+  const std::string* type_string = args->GetList()[1].GetIfString();
+  std::string value = args->GetList()[2].GetString();
 
   const GURL origin(origin_string);
   if (!origin.is_valid())
     return;
 
+  std::vector<ContentSettingsType> types;
+  if (type_string) {
+    types.push_back(
+        site_settings::ContentSettingsTypeFromGroupName(*type_string));
+  } else {
+    types = site_settings::GetVisiblePermissionCategoriesForOrigin(profile_,
+                                                                   origin);
+  }
+
   ContentSetting setting;
   CHECK(content_settings::ContentSettingFromString(value, &setting));
-  for (size_t i = 0; i < types->GetSize(); ++i) {
-    std::string type;
-    types->GetString(i, &type);
-
-    ContentSettingsType content_type =
-        site_settings::ContentSettingsTypeFromGroupName(type);
-    HostContentSettingsMap* map =
-        HostContentSettingsMapFactory::GetForProfile(profile_);
-
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  for (ContentSettingsType content_type : types) {
     permissions::PermissionUmaUtil::ScopedRevocationReporter
         scoped_revocation_reporter(
             profile_, origin, origin, content_type,

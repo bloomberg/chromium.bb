@@ -8,8 +8,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -262,6 +264,8 @@ void OutputPresenterGL::InitializeCapabilities(
   // Set resize_based_on_root_surface to omit platform proposed size.
   capabilities->resize_based_on_root_surface =
       gl_surface_->SupportsOverridePlatformSize();
+  capabilities->use_dynamic_frame_buffer_allocation =
+      base::FeatureList::IsEnabled(features::kDynamicBufferQueueAllocation);
 
   // TODO(https://crbug.com/1108406): only add supported formats base on
   // platform, driver, etc.
@@ -317,9 +321,9 @@ OutputPresenterGL::AllocateImages(gfx::ColorSpace color_space,
   return images;
 }
 
-std::unique_ptr<OutputPresenter::Image>
-OutputPresenterGL::AllocateBackgroundImage(gfx::ColorSpace color_space,
-                                           gfx::Size image_size) {
+std::unique_ptr<OutputPresenter::Image> OutputPresenterGL::AllocateSingleImage(
+    gfx::ColorSpace color_space,
+    gfx::Size image_size) {
   auto image = std::make_unique<PresenterImageGL>();
   if (!image->Initialize(shared_image_factory_,
                          shared_image_representation_factory_, image_size,

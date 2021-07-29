@@ -71,7 +71,8 @@ FetchParameters CSSImageValue::PrepareFetch(
   options.initiator_info.name = initiator_name_.IsEmpty()
                                     ? fetch_initiator_type_names::kCSS
                                     : initiator_name_;
-  options.initiator_info.referrer = referrer_.referrer;
+  if (referrer_.referrer != Referrer::ClientReferrerString())
+    options.initiator_info.referrer = referrer_.referrer;
   FetchParameters params(std::move(resource_request), options);
 
   if (cross_origin != kCrossOriginAttributeNotSet) {
@@ -155,12 +156,6 @@ bool CSSImageValue::Equals(const CSSImageValue& other) const {
 
 String CSSImageValue::CustomCSSText() const {
   return SerializeURI(relative_url_);
-}
-
-bool CSSImageValue::KnownToBeOpaque(const Document& document,
-                                    const ComputedStyle& style) const {
-  return cached_image_ ? cached_image_->KnownToBeOpaque(document, style)
-                       : false;
 }
 
 void CSSImageValue::TraceAfterDispatch(blink::Visitor* visitor) const {

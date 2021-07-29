@@ -5,8 +5,10 @@
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -50,7 +52,8 @@ enum class ClipboardPastedImageUrls {
   kOtherUrls = 4,
   kBase64EncodedImage = 5,
   kLocalFileUrlWithRtf = 6,
-  kMaxValue = kLocalFileUrlWithRtf,
+  kImageLoadError = 7,
+  kMaxValue = kImageLoadError,
 };
 
 }  // namespace
@@ -119,14 +122,15 @@ void SystemClipboard::WritePlainText(const String& plain_text,
 #if defined(OS_WIN)
   ReplaceNewlinesWithWindowsStyleNewlines(text);
 #endif
-  clipboard_->WriteText(NonNullString(text));
+  if (clipboard_.is_bound())
+    clipboard_->WriteText(NonNullString(text));
 }
 
 String SystemClipboard::ReadHTML(KURL& url,
                                  unsigned& fragment_start,
                                  unsigned& fragment_end) {
   String html;
-  if (IsValidBufferType(buffer_)) {
+  if (IsValidBufferType(buffer_) && clipboard_.is_bound()) {
     clipboard_->ReadHtml(buffer_, &html, &url,
                          static_cast<uint32_t*>(&fragment_start),
                          static_cast<uint32_t*>(&fragment_end));
@@ -142,6 +146,8 @@ String SystemClipboard::ReadHTML(KURL& url,
 void SystemClipboard::WriteHTML(const String& markup,
                                 const KURL& document_url,
                                 SmartReplaceOption smart_replace_option) {
+  if (!clipboard_.is_bound())
+    return;
   clipboard_->WriteHtml(NonNullString(markup), document_url);
   if (smart_replace_option == kCanSmartReplace)
     clipboard_->WriteSmartPasteMarker();
@@ -157,7 +163,8 @@ void SystemClipboard::ReadSvg(
 }
 
 void SystemClipboard::WriteSvg(const String& markup) {
-  clipboard_->WriteSvg(NonNullString(markup));
+  if (clipboard_.is_bound())
+    clipboard_->WriteSvg(NonNullString(markup));
 }
 
 String SystemClipboard::ReadRTF() {
@@ -166,6 +173,15 @@ String SystemClipboard::ReadRTF() {
   String rtf;
   clipboard_->ReadRtf(buffer_, &rtf);
   return rtf;
+}
+
+mojo_base::BigBuffer SystemClipboard::ReadPng(
+    mojom::blink::ClipboardBuffer buffer) {
+  if (!IsValidBufferType(buffer) || !clipboard_.is_bound())
+    return mojo_base::BigBuffer();
+  mojo_base::BigBuffer png;
+  clipboard_->ReadPng(buffer, &png);
+  return png;
 }
 
 SkBitmap SystemClipboard::ReadImage(mojom::ClipboardBuffer buffer) {
@@ -178,8 +194,14 @@ SkBitmap SystemClipboard::ReadImage(mojom::ClipboardBuffer buffer) {
 
 String SystemClipboard::ReadImageAsImageMarkup(
     mojom::blink::ClipboardBuffer buffer) {
-  SkBitmap bitmap = ReadImage(buffer);
-  return BitmapToImageMarkup(bitmap);
+  // TODO(crbug.com/1223849): Remove check once `ReadImage()` is removed.
+  if (RuntimeEnabledFeatures::ClipboardReadPngEnabled()) {
+    mojo_base::BigBuffer png_data = ReadPng(buffer);
+    return PNGToImageMarkup(png_data);
+  } else {
+    SkBitmap bitmap = ReadImage(buffer);
+    return BitmapToImageMarkup(bitmap);
+  }
 }
 
 void SystemClipboard::WriteImageWithTag(Image* image,
@@ -191,6 +213,8 @@ void SystemClipboard::WriteImageWithTag(Image* image,
   SkBitmap bitmap;
   if (sk_sp<SkImage> sk_image = paint_image.GetSwSkImage())
     sk_image->asLegacyBitmap(&bitmap);
+  if (!clipboard_.is_bound())
+    return;
   // The bitmap backing a canvas can be in non-native skia pixel order (aka
   // RGBA when kN32_SkColorType is BGRA-ordered, or higher bit-depth color-types
   // like F16. The IPC to the browser requires the bitmap to be in N32 format
@@ -219,7 +243,8 @@ void SystemClipboard::WriteImageWithTag(Image* image,
 }
 
 void SystemClipboard::WriteImage(const SkBitmap& bitmap) {
-  clipboard_->WriteImage(bitmap);
+  if (clipboard_.is_bound())
+    clipboard_->WriteImage(bitmap);
 }
 
 mojom::blink::ClipboardFilesPtr SystemClipboard::ReadFiles() {
@@ -240,6 +265,8 @@ String SystemClipboard::ReadCustomData(const String& type) {
 
 void SystemClipboard::WriteDataObject(DataObject* data_object) {
   DCHECK(data_object);
+  if (!clipboard_.is_bound())
+    return;
   // This plagiarizes the logic in DropDataBuilder::Build, but only extracts the
   // data needed for the implementation of WriteDataObject.
   //
@@ -250,7 +277,6 @@ void SystemClipboard::WriteDataObject(DataObject* data_object) {
   // TODO(slangley): Use a mojo struct to send web_drag_data and allow receiving
   // side to extract the data required.
   // TODO(dcheng): Properly support text/uri-list here.
-
   HashMap<String, String> custom_data;
   WebDragData data = data_object->ToWebDragData();
   for (const WebDragData::Item& item : data.Items()) {
@@ -270,12 +296,14 @@ void SystemClipboard::WriteDataObject(DataObject* data_object) {
 }
 
 void SystemClipboard::CommitWrite() {
-  clipboard_->CommitWrite();
+  if (clipboard_.is_bound())
+    clipboard_->CommitWrite();
 }
 
 void SystemClipboard::CopyToFindPboard(const String& text) {
 #if defined(OS_MAC)
-  clipboard_->WriteStringToFindPboard(text);
+  if (clipboard_.is_bound())
+    clipboard_->WriteStringToFindPboard(text);
 #endif
 }
 
@@ -283,52 +311,62 @@ void SystemClipboard::RecordClipboardImageUrls(
     DocumentFragment* pasting_fragment) {
   if (!pasting_fragment)
     return;
+  image_urls_in_paste_.clear();
   bool rtf_format_available =
       IsFormatAvailable(blink::mojom::ClipboardFormat::kRtf);
   for (Element& element : ElementTraversal::DescendantsOf(*pasting_fragment)) {
     if (!IsA<HTMLImageElement>(&element))
       continue;
 
-    AttributeCollection attributes = element.Attributes();
-    for (const auto& attribute : attributes) {
-      if (element.IsURLAttribute(attribute) && !attribute.Value().IsEmpty()) {
-        static constexpr char kFilePrefix[] = "file:";
-        static constexpr char kCidPrefix[] = "cid:";
-        static constexpr char kHttpPrefix[] = "http:";
-        static constexpr char kHttpsPrefix[] = "https:";
-        static constexpr char kDataPrefix[] = "data:";
-        static constexpr char kBase64[] = "base64,";
-        const AtomicString& filename = attribute.Value();
-        ClipboardPastedImageUrls image_src_url_prefix =
-            ClipboardPastedImageUrls::kUnknown;
-        if (filename.StartsWithIgnoringCase(kFilePrefix)) {
-          // Record local file urls.
-          image_src_url_prefix = ClipboardPastedImageUrls::kLocalFileUrls;
-        } else if (filename.StartsWithIgnoringCase(kCidPrefix)) {
-          // Record cid prefix.
-          image_src_url_prefix = ClipboardPastedImageUrls::kCidUrls;
-        } else if (filename.StartsWithIgnoringCase(kHttpPrefix) ||
-                   filename.StartsWithIgnoringCase(kHttpsPrefix)) {
-          // Record http prefix.
-          image_src_url_prefix = ClipboardPastedImageUrls::kHttpUrls;
-        } else if (filename.StartsWithIgnoringCase(kDataPrefix) &&
-                   filename.Contains(kBase64)) {
-          // Record base64 encoded image.
-          image_src_url_prefix = ClipboardPastedImageUrls::kBase64EncodedImage;
-        } else {
-          image_src_url_prefix = ClipboardPastedImageUrls::kOtherUrls;
-        }
-        base::UmaHistogramEnumeration("Blink.Clipboard.Paste.Image",
-                                      image_src_url_prefix);
-        // Check if RTF is present in the clipboard.
-        if (image_src_url_prefix == ClipboardPastedImageUrls::kLocalFileUrls &&
-            rtf_format_available) {
-          image_src_url_prefix = ClipboardPastedImageUrls::kLocalFileUrlWithRtf;
-          base::UmaHistogramEnumeration("Blink.Clipboard.Paste.Image",
-                                        image_src_url_prefix);
-        }
-      }
+    auto* html_image_element = DynamicTo<HTMLImageElement>(&element);
+    const AtomicString& image_src_url = html_image_element->ImageSourceURL();
+    if (image_src_url.IsEmpty())
+      continue;
+    // Save the image url so we can record it when the image loading fails.
+    image_urls_in_paste_.insert(image_src_url.GetString());
+    static constexpr char kFilePrefix[] = "file:";
+    static constexpr char kCidPrefix[] = "cid:";
+    static constexpr char kHttpPrefix[] = "http:";
+    static constexpr char kHttpsPrefix[] = "https:";
+    static constexpr char kDataPrefix[] = "data:";
+    static constexpr char kBase64[] = "base64,";
+    ClipboardPastedImageUrls image_src_url_prefix =
+        ClipboardPastedImageUrls::kUnknown;
+    if (image_src_url.StartsWithIgnoringCase(kFilePrefix)) {
+      // Record local file urls.
+      image_src_url_prefix = ClipboardPastedImageUrls::kLocalFileUrls;
+    } else if (image_src_url.StartsWithIgnoringCase(kCidPrefix)) {
+      // Record cid prefix.
+      image_src_url_prefix = ClipboardPastedImageUrls::kCidUrls;
+    } else if (image_src_url.StartsWithIgnoringCase(kHttpPrefix) ||
+               image_src_url.StartsWithIgnoringCase(kHttpsPrefix)) {
+      // Record http prefix.
+      image_src_url_prefix = ClipboardPastedImageUrls::kHttpUrls;
+    } else if (image_src_url.StartsWithIgnoringCase(kDataPrefix) &&
+               image_src_url.Contains(kBase64)) {
+      // Record base64 encoded image.
+      image_src_url_prefix = ClipboardPastedImageUrls::kBase64EncodedImage;
+    } else {
+      image_src_url_prefix = ClipboardPastedImageUrls::kOtherUrls;
     }
+    base::UmaHistogramEnumeration("Blink.Clipboard.Paste.Image",
+                                  image_src_url_prefix);
+    // Check if RTF is present in the clipboard.
+    if (image_src_url_prefix == ClipboardPastedImageUrls::kLocalFileUrls &&
+        rtf_format_available) {
+      image_src_url_prefix = ClipboardPastedImageUrls::kLocalFileUrlWithRtf;
+      base::UmaHistogramEnumeration("Blink.Clipboard.Paste.Image",
+                                    image_src_url_prefix);
+    }
+  }
+}
+
+void SystemClipboard::RecordImageLoadError(const String& image_url) {
+  if (image_urls_in_paste_.IsEmpty())
+    return;
+  if (base::Contains(image_urls_in_paste_, image_url)) {
+    base::UmaHistogramEnumeration("Blink.Clipboard.Paste.Image",
+                                  ClipboardPastedImageUrls::kImageLoadError);
   }
 }
 

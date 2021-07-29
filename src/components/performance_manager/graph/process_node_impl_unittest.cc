@@ -4,6 +4,7 @@
 
 #include "components/performance_manager/graph/process_node_impl.h"
 
+#include "base/containers/contains.h"
 #include "base/process/process.h"
 #include "base/test/bind.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
@@ -290,10 +291,17 @@ class LenientFakeBackgroundTracingManager
   // Functions we don't care about.
   bool SetActiveScenario(
       std::unique_ptr<content::BackgroundTracingConfig> config,
-      ReceiveCallback receive_callback,
       DataFiltering data_filtering) override {
     return true;
   }
+  bool SetActiveScenarioWithReceiveCallback(
+      std::unique_ptr<content::BackgroundTracingConfig> config,
+      ReceiveCallback receive_callback,
+      DataFiltering data_filtering,
+      bool local_output = false) override {
+    return true;
+  }
+
   void WhenIdle(IdleCallback idle_callback) override {}
   const std::string& GetTriggerNameFromHandle(
       TriggerHandle trigger_handle) override {

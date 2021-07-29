@@ -5,6 +5,7 @@
 #include "android_webview/browser/component_updater/loader_policies/origin_trials_component_loader_policy.h"
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include <memory>
 #include <string>
@@ -12,8 +13,10 @@
 
 #include "android_webview/browser/aw_browser_process.h"
 #include "base/containers/flat_map.h"
+#include "base/files/scoped_file.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "components/component_updater/android/component_loader_policy.h"
 #include "components/component_updater/installer_policies/origin_trials_component_installer.h"
 #include "components/embedder_support/origin_trials/component_updater_utils.h"
 
@@ -27,7 +30,7 @@ OriginTrialsComponentLoaderPolicy::~OriginTrialsComponentLoaderPolicy() =
 
 void OriginTrialsComponentLoaderPolicy::ComponentLoaded(
     const base::Version& version,
-    const base::flat_map<std::string, int>& fd_map,
+    base::flat_map<std::string, base::ScopedFD>& fd_map,
     std::unique_ptr<base::DictionaryValue> manifest) {
   // Read the configuration from the manifest and set values in browser
   // local_state. These will be used on the next browser restart.
@@ -38,7 +41,8 @@ void OriginTrialsComponentLoaderPolicy::ComponentLoaded(
       std::move(manifest));
 }
 
-void OriginTrialsComponentLoaderPolicy::ComponentLoadFailed() {}
+void OriginTrialsComponentLoaderPolicy::ComponentLoadFailed(
+    component_updater::ComponentLoadError /*error*/) {}
 
 void OriginTrialsComponentLoaderPolicy::GetHash(
     std::vector<uint8_t>* hash) const {

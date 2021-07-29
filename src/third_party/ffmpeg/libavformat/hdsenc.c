@@ -313,8 +313,8 @@ static void close_file(AVFormatContext *s, OutputStream *os)
 static int hds_write_header(AVFormatContext *s)
 {
     HDSContext *c = s->priv_data;
+    const AVOutputFormat *oformat;
     int ret = 0, i;
-    ff_const59 AVOutputFormat *oformat;
 
     if (mkdir(s->url, 0777) == -1 && errno != EEXIST) {
         av_log(s, AV_LOG_ERROR , "Failed to create directory %s\n", s->url);
@@ -566,7 +566,7 @@ static const AVClass hds_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVOutputFormat ff_hds_muxer = {
+const AVOutputFormat ff_hds_muxer = {
     .name           = "hds",
     .long_name      = NULL_IF_CONFIG_SMALL("HDS Muxer"),
     .priv_data_size = sizeof(HDSContext),

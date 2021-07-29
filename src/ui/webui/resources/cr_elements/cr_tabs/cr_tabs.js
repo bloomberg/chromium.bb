@@ -22,55 +22,131 @@
 import '../hidden_style_css.m.js';
 import '../shared_vars_css.m.js';
 
-import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {html, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-Polymer({
-  is: 'cr-tabs',
+/** @polymer */
+export class CrTabsElement extends PolymerElement {
+  static get is() {
+    return 'cr-tabs';
+  }
 
-  _template: html`{__html_template__}`,
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-  properties: {
-    /**
-     * Tab names displayed in each tab.
-     * @type {!Array<string>}
-     */
-    tabNames: {
-      type: Array,
-      value: () => [],
-    },
+  static get properties() {
+    return {
+      /**
+       * Tab names displayed in each tab.
+       * @type {!Array<string>}
+       */
+      tabNames: {
+        type: Array,
+        value: () => [],
+      },
 
-    /** Index of the selected tab. */
-    selected: {
-      type: Number,
-      notify: true,
-      observer: 'updateUi_',
-    },
-  },
+      /** Index of the selected tab. */
+      selected: {
+        type: Number,
+        notify: true,
+        observer: 'onSelectedChanged_',
+      },
+    };
+  }
 
-  hostAttributes: {
-    role: 'tablist',
-  },
+  constructor() {
+    super();
 
-  listeners: {
-    keydown: 'onKeyDown_',
-    mousedown: 'onMouseDown_',
-  },
+    /** @private {boolean} */
+    this.isRtl_ = false;
 
-  /** @private {boolean} */
-  isRtl_: false,
-
-  /** @private {?number} */
-  lastSelected_: null,
+    /** @private {?number} */
+    this.lastSelected_ = null;
+  }
 
   /** @override */
-  attached() {
+  connectedCallback() {
+    super.connectedCallback();
     this.isRtl_ = this.matches(':host-context([dir=rtl]) cr-tabs');
-  },
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+
+    this.setAttribute('role', 'tablist');
+    this.addEventListener(
+        'keydown', e => this.onKeyDown_(/** @type {!KeyboardEvent} */ (e)));
+    this.addEventListener('mousedown', this.onMouseDown_);
+  }
+
+  /**
+   * @param {number} index
+   * @return {string}
+   * @private
+   */
+  getAriaSelected_(index) {
+    return index === this.selected ? 'true' : 'false';
+  }
+
+  /**
+   * @param {number} index
+   * @return {string}
+   * @private
+   */
+  getTabindex_(index) {
+    return index === this.selected ? '0' : '-1';
+  }
+
+  /**
+   * @param {number} index
+   * @return {string}
+   * @private
+   */
+  getSelectedClass_(index) {
+    return index === this.selected ? 'selected' : '';
+  }
+
+  /**
+   * @param {number} newSelected
+   * @param {number} oldSelected
+   * @private
+   */
+  onSelectedChanged_(newSelected, oldSelected) {
+    const tabs = this.shadowRoot.querySelectorAll('.tab');
+    if (tabs.length === 0 || oldSelected === undefined) {
+      // Tabs are not rendered yet.
+      return;
+    }
+
+    const oldTabRect = tabs[oldSelected].getBoundingClientRect();
+    const newTabRect = tabs[newSelected].getBoundingClientRect();
+
+    const newIndicator = /** @type {!HTMLElement} */ (
+        tabs[newSelected].querySelector('.tab-indicator'));
+    newIndicator.classList.remove('expand', 'contract');
+
+    // Make new indicator look like it is the old indicator.
+    this.updateIndicator_(
+        newIndicator, newTabRect, oldTabRect.left, oldTabRect.width);
+    newIndicator.getBoundingClientRect();  // Force repaint.
+
+    // Expand to cover both the previous selected tab, the newly selected tab,
+    // and everything in between.
+    newIndicator.classList.add('expand');
+    newIndicator.addEventListener(
+        'transitionend', e => this.onIndicatorTransitionEnd_(e), {once: true});
+    const leftmostEdge = Math.min(oldTabRect.left, newTabRect.left);
+    const fullWidth = newTabRect.left > oldTabRect.left ?
+        newTabRect.right - oldTabRect.left :
+        oldTabRect.right - newTabRect.left;
+    this.updateIndicator_(newIndicator, newTabRect, leftmostEdge, fullWidth);
+  }
 
   /** @private */
   onMouseDown_() {
     this.classList.remove('keyboard-focus');
-  },
+  }
 
   /**
    * @param {!KeyboardEvent} e
@@ -94,18 +170,18 @@ Polymer({
     e.preventDefault();
     e.stopPropagation();
     this.selected = newSelection;
-  },
+    this.shadowRoot.querySelector('.tab.selected').focus();
+  }
 
-  /** @private */
-  onSelectionBarTransitionEnd_() {
-    this.$.selectionBar.classList.replace('expand', 'contract');
-    const tab = this.$$(`.tab:nth-of-type(${this.selected + 1})`);
-    if (!tab) {
-      this.$.selectionBar.style.transform = 'scaleX(0)';
-      return;
-    }
-    this.updateSelectionBar_(tab.offsetLeft, tab.offsetWidth);
-  },
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onIndicatorTransitionEnd_(event) {
+    const indicator = event.target;
+    indicator.classList.replace('expand', 'contract');
+    indicator.style.transform = `translateX(0) scaleX(1)`;
+  }
 
   /**
    * @param {!{model: !{index: number}}} _
@@ -113,105 +189,21 @@ Polymer({
    */
   onTabClick_({model: {index}}) {
     this.selected = index;
-  },
+  }
 
   /**
-   * @param {number} left
-   * @param {number} width
+   * @param {!HTMLElement} indicator
+   * @param {!ClientRect} originRect
+   * @param {number} newLeft
+   * @param {number} newWidth
    * @private
    */
-  updateSelectionBar_(left, width) {
-    const containerWidth = this.offsetWidth;
-    const leftPercent = 100 * left / containerWidth;
-    const widthRatio = width / containerWidth;
+  updateIndicator_(indicator, originRect, newLeft, newWidth) {
+    const leftDiff = 100 * (newLeft - originRect.left) / originRect.width;
+    const widthRatio = newWidth / originRect.width;
+    const transform = `translateX(${leftDiff}%) scaleX(${widthRatio})`;
+    indicator.style.transform = transform;
+  }
+}
 
-    if (this.hasAttribute('new-material')) {
-      // Initiate with initial transform and width, then add |initiated| class
-      // in a timeout so that only all subsequent updates to transform and width
-      // are transitioned.
-      this.$.selectionBar.style.transform = `translateX(${left}px)`;
-      this.$.selectionBar.style.width = `${width}px`;
-      setTimeout(() => {
-        this.$.selectionBar.classList.add('initiated');
-      });
-      return;
-    }
-
-    // When there are two tabs, the selection bar will expand to underline both
-    // tabs. If a user quickly changes tabs multiple times, the selection bar
-    // will no longer have any room to expand the transitionend event will be
-    // fired only after the unerline is fully expanded. The underline will
-    // freeze in an expanded state since no transitionend events will be fired
-    // for subsequent selection changes. Call transition end method to prevent
-    // this.
-    if (this.$.selectionBar.style.transform === 'translateX(0%) scaleX(1)' &&
-        leftPercent === 0 && widthRatio === 1) {
-      this.onSelectionBarTransitionEnd_();
-      return;
-    }
-
-    this.$.selectionBar.style.transform =
-        `translateX(${leftPercent}%) scaleX(${widthRatio})`;
-  },
-
-  /** @private */
-  updateUi_() {
-    const tabs = this.shadowRoot.querySelectorAll('.tab');
-    // Tabs are not rendered yet by dom-repeat. Skip this update since
-    // dom-repeat will fire a dom-change event when it is ready.
-    if (tabs.length === 0) {
-      return;
-    }
-
-    tabs.forEach((tab, i) => {
-      const isSelected = this.selected === i;
-      if (isSelected) {
-        tab.focus();
-      }
-      tab.classList.toggle('selected', isSelected);
-      tab.setAttribute('aria-selected', isSelected);
-      tab.setAttribute('tabindex', isSelected ? 0 : -1);
-    });
-
-    if (this.selected === undefined) {
-      return;
-    }
-
-    this.$.selectionBar.classList.remove('expand', 'contract');
-    const oldValue = this.lastSelected_;
-    this.lastSelected_ = this.selected;
-
-    // If there is no previously selected tab or the tab has not changed,
-    // underline the selected tab instantly.
-    if (oldValue === null || oldValue === this.selected) {
-      // When handling the initial 'dom-change' event, it's possible for the
-      // selected tab to exist and not yet be fully rendered. This will result
-      // in the selection bar not rendering correctly.
-      setTimeout(() => {
-        const {offsetLeft, offsetWidth} = tabs[this.selected];
-        this.updateSelectionBar_(offsetLeft, offsetWidth);
-      });
-      return;
-    }
-
-    if (this.hasAttribute('new-material')) {
-      const selectedTab = tabs[this.selected];
-      this.updateSelectionBar_(selectedTab.offsetLeft, selectedTab.offsetWidth);
-      return;
-    }
-
-    // Expand bar to underline the last selected tab, the newly selected tab and
-    // everything in between. After expansion is complete, contract bar to
-    // underline the selected tab.
-    this.$.selectionBar.classList.add('expand');
-    this.$.selectionBar.addEventListener(
-        'transitionend', () => this.onSelectionBarTransitionEnd_(),
-        {once: true});
-
-    const {offsetLeft: newLeft, offsetWidth: newWidth} = tabs[this.selected];
-    const {offsetLeft: oldLeft, offsetWidth: oldWidth} = tabs[oldValue];
-    const left = Math.min(newLeft, oldLeft);
-    const right = Math.max(newLeft + newWidth, oldLeft + oldWidth);
-    this.updateSelectionBar_(left, right - left);
-  },
-});
+customElements.define(CrTabsElement.is, CrTabsElement);

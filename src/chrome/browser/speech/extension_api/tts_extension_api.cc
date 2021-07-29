@@ -173,7 +173,7 @@ void TtsExtensionEventHandler::OnTtsEvent(content::TtsUtterance* utterance,
 
   auto event = std::make_unique<extensions::Event>(
       ::extensions::events::TTS_ON_EVENT, ::events::kOnEvent,
-      arguments->TakeList(), utterance->GetBrowserContext());
+      std::move(*arguments).TakeList(), utterance->GetBrowserContext());
   event->event_url = utterance->GetSrcUrl();
   extensions::EventRouter::Get(utterance->GetBrowserContext())
       ->DispatchEventToExtension(src_extension_id_, std::move(event));
@@ -358,7 +358,8 @@ ExtensionFunction::ResponseAction TtsIsSpeakingFunction::Run() {
 
 ExtensionFunction::ResponseAction TtsGetVoicesFunction::Run() {
   std::vector<content::VoiceData> voices;
-  content::TtsController::GetInstance()->GetVoices(browser_context(), &voices);
+  content::TtsController::GetInstance()->GetVoices(browser_context(),
+                                                   source_url(), &voices);
 
   auto result_voices = std::make_unique<base::ListValue>();
   for (size_t i = 0; i < voices.size(); ++i) {

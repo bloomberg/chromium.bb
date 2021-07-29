@@ -16,7 +16,6 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -60,8 +59,6 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "url/gurl.h"
-#include "url/third_party/mozilla/url_parse.h"
-#include "url/url_canon_ip.h"
 
 #if defined(OS_WIN)
 #include "base/win/shortcut.h"
@@ -194,7 +191,7 @@ class FileURLDirectoryLoader
              scoped_refptr<net::HttpResponseHeaders> response_headers) {
     receiver_.Bind(std::move(loader));
     receiver_.set_disconnect_handler(base::BindOnce(
-        &FileURLDirectoryLoader::OnMojoDisconnct, base::Unretained(this)));
+        &FileURLDirectoryLoader::OnMojoDisconnect, base::Unretained(this)));
 
     mojo::Remote<network::mojom::URLLoaderClient> client(
         std::move(client_remote));
@@ -241,7 +238,7 @@ class FileURLDirectoryLoader
         std::make_unique<mojo::DataPipeProducer>(std::move(producer_handle));
   }
 
-  void OnMojoDisconnct() {
+  void OnMojoDisconnect() {
     lister_.reset();
     data_producer_.reset();
     receiver_.reset();
@@ -461,12 +458,9 @@ class FileURLLoader : public network::mojom::URLLoader {
     head->headers = extra_response_headers;
     receiver_.Bind(std::move(loader));
     receiver_.set_disconnect_handler(base::BindOnce(
-        &FileURLLoader::OnMojoDisconnct, base::Unretained(this)));
+        &FileURLLoader::OnMojoDisconnect, base::Unretained(this)));
 
     client_.Bind(std::move(client_remote));
-    host_safety_status_ = url::CheckHostnameSafety(
-        request.url.host_piece().data(),
-        url::Component(0, request.url.host_piece().size()));
 
     base::FilePath path;
     if (!net::FileURLToFilePath(request.url, &path)) {
@@ -706,26 +700,15 @@ class FileURLLoader : public network::mojom::URLLoader {
                                          base::Unretained(this), nullptr));
   }
 
-  void OnMojoDisconnct() {
+  void OnMojoDisconnect() {
     data_producer_.reset();
     receiver_.reset();
     client_.reset();
     MaybeDeleteSelf();
   }
 
-  void RecordCompletionHistogram(net::Error net_error) {
-    if (net_error == net::OK) {
-      UMA_HISTOGRAM_ENUMERATION("Net.File.Request.Success.HostSafetyStatus",
-                                host_safety_status_);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("Net.File.Request.Failure.HostSafetyStatus",
-                                host_safety_status_);
-    }
-  }
-
   void OnClientComplete(net::Error net_error,
                         std::unique_ptr<FileURLLoaderObserver> observer) {
-    RecordCompletionHistogram(net_error);
     client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
     client_.reset();
     if (observer) {
@@ -754,14 +737,12 @@ class FileURLLoader : public network::mojom::URLLoader {
 
     if (result == MOJO_RESULT_OK) {
       network::URLLoaderCompletionStatus status(net::OK);
-      RecordCompletionHistogram(net::OK);
       status.encoded_data_length = total_bytes_written_;
       status.encoded_body_length = total_bytes_written_;
       status.decoded_body_length = total_bytes_written_;
       client_->OnComplete(status);
     } else {
       client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
-      RecordCompletionHistogram(net::ERR_FAILED);
     }
     client_.reset();
     MaybeDeleteSelf();
@@ -778,7 +759,6 @@ class FileURLLoader : public network::mojom::URLLoader {
   // It is used to set some of the URLLoaderCompletionStatus data passed back
   // to the URLLoaderClients (eg SimpleURLLoader).
   uint64_t total_bytes_written_ = 0;
-  url::HostSafetyStatus host_safety_status_ = url::HostSafetyStatus::kOk;
 
   DISALLOW_COPY_AND_ASSIGN(FileURLLoader);
 };
@@ -809,7 +789,7 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // CORS mode requires a valid |request_inisiator|.
+  // CORS mode requires a valid |request_initiator|.
   if (network::cors::IsCorsEnabledRequestMode(request.mode) &&
       !request.request_initiator) {
     mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))

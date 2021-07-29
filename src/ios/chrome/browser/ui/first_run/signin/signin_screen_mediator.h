@@ -7,26 +7,25 @@
 
 #import <Foundation/Foundation.h>
 
-@class AuthenticationFlow;
+class AuthenticationService;
+class ChromeAccountManagerService;
 @class ChromeIdentity;
-class PrefService;
 @protocol SigninScreenConsumer;
-@protocol SigninScreenMediatorDelegate;
 
 // Mediator that handles the sign-in operation.
 @interface SigninScreenMediator : NSObject
 
 // The designated initializer.
-- (instancetype)initWithPrefService:(PrefService*)prefService
+- (instancetype)initWithAccountManagerService:
+                    (ChromeAccountManagerService*)accountManagerService
+                        authenticationService:
+                            (AuthenticationService*)authenticationService
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 // Consumer for this mediator.
 @property(nonatomic, weak) id<SigninScreenConsumer> consumer;
-
-// Delegate.
-@property(nonatomic, weak) id<SigninScreenMediatorDelegate> delegate;
 
 // The identity currently selected.
 @property(nonatomic, strong) ChromeIdentity* selectedIdentity;
@@ -37,9 +36,8 @@ class PrefService;
 // Disconnect the mediator.
 - (void)disconnect;
 
-// Starts the sign in process, using |authenticationFlow|.
-- (void)startSignInWithAuthenticationFlow:
-    (AuthenticationFlow*)authenticationFlow;
+// Sign in the selected account.
+- (void)startSignIn;
 
 @end
 

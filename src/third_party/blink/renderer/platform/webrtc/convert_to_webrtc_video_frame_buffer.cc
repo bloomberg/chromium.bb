@@ -22,7 +22,6 @@
 #include "third_party/libyuv/include/libyuv/scale.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
 #include "third_party/webrtc/common_video/include/video_frame_buffer.h"
-#include "third_party/webrtc/common_video/libyuv/include/webrtc_libyuv.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -194,10 +193,12 @@ scoped_refptr<media::VideoFrame> MakeScaledI420VideoFrame(
     scoped_refptr<blink::WebRtcVideoFrameAdapter::SharedResources>
         shared_resources) {
   // ARGB pixel format may be produced by readback of texture backed frames.
-  DCHECK(source_frame->format() == media::PIXEL_FORMAT_NV12 ||
-         source_frame->format() == media::PIXEL_FORMAT_I420 ||
+  DCHECK(source_frame->format() == media::PIXEL_FORMAT_I420 ||
          source_frame->format() == media::PIXEL_FORMAT_I420A ||
-         source_frame->format() == media::PIXEL_FORMAT_ARGB);
+         source_frame->format() == media::PIXEL_FORMAT_ARGB ||
+         source_frame->format() == media::PIXEL_FORMAT_XRGB ||
+         source_frame->format() == media::PIXEL_FORMAT_ABGR ||
+         source_frame->format() == media::PIXEL_FORMAT_XBGR);
   const bool has_alpha = source_frame->format() == media::PIXEL_FORMAT_I420A;
   // Convert to I420 and scale to the natural size specified in
   // |source_frame|.
@@ -241,52 +242,41 @@ scoped_refptr<media::VideoFrame> MakeScaledI420VideoFrame(
                         dst_frame->coded_size().width(),
                         dst_frame->coded_size().height(), libyuv::kFilterBox);
       break;
-    case media::PIXEL_FORMAT_NV12: {
-      webrtc::NV12ToI420Scaler scaler;
-      scaler.NV12ToI420Scale(
-          source_frame->visible_data(media::VideoFrame::kYPlane),
-          source_frame->stride(media::VideoFrame::kYPlane),
-          source_frame->visible_data(media::VideoFrame::kUVPlane),
-          source_frame->stride(media::VideoFrame::kUVPlane),
-          source_frame->visible_rect().width(),
-          source_frame->visible_rect().height(),
-          dst_frame->data(media::VideoFrame::kYPlane),
-          dst_frame->stride(media::VideoFrame::kYPlane),
-          dst_frame->data(media::VideoFrame::kUPlane),
-          dst_frame->stride(media::VideoFrame::kUPlane),
-          dst_frame->data(media::VideoFrame::kVPlane),
-          dst_frame->stride(media::VideoFrame::kVPlane),
-          dst_frame->coded_size().width(), dst_frame->coded_size().height());
-    } break;
-    case media::PIXEL_FORMAT_ARGB: {
+    case media::PIXEL_FORMAT_XRGB:
+    case media::PIXEL_FORMAT_ARGB:
+    case media::PIXEL_FORMAT_XBGR:
+    case media::PIXEL_FORMAT_ABGR: {
+      auto convert_func = (source_frame->format() == media::PIXEL_FORMAT_XRGB ||
+                           source_frame->format() == media::PIXEL_FORMAT_ARGB)
+                              ? libyuv::ARGBToI420
+                              : libyuv::ABGRToI420;
+
       auto visible_size = source_frame->visible_rect().size();
       if (visible_size == dst_frame->coded_size()) {
         // Direct conversion to dst_frame with no scaling.
-        libyuv::ARGBToI420(
-            source_frame->visible_data(media::VideoFrame::kARGBPlane),
-            source_frame->stride(media::VideoFrame::kARGBPlane),
-            dst_frame->data(media::VideoFrame::kYPlane),
-            dst_frame->stride(media::VideoFrame::kYPlane),
-            dst_frame->data(media::VideoFrame::kUPlane),
-            dst_frame->stride(media::VideoFrame::kUPlane),
-            dst_frame->data(media::VideoFrame::kVPlane),
-            dst_frame->stride(media::VideoFrame::kVPlane), visible_size.width(),
-            visible_size.height());
+        convert_func(source_frame->visible_data(media::VideoFrame::kARGBPlane),
+                     source_frame->stride(media::VideoFrame::kARGBPlane),
+                     dst_frame->data(media::VideoFrame::kYPlane),
+                     dst_frame->stride(media::VideoFrame::kYPlane),
+                     dst_frame->data(media::VideoFrame::kUPlane),
+                     dst_frame->stride(media::VideoFrame::kUPlane),
+                     dst_frame->data(media::VideoFrame::kVPlane),
+                     dst_frame->stride(media::VideoFrame::kVPlane),
+                     visible_size.width(), visible_size.height());
       } else {
         // Convert to I420 tmp image and then scale to the dst_frame.
         auto tmp_frame = shared_resources->CreateTemporaryFrame(
             media::PIXEL_FORMAT_I420, visible_size, gfx::Rect(visible_size),
             visible_size, source_frame->timestamp());
-        libyuv::ARGBToI420(
-            source_frame->visible_data(media::VideoFrame::kARGBPlane),
-            source_frame->stride(media::VideoFrame::kARGBPlane),
-            tmp_frame->data(media::VideoFrame::kYPlane),
-            tmp_frame->stride(media::VideoFrame::kYPlane),
-            tmp_frame->data(media::VideoFrame::kUPlane),
-            tmp_frame->stride(media::VideoFrame::kUPlane),
-            tmp_frame->data(media::VideoFrame::kVPlane),
-            tmp_frame->stride(media::VideoFrame::kVPlane), visible_size.width(),
-            visible_size.height());
+        convert_func(source_frame->visible_data(media::VideoFrame::kARGBPlane),
+                     source_frame->stride(media::VideoFrame::kARGBPlane),
+                     tmp_frame->data(media::VideoFrame::kYPlane),
+                     tmp_frame->stride(media::VideoFrame::kYPlane),
+                     tmp_frame->data(media::VideoFrame::kUPlane),
+                     tmp_frame->stride(media::VideoFrame::kUPlane),
+                     tmp_frame->data(media::VideoFrame::kVPlane),
+                     tmp_frame->stride(media::VideoFrame::kVPlane),
+                     visible_size.width(), visible_size.height());
         libyuv::I420Scale(tmp_frame->data(media::VideoFrame::kYPlane),
                           tmp_frame->stride(media::VideoFrame::kYPlane),
                           tmp_frame->data(media::VideoFrame::kUPlane),
@@ -346,11 +336,12 @@ scoped_refptr<media::VideoFrame> MaybeConvertAndScaleFrame(
   RTC_DCHECK(source_frame->format() == media::PIXEL_FORMAT_I420 ||
              source_frame->format() == media::PIXEL_FORMAT_I420A ||
              source_frame->format() == media::PIXEL_FORMAT_NV12 ||
-             source_frame->format() == media::PIXEL_FORMAT_ARGB);
+             source_frame->format() == media::PIXEL_FORMAT_ARGB ||
+             source_frame->format() == media::PIXEL_FORMAT_XRGB ||
+             source_frame->format() == media::PIXEL_FORMAT_ABGR ||
+             source_frame->format() == media::PIXEL_FORMAT_XBGR);
   RTC_DCHECK(shared_resources);
 
-  const bool allow_nv12_output =
-      base::FeatureList::IsEnabled(blink::features::kWebRtcLibvpxEncodeNV12);
   const bool source_is_i420 =
       source_frame->format() == media::PIXEL_FORMAT_I420 ||
       source_frame->format() == media::PIXEL_FORMAT_I420A;
@@ -359,18 +350,16 @@ scoped_refptr<media::VideoFrame> MaybeConvertAndScaleFrame(
   const bool no_scaling_needed =
       source_frame->natural_size() == source_frame->visible_rect().size();
 
-  if (((source_is_nv12 && allow_nv12_output) || source_is_i420) &&
-      no_scaling_needed) {
+  if ((source_is_nv12 || source_is_i420) && no_scaling_needed) {
     // |source_frame| already has correct pixel format and resolution.
     return source_frame;
-  } else if (source_is_nv12 && allow_nv12_output) {
-    // Output NV12 only if it is allowed and no conversion is needed.
+  } else if (source_is_nv12) {
+    // Output NV12 only if no conversion is needed.
     return MakeScaledNV12VideoFrame(std::move(source_frame),
                                     std::move(shared_resources));
-  } else {
-    return MakeScaledI420VideoFrame(std::move(source_frame),
-                                    std::move(shared_resources));
   }
+  return MakeScaledI420VideoFrame(std::move(source_frame),
+                                  std::move(shared_resources));
 }
 
 }  // anonymous namespace
@@ -395,7 +384,9 @@ GetPixelFormatsMappableToWebRtcVideoFrameBuffer() {
   static constexpr const media::VideoPixelFormat
       kGetPixelFormatsMappableToWebRtcVideoFrameBuffer[] = {
           media::PIXEL_FORMAT_I420, media::PIXEL_FORMAT_I420A,
-          media::PIXEL_FORMAT_NV12};
+          media::PIXEL_FORMAT_NV12, media::PIXEL_FORMAT_ARGB,
+          media::PIXEL_FORMAT_XRGB, media::PIXEL_FORMAT_ABGR,
+          media::PIXEL_FORMAT_XBGR};
   return base::make_span(kGetPixelFormatsMappableToWebRtcVideoFrameBuffer);
 }
 

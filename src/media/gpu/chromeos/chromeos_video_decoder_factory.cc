@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/containers/cxx20_erase.h"
 #include "base/sequenced_task_runner.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_preferences.h"
@@ -67,9 +68,9 @@ std::unique_ptr<VideoDecoder> ChromeosVideoDecoderFactory::Create(
       std::move(client_task_runner), std::move(frame_pool),
       std::move(frame_converter), std::move(media_log),
 #if BUILDFLAG(USE_VAAPI)
-      base::BindRepeating(&VaapiVideoDecoder::Create)
+      base::BindOnce(&VaapiVideoDecoder::Create)
 #elif BUILDFLAG(USE_V4L2_CODEC)
-      base::BindRepeating(&V4L2VideoDecoder::Create)
+      base::BindOnce(&V4L2VideoDecoder::Create)
 #endif
   );
 }

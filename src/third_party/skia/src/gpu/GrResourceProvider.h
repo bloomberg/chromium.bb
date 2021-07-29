@@ -10,10 +10,10 @@
 
 #include "include/gpu/GrContextOptions.h"
 #include "include/private/SkImageInfoPriv.h"
-#include "src/core/SkScalerContext.h"
 #include "src/gpu/GrGpuBuffer.h"
 #include "src/gpu/GrResourceCache.h"
 
+class GrAttachment;
 class GrBackendRenderTarget;
 class GrBackendSemaphore;
 class GrBackendTexture;
@@ -24,7 +24,7 @@ class GrRenderTarget;
 class GrResourceProviderPriv;
 class GrSemaphore;
 class GrSingleOwner;
-class GrAttachment;
+struct GrVertexWriter;
 class GrTexture;
 struct GrVkDrawableInfo;
 
@@ -178,6 +178,21 @@ public:
     static const int kMinScratchTextureSize;
 
     /**
+     * Either finds and refs a buffer with the given unique key, or creates a new new, fills its
+     * contents with the InitializeBufferDataFn() callback, and assigns it the unique key.
+     *
+     * @param intendedType        hint to the graphics subsystem about how the buffer will be used.
+     * @param size                minimum size of buffer to return.
+     * @param key                 Key to be assigned to the buffer.
+     * @param InitializeBufferFn  callback with which to initialize the buffer.
+     *
+     * @return The buffer if successful, otherwise nullptr.
+     */
+    using InitializeBufferFn = void(*)(GrVertexWriter, size_t bufferSize);
+    sk_sp<const GrGpuBuffer> findOrMakeStaticBuffer(GrGpuBufferType intendedType, size_t size,
+                                                    const GrUniqueKey& key, InitializeBufferFn);
+
+    /**
      * Either finds and refs, or creates a static buffer with the given parameters and contents.
      *
      * @param intendedType    hint to the graphics subsystem about what the buffer will be used for.
@@ -188,7 +203,7 @@ public:
      * @return The buffer if successful, otherwise nullptr.
      */
     sk_sp<const GrGpuBuffer> findOrMakeStaticBuffer(GrGpuBufferType intendedType, size_t size,
-                                                    const void* data, const GrUniqueKey& key);
+                                                    const void* staticData, const GrUniqueKey& key);
 
     /**
      * Either finds and refs, or creates an index buffer with a repeating pattern for drawing
@@ -296,13 +311,8 @@ public:
 
     std::unique_ptr<GrSemaphore> SK_WARN_UNUSED_RESULT makeSemaphore(bool isOwned = true);
 
-    enum class SemaphoreWrapType {
-        kWillSignal,
-        kWillWait,
-    };
-
     std::unique_ptr<GrSemaphore> wrapBackendSemaphore(const GrBackendSemaphore&,
-                                                      SemaphoreWrapType wrapType,
+                                                      GrSemaphoreWrapType,
                                                       GrWrapOwnership = kBorrow_GrWrapOwnership);
 
     void abandon() {

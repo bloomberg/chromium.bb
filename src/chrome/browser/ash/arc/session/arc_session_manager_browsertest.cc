@@ -28,7 +28,6 @@
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -40,8 +39,8 @@
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session_runner.h"
+#include "components/arc/test/arc_util_test_support.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -152,7 +151,8 @@ class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_.get());
 
     // Seed account info properly.
-    identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(kFakeUserName);
+    identity_test_env()->MakePrimaryAccountAvailable(
+        kFakeUserName, signin::ConsentLevel::kSignin);
 
     profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
     profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);

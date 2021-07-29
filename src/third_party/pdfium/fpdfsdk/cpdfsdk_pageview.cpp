@@ -21,8 +21,8 @@
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "third_party/base/check.h"
+#include "third_party/base/containers/contains.h"
 #include "third_party/base/ptr_util.h"
-#include "third_party/base/stl_util.h"
 
 #ifdef PDF_ENABLE_XFA
 #include "fpdfsdk/fpdfxfa/cpdfxfa_page.h"
@@ -499,7 +499,7 @@ void CPDFSDK_PageView::LoadFXAnnots() {
   CPDF_Document::Extension* pContext = m_pFormFillEnv->GetDocExtension();
   if (pContext && pContext->ContainsExtensionFullForm()) {
     CXFA_FFPageView* pageView = protector->GetXFAPageView();
-    IXFA_WidgetIterator* pWidgetHandler =
+    CXFA_FFWidget::IteratorIface* pWidgetHandler =
         pageView->CreateGCedFormWidgetIterator(XFA_WidgetStatus_Visible |
                                                XFA_WidgetStatus_Viewable);
 

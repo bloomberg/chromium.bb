@@ -296,6 +296,11 @@ typedef VKAPI_ATTR void					(VKAPI_CALL* CmdEndTransformFeedbackEXTFunc)								
 typedef VKAPI_ATTR void					(VKAPI_CALL* CmdBeginQueryIndexedEXTFunc)											(VkCommandBuffer commandBuffer, VkQueryPool queryPool, deUint32 query, VkQueryControlFlags flags, deUint32 index);
 typedef VKAPI_ATTR void					(VKAPI_CALL* CmdEndQueryIndexedEXTFunc)												(VkCommandBuffer commandBuffer, VkQueryPool queryPool, deUint32 query, deUint32 index);
 typedef VKAPI_ATTR void					(VKAPI_CALL* CmdDrawIndirectByteCountEXTFunc)										(VkCommandBuffer commandBuffer, deUint32 instanceCount, deUint32 firstInstance, VkBuffer counterBuffer, VkDeviceSize counterBufferOffset, deUint32 counterOffset, deUint32 vertexStride);
+typedef VKAPI_ATTR VkResult				(VKAPI_CALL* CreateCuModuleNVXFunc)													(VkDevice device, const VkCuModuleCreateInfoNVX* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCuModuleNVX* pModule);
+typedef VKAPI_ATTR VkResult				(VKAPI_CALL* CreateCuFunctionNVXFunc)												(VkDevice device, const VkCuFunctionCreateInfoNVX* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCuFunctionNVX* pFunction);
+typedef VKAPI_ATTR void					(VKAPI_CALL* DestroyCuModuleNVXFunc)												(VkDevice device, VkCuModuleNVX module, const VkAllocationCallbacks* pAllocator);
+typedef VKAPI_ATTR void					(VKAPI_CALL* DestroyCuFunctionNVXFunc)												(VkDevice device, VkCuFunctionNVX function, const VkAllocationCallbacks* pAllocator);
+typedef VKAPI_ATTR void					(VKAPI_CALL* CmdCuLaunchKernelNVXFunc)												(VkCommandBuffer commandBuffer, const VkCuLaunchInfoNVX* pLaunchInfo);
 typedef VKAPI_ATTR uint32_t				(VKAPI_CALL* GetImageViewHandleNVXFunc)												(VkDevice device, const VkImageViewHandleInfoNVX* pInfo);
 typedef VKAPI_ATTR VkResult				(VKAPI_CALL* GetImageViewAddressNVXFunc)											(VkDevice device, VkImageView imageView, VkImageViewAddressPropertiesNVX* pProperties);
 typedef VKAPI_ATTR void					(VKAPI_CALL* CmdDrawIndirectCountAMDFunc)											(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkBuffer countBuffer, VkDeviceSize countBufferOffset, deUint32 maxDrawCount, deUint32 stride);
@@ -394,6 +399,8 @@ typedef VKAPI_ATTR void					(VKAPI_CALL* CmdExecuteGeneratedCommandsNVFunc)					
 typedef VKAPI_ATTR void					(VKAPI_CALL* CmdBindPipelineShaderGroupNVFunc)										(VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline, deUint32 groupIndex);
 typedef VKAPI_ATTR VkResult				(VKAPI_CALL* CreateIndirectCommandsLayoutNVFunc)									(VkDevice device, const VkIndirectCommandsLayoutCreateInfoNV* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkIndirectCommandsLayoutNV* pIndirectCommandsLayout);
 typedef VKAPI_ATTR void					(VKAPI_CALL* DestroyIndirectCommandsLayoutNVFunc)									(VkDevice device, VkIndirectCommandsLayoutNV indirectCommandsLayout, const VkAllocationCallbacks* pAllocator);
+typedef VKAPI_ATTR VkResult				(VKAPI_CALL* AcquireDrmDisplayEXTFunc)												(VkPhysicalDevice physicalDevice, deInt32 drmFd, VkDisplayKHR display);
+typedef VKAPI_ATTR VkResult				(VKAPI_CALL* GetDrmDisplayEXTFunc)													(VkPhysicalDevice physicalDevice, deInt32 drmFd, deUint32 connectorId, VkDisplayKHR* display);
 typedef VKAPI_ATTR VkResult				(VKAPI_CALL* CreatePrivateDataSlotEXTFunc)											(VkDevice device, const VkPrivateDataSlotCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkPrivateDataSlotEXT* pPrivateDataSlot);
 typedef VKAPI_ATTR void					(VKAPI_CALL* DestroyPrivateDataSlotEXTFunc)											(VkDevice device, VkPrivateDataSlotEXT privateDataSlot, const VkAllocationCallbacks* pAllocator);
 typedef VKAPI_ATTR VkResult				(VKAPI_CALL* SetPrivateDataEXTFunc)													(VkDevice device, VkObjectType objectType, deUint64 objectHandle, VkPrivateDataSlotEXT privateDataSlot, deUint64 data);
@@ -402,12 +409,17 @@ typedef VKAPI_ATTR void					(VKAPI_CALL* CmdSetFragmentShadingRateEnumNVFunc)			
 typedef VKAPI_ATTR VkResult				(VKAPI_CALL* AcquireWinrtDisplayNVFunc)												(VkPhysicalDevice physicalDevice, VkDisplayKHR display);
 typedef VKAPI_ATTR VkResult				(VKAPI_CALL* GetWinrtDisplayNVFunc)													(VkPhysicalDevice physicalDevice, deUint32 deviceRelativeId, VkDisplayKHR* pDisplay);
 typedef VKAPI_ATTR void					(VKAPI_CALL* CmdSetVertexInputEXTFunc)												(VkCommandBuffer commandBuffer, deUint32 vertexBindingDescriptionCount, const VkVertexInputBindingDescription2EXT* pVertexBindingDescriptions, deUint32 vertexAttributeDescriptionCount, const VkVertexInputAttributeDescription2EXT* pVertexAttributeDescriptions);
+typedef VKAPI_ATTR VkResult				(VKAPI_CALL* GetDeviceSubpassShadingMaxWorkgroupSizeHUAWEIFunc)						(VkDevice device, VkRenderPass renderpass, VkExtent2D* pMaxWorkgroupSize);
+typedef VKAPI_ATTR void					(VKAPI_CALL* CmdSubpassShadingHUAWEIFunc)											(VkCommandBuffer commandBuffer);
+typedef VKAPI_ATTR VkResult				(VKAPI_CALL* GetMemoryRemoteAddressNVFunc)											(VkDevice device, const VkMemoryGetRemoteAddressInfoNV* getMemoryRemoteAddressInfo, VkRemoteAddressNV* pAddress);
 typedef VKAPI_ATTR void					(VKAPI_CALL* CmdSetPatchControlPointsEXTFunc)										(VkCommandBuffer commandBuffer, deUint32 patchControlPoints);
 typedef VKAPI_ATTR void					(VKAPI_CALL* CmdSetRasterizerDiscardEnableEXTFunc)									(VkCommandBuffer commandBuffer, VkBool32 rasterizerDiscardEnable);
 typedef VKAPI_ATTR void					(VKAPI_CALL* CmdSetDepthBiasEnableEXTFunc)											(VkCommandBuffer commandBuffer, VkBool32 depthBiasEnable);
 typedef VKAPI_ATTR void					(VKAPI_CALL* CmdSetLogicOpEXTFunc)													(VkCommandBuffer commandBuffer, VkLogicOp logicOp);
 typedef VKAPI_ATTR void					(VKAPI_CALL* CmdSetPrimitiveRestartEnableEXTFunc)									(VkCommandBuffer commandBuffer, VkBool32 primitiveRestartEnable);
 typedef VKAPI_ATTR void					(VKAPI_CALL* CmdSetColorWriteEnableEXTFunc)											(VkCommandBuffer commandBuffer, deUint32 attachmentCount, const VkBool32* pColorWriteEnables);
+typedef VKAPI_ATTR void					(VKAPI_CALL* CmdDrawMultiEXTFunc)													(VkCommandBuffer commandBuffer, deUint32 drawCount, const VkMultiDrawInfoEXT* pVertexInfo, deUint32 instanceCount, deUint32 firstInstance, deUint32 stride);
+typedef VKAPI_ATTR void					(VKAPI_CALL* CmdDrawMultiIndexedEXTFunc)											(VkCommandBuffer commandBuffer, deUint32 drawCount, const VkMultiDrawIndexedInfoEXT* pIndexInfo, deUint32 instanceCount, deUint32 firstInstance, deUint32 stride, const deInt32* pVertexOffset);
 typedef VKAPI_ATTR VkResult				(VKAPI_CALL* CreateAccelerationStructureKHRFunc)									(VkDevice device, const VkAccelerationStructureCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkAccelerationStructureKHR* pAccelerationStructure);
 typedef VKAPI_ATTR void					(VKAPI_CALL* DestroyAccelerationStructureKHRFunc)									(VkDevice device, VkAccelerationStructureKHR accelerationStructure, const VkAllocationCallbacks* pAllocator);
 typedef VKAPI_ATTR void					(VKAPI_CALL* CmdBuildAccelerationStructuresKHRFunc)									(VkCommandBuffer commandBuffer, deUint32 infoCount, const VkAccelerationStructureBuildGeometryInfoKHR* pInfos, const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos);

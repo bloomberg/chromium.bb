@@ -655,11 +655,24 @@ class ContextualSearchFakeServer
         rSearch1.put("title", "Related Search 1");
         JSONObject rSearch2 = new JSONObject();
         rSearch2.put("title", "Related Search 2");
+        JSONObject rSearch3 = new JSONObject();
+        rSearch3.put("title", "Related Search 3");
         JSONArray rSearches = new JSONArray();
         rSearches.put(rSearch1);
         rSearches.put(rSearch2);
+        rSearches.put(rSearch3);
         JSONObject suggestions = new JSONObject();
         suggestions.put("content", rSearches);
+        // Also add selection suggestions, which are shown in the Bar, so we can exercise that code.
+        JSONObject rBar1 = new JSONObject();
+        rBar1.put("title", "Selection Related 1");
+        JSONObject rBar2 = new JSONObject();
+        rBar2.put("title", "Selection Related 2");
+        JSONArray selectionSearches = new JSONArray();
+        selectionSearches.put(rBar1);
+        selectionSearches.put(rBar2);
+        suggestions.put("selection", selectionSearches);
+
         ResolvedSearchTerm intelligenceWithRelatedSearches =
                 new ResolvedSearchTerm.Builder(false, 200, "Intelligence", "Intelligence")
                         .setRelatedSearchesJson(suggestions.toString())

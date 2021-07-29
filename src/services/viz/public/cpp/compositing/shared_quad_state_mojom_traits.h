@@ -7,6 +7,7 @@
 
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "services/viz/public/mojom/compositing/shared_quad_state.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/mojom/mask_filter_info_mojom_traits.h"
 #include "ui/gfx/mojom/rrect_f_mojom_traits.h"
 
@@ -69,10 +70,6 @@ struct StructTraits<viz::mojom::SharedQuadStateDataView, OptSharedQuadState> {
   static float de_jelly_delta_y(const OptSharedQuadState& input) {
     return input.sqs->de_jelly_delta_y;
   }
-
-  static bool no_damage(const OptSharedQuadState& input) {
-    return input.sqs->no_damage;
-  }
 };
 
 template <>
@@ -123,10 +120,6 @@ struct StructTraits<viz::mojom::SharedQuadStateDataView, viz::SharedQuadState> {
     return sqs.de_jelly_delta_y;
   }
 
-  static bool no_damage(const viz::SharedQuadState& sqs) {
-    return sqs.no_damage;
-  }
-
   static bool Read(viz::mojom::SharedQuadStateDataView data,
                    viz::SharedQuadState* out) {
     if (!data.ReadQuadToTargetTransform(&out->quad_to_target_transform) ||
@@ -145,7 +138,7 @@ struct StructTraits<viz::mojom::SharedQuadStateDataView, viz::SharedQuadState> {
     out->sorting_context_id = data.sorting_context_id();
     out->is_fast_rounded_corner = data.is_fast_rounded_corner();
     out->de_jelly_delta_y = data.de_jelly_delta_y();
-    out->no_damage = data.no_damage();
+
     return true;
   }
 };

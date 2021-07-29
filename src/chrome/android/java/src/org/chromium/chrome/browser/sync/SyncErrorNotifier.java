@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
-import org.chromium.chrome.browser.sync.ui.TrustedVaultKeyRetrievalProxyActivity;
+import org.chromium.chrome.browser.sync.ui.SyncTrustedVaultProxyActivity;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
@@ -35,28 +35,29 @@ import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.base.GoogleServiceAuthError.State;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.sync.PassphraseType;
+import org.chromium.components.sync.TrustedVaultUserActionTriggerForUMA;
 
 /**
  * {@link SyncErrorNotifier} displays Android notifications regarding sync errors.
  * Errors can be fixed by clicking the notification.
  */
-public class SyncErrorNotifier implements ProfileSyncService.SyncStateChangedListener {
+public class SyncErrorNotifier implements SyncService.SyncStateChangedListener {
     private static final String TAG = "SyncUI";
     private final NotificationManagerProxy mNotificationManager;
-    private final ProfileSyncService mProfileSyncService;
+    private final SyncService mSyncService;
     private boolean mTrustedVaultNotificationShownOrCreating;
 
     private @Nullable static SyncErrorNotifier sInstance;
     private static boolean sInitialized;
 
     /**
-     * Returns null if there's no instance of ProfileSyncService (Sync disabled via command-line).
+     * Returns null if there's no instance of SyncService (Sync disabled via command-line).
      */
     @Nullable
     public static SyncErrorNotifier get() {
         ThreadUtils.assertOnUiThread();
         if (!sInitialized) {
-            if (ProfileSyncService.get() != null) {
+            if (SyncService.get() != null) {
                 sInstance = new SyncErrorNotifier();
             }
             sInitialized = true;
@@ -67,40 +68,40 @@ public class SyncErrorNotifier implements ProfileSyncService.SyncStateChangedLis
     private SyncErrorNotifier() {
         mNotificationManager =
                 new NotificationManagerProxyImpl(ContextUtils.getApplicationContext());
-        mProfileSyncService = ProfileSyncService.get();
-        assert mProfileSyncService != null;
-        mProfileSyncService.addSyncStateChangedListener(this);
+        mSyncService = SyncService.get();
+        assert mSyncService != null;
+        mSyncService.addSyncStateChangedListener(this);
     }
 
     /**
-     * {@link ProfileSyncService.SyncStateChangedListener} implementation.
+     * {@link SyncService.SyncStateChangedListener} implementation.
      * Decides which error notification to show (if any), based on the sync state.
      */
     @Override
     public void syncStateChanged() {
         ThreadUtils.assertOnUiThread();
 
-        if (!mProfileSyncService.isSyncRequested()) {
+        if (!mSyncService.isSyncRequested()) {
             cancelNotifications();
         } else if (shouldSyncAuthErrorBeShown()) {
             // Auth errors take precedence over passphrase errors.
-            showNotification(SyncSettingsUtils.getSyncStatusSummaryForAuthError(
-                                     ContextUtils.getApplicationContext(),
-                                     mProfileSyncService.getAuthError()),
+            showNotification(getString(R.string.sync_error_card_title),
+                    SyncSettingsUtils.getSyncStatusSummaryForAuthError(
+                            ContextUtils.getApplicationContext(), mSyncService.getAuthError()),
                     createSettingsIntent());
-        } else if (mProfileSyncService.isEngineInitialized()
-                && mProfileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
-            assert (!mProfileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes());
+        } else if (mSyncService.isEngineInitialized()
+                && mSyncService.isPassphraseRequiredForPreferredDataTypes()) {
+            assert (!mSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes());
 
-            if (mProfileSyncService.isPassphrasePromptMutedForCurrentProductVersion()) {
+            if (mSyncService.isPassphrasePromptMutedForCurrentProductVersion()) {
                 return;
             }
 
-            switch (mProfileSyncService.getPassphraseType()) {
+            switch (mSyncService.getPassphraseType()) {
                 case PassphraseType.IMPLICIT_PASSPHRASE:
                 case PassphraseType.FROZEN_IMPLICIT_PASSPHRASE:
                 case PassphraseType.CUSTOM_PASSPHRASE:
-                    showNotification(
+                    showNotification(getString(R.string.sync_error_card_title),
                             getString(R.string.hint_passphrase_required), createPassphraseIntent());
                     break;
                 case PassphraseType.TRUSTED_VAULT_PASSPHRASE:
@@ -113,8 +114,8 @@ public class SyncErrorNotifier implements ProfileSyncService.SyncStateChangedLis
                     assert false : "Unknown passphrase type";
                     break;
             }
-        } else if (mProfileSyncService.isEngineInitialized()
-                && mProfileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes()) {
+        } else if (mSyncService.isEngineInitialized()
+                && mSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes()) {
             maybeShowKeyRetrievalNotification();
         } else {
             cancelNotifications();
@@ -130,11 +131,11 @@ public class SyncErrorNotifier implements ProfileSyncService.SyncStateChangedLis
      * Displays the error notification with content |textBody|. The title of the notification is
      * fixed.
      */
-    private void showNotification(String textBody, Intent intentTriggeredOnClick) {
+    private void showNotification(String title, String textBody, Intent intentTriggeredOnClick) {
         // Converting |intentTriggeredOnClick| into a PendingIntent is needed because it will be
         // handed over to the Android notification manager, a foreign application.
         // FLAG_UPDATE_CURRENT ensures any cached intent extras are updated.
-        // TODO(crbug.com/1071377): TrustedVaultKeyRetrievalProxyActivity is the only one to add
+        // TODO(crbug.com/1071377): SyncTrustedVaultProxyActivity is the only one to add
         // extras to the intent, so it should probably be responsible for passing
         // FLAG_UPDATE_CURRENT.
         PendingIntentProvider pendingIntent =
@@ -153,7 +154,7 @@ public class SyncErrorNotifier implements ProfileSyncService.SyncStateChangedLis
                                         NotificationConstants.NOTIFICATION_ID_SYNC))
                         .setAutoCancel(true)
                         .setContentIntent(pendingIntent)
-                        .setContentTitle(getString(R.string.sync_error_card_title))
+                        .setContentTitle(title)
                         .setContentText(textBody)
                         .setSmallIcon(R.drawable.ic_chrome)
                         .setTicker(textBody)
@@ -166,7 +167,7 @@ public class SyncErrorNotifier implements ProfileSyncService.SyncStateChangedLis
     }
 
     private boolean shouldSyncAuthErrorBeShown() {
-        switch (mProfileSyncService.getAuthError()) {
+        switch (mSyncService.getAuthError()) {
             case State.NONE:
             case State.CONNECTION_FAILED:
             case State.SERVICE_UNAVAILABLE:
@@ -176,7 +177,7 @@ public class SyncErrorNotifier implements ProfileSyncService.SyncStateChangedLis
             case State.USER_NOT_SIGNED_UP:
                 return true;
             default:
-                Log.w(TAG, "Not showing unknown Auth Error: " + mProfileSyncService.getAuthError());
+                Log.w(TAG, "Not showing unknown Auth Error: " + mSyncService.getAuthError());
                 return false;
         }
     }
@@ -200,7 +201,7 @@ public class SyncErrorNotifier implements ProfileSyncService.SyncStateChangedLis
      */
     private Intent createPassphraseIntent() {
         // Make sure we don't prompt too many times.
-        mProfileSyncService.markPassphrasePromptMutedForCurrentProductVersion();
+        mSyncService.markPassphrasePromptMutedForCurrentProductVersion();
 
         Intent intent = new Intent(ContextUtils.getApplicationContext(), PassphraseActivity.class);
         // This activity will become the start of a new task on this history stack.
@@ -230,19 +231,23 @@ public class SyncErrorNotifier implements ProfileSyncService.SyncStateChangedLis
         }
         mTrustedVaultNotificationShownOrCreating = true;
 
-        String notificationTextBody = getString(mProfileSyncService.isEncryptEverythingEnabled()
+        String notificationTitle = getString(mSyncService.isEncryptEverythingEnabled()
+                        ? R.string.sync_error_card_title
+                        : R.string.password_sync_error_summary);
+        String notificationTextBody = getString(mSyncService.isEncryptEverythingEnabled()
                         ? R.string.hint_sync_retrieve_keys_for_everything
                         : R.string.hint_sync_retrieve_keys_for_passwords);
 
         TrustedVaultClient.get()
                 .createKeyRetrievalIntent(primaryAccountInfo)
-                // Cf. TrustedVaultKeyRetrievalProxyActivity as to why use a proxy intent.
+                // Cf. SyncTrustedVaultProxyActivity as to why use a proxy intent.
                 // TODO(crbug.com/1071377): Sync state might have changed by the time |realIntent|
                 // is available, so showing the notification won't make sense.
                 .then((realIntent)
-                                -> showNotification(notificationTextBody,
-                                        TrustedVaultKeyRetrievalProxyActivity
-                                                .createKeyRetrievalProxyIntent(realIntent)),
+                                -> showNotification(notificationTitle, notificationTextBody,
+                                        SyncTrustedVaultProxyActivity.createKeyRetrievalProxyIntent(
+                                                realIntent,
+                                                TrustedVaultUserActionTriggerForUMA.NOTIFICATION)),
                         (exception)
                                 -> Log.w(TAG, "Error creating key retrieval intent: ", exception));
     }

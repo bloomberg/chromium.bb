@@ -10,18 +10,18 @@
 #include "base/time/time_delta_from_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/renderer/bindings/core/v8/double_or_scroll_timeline_auto_keyword.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_timeline_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_animationeffect_animationeffectsequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_documenttimeline_scrolltimeline.h"
-#include "third_party/blink/renderer/bindings/modules/v8/animation_effect_or_animation_effect_sequence.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_double_scrolltimelineautokeyword.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -68,7 +68,6 @@ WorkletAnimation* CreateWorkletAnimation(
     Element* element,
     const String& animator_name,
     ScrollTimeline* scroll_timeline = nullptr) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   auto* effects =
       MakeGarbageCollected<V8UnionAnimationEffectOrAnimationEffectSequence>(
           CreateKeyframeEffect(element));
@@ -77,14 +76,6 @@ WorkletAnimation* CreateWorkletAnimation(
     timeline = MakeGarbageCollected<V8UnionDocumentTimelineOrScrollTimeline>(
         scroll_timeline);
   }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  AnimationEffectOrAnimationEffectSequence effects;
-  AnimationEffect* effect = CreateKeyframeEffect(element);
-  effects.SetAnimationEffect(effect);
-  DocumentTimelineOrScrollTimeline timeline;
-  if (scroll_timeline)
-    timeline.SetScrollTimeline(scroll_timeline);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ScriptValue options;
 
   ScriptState::Scope scope(script_state);
@@ -212,8 +203,8 @@ TEST_F(WorkletAnimationTest,
   scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
                                    mojom::blink::ScrollType::kProgrammatic);
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  auto* time_range =
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(100);
   options->setTimeRange(time_range);
   options->setScrollSource(GetElementById("scroller"));
   ScrollTimeline* scroll_timeline =
@@ -329,8 +320,8 @@ TEST_F(WorkletAnimationTest, ScrollTimelineSetPlaybackRate) {
   scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
                                    mojom::blink::ScrollType::kProgrammatic);
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  auto* time_range =
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(100);
   options->setTimeRange(time_range);
   options->setScrollSource(GetElementById("scroller"));
   ScrollTimeline* scroll_timeline =
@@ -383,8 +374,8 @@ TEST_F(WorkletAnimationTest, ScrollTimelineSetPlaybackRateWhilePlaying) {
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  auto* time_range =
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(100);
   options->setTimeRange(time_range);
   options->setScrollSource(GetElementById("scroller"));
   ScrollTimeline* scroll_timeline =
@@ -432,8 +423,8 @@ TEST_F(WorkletAnimationTest, ScrollTimelineNewlyActive) {
   Element* scroller_element = GetElementById("scroller");
 
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  auto* time_range =
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(100);
   options->setTimeRange(time_range);
   options->setScrollSource(scroller_element);
   ScrollTimeline* scroll_timeline =
@@ -489,8 +480,8 @@ TEST_F(WorkletAnimationTest, ScrollTimelineNewlyInactive) {
   Element* scroller_element = GetElementById("scroller");
 
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  auto* time_range =
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(100);
   options->setTimeRange(time_range);
   options->setScrollSource(scroller_element);
   ScrollTimeline* scroll_timeline =

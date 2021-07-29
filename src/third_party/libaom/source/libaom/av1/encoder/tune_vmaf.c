@@ -947,7 +947,8 @@ int av1_get_vmaf_base_qindex(const AV1_COMP *const cpi, int current_qindex) {
   const double dsse = dvmaf * approx_sse / approx_dvmaf;
 
   const double beta = approx_sse / (dsse + approx_sse);
-  const int offset = av1_get_deltaq_offset(cpi, current_qindex, beta);
+  const int offset =
+      av1_get_deltaq_offset(cm->seq_params->bit_depth, current_qindex, beta);
   int qindex = current_qindex + offset;
 
   qindex = AOMMIN(qindex, MAXQ);

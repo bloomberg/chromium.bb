@@ -6,6 +6,7 @@
 #define ASH_APP_LIST_BUBBLE_APP_LIST_BUBBLE_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/search_box/search_box_view_delegate.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace aura {
@@ -14,35 +15,50 @@ class Window;
 
 namespace ash {
 
-class BubbleAppsPage;
-class BubbleAssistantPage;
-class BubbleSearchPage;
+class AppListBubbleAppsPage;
+class AppListBubbleAssistantPage;
+class AppListBubbleSearchPage;
+class AppListViewDelegate;
+class SearchBoxView;
 enum class ShelfAlignment;
 
 // Contains the views for the bubble version of the launcher.
-class ASH_EXPORT AppListBubbleView : public views::BubbleDialogDelegateView {
+class ASH_EXPORT AppListBubbleView : public views::BubbleDialogDelegateView,
+                                     public SearchBoxViewDelegate {
  public:
   // Creates the bubble on the display for `root_window`. Anchors the bubble to
   // a corner of the screen based on `shelf_alignment`.
-  AppListBubbleView(aura::Window* root_window, ShelfAlignment shelf_alignment);
+  AppListBubbleView(AppListViewDelegate* view_delegate,
+                    aura::Window* root_window,
+                    ShelfAlignment shelf_alignment);
   AppListBubbleView(const AppListBubbleView&) = delete;
   AppListBubbleView& operator=(const AppListBubbleView&) = delete;
   ~AppListBubbleView() override;
 
+  // Focuses the search box text input field.
+  void FocusSearchBox();
+
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
 
+  // SearchBoxViewDelegate:
+  void QueryChanged(SearchBoxViewBase* sender) override;
+  void AssistantButtonPressed() override;
+  void BackButtonPressed() override {}
+  void CloseButtonPressed() override;
+  void ActiveChanged(SearchBoxViewBase* sender) override {}
+  void SearchBoxFocusChanged(SearchBoxViewBase* sender) override {}
+  void OnSearchBoxKeyEvent(ui::KeyEvent* event) override;
+  bool CanSelectSearchResults() override;
+
  private:
-  // Flips between the apps, search and assistant pages.
-  // TODO(https://crbug.com/1204551): Delete this when search box is hooked up.
-  void FlipPage();
+  friend class AppListTestHelper;
 
-  // TODO(https://crbug.com/1204551): Delete this when search box is hooked up.
-  int visible_page_ = 0;
-
-  BubbleAppsPage* apps_page_ = nullptr;
-  BubbleSearchPage* search_page_ = nullptr;
-  BubbleAssistantPage* assistant_page_ = nullptr;
+  AppListViewDelegate* const view_delegate_;
+  SearchBoxView* search_box_view_ = nullptr;
+  AppListBubbleAppsPage* apps_page_ = nullptr;
+  AppListBubbleSearchPage* search_page_ = nullptr;
+  AppListBubbleAssistantPage* assistant_page_ = nullptr;
 };
 
 }  // namespace ash

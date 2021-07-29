@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 #include <fuchsia/input/virtualkeyboard/cpp/fidl.h>
+#include <fuchsia/ui/input3/cpp/fidl.h>
 #include <lib/fit/function.h>
-#include <lib/ui/scenic/cpp/view_ref_pair.h>
-#include <lib/ui/scenic/cpp/view_token_pair.h>
 
 #include "base/callback.h"
 #include "base/fuchsia/fuchsia_logging.h"
@@ -13,135 +12,37 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/test_component_context_for_process.h"
 #include "base/strings/stringprintf.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host_view.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/public/test/browser_test.h"
-#include "content/public/test/browser_test_utils.h"
 #include "fuchsia/base/test/frame_test_util.h"
+#include "fuchsia/base/test/scoped_connection_checker.h"
 #include "fuchsia/base/test/test_navigation_listener.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/frame_impl.h"
-#include "fuchsia/engine/browser/frame_window_tree_host.h"
+#include "fuchsia/engine/browser/mock_virtual_keyboard.h"
+#include "fuchsia/engine/features.h"
+#include "fuchsia/engine/test/frame_for_test.h"
+#include "fuchsia/engine/test/scenic_test_helper.h"
 #include "fuchsia/engine/test/test_data.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace virtualkeyboard = fuchsia::input::virtualkeyboard;
 
 namespace {
 
-const gfx::Rect kBounds = {1000, 1000};
 const gfx::Point kNoTarget = {999, 999};
 
 constexpr char kInputFieldText[] = "input-text";
-constexpr char kInputFieldTel[] = "input-tel";
-constexpr char kInputFieldNumeric[] = "input-numeric";
-constexpr char kInputFieldUrl[] = "input-url";
-constexpr char kInputFieldEmail[] = "input-email";
-constexpr char kInputFieldDecimal[] = "input-decimal";
-constexpr char kInputFieldSearch[] = "input-search";
-
-class MockVirtualKeyboardController : public virtualkeyboard::Controller {
- public:
-  MockVirtualKeyboardController() : binding_(this) {}
-  ~MockVirtualKeyboardController() override = default;
-
-  MockVirtualKeyboardController(MockVirtualKeyboardController&) = delete;
-  MockVirtualKeyboardController operator=(MockVirtualKeyboardController&) =
-      delete;
-
-  void Bind(fuchsia::ui::views::ViewRef view_ref,
-            virtualkeyboard::TextType text_type,
-            fidl::InterfaceRequest<fuchsia::input::virtualkeyboard::Controller>
-                controller_request) {
-    text_type_ = text_type;
-    view_ref_ = std::move(view_ref);
-    binding_.Bind(std::move(controller_request));
-  }
-
-  // Spins a RunLoop until the client calls WatchVisibility().
-  void AwaitWatchAndRespondWith(bool is_visible) {
-    if (!watch_vis_callback_) {
-      base::RunLoop run_loop;
-      on_watch_visibility_ = run_loop.QuitClosure();
-      run_loop.Run();
-      ASSERT_TRUE(watch_vis_callback_);
-    }
-
-    (*watch_vis_callback_)(is_visible);
-    watch_vis_callback_ = {};
-  }
-
-  const fuchsia::ui::views::ViewRef& view_ref() const { return view_ref_; }
-  virtualkeyboard::TextType text_type() const { return text_type_; }
-
-  // virtualkeyboard::Controller implementation.
-  MOCK_METHOD0(RequestShow, void());
-  MOCK_METHOD0(RequestHide, void());
-  MOCK_METHOD1(SetTextType, void(virtualkeyboard::TextType text_type));
-
- private:
-  // virtualkeyboard::Controller implementation.
-  void WatchVisibility(
-      virtualkeyboard::Controller::WatchVisibilityCallback callback) final {
-    watch_vis_callback_ = std::move(callback);
-
-    if (on_watch_visibility_)
-      std::move(on_watch_visibility_).Run();
-  }
-
-  base::OnceClosure on_watch_visibility_;
-  absl::optional<virtualkeyboard::Controller::WatchVisibilityCallback>
-      watch_vis_callback_;
-  fuchsia::ui::views::ViewRef view_ref_;
-  virtualkeyboard::TextType text_type_;
-  fidl::Binding<fuchsia::input::virtualkeyboard::Controller> binding_;
-};
-
-// Services connection requests for MockVirtualKeyboardControllers.
-class MockVirtualKeyboardControllerCreator
-    : public virtualkeyboard::ControllerCreator {
- public:
-  explicit MockVirtualKeyboardControllerCreator(
-      base::TestComponentContextForProcess* component_context)
-      : binding_(component_context->additional_services(), this) {}
-
-  ~MockVirtualKeyboardControllerCreator() override {
-    CHECK(!pending_controller_);
-  }
-
-  MockVirtualKeyboardControllerCreator(MockVirtualKeyboardControllerCreator&) =
-      delete;
-  MockVirtualKeyboardControllerCreator operator=(
-      MockVirtualKeyboardControllerCreator&) = delete;
-
-  // Returns an unbound MockVirtualKeyboardController, which will later be
-  // connected when |this| handles a call to the FIDL method Create().
-  std::unique_ptr<MockVirtualKeyboardController> CreateController() {
-    DCHECK(!pending_controller_);
-
-    auto controller = std::make_unique<MockVirtualKeyboardController>();
-    pending_controller_ = controller.get();
-    return controller;
-  }
-
- private:
-  // fuchsia::input::virtualkeyboard implementation.
-  void Create(
-      fuchsia::ui::views::ViewRef view_ref,
-      fuchsia::input::virtualkeyboard::TextType text_type,
-      fidl::InterfaceRequest<fuchsia::input::virtualkeyboard::Controller>
-          controller_request) final {
-    CHECK(pending_controller_);
-    pending_controller_->Bind(std::move(view_ref), text_type,
-                              std::move(controller_request));
-    pending_controller_ = nullptr;
-  }
-
-  MockVirtualKeyboardController* pending_controller_ = nullptr;
-  base::ScopedServiceBinding<virtualkeyboard::ControllerCreator> binding_;
-};
+constexpr char kInputFieldModeTel[] = "input-mode-tel";
+constexpr char kInputFieldModeNumeric[] = "input-mode-numeric";
+constexpr char kInputFieldModeUrl[] = "input-mode-url";
+constexpr char kInputFieldModeEmail[] = "input-mode-email";
+constexpr char kInputFieldModeDecimal[] = "input-mode-decimal";
+constexpr char kInputFieldModeSearch[] = "input-mode-search";
+constexpr char kInputFieldTypeTel[] = "input-type-tel";
+constexpr char kInputFieldTypeNumber[] = "input-type-number";
+constexpr char kInputFieldTypePassword[] = "input-type-password";
 
 class VirtualKeyboardTest : public cr_fuchsia::WebEngineBrowserTest {
  public:
@@ -150,60 +51,49 @@ class VirtualKeyboardTest : public cr_fuchsia::WebEngineBrowserTest {
   }
   ~VirtualKeyboardTest() override = default;
 
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kVirtualKeyboard, features::kKeyboardInput}, {});
+    cr_fuchsia::WebEngineBrowserTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
     cr_fuchsia::WebEngineBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
 
+    fuchsia::web::CreateFrameParams params;
+    frame_for_test_ =
+        cr_fuchsia::FrameForTest::Create(context(), std::move(params));
+
     component_context_.emplace(
         base::TestComponentContextForProcess::InitialState::kCloneAll);
     controller_creator_.emplace(&*component_context_);
+
     controller_ = controller_creator_->CreateController();
 
-    frame_ = CreateFrame(&navigation_listener_);
-    frame_impl_ = context_impl()->GetFrameImplForTest(&frame_);
+    // Ensure that the fuchsia.ui.input3.Keyboard service is connected.
+    component_context_->additional_services()
+        ->RemovePublicService<fuchsia::ui::input3::Keyboard>();
+    keyboard_input_checker_.emplace(component_context_->additional_services());
 
-    // Navigate to the test page.
     fuchsia::web::NavigationControllerPtr controller;
-    frame_->GetNavigationController(controller.NewRequest());
+    frame_for_test_.ptr()->GetNavigationController(controller.NewRequest());
     const GURL test_url(embedded_test_server()->GetURL("/input_fields.html"));
     EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
         controller.get(), fuchsia::web::LoadUrlParams(), test_url.spec()));
-    navigation_listener_.RunUntilUrlEquals(test_url);
+    frame_for_test_.navigation_listener().RunUntilUrlEquals(test_url);
 
-    // Simulate the creation of a Scenic View, except bypassing the actual
-    // construction of a Scenic PlatformWindow in favor of using an injected
-    // StubWindow.
-    scenic::ViewRefPair view_ref_pair = scenic::ViewRefPair::New();
-    view_ref_ = std::move(view_ref_pair.view_ref);
-    fuchsia::ui::views::ViewRef view_ref_dup;
-    zx_status_t status = view_ref_.reference.duplicate(ZX_RIGHT_SAME_RIGHTS,
-                                                       &view_ref_dup.reference);
-    ZX_CHECK(status == ZX_OK, status) << "zx_object_duplicate";
-
-    auto view_tokens = scenic::ViewTokenPair::New();
-    frame_->CreateViewWithViewRef(std::move(view_tokens.view_token),
-                                  std::move(view_ref_pair.control_ref),
-                                  std::move(view_ref_dup));
-    base::RunLoop().RunUntilIdle();
-    frame_impl_->window_tree_host_for_test()->Show();
-
-    // Prepare the view for headless interaction by setting its focus state and
-    // size.
-    web_contents_ = frame_impl_->web_contents();
-    content::RenderWidgetHostView* view =
-        web_contents_->GetMainFrame()->GetView();
-    view->SetBounds(kBounds);
-    view->Focus();
+    fuchsia::web::FramePtr* frame_ptr = &(frame_for_test_.ptr());
+    web_contents_ =
+        context_impl()->GetFrameImplForTest(frame_ptr)->web_contents();
+    scenic_test_helper_.CreateScenicView(
+        context_impl()->GetFrameImplForTest(frame_ptr), frame_for_test_.ptr());
+    scenic_test_helper_.SetUpViewForInteraction(web_contents_);
 
     controller_->AwaitWatchAndRespondWith(false);
-
-    ASSERT_EQ(base::GetKoid(controller_->view_ref().reference).value(),
-              base::GetKoid(view_ref_.reference).value());
-  }
-
-  void TearDownOnMainThread() override {
-    frame_.Unbind();
-    base::RunLoop().RunUntilIdle();
+    ASSERT_EQ(
+        base::GetKoid(controller_->view_ref().reference).value(),
+        base::GetKoid(scenic_test_helper_.CloneViewRef().reference).value());
   }
 
   gfx::Point GetCoordinatesOfInputField(base::StringPiece id) {
@@ -211,7 +101,7 @@ class VirtualKeyboardTest : public cr_fuchsia::WebEngineBrowserTest {
     constexpr int kInputFieldClickInset = 8;
 
     absl::optional<base::Value> result = cr_fuchsia::ExecuteJavaScript(
-        frame_.get(),
+        frame_for_test_.ptr().get(),
         base::StringPrintf("getPointInsideText('%s')", id.data()));
     CHECK(result);
 
@@ -223,49 +113,53 @@ class VirtualKeyboardTest : public cr_fuchsia::WebEngineBrowserTest {
   }
 
  protected:
-  // Used to publish fake virtual keyboard services for the InputMethod to use.
+  cr_fuchsia::FrameForTest frame_for_test_;
+  cr_fuchsia::ScenicTestHelper scenic_test_helper_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  absl::optional<EnsureConnectedChecker<fuchsia::ui::input3::Keyboard>>
+      keyboard_input_checker_;
+
+  // Fake virtual keyboard services for the InputMethod to use.
   absl::optional<base::TestComponentContextForProcess> component_context_;
   absl::optional<MockVirtualKeyboardControllerCreator> controller_creator_;
   std::unique_ptr<MockVirtualKeyboardController> controller_;
 
-  fuchsia::web::FramePtr frame_;
-  FrameImpl* frame_impl_ = nullptr;
   content::WebContents* web_contents_ = nullptr;
-  cr_fuchsia::TestNavigationListener navigation_listener_;
-  fuchsia::ui::views::ViewRef view_ref_;
 };
 
 // Verifies that RequestShow() is not called redundantly if the virtual
 // keyboard is reported as visible.
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardTest, ShowAndHideWithVisibility) {
+// TODO(https://crbug.com/1226757): Flaky on Fuchsia-x64.
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardTest, DISABLED_ShowAndHideWithVisibility) {
   testing::InSequence s;
-  base::RunLoop on_show_run_loop;
 
   // Alphanumeric field click.
+  base::RunLoop on_show_run_loop;
   EXPECT_CALL(*controller_, RequestShow())
       .WillOnce(testing::InvokeWithoutArgs(
           [&on_show_run_loop]() { on_show_run_loop.Quit(); }))
       .RetiresOnSaturation();
-  EXPECT_CALL(*controller_, RequestHide()).RetiresOnSaturation();
 
   // Numeric field click.
   base::RunLoop click_numeric_run_loop;
+  EXPECT_CALL(*controller_, RequestHide()).RetiresOnSaturation();
   EXPECT_CALL(*controller_, SetTextType(virtualkeyboard::TextType::NUMERIC))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*controller_, RequestShow())
       .WillOnce(testing::InvokeWithoutArgs(
           [&click_numeric_run_loop]() { click_numeric_run_loop.Quit(); }))
       .RetiresOnSaturation();
-  EXPECT_CALL(*controller_, RequestShow()).RetiresOnSaturation();
 
   // Input blur click.
-  EXPECT_CALL(*controller_, RequestHide()).RetiresOnSaturation();
-  base::RunLoop text_type_changed_run_loop;
-  EXPECT_CALL(*controller_,
-              SetTextType(virtualkeyboard::TextType::ALPHANUMERIC))
-      .WillOnce(testing::InvokeWithoutArgs([&text_type_changed_run_loop]() {
-        text_type_changed_run_loop.Quit();
-      }))
+  base::RunLoop on_hide_run_loop;
+  EXPECT_CALL(*controller_, RequestHide())
+      .WillOnce(testing::InvokeWithoutArgs(
+          [&on_hide_run_loop]() { on_hide_run_loop.Quit(); }))
       .RetiresOnSaturation();
 
+  // Give focus to an alphanumeric input field, which will result in
+  // RequestShow() being called.
   content::SimulateTapAt(web_contents_,
                          GetCoordinatesOfInputField(kInputFieldText));
   on_show_run_loop.Run();
@@ -278,12 +172,12 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardTest, ShowAndHideWithVisibility) {
   // Tap on another text field. RequestShow should not be called a second time
   // since the keyboard is already onscreen.
   content::SimulateTapAt(web_contents_,
-                         GetCoordinatesOfInputField(kInputFieldNumeric));
+                         GetCoordinatesOfInputField(kInputFieldModeNumeric));
   click_numeric_run_loop.Run();
 
   // Trigger input blur by clicking outside any input element.
   content::SimulateTapAt(web_contents_, kNoTarget);
-  text_type_changed_run_loop.Run();
+  on_hide_run_loop.Run();
 }
 
 // Gives focus to a sequence of HTML <input> nodes with different InputModes,
@@ -293,12 +187,15 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardTest, InputModeMappings) {
   // so the array is ordered to produce an update on each entry.
   const std::vector<std::pair<base::StringPiece, virtualkeyboard::TextType>>
       kInputTypeMappings = {
-          {kInputFieldTel, virtualkeyboard::TextType::PHONE},
-          {kInputFieldSearch, virtualkeyboard::TextType::ALPHANUMERIC},
-          {kInputFieldNumeric, virtualkeyboard::TextType::NUMERIC},
-          {kInputFieldUrl, virtualkeyboard::TextType::ALPHANUMERIC},
-          {kInputFieldDecimal, virtualkeyboard::TextType::NUMERIC},
-          {kInputFieldEmail, virtualkeyboard::TextType::ALPHANUMERIC},
+          {kInputFieldModeTel, virtualkeyboard::TextType::PHONE},
+          {kInputFieldModeSearch, virtualkeyboard::TextType::ALPHANUMERIC},
+          {kInputFieldModeNumeric, virtualkeyboard::TextType::NUMERIC},
+          {kInputFieldModeUrl, virtualkeyboard::TextType::ALPHANUMERIC},
+          {kInputFieldModeDecimal, virtualkeyboard::TextType::NUMERIC},
+          {kInputFieldModeEmail, virtualkeyboard::TextType::ALPHANUMERIC},
+          {kInputFieldTypeTel, virtualkeyboard::TextType::PHONE},
+          {kInputFieldTypeNumber, virtualkeyboard::TextType::NUMERIC},
+          {kInputFieldTypePassword, virtualkeyboard::TextType::ALPHANUMERIC},
       };
 
   // GMock expectations must be set upfront, hence the redundant for-each loop.
@@ -349,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardTest, Disconnection) {
 
   // Focus on another text field, then defocus. Nothing should crash.
   content::SimulateTapAt(web_contents_,
-                         GetCoordinatesOfInputField(kInputFieldNumeric));
+                         GetCoordinatesOfInputField(kInputFieldModeNumeric));
   content::SimulateTapAt(web_contents_, kNoTarget);
 }
 

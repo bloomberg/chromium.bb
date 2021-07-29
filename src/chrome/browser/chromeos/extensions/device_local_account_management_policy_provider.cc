@@ -14,10 +14,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/common/extensions/api/chrome_url_overrides.h"
 #include "chrome/common/extensions/api/omnibox.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/device_local_account_util.h"
 #include "extensions/common/api/incognito.h"
+#include "extensions/common/api/oauth2.h"
 #include "extensions/common/api/requirements.h"
 #include "extensions/common/api/shared_module.h"
 #include "extensions/common/api/web_accessible_resources.h"
@@ -72,7 +74,7 @@ const char* const kSafeManifestEntries[] = {
     // emk::kSettingsOverride,
 
     // Bookmark manager, history, new tab - should be safe.
-    emk::kChromeURLOverrides,
+    ext_api::chrome_url_overrides::ManifestKeys::kChromeUrlOverrides,
 
     // General risk of capturing user input, but key combos must include Ctrl or
     // Alt, so I think this is safe.
@@ -178,7 +180,7 @@ const char* const kSafeManifestEntries[] = {
 
     // Used in conjunction with the identity API - not really used when there's
     // no GAIA user signed in.
-    emk::kOAuth2,
+    ext_api::oauth2::ManifestKeys::kOauth2,
 
     // Generally safe (i.e. only whitelist apps), except for the policy to
     // whitelist apps for auto-approved token minting (we should just ignore
@@ -707,13 +709,13 @@ bool IsSafeForPublicSession(const extensions::Extension* extension) {
           continue;
         }
         // Try to read as string.
-        std::string permission_string;
-        if (!entry.GetAsString(&permission_string)) {
+        if (!entry.is_string()) {
           LOG(ERROR) << extension->id() << ": " << it.key()
                      << " contains a token that's neither a string nor a dict.";
           safe = false;
           continue;
         }
+        const std::string permission_string = entry.GetString();
         // Log permission (usual, string form).
         LogPermissionUmaStats(permission_string);
         // Accept whitelisted permissions.

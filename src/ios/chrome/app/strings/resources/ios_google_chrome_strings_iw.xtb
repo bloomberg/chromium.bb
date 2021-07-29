@@ -4,6 +4,7 @@
 <translation id="1096883626080133124">‏Chromium מאפשר לך להספיק יותר באופן פשוט, מאובטח ומהיר מאי פעם</translation>
 <translation id="1282031177488366470">‏עזרה בשיפור התכונות והביצועים של Chrome</translation>
 <translation id="1314663809820920746">‏יש לך עדיין אפשרות לראות את הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות במכשיר זה. שינויים שיתבצעו על ידך לא יסונכרנו בחשבון Google שלך.</translation>
+<translation id="139135165841384604">‏להספיק יותר עם Chrome</translation>
 <translation id="1479202195792305274">‏Chrome יכול לבדוק את הסיסמאות כשנכנסים באמצעות חשבון Google.</translation>
 <translation id="1493827051843127077">‏כדאי להגדיר את Chrome כדפדפן ברירת המחדל כדי לסנכרן את הכרטיסיות, הסיסמאות ופרטי התשלומים שלך בכל המכשירים שלך</translation>
 <translation id="1504372625950710826">‏Chrome לא הצליח לחפש עדכונים. יש לבדוק את החיבור לאינטרנט.</translation>
@@ -14,6 +15,7 @@
 <translation id="2009224836393115614">‏Chrome לא הצליח לבדוק את הסיסמאות שלך. יש לבדוק את החיבור לאינטרנט.</translation>
 <translation id="2147651015520127414">‏Chrome אימת ש-<ph name="ISSUER" /> הנפיק את האישור של אתר זה.</translation>
 <translation id="2199719347983604670">‏נתונים מסנכרון Chrome</translation>
+<translation id="2313070403598893276">‏Google Chrome הוא פשוט, מאובטח ומהיר יותר מאי פעם</translation>
 <translation id="2342919707875585281">‏המיקום שלך ישותף על ידי Chrome עם אתרים שיאושרו על ידך.</translation>
 <translation id="2347208864470321755">‏כשהתכונה הזו פועלת, Chrome יציע לתרגם דפים שנכתבו בשפות אחרות באמצעות Google Translate‏. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="2415682770504543561">‏הגדרת Chrome כדפדפן ברירת המחדל</translation>
@@ -32,9 +34,9 @@
 <translation id="3196546062792660320">‏Chromium מאפשר גישה לחשבונות באינטרנט וכך חוסך לך זמן. ניתן להוסיף או להסיר חשבונות בקטע 'הגדרות'.</translation>
 <translation id="3282568296779691940">‏כניסה ל-Chrome</translation>
 <translation id="3345341804167540816">‏להשתמש ב-Chrome בכל מקום</translation>
-<translation id="3455456143708465450">‏כדי להפיק את המרב מ-Chrome, יש להיכנס לחשבון Google</translation>
 <translation id="3522659714780527202">‏כדי לראות את הכרטיסיות שלך מכל מקום שבו פתחת את Chrome יש להפעיל את הסנכרון</translation>
 <translation id="3533694711092285624">‏אין סיסמאות שמורות. Chrome יכול לבדוק את הסיסמאות שלך רק אם שמרת אותן.</translation>
+<translation id="3634910711516114487">‏אפשר להיכנס ל-Chrome באמצעות חשבון Google כדי להפיק את המרב מ-Chrome</translation>
 <translation id="3706101708757577809">‏אפשר עכשיו להשתמש ב-Chrome בכל פעם שמקישים על קישורים בהודעות, במסמכים ובאפליקציות אחרות.</translation>
 <translation id="3720541637541300822">‏כרטיסיות מצב אנונימי יינעלו כש-Chrome ייסגר</translation>
 <translation id="384394811301901750">‏Google Chrome לא יכול להשתמש עכשיו במצלמה</translation>
@@ -64,7 +66,7 @@
 <translation id="6063091872902370735">‏התרת כניסה אל Chrome</translation>
 <translation id="6181930887571472871">‏לעבור ל-Chrome?</translation>
 <translation id="6238746320622508509">‏כרטיסיות מצב אנונימי יינעלו באמצעות Chrome.</translation>
-<translation id="6573431926118603307">‏כרטיסיות שפתחת ב-Chrome במכשירים האחרים שלך יופיעו כאן.</translation>
+<translation id="6427126399757991875">‏הארגון שלך מגדיר את Chrome…</translation>
 <translation id="6600954340915313787">‏הועתק אל Chrome</translation>
 <translation id="6634107063912726160">‏לאחר היציאה מהחשבון, לא יתבצע סנכרון של נתונים חדשים מ-Chrome לחשבון Google שלך. נתונים שסונכרנו בעבר יישארו בחשבון.</translation>
 <translation id="6648150602980899529">‏נכנסת עם חשבון המנוהל על-ידי <ph name="DOMAIN" /> שמעניק למנהל שלו שליטה על הנתונים שלך ב-Chrome. הנתונים שלך ישויכו לצמיתות אל החשבון הזה. יציאה מ-Chrome תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו בחשבון Google שלך.</translation>
@@ -78,7 +80,6 @@
 <translation id="7172660552945675509">‏טיפ: <ph name="BEGIN_LINK" />כדאי להעביר את Chrome לשורת המשימות<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">‏Chrome משתמש ב-Face ID כדי להבטיח גישה מאושרת לסיסמאות שלך.</translation>
 <translation id="7261678641327190792">‏Chrome לא יכול לבדוק את הסיסמאות שלך</translation>
-<translation id="7265369419224458312">‏גישה מכאן ישירות לכרטיסיות שפתחת במחשב. יש לפתוח את Chrome במחשב, לעבור אל התפריט ולבחור באפשרות 'כניסה אל Chrome...'</translation>
 <translation id="7272930098487145294">‏כדי לשמור תמונות צריך להקיש על 'הגדרות' על מנת לאפשר ל-Chrome להוסיף תמונות לגלריה שלך</translation>
 <translation id="7275945473750112644">‏החשבון שלך מנוהל על ידי <ph name="HOSTED_DOMAIN" />, ולכן הנתונים שלך מ-Chrome יימחקו מהמכשיר הזה</translation>
 <translation id="7400722733683201933">‏אודות Google Chrome</translation>

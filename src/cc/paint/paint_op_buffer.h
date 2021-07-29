@@ -28,6 +28,7 @@
 #include "cc/paint/paint_flags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "ui/gfx/geometry/rect.h"
@@ -388,8 +389,15 @@ class CC_PAINT_EXPORT AnnotateOp final : public PaintOp {
 class CC_PAINT_EXPORT ClipPathOp final : public PaintOp {
  public:
   static constexpr PaintOpType kType = PaintOpType::ClipPath;
-  ClipPathOp(SkPath path, SkClipOp op, bool antialias)
-      : PaintOp(kType), path(path), op(op), antialias(antialias) {}
+  ClipPathOp(SkPath path,
+             SkClipOp op,
+             bool antialias,
+             UsePaintCache use_paint_cache = UsePaintCache::kEnabled)
+      : PaintOp(kType),
+        path(path),
+        op(op),
+        antialias(antialias),
+        use_cache(use_paint_cache) {}
   static void Raster(const ClipPathOp* op,
                      SkCanvas* canvas,
                      const PlaybackParams& params);
@@ -402,6 +410,7 @@ class CC_PAINT_EXPORT ClipPathOp final : public PaintOp {
   ThreadsafePath path;
   SkClipOp op;
   bool antialias;
+  UsePaintCache use_cache;
 
  private:
   ClipPathOp() : PaintOp(kType) {}
@@ -684,10 +693,13 @@ class CC_PAINT_EXPORT DrawPathOp final : public PaintOpWithFlags {
  public:
   static constexpr PaintOpType kType = PaintOpType::DrawPath;
   static constexpr bool kIsDrawOp = true;
-  DrawPathOp(const SkPath& path, const PaintFlags& flags)
+  DrawPathOp(const SkPath& path,
+             const PaintFlags& flags,
+             UsePaintCache use_paint_cache = UsePaintCache::kEnabled)
       : PaintOpWithFlags(kType, flags),
         path(path),
-        sk_path_fill_type(static_cast<uint8_t>(path.getFillType())) {}
+        sk_path_fill_type(static_cast<uint8_t>(path.getFillType())),
+        use_cache(use_paint_cache) {}
   static void RasterWithFlags(const DrawPathOp* op,
                               const PaintFlags* flags,
                               SkCanvas* canvas,
@@ -704,6 +716,7 @@ class CC_PAINT_EXPORT DrawPathOp final : public PaintOpWithFlags {
   // serialize/deserialize this value and set it on the SkPath before handing it
   // to Skia.
   uint8_t sk_path_fill_type;
+  UsePaintCache use_cache;
 
  private:
   DrawPathOp() : PaintOpWithFlags(kType) {}
@@ -1043,6 +1056,15 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
       const volatile void* input,
       size_t input_size,
       const PaintOp::DeserializeOptions& options);
+
+  // Given the |bounds| of a PaintOpBuffer that would be transformed by |ctm|
+  // when rendered, compute the bounds needed to raster the buffer at a fixed
+  // scale into an auxiliary image instead of rasterizing at scale dynamically.
+  // This is used to enforce scaling decisions made pre-serialization when
+  // rasterizing after deserializing the buffer.
+  static SkRect GetFixedScaleBounds(const SkMatrix& ctm,
+                                    const SkRect& bounds,
+                                    int max_texture_size = 0);
 
   // Returns the size of the paint op buffer. That is, the number of ops
   // contained in it.

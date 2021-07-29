@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/at_exit.h"
@@ -10,12 +11,16 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/icu_util.h"
+#include "base/no_destructor.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"  // [nogncheck]
 #include "content/browser/code_cache/generated_code_cache_context.h"  // [nogncheck]
+#include "content/browser/network_service_instance_impl.h"       // [nogncheck]
 #include "content/browser/renderer_host/code_cache_host_impl.h"  // [nogncheck]
+#include "content/browser/storage_partition_impl.h"              // [nogncheck]
 #include "content/browser/storage_partition_impl_map.h"          // [nogncheck]
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,6 +29,7 @@
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/test/fuzzer/code_cache_host_mojolpm_fuzzer.pb.h"
 #include "mojo/core/embedder/embedder.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-mojolpm.h"
@@ -61,6 +67,10 @@ class ContentFuzzerEnvironment {
     logging::SetMinLogLevel(logging::LOG_FATAL);
     mojo::core::Init();
     base::i18n::InitializeICU();
+
+    content::ForceCreateNetworkServiceDirectlyForTesting();
+    content::StoragePartitionImpl::ForceInProcessStorageServiceForTesting();
+
     fuzzer_thread_.StartAndWaitForTesting();
   }
 
@@ -175,7 +185,10 @@ class CodeCacheHostTestcase {
 
   // Mapping from renderer id to CodeCacheHostImpl instances being fuzzed.
   // Access only from UI thread.
-  std::map<int, std::unique_ptr<content::CodeCacheHostImpl>> code_cache_hosts_;
+  std::map<
+      int,
+      std::unique_ptr<mojo::UniqueReceiverSet<blink::mojom::CodeCacheHost>>>
+      code_cache_host_receivers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };
@@ -210,8 +223,11 @@ void CodeCacheHostTestcase::SetUpOnUIThread() {
       std::make_unique<content::CacheStorageControlWrapper>(
           content::GetIOThreadTaskRunner({}), browser_context_->GetPath(),
           browser_context_->GetSpecialStoragePolicy(),
-          /*quota_manager_proxy=*/nullptr,
-          /*blob_storage_context=*/mojo::NullRemote());
+          browser_context_->GetDefaultStoragePartition()
+              ->GetQuotaManager()
+              ->proxy(),
+          content::ChromeBlobStorageContext::GetRemoteFor(
+              browser_context_.get()));
 
   generated_code_cache_context_ =
       base::MakeRefCounted<content::GeneratedCodeCacheContext>();
@@ -230,7 +246,7 @@ void CodeCacheHostTestcase::TearDown() {
 }
 
 void CodeCacheHostTestcase::TearDownOnUIThread() {
-  code_cache_hosts_.clear();
+  code_cache_host_receivers_.clear();
   generated_code_cache_context_.reset();
   cache_storage_control_wrapper_.reset();
   browser_context_.reset();
@@ -294,11 +310,13 @@ void CodeCacheHostTestcase::AddCodeCacheHostImpl(
     const Origin& origin,
     mojo::PendingReceiver<::blink::mojom::CodeCacheHost>&& receiver) {
   auto code_cache_host = std::make_unique<content::CodeCacheHostImpl>(
-      renderer_id, /*render_process_host_impl=*/nullptr,
-      generated_code_cache_context_, std::move(receiver));
+      renderer_id, generated_code_cache_context_);
   code_cache_host->SetCacheStorageControlForTesting(
       cache_storage_control_wrapper_.get());
-  code_cache_hosts_[renderer_id] = std::move(code_cache_host);
+  auto receivers =
+      std::make_unique<mojo::UniqueReceiverSet<blink::mojom::CodeCacheHost>>();
+  receivers->Add(std::move(code_cache_host), std::move(receiver));
+  code_cache_host_receivers_[renderer_id] = std::move(receivers);
 }
 
 void CodeCacheHostTestcase::AddCodeCacheHost(
@@ -334,7 +352,7 @@ void CodeCacheHostTestcase::AddCodeCacheHost(
 // Helper function to keep scheduling fuzzer actions on the current runloop
 // until the testcase has completed, and then quit the runloop.
 void NextAction(CodeCacheHostTestcase* testcase,
-                base::RepeatingClosure quit_closure) {
+                base::OnceClosure quit_closure) {
   if (!testcase->IsFinished()) {
     testcase->NextAction();
     GetFuzzerTaskRunner()->PostTask(

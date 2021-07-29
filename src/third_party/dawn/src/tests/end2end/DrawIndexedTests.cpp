@@ -37,7 +37,7 @@ class DrawIndexedTest : public DawnTest {
                 return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
         descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleStrip;
@@ -48,7 +48,7 @@ class DrawIndexedTest : public DawnTest {
         descriptor.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
         descriptor.cTargets[0].format = renderPass.colorFormat;
 
-        pipeline = device.CreateRenderPipeline2(&descriptor);
+        pipeline = device.CreateRenderPipeline(&descriptor);
 
         vertexBuffer = utils::CreateBufferFromData<float>(
             device, wgpu::BufferUsage::Vertex,
@@ -178,7 +178,7 @@ TEST_P(DrawIndexedTest, ZeroSizedIndexBuffer) {
 
 // Test the parameter 'baseVertex' of DrawIndexed() works.
 TEST_P(DrawIndexedTest, BaseVertex) {
-    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_base_vertex"));
+    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("disable_base_vertex"));
     RGBA8 filled(0, 255, 0, 255);
     RGBA8 notFilled(0, 0, 0, 0);
 

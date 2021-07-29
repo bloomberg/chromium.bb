@@ -33,12 +33,12 @@ import (
 // splitReceiverMethodArgs returns the "receiver", "method" and "args" in the
 // expression "receiver.method(args)".
 func splitReceiverMethodArgs(n *a.Expr) (receiver *a.Expr, method t.ID, args []*a.Node) {
-	if n.Operator() != t.IDOpenParen {
+	if n.Operator() != a.ExprOperatorCall {
 		return nil, 0, nil
 	}
 	args = n.Args()
 	n = n.LHS().AsExpr()
-	if n.Operator() != t.IDDot {
+	if n.Operator() != a.ExprOperatorSelector {
 		return nil, 0, nil
 	}
 	return n.LHS().AsExpr(), n.Ident(), args
@@ -55,16 +55,16 @@ func (q *checker) optimizeIOMethodAdvance(receiver *a.Expr, advance *big.Int, ad
 
 	// Check if receiver looks like "a[i .. j]" where i and j are constants and
 	// ((j - i) >= advance).
-	if receiver.Operator() == t.IDDotDot {
+	if _, i, j, ok := receiver.IsSlice(); ok {
 		icv := (*big.Int)(nil)
-		if i := receiver.MHS().AsExpr(); i == nil {
+		if i == nil {
 			icv = zero
 		} else if i.ConstValue() != nil {
 			icv = i.ConstValue()
 		}
 
 		jcv := (*big.Int)(nil)
-		if j := receiver.RHS().AsExpr(); (j != nil) && (j.ConstValue() != nil) {
+		if (j != nil) && (j.ConstValue() != nil) {
 			jcv = j.ConstValue()
 		}
 
@@ -94,11 +94,11 @@ func (q *checker) optimizeIOMethodAdvance(receiver *a.Expr, advance *big.Int, ad
 
 		// Check that lhs is "receiver.length()".
 		lhs := x.LHS().AsExpr()
-		if lhs.Operator() != t.IDOpenParen || len(lhs.Args()) != 0 {
+		if (lhs.Operator() != a.ExprOperatorCall) || (len(lhs.Args()) != 0) {
 			return x, nil
 		}
 		lhs = lhs.LHS().AsExpr()
-		if lhs.Operator() != t.IDDot || lhs.Ident() != t.IDLength {
+		if (lhs.Operator() != a.ExprOperatorSelector) || (lhs.Ident() != t.IDLength) {
 			return x, nil
 		}
 		lhs = lhs.LHS().AsExpr()
@@ -155,11 +155,11 @@ func (q *checker) optimizeIOMethodAdvanceExpr(receiver *a.Expr, advanceExpr *a.E
 
 		// Check that lhs is "receiver.length()".
 		lhs := x.LHS().AsExpr()
-		if lhs.Operator() != t.IDOpenParen || len(lhs.Args()) != 0 {
+		if (lhs.Operator() != a.ExprOperatorCall) || (len(lhs.Args()) != 0) {
 			return x, nil
 		}
 		lhs = lhs.LHS().AsExpr()
-		if lhs.Operator() != t.IDDot || lhs.Ident() != t.IDLength {
+		if (lhs.Operator() != a.ExprOperatorSelector) || (lhs.Ident() != t.IDLength) {
 			return x, nil
 		}
 		lhs = lhs.LHS().AsExpr()

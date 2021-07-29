@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">നിങ്ങളുടെ ഇന്‍റർനെറ്റ് കണക്ഷൻ പരിശോധിക്കുന്നു</translation>
 <translation id="2388990488038464401">നിങ്ങളുടെ ഫോണിൽ നിന്ന് ഈ നമ്പറിലേക്ക് വിളിക്കണോ?</translation>
+<translation id="2435457462613246316">പാസ്‌വേഡ് കാണിക്കുക</translation>
 <translation id="24452542372838207">അറിയിപ്പ് വികസിപ്പിക്കുക</translation>
 <translation id="2445449901874883781">കൂടിയ സാന്ദ്രത ഉപയോഗിക്കുക</translation>
 <translation id="2482878487686419369">അറിയിപ്പുകൾ</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{ഒരു വർഷം മുമ്പ്}other{# വർഷം മുമ്പ്}}</translation>
 <translation id="2878511608894704031">എല്ലാം ഇല്ലാതാക്കൂ</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{ഒരു ദിവസത്തിൽ}other{# ദിവസത്തിൽ}}</translation>
+<translation id="2922712708897119705"><ph name="COLUMN_NAME" /> എന്ന കോളം അവരോഹണക്രമത്തിൽ അടുക്കി.</translation>
 <translation id="2931838996092594335">ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="2981684127883932071">നിർദ്ദേശങ്ങൾ കാണിക്കുന്നു</translation>
 <translation id="3036649622769666520">ഫയലുകള്‍‌ തുറക്കുക</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">മെനു</translation>
 <translation id="3909791450649380159">&amp;മുറിക്കുക</translation>
 <translation id="3990502903496589789">വലത് അഗ്രം</translation>
+<translation id="3994749195054421561"><ph name="COLUMN_NAME" /> എന്ന കോളം ആരോഹണക്രമത്തിൽ അടുക്കി.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{വായിക്കാത്ത ഒരു അറിയിപ്പ്}other{വായിക്കാത്ത # അറിയിപ്പുകൾ}}</translation>
 <translation id="4202807286478387388">jump</translation>
 <translation id="4250229828105606438">സ്‌ക്രീൻഷോട്ട്</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">ക്ലിപ്പ്ബോർഡിൽ നിന്ന് നീക്കം ചെയ്യുക.</translation>
 <translation id="4316910396681052118">എല്ലാ ആപ്പുകളും</translation>
 <translation id="4491109536499578614">ചിത്രം</translation>
+<translation id="4565377596337484307">പാസ്‌വേഡ് മറയ്ക്കുക</translation>
 <translation id="4588090240171750605">വലത്തോട്ട് സ്ക്രോള്‍ ചെയ്യുക</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, <ph name="RATING_SCORE" /> നക്ഷത്ര റേറ്റിംഗ്</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, ആപ്പ് നിർദ്ദേശം</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">പേജ് <ph name="SELECTED_PAGE" /> / <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">തിരയൽ ബോക്‌സ് ടെക്‌സ്‌റ്റ് മായ്‌ക്കുക</translation>
 <translation id="6040143037577758943">അടയ്ക്കുക</translation>
+<translation id="6117103120090651229">നടുവിലുള്ള ബട്ടൺ</translation>
 <translation id="6119846243427417423">ആക്റ്റിവേറ്റ് ചെയ്യുക</translation>
 <translation id="6129953537138746214">സ്പെയ്സ്</translation>
 <translation id="6134259848159370930">നിങ്ങളുടെ ഉപകരണവും ആപ്പുകളും ക്രമീകരണവും വെബും തിരയുക.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">എല്ലാ ആപ്പുകളിലേക്കും വികസിപ്പിക്കുക</translation>
 <translation id="6165508094623778733">കൂടുതലറിയുക</translation>
 <translation id="6166852626429024716">നിങ്ങളുടെ ഉപകരണവും ആപ്പുകളും ക്രമീകരണവും വെബും തിരയുക...</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> തിരഞ്ഞെടുത്തു.</translation>
 <translation id="6264365405983206840">എല്ലാം &amp;തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6351032674660237738">ആപ്പ് നിർദ്ദേശങ്ങൾ</translation>
 <translation id="6364916375976753737">ഇടത്തേക്ക് സ്ക്രോള്‍ ചെയ്യുക</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{ഒരു മിനിറ്റ് ശേഷിക്കുന്നു}other{# മിനിറ്റ് ശേഷിക്കുന്നു}}</translation>
 <translation id="7430878839542012341">നിങ്ങളുടെ ചരിത്രത്തിൽ നിന്ന് ഈ തിരയൽ ഇല്ലാതാക്കണോ?</translation>
+<translation id="7437971918971306061"><ph name="COLUMN_NAME" /> എന്ന കോളം അടുക്കിയത് മാറ്റി.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ഇമോജി</translation>
 <translation id="7620655452534002301">നീക്കം ചെയ്തു.</translation>

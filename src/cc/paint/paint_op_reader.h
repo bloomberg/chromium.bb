@@ -11,6 +11,7 @@
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace gpu {
 struct Mailbox;
@@ -129,7 +130,12 @@ class CC_PAINT_EXPORT PaintOpReader {
   void ReadSimple(T* val);
 
   template <typename T>
-  void ReadFlattenable(sk_sp<T>* val);
+  using Factory = sk_sp<T> (*)(const void* data,
+                               size_t size,
+                               const SkDeserialProcs* procs);
+
+  template <typename T>
+  void ReadFlattenable(sk_sp<T>* val, Factory<T> factory);
 
   template <typename Enum, Enum kMaxValue = Enum::kMaxValue>
   void ReadEnum(Enum* enum_value) {
@@ -212,6 +218,9 @@ class CC_PAINT_EXPORT PaintOpReader {
       sk_sp<PaintFilter>* filter,
       const absl::optional<PaintFilter::CropRect>& crop_rect);
   void ReadLightingSpotPaintFilter(
+      sk_sp<PaintFilter>* filter,
+      const absl::optional<PaintFilter::CropRect>& crop_rect);
+  void ReadStretchPaintFilter(
       sk_sp<PaintFilter>* filter,
       const absl::optional<PaintFilter::CropRect>& crop_rect);
 

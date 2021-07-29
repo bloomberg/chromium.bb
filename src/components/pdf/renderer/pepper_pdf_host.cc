@@ -8,12 +8,12 @@
 
 #include "base/lazy_instance.h"
 #include "components/pdf/renderer/pdf_accessibility_tree.h"
-#include "content/public/common/referrer.h"
-#include "content/public/common/referrer_type_converters.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "pdf/accessibility_structs.h"
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/ppapi_host.h"
@@ -29,6 +29,7 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace pdf {
 
@@ -215,17 +216,12 @@ int32_t PepperPDFHost::OnHostMsgSaveAs(
   if (!instance)
     return PP_ERROR_FAILED;
 
-  GURL url = instance->GetPluginURL();
-  content::Referrer referrer;
-  referrer.url = url;
-  referrer.policy = network::mojom::ReferrerPolicy::kDefault;
-  referrer = content::Referrer::SanitizeForRequest(url, referrer);
-
   mojom::PdfService* service = GetRemotePdfService();
   if (!service)
     return PP_ERROR_FAILED;
 
-  service->SaveUrlAs(url, blink::mojom::Referrer::From(referrer));
+  service->SaveUrlAs(instance->GetPluginURL(),
+                     network::mojom::ReferrerPolicy::kDefault);
   return PP_OK;
 }
 
@@ -253,20 +249,36 @@ int32_t PepperPDFHost::OnHostMsgSetLinkUnderCursor(
 
 int32_t PepperPDFHost::OnHostMsgSetAccessibilityViewportInfo(
     ppapi::host::HostMessageContext* context,
-    const PP_PrivateAccessibilityViewportInfo& viewport_info) {
+    const PP_PrivateAccessibilityViewportInfo& pp_viewport_info) {
   if (!host_->GetPluginInstance(pp_instance()))
     return PP_ERROR_FAILED;
   CreatePdfAccessibilityTreeIfNeeded();
+  chrome_pdf::AccessibilityViewportInfo viewport_info = {
+      pp_viewport_info.zoom,
+      pp_viewport_info.scale,
+      gfx::Point(pp_viewport_info.scroll.x, pp_viewport_info.scroll.y),
+      gfx::Point(pp_viewport_info.offset.x, pp_viewport_info.offset.y),
+      pp_viewport_info.selection_start_page_index,
+      pp_viewport_info.selection_start_char_index,
+      pp_viewport_info.selection_end_page_index,
+      pp_viewport_info.selection_end_char_index,
+      {static_cast<chrome_pdf::FocusObjectType>(
+           pp_viewport_info.focus_info.focused_object_type),
+       pp_viewport_info.focus_info.focused_object_page_index,
+       pp_viewport_info.focus_info.focused_annotation_index_in_page}};
   pdf_accessibility_tree_->SetAccessibilityViewportInfo(viewport_info);
   return PP_OK;
 }
 
 int32_t PepperPDFHost::OnHostMsgSetAccessibilityDocInfo(
     ppapi::host::HostMessageContext* context,
-    const PP_PrivateAccessibilityDocInfo& doc_info) {
+    const PP_PrivateAccessibilityDocInfo& pp_doc_info) {
   if (!host_->GetPluginInstance(pp_instance()))
     return PP_ERROR_FAILED;
   CreatePdfAccessibilityTreeIfNeeded();
+  chrome_pdf::AccessibilityDocInfo doc_info = {
+      pp_doc_info.page_count, PP_ToBool(pp_doc_info.text_accessible),
+      PP_ToBool(pp_doc_info.text_copyable)};
   pdf_accessibility_tree_->SetAccessibilityDocInfo(doc_info);
   return PP_OK;
 }

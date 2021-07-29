@@ -10,17 +10,16 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "components/services/storage/service_worker/service_worker_storage_control_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/browser/url_loader_factory_getter.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/origin.h"
 
@@ -48,7 +47,6 @@ class ServiceWorkerContextWrapperTest : public testing::Test {
     browser_context_ = std::make_unique<TestBrowserContext>();
     wrapper_ = base::MakeRefCounted<ServiceWorkerContextWrapper>(
         browser_context_.get());
-    url_loader_factory_getter_ = base::MakeRefCounted<URLLoaderFactoryGetter>();
     // Set up a mojo connection binder which binds a connection to a
     // ServiceWorkerStorageControlImpl instance owned by `this`. This is needed
     // to work around strange situations (e.g. nested
@@ -62,8 +60,7 @@ class ServiceWorkerContextWrapperTest : public testing::Test {
             browser_context_->GetStoragePartitionForUrl(
                 GURL("https://example.com")));
     wrapper_->set_storage_partition(storage_partition);
-    wrapper_->Init(user_data_directory_.GetPath(), nullptr, nullptr, nullptr,
-                   url_loader_factory_getter_.get());
+    wrapper_->Init(user_data_directory_.GetPath(), nullptr, nullptr, nullptr);
     // Init() posts a couple tasks to the IO thread. Let them finish.
     base::RunLoop().RunUntilIdle();
   }
@@ -90,7 +87,7 @@ class ServiceWorkerContextWrapperTest : public testing::Test {
     blink::ServiceWorkerStatusCode result;
     base::RunLoop loop;
     registry()->DeleteRegistration(
-        registration, storage::StorageKey(registration->origin()),
+        registration, registration->key(),
         base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
           result = status;
           loop.Quit();
@@ -113,7 +110,6 @@ class ServiceWorkerContextWrapperTest : public testing::Test {
   BrowserTaskEnvironment task_environment_{BrowserTaskEnvironment::IO_MAINLOOP};
   base::ScopedTempDir user_data_directory_;
   std::unique_ptr<TestBrowserContext> browser_context_;
-  scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
   std::unique_ptr<storage::ServiceWorkerStorageControlImpl> storage_control_;
 
@@ -126,9 +122,10 @@ class ServiceWorkerContextWrapperTest : public testing::Test {
 TEST_F(ServiceWorkerContextWrapperTest, HasRegistration) {
   // Make a service worker.
   GURL scope("https://example.com/");
+  blink::StorageKey key(url::Origin::Create(scope));
   GURL script("https://example.com/sw.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateServiceWorkerRegistrationAndVersion(context(), scope, script,
+      CreateServiceWorkerRegistrationAndVersion(context(), scope, script, key,
                                                 /*resource_id=*/1);
 
   // Store it.
@@ -166,14 +163,16 @@ TEST_F(ServiceWorkerContextWrapperTest, DeleteRegistrationsForSameOrigin) {
 
   // Make two registrations for same origin.
   GURL scope1("https://example1.com/abc/");
+  blink::StorageKey key(url::Origin::Create(scope1));
   GURL script1("https://example1.com/abc/sw.js");
   scoped_refptr<ServiceWorkerRegistration> registration1 =
-      CreateServiceWorkerRegistrationAndVersion(context(), scope1, script1,
+      CreateServiceWorkerRegistrationAndVersion(context(), scope1, script1, key,
                                                 /*resource_id=*/1);
   GURL scope2("https://example1.com/xyz/");
   GURL script2("https://example1.com/xyz/sw.js");
   scoped_refptr<ServiceWorkerRegistration> registration2 =
-      CreateServiceWorkerRegistrationAndVersion(context(), scope2, script2, 1);
+      CreateServiceWorkerRegistrationAndVersion(context(), scope2, script2, key,
+                                                1);
 
   // Store both registrations.
   ASSERT_EQ(StoreRegistration(registration1),
@@ -216,9 +215,10 @@ TEST_F(ServiceWorkerContextWrapperTest, DeleteRegistration) {
 
   // Make registration.
   GURL scope1("https://example2.com/");
+  blink::StorageKey key(url::Origin::Create(scope1));
   GURL script1("https://example2.com/");
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateServiceWorkerRegistrationAndVersion(context(), scope1, script1,
+      CreateServiceWorkerRegistrationAndVersion(context(), scope1, script1, key,
                                                 /*resource_id=*/1);
 
   // Store registration.

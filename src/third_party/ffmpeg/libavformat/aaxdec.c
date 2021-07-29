@@ -264,6 +264,11 @@ static int aax_read_header(AVFormatContext *s)
         }
     }
 
+    if (!a->segments[0].end) {
+        ret = AVERROR_INVALIDDATA;
+        goto fail;
+    }
+
     st = avformat_new_stream(s, NULL);
     if (!st) {
         ret = AVERROR(ENOMEM);
@@ -397,7 +402,7 @@ static int aax_read_close(AVFormatContext *s)
     return 0;
 }
 
-AVInputFormat ff_aax_demuxer = {
+const AVInputFormat ff_aax_demuxer = {
     .name           = "aax",
     .long_name      = NULL_IF_CONFIG_SMALL("CRI AAX"),
     .priv_data_size = sizeof(AAXContext),

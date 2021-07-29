@@ -104,13 +104,6 @@ void KSVSearchBoxView::UpdateSearchBoxBorder() {
 
 void KSVSearchBoxView::SetupCloseButton() {
   views::ImageButton* close = close_button();
-  close->SetCallback(base::BindRepeating(
-      [](ash::SearchBoxViewBase* view) {
-        // Focus on the search box text field after clicking close button.
-        view->search_box()->RequestFocus();
-        view->ClearSearch();
-      },
-      this));
   close->SetHasInkDropActionOnClick(true);
   close->SetImage(
       views::ImageButton::STATE_NORMAL,

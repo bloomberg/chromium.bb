@@ -37,7 +37,6 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   void UpdateGalleries() override;
 
   // views::DialogDelegate:
-  void DeleteDelegate() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
   views::View* GetContentsView() override;
@@ -49,8 +48,8 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
                                   ui::MenuSourceType source_type) override;
 
  private:
+  friend class MediaGalleriesDialogTest;
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, InitializeCheckboxes);
-  FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ToggleCheckboxes);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, UpdateAdds);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ForgetDeletes);
 

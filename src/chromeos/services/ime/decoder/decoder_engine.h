@@ -7,40 +7,37 @@
 
 #include "base/scoped_native_library.h"
 #include "chromeos/services/ime/ime_decoder.h"
-#include "chromeos/services/ime/input_engine.h"
 #include "chromeos/services/ime/public/cpp/shared_lib/interfaces.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "chromeos/services/ime/public/mojom/input_method.mojom.h"
+#include "chromeos/services/ime/public/mojom/input_method_host.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace ime {
 
-// An enhanced implementation of the basic InputEngine which allows the input
-// engine to call a customized transliteration library (aka decoder) to provide
-// a premium typing experience.
-class DecoderEngine : public InputEngine {
+// A Mojo wrapper around a "decoder" that converts key events and pointer events
+// to text. The built-in Chrome OS XKB extension communicates with this to
+// implement its IMEs.
+class DecoderEngine : public mojom::InputChannel {
  public:
   explicit DecoderEngine(ImeCrosPlatform* platform);
   ~DecoderEngine() override;
 
-  // InputEngine overrides:
+  // Binds the mojom::InputChannel interface to this object and returns true if
+  // the given ime_spec is supported by the engine.
   bool BindRequest(const std::string& ime_spec,
                    mojo::PendingReceiver<mojom::InputChannel> receiver,
                    mojo::PendingRemote<mojom::InputChannel> remote,
-                   const std::vector<uint8_t>& extra) override;
+                   const std::vector<uint8_t>& extra);
 
+  // mojom::InputChannel:
   void ProcessMessage(const std::vector<uint8_t>& message,
                       ProcessMessageCallback callback) override;
-  void OnInputMethodChanged(const std::string& engine_id) override {}
-  void OnFocus(mojom::InputFieldInfoPtr input_field_info) override {}
-  void OnBlur() override {}
-  void OnKeyEvent(mojom::PhysicalKeyEventPtr event,
-                  OnKeyEventCallback callback) override {}
-  void OnSurroundingTextChanged(
-      const std::string& text,
-      uint32_t offset,
-      mojom::SelectionRangePtr selection_range) override {}
-  void OnCompositionCanceled() override {}
 
  private:
   // Try to load the decoding functions from some decoder shared library.

@@ -9,7 +9,6 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/login/ui/lock_screen.h"
-#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -34,6 +33,8 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/menu_model.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -48,9 +49,12 @@
 #include "ui/gfx/transform.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
 #include "ui/views/view_class_properties.h"
@@ -216,11 +220,13 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
   SetNotifyEnterExitOnChild(true);
 
   auto ripple_attributes = AshColorProvider::Get()->GetRippleAttributes();
-  ink_drop()->SetBaseColor(ripple_attributes.base_color);
-  ink_drop()->SetVisibleOpacity(ripple_attributes.inkdrop_opacity);
+  views::InkDrop::Get(this)->SetBaseColor(ripple_attributes.base_color);
+  views::InkDrop::Get(this)->SetVisibleOpacity(
+      ripple_attributes.inkdrop_opacity);
 
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON_NO_GESTURE_HANDLER);
-  ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+  views::InkDrop::Get(this)->SetMode(
+      views::InkDropHost::InkDropMode::ON_NO_GESTURE_HANDLER);
+  views::InkDrop::Get(this)->SetCreateHighlightCallback(base::BindRepeating(
       [](TrayBackgroundView* host) {
         gfx::Rect bounds = host->GetBackgroundBounds();
         // Currently, we don't handle view resize. To compensate for that,
@@ -241,13 +247,13 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
         return highlight;
       },
       this));
-  ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+  views::InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
       [](TrayBackgroundView* host) -> std::unique_ptr<views::InkDropRipple> {
         const AshColorProvider::RippleAttributes ripple_attributes =
             AshColorProvider::Get()->GetRippleAttributes();
         return std::make_unique<views::FloodFillInkDropRipple>(
             host->size(), host->GetBackgroundInsets(),
-            host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+            views::InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
             ripple_attributes.base_color, ripple_attributes.inkdrop_opacity);
       },
       this));
@@ -255,9 +261,10 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetInstallFocusRingOnFocus(true);
 
-  focus_ring()->SetColor(AshColorProvider::Get()->GetControlsLayerColor(
+  views::FocusRing* const focus_ring = views::FocusRing::Get(this);
+  focus_ring->SetColor(AshColorProvider::Get()->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kFocusRingColor));
-  focus_ring()->SetPathGenerator(std::make_unique<HighlightPathGenerator>(
+  focus_ring->SetPathGenerator(std::make_unique<HighlightPathGenerator>(
       this, kTrayBackgroundFocusPadding));
   SetFocusPainter(nullptr);
 
@@ -313,6 +320,10 @@ void TrayBackgroundView::SetVisiblePreferred(bool visible_preferred) {
   // should_log_visible_pod_count)` when the animation is finished.
   if (!layer()->GetAnimator()->is_animating() || visible_preferred_)
     UpdateStatusArea(true /*should_log_visible_pod_count*/);
+}
+
+bool TrayBackgroundView::IsShowingMenu() const {
+  return context_menu_runner_ && context_menu_runner_->IsRunning();
 }
 
 void TrayBackgroundView::StartVisibilityAnimation(bool visible) {
@@ -384,6 +395,40 @@ void TrayBackgroundView::OnVisibilityAnimationFinished(
     views::View::SetVisible(false);
     UpdateStatusArea(should_log_visible_pod_count);
   }
+}
+
+void TrayBackgroundView::ShowContextMenuForViewImpl(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
+  context_menu_model_ = CreateContextMenuModel();
+  if (!context_menu_model_)
+    return;
+
+  const int run_types = views::MenuRunner::USE_TOUCHABLE_LAYOUT |
+                        views::MenuRunner::CONTEXT_MENU |
+                        views::MenuRunner::FIXED_ANCHOR;
+  context_menu_runner_ = std::make_unique<views::MenuRunner>(
+      context_menu_model_.get(), run_types,
+      base::BindRepeating(&Shelf::UpdateAutoHideState,
+                          base::Unretained(shelf_)));
+  views::MenuAnchorPosition anchor;
+  switch (shelf_->alignment()) {
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
+      anchor = views::MenuAnchorPosition::kBubbleTopRight;
+      break;
+    case ShelfAlignment::kLeft:
+      anchor = views::MenuAnchorPosition::kBubbleRight;
+      break;
+    case ShelfAlignment::kRight:
+      anchor = views::MenuAnchorPosition::kBubbleLeft;
+      break;
+  }
+
+  context_menu_runner_->RunMenuAt(
+      source->GetWidget(), /*button_controller=*/nullptr,
+      source->GetBoundsInScreen(), anchor, source_type);
 }
 
 void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
@@ -465,7 +510,7 @@ void TrayBackgroundView::UpdateAfterStatusAreaCollapseChange() {
 void TrayBackgroundView::BubbleResized(const TrayBubbleView* bubble_view) {}
 
 void TrayBackgroundView::UpdateBackground() {
-  const int radius = ShelfConfig::Get()->control_border_radius();
+  const float radius = ShelfConfig::Get()->control_border_radius();
   gfx::RoundedCornersF rounded_corners = {radius, radius, radius, radius};
   layer()->SetRoundedCornerRadius(rounded_corners);
   layer()->SetIsFastRoundedCorner(true);
@@ -636,9 +681,10 @@ void TrayBackgroundView::SetIsActive(bool is_active) {
   if (is_active_ == is_active)
     return;
   is_active_ = is_active;
-  ink_drop()->AnimateToState(is_active_ ? views::InkDropState::ACTIVATED
-                                        : views::InkDropState::DEACTIVATED,
-                             nullptr);
+  views::InkDrop::Get(this)->AnimateToState(
+      is_active_ ? views::InkDropState::ACTIVATED
+                 : views::InkDropState::DEACTIVATED,
+      nullptr);
 }
 
 views::View* TrayBackgroundView::GetBubbleAnchor() const {
@@ -697,6 +743,11 @@ void TrayBackgroundView::HandlePerformActionResult(bool action_performed,
   if (action_performed)
     return;
   ActionableView::HandlePerformActionResult(action_performed, event);
+}
+
+std::unique_ptr<ui::SimpleMenuModel>
+TrayBackgroundView::CreateContextMenuModel() {
+  return nullptr;
 }
 
 views::PaintInfo::ScaleType TrayBackgroundView::GetPaintScaleType() const {

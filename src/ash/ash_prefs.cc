@@ -6,7 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/accessibility/magnifier/docked_magnifier_controller_impl.h"
+#include "ash/accessibility/magnifier/docked_magnifier_controller.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller_impl.h"
@@ -19,7 +19,6 @@
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/login_expanded_public_account_view.h"
 #include "ash/media/media_controller_impl.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/holding_space/holding_space_prefs.h"
 #include "ash/session/fullscreen_controller.h"
 #include "ash/shelf/contextual_tooltip.h"
@@ -67,7 +66,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   contextual_tooltip::RegisterProfilePrefs(registry);
   ClipboardNudgeController::RegisterProfilePrefs(registry);
   desks_restore_util::RegisterProfilePrefs(registry);
-  DockedMagnifierControllerImpl::RegisterProfilePrefs(registry);
+  DockedMagnifierController::RegisterProfilePrefs(registry);
   FullscreenController::RegisterProfilePrefs(registry);
   GestureEducationNotificationController::RegisterProfilePrefs(registry,
                                                                for_test);

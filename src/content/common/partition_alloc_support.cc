@@ -9,6 +9,7 @@
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/extended_api.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
 #include "base/allocator/partition_allocator/starscan/pcscan_scheduling.h"
@@ -18,7 +19,6 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
-#include "base/partition_alloc_buildflags.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 
@@ -52,18 +52,18 @@ void SetProcessNameForPCScan(const std::string& process_type) {
 }
 
 bool EnablePCScanForMallocPartitionsIfNeeded() {
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_ALLOW_PCSCAN
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
   DCHECK(base::FeatureList::GetInstance());
   if (base::FeatureList::IsEnabled(base::features::kPartitionAllocPCScan)) {
     base::allocator::EnablePCScan(/*dcscan*/ false);
     return true;
   }
-#endif
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
   return false;
 }
 
 bool EnablePCScanForMallocPartitionsInBrowserProcessIfNeeded() {
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_ALLOW_PCSCAN
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
   DCHECK(base::FeatureList::GetInstance());
   if (base::FeatureList::IsEnabled(
           base::features::kPartitionAllocPCScanBrowserOnly)) {
@@ -76,7 +76,7 @@ bool EnablePCScanForMallocPartitionsInBrowserProcessIfNeeded() {
     base::allocator::EnablePCScan(dcscan_wanted);
     return true;
   }
-#endif
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
   return false;
 }
 
@@ -100,7 +100,12 @@ void ReconfigurePartitionForKnownProcess(const std::string& process_type) {
   DCHECK_NE(process_type, switches::kZygoteProcess);
 
   // No specified process type means this is the Browser process.
-  ConfigurePartitionRefCountSupportIfNeeded(process_type.empty());
+  ConfigurePartitionRefCountSupportIfNeeded(
+      process_type.empty()
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_IN_RENDERER_PROCESS)
+      || process_type == switches::kRendererProcess
+#endif
+  );
 }
 
 }  // namespace
@@ -226,6 +231,10 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
       base::internal::PCScan::NotifyThreadCreated(
           base::internal::GetStackTop());
 #endif
+    }
+    if (base::FeatureList::IsEnabled(
+            base::features::kPartitionAllocPCScanImmediateFreeing)) {
+      base::internal::PCScan::EnableImmediateFreeing();
     }
     SetProcessNameForPCScan(process_type);
   }

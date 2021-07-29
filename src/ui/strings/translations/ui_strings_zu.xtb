@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Ihlola ixhumo lwakho le-inthanethi</translation>
 <translation id="2388990488038464401">Shayela le nombolo kusukela kufoni yakho?</translation>
+<translation id="2435457462613246316">Bonisa iphasiwedi</translation>
 <translation id="24452542372838207">Nweba isaziso</translation>
 <translation id="2445449901874883781">Sebenzisa ukuminyana okuphezulu</translation>
 <translation id="2482878487686419369">Izaziso</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 unyaka odlule}one{# iminyaka edlule}other{# iminyaka edlule}}</translation>
 <translation id="2878511608894704031">Susa Konke</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{nge-1d}one{ku-#d}other{ku-#d}}</translation>
+<translation id="2922712708897119705">Ikholomu le-<ph name="COLUMN_NAME" /> lihlungwe nge-oda eyehlayo.</translation>
 <translation id="2931838996092594335">chofoza</translation>
 <translation id="2981684127883932071">Ukubonisa iziphakamiso</translation>
 <translation id="3036649622769666520">Vula amafayela</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Imenyu</translation>
 <translation id="3909791450649380159">Sika</translation>
 <translation id="3990502903496589789">Emaphethelweni angokwesokudla</translation>
+<translation id="3994749195054421561">Ikholomu le-<ph name="COLUMN_NAME" /> lihlungwe nge-oda enyukayo.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 Isaziso esingafundiwe}one{# Izaziso ezingafundiwe}other{# Izaziso ezingafundiwe}}</translation>
 <translation id="4202807286478387388">yeqa</translation>
 <translation id="4250229828105606438">Isithombe-skrini</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Yisuse kwibhodi yokunamathisela.</translation>
 <translation id="4316910396681052118">ZONKE IZINHLELO ZOKUSEBENZA</translation>
 <translation id="4491109536499578614">Isithombe</translation>
+<translation id="4565377596337484307">Fihla iphasiwedi</translation>
 <translation id="4588090240171750605">Skrolela ngakwesokudla</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Isilinganiso senkanyezi <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Izincomo zohlelo lokusebenza</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Ikhasi elingu-<ph name="SELECTED_PAGE" /> kwangu-<ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Sula umbhalo webhokisi losesho</translation>
 <translation id="6040143037577758943">Vala</translation>
+<translation id="6117103120090651229">Inkinobho yamaphakathi</translation>
 <translation id="6119846243427417423">yenza kusebenze</translation>
 <translation id="6129953537138746214">Isikhala</translation>
 <translation id="6134259848159370930">Sesha idivayisi yakho, izinhlelo zokusebenza, amasethingi, newebhu.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Nwebela kuzo zonke izinhlelo zokusebenza</translation>
 <translation id="6165508094623778733">Funda kabanzi</translation>
 <translation id="6166852626429024716">Sesha idivayisi yakho, izinhlelo zokusebenza, amasethingi, iwebhu...</translation>
+<translation id="6237461503717005873">I-<ph name="ROW_NAME" /> ikhethiwe.</translation>
 <translation id="6264365405983206840">Khetha &amp;konke</translation>
 <translation id="6351032674660237738">IZIPHAKAMISO ZOHLELO LOKUSEBENZA</translation>
 <translation id="6364916375976753737">Skrolela ngakwesokunxele</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 iminithi elisele}one{# amaminithi asele}other{# amaminithi asele}}</translation>
 <translation id="7430878839542012341">Susa lolu sesho kusukela kumlando wakho?</translation>
+<translation id="7437971918971306061">Ikholomu le-<ph name="COLUMN_NAME" /> alihlungwanga.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">I-emoji</translation>
 <translation id="7620655452534002301">Kususiwe.</translation>

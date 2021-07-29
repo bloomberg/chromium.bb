@@ -6,7 +6,8 @@
 #define CEF_TESTS_CEFCLIENT_BROWSER_MAIN_CONTEXT_IMPL_H_
 #pragma once
 
-#include "include/base/cef_scoped_ptr.h"
+#include <memory>
+
 #include "include/base/cef_thread_checker.h"
 #include "include/cef_app.h"
 #include "include/cef_command_line.h"
@@ -22,19 +23,19 @@ class MainContextImpl : public MainContext {
                   bool terminate_when_all_windows_closed);
 
   // MainContext members.
-  std::string GetConsoleLogPath() OVERRIDE;
-  std::string GetDownloadPath(const std::string& file_name) OVERRIDE;
-  std::string GetAppWorkingDirectory() OVERRIDE;
-  std::string GetMainURL() OVERRIDE;
-  cef_color_t GetBackgroundColor() OVERRIDE;
-  bool UseChromeRuntime() OVERRIDE;
-  bool UseViews() OVERRIDE;
-  bool UseWindowlessRendering() OVERRIDE;
-  bool TouchEventsEnabled() OVERRIDE;
-  void PopulateSettings(CefSettings* settings) OVERRIDE;
-  void PopulateBrowserSettings(CefBrowserSettings* settings) OVERRIDE;
-  void PopulateOsrSettings(OsrRendererSettings* settings) OVERRIDE;
-  RootWindowManager* GetRootWindowManager() OVERRIDE;
+  std::string GetConsoleLogPath() override;
+  std::string GetDownloadPath(const std::string& file_name) override;
+  std::string GetAppWorkingDirectory() override;
+  std::string GetMainURL() override;
+  cef_color_t GetBackgroundColor() override;
+  bool UseChromeRuntime() override;
+  bool UseViews() override;
+  bool UseWindowlessRendering() override;
+  bool TouchEventsEnabled() override;
+  void PopulateSettings(CefSettings* settings) override;
+  void PopulateBrowserSettings(CefBrowserSettings* settings) override;
+  void PopulateOsrSettings(OsrRendererSettings* settings) override;
+  RootWindowManager* GetRootWindowManager() override;
 
   // Initialize CEF and associated main context state. This method must be
   // called on the same thread that created this object.
@@ -48,8 +49,8 @@ class MainContextImpl : public MainContext {
   void Shutdown();
 
  private:
-  // Allow deletion via scoped_ptr only.
-  friend struct base::DefaultDeleter<MainContextImpl>;
+  // Allow deletion via std::unique_ptr only.
+  friend std::default_delete<MainContextImpl>;
 
   ~MainContextImpl();
 
@@ -75,7 +76,7 @@ class MainContextImpl : public MainContext {
   bool use_views_;
   bool touch_events_enabled_;
 
-  scoped_ptr<RootWindowManager> root_window_manager_;
+  std::unique_ptr<RootWindowManager> root_window_manager_;
 
 #if defined(OS_WIN)
   bool shared_texture_enabled_;

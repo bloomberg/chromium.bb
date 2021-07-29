@@ -6,6 +6,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_timeline_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_csskeywordvalue_cssnumericvalue_scrolltimelineelementbasedoffset_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_double_scrolltimelineautokeyword.h"
 #include "third_party/blink/renderer/core/animation/animation_test_helpers.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
@@ -91,7 +93,7 @@ class ScrollTimelineTest : public RenderingTest {
     return count;
   }
 
-  ScrollTimelineOffsetValue OffsetFromString(const String& value) {
+  V8ScrollTimelineOffset* OffsetFromString(const String& value) {
     return animation_test_helpers::OffsetFromString(GetDocument(), value);
   }
 };
@@ -134,8 +136,8 @@ TEST_F(ScrollTimelineTest, CurrentTimeIsNullIfScrollSourceIsNotScrollable) {
   ASSERT_TRUE(scroller);
 
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  auto* time_range =
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(100);
   options->setTimeRange(time_range);
   options->setScrollSource(GetElementById("scroller"));
   ScrollTimeline* scroll_timeline =
@@ -164,8 +166,8 @@ TEST_F(ScrollTimelineTest,
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  auto* time_range =
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(100);
   options->setTimeRange(time_range);
   options->setScrollSource(GetElementById("scroller"));
   options->setScrollOffsets(
@@ -173,7 +175,6 @@ TEST_F(ScrollTimelineTest,
   ScrollTimeline* scroll_timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
-  bool current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 5),
                                    mojom::blink::ScrollType::kProgrammatic);
   // Simulate a new animation frame  which allows the timeline to compute new
@@ -182,34 +183,30 @@ TEST_F(ScrollTimelineTest,
   EXPECT_EQ(scroll_timeline->CurrentTimeMilliseconds(), 0);
   EXPECT_EQ("before", scroll_timeline->phase());
 
-  current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 10),
                                    mojom::blink::ScrollType::kProgrammatic);
   SimulateFrame();
   EXPECT_EQ(scroll_timeline->CurrentTimeMilliseconds(), 0);
   EXPECT_EQ("active", scroll_timeline->phase());
 
-  current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 50),
                                    mojom::blink::ScrollType::kProgrammatic);
   SimulateFrame();
   EXPECT_EQ(scroll_timeline->CurrentTimeMilliseconds(), 50);
   EXPECT_EQ("active", scroll_timeline->phase());
 
-  current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 90),
                                    mojom::blink::ScrollType::kProgrammatic);
   SimulateFrame();
   EXPECT_EQ(scroll_timeline->CurrentTimeMilliseconds(),
-            time_range.GetAsDouble());
+            time_range->GetAsDouble());
   EXPECT_EQ("after", scroll_timeline->phase());
 
-  current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 100),
                                    mojom::blink::ScrollType::kProgrammatic);
   SimulateFrame();
   EXPECT_EQ(scroll_timeline->CurrentTimeMilliseconds(),
-            time_range.GetAsDouble());
+            time_range->GetAsDouble());
   EXPECT_EQ("after", scroll_timeline->phase());
   EXPECT_TRUE(scroll_timeline->IsActive());
 }
@@ -233,8 +230,8 @@ TEST_F(ScrollTimelineTest,
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  auto* time_range =
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(100);
   options->setTimeRange(time_range);
   options->setScrollSource(GetElementById("scroller"));
   options->setScrollOffsets(
@@ -242,7 +239,6 @@ TEST_F(ScrollTimelineTest,
   ScrollTimeline* scroll_timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
-  bool current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
                                    mojom::blink::ScrollType::kProgrammatic);
   // Simulate a new animation frame  which allows the timeline to compute new
@@ -251,18 +247,16 @@ TEST_F(ScrollTimelineTest,
   EXPECT_EQ(0, scroll_timeline->CurrentTimeMilliseconds());
   EXPECT_EQ("before", scroll_timeline->phase());
 
-  current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 60),
                                    mojom::blink::ScrollType::kProgrammatic);
   SimulateFrame();
   EXPECT_EQ(0, scroll_timeline->CurrentTimeMilliseconds());
   EXPECT_EQ("before", scroll_timeline->phase());
 
-  current_time_is_null = true;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 100),
                                    mojom::blink::ScrollType::kProgrammatic);
   SimulateFrame();
-  EXPECT_EQ(time_range.GetAsDouble(),
+  EXPECT_EQ(time_range->GetAsDouble(),
             scroll_timeline->CurrentTimeMilliseconds());
   EXPECT_EQ("after", scroll_timeline->phase());
   EXPECT_TRUE(scroll_timeline->IsActive());
@@ -286,8 +280,8 @@ TEST_F(ScrollTimelineTest, PhasesAreCorrectWhenUsingOffsets) {
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  auto* time_range =
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(100);
   options->setTimeRange(time_range);
   options->setScrollSource(GetElementById("scroller"));
   options->setScrollOffsets(
@@ -333,8 +327,8 @@ TEST_F(ScrollTimelineTest,
   // Create the ScrollTimeline with Document.scrollingElement() as source. The
   // resolved scroll source should be the Document.
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  auto* time_range =
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(100);
   options->setTimeRange(time_range);
   options->setScrollSource(GetDocument().scrollingElement());
   ScrollTimeline* scroll_timeline =
@@ -359,8 +353,8 @@ TEST_F(ScrollTimelineTest,
   // Create the ScrollTimeline with Document.scrollingElement() as source. The
   // resolved scroll source should be the Document.
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  auto* time_range =
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(100);
   options->setTimeRange(time_range);
   options->setScrollSource(GetDocument().scrollingElement());
   ScrollTimeline* scroll_timeline =
@@ -724,8 +718,8 @@ TEST_F(ScrollTimelineTest, CurrentTimeUpdateAfterNewAnimationFrame) {
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  auto* time_range =
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(100);
   options->setTimeRange(time_range);
   options->setScrollSource(GetElementById("scroller"));
 
@@ -934,10 +928,11 @@ TEST_F(ScrollTimelineTest, ResolveScrollOffsets) {
   double time_range = 100.0;
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
   options->setTimeRange(
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(time_range));
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(
+          time_range));
   options->setScrollSource(GetElementById("scroller"));
   // Empty scroll offsets resolve into [0, 100%].
-  HeapVector<ScrollTimelineOffsetValue> scroll_offsets = {};
+  HeapVector<Member<V8ScrollTimelineOffset>> scroll_offsets = {};
   options->setScrollOffsets(scroll_offsets);
 
   ScrollTimeline* scroll_timeline =
@@ -1001,9 +996,10 @@ TEST_F(ScrollTimelineTest, MultipleScrollOffsetsCurrentTimeCalculations) {
   double time_range = 100.0;
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
   options->setTimeRange(
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(time_range));
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(
+          time_range));
   options->setScrollSource(GetElementById("scroller"));
-  HeapVector<ScrollTimelineOffsetValue> scroll_offsets;
+  HeapVector<Member<V8ScrollTimelineOffset>> scroll_offsets;
   scroll_offsets.push_back(OffsetFromString("10px"));
   scroll_offsets.push_back(OffsetFromString("20px"));
   scroll_offsets.push_back(OffsetFromString("40px"));
@@ -1092,9 +1088,10 @@ TEST_F(ScrollTimelineTest, OverlappingScrollOffsets) {
   double time_range = 100.0;
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
   options->setTimeRange(
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(time_range));
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(
+          time_range));
   options->setScrollSource(GetElementById("scroller"));
-  HeapVector<ScrollTimelineOffsetValue> scroll_offsets = {
+  HeapVector<Member<V8ScrollTimelineOffset>> scroll_offsets = {
       OffsetFromString("90px"), OffsetFromString("40px"),
       OffsetFromString("10px")};
   options->setScrollOffsets(scroll_offsets);

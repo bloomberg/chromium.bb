@@ -151,12 +151,6 @@ class WPTExpectationsUpdater(object):
             help='Adds Pass to tests with failure expectations. '
                  'This command line argument can be used to mark tests '
                  'as flaky.')
-        parser.add_argument(
-            '--rebaseline-blink-try-bots-only',
-            action='store_true',
-            help='When set, only rebaselines using the results from blink-rel '
-            'trybots, and ignores CQ bots. By default, both CQ and blink '
-            'bots are used.')
 
     def update_expectations(self):
         """Downloads text new baselines and adds test expectations lines.
@@ -483,9 +477,10 @@ class WPTExpectationsUpdater(object):
                 merged_dict[tuple([current_key])] = dictionary[current_key]
                 keys.remove(current_key)
                 break
-
+            current_result_set = set(dictionary[current_key].actual.split())
             for next_item in keys[1:]:
-                if dictionary[current_key] == dictionary[next_item]:
+                if (current_result_set ==
+                        set(dictionary[next_item].actual.split())):
                     found_match = True
                     matching_value_keys.update([current_key, next_item])
 
@@ -786,7 +781,7 @@ class WPTExpectationsUpdater(object):
         return line_dict
 
     @contextlib.contextmanager
-    def prepare_smoke_tests(self):
+    def prepare_smoke_tests(self, chromium_git):
         """List test cases that should be run by the smoke test builder
 
         Add new and modified test cases to WPT_SMOKE_TESTS_FILE,
@@ -824,6 +819,7 @@ class WPTExpectationsUpdater(object):
         finally:
             _log.info('Restore file WPTSmokeTestCases.')
             shutil.copyfile(self._saved_test_cases_file, WPT_SMOKE_TESTS_FILE)
+            chromium_git.commit_locally_with_message('Restore WPTSmokeTestCases')
 
     def cleanup_test_expectations_files(self):
         """Removes deleted tests from expectations files.
@@ -1013,17 +1009,18 @@ class WPTExpectationsUpdater(object):
             'python',
             blink_tool,
             'rebaseline-cl',
-            '--verbose',
             '--no-trigger-jobs',
             '--fill-missing',
         ]
-        if self.options.rebaseline_blink_try_bots_only:
-            command.append('--use-blink-try-bots-only')
-
+        if self.options.verbose:
+            command.append('--verbose')
         if self.patchset:
             command.append('--patchset=' + str(self.patchset))
         command += tests_to_rebaseline
-        self.host.executive.run_command(command)
+        rebaseline_output = self.host.executive.run_command(command)
+        _log.info(
+            "Output of rebaseline-cl:\n%s\n--end of rebaseline-cl output --" %
+            rebaseline_output)
         return tests_to_rebaseline, test_results
 
     def get_tests_to_rebaseline(self, test_results):
@@ -1076,11 +1073,5 @@ class WPTExpectationsUpdater(object):
 
     @memoized
     def _get_try_bots(self):
-        builder_set = frozenset(
-            self.host.builders.filter_builders(is_try=True,
-                                               exclude_specifiers={'android'}))
-        # Omit the CQ bots if we are only using data from blink trybots.
-        if self.options.rebaseline_blink_try_bots_only:
-            builder_set -= frozenset(
-                self.host.builders.all_cq_try_builder_names())
-        return list(builder_set)
+        return self.host.builders.filter_builders(
+            is_try=True, exclude_specifiers={'android'})

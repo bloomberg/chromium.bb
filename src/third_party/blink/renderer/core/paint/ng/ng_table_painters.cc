@@ -13,11 +13,11 @@
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_column.h"
 #include "third_party/blink/renderer/core/layout/ng/table/ng_table_borders.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
+#include "third_party/blink/renderer/core/paint/box_border_painter.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
-#include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
@@ -51,6 +51,16 @@ class NGTableCollapsedEdge {
         edge_index_ = UINT_MAX;
     }
     InitCachedProps();
+  }
+
+  NGTableCollapsedEdge(const NGTableCollapsedEdge& edge)
+      : NGTableCollapsedEdge(edge, 0) {}
+
+  NGTableCollapsedEdge& operator=(const NGTableCollapsedEdge& edge) {
+    edge_index_ = edge.edge_index_;
+    border_width_ = edge.border_width_;
+    border_style_ = edge.border_style_;
+    return *this;
   }
 
   bool Exists() const { return edge_index_ != UINT_MAX; }
@@ -204,13 +214,6 @@ class NGTableCollapsedEdge {
   }
   bool operator!=(const NGTableCollapsedEdge& rhs) const {
     return !(*this == rhs);
-  }
-
-  NGTableCollapsedEdge& operator=(const NGTableCollapsedEdge& edge) {
-    edge_index_ = edge.edge_index_;
-    border_width_ = edge.border_width_;
-    border_style_ = edge.border_style_;
-    return *this;
   }
 
  private:
@@ -420,7 +423,6 @@ void NGTablePainter::PaintBoxDecorationBackground(
 void NGTablePainter::PaintCollapsedBorders(const PaintInfo& paint_info,
                                            const PhysicalOffset& paint_offset,
                                            const IntRect& visual_rect) {
-  DCHECK_EQ(paint_info.phase, PaintPhase::kForeground);
   const NGTableBorders* collapsed_borders = fragment_.TableCollapsedBorders();
   if (!collapsed_borders)
     return;
@@ -525,7 +527,7 @@ void NGTablePainter::PaintCollapsedBorders(const PaintInfo& paint_info,
     } else {
       box_side = edge.IsInlineAxis() ? BoxSide::kLeft : BoxSide::kTop;
     }
-    ObjectPainter::DrawBoxSide(
+    BoxBorderPainter::DrawBoxSide(
         paint_info.context, PixelSnappedIntRect(physical_border_rect), box_side,
         edge.BorderColor(), edge.BorderStyle());
   }

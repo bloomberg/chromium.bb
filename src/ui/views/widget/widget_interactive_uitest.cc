@@ -533,7 +533,13 @@ TEST_F(WidgetTestInteractive, ViewFocusOnWidgetActivationChanges) {
 }
 
 // Test z-order of child widgets relative to their parent.
-TEST_F(WidgetTestInteractive, ChildStackedRelativeToParent) {
+// TODO(crbug.com/1227009): Disabled on Mac due to flake
+#if defined(OS_MAC)
+#define MAYBE_ChildStackedRelativeToParent DISABLED_ChildStackedRelativeToParent
+#else
+#define MAYBE_ChildStackedRelativeToParent ChildStackedRelativeToParent
+#endif
+TEST_F(WidgetTestInteractive, MAYBE_ChildStackedRelativeToParent) {
   WidgetAutoclosePtr parent(CreateTopLevelPlatformWidget());
   Widget* child = CreateChildPlatformWidget(parent->GetNativeView());
 
@@ -1038,6 +1044,19 @@ TEST_F(WidgetTestInteractive, ShowAfterShowInactive) {
   ShowInactiveSync(widget.get());
   ShowSync(widget.get());
   EXPECT_EQ(GetWidgetShowState(widget.get()), ui::SHOW_STATE_NORMAL);
+}
+
+TEST_F(WidgetTestInteractive, WidgetShouldBeActiveWhenShow) {
+  // TODO(crbug/1217331): This test fails if put under NativeWidgetAuraTest.
+  WidgetAutoclosePtr anchor_widget(CreateTopLevelNativeWidget());
+
+  test::WidgetActivationWaiter waiter(anchor_widget.get(), true);
+  anchor_widget->Show();
+  waiter.Wait();
+  EXPECT_TRUE(anchor_widget->IsActive());
+#if !defined(OS_MAC)
+  EXPECT_TRUE(anchor_widget->GetNativeWindow()->HasFocus());
+#endif
 }
 
 #if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MAC)

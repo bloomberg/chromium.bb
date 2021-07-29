@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/core/timing/background_tracing_helper.h"
 
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/hash/md5.h"
-#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "base/trace_event/typed_macros.h"
 #include "third_party/blink/public/common/features.h"
@@ -173,17 +173,26 @@ void BackgroundTracingHelper::MaybeEmitBackgroundTracingPerformanceMarkEvent(
   if (!mark_hashes_->Contains(mark_hash))
     return;
 
-  // Emit the trace event. We emit hashes and strings to facilitate local trace
+  // Emit the trace events. We emit hashes and strings to facilitate local trace
   // consumption. However, the strings will be stripped and only the hashes
   // shipped externally.
-  TRACE_EVENT("blink", "performance.mark", [&](perfetto::EventContext ctx) {
+
+  auto event_lambda = [&](perfetto::EventContext ctx) {
     auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
     auto* data = event->set_chrome_hashed_performance_mark();
     data->set_site_hash(site_hash_);
     data->set_site(site_.Ascii());
     data->set_mark_hash(mark_hash);
     data->set_mark(mark_name_ascii);
-  });
+  };
+
+  // For additional context, also emit a paired event marking *when* the
+  // performance.mark was actually created.
+  TRACE_EVENT_INSTANT("blink", "performance.mark.created", event_lambda);
+
+  // Emit an event with the actual timestamp associated with the mark.
+  TRACE_EVENT_INSTANT("blink", "performance.mark", mark.UnsafeTimeForTraces(),
+                      event_lambda);
 
   // If this is a slow-reports trigger then fire it.
   if (MarkNameIsTrigger(mark_name)) {

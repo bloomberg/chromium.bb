@@ -26,8 +26,10 @@ class Expression;
 class Function;
 class MemberAccessorExpression;
 class Statement;
+class Struct;
 class StructMember;
 class Type;
+class TypeDecl;
 class Variable;
 }  // namespace ast
 
@@ -57,6 +59,8 @@ struct TypeMappings {
   Statement* operator()(ast::Statement*);
   StructMember* operator()(ast::StructMember*);
   Type* operator()(ast::Type*);
+  Type* operator()(ast::TypeDecl*);
+  Struct* operator()(ast::Struct*);
   Variable* operator()(ast::Variable*);
   //! @endcond
 };

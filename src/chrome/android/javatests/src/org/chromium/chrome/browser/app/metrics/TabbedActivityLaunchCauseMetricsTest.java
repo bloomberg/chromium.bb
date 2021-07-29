@@ -44,6 +44,7 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -72,6 +73,8 @@ import java.util.List;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Batch(Batch.PER_CLASS)
 public final class TabbedActivityLaunchCauseMetricsTest {
+    private static final long CHROME_LAUNCH_TIMEOUT = 10000L;
+
     @Rule
     public final ChromeTabbedActivityTestRule mActivityTestRule =
             new ChromeTabbedActivityTestRule();
@@ -179,7 +182,7 @@ public final class TabbedActivityLaunchCauseMetricsTest {
             Criteria.checkThat(
                     histogramCountForValue(LaunchCauseMetrics.LaunchCause.HOME_SCREEN_WIDGET),
                     Matchers.is(count));
-        }, 5000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        }, CHROME_LAUNCH_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     private static class TestContext extends ContextWrapper {
@@ -229,7 +232,7 @@ public final class TabbedActivityLaunchCauseMetricsTest {
                     histogramCountForValue(
                             LaunchCauseMetrics.LaunchCause.EXTERNAL_SEARCH_ACTION_INTENT),
                     Matchers.is(count));
-        }, 5000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        }, CHROME_LAUNCH_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         ApplicationTestUtils.finishActivity(cta);
         ApplicationTestUtils.finishActivity(searchActivity);
@@ -238,6 +241,7 @@ public final class TabbedActivityLaunchCauseMetricsTest {
 
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/1224738")
     public void testServiceWorkerTabLaunch() throws Throwable {
         final int count = 1 + histogramCountForValue(LaunchCauseMetrics.LaunchCause.NOTIFICATION);
         mJniMocker.mock(ServiceTabLauncherJni.TEST_HOOKS, mServiceTabLauncherJni);
@@ -250,6 +254,6 @@ public final class TabbedActivityLaunchCauseMetricsTest {
         CriteriaHelper.pollInstrumentationThread(() -> {
             Criteria.checkThat(histogramCountForValue(LaunchCauseMetrics.LaunchCause.NOTIFICATION),
                     Matchers.is(count));
-        }, 5000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        }, CHROME_LAUNCH_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 }

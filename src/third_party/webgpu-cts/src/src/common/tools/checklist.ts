@@ -1,12 +1,13 @@
 import * as fs from 'fs';
 import * as process from 'process';
 
-import { DefaultTestFileLoader } from '../framework/file_loader.js';
-import { Ordering, compareQueries } from '../framework/query/compare.js';
-import { parseQuery } from '../framework/query/parseQuery.js';
-import { TestQuery, TestQueryMultiFile } from '../framework/query/query.js';
-import { loadTreeForQuery, TestTree } from '../framework/tree.js';
-import { assert, StacklessError } from '../framework/util/util.js';
+import { DefaultTestFileLoader } from '../internal/file_loader.js';
+import { Ordering, compareQueries } from '../internal/query/compare.js';
+import { parseQuery } from '../internal/query/parseQuery.js';
+import { TestQuery, TestQueryMultiFile } from '../internal/query/query.js';
+import { loadTreeForQuery, TestTree } from '../internal/tree.js';
+import { StacklessError } from '../internal/util.js';
+import { assert } from '../util/util.js';
 
 function usage(rc: number): void {
   console.error('Usage:');

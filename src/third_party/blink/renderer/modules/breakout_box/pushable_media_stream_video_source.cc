@@ -7,7 +7,6 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track_signal_observer.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
@@ -15,7 +14,7 @@ namespace blink {
 PushableMediaStreamVideoSource::Broker::Broker(
     PushableMediaStreamVideoSource* source)
     : source_(source),
-      main_task_runner_(Thread::MainThread()->GetTaskRunner()),
+      main_task_runner_(source->GetTaskRunner()),
       io_task_runner_(source->io_task_runner()) {
   DCHECK(main_task_runner_);
   DCHECK(io_task_runner_);
@@ -105,12 +104,17 @@ void PushableMediaStreamVideoSource::Broker::StopSourceOnMain() {
   source_->StopSource();
 }
 
-PushableMediaStreamVideoSource::PushableMediaStreamVideoSource()
-    : broker_(AdoptRef(new Broker(this))) {}
+PushableMediaStreamVideoSource::PushableMediaStreamVideoSource(
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
+    : MediaStreamVideoSource(std::move(main_task_runner)),
+      broker_(AdoptRef(new Broker(this))) {}
 
 PushableMediaStreamVideoSource::PushableMediaStreamVideoSource(
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     const base::WeakPtr<MediaStreamVideoSource>& upstream_source)
-    : upstream_source_(upstream_source), broker_(AdoptRef(new Broker(this))) {}
+    : MediaStreamVideoSource(std::move(main_task_runner)),
+      upstream_source_(upstream_source),
+      broker_(AdoptRef(new Broker(this))) {}
 
 PushableMediaStreamVideoSource::~PushableMediaStreamVideoSource() {
   broker_->OnSourceDestroyedOrStopped();
@@ -123,7 +127,7 @@ void PushableMediaStreamVideoSource::PushFrame(
 }
 
 void PushableMediaStreamVideoSource::RequestRefreshFrame() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   if (upstream_source_)
     upstream_source_->RequestRefreshFrame();
   if (signal_observer_)
@@ -132,14 +136,14 @@ void PushableMediaStreamVideoSource::RequestRefreshFrame() {
 
 void PushableMediaStreamVideoSource::OnFrameDropped(
     media::VideoCaptureFrameDropReason reason) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   if (upstream_source_)
     upstream_source_->OnFrameDropped(reason);
 }
 
 VideoCaptureFeedbackCB PushableMediaStreamVideoSource::GetFeedbackCallback()
     const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   if (upstream_source_) {
     return WTF::BindRepeating(
         [](const base::WeakPtr<MediaStreamVideoSource>& source,
@@ -159,14 +163,14 @@ VideoCaptureFeedbackCB PushableMediaStreamVideoSource::GetFeedbackCallback()
 void PushableMediaStreamVideoSource::StartSourceImpl(
     VideoCaptureDeliverFrameCB frame_callback,
     EncodedVideoFrameCB encoded_frame_callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(frame_callback);
   broker_->OnSourceStarted(std::move(frame_callback));
   OnStartDone(mojom::blink::MediaStreamRequestResult::OK);
 }
 
 void PushableMediaStreamVideoSource::StopSourceImpl() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   broker_->OnSourceDestroyedOrStopped();
 }
 
@@ -177,7 +181,7 @@ PushableMediaStreamVideoSource::GetWeakPtr() const {
 
 VideoCaptureFeedbackCB
 PushableMediaStreamVideoSource::GetInternalFeedbackCallback() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   if (!upstream_source_)
     return VideoCaptureFeedbackCB();
 
@@ -186,7 +190,7 @@ PushableMediaStreamVideoSource::GetInternalFeedbackCallback() const {
 
 void PushableMediaStreamVideoSource::SetSignalObserver(
     MediaStreamVideoTrackSignalObserver* observer) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   signal_observer_ = observer;
 }
 

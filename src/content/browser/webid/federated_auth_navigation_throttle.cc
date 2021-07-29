@@ -17,11 +17,38 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
+
+namespace {
+
+// Determines if the source and destination would need special permission to
+// get access to 1st party state in each other's contexts. Currently this only
+// determines if they are same-site based on the public suffix list, but later
+// should account for other considerations such as first-party sets or
+// enterprise policies.
+// Returns true if the source and destination would need permission. Both
+// arguments must be absolute URLs.
+bool AreCookieIsolatedPrincipals(url::Origin src_origin,
+                                 url::Origin dest_origin) {
+  if (src_origin.scheme() != dest_origin.scheme()) {
+    return true;
+  }
+
+  if (!net::registry_controlled_domains::SameDomainOrHost(
+          src_origin, dest_origin,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    return true;
+  }
+
+  return false;
+}
+
+}  // namespace
 
 // static
 std::unique_ptr<NavigationThrottle>
@@ -54,7 +81,11 @@ FederatedAuthNavigationThrottle::WillStartRequest() {
   if (headers.HasHeader(kSecWebIdCsrfHeader))
     return NavigationThrottle::PROCEED;
 
-  if (IsFederationRequest(navigation_url)) {
+  const auto initiator_origin = navigation_handle()->GetInitiatorOrigin();
+  url::Origin navigation_origin = url::Origin::Create(navigation_url);
+
+  if (IsFederationRequest(navigation_url) && initiator_origin &&
+      AreCookieIsolatedPrincipals(*initiator_origin, navigation_origin)) {
     net::GetValueForKeyInQuery(navigation_url, "redirect_uri", &redirect_uri_);
 
     // Permission dialog is skipped if this RP/IdP pair already have the
@@ -64,10 +95,9 @@ FederatedAuthNavigationThrottle::WillStartRequest() {
             ->GetWebContents()
             ->GetBrowserContext()
             ->GetFederatedIdentityRequestPermissionContext();
-    const auto initiator_origin = navigation_handle()->GetInitiatorOrigin();
-    if (request_permission_delegate && initiator_origin &&
-        request_permission_delegate->HasRequestPermission(
-            *initiator_origin, url::Origin::Create(navigation_url))) {
+    if (request_permission_delegate &&
+        request_permission_delegate->HasRequestPermission(*initiator_origin,
+                                                          navigation_origin)) {
       RedirectUriData::Set(navigation_handle()->GetWebContents(),
                            redirect_uri_);
       return NavigationThrottle::PROCEED;
@@ -77,33 +107,23 @@ FederatedAuthNavigationThrottle::WillStartRequest() {
         GetContentClient()->browser()->CreateIdentityRequestDialogController();
     request_dialog_controller_->ShowInitialPermissionDialog(
         navigation_handle()->GetWebContents(), navigation_url,
+        IdentityRequestDialogController::PermissionDialogMode::kStateless,
         base::BindOnce(&FederatedAuthNavigationThrottle::OnSigninApproved,
                        weak_ptr_factory_.GetWeakPtr()));
     return NavigationThrottle::DEFER;
   } else if (IsFederationResponse(navigation_url)) {
-    request_dialog_controller_ =
-        GetContentClient()->browser()->CreateIdentityRequestDialogController();
-
-    // Token exchange dialog is skipped if this RP/IdP pair already have the
-    // Identity Sharing permission.
-    auto* sharing_permission_delegate =
-        navigation_handle()
-            ->GetWebContents()
-            ->GetBrowserContext()
-            ->GetFederatedIdentitySharingPermissionContext();
-    const auto initiator_origin = navigation_handle()->GetInitiatorOrigin();
-    if (sharing_permission_delegate && initiator_origin &&
-        sharing_permission_delegate->HasSharingPermission(
-            *initiator_origin, url::Origin::Create(navigation_url))) {
-      return NavigationThrottle::PROCEED;
-    }
-
-    request_dialog_controller_->ShowTokenExchangePermissionDialog(
-        navigation_handle()->GetWebContents(), navigation_url,
-        base::BindOnce(
-            &FederatedAuthNavigationThrottle::OnTokenProvisionApproved,
-            weak_ptr_factory_.GetWeakPtr()));
-    return NavigationThrottle::DEFER;
+    // TODO(kenrb): Currently no action, this may proceed. Two things to
+    // change here:
+    //     1) Check the redirect_uri and verify we are going back to the
+    //        original source, from which the user consented to login.
+    //        Set the session management permission if the IdP wants it.
+    //        First, that permission has to be created.
+    //        https://crbug.com/1223570.
+    //     2) (In the eventual future where directed identifiers are
+    //        important) Prompt the user for permission to share personalized
+    //        identifiers and store the FEDERATED_IDENTITY_SHARING
+    //        setting. https://crbug.com/1141125.
+    return NavigationThrottle::PROCEED;
   }
 
   return NavigationThrottle::PROCEED;

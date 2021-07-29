@@ -4,7 +4,8 @@
 
 #include <windows.h>
 
-#include "include/base/cef_scoped_ptr.h"
+#include <memory>
+
 #include "include/cef_command_line.h"
 #include "include/cef_sandbox_win.h"
 #include "tests/cefclient/browser/main_context_impl.h"
@@ -68,7 +69,7 @@ int RunMain(HINSTANCE hInstance, int nCmdShow) {
     return exit_code;
 
   // Create the main context object.
-  scoped_ptr<MainContextImpl> context(new MainContextImpl(command_line, true));
+  auto context = std::make_unique<MainContextImpl>(command_line, true);
 
   CefSettings settings;
 
@@ -84,7 +85,7 @@ int RunMain(HINSTANCE hInstance, int nCmdShow) {
   context->PopulateSettings(&settings);
 
   // Create the main message loop object.
-  scoped_ptr<MainMessageLoop> message_loop;
+  std::unique_ptr<MainMessageLoop> message_loop;
   if (settings.multi_threaded_message_loop)
     message_loop.reset(new MainMessageLoopMultithreadedWin);
   else if (settings.external_message_pump)
@@ -98,14 +99,16 @@ int RunMain(HINSTANCE hInstance, int nCmdShow) {
   // Register scheme handlers.
   test_runner::RegisterSchemeHandlers();
 
-  RootWindowConfig window_config;
-  window_config.always_on_top = command_line->HasSwitch(switches::kAlwaysOnTop);
-  window_config.with_controls =
+  auto window_config = std::make_unique<RootWindowConfig>();
+  window_config->always_on_top =
+      command_line->HasSwitch(switches::kAlwaysOnTop);
+  window_config->with_controls =
       !command_line->HasSwitch(switches::kHideControls);
-  window_config.with_osr = settings.windowless_rendering_enabled ? true : false;
+  window_config->with_osr =
+      settings.windowless_rendering_enabled ? true : false;
 
   // Create the first window.
-  context->GetRootWindowManager()->CreateRootWindow(window_config);
+  context->GetRootWindowManager()->CreateRootWindow(std::move(window_config));
 
   // Run the message loop. This will block until Quit() is called by the
   // RootWindowManager after all windows have been destroyed.

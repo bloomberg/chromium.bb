@@ -17,7 +17,7 @@
 #include "common/Assert.h"
 #include "common/Constants.h"
 #include "common/Math.h"
-#include "utils/TextureFormatUtils.h"
+#include "utils/TextureUtils.h"
 #include "utils/WGPUHelpers.h"
 
 #include <vector>
@@ -26,15 +26,18 @@ namespace utils {
 
     uint32_t GetMinimumBytesPerRow(wgpu::TextureFormat format, uint32_t width) {
         const uint32_t bytesPerBlock = utils::GetTexelBlockSizeInBytes(format);
-        return Align(bytesPerBlock * width, kTextureBytesPerRowAlignment);
+        const uint32_t blockWidth = utils::GetTextureFormatBlockWidth(format);
+        ASSERT(width % blockWidth == 0);
+        return Align(bytesPerBlock * (width / blockWidth), kTextureBytesPerRowAlignment);
     }
 
-    TextureDataCopyLayout GetTextureDataCopyLayoutForTexture2DAtLevel(
+    TextureDataCopyLayout GetTextureDataCopyLayoutForTextureAtLevel(
         wgpu::TextureFormat format,
         wgpu::Extent3D textureSizeAtLevel0,
         uint32_t mipmapLevel,
+        wgpu::TextureDimension dimension,
         uint32_t rowsPerImage) {
-        // TODO(jiawei.shao@intel.com): support compressed texture formats
+        // Compressed texture formats not supported in this function yet.
         ASSERT(utils::GetTextureFormatBlockWidth(format) == 1);
 
         TextureDataCopyLayout layout;
@@ -43,6 +46,11 @@ namespace utils {
                           std::max(textureSizeAtLevel0.height >> mipmapLevel, 1u),
                           textureSizeAtLevel0.depthOrArrayLayers};
 
+        if (dimension == wgpu::TextureDimension::e3D) {
+            layout.mipSize.depthOrArrayLayers =
+                std::max(textureSizeAtLevel0.depthOrArrayLayers >> mipmapLevel, 1u);
+        }
+
         layout.bytesPerRow = GetMinimumBytesPerRow(format, layout.mipSize.width);
 
         if (rowsPerImage == wgpu::kCopyStrideUndefined) {
@@ -50,19 +58,11 @@ namespace utils {
         }
         layout.rowsPerImage = rowsPerImage;
 
-        layout.bytesPerImage = layout.bytesPerRow * rowsPerImage;
+        uint32_t appliedRowsPerImage = rowsPerImage > 0 ? rowsPerImage : layout.mipSize.height;
+        layout.bytesPerImage = layout.bytesPerRow * appliedRowsPerImage;
 
-        // TODO(kainino@chromium.org): Remove this intermediate variable.
-        // It is currently needed because of an issue in the D3D12 copy splitter
-        // (or maybe in D3D12 itself?) which requires there to be enough room in the
-        // buffer for the last image to have a height of `rowsPerImage` instead of
-        // the actual height.
-        wgpu::Extent3D mipSizeWithHeightWorkaround = layout.mipSize;
-        mipSizeWithHeightWorkaround.height =
-            rowsPerImage * utils::GetTextureFormatBlockHeight(format);
-
-        layout.byteLength = RequiredBytesInCopy(layout.bytesPerRow, rowsPerImage,
-                                                mipSizeWithHeightWorkaround, format);
+        layout.byteLength =
+            RequiredBytesInCopy(layout.bytesPerRow, appliedRowsPerImage, layout.mipSize, format);
 
         const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(format);
         layout.texelBlocksPerRow = layout.bytesPerRow / bytesPerTexel;

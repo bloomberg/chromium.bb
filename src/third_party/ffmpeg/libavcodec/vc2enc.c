@@ -993,7 +993,7 @@ static av_cold int vc2_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     }
 
     flush_put_bits(&s->pb);
-    avpkt->size = put_bits_count(&s->pb) >> 3;
+    av_shrink_packet(avpkt, put_bytes_output(&s->pb));
 
     *got_packet = 1;
 
@@ -1226,7 +1226,7 @@ static const enum AVPixelFormat allowed_pix_fmts[] = {
     AV_PIX_FMT_NONE
 };
 
-AVCodec ff_vc2_encoder = {
+const AVCodec ff_vc2_encoder = {
     .name           = "vc2",
     .long_name      = NULL_IF_CONFIG_SMALL("SMPTE VC-2"),
     .type           = AVMEDIA_TYPE_VIDEO,

@@ -6,7 +6,6 @@
 #define NET_SOCKET_SOCKS_CONNECT_JOB_H_
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -70,6 +69,20 @@ class NET_EXPORT_PRIVATE SOCKSSocketParams
 class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob,
                                            public ConnectJob::Delegate {
  public:
+  class NET_EXPORT_PRIVATE Factory {
+   public:
+    Factory() = default;
+    virtual ~Factory() = default;
+
+    virtual std::unique_ptr<SOCKSConnectJob> Create(
+        RequestPriority priority,
+        const SocketTag& socket_tag,
+        const CommonConnectJobParams* common_connect_job_params,
+        scoped_refptr<SOCKSSocketParams> socks_params,
+        ConnectJob::Delegate* delegate,
+        const NetLogWithSource* net_log);
+  };
+
   SOCKSConnectJob(RequestPriority priority,
                   const SocketTag& socket_tag,
                   const CommonConnectJobParams* common_connect_job_params,

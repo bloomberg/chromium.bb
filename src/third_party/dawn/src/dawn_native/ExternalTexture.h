@@ -35,16 +35,20 @@ namespace dawn_native {
             DeviceBase* device,
             const ExternalTextureDescriptor* descriptor);
 
-        std::array<Ref<TextureViewBase>, kMaxPlanesPerFormat> GetTextureViews() const;
+        const std::array<Ref<TextureViewBase>, kMaxPlanesPerFormat>& GetTextureViews() const;
+
+        MaybeError ValidateCanUseInSubmitNow() const;
 
         static ExternalTextureBase* MakeError(DeviceBase* device);
 
         void APIDestroy();
 
       private:
+        enum class ExternalTextureState { Alive, Destroyed };
         ExternalTextureBase(DeviceBase* device, const ExternalTextureDescriptor* descriptor);
         ExternalTextureBase(DeviceBase* device, ObjectBase::ErrorTag tag);
         std::array<Ref<TextureViewBase>, kMaxPlanesPerFormat> textureViews;
+        ExternalTextureState mState;
     };
 }  // namespace dawn_native
 

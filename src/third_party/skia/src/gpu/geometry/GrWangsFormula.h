@@ -126,12 +126,12 @@ SK_ALWAYS_INLINE static int worst_case_cubic_log2(float precision, float devWidt
 }
 
 // Returns Wang's formula specialized for a conic curve, raised to the second power.
-// Input points should be in projected space, and note tolerance parameter is not "precision".
+// Input points should be in projected space.
 //
 // This is not actually due to Wang, but is an analogue from (Theorem 3, corollary 1):
 //   J. Zheng, T. Sederberg. "Estimating Tessellation Parameter Intervals for
 //   Rational Curves and Surfaces." ACM Transactions on Graphics 19(1). 2000.
-SK_ALWAYS_INLINE static float conic_pow2(float tolerance, const SkPoint pts[], float w,
+SK_ALWAYS_INLINE static float conic_pow2(float precision, const SkPoint pts[], float w,
                                          const GrVectorXform& vectorXform = GrVectorXform()) {
     using grvx::dot, grvx::float2, grvx::float4, skvx::bit_pun;
     float2 p0 = vectorXform(bit_pun<float2>(pts[0]));
@@ -152,13 +152,13 @@ SK_ALWAYS_INLINE static float conic_pow2(float tolerance, const SkPoint pts[], f
 
     // Compute forward differences
     const float2 dp = grvx::fast_madd<2>(-2 * w, p1, p0) + p2;
-    const float dw = fabsf(1 - 2 * w + 1);
+    const float dw = fabsf(-2 * w + 2);
 
-    // Compute numerator and denominator for parametric step size of linearization
-    const float r_minus_eps = std::max(0.f, max_len - tolerance);
-    const float min_w = std::min(w, 1.f);
-    const float numer = sqrtf(grvx::dot(dp, dp)) + r_minus_eps * dw;
-    const float denom = 4 * min_w * tolerance;
+    // Compute numerator and denominator for parametric step size of linearization. Here, the
+    // epsilon referenced from the cited paper is 1/precision.
+    const float rp_minus_1 = std::max(0.f, max_len * precision - 1);
+    const float numer = sqrtf(grvx::dot(dp, dp)) * precision + rp_minus_1 * dw;
+    const float denom = 4 * std::min(w, 1.f);
 
     // Number of segments = sqrt(numer / denom).
     // This assumes parametric interval of curve being linearized is [t0,t1] = [0, 1].
@@ -181,28 +181,60 @@ SK_ALWAYS_INLINE static int conic_log2(float tolerance, const SkPoint pts[], flo
 }
 
 // Emits an SKSL function that calculates Wang's formula for the given set of 4 points. The points
-// represent a cubic, or, if 'hasConics' is true and w >= 0, a conic defined by the first 3 points.
-inline static SkString as_sksl(bool hasConics) {
+// represent a cubic if w < 0, or if w >= 0, a conic defined by the first 3 points.
+inline static SkString as_sksl() {
     SkString code;
     code.appendf(R"(
-    float length_pow2(float2 v) {
-        return dot(v, v);
+    // Returns the length squared of the largest forward difference from Wang's cubic formula.
+    float wangs_formula_max_fdiff_pow2(float2 p0, float2 p1, float2 p2, float2 p3,
+                                       float2x2 matrix) {
+        float2 d0 = matrix * (fma(float2(-2), p1, p2) + p0);
+        float2 d1 = matrix * (fma(float2(-2), p2, p3) + p1);
+        return max(dot(d0,d0), dot(d1,d1));
     }
-    float wangs_formula(float parametricPrecision, float2 p0, float2 p1, float2 p2, float2 p3,
-                        float w) {
-        const float CUBIC_TERM_POW2 = %f;
-        float l0 = length_pow2(fma(float2(-2), p1, p2) + p0);
-        float l1 = length_pow2(fma(float2(-2), p2, p3) + p1);
-        float m = CUBIC_TERM_POW2 * max(l0, l1);)", length_term_pow2<3>(1));
-    if (hasConics) {
-        // FIXME: Use the better formula from GrWangsFormula::conic().
-        code.appendf(R"(
-        const float QUAD_TERM_POW2 = %f;
-        m = (w >= 0.0) ? QUAD_TERM_POW2 * l0 : m;)", length_term_pow2<2>(1));
+    float wangs_formula_cubic(float _precision_, float2 p0, float2 p1, float2 p2, float2 p3,
+                              float2x2 matrix) {
+        float m = wangs_formula_max_fdiff_pow2(p0, p1, p2, p3, matrix);
+        return max(ceil(sqrt(%f * _precision_ * sqrt(m))), 1.0);
     }
-    code.append(R"(
-        return max(ceil(sqrt(parametricPrecision * sqrt(m))), 1.0);
+    float wangs_formula_cubic_log2(float _precision_, float2 p0, float2 p1, float2 p2, float2 p3,
+                                   float2x2 matrix) {
+        float m = wangs_formula_max_fdiff_pow2(p0, p1, p2, p3, matrix);
+        return ceil(log2(max(%f * _precision_ * _precision_ * m, 1.0)) * .25);
+    })", length_term<3>(1), length_term_pow2<3>(1));
+
+    code.appendf(R"(
+    float wangs_formula_conic_pow2(float _precision_, float2 p0, float2 p1, float2 p2, float w) {
+        // Translate the bounding box center to the origin.
+        float2 C = (min(min(p0, p1), p2) + max(max(p0, p1), p2)) * 0.5;
+        p0 -= C;
+        p1 -= C;
+        p2 -= C;
+
+        // Compute max length.
+        float m = sqrt(max(max(dot(p0,p0), dot(p1,p1)), dot(p2,p2)));
+
+        // Compute forward differences.
+        float2 dp = fma(float2(-2.0 * w), p1, p0) + p2;
+        float dw = abs(fma(-2.0, w, 2.0));
+
+        // Compute numerator and denominator for parametric step size of linearization. Here, the
+        // epsilon referenced from the cited paper is 1/precision.
+        float rp_minus_1 = max(0.0, fma(m, _precision_, -1.0));
+        float numer = length(dp) * _precision_ + rp_minus_1 * dw;
+        float denom = 4 * min(w, 1.0);
+
+        return numer/denom;
+    }
+    float wangs_formula_conic(float _precision_, float2 p0, float2 p1, float2 p2, float w) {
+        float n2 = wangs_formula_conic_pow2(_precision_, p0, p1, p2, w);
+        return max(ceil(sqrt(n2)), 1.0);
+    }
+    float wangs_formula_conic_log2(float _precision_, float2 p0, float2 p1, float2 p2, float w) {
+        float n2 = wangs_formula_conic_pow2(_precision_, p0, p1, p2, w);
+        return ceil(log2(max(n2, 1.0)) * .5);
     })");
+
     return code;
 }
 

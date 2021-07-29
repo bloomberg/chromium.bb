@@ -37,7 +37,8 @@
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
@@ -64,6 +65,7 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/paint_preview/buildflags/buildflags.h"
+#include "components/safe_browsing/content/browser/safe_browsing_navigation_observer.h"
 #include "components/security_state/content/content_utils.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/navigation_entry.h"
@@ -153,6 +155,9 @@ void TabWebContentsDelegateAndroid::PortalWebContentsCreated(
     content::WebContents* portal_contents) {
   WebContentsDelegateAndroid::PortalWebContentsCreated(portal_contents);
 
+  Profile* profile =
+      Profile::FromBrowserContext(portal_contents->GetBrowserContext());
+
   // This is a subset of the tab helpers that would be attached by
   // TabAndroid::AttachTabHelpers.
   //
@@ -174,7 +179,10 @@ void TabWebContentsDelegateAndroid::PortalWebContentsCreated(
   PrefsTabHelper::CreateForWebContents(portal_contents);
   DataReductionProxyTabHelper::CreateForWebContents(portal_contents);
   safe_browsing::SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
-      portal_contents);
+      portal_contents, HostContentSettingsMapFactory::GetForProfile(profile),
+      safe_browsing::SafeBrowsingNavigationObserverManagerFactory::
+          GetForBrowserContext(profile),
+      profile->GetPrefs(), g_browser_process->safe_browsing_service());
 }
 
 void TabWebContentsDelegateAndroid::RunFileChooser(
@@ -197,6 +205,9 @@ void TabWebContentsDelegateAndroid::CreateSmsPrompt(
     const std::string& one_time_code,
     base::OnceClosure on_confirm,
     base::OnceClosure on_cancel) {
+  DCHECK_EQ(host->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kActive);
+
   auto* web_contents = content::WebContents::FromRenderFrameHost(host);
   sms::SmsInfoBar::Create(
       web_contents,
@@ -466,6 +477,10 @@ void TabWebContentsDelegateAndroid::ExitPictureInPicture() {
 }
 
 bool TabWebContentsDelegateAndroid::IsBackForwardCacheSupported() {
+  return true;
+}
+
+bool TabWebContentsDelegateAndroid::IsPrerender2Supported() {
   return true;
 }
 

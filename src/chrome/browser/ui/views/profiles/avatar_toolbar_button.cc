@@ -15,6 +15,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -58,7 +59,8 @@ AvatarToolbarButton::AvatarToolbarButton(BrowserView* browser_view)
 
 AvatarToolbarButton::AvatarToolbarButton(BrowserView* browser_view,
                                          ToolbarIconContainerView* parent)
-    : ToolbarButton(PressedCallback()),
+    : ToolbarButton(base::BindRepeating(&AvatarToolbarButton::ButtonPressed,
+                                        base::Unretained(this))),
       browser_(browser_view->browser()),
       parent_(parent),
       creation_time_(base::TimeTicks::Now()),
@@ -149,7 +151,6 @@ void AvatarToolbarButton::UpdateText() {
       text = delegate_->GetShortProfileName();
       break;
     }
-    case State::kPasswordsOnlySyncError:
     case State::kSyncError:
       color = AdjustHighlightColorForContrast(
           GetThemeProvider(), gfx::kGoogleRed300, gfx::kGoogleRed600,
@@ -255,17 +256,11 @@ void AvatarToolbarButton::SetIPHMinDelayAfterCreationForTesting(
   g_iph_min_delay_after_creation = delay;
 }
 
-void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
-  Button::NotifyClick(event);
-  delegate_->NotifyClick();
-  // TODO(bsep): Other toolbar buttons have a ToolbarView method as a callback
-  // and let it call ExecuteCommandWithDisposition on their behalf.
-  // Unfortunately, it's not possible to plumb IsKeyEvent through, so this has
-  // to be a special case.
+void AvatarToolbarButton::ButtonPressed() {
   browser_->window()->ShowAvatarBubbleFromAvatarButton(
       BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
-      event.IsKeyEvent());
+      /*is_source_accelerator=*/false);
 }
 
 void AvatarToolbarButton::AfterPropertyChange(const void* key,
@@ -283,16 +278,19 @@ std::u16string AvatarToolbarButton::GetAvatarTooltipText() const {
       return l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_GUEST_TOOLTIP);
     case State::kAnimatedUserIdentity:
       return delegate_->GetShortProfileName();
-    case State::kPasswordsOnlySyncError:
-      return l10n_util::GetStringFUTF16(
-          IDS_AVATAR_BUTTON_SYNC_ERROR_PASSWORDS_TOOLTIP,
-          delegate_->GetProfileName());
+    // kSyncPaused is just a type of sync error with different color, but should
+    // still use GetAvatarSyncErrorDescription() as tooltip.
     case State::kSyncError:
-      return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR_TOOLTIP,
-                                        delegate_->GetProfileName());
-    case State::kSyncPaused:
-      return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED_TOOLTIP,
-                                        delegate_->GetProfileName());
+    case State::kSyncPaused: {
+      absl::optional<AvatarSyncErrorType> error =
+          delegate_->GetAvatarSyncErrorType();
+      DCHECK(error);
+      return l10n_util::GetStringFUTF16(
+          IDS_AVATAR_BUTTON_SYNC_ERROR_TOOLTIP,
+          delegate_->GetShortProfileName(),
+          GetAvatarSyncErrorDescription(*error,
+                                        delegate_->IsSyncFeatureEnabled()));
+    }
     case State::kNormal:
       return delegate_->GetProfileName();
   }
@@ -315,8 +313,9 @@ ui::ImageModel AvatarToolbarButton::GetAvatarIcon(
     case State::kGuestSession:
       return profiles::GetGuestAvatar(icon_size);
     case State::kAnimatedUserIdentity:
-    case State::kPasswordsOnlySyncError:
     case State::kSyncError:
+    // TODO(crbug.com/1191411): If sync-the-feature is disabled, the icon should
+    // be different.
     case State::kSyncPaused:
     case State::kNormal:
       return ui::ImageModel::FromImage(profiles::GetSizedAvatarIcon(

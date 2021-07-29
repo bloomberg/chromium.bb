@@ -32,6 +32,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.base.SelectFileDialog;
 
 /**
@@ -59,11 +60,10 @@ public class SelectFileDialogTest {
     private static class ActivityWindowAndroidForTest extends ActivityWindowAndroid {
         public Intent lastIntent;
         public IntentCallback lastCallback;
-        /**
-         * @param activity
-         */
+
         public ActivityWindowAndroidForTest(Activity activity) {
-            super(activity);
+            super(activity, /* listenToActivityState= */ true,
+                    IntentRequestTracker.createFromActivity(activity));
         }
 
         @Override

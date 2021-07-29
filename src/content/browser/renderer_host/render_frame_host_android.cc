@@ -4,9 +4,11 @@
 
 #include "content/browser/renderer_host/render_frame_host_android.h"
 
+#include <jni.h>
 #include <utility>
 
 #include "base/android/callback_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/unguessable_token_android.h"
 #include "base/bind.h"
@@ -88,8 +90,7 @@ RenderFrameHostAndroid::GetJavaObject() {
     const bool is_incognito = render_frame_host_->GetSiteInstance()
                                   ->GetBrowserContext()
                                   ->IsOffTheRecord();
-    const GlobalFrameRoutingId rfh_id =
-        render_frame_host_->GetGlobalFrameRoutingId();
+    const GlobalRenderFrameHostId rfh_id = render_frame_host_->GetGlobalId();
     ScopedJavaLocalRef<jobject> local_ref = Java_RenderFrameHostImpl_create(
         env, reinterpret_cast<intptr_t>(this),
         render_frame_host_->delegate()->GetJavaRenderFrameHostDelegate(),
@@ -186,26 +187,37 @@ jboolean RenderFrameHostAndroid::IsProcessBlocked(
   return render_frame_host_->GetProcess()->IsBlocked();
 }
 
-jint RenderFrameHostAndroid::PerformGetAssertionWebAuthSecurityChecks(
+ScopedJavaLocalRef<jobject>
+RenderFrameHostAndroid::PerformGetAssertionWebAuthSecurityChecks(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>&,
     const base::android::JavaParamRef<jstring>& relying_party_id,
     const base::android::JavaParamRef<jobject>& effective_origin) const {
   url::Origin origin = url::Origin::FromJavaObject(effective_origin);
-  return static_cast<int32_t>(
+  std::pair<blink::mojom::AuthenticatorStatus, bool> results =
       render_frame_host_->PerformGetAssertionWebAuthSecurityChecks(
-          ConvertJavaStringToUTF8(env, relying_party_id), origin));
+          ConvertJavaStringToUTF8(env, relying_party_id), origin);
+  return Java_RenderFrameHostImpl_createWebAuthSecurityChecksResults(
+      env, static_cast<jint>(results.first), results.second);
 }
 
 jint RenderFrameHostAndroid::PerformMakeCredentialWebAuthSecurityChecks(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>&,
     const base::android::JavaParamRef<jstring>& relying_party_id,
-    const base::android::JavaParamRef<jobject>& effective_origin) const {
+    const base::android::JavaParamRef<jobject>& effective_origin,
+    jboolean is_payment_credential_creation) const {
   url::Origin origin = url::Origin::FromJavaObject(effective_origin);
   return static_cast<int32_t>(
       render_frame_host_->PerformMakeCredentialWebAuthSecurityChecks(
-          ConvertJavaStringToUTF8(env, relying_party_id), origin));
+          ConvertJavaStringToUTF8(env, relying_party_id), origin,
+          is_payment_credential_creation));
+}
+
+jint RenderFrameHostAndroid::GetLifecycleState(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>&) const {
+  return static_cast<jint>(render_frame_host_->GetLifecycleState());
 }
 
 }  // namespace content

@@ -14,15 +14,15 @@
 #include "chrome/browser/ash/arc/arc_support_host.h"
 #include "chrome/browser/ash/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
 #include "chrome/browser/ash/arc/extensions/fake_arc_support.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/dm_token_storage.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/dm_token_storage.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
-#include "components/arc/arc_util.h"
+#include "components/arc/test/arc_util_test_support.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/user_manager/user_manager.h"
@@ -33,6 +33,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -368,6 +369,7 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
   void OnWindowClosed() override {}
   void OnRetryClicked() override {}
   void OnSendFeedbackClicked() override {}
+  void OnRunNetworkTestsClicked() override {}
 
   std::unique_ptr<ArcSupportHost> support_host_;
 

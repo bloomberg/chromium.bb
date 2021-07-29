@@ -4,6 +4,7 @@
 
 #include "components/site_isolation/site_isolation_policy.h"
 
+#include "base/containers/contains.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/system/sys_info.h"
@@ -247,7 +248,7 @@ void SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(
     auto* dict =
         pref_service->GetDictionary(prefs::kWebTriggeredIsolatedOrigins);
     if (dict) {
-      for (const auto& site_time_pair : dict->DictItems()) {
+      for (auto site_time_pair : dict->DictItems()) {
         // Only isolate origins that haven't expired.
         absl::optional<base::Time> timestamp =
             util::ValueToTime(site_time_pair.second);

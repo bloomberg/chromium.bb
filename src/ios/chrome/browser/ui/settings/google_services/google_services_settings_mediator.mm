@@ -16,7 +16,6 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #include "components/sync/driver/sync_service.h"
-#include "components/ukm/ios/features.h"
 #include "components/unified_consent/pref_names.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -86,6 +85,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ReauthDialogAsSyncIsInAuthErrorItemType,
   ShowPassphraseDialogErrorItemType,
   SyncNeedsTrustedVaultKeyErrorItemType,
+  SyncTrustedVaultRecoverabilityDegradedErrorItemType,
   SyncDisabledByAdministratorErrorItemType,
   SyncSettingsNotCofirmedErrorItemType,
   SyncChromeDataItemType,
@@ -126,7 +126,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 }
 
 // Returns YES if the user is authenticated.
-@property(nonatomic, assign, readonly) BOOL isAuthenticated;
+@property(nonatomic, assign, readonly) BOOL hasPrimaryIdentity;
 // Returns YES if Sync settings has been confirmed.
 @property(nonatomic, assign, readonly) BOOL isSyncSettingsConfirmed;
 // Returns YES if the user cannot turn on sync for enterprise policy reasons.
@@ -226,13 +226,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         initWithPrefService:localPrefService
                    prefName:metrics::prefs::kMetricsReportingEnabled];
     _sendDataUsagePreference.observer = self;
-    if (!base::FeatureList::IsEnabled(kUmaCellular)) {
-      // When flag is not, kMetricsReportingWifiOnly pref has not been
-      // initialized, so don't create a PrefBackedBoolean for it.
-      _sendDataUsageWifiOnlyPreference = [[PrefBackedBoolean alloc]
-          initWithPrefService:localPrefService
-                     prefName:prefs::kMetricsReportingWifiOnly];
-    }
     _passwordLeakCheckEnabled = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:password_manager::prefs::
@@ -253,7 +246,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // Loads the identity section.
 - (void)loadIdentitySection {
   self.accountItem = nil;
-  if (!self.isAuthenticated)
+  if (!self.hasPrimaryIdentity)
     return;
   [self createIdentitySection];
   [self configureIdentityAccountItem];
@@ -296,7 +289,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   TableViewModel* model = self.consumer.tableViewModel;
   BOOL hasIdentitySection =
       [model hasSectionForSectionIdentifier:IdentitySectionIdentifier];
-  if (!self.isAuthenticated) {
+  if (!self.hasPrimaryIdentity) {
     if (!hasIdentitySection) {
       DCHECK(!self.accountItem);
       return;
@@ -323,7 +316,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // Configures the identity account item.
 - (void)configureIdentityAccountItem {
   DCHECK(self.accountItem);
-  ChromeIdentity* identity = self.authService->GetAuthenticatedIdentity();
+  ChromeIdentity* identity =
+      self.authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   DCHECK(identity);
   self.accountItem.image =
       [self.resizedAvatarCache resizedAvatarForIdentity:identity];
@@ -378,7 +372,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   BOOL hasAccountSignInItem = [model hasItemForItemType:SignInItemType
                                       sectionIdentifier:SyncSectionIdentifier];
 
-  if (self.isAuthenticated) {
+  if (self.hasPrimaryIdentity) {
     self.hasRecordedSigninImpression = NO;
     if (!hasAccountSignInItem)
       return NO;
@@ -402,7 +396,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         IDS_IOS_TOGGLE_SETTING_MANAGED_ACCESSIBILITY_HINT);
     signinDisabledItem.image =
         CircularImageFromImage(ios::GetChromeBrowserProvider()
-                                   ->GetSigninResourcesProvider()
+                                   .GetSigninResourcesProvider()
                                    ->GetDefaultAvatar(),
                                kAccountProfilePhotoDimension);
     signinDisabledItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
@@ -439,7 +433,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   if (self.isSyncDisabledByAdministrator) {
     type = SyncDisabledByAdministratorErrorItemType;
     hasError = YES;
-  } else if (self.isAuthenticated && self.syncSetupService->IsSyncEnabled()) {
+  } else if (self.hasPrimaryIdentity &&
+             self.syncSetupService->CanSyncFeatureStart()) {
     switch (self.syncSetupService->GetSyncServiceState()) {
       case SyncSetupService::kSyncServiceUnrecoverableError:
         type = RestartAuthenticationFlowErrorItemType;
@@ -455,6 +450,10 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         break;
       case SyncSetupService::kSyncServiceNeedsTrustedVaultKey:
         type = SyncNeedsTrustedVaultKeyErrorItemType;
+        hasError = YES;
+        break;
+      case SyncSetupService::kSyncServiceTrustedVaultRecoverabilityDegraded:
+        type = SyncTrustedVaultRecoverabilityDegradedErrorItemType;
         hasError = YES;
         break;
       case SyncSetupService::kSyncSettingsNotConfirmed:
@@ -641,6 +640,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       case ReauthDialogAsSyncIsInAuthErrorItemType:
       case ShowPassphraseDialogErrorItemType:
       case SyncNeedsTrustedVaultKeyErrorItemType:
+      case SyncTrustedVaultRecoverabilityDegradedErrorItemType:
       case SyncDisabledByAdministratorErrorItemType:
       case SyncSettingsNotCofirmedErrorItemType:
       case SyncChromeDataItemType:
@@ -661,8 +661,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 #pragma mark - Properties
 
-- (BOOL)isAuthenticated {
-  return self.authService->IsAuthenticated();
+- (BOOL)hasPrimaryIdentity {
+  return self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin);
 }
 
 - (BOOL)isSyncSettingsConfirmed {
@@ -678,13 +678,13 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 - (BOOL)isSyncEnabled {
   // Sync is not active when |syncSetupService->IsFirstSetupComplete()| is
   // false. Show sync being turned off in the UI in this cases.
-  return self.syncSetupService->IsSyncEnabled() &&
+  return self.syncSetupService->CanSyncFeatureStart() &&
          (self.syncSetupService->IsFirstSetupComplete() ||
           self.mode == GoogleServicesSettingsModeAdvancedSigninSettings);
 }
 
 - (BOOL)shouldDisplaySync {
-  return self.isAuthenticated && !self.isSyncDisabledByAdministrator;
+  return self.hasPrimaryIdentity && !self.isSyncDisabledByAdministrator;
 }
 
 - (ItemArray)nonPersonalizedItems {
@@ -714,7 +714,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
                              IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT
                        detailStringID:
                            IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL
-                               status:self.autocompleteSearchPreference];
+                               status:self.autocompleteSearchPreference.value];
       [items addObject:autocompleteItem];
     } else {
       SyncSwitchItem* autocompleteItem = [self
@@ -735,7 +735,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
                              IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_TEXT
                        detailStringID:
                            IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_DETAIL
-                               status:self.safeBrowsingPreference];
+                               status:self.safeBrowsingPreference.value];
       [items addObject:safeBrowsingManagedItem];
     } else {
       SyncSwitchItem* safeBrowsingItem = [self
@@ -811,7 +811,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
     passwordLeakCheckItem.accessibilityIdentifier =
         kPasswordLeakCheckItemAccessibilityIdentifier;
-    passwordLeakCheckItem.enabled = self.isAuthenticated;
+    passwordLeakCheckItem.enabled = self.hasPrimaryIdentity;
     _passwordLeakCheckItem = passwordLeakCheckItem;
   }
   return _passwordLeakCheckItem;
@@ -854,38 +854,53 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 //   + ReauthDialogAsSyncIsInAuthErrorItemType
 //   + ShowPassphraseDialogErrorItemType
 //   + SyncNeedsTrustedVaultKeyErrorItemType
+//   + SyncTrustedVaultRecoverabilityDegradedErrorItemType
 //   + SyncSettingsNotCofirmedErrorItemType
 - (TableViewItem*)createSyncErrorItemWithItemType:(NSInteger)itemType {
   DCHECK(itemType == RestartAuthenticationFlowErrorItemType ||
          itemType == ReauthDialogAsSyncIsInAuthErrorItemType ||
          itemType == ShowPassphraseDialogErrorItemType ||
          itemType == SyncNeedsTrustedVaultKeyErrorItemType ||
+         itemType == SyncTrustedVaultRecoverabilityDegradedErrorItemType ||
          itemType == SyncSettingsNotCofirmedErrorItemType);
   SettingsImageDetailTextItem* syncErrorItem =
       [[SettingsImageDetailTextItem alloc] initWithType:itemType];
   syncErrorItem.text = GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
   syncErrorItem.detailText =
       GetSyncErrorDescriptionForSyncSetupService(self.syncSetupService);
-  if (itemType == SyncSettingsNotCofirmedErrorItemType) {
-    // Special case for the sync error title.
-    syncErrorItem.text = GetNSString(IDS_IOS_SYNC_SETUP_NOT_CONFIRMED_TITLE);
-  } else if (itemType == ShowPassphraseDialogErrorItemType) {
-    // Special case only for the sync passphrase error message. The regular
-    // error message should be still be displayed in the first settings screen.
-    syncErrorItem.detailText = GetNSString(
-        IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENTER_PASSPHRASE_TO_START_SYNC);
-  } else if (itemType == SyncNeedsTrustedVaultKeyErrorItemType) {
-    // Special case only for the sync encryption key error message. The regular
-    // error message should be still be displayed in the first settings screen.
-    syncErrorItem.detailText =
-        GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_ENCRYPTION_FIX_NOW);
 
-    // Also override the title to be more accurate, if only passwords are being
-    // encrypted.
-    if (!self.syncSetupService->IsEncryptEverythingEnabled()) {
-      syncErrorItem.text = GetNSString(IDS_IOS_SYNC_PASSWORDS_ERROR_TITLE);
-    }
+  switch (itemType) {
+    case SyncSettingsNotCofirmedErrorItemType:
+      // Special case for the sync error title.
+      syncErrorItem.text = GetNSString(IDS_IOS_SYNC_SETUP_NOT_CONFIRMED_TITLE);
+      break;
+    case ShowPassphraseDialogErrorItemType:
+      // Special case only for the sync passphrase error message. The regular
+      // error message should be still be displayed in the first settings
+      // screen.
+      syncErrorItem.detailText = GetNSString(
+          IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENTER_PASSPHRASE_TO_START_SYNC);
+      break;
+    case SyncNeedsTrustedVaultKeyErrorItemType:
+      syncErrorItem.detailText =
+          GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_ENCRYPTION_FIX_NOW);
+      // Also override the title to be more accurate, if only passwords are
+      // being encrypted.
+      if (!self.syncSetupService->IsEncryptEverythingEnabled()) {
+        syncErrorItem.text = GetNSString(IDS_IOS_SYNC_PASSWORDS_ERROR_TITLE);
+      }
+      break;
+    case SyncTrustedVaultRecoverabilityDegradedErrorItemType:
+      syncErrorItem.detailText = GetNSString(
+          self.syncSetupService->IsEncryptEverythingEnabled()
+              ? IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_FIX_RECOVERABILITY_DEGRADED_FOR_EVERYTHING
+              : IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_FIX_RECOVERABILITY_DEGRADED_FOR_PASSWORDS);
+
+      // Also override the title to be more accurate.
+      syncErrorItem.text = GetNSString(IDS_SYNC_NEEDS_VERIFICATION_TITLE);
+      break;
   }
+
   syncErrorItem.image = [UIImage imageNamed:kGoogleServicesSyncErrorImage];
   return syncErrorItem;
 }
@@ -907,17 +922,17 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // based on the sync preference and the sign in status.
 - (BOOL)passwordLeakCheckItemOnState {
   return self.safeBrowsingPreference.value &&
-         self.passwordLeakCheckEnabled.value && self.isAuthenticated;
+         self.passwordLeakCheckEnabled.value && self.hasPrimaryIdentity;
 }
 
 // Updates the detail text and on state of the leak check item based on the
 // state.
 - (void)updateLeakCheckItem {
   self.passwordLeakCheckItem.enabled =
-      self.isAuthenticated && self.safeBrowsingPreference.value;
+      self.hasPrimaryIdentity && self.safeBrowsingPreference.value;
   self.passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
 
-  if (!self.isAuthenticated && self.passwordLeakCheckEnabled.value) {
+  if (!self.hasPrimaryIdentity && self.passwordLeakCheckEnabled.value) {
     // If the user is signed out and the sync preference is enabled, this
     // informs that it will be turned on on sign in.
     self.passwordLeakCheckItem.detailText =
@@ -962,7 +977,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   ItemType type = static_cast<ItemType>(item.type);
   switch (type) {
     case AllowChromeSigninItemType: {
-      if (self.isAuthenticated) {
+      if (self.hasPrimaryIdentity) {
         __weak GoogleServicesSettingsMediator* weakSelf = self;
         [self.commandHandler
             showSignOutFromTargetRect:targetRect
@@ -1028,6 +1043,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     case BetterSearchAndBrowsingManagedItemType:
     case ShowPassphraseDialogErrorItemType:
     case SyncNeedsTrustedVaultKeyErrorItemType:
+    case SyncTrustedVaultRecoverabilityDegradedErrorItemType:
     case SyncDisabledByAdministratorErrorItemType:
     case SyncSettingsNotCofirmedErrorItemType:
     case ManageSyncItemType:
@@ -1060,7 +1076,10 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       [self.syncErrorHandler openPassphraseDialog];
       break;
     case SyncNeedsTrustedVaultKeyErrorItemType:
-      [self.syncErrorHandler openTrustedVaultReauth];
+      [self.syncErrorHandler openTrustedVaultReauthForFetchKeys];
+      break;
+    case SyncTrustedVaultRecoverabilityDegradedErrorItemType:
+      [self.syncErrorHandler openTrustedVaultReauthForDegradedRecoverability];
       break;
     case ManageSyncItemType:
       [self.commandHandler openManageSyncSettings];
@@ -1089,7 +1108,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   [self updateSyncSection:YES];
   // It is possible for |onSyncStateChanged| to be called before
   // |onPrimaryAccountCleared|, when the primary account is removed.
-  if (self.isAuthenticated && self.accountItem) {
+  if (self.hasPrimaryIdentity && self.accountItem) {
     [self configureIdentityAccountItem];
     [self.consumer reloadItem:self.accountItem];
   }

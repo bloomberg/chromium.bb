@@ -37,7 +37,7 @@ class DrawIndexedIndirectTest : public DawnTest {
                 return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
         descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleStrip;
@@ -48,7 +48,7 @@ class DrawIndexedIndirectTest : public DawnTest {
         descriptor.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
         descriptor.cTargets[0].format = renderPass.colorFormat;
 
-        pipeline = device.CreateRenderPipeline2(&descriptor);
+        pipeline = device.CreateRenderPipeline(&descriptor);
 
         vertexBuffer = utils::CreateBufferFromData<float>(
             device, wgpu::BufferUsage::Vertex,
@@ -100,7 +100,7 @@ class DrawIndexedIndirectTest : public DawnTest {
 // The most basic DrawIndexed triangle draw.
 TEST_P(DrawIndexedIndirectTest, Uint32) {
     // TODO(crbug.com/dawn/789): Test is failing after a roll on SwANGLE on Windows only.
-    DAWN_SKIP_TEST_IF(IsANGLE() && IsWindows());
+    DAWN_SUPPRESS_TEST_IF(IsANGLE() && IsWindows());
 
     RGBA8 filled(0, 255, 0, 255);
     RGBA8 notFilled(0, 0, 0, 0);
@@ -122,8 +122,12 @@ TEST_P(DrawIndexedIndirectTest, Uint32) {
 TEST_P(DrawIndexedIndirectTest, BaseVertex) {
     // TODO(crbug.com/dawn/161): add workaround for OpenGL index buffer offset (could be compute
     // shader that adds it to the draw calls)
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGL());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
+
+    // TODO(crbug.com/dawn/966): Fails on Metal Intel, likely because [[builtin(vertex_index)]]
+    // doesn't take into account BaseVertex, which breaks programmable vertex pulling.
+    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsIntel());
 
     RGBA8 filled(0, 255, 0, 255);
     RGBA8 notFilled(0, 0, 0, 0);
@@ -148,7 +152,11 @@ TEST_P(DrawIndexedIndirectTest, BaseVertex) {
 
 TEST_P(DrawIndexedIndirectTest, IndirectOffset) {
     // TODO(crbug.com/dawn/789): Test is failing after a roll on SwANGLE on Windows only.
-    DAWN_SKIP_TEST_IF(IsANGLE() && IsWindows());
+    DAWN_SUPPRESS_TEST_IF(IsANGLE() && IsWindows());
+
+    // TODO(crbug.com/dawn/966): Fails on Metal Intel, likely because [[builtin(vertex_index)]]
+    // doesn't take into account BaseVertex, which breaks programmable vertex pulling.
+    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsIntel());
 
     RGBA8 filled(0, 255, 0, 255);
     RGBA8 notFilled(0, 0, 0, 0);

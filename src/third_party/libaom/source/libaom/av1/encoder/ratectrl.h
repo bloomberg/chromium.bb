@@ -19,6 +19,7 @@
 
 #include "av1/common/av1_common_int.h"
 #include "av1/common/blockd.h"
+#include "av1/encoder/tpl_model.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -185,6 +186,7 @@ typedef struct {
   int frames_to_key;
   /*!\cond */
   int frames_since_key;
+  int frames_to_fwd_kf;
   int is_src_frame_alt_ref;
   int sframe_due;
 
@@ -260,6 +262,10 @@ typedef struct {
   int resize_avg_qp;
   int resize_buffer_underflow;
   int resize_count;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  int frame_level_fast_extra_bits;
+  double frame_level_rate_correction_factors[RATE_FACTOR_LEVELS];
+#endif
   /*!\endcond */
 } RATE_CONTROL;
 
@@ -355,10 +361,97 @@ typedef struct {
    * Q used for last boosted (non leaf) frame
    */
   int last_kf_qindex;
+
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  /*!
+   * Temporary variable used in simulating the delayed update of
+   * active_best_quality.
+   */
+  int temp_active_best_quality[MAX_ARF_LAYERS + 1];
+
+  /*!
+   * Temporary variable used in simulating the delayed update of
+   * last_boosted_qindex.
+   */
+  int temp_last_boosted_qindex;
+
+  /*!
+   * Temporary variable used in simulating the delayed update of
+   * avg_q.
+   */
+  double temp_avg_q;
+
+  /*!
+   * Temporary variable used in simulating the delayed update of
+   * last_q.
+   */
+  int temp_last_q[FRAME_TYPES];
+
+  /*!
+   * Temporary variable used in simulating the delayed update of
+   * projected_frame_size.
+   */
+  int temp_projected_frame_size;
+
+  /*!
+   * Temporary variable used in simulating the delayed update of
+   * total_actual_bits.
+   */
+  int64_t temp_total_actual_bits;
+
+  /*!
+   * Temporary variable used in simulating the delayed update of
+   * buffer_level.
+   */
+  int64_t temp_buffer_level;
+
+  /*!
+   * Temporary variable used in simulating the delayed update of
+   * vbr_bits_off_target.
+   */
+  int64_t temp_vbr_bits_off_target;
+
+  /*!
+   * Temporary variable used in simulating the delayed update of
+   * vbr_bits_off_target_fast.
+   */
+  int64_t temp_vbr_bits_off_target_fast;
+
+  /*!
+   * Temporary variable used in simulating the delayed update of
+   * rate_correction_factors.
+   */
+  double temp_rate_correction_factors[RATE_FACTOR_LEVELS];
+
+  /*!
+   * Temporary variable used in simulating the delayed update of
+   * rate_error_estimate.
+   */
+  int temp_rate_error_estimate;
+
+  /*!
+   * Temporary variable used in simulating the delayed update of
+   * rolling_arf_group_target_bits.
+   */
+  int temp_rolling_arf_group_target_bits;
+
+  /*!
+   * Temporary variable used in simulating the delayed update of
+   * rolling_arf_group_actual_bits;.
+   */
+  int temp_rolling_arf_group_actual_bits;
+
+  /*!
+   * Temporary variable used in simulating the delayed update of
+   * bits_left;.
+   */
+  int64_t temp_bits_left;
+#endif
 } PRIMARY_RATE_CONTROL;
 
 struct AV1_COMP;
 struct AV1EncoderConfig;
+struct GF_GROUP;
 
 void av1_primary_rc_init(const struct AV1EncoderConfig *oxcf,
                          PRIMARY_RATE_CONTROL *p_rc);
@@ -389,8 +482,7 @@ int av1_rc_get_default_max_gf_interval(double framerate, int min_gf_interval);
 //
 // Then, call encode_frame_to_data_rate() to perform the
 // actual encode. This function will in turn call encode_frame()
-// one or more times, followed by one of:
-//   av1_rc_postencode_update()
+// one or more times, followed by:
 //   av1_rc_postencode_update_drop_frame()
 //
 // The majority of rate control parameters are only expected
@@ -422,8 +514,11 @@ void av1_rc_postencode_update_drop_frame(struct AV1_COMP *cpi);
  *
  * \return None but updates the relevant rate correction factor in cpi->rc
  */
-void av1_rc_update_rate_correction_factors(struct AV1_COMP *cpi, int width,
-                                           int height);
+void av1_rc_update_rate_correction_factors(struct AV1_COMP *cpi,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                                           int is_encode_stage,
+#endif
+                                           int width, int height);
 /*!\cond */
 
 // Decide if we should drop this frame: For 1-pass CBR.
@@ -606,6 +701,59 @@ void av1_get_one_pass_rt_params(struct AV1_COMP *cpi,
  */
 int av1_encodedframe_overshoot_cbr(struct AV1_COMP *cpi, int *q);
 
+/*!\brief Compute the q_indices for the entire GOP.
+ *
+ * Intended to be used only with AOM_Q mode.
+ *
+ * \param[in]       gf_frame_index    Index of the current frame
+ * \param[in]       base_q_index      Base q index
+ * \param[in]       gfu_boost         GFU boost
+ * \param[in]       bit_depth         Bit depth
+ * \param[in]       arf_boost_factor  ARF boost factor
+ * \param[out]      gf_group          Pointer to the GOP
+ */
+void av1_q_mode_compute_gop_q_indices(int gf_frame_index, int base_q_index,
+                                      int gfu_boost, int bit_depth,
+                                      double arf_boost_factor,
+                                      struct GF_GROUP *gf_group);
+
+/*!\brief Compute the q_indices for a single frame.
+ *
+ * Intended to be used with AOM_Q mode.
+ *
+ * \param[in]       base_q_index      Base q index
+ * \param[in]       gf_update_type    GOP update type
+ * \param[in]       gf_pyramid_level  GOP level of the current frame
+ * \param[in]       arf_q             ARF q_index
+ *
+ * \return Returns the q_index for the current frame.
+ */
+int av1_q_mode_get_q_index(int base_q_index, int gf_update_type,
+                           int gf_pyramid_level, int arf_q);
+
+/*!\brief Compute the q_indices for the ARF of a GOP.
+ *
+ * \param[in]       base_q_index      Base q index
+ * \param[in]       gfu_boost         GFU boost
+ * \param[in]       bit_depth         Bit depth
+ * \param[in]       arf_boost_factor  ARF boost factor
+ *
+ * \return Returns the q_index for the ARF frame.
+ */
+int av1_get_arf_q_index(int base_q_index, int gfu_boost, int bit_depth,
+                        double arf_boost_factor);
+
+#if !CONFIG_REALTIME_ONLY
+/*!\brief Compute the q_indices for the ARF of a GOP in Q mode.
+ *
+ * \param[in]       cpi               Top level encoder structure
+ * \param[in]       tpl_frame         Tpl Frame stats
+ *
+ * \return Returns the q_index for the ARF frame.
+ */
+int av1_get_arf_q_index_q_mode(struct AV1_COMP *cpi,
+                               struct TplDepFrame *tpl_frame);
+#endif
 #ifdef __cplusplus
 }  // extern "C"
 #endif

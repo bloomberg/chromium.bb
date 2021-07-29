@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "include/base/cef_bind.h"
+#include "include/base/cef_callback.h"
 #include "include/cef_process_message.h"
 #include "include/cef_task.h"
 #include "include/wrapper/cef_closure_task.h"
@@ -99,8 +99,9 @@ class SendRecvTestHandler : public TestHandler {
 
     // Send the message to the renderer process.
     if (!CefCurrentlyOn(send_thread_)) {
-      CefPostTask(send_thread_, base::Bind(&SendRecvTestHandler::SendMessage,
-                                           this, browser, frame));
+      CefPostTask(send_thread_,
+                  base::BindOnce(&SendRecvTestHandler::SendMessage, this,
+                                 browser, frame));
     } else {
       SendMessage(browser, frame);
     }

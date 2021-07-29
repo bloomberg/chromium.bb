@@ -17,6 +17,7 @@ import androidx.annotation.WorkerThread;
 import com.google.common.base.Optional;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Promise;
 
 import java.util.List;
 
@@ -49,35 +50,17 @@ public interface AccountManagerFacade {
     void removeObserver(AccountsChangeObserver observer);
 
     /**
-     * Returns whether the account cache has already been populated. {@link #tryGetGoogleAccounts()}
-     * and similar methods will return instantly if the cache has been populated, otherwise these
-     * methods may block waiting for the cache to be populated.
-     */
-    @AnyThread
-    boolean isCachePopulated();
-
-    /**
-     * Retrieves all Google accounts on the device from the cache.
-     * Returns an empty array if an error occurs while getting account list.
-     * If the cache is not yet populated, the optional will be empty.
-     */
-    @AnyThread
-    Optional<List<Account>> getGoogleAccounts();
-
-    /**
-     * Retrieves all Google accounts on the device.
-     * Returns an empty array if an error occurs while getting account list.
-     * This method is blocking, use {@link #getGoogleAccounts()} instead.
-     */
-    @AnyThread
-    @Deprecated
-    List<Account> tryGetGoogleAccounts();
-
-    /**
-     * Asynchronous version of {@link #getGoogleAccounts()}.
+     * Retrieves all the accounts on the device.
+     * The {@link Promise} will be fulfilled once the accounts cache will be populated.
+     * If an error occurs while getting account list, the returned {@link Promise} will wrap an
+     * empty array.
+     *
+     * Since a different {@link Promise} will be returned every time the accounts get updated,
+     * this makes it a bad candidate for end users to cache the {@link Promise} locally unless
+     * the end users are awaiting the current list of accounts only.
      */
     @MainThread
-    void tryGetGoogleAccounts(final Callback<List<Account>> callback);
+    Promise<List<Account>> getAccounts();
 
     /**
      * @return Whether or not there is an account authenticator for Google accounts.
@@ -113,10 +96,10 @@ public interface AccountManagerFacade {
     void checkChildAccountStatus(Account account, ChildAccountStatusListener listener);
 
     /**
-     * Gets the boolean for whether the account is subject to minor mode restrictions.
+     * Gets the boolean for whether the account can offer extended sync promos.
      * If the result is not yet fetched, the optional will be empty.
      */
-    Optional<Boolean> isAccountSubjectToMinorModeRestrictions(Account account);
+    Optional<Boolean> canOfferExtendedSyncPromos(Account account);
 
     /**
      * Creates an intent that will ask the user to add a new account to the device. See
@@ -156,10 +139,4 @@ public interface AccountManagerFacade {
     @WorkerThread
     @Nullable
     String getAccountGaiaId(String accountEmail);
-
-    /**
-     * Checks whether Google Play services is available.
-     */
-    @AnyThread
-    boolean isGooglePlayServicesAvailable();
 }

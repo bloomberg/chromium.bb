@@ -35,7 +35,7 @@
 #include <string>
 
 #include "base/callback_helpers.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -84,6 +84,7 @@
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_document.h"
+#include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/css/media_query_list_listener.h"
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -153,6 +154,7 @@
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/cursor/cursor.h"
@@ -186,9 +188,7 @@ enum VerticalScrollbarState {
 
 class TestData {
  public:
-  void SetWebView(WebView* web_view) {
-    web_view_ = static_cast<WebViewImpl*>(web_view);
-  }
+  void SetWebView(WebView* web_view) { web_view_ = To<WebViewImpl>(web_view); }
   void SetSize(const gfx::Size& new_size) { size_ = new_size; }
   HorizontalScrollbarState GetHorizontalScrollbarState() const {
     return web_view_->HasHorizontalScrollbar() ? kVisibleHorizontalScrollbar
@@ -432,7 +432,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColor) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   EXPECT_EQ(SK_ColorWHITE, web_view->BackgroundColor());
 
-  web_view->SetBaseBackgroundColor(SK_ColorBLUE);
+  web_view->SetPageBaseBackgroundColor(SK_ColorBLUE);
   EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
@@ -452,11 +452,11 @@ TEST_F(WebViewTest, SetBaseBackgroundColor) {
   // Expected: red (50% alpha) blended atop base of SK_ColorBLUE.
   EXPECT_EQ(0xFF80007F, web_view->BackgroundColor());
 
-  web_view->SetBaseBackgroundColor(kTranslucentPutty);
+  web_view->SetPageBaseBackgroundColor(kTranslucentPutty);
   // Expected: red (50% alpha) blended atop kTranslucentPutty. Note the alpha.
   EXPECT_EQ(0xBFE93A31, web_view->BackgroundColor());
 
-  web_view->SetBaseBackgroundColor(SK_ColorTRANSPARENT);
+  web_view->SetPageBaseBackgroundColor(SK_ColorTRANSPARENT);
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
                                      "<html><head><style>body "
                                      "{background-color:transparent}</style></"
@@ -485,21 +485,24 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   // Note: this test doesn't use WebViewHelper since it intentionally runs
   // initialization code between WebView and WebLocalFrame creation.
   frame_test_helpers::TestWebViewClient web_view_client;
-  WebViewImpl* web_view = static_cast<WebViewImpl*>(
+  WebViewImpl* web_view = To<WebViewImpl>(
       WebView::Create(&web_view_client,
                       /*is_hidden=*/false,
+                      /*is_prerendering=*/false,
                       /*is_inside_portal=*/false,
                       /*compositing_enabled=*/true,
                       /*widgets_never_composited=*/false,
                       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
                       web_view_helper_.GetAgentGroupScheduler(),
-                      /*session_storage_namespace_id=*/base::EmptyString()));
+                      /*session_storage_namespace_id=*/base::EmptyString(),
+                      /*page_base_background_color=*/absl::nullopt));
 
   EXPECT_NE(SK_ColorBLUE, web_view->BackgroundColor());
-  // WebView does not have a frame yet, but we should still be able to set the
-  // background color.
-  web_view->SetBaseBackgroundColor(SK_ColorBLUE);
-  EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
+  // WebView does not have a frame yet; while it's possible to set the page
+  // background color, it won't have any effect until a local main frame is
+  // attached.
+  web_view->SetPageBaseBackgroundColor(SK_ColorBLUE);
+  EXPECT_NE(SK_ColorBLUE, web_view->BackgroundColor());
 
   frame_test_helpers::TestWebFrameClient web_frame_client;
   WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
@@ -527,7 +530,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
 
   // Set WebView background to green with alpha.
-  web_view->SetBaseBackgroundColor(kAlphaGreen);
+  web_view->SetPageBaseBackgroundColor(kAlphaGreen);
   web_view->GetSettings()->SetShouldClearDocumentBackground(false);
   web_view->MainFrameViewWidget()->Resize(gfx::Size(kWidth, kHeight));
   UpdateAllLifecyclePhases();
@@ -568,7 +571,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorWithColorScheme) {
   ColorSchemeHelper color_scheme_helper(*(web_view->GetPage()));
   color_scheme_helper.SetPreferredColorScheme(
       mojom::blink::PreferredColorScheme::kLight);
-  web_view->SetBaseBackgroundColor(SK_ColorBLUE);
+  web_view->SetPageBaseBackgroundColor(SK_ColorBLUE);
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(
@@ -585,9 +588,9 @@ TEST_F(WebViewTest, SetBaseBackgroundColorWithColorScheme) {
   EXPECT_EQ(Color(0x12, 0x12, 0x12), frame_view->BaseBackgroundColor());
 
   // Don't let dark color-scheme override a transparent background.
-  web_view->SetBaseBackgroundColor(SK_ColorTRANSPARENT);
+  web_view->SetPageBaseBackgroundColor(SK_ColorTRANSPARENT);
   EXPECT_EQ(Color::kTransparent, frame_view->BaseBackgroundColor());
-  web_view->SetBaseBackgroundColor(SK_ColorBLUE);
+  web_view->SetPageBaseBackgroundColor(SK_ColorBLUE);
   EXPECT_EQ(Color(0x12, 0x12, 0x12), frame_view->BaseBackgroundColor());
 
   color_scheme_helper.SetForcedColors(*(web_view->GetPage()),
@@ -2604,24 +2607,24 @@ TEST_F(WebViewTest, FullscreenBackgroundColor) {
   EXPECT_EQ(SK_ColorYELLOW, web_view_impl->BackgroundColor());
 }
 
-class PrintWebViewClient : public frame_test_helpers::TestWebViewClient {
+class PrintWebFrameClient : public frame_test_helpers::TestWebFrameClient {
  public:
-  PrintWebViewClient() : print_called_(false) {}
+  PrintWebFrameClient() = default;
 
-  // WebViewClient methods
-  void PrintPage(WebLocalFrame*) override { print_called_ = true; }
+  // WebLocalFrameClient overrides:
+  void ScriptedPrint() override { print_called_ = true; }
 
   bool PrintCalled() const { return print_called_; }
 
  private:
-  bool print_called_;
+  bool print_called_ = false;
 };
 
 TEST_F(WebViewTest, PrintWithXHRInFlight) {
-  PrintWebViewClient client;
+  PrintWebFrameClient client;
   RegisterMockedHttpURLLoad("print_with_xhr_inflight.html");
   WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(
-      base_url_ + "print_with_xhr_inflight.html", nullptr, &client);
+      base_url_ + "print_with_xhr_inflight.html", &client, nullptr);
 
   ASSERT_TRUE(To<LocalFrame>(web_view_impl->GetPage()->MainFrame())
                   ->GetDocument()
@@ -2733,13 +2736,15 @@ ExternalDateTimeChooser* WebViewTest::GetExternalDateTimeChooser(
 TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   // Note: this test doesn't use WebViewHelper since WebViewHelper creates an
   // internal WebViewClient on demand if the supplied WebViewClient is null.
-  WebViewImpl* web_view = static_cast<WebViewImpl*>(WebView::Create(
-      /*client=*/nullptr, /*is_hidden=*/false, /*is_inside_portal=*/false,
+  WebViewImpl* web_view = To<WebViewImpl>(WebView::Create(
+      /*client=*/nullptr, /*is_hidden=*/false, /*is_prerendering=*/false,
+      /*is_inside_portal=*/false,
       /*compositing_enabled=*/false,
       /*widgets_never_composited=*/false,
       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
       web_view_helper_.GetAgentGroupScheduler(),
-      /*session_storage_namespace_id=*/base::EmptyString()));
+      /*session_storage_namespace_id=*/base::EmptyString(),
+      /*page_base_background_color=*/absl::nullopt));
   frame_test_helpers::TestWebFrameClient web_frame_client;
   WebLocalFrame* local_frame = WebLocalFrame::CreateMainFrame(
       web_view, &web_frame_client, nullptr, LocalFrameToken(), nullptr);
@@ -4117,7 +4122,7 @@ TEST_F(WebViewTest, AddFrameInCloseURLUnload) {
   web_view_helper_.InitializeAndLoad(base_url_ + "add_frame_in_unload.html",
                                      &frame_client);
   // Dispatch unload event.
-  web_view_helper_.LocalMainFrame()->GetFrame()->ClosePage(base::DoNothing());
+  web_view_helper_.LocalMainFrame()->GetFrame()->ClosePageForTesting();
   EXPECT_EQ(0, frame_client.Count());
   web_view_helper_.Reset();
 }
@@ -6126,7 +6131,7 @@ TEST_F(WebViewTest, EmulatingPopupRect) {
   gfx::Rect widget_screen_rect(5, 7, 57, 59);
 
   blink::VisualProperties visual_properties;
-  visual_properties.screen_infos = ScreenInfos(ScreenInfo());
+  visual_properties.screen_infos = display::ScreenInfos(display::ScreenInfo());
   visual_properties.new_size = gfx::Size(400, 300);
   visual_properties.visible_viewport_size = gfx::Size(400, 300);
   visual_properties.screen_infos.mutable_current().rect = gfx::Rect(800, 600);

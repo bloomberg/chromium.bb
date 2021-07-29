@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/core/editing/iterators/text_searcher_icu.h"
 
 #include <unicode/usearch.h>
-#include "base/macros.h"
 #include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/text/text_boundaries.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator_internal_icu.h"
@@ -61,6 +60,9 @@ class ICULockableSearcher {
   STACK_ALLOCATED();
 
  public:
+  ICULockableSearcher(const ICULockableSearcher&) = delete;
+  ICULockableSearcher& operator=(const ICULockableSearcher&) = delete;
+
   static UStringSearch* AcquireSearcher() {
     Instance().lock();
     return Instance().searcher_;
@@ -95,17 +97,15 @@ class ICULockableSearcher {
 #if DCHECK_IS_ON()
   bool locked_ = false;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(ICULockableSearcher);
 };
 
 }  // namespace
 
 static bool IsWholeWordMatch(const UChar* text,
-                             int text_length,
+                             unsigned text_length,
                              MatchResultICU& result) {
   const wtf_size_t result_end = result.start + result.length;
-  DCHECK_LE(result_end, static_cast<wtf_size_t>(text_length));
+  DCHECK_LE(result_end, text_length);
   UChar32 first_character;
   U16_GET(text, 0, result.start, result_end, first_character);
 
@@ -201,9 +201,10 @@ bool TextSearcherICU::NextMatchResultInternal(MatchResultICU& result) {
 }
 
 bool TextSearcherICU::ShouldSkipCurrentMatch(MatchResultICU& result) const {
-  int32_t text_length;
-  const UChar* text = usearch_getText(searcher_, &text_length);
-  DCHECK_LE((int32_t)(result.start + result.length), text_length);
+  int32_t text_length_i32;
+  const UChar* text = usearch_getText(searcher_, &text_length_i32);
+  unsigned text_length = text_length_i32;
+  DCHECK_LE(result.start + result.length, text_length);
   DCHECK_GT(result.length, 0u);
 
   if (!normalized_search_text_.IsEmpty() && !IsCorrectKanaMatch(text, result))

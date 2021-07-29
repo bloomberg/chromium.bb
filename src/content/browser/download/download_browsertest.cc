@@ -234,6 +234,7 @@ class MockDownloadManagerObserver : public DownloadManager::Observer {
 
   MOCK_METHOD2(OnDownloadCreated,
                void(DownloadManager*, download::DownloadItem*));
+  MOCK_METHOD1(OnDownloadDropped, void(DownloadManager*));
   MOCK_METHOD1(ModelChanged, void(DownloadManager*));
   void ManagerGoingDown(DownloadManager* manager) override {
     DCHECK_EQ(manager_, manager);
@@ -2292,6 +2293,38 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectUnsafeDownload) {
             downloads[0]->GetLastReason());
 }
 
+// Verify that DownloadUrl() with no DownloadManagerDelegate drops the download.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, NoDownloadManagerDelegateDownload) {
+  const GURL download_url =
+      embedded_test_server()->GetURL("/download/download-test.lib");
+  TestDownloadHttpResponse::StartServing(TestDownloadHttpResponse::Parameters(),
+                                         download_url);
+
+  // Unset the DownloadManagerDelegate.
+  auto* download_manager = DownloadManagerForShell(shell());
+  download_manager->GetDelegate()->Shutdown();
+  download_manager->SetDelegate(nullptr);
+
+  MockDownloadManagerObserver dm_observer(download_manager);
+  EXPECT_CALL(dm_observer, OnDownloadCreated(_, _)).Times(0);
+  EXPECT_CALL(dm_observer, OnDownloadDropped(_)).Times(1);
+
+  // Create download parameters with renderer process information. This is
+  // required to go through the DownloadManagerDelegate code path.
+  auto download_parameters =
+      DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
+          shell()->web_contents(), download_url, TRAFFIC_ANNOTATION_FOR_TESTS);
+  download_parameters->set_content_initiated(true);
+  download_manager->DownloadUrl(std::move(download_parameters));
+
+  // Verify there were no downloads.
+  EXPECT_TRUE(EnsureNoPendingDownloads());
+
+  std::vector<download::DownloadItem*> downloads;
+  download_manager->GetAllDownloads(&downloads);
+  EXPECT_TRUE(downloads.empty());
+}
+
 // If the server response for the resumption request specifies a bad range (i.e.
 // not the range that was requested), then the download should be marked as
 // interrupted and restart from the beginning.
@@ -4113,6 +4146,26 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, SniffedMimeType) {
 
   EXPECT_STREQ("application/x-gzip", item->GetMimeType().c_str());
   EXPECT_TRUE(item->GetOriginalMimeType().empty());
+}
+
+// Verify that for download that is not triggered by navigation, MIME sniffing
+// is working.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, SniffedMimeTypeForDownloadURL) {
+  GURL download_url =
+      embedded_test_server()->GetURL("/download/gzip-content.gz");
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
+  auto download_parameters = std::make_unique<download::DownloadUrlParameters>(
+      download_url, TRAFFIC_ANNOTATION_FOR_TESTS);
+  // Download URL without navigation.
+  DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
+  observer->WaitForFinished();
+
+  // Verify download failed.
+  std::vector<download::DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  EXPECT_EQ(1u, downloads.size());
+  EXPECT_EQ(download::DownloadItem::COMPLETE, downloads[0]->GetState());
+  EXPECT_STREQ("application/x-gzip", downloads[0]->GetMimeType().c_str());
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DuplicateContentDisposition) {

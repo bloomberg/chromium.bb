@@ -144,14 +144,14 @@ func doGenrelease(args []string) error {
 }
 
 var (
-	grImplStartsHere = []byte("\n// WUFFS C HEADER ENDS HERE.\n#ifdef WUFFS_IMPLEMENTATION\n")
+	grImplStartsHere = []byte("\n// ‼ WUFFS C HEADER ENDS HERE.\n#ifdef WUFFS_IMPLEMENTATION\n")
 	grImplEndsHere   = []byte("#endif  // WUFFS_IMPLEMENTATION\n")
 	grIncludeQuote   = []byte("#include \"")
 	grNN             = []byte("\n\n")
-	grVOverride      = []byte("// !! Some code generation programs can override WUFFS_VERSION.\n")
+	grVOverride      = []byte("// ¡ Some code generation programs can override WUFFS_VERSION.\n")
 	grVEnd           = []byte(`#define WUFFS_VERSION_STRING "0.0.0+0.00000000"`)
-	grWmrAbove       = []byte("// !! WUFFS MONOLITHIC RELEASE DISCARDS EVERYTHING ABOVE.\n")
-	grWmrBelow       = []byte("// !! WUFFS MONOLITHIC RELEASE DISCARDS EVERYTHING BELOW.\n")
+	grWmrAbove       = []byte("// ¡ WUFFS MONOLITHIC RELEASE DISCARDS EVERYTHING ABOVE.\n")
+	grWmrBelow       = []byte("// ¡ WUFFS MONOLITHIC RELEASE DISCARDS EVERYTHING BELOW.\n")
 )
 
 const grSingleFileGuidance = `
@@ -167,16 +167,37 @@ const grSingleFileGuidance = `
 const grPragmaPush = `
 // Wuffs' C code is generated automatically, not hand-written. These warnings'
 // costs outweigh the benefits.
-#ifdef __clang__
+//
+// The "elif defined(__clang__)" isn't redundant. While vanilla clang defines
+// __GNUC__, clang-cl (which mimics MSVC's cl.exe) does not.
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wunreachable-code"
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#if defined(__cplusplus)
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
+#elif defined(__clang__)
 #pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wimplicit-fallthrough"
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #pragma clang diagnostic ignored "-Wunreachable-code"
 #pragma clang diagnostic ignored "-Wunused-function"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#if defined(__cplusplus)
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
 #endif
 
 `
 
 const grPragmaPop = `
-#ifdef __clang__
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#elif defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 

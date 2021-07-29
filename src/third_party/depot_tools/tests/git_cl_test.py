@@ -71,8 +71,9 @@ class ChangelistMock(object):
   # instance that's being set.
   desc = ''
 
-  def __init__(self, gerrit_change=None, **kwargs):
+  def __init__(self, gerrit_change=None, use_python3=False, **kwargs):
     self._gerrit_change = gerrit_change
+    self._use_python3 = use_python3
 
   def GetIssue(self):
     return 1
@@ -90,6 +91,8 @@ class ChangelistMock(object):
   def GetRemoteBranch(self):
     return ('origin', 'refs/remotes/origin/main')
 
+  def GetUsePython3(self):
+    return self._use_python3
 
 class GitMocks(object):
   def __init__(self, config=None, branchref=None):
@@ -762,6 +765,8 @@ class TestGitCl(unittest.TestCase):
       ((['git', 'config', '--unset-all', 'rietveld.run-post-upload-hook'],),
         CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.format-full-by-default'],),
+        CERR1),
+      ((['git', 'config', '--unset-all', 'rietveld.use-python3'],),
         CERR1),
       ((['git', 'config', 'gerrit.host', 'true'],), ''),
     ]
@@ -2116,6 +2121,18 @@ class TestGitCl(unittest.TestCase):
           {'Commit-Queue': vote}, notify, None), ''),
     ]
 
+  def _cmd_set_quick_run_gerrit(self):
+    self.mockGit.config['branch.master.gerritissue'] = '123'
+    self.mockGit.config['branch.master.gerritserver'] = (
+        'https://chromium-review.googlesource.com')
+    self.mockGit.config['remote.origin.url'] = (
+        'https://chromium.googlesource.com/infra/infra')
+    self.calls = [
+        (('SetReview', 'chromium-review.googlesource.com',
+          'infra%2Finfra~123', None,
+          {'Commit-Queue': 1, 'Quick-Run': 1}, None, None), ''),
+    ]
+
   def test_cmd_set_commit_gerrit_clear(self):
     self._cmd_set_commit_gerrit_common(0)
     self.assertEqual(0, git_cl.main(['set-commit', '-c']))
@@ -2127,6 +2144,10 @@ class TestGitCl(unittest.TestCase):
   def test_cmd_set_commit_gerrit(self):
     self._cmd_set_commit_gerrit_common(2)
     self.assertEqual(0, git_cl.main(['set-commit']))
+
+  def test_cmd_set_quick_run_gerrit(self):
+    self._cmd_set_quick_run_gerrit()
+    self.assertEqual(0, git_cl.main(['set-commit', '-q']))
 
   def test_description_display(self):
     mock.patch('git_cl.Changelist', ChangelistMock).start()
@@ -3015,6 +3036,7 @@ class ChangelistTest(unittest.TestCase):
     mock.patch('git_cl.Changelist.GetAuthor', return_value='author').start()
     mock.patch('git_cl.Changelist.GetIssue', return_value=123456).start()
     mock.patch('git_cl.Changelist.GetPatchset', return_value=7).start()
+    mock.patch('git_cl.Changelist.GetUsePython3', return_value=False).start()
     mock.patch(
         'git_cl.Changelist.GetRemoteBranch',
         return_value=('origin', 'refs/remotes/origin/main')).start()
@@ -3576,6 +3598,16 @@ class CMDTryTestCase(CMDTestCaseBase):
     self.assertEqual(
         sys.stdout.getvalue(),
         'Scheduling CQ dry run on: '
+        'https://chromium-review.googlesource.com/123456\n')
+
+  @mock.patch('git_cl.Changelist.SetCQState')
+  def testSetCQQuickRunByDefault(self, mockSetCQState):
+    mockSetCQState.return_value = 0
+    self.assertEqual(0, git_cl.main(['try', '-q']))
+    git_cl.Changelist.SetCQState.assert_called_with(git_cl._CQState.QUICK_RUN)
+    self.assertEqual(
+        sys.stdout.getvalue(),
+        'Scheduling CQ quick run on: '
         'https://chromium-review.googlesource.com/123456\n')
 
   @mock.patch('git_cl._call_buildbucket')

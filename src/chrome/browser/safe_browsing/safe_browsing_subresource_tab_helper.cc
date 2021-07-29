@@ -6,9 +6,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "components/safe_browsing/content/browser/safe_browsing_blocking_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -32,9 +32,9 @@ void SafeBrowsingSubresourceTabHelper::ReadyToCommitNavigation(
     if (manager->PopUnsafeResourceForURL(navigation_handle->GetURL(),
                                          &resource)) {
       safe_browsing::SafeBrowsingBlockingPage* blocking_page =
-          safe_browsing::SafeBrowsingBlockingPage::CreateBlockingPage(
+          manager->blocking_page_factory()->CreateSafeBrowsingPage(
               manager.get(), navigation_handle->GetWebContents(),
-              navigation_handle->GetURL(), resource,
+              navigation_handle->GetURL(), {resource},
               /*should_trigger_reporting=*/true);
       security_interstitials::SecurityInterstitialTabHelper::
           AssociateBlockingPage(navigation_handle->GetWebContents(),

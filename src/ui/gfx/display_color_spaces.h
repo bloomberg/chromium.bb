@@ -8,9 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_space_export.h"
+#include "ui/gfx/hdr_static_metadata.h"
 
 namespace mojo {
 template <class T, class U>
@@ -43,6 +45,8 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
 
   // Initialize as sRGB-only.
   DisplayColorSpaces();
+  DisplayColorSpaces(const DisplayColorSpaces& display_color_space);
+  DisplayColorSpaces& operator=(const DisplayColorSpaces& display_color_space);
 
   // Initialize as |color_space| for all settings. If |color_space| is the
   // default (invalid) color space, then initialize to sRGB. The BufferFormat
@@ -80,9 +84,17 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
   }
   float GetSDRWhiteLevel() const { return sdr_white_level_; }
 
+  void set_hdr_static_metadata(
+      absl::optional<HDRStaticMetadata> hdr_static_metadata) {
+    hdr_static_metadata_ = hdr_static_metadata;
+  }
+  const absl::optional<HDRStaticMetadata>& hdr_static_metadata() const {
+    return hdr_static_metadata_;
+  }
+
   // TODO(https://crbug.com/1116870): These helper functions exist temporarily
-  // to handle the transition of blink::ScreenInfo off of ColorSpace. All calls
-  // to these functions are to be eliminated.
+  // to handle the transition of display::ScreenInfo off of ColorSpace. All
+  // calls to these functions are to be eliminated.
   ColorSpace GetScreenInfoColorSpace() const;
 
   // Return the color space that should be used for rasterization.
@@ -117,6 +129,8 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
   gfx::ColorSpace color_spaces_[kConfigCount];
   gfx::BufferFormat buffer_formats_[kConfigCount];
   float sdr_white_level_ = ColorSpace::kDefaultSDRWhiteLevel;
+  // By definition this only applies to ContentColorUsage::kHDR.
+  absl::optional<HDRStaticMetadata> hdr_static_metadata_;
 };
 
 }  // namespace gfx

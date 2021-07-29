@@ -24,8 +24,8 @@
 
 namespace SkSL {
 
-void GLSLCodeGenerator::write(const char* s) {
-    if (s[0] == 0) {
+void GLSLCodeGenerator::write(skstd::string_view s) {
+    if (!s.length()) {
         return;
     }
     if (fAtLineStart) {
@@ -33,37 +33,12 @@ void GLSLCodeGenerator::write(const char* s) {
             fOut->writeText("    ");
         }
     }
-    fOut->writeText(s);
+    fOut->write(s.data(), s.length());
     fAtLineStart = false;
 }
 
-void GLSLCodeGenerator::writeLine(const char* s) {
+void GLSLCodeGenerator::writeLine(skstd::string_view s) {
     this->write(s);
-    this->writeLine();
-}
-
-void GLSLCodeGenerator::write(const String& s) {
-    this->write(s.c_str());
-}
-
-void GLSLCodeGenerator::write(StringFragment s) {
-    if (!s.fLength) {
-        return;
-    }
-    if (fAtLineStart) {
-        for (int i = 0; i < fIndentation; i++) {
-            fOut->writeText("    ");
-        }
-    }
-    fOut->write(s.fChars, s.fLength);
-    fAtLineStart = false;
-}
-
-void GLSLCodeGenerator::writeLine(const String& s) {
-    this->writeLine(s.c_str());
-}
-
-void GLSLCodeGenerator::writeLine() {
     fOut->writeText(fLineEnding);
     fAtLineStart = true;
 }
@@ -74,13 +49,9 @@ void GLSLCodeGenerator::finishLine() {
     }
 }
 
-void GLSLCodeGenerator::writeExtension(const String& name) {
-    this->writeExtension(name, true);
-}
-
-void GLSLCodeGenerator::writeExtension(const String& name, bool require) {
+void GLSLCodeGenerator::writeExtension(skstd::string_view name, bool require) {
     fExtensions.writeText("#extension ");
-    fExtensions.write(name.c_str(), name.length());
+    fExtensions.write(name.data(), name.length());
     fExtensions.writeText(require ? " : require\n" : " : enable\n");
 }
 
@@ -145,14 +116,12 @@ String GLSLCodeGenerator::getTypeName(const Type& type) {
                 return "uint";
             }
             else {
-                return type.name();
+                return String(type.name());
             }
             break;
         }
-        case Type::TypeKind::kEnum:
-            return "int";
         default:
-            return type.name();
+            return String(type.name());
     }
 }
 
@@ -496,12 +465,25 @@ void GLSLCodeGenerator::writeFunctionCall(const FunctionCall& c) {
                 }
             }
             break;
-        case k_dFdy_IntrinsicKind:
-            if (fProgram.fConfig->fSettings.fFlipY) {
-                // Flipping Y also negates the Y derivatives.
-                this->write("-dFdy");
-                nameWritten = true;
+        case k_ldexp_IntrinsicKind:
+            if (this->caps().mustForceNegatedLdexpParamToMultiply() &&
+                arguments.size() == 2 &&
+                arguments[1]->is<PrefixExpression>()) {
+                const PrefixExpression& p = arguments[1]->as<PrefixExpression>();
+                if (p.getOperator().kind() == Token::Kind::TK_MINUS) {
+                    this->write("ldexp(");
+                    this->writeExpression(*arguments[0], Precedence::kSequence);
+                    this->write(", ");
+                    this->writeExpression(*p.operand(), Precedence::kMultiplicative);
+                    this->write(" * -1)");
+                    return;
+                }
             }
+            break;
+        case k_dFdy_IntrinsicKind:
+            // Flipping Y also negates the Y derivatives.
+            this->write(SKSL_RTFLIP_NAME ".y * dFdy");
+            nameWritten = true;
             [[fallthrough]];
         case k_dFdx_IntrinsicKind:
         case k_fwidth_IntrinsicKind:
@@ -757,29 +739,16 @@ void GLSLCodeGenerator::writeFragCoord() {
         return;
     }
 
-    // We only declare "gl_FragCoord" when we're in the case where we want to use layout qualifiers
-    // to reverse y. Otherwise it isn't necessary and whether the "in" qualifier appears in the
-    // declaration varies in earlier GLSL specs. So it is simpler to omit it.
-    if (!fProgram.fConfig->fSettings.fFlipY) {
-        this->write("gl_FragCoord");
-    } else if (const char* extension = this->caps().fragCoordConventionsExtensionString()) {
-        if (!fSetupFragPositionGlobal) {
-            if (this->caps().generation() < k150_GrGLSLGeneration) {
-                this->writeExtension(extension);
-            }
-            fGlobals.writeText("layout(origin_upper_left) in vec4 gl_FragCoord;\n");
-            fSetupFragPositionGlobal = true;
-        }
-        this->write("gl_FragCoord");
-    } else {
-        if (!fSetupFragPositionLocal) {
-            fFunctionHeader += usesPrecisionModifiers() ? "highp " : "";
-            fFunctionHeader += "    vec4 sk_FragCoord = vec4(gl_FragCoord.x, " SKSL_RTHEIGHT_NAME
-                               " - gl_FragCoord.y, gl_FragCoord.z, gl_FragCoord.w);\n";
-            fSetupFragPositionLocal = true;
-        }
-        this->write("sk_FragCoord");
+    if (!fSetupFragPosition) {
+        fFunctionHeader += usesPrecisionModifiers() ? "highp " : "";
+        fFunctionHeader += "    vec4 sk_FragCoord = vec4("
+                "gl_FragCoord.x, "
+                SKSL_RTFLIP_NAME ".x + " SKSL_RTFLIP_NAME ".y * gl_FragCoord.y, "
+                "gl_FragCoord.z, "
+                "gl_FragCoord.w);\n";
+        fSetupFragPosition = true;
     }
+    this->write("sk_FragCoord");
 }
 
 void GLSLCodeGenerator::writeVariableReference(const VariableReference& ref) {
@@ -795,7 +764,15 @@ void GLSLCodeGenerator::writeVariableReference(const VariableReference& ref) {
             this->writeFragCoord();
             break;
         case SK_CLOCKWISE_BUILTIN:
-            this->write(fProgram.fConfig->fSettings.fFlipY ? "(!gl_FrontFacing)" : "gl_FrontFacing");
+            if (!fSetupClockwise) {
+                fFunctionHeader +=
+                        "    bool sk_Clockwise = gl_FrontFacing;\n"
+                        "    if (" SKSL_RTFLIP_NAME ".y < 0.0) {\n"
+                        "        sk_Clockwise = !sk_Clockwise;\n"
+                        "    }\n";
+                fSetupClockwise = true;
+            }
+            this->write("sk_Clockwise");
             break;
         case SK_VERTEXID_BUILTIN:
             this->write("gl_VertexID");
@@ -834,7 +811,7 @@ void GLSLCodeGenerator::writeFieldAccess(const FieldAccess& f) {
         this->write(".");
     }
     const Type& baseType = f.base()->type();
-    StringFragment name = baseType.fields()[f.fieldIndex()].fName;
+    skstd::string_view name = baseType.fields()[f.fieldIndex()].fName;
     if (name == "sk_Position") {
         this->write("gl_Position");
     } else if (name == "sk_PointSize") {
@@ -853,6 +830,31 @@ void GLSLCodeGenerator::writeSwizzle(const Swizzle& swizzle) {
     }
 }
 
+void GLSLCodeGenerator::writeMatrixComparisonWorkaround(const BinaryExpression& b) {
+    const Expression& left = *b.left();
+    const Expression& right = *b.right();
+    Operator op = b.getOperator();
+
+    SkASSERT(op.kind() == Token::Kind::TK_EQEQ || op.kind() == Token::Kind::TK_NEQ);
+    SkASSERT(left.type().isMatrix());
+    SkASSERT(right.type().isMatrix());
+
+    String tempMatrix1 = "_tempMatrix" + to_string(fVarCount++);
+    String tempMatrix2 = "_tempMatrix" + to_string(fVarCount++);
+
+    this->fFunctionHeader += String("    ") + this->getTypePrecision(left.type()) +
+                             this->getTypeName(left.type()) + " " + tempMatrix1 + ";\n    " +
+                             this->getTypePrecision(right.type()) +
+                             this->getTypeName(right.type()) + " " + tempMatrix2 + ";\n";
+    this->write("((" + tempMatrix1 + " = ");
+    this->writeExpression(left, Precedence::kAssignment);
+    this->write("), (" + tempMatrix2 + " = ");
+    this->writeExpression(right, Precedence::kAssignment);
+    this->write("), (" + tempMatrix1 + " ");
+    this->write(op.operatorName());
+    this->write(" " + tempMatrix2 + "))");
+}
+
 void GLSLCodeGenerator::writeBinaryExpression(const BinaryExpression& b,
                                               Precedence parentPrecedence) {
     const Expression& left = *b.left();
@@ -861,6 +863,13 @@ void GLSLCodeGenerator::writeBinaryExpression(const BinaryExpression& b,
     if (this->caps().unfoldShortCircuitAsTernary() &&
             (op.kind() == Token::Kind::TK_LOGICALAND || op.kind() == Token::Kind::TK_LOGICALOR)) {
         this->writeShortCircuitWorkaroundExpression(b, parentPrecedence);
+        return;
+    }
+
+    if (this->caps().rewriteMatrixComparisons() &&
+            left.type().isMatrix() && right.type().isMatrix() &&
+            (op.kind() == Token::Kind::TK_EQEQ || op.kind() == Token::Kind::TK_NEQ)) {
+        this->writeMatrixComparisonWorkaround(b);
         return;
     }
 
@@ -1017,7 +1026,7 @@ void GLSLCodeGenerator::writeFunctionDeclaration(const FunctionDeclaration& f) {
 }
 
 void GLSLCodeGenerator::writeFunction(const FunctionDefinition& f) {
-    fSetupFragPositionLocal = false;
+    fSetupFragPosition = false;
     fSetupFragCoordWorkaround = false;
 
     this->writeFunctionDeclaration(f.declaration());
@@ -1445,8 +1454,6 @@ void GLSLCodeGenerator::writeProgramElement(const ProgramElement& e) {
             this->writeLine(";");
             break;
         }
-        case ProgramElement::Kind::kEnum:
-            break;
         case ProgramElement::Kind::kStructDefinition:
             this->writeStructDefinition(e.as<StructDefinition>());
             break;
@@ -1457,11 +1464,11 @@ void GLSLCodeGenerator::writeProgramElement(const ProgramElement& e) {
 }
 
 void GLSLCodeGenerator::writeInputVars() {
-    if (fProgram.fInputs.fRTHeight) {
+    if (fProgram.fInputs.fUseFlipRTUniform) {
         const char* precision = usesPrecisionModifiers() ? "highp " : "";
         fGlobals.writeText("uniform ");
         fGlobals.writeText(precision);
-        fGlobals.writeText("float " SKSL_RTHEIGHT_NAME ";\n");
+        fGlobals.writeText("vec2 " SKSL_RTFLIP_NAME ";\n");
     }
 }
 
@@ -1522,14 +1529,15 @@ bool GLSLCodeGenerator::generateCode() {
     }
 
     if (this->usesPrecisionModifiers()) {
-        this->writeLine("precision mediump float;");
-        this->writeLine("precision mediump sampler2D;");
-        if (fFoundExternalSamplerDecl &&
-            !this->caps().noDefaultPrecisionForExternalSamplers()) {
-            this->writeLine("precision mediump samplerExternalOES;");
+        const char* precision =
+                fProgram.fConfig->fSettings.fForceHighPrecision ? "highp" : "mediump";
+        this->write(String::printf("precision %s float;\n", precision));
+        this->write(String::printf("precision %s sampler2D;\n", precision));
+        if (fFoundExternalSamplerDecl && !this->caps().noDefaultPrecisionForExternalSamplers()) {
+            this->write(String::printf("precision %s samplerExternalOES;\n", precision));
         }
         if (fFoundRectSamplerDecl) {
-            this->writeLine("precision mediump sampler2DRect;");
+            this->write(String::printf("precision %s sampler2DRect;\n", precision));
         }
     }
     write_stringstream(fExtraFunctions, *rawOut);

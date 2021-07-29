@@ -88,16 +88,14 @@ OfflineInternalsUIMessageHandler::~OfflineInternalsUIMessageHandler() {}
 
 void OfflineInternalsUIMessageHandler::HandleDeleteSelectedPages(
     const base::ListValue* args) {
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
-
-  const base::ListValue* offline_ids_from_arg;
-  args->GetList(1, &offline_ids_from_arg);
+  base::Value::ConstListView args_list = args->GetList();
+  CHECK_EQ(2u, args_list.size());
+  std::string callback_id = args_list[0].GetString();
 
   std::vector<int64_t> offline_ids;
-  for (size_t i = 0; i < offline_ids_from_arg->GetSize(); i++) {
-    std::string value;
-    offline_ids_from_arg->GetString(i, &value);
+  base::Value::ConstListView offline_ids_from_arg = args_list[1].GetList();
+  for (size_t i = 0; i < offline_ids_from_arg.size(); i++) {
+    std::string value = offline_ids_from_arg[i].GetString();
     int64_t int_value;
     base::StringToInt64(value, &int_value);
     offline_ids.push_back(int_value);
@@ -114,16 +112,14 @@ void OfflineInternalsUIMessageHandler::HandleDeleteSelectedPages(
 
 void OfflineInternalsUIMessageHandler::HandleDeleteSelectedRequests(
     const base::ListValue* args) {
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
+  base::Value::ConstListView args_list = args->GetList();
+  CHECK_EQ(2u, args_list.size());
+  std::string callback_id = args_list[0].GetString();
 
   std::vector<int64_t> offline_ids;
-  const base::ListValue* offline_ids_from_arg = nullptr;
-  args->GetList(1, &offline_ids_from_arg);
-
-  for (size_t i = 0; i < offline_ids_from_arg->GetSize(); i++) {
-    std::string value;
-    offline_ids_from_arg->GetString(i, &value);
+  base::Value::ConstListView offline_ids_from_arg = args_list[1].GetList();
+  for (size_t i = 0; i < offline_ids_from_arg.size(); i++) {
+    std::string value = offline_ids_from_arg[i].GetString();
     int64_t int_value;
     base::StringToInt64(value, &int_value);
     offline_ids.push_back(int_value);
@@ -191,12 +187,12 @@ void OfflineInternalsUIMessageHandler::HandleRequestQueueCallback(
   for (const auto& request : requests) {
     auto save_page_request = std::make_unique<base::DictionaryValue>();
     save_page_request->SetString("onlineUrl", request->url().spec());
-    save_page_request->SetDouble("creationTime",
-                                 request->creation_time().ToJsTime());
+    save_page_request->SetDoubleKey("creationTime",
+                                    request->creation_time().ToJsTime());
     save_page_request->SetString("status", GetStringFromSavePageStatus());
     save_page_request->SetString("namespace", request->client_id().name_space);
-    save_page_request->SetDouble("lastAttemptTime",
-                                 request->last_attempt_time().ToJsTime());
+    save_page_request->SetDoubleKey("lastAttemptTime",
+                                    request->last_attempt_time().ToJsTime());
     save_page_request->SetString("id", std::to_string(request->request_id()));
     save_page_request->SetString("originalUrl", request->original_url().spec());
     save_page_request->SetString("requestOrigin", request->request_origin());

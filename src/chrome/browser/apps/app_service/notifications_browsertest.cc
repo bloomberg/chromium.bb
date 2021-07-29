@@ -37,9 +37,9 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/connection_holder.h"
+#include "components/arc/test/arc_util_test_support.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -109,7 +109,7 @@ OptionalBool HasBadge(Profile* profile, const std::string& app_id) {
 void RemoveNotification(Profile* profile, const std::string& notification_id) {
   const std::string profile_notification_id =
       ProfileNotification::GetProfileNotificationId(
-          notification_id, NotificationUIManager::GetProfileID(profile));
+          notification_id, ProfileNotification::GetProfileID(profile));
   message_center::MessageCenter::Get()->RemoveNotification(
       profile_notification_id, true);
 }

@@ -23,8 +23,6 @@ std::string Token::TypeToName(Type type) {
   switch (type) {
     case Token::Type::kError:
       return "kError";
-    case Token::Type::kReservedKeyword:
-      return "kReservedKeyword";
     case Token::Type::kEOF:
       return "kEOF";
     case Token::Type::kIdentifier:
@@ -86,10 +84,14 @@ std::string Token::TypeToName(Type type) {
       return "!=";
     case Token::Type::kMinus:
       return "-";
+    case Token::Type::kMinusMinus:
+      return "--";
     case Token::Type::kPeriod:
       return ".";
     case Token::Type::kPlus:
       return "+";
+    case Token::Type::kPlusPlus:
+      return "++";
     case Token::Type::kOr:
       return "|";
     case Token::Type::kOrOr:
@@ -102,11 +104,15 @@ std::string Token::TypeToName(Type type) {
       return ";";
     case Token::Type::kStar:
       return "*";
+    case Token::Type::kTilde:
+      return "~";
     case Token::Type::kXor:
       return "^";
 
     case Token::Type::kArray:
       return "array";
+    case Token::Type::kAtomic:
+      return "atomic";
     case Token::Type::kBitcast:
       return "bitcast";
     case Token::Type::kBool:
@@ -115,8 +121,6 @@ std::string Token::TypeToName(Type type) {
       return "break";
     case Token::Type::kCase:
       return "case";
-    case Token::Type::kConst:
-      return "const";
     case Token::Type::kContinue:
       return "continue";
     case Token::Type::kContinuing:
@@ -219,8 +223,6 @@ std::string Token::TypeToName(Type type) {
       return "image";
     case Token::Type::kImport:
       return "import";
-    case Token::Type::kIn:
-      return "in";
     case Token::Type::kLet:
       return "let";
     case Token::Type::kLoop:
@@ -243,8 +245,6 @@ std::string Token::TypeToName(Type type) {
       return "mat4x3";
     case Token::Type::kMat4x4:
       return "mat4x4";
-    case Token::Type::kOut:
-      return "out";
     case Token::Type::kPrivate:
       return "private";
     case Token::Type::kPtr:
@@ -309,8 +309,6 @@ std::string Token::TypeToName(Type type) {
       return "vec3";
     case Token::Type::kVec4:
       return "vec4";
-    case Token::Type::kVoid:
-      return "void";
     case Token::Type::kWorkgroup:
       return "workgroup";
   }

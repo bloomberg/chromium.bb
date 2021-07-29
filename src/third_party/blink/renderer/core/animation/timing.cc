@@ -6,8 +6,10 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_computed_effect_timing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_effect_timing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_string_unrestricteddouble.h"
 #include "third_party/blink/renderer/core/animation/timing_calculations.h"
-#include "third_party/blink/renderer/core/css/cssom/css_numeric_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unit_values.h"
 
 namespace blink {
 
@@ -66,39 +68,21 @@ Timing::FillMode Timing::ResolvedFillMode(bool is_keyframe_effect) const {
   return Timing::FillMode::BOTH;
 }
 
-AnimationTimeDelta Timing::IterationDuration() const {
-  AnimationTimeDelta result = iteration_duration.value_or(AnimationTimeDelta());
-  DCHECK_GE(result, AnimationTimeDelta());
-  return result;
-}
-
-AnimationTimeDelta Timing::ActiveDuration() const {
-  const AnimationTimeDelta result =
-      MultiplyZeroAlwaysGivesZero(IterationDuration(), iteration_count);
-  DCHECK_GE(result, AnimationTimeDelta());
-  return result;
-}
-
-AnimationTimeDelta Timing::EndTimeInternal() const {
-  // Per the spec, the end time has a lower bound of 0.0:
-  // https://drafts.csswg.org/web-animations-1/#end-time
-  return std::max(start_delay + ActiveDuration() + end_delay,
-                  AnimationTimeDelta());
-}
-
 EffectTiming* Timing::ConvertToEffectTiming() const {
   EffectTiming* effect_timing = EffectTiming::Create();
 
+  // Specified values used here so that inputs match outputs for JS API calls
   effect_timing->setDelay(start_delay.InMillisecondsF());
   effect_timing->setEndDelay(end_delay.InMillisecondsF());
   effect_timing->setFill(FillModeString(fill_mode));
   effect_timing->setIterationStart(iteration_start);
   effect_timing->setIterations(iteration_count);
-  UnrestrictedDoubleOrString duration;
+  V8UnionStringOrUnrestrictedDouble* duration;
   if (iteration_duration) {
-    duration.SetUnrestrictedDouble(iteration_duration->InMillisecondsF());
+    duration = MakeGarbageCollected<V8UnionStringOrUnrestrictedDouble>(
+        iteration_duration->InMillisecondsF());
   } else {
-    duration.SetString("auto");
+    duration = MakeGarbageCollected<V8UnionStringOrUnrestrictedDouble>("auto");
   }
   effect_timing->setDuration(duration);
   effect_timing->setDirection(PlaybackDirectionString(direction));
@@ -107,23 +91,38 @@ EffectTiming* Timing::ConvertToEffectTiming() const {
   return effect_timing;
 }
 
+// Converts values to CSSNumberish based on corresponding timeline type
+V8CSSNumberish* Timing::ToComputedValue(
+    absl::optional<AnimationTimeDelta> time,
+    absl::optional<AnimationTimeDelta> max_time) const {
+  if (time) {
+    // A valid timeline_duration indicates use of progress based timeline. We
+    // need to convert values to percentages using timeline_duration as 100%
+    if (max_time) {
+      return MakeGarbageCollected<V8CSSNumberish>(
+          CSSUnitValues::percent((time.value() / max_time.value()) * 100));
+    } else {
+      // For time based timeline, simply return the value in milliseconds.
+      return MakeGarbageCollected<V8CSSNumberish>(
+          time.value().InMillisecondsF());
+    }
+  }
+  return nullptr;
+}
+
 ComputedEffectTiming* Timing::getComputedTiming(
     const CalculatedTiming& calculated_timing,
+    const NormalizedTiming& normalized_timing,
     bool is_keyframe_effect) const {
   ComputedEffectTiming* computed_timing = ComputedEffectTiming::Create();
 
   // ComputedEffectTiming members.
-  computed_timing->setEndTime(
-      CSSNumberish::FromDouble(EndTimeInternal().InMillisecondsF()));
-  computed_timing->setActiveDuration(
-      CSSNumberish::FromDouble(ActiveDuration().InMillisecondsF()));
-
-  if (calculated_timing.local_time) {
-    computed_timing->setLocalTime(CSSNumberish::FromDouble(
-        calculated_timing.local_time->InMillisecondsF()));
-  } else {
-    computed_timing->setLocalTime(CSSNumberish());
-  }
+  computed_timing->setEndTime(ToComputedValue(
+      normalized_timing.end_time, normalized_timing.timeline_duration));
+  computed_timing->setActiveDuration(ToComputedValue(
+      normalized_timing.active_duration, normalized_timing.timeline_duration));
+  computed_timing->setLocalTime(ToComputedValue(
+      calculated_timing.local_time, normalized_timing.timeline_duration));
 
   if (calculated_timing.is_in_effect) {
     DCHECK(calculated_timing.current_iteration);
@@ -132,14 +131,17 @@ ComputedEffectTiming* Timing::getComputedTiming(
     computed_timing->setCurrentIteration(
         calculated_timing.current_iteration.value());
   } else {
-    computed_timing->setProgressToNull();
-    computed_timing->setCurrentIterationToNull();
+    computed_timing->setProgress(absl::nullopt);
+    computed_timing->setCurrentIteration(absl::nullopt);
   }
 
   // For the EffectTiming members, getComputedTiming is equivalent to getTiming
   // except that the fill and duration must be resolved.
   //
   // https://drafts.csswg.org/web-animations-1/#dom-animationeffect-getcomputedtiming
+
+  // TODO(crbug.com/1216527): Animation effect timing members start_delay and
+  // end_delay should be CSSNumberish
   computed_timing->setDelay(start_delay.InMillisecondsF());
   computed_timing->setEndDelay(end_delay.InMillisecondsF());
   computed_timing->setFill(
@@ -147,9 +149,22 @@ ComputedEffectTiming* Timing::getComputedTiming(
   computed_timing->setIterationStart(iteration_start);
   computed_timing->setIterations(iteration_count);
 
-  UnrestrictedDoubleOrString duration;
-  duration.SetUnrestrictedDouble(IterationDuration().InMillisecondsF());
-  computed_timing->setDuration(duration);
+  // TODO(crbug.com/1219008): Animation effect computed iteration_duration
+  // should return CSSNumberish, which will simplify this logic.
+  V8CSSNumberish* computed_duration =
+      ToComputedValue(normalized_timing.iteration_duration,
+                      normalized_timing.timeline_duration);
+  if (computed_duration->IsCSSNumericValue()) {
+    computed_timing->setDuration(
+        MakeGarbageCollected<V8UnionStringOrUnrestrictedDouble>(
+            computed_duration->GetAsCSSNumericValue()
+                ->to(CSSPrimitiveValue::UnitType::kPercentage)
+                ->value()));
+  } else {
+    computed_timing->setDuration(
+        MakeGarbageCollected<V8UnionStringOrUnrestrictedDouble>(
+            computed_duration->GetAsDouble()));
+  }
 
   computed_timing->setDirection(Timing::PlaybackDirectionString(direction));
   computed_timing->setEasing(timing_function->ToString());
@@ -160,23 +175,24 @@ ComputedEffectTiming* Timing::getComputedTiming(
 Timing::CalculatedTiming Timing::CalculateTimings(
     absl::optional<AnimationTimeDelta> local_time,
     absl::optional<Phase> timeline_phase,
+    const NormalizedTiming& normalized_timing,
     AnimationDirection animation_direction,
     bool is_keyframe_effect,
     absl::optional<double> playback_rate) const {
-  const AnimationTimeDelta active_duration = ActiveDuration();
+  const AnimationTimeDelta active_duration = normalized_timing.active_duration;
+  const AnimationTimeDelta duration = normalized_timing.iteration_duration;
 
   Timing::Phase current_phase = CalculatePhase(
-      active_duration, local_time, timeline_phase, animation_direction, *this);
+      normalized_timing, local_time, timeline_phase, animation_direction);
 
-  const absl::optional<AnimationTimeDelta> active_time =
-      CalculateActiveTime(active_duration, ResolvedFillMode(is_keyframe_effect),
-                          local_time, current_phase, *this);
+  const absl::optional<AnimationTimeDelta> active_time = CalculateActiveTime(
+      normalized_timing, ResolvedFillMode(is_keyframe_effect), local_time,
+      current_phase);
 
   absl::optional<double> progress;
 
-  const absl::optional<double> overall_progress =
-      CalculateOverallProgress(current_phase, active_time, IterationDuration(),
-                               iteration_count, iteration_start);
+  const absl::optional<double> overall_progress = CalculateOverallProgress(
+      current_phase, active_time, duration, iteration_count, iteration_start);
   const absl::optional<double> simple_iteration_progress =
       CalculateSimpleIterationProgress(current_phase, overall_progress,
                                        iteration_start, active_time,
@@ -196,20 +212,19 @@ Timing::CalculatedTiming Timing::CalculateTimings(
   AnimationTimeDelta time_to_next_iteration = AnimationTimeDelta::Max();
   // Conditionally compute the time to next iteration, which is only
   // applicable if the iteration duration is non-zero.
-  if (!IterationDuration().is_zero()) {
+  if (!duration.is_zero()) {
     const AnimationTimeDelta start_offset =
-        MultiplyZeroAlwaysGivesZero(IterationDuration(), iteration_start);
+        MultiplyZeroAlwaysGivesZero(duration, iteration_start);
     DCHECK_GE(start_offset, AnimationTimeDelta());
     const absl::optional<AnimationTimeDelta> offset_active_time =
         CalculateOffsetActiveTime(active_duration, active_time, start_offset);
     const absl::optional<AnimationTimeDelta> iteration_time =
-        CalculateIterationTime(IterationDuration(), active_duration,
-                               offset_active_time, start_offset, current_phase,
-                               *this);
+        CalculateIterationTime(duration, active_duration, offset_active_time,
+                               start_offset, current_phase, *this);
     if (iteration_time) {
       // active_time cannot be null if iteration_time is not null.
       DCHECK(active_time);
-      time_to_next_iteration = IterationDuration() - iteration_time.value();
+      time_to_next_iteration = duration - iteration_time.value();
       if (active_duration - active_time.value() < time_to_next_iteration)
         time_to_next_iteration = AnimationTimeDelta::Max();
     }

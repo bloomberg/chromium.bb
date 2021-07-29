@@ -15,6 +15,7 @@ ch-prefers-color-scheme
 ch-rtt
 ch-ua
 ch-ua-arch
+ch-ua-bitness
 ch-ua-full-version
 ch-ua-mobile
 ch-ua-model
@@ -51,7 +52,6 @@ serial
 shared-autofill
 storage-access-api
 sync-xhr
-trust-token-redemption
 usb
 vertical-scroll
 window-placement

@@ -6,7 +6,6 @@
 #define CONTENT_RENDERER_PEPPER_PEPPER_WEBPLUGIN_IMPL_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -70,7 +69,6 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   blink::WebURL LinkAtPosition(const gfx::Point& position) const override;
   bool GetPrintPresetOptionsFromDocument(
       blink::WebPrintPresetOptions* preset_options) override;
-  bool IsPdfPlugin() override;
   bool StartFind(const blink::WebString& search_text,
                  bool case_sensitive,
                  int identifier) override;
@@ -83,7 +81,7 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   void PrintEnd() override;
 
   bool CanRotateView() override;
-  void RotateView(RotationType type) override;
+  void RotateView(blink::WebPlugin::RotationType type) override;
   bool IsPlaceholder() override;
   void DidLoseMouseLock() override;
   void DidReceiveMouseLockResult(bool success) override;

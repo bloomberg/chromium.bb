@@ -20,6 +20,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -39,9 +40,10 @@ bool g_auto_check_open_in_window_for_testing = false;
 
 bool ShowRadioButtons() {
   // This UI is only for prototyping and is not intended for shipping.
-  DCHECK_EQ(features::kDesktopPWAsTabStrip.default_state,
+  DCHECK_EQ(features::kDesktopPWAsTabStripSettings.default_state,
             base::FEATURE_DISABLED_BY_DEFAULT);
-  return base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip);
+  return base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) &&
+         base::FeatureList::IsEnabled(features::kDesktopPWAsTabStripSettings);
 }
 
 }  // namespace

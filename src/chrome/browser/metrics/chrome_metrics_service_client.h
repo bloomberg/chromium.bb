@@ -83,9 +83,10 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
   bool IsUMACellularUploadLogicEnabled() override;
   bool IsUkmAllowedForAllProfiles() override;
+  bool IsUkmAllowedWithAppsForAllProfiles() override;
   bool IsUkmAllowedWithExtensionsForAllProfiles() override;
   bool AreNotificationListenersEnabledOnAllProfiles() override;
-  std::string GetAppPackageName() override;
+  std::string GetAppPackageNameIfLoggable() override;
   std::string GetUploadSigningKey() override;
   static void SetNotificationListenerSetupFailedForTesting(
       bool simulate_failure);

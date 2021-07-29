@@ -5,6 +5,12 @@
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 
+import reportStyles from './report.css.js';
+import reportKeyStyles from './reportKey.css.js';
+import reportSectionDividerStyles from './reportSectionDivider.css.js';
+import reportSectionHeaderStyles from './reportSectionHeader.css.js';
+import reportValueStyles from './reportValue.css.js';
+
 /**
  * The `Report` component can be used to display static information. A report
  * usually consists of multiple sections where each section has rows of name/value
@@ -28,7 +34,7 @@ export interface ReportData {
   reportTitle: string;
 }
 export class Report extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-report`;
+  static readonly litTagName = LitHtml.literal`devtools-report`;
 
   private readonly shadow = this.attachShadow({mode: 'open'});
   private reportTitle: string = '';
@@ -39,6 +45,7 @@ export class Report extends HTMLElement {
   }
 
   connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [reportStyles];
     this.render();
   }
 
@@ -46,31 +53,6 @@ export class Report extends HTMLElement {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     LitHtml.render(LitHtml.html`
-      <style>
-        :host {
-          display: block;
-        }
-
-        .content {
-          background-color: var(--color-background);
-          display: grid;
-          grid-template-columns: min-content 1fr;
-          user-select: text;
-        }
-
-        .report-title {
-          padding: 12px 24px;
-          font-size: 15px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          border-bottom: 1px solid var(--color-details-hairline);
-          color: var(--color-text-primary);
-          background-color: var(--color-background);
-          grid-column-start: span 2;
-        }
-      </style>
-
       <div class="content">
         ${this.reportTitle ? LitHtml.html`<div class="report-title">${this.reportTitle}</div>` : LitHtml.nothing}
         <slot></slot>
@@ -85,10 +67,11 @@ export interface ReportSectionData {
 }
 
 export class ReportSectionHeader extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-report-section-header`;
+  static readonly litTagName = LitHtml.literal`devtools-report-section-header`;
 
   private readonly shadow = this.attachShadow({mode: 'open'});
   connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [reportSectionHeaderStyles];
     this.render();
   }
 
@@ -96,24 +79,6 @@ export class ReportSectionHeader extends HTMLElement {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     LitHtml.render(LitHtml.html`
-      <style>
-        :host {
-          grid-column-start: span 2;
-        }
-
-        .section-header {
-          padding: 12px;
-          margin-left: 18px;
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          flex: auto;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          font-weight: bold;
-          color: var(--color-text-primary);
-        }
-      </style>
       <div class="section-header">
         <slot></slot>
       </div>
@@ -123,10 +88,11 @@ export class ReportSectionHeader extends HTMLElement {
 }
 
 export class ReportSectionDivider extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-report-divider`;
+  static readonly litTagName = LitHtml.literal`devtools-report-divider`;
 
   private readonly shadow = this.attachShadow({mode: 'open'});
   connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [reportSectionDividerStyles];
     this.render();
   }
 
@@ -134,15 +100,6 @@ export class ReportSectionDivider extends HTMLElement {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     LitHtml.render(LitHtml.html`
-      <style>
-        :host {
-          grid-column-start: span 2;
-        }
-
-        .section-divider {
-          border-bottom: 1px solid var(--color-details-hairline);
-        }
-      </style>
       <div class="section-divider">
       </div>
     `, this.shadow);
@@ -151,10 +108,11 @@ export class ReportSectionDivider extends HTMLElement {
 }
 
 export class ReportKey extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-report-key`;
+  static readonly litTagName = LitHtml.literal`devtools-report-key`;
 
   private readonly shadow = this.attachShadow({mode: 'open'});
   connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [reportKeyStyles];
     this.render();
   }
 
@@ -162,19 +120,6 @@ export class ReportKey extends HTMLElement {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     LitHtml.render(LitHtml.html`
-      <style>
-        :host {
-          line-height: 28px;
-          margin: 0 0 8px 0;
-        }
-
-        .key {
-          color: var(--color-text-secondary);
-          padding: 0 6px;
-          text-align: right;
-          white-space: pre;
-        }
-      </style>
       <div class="key"><slot></slot></div>
     `, this.shadow);
     // clang-format on
@@ -182,10 +127,11 @@ export class ReportKey extends HTMLElement {
 }
 
 export class ReportValue extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-report-value`;
+  static readonly litTagName = LitHtml.literal`devtools-report-value`;
 
   private readonly shadow = this.attachShadow({mode: 'open'});
   connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [reportValueStyles];
     this.render();
   }
 
@@ -193,19 +139,6 @@ export class ReportValue extends HTMLElement {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     LitHtml.render(LitHtml.html`
-      <style>
-        :host {
-          line-height: 28px;
-          margin: 0 0 8px 0;
-          min-width: 150px;
-        }
-
-        .value {
-          color: var(--color-text-primary);
-          margin-inline-start: 0;
-          padding: 0 6px;
-        }
-      </style>
       <div class="value"><slot></slot></div>
     `, this.shadow);
     // clang-format on

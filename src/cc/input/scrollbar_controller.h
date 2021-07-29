@@ -12,9 +12,10 @@
 #include "cc/input/scrollbar.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // High level documentation:
-// https://source.chromium.org/chromium/chromium/src/+/master:cc/input/README.md
+// https://source.chromium.org/chromium/chromium/src/+/main:cc/input/README.md
 
 // Click scrolling.
 // - A click is considered as a kMouseDown and a kMouseUp in quick succession.

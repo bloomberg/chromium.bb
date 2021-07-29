@@ -13,6 +13,7 @@
 
 class GURL;
 @protocol TabSwitcher;
+@class FirstRunAppAgent;
 
 // Private methods and protocols that are made visible here for tests.
 @interface MainController ()

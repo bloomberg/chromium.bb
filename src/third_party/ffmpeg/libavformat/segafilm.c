@@ -183,7 +183,7 @@ static int film_read_header(AVFormatContext *s)
         if (film->audio_type == AV_CODEC_ID_ADPCM_ADX) {
             st->codecpar->bits_per_coded_sample = 18 * 8 / 32;
             st->codecpar->block_align = st->codecpar->channels * 18;
-            st->need_parsing = AVSTREAM_PARSE_FULL;
+            st->internal->need_parsing = AVSTREAM_PARSE_FULL;
         } else {
             st->codecpar->bits_per_coded_sample = film->audio_bits;
             st->codecpar->block_align = st->codecpar->channels *
@@ -201,8 +201,6 @@ static int film_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     film->base_clock = AV_RB32(&scratch[8]);
     film->sample_count = AV_RB32(&scratch[12]);
-    if(film->sample_count >= UINT_MAX / sizeof(film_sample))
-        return -1;
     film->sample_table = av_malloc_array(film->sample_count, sizeof(film_sample));
     if (!film->sample_table)
         return AVERROR(ENOMEM);
@@ -333,7 +331,7 @@ static int film_read_seek(AVFormatContext *s, int stream_index, int64_t timestam
     return 0;
 }
 
-AVInputFormat ff_segafilm_demuxer = {
+const AVInputFormat ff_segafilm_demuxer = {
     .name           = "film_cpk",
     .long_name      = NULL_IF_CONFIG_SMALL("Sega FILM / CPK"),
     .priv_data_size = sizeof(FilmDemuxContext),

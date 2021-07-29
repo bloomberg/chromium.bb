@@ -43,6 +43,11 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
+namespace absl {
+template <typename>
+class optional;
+}
+
 namespace blink {
 
 class PushPullFIFO;
@@ -77,6 +82,8 @@ class PLATFORM_EXPORT AudioDestination
                    const WebAudioLatencyHint&,
                    absl::optional<float> context_sample_rate,
                    unsigned render_quantum_frames);
+  AudioDestination(const AudioDestination&) = delete;
+  AudioDestination& operator=(const AudioDestination&) = delete;
   ~AudioDestination() override;
 
   static scoped_refptr<AudioDestination> Create(
@@ -193,8 +200,6 @@ class PLATFORM_EXPORT AudioDestination
   // Modified only on the main thread, so it can be read without holding a lock
   // there.
   DeviceState device_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioDestination);
 };
 
 }  // namespace blink

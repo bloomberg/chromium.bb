@@ -10,7 +10,6 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/android_intent_helper.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/mojom/assistant_volume_control.mojom.h"
 #include "ash/session/session_controller_impl.h"
@@ -197,7 +196,7 @@ void AssistantControllerImpl::OnDeepLinkReceived(
     }
     case DeepLinkType::kFeedback:
       NewWindowDelegate::GetInstance()->OpenFeedbackPage(
-          /*from_assistant=*/true);
+          NewWindowDelegate::FeedbackSource::kFeedbackSourceAssistant);
 
       // Close the assistant UI so that the feedback page is visible.
       assistant_ui_controller_.CloseUi(

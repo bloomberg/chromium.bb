@@ -8,13 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/pdf/common/pdf.mojom.h"
 #include "content/public/browser/touch_selection_controller_client_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "pdf/mojom/pdf.mojom.h"
 #include "ui/touch_selection/selection_event_type.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 #include "ui/touch_selection/touch_selection_menu_runner.h"
@@ -82,7 +82,8 @@ class PDFWebContentsHelper
   // mojom::PdfService:
   void SetListener(mojo::PendingRemote<mojom::PdfListener> listener) override;
   void HasUnsupportedFeature() override;
-  void SaveUrlAs(const GURL& url, blink::mojom::ReferrerPtr referrer) override;
+  void SaveUrlAs(const GURL& url,
+                 network::mojom::ReferrerPolicy policy) override;
   void UpdateContentRestrictions(int32_t content_restrictions) override;
   void SelectionChanged(const gfx::PointF& left,
                         int32_t left_height,

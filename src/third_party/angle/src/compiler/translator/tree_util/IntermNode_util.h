@@ -45,6 +45,15 @@ TVariable *DeclareTempVariable(TSymbolTable *symbolTable,
                                TIntermTyped *initializer,
                                TQualifier qualifier,
                                TIntermDeclaration **declarationOut);
+std::pair<const TVariable *, const TVariable *> DeclareStructure(
+    TIntermBlock *root,
+    TSymbolTable *symbolTable,
+    TFieldList *fieldList,
+    TQualifier qualifier,
+    const TMemoryQualifier &memoryQualifier,
+    uint32_t arraySize,
+    const ImmutableString &structTypeName,
+    const ImmutableString *structInstanceName);
 const TVariable *DeclareInterfaceBlock(TIntermBlock *root,
                                        TSymbolTable *symbolTable,
                                        TFieldList *fieldList,
@@ -74,6 +83,10 @@ TIntermTyped *CreateBuiltInFunctionCallNode(const char *name,
                                             TIntermSequence *arguments,
                                             const TSymbolTable &symbolTable,
                                             int shaderVersion);
+TIntermTyped *CreateBuiltInUnaryFunctionCallNode(const char *name,
+                                                 TIntermTyped *argument,
+                                                 const TSymbolTable &symbolTable,
+                                                 int shaderVersion);
 
 inline void GetSwizzleIndex(TVector<int> *indexOut) {}
 

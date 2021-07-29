@@ -142,7 +142,9 @@ class CoreLibraryInitializer {
 extern "C" {
 
 MojoResult MojoInitialize(const struct MojoInitializeOptions* options) {
-  static base::NoDestructor<mojo::CoreLibraryInitializer> initializer;
+  static base::NoDestructor<mojo::CoreLibraryInitializer,
+                            base::AllowForTriviallyDestructibleType>
+      initializer;
 
   base::StringPiece library_path_utf8;
   if (options) {
@@ -489,6 +491,10 @@ MojoResult MojoSetDefaultProcessErrorHandler(
 }
 
 }  // extern "C"
+
+const MojoSystemThunks* MojoEmbedderGetSystemThunks() {
+  return &g_thunks;
+}
 
 void MojoEmbedderSetSystemThunks(const MojoSystemThunks* thunks) {
   // Assume embedders will always use matching versions of the Mojo Core and

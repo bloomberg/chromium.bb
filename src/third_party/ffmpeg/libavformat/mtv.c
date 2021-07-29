@@ -185,7 +185,7 @@ static int mtv_read_header(AVFormatContext *s)
     st->codecpar->codec_type      = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id        = AV_CODEC_ID_MP3;
     st->codecpar->bit_rate        = mtv->audio_br;
-    st->need_parsing              = AVSTREAM_PARSE_FULL;
+    st->internal->need_parsing              = AVSTREAM_PARSE_FULL;
 
     // Jump over header
 
@@ -225,7 +225,7 @@ static int mtv_read_packet(AVFormatContext *s, AVPacket *pkt)
     return ret;
 }
 
-AVInputFormat ff_mtv_demuxer = {
+const AVInputFormat ff_mtv_demuxer = {
     .name           = "mtv",
     .long_name      = NULL_IF_CONFIG_SMALL("MTV"),
     .priv_data_size = sizeof(MTVDemuxContext),

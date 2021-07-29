@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -33,7 +34,8 @@ class AppUpdate : public App {
 };
 
 void AppUpdate::Initialize() {
-  config_ = base::MakeRefCounted<Configurator>(CreateGlobalPrefs());
+  config_ =
+      base::MakeRefCounted<Configurator>(CreateGlobalPrefs(updater_scope()));
 }
 
 void AppUpdate::Uninitialize() {

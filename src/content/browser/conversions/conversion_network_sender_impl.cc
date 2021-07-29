@@ -46,11 +46,9 @@ enum class Status {
 };
 
 // Called when a network request is started for |report|, for logging metrics.
-void LogMetricsOnReportSend(ConversionReport* report) {
-  DCHECK(report);
-
+void LogMetricsOnReportSend(const ConversionReport& report) {
   // Reports sent from the WebUI should not log metrics.
-  if (report->report_time == base::Time::Min())
+  if (report.report_time == base::Time::Min())
     return;
 
   // Use a large time range to capture users that might not open the browser for
@@ -61,21 +59,21 @@ void LogMetricsOnReportSend(ConversionReport* report) {
   // whose |report_time| changes due to additional startup delay.
   base::Time now = base::Time::Now();
   base::TimeDelta time_since_original_report_time =
-      (now - report->report_time) + report->extra_delay;
+      (now - report.report_time) + report.extra_delay;
   base::UmaHistogramCustomTimes("Conversions.ExtraReportDelay",
                                 time_since_original_report_time,
                                 base::TimeDelta::FromSeconds(1),
                                 base::TimeDelta::FromDays(7), /*buckets=*/100);
 
   base::TimeDelta time_from_conversion_to_report_send =
-      report->report_time - report->conversion_time;
+      report.report_time - report.conversion_time;
   UMA_HISTOGRAM_COUNTS_1000("Conversions.TimeFromConversionToReportSend",
                             time_from_conversion_to_report_send.InHours());
 }
 
 GURL GetReportUrl(const content::ConversionReport& report) {
   url::Replacements<char> replacements;
-  const char kEndpointPath[] =
+  static constexpr char kEndpointPath[] =
       "/.well-known/attribution-reporting/report-attribution";
   replacements.SetPath(kEndpointPath, url::Component(0, strlen(kEndpointPath)));
   return report.impression.reporting_origin().GetURL().ReplaceComponents(
@@ -85,18 +83,17 @@ GURL GetReportUrl(const content::ConversionReport& report) {
 std::string GetReportPostBody(const content::ConversionReport& report) {
   base::Value dict(base::Value::Type::DICTIONARY);
 
-  // The API denotes this id as a string. Note that a uint64_t cannot be put in
-  // a dict as an integer key.
-  dict.SetStringKey("source_event_id", report.impression.impression_data());
+  // The API denotes these values as strings; a `uint64_t` cannot be put in
+  // a dict as an integer in order to be opaque to various API configurations.
+  dict.SetStringKey("source_event_id",
+                    base::NumberToString(report.impression.impression_data()));
 
-  int trigger_data;
-  bool success = base::StringToInt(report.conversion_data, &trigger_data);
-  DCHECK(success);
-  dict.SetIntKey("trigger_data", trigger_data);
+  dict.SetStringKey("trigger_data",
+                    base::NumberToString(report.conversion_data));
 
   // Write the dict to json;
   std::string output_json;
-  success = base::JSONWriter::Write(dict, &output_json);
+  bool success = base::JSONWriter::Write(dict, &output_json);
   DCHECK(success);
   return output_json;
 }
@@ -109,7 +106,7 @@ ConversionNetworkSenderImpl::ConversionNetworkSenderImpl(
 
 ConversionNetworkSenderImpl::~ConversionNetworkSenderImpl() = default;
 
-void ConversionNetworkSenderImpl::SendReport(ConversionReport* report,
+void ConversionNetworkSenderImpl::SendReport(const ConversionReport& report,
                                              ReportSentCallback sent_callback) {
   // The browser process URLLoaderFactory is not created by default, so don't
   // create it until it is directly needed.
@@ -118,12 +115,12 @@ void ConversionNetworkSenderImpl::SendReport(ConversionReport* report,
         storage_partition_->GetURLLoaderFactoryForBrowserProcess();
   }
 
-  GURL report_url = GetReportUrl(*report);
+  GURL report_url = GetReportUrl(report);
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = report_url;
   resource_request->referrer =
-      GURL(report->impression.ConversionDestination().Serialize());
+      GURL(report.impression.ConversionDestination().Serialize());
   resource_request->method = net::HttpRequestHeaders::kPostMethod;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->load_flags =
@@ -165,7 +162,7 @@ void ConversionNetworkSenderImpl::SendReport(ConversionReport* report,
                                         std::move(simple_url_loader));
   simple_url_loader_ptr->SetTimeoutDuration(base::TimeDelta::FromSeconds(30));
 
-  std::string report_body = GetReportPostBody(*report);
+  std::string report_body = GetReportPostBody(report);
   simple_url_loader_ptr->AttachStringForUpload(report_body, "application/json");
 
   // Retry once on network change. A network change during DNS resolution
@@ -175,7 +172,7 @@ void ConversionNetworkSenderImpl::SendReport(ConversionReport* report,
   // retry succeeds/fails.
   int retry_mode = network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE |
                    network::SimpleURLLoader::RETRY_ON_NAME_NOT_RESOLVED;
-  simple_url_loader_ptr->SetRetryOptions(1 /* max_retries */, retry_mode);
+  simple_url_loader_ptr->SetRetryOptions(/*max_retries=*/1, retry_mode);
 
   // Unretained is safe because the URLLoader is owned by |this| and will be
   // deleted before |this|.

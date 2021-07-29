@@ -32,7 +32,7 @@ PictureInPictureServiceImpl* PictureInPictureServiceImpl::CreateForTesting(
 void PictureInPictureServiceImpl::StartSession(
     uint32_t player_id,
     mojo::PendingAssociatedRemote<media::mojom::MediaPlayer> player_remote,
-    const absl::optional<viz::SurfaceId>& surface_id,
+    const viz::SurfaceId& surface_id,
     const gfx::Size& natural_size,
     bool show_play_pause_button,
     mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver> observer,
@@ -40,23 +40,19 @@ void PictureInPictureServiceImpl::StartSession(
   gfx::Size window_size;
   mojo::PendingRemote<blink::mojom::PictureInPictureSession> session_remote;
 
-  if (surface_id.has_value()) {
-    auto result = GetController().StartSession(
-        this,
-        MediaPlayerId(render_frame_host()->GetGlobalFrameRoutingId(),
-                      player_id),
-        std::move(player_remote), surface_id.value(), natural_size,
-        show_play_pause_button, std::move(observer), &session_remote,
-        &window_size);
+  auto result = GetController().StartSession(
+      this, MediaPlayerId(render_frame_host()->GetGlobalId(), player_id),
+      std::move(player_remote), surface_id, natural_size,
+      show_play_pause_button, std::move(observer), &session_remote,
+      &window_size);
 
-    if (result == PictureInPictureResult::kSuccess) {
-      // Frames are to be blocklisted from the back-forward cache because the
-      // picture-in-picture continues to be displayed while the page is in the
-      // cache instead of closing.
-      static_cast<RenderFrameHostImpl*>(render_frame_host())
-          ->OnSchedulerTrackedFeatureUsed(
-              blink::scheduler::WebSchedulerTrackedFeature::kPictureInPicture);
-    }
+  if (result == PictureInPictureResult::kSuccess) {
+    // Frames are to be blocklisted from the back-forward cache because the
+    // picture-in-picture continues to be displayed while the page is in the
+    // cache instead of closing.
+    static_cast<RenderFrameHostImpl*>(render_frame_host())
+        ->OnSchedulerTrackedFeatureUsed(
+            blink::scheduler::WebSchedulerTrackedFeature::kPictureInPicture);
   }
 
   std::move(callback).Run(std::move(session_remote), window_size);
@@ -65,7 +61,7 @@ void PictureInPictureServiceImpl::StartSession(
 PictureInPictureServiceImpl::PictureInPictureServiceImpl(
     RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::PictureInPictureService> receiver)
-    : FrameServiceBase(render_frame_host, std::move(receiver)) {}
+    : DocumentServiceBase(render_frame_host, std::move(receiver)) {}
 
 PictureInPictureServiceImpl::~PictureInPictureServiceImpl() {
   // If the service is destroyed because the frame was destroyed, the session

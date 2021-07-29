@@ -24,12 +24,14 @@
 #include "components/feed/core/v2/test/callback_receiver.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,7 +91,8 @@ class TestDelegate : public FeedNetworkImpl::Delegate {
 class FeedNetworkTest : public testing::Test {
  public:
   FeedNetworkTest() {
-    identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
+    identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com",
+                                                   signin::ConsentLevel::kSync);
     identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
   }
   FeedNetworkTest(FeedNetworkTest&) = delete;
@@ -211,6 +214,8 @@ class FeedNetworkTest : public testing::Test {
  private:
   signin::IdentityTestEnvironment identity_test_env_;
   TestDelegate delegate_{&identity_test_env_};
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
   std::unique_ptr<FeedNetwork> feed_network_;
   network::TestURLLoaderFactory test_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;

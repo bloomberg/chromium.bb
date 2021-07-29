@@ -295,8 +295,7 @@ void AccessibilityTreeFormatterBlink::RecursiveBuildTree(
     return;
 
   base::Value children(base::Value::Type::LIST);
-  for (size_t i = 0; i < ChildCount(node); ++i) {
-    BrowserAccessibility* child_node = GetChild(node, i);
+  for (const auto* child_node : node.AllChildren()) {
     base::Value child_dict(base::Value::Type::DICTIONARY);
     RecursiveBuildTree(*child_node, &child_dict);
     children.Append(std::move(child_dict));
@@ -316,29 +315,6 @@ void AccessibilityTreeFormatterBlink::RecursiveBuildTree(
     children.Append(std::move(child_dict));
   }
   dict->SetKey(kChildrenDictAttr, std::move(children));
-}
-
-uint32_t AccessibilityTreeFormatterBlink::ChildCount(
-    const BrowserAccessibility& node) const {
-  if (node.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
-    return node.PlatformChildCount();
-  // We don't want to use InternalGetChild as we want to include
-  // ignored nodes in the tree for tests.
-  return node.node()->children().size();
-}
-
-BrowserAccessibility* AccessibilityTreeFormatterBlink::GetChild(
-    const BrowserAccessibility& node,
-    uint32_t i) const {
-  if (node.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
-    return node.PlatformGetChild(i);
-  // We don't want to use InternalGetChild as we want to include
-  // ignored nodes in the tree for tests.
-  if (i < 0 && i >= node.node()->children().size())
-    return nullptr;
-  ui::AXNode* child_node = node.node()->children()[i];
-  DCHECK(child_node);
-  return node.manager()->GetFromAXNode(child_node);
 }
 
 void AccessibilityTreeFormatterBlink::AddProperties(
@@ -436,19 +412,19 @@ void AccessibilityTreeFormatterBlink::AddProperties(
     if (node.HasIntListAttribute(attr)) {
       std::vector<int32_t> values;
       node.GetIntListAttribute(attr, &values);
-      auto value_list = std::make_unique<base::ListValue>();
+      base::ListValue value_list;
       for (size_t i = 0; i < values.size(); ++i) {
         if (ui::IsNodeIdIntListAttribute(attr)) {
           BrowserAccessibility* target = node.manager()->GetFromID(values[i]);
           if (target)
-            value_list->AppendString(ui::ToString(target->GetData().role));
+            value_list.AppendString(ui::ToString(target->GetData().role));
           else
-            value_list->AppendString("null");
+            value_list.AppendString("null");
         } else {
-          value_list->AppendInteger(values[i]);
+          value_list.AppendInteger(values[i]);
         }
       }
-      dict->Set(ui::ToString(attr), std::move(value_list));
+      dict->SetKey(ui::ToString(attr), std::move(value_list));
     }
   }
 
@@ -582,7 +558,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
     if (node.HasIntListAttribute(attr)) {
       std::vector<int32_t> values;
       node.GetIntListAttribute(attr, &values);
-      auto value_list = std::make_unique<base::ListValue>();
+      base::ListValue value_list;
       for (auto value : values) {
         if (ui::IsNodeIdIntListAttribute(attr)) {
           ui::AXTreeID tree_id = node.tree()->GetAXTreeID();
@@ -591,14 +567,14 @@ void AccessibilityTreeFormatterBlink::AddProperties(
                                    ->GetNodeFromTree(tree_id, node.id());
 
           if (target)
-            value_list->AppendString(ui::ToString(target->data().role));
+            value_list.AppendString(ui::ToString(target->data().role));
           else
-            value_list->AppendString("null");
+            value_list.AppendString("null");
         } else {
-          value_list->AppendInteger(value);
+          value_list.AppendInteger(value);
         }
       }
-      dict->Set(ui::ToString(attr), std::move(value_list));
+      dict->SetKey(ui::ToString(attr), std::move(value_list));
     }
   }
 
@@ -773,22 +749,21 @@ std::string AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
        static_cast<int32_t>(ax::mojom::IntListAttribute::kMaxValue);
        ++attr_index) {
     auto attr = static_cast<ax::mojom::IntListAttribute>(attr_index);
-    const base::ListValue* value;
-    if (!dict.GetList(ui::ToString(attr), &value))
+    const base::Value* value = dict.FindListPath(ui::ToString(attr));
+    if (!value || !value->is_list())
       continue;
+    base::Value::ConstListView list = value->GetList();
     std::string attr_string(ui::ToString(attr));
     attr_string.push_back('=');
-    for (size_t i = 0; i < value->GetSize(); ++i) {
+    for (size_t i = 0; i < list.size(); ++i) {
       if (i > 0)
         attr_string += ",";
       if (ui::IsNodeIdIntListAttribute(attr)) {
-        std::string string_value;
-        value->GetString(i, &string_value);
-        attr_string += string_value;
+        if (list[i].is_string()) {
+          attr_string += list[i].GetString();
+        }
       } else {
-        int int_value;
-        value->GetInteger(i, &int_value);
-        attr_string += base::NumberToString(int_value);
+        attr_string += base::NumberToString(list[i].GetIfInt().value_or(0));
       }
     }
     WriteAttribute(false, attr_string, &line);
@@ -824,8 +799,8 @@ std::string AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
         break;
       }
       case base::Value::Type::DOUBLE: {
-        double double_value = 0.0;
-        value->GetAsDouble(&double_value);
+        double double_value;
+        double_value = value->GetIfDouble().value_or(0.0);
         WriteAttribute(
             false, base::StringPrintf("%s=%.2f", attribute_name, double_value),
             &line);

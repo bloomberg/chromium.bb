@@ -142,7 +142,6 @@ SkPaint PaintFlags::ToSkPaint() const {
   paint.setStrokeCap(static_cast<SkPaint::Cap>(getStrokeCap()));
   paint.setStrokeJoin(static_cast<SkPaint::Join>(getStrokeJoin()));
   paint.setStyle(static_cast<SkPaint::Style>(getStyle()));
-  paint.setFilterQuality(getFilterQuality());
   return paint;
 }
 
@@ -150,7 +149,7 @@ SkSamplingOptions PaintFlags::FilterQualityToSkSamplingOptions(
     SkFilterQuality filter_quality) {
   switch (filter_quality) {
     case SkFilterQuality::kHigh_SkFilterQuality:
-      return SkSamplingOptions(SkCubicResampler::Mitchell());
+      return SkSamplingOptions(SkCubicResampler::CatmullRom());
     case SkFilterQuality::kMedium_SkFilterQuality:
       return SkSamplingOptions(SkFilterMode::kLinear, SkMipmapMode::kLinear);
     case SkFilterQuality::kLow_SkFilterQuality:

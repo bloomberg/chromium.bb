@@ -53,7 +53,7 @@ fn test(vert_idx : u32) -> u32 {
 
 [[stage(vertex)]]
 fn entry([[builtin(vertex_index)]] vert_idx : u32) -> [[builtin(position)]] vec4<f32> {
-  test(vert_idx);
+  ignore(test(vert_idx));
   return vec4<f32>();
 }
 )";
@@ -72,7 +72,7 @@ fn test(vert_idx : u32) -> u32 {
 
 [[stage(vertex)]]
 fn entry([[builtin(vertex_index)]] vert_idx : u32) -> [[builtin(position)]] vec4<f32> {
-  test((vert_idx + tint_symbol_1.first_vertex_index));
+  ignore(test((vert_idx + tint_symbol_1.first_vertex_index)));
   return vec4<f32>();
 }
 )";
@@ -100,7 +100,7 @@ fn test(inst_idx : u32) -> u32 {
 
 [[stage(vertex)]]
 fn entry([[builtin(instance_index)]] inst_idx : u32) -> [[builtin(position)]] vec4<f32> {
-  test(inst_idx);
+  ignore(test(inst_idx));
   return vec4<f32>();
 }
 )";
@@ -119,7 +119,7 @@ fn test(inst_idx : u32) -> u32 {
 
 [[stage(vertex)]]
 fn entry([[builtin(instance_index)]] inst_idx : u32) -> [[builtin(position)]] vec4<f32> {
-  test((inst_idx + tint_symbol_1.first_instance_index));
+  ignore(test((inst_idx + tint_symbol_1.first_instance_index)));
   return vec4<f32>();
 }
 )";
@@ -152,7 +152,7 @@ struct Inputs {
 
 [[stage(vertex)]]
 fn entry(inputs : Inputs) -> [[builtin(position)]] vec4<f32> {
-  test(inputs.instance_idx, inputs.vert_idx);
+  ignore(test(inputs.instance_idx, inputs.vert_idx));
   return vec4<f32>();
 }
 )";
@@ -179,7 +179,7 @@ struct Inputs {
 
 [[stage(vertex)]]
 fn entry(inputs : Inputs) -> [[builtin(position)]] vec4<f32> {
-  test((inputs.instance_idx + tint_symbol_1.first_instance_index), (inputs.vert_idx + tint_symbol_1.first_vertex_index));
+  ignore(test((inputs.instance_idx + tint_symbol_1.first_instance_index), (inputs.vert_idx + tint_symbol_1.first_vertex_index)));
   return vec4<f32>();
 }
 )";
@@ -211,7 +211,7 @@ fn func2(vert_idx : u32) -> u32 {
 
 [[stage(vertex)]]
 fn entry([[builtin(vertex_index)]] vert_idx : u32) -> [[builtin(position)]] vec4<f32> {
-  func2(vert_idx);
+  ignore(func2(vert_idx));
   return vec4<f32>();
 }
 )";
@@ -234,7 +234,7 @@ fn func2(vert_idx : u32) -> u32 {
 
 [[stage(vertex)]]
 fn entry([[builtin(vertex_index)]] vert_idx : u32) -> [[builtin(position)]] vec4<f32> {
-  func2((vert_idx + tint_symbol_1.first_vertex_index));
+  ignore(func2((vert_idx + tint_symbol_1.first_vertex_index)));
   return vec4<f32>();
 }
 )";
@@ -262,19 +262,19 @@ fn func(i : u32) -> u32 {
 
 [[stage(vertex)]]
 fn entry_a([[builtin(vertex_index)]] vert_idx : u32) -> [[builtin(position)]] vec4<f32> {
-  func(vert_idx);
+  ignore(func(vert_idx));
   return vec4<f32>();
 }
 
 [[stage(vertex)]]
 fn entry_b([[builtin(vertex_index)]] vert_idx : u32, [[builtin(instance_index)]] inst_idx : u32) -> [[builtin(position)]] vec4<f32> {
-  func(vert_idx + inst_idx);
+  ignore(func(vert_idx + inst_idx));
   return vec4<f32>();
 }
 
 [[stage(vertex)]]
 fn entry_c([[builtin(instance_index)]] inst_idx : u32) -> [[builtin(position)]] vec4<f32> {
-  func(inst_idx);
+  ignore(func(inst_idx));
   return vec4<f32>();
 }
 )";
@@ -294,19 +294,19 @@ fn func(i : u32) -> u32 {
 
 [[stage(vertex)]]
 fn entry_a([[builtin(vertex_index)]] vert_idx : u32) -> [[builtin(position)]] vec4<f32> {
-  func((vert_idx + tint_symbol_1.first_vertex_index));
+  ignore(func((vert_idx + tint_symbol_1.first_vertex_index)));
   return vec4<f32>();
 }
 
 [[stage(vertex)]]
 fn entry_b([[builtin(vertex_index)]] vert_idx : u32, [[builtin(instance_index)]] inst_idx : u32) -> [[builtin(position)]] vec4<f32> {
-  func(((vert_idx + tint_symbol_1.first_vertex_index) + (inst_idx + tint_symbol_1.first_instance_index)));
+  ignore(func(((vert_idx + tint_symbol_1.first_vertex_index) + (inst_idx + tint_symbol_1.first_instance_index))));
   return vec4<f32>();
 }
 
 [[stage(vertex)]]
 fn entry_c([[builtin(instance_index)]] inst_idx : u32) -> [[builtin(position)]] vec4<f32> {
-  func((inst_idx + tint_symbol_1.first_instance_index));
+  ignore(func((inst_idx + tint_symbol_1.first_instance_index)));
   return vec4<f32>();
 }
 )";
@@ -324,236 +324,6 @@ fn entry_c([[builtin(instance_index)]] inst_idx : u32) -> [[builtin(position)]] 
   EXPECT_EQ(data->has_instance_index, true);
   EXPECT_EQ(data->first_vertex_offset, 0u);
   EXPECT_EQ(data->first_instance_offset, 4u);
-}
-
-TEST_F(FirstIndexOffsetTest, OLD_BasicModuleVertexIndex) {
-  auto* src = R"(
-[[builtin(vertex_index)]] var<in> vert_idx : u32;
-
-[[builtin(position)]] var<out> pos : vec4<f32>;
-
-fn test() -> u32 {
-  return vert_idx;
-}
-
-[[stage(vertex)]]
-fn entry() {
-  test();
-  pos = vec4<f32>();
-}
-)";
-
-  auto* expect = R"(
-[[block]]
-struct tint_symbol {
-  first_vertex_index : u32;
-};
-
-[[binding(1), group(2)]] var<uniform> tint_symbol_1 : tint_symbol;
-
-[[builtin(vertex_index)]] var<in> vert_idx : u32;
-
-[[builtin(position)]] var<out> pos : vec4<f32>;
-
-fn test() -> u32 {
-  return (vert_idx + tint_symbol_1.first_vertex_index);
-}
-
-[[stage(vertex)]]
-fn entry() {
-  test();
-  pos = vec4<f32>();
-}
-)";
-
-  DataMap config;
-  config.Add<FirstIndexOffset::BindingPoint>(1, 2);
-  auto got = Run<FirstIndexOffset>(src, std::move(config));
-
-  EXPECT_EQ(expect, str(got));
-
-  auto* data = got.data.Get<FirstIndexOffset::Data>();
-
-  ASSERT_NE(data, nullptr);
-  EXPECT_EQ(data->has_vertex_index, true);
-  EXPECT_EQ(data->has_instance_index, false);
-  EXPECT_EQ(data->first_vertex_offset, 0u);
-  EXPECT_EQ(data->first_instance_offset, 0u);
-}
-
-TEST_F(FirstIndexOffsetTest, OLD_BasicModuleInstanceIndex) {
-  auto* src = R"(
-[[builtin(instance_index)]] var<in> inst_idx : u32;
-
-[[builtin(position)]] var<out> pos : vec4<f32>;
-
-fn test() -> u32 {
-  return inst_idx;
-}
-
-[[stage(vertex)]]
-fn entry() {
-  test();
-  pos = vec4<f32>();
-}
-)";
-
-  auto* expect = R"(
-[[block]]
-struct tint_symbol {
-  first_instance_index : u32;
-};
-
-[[binding(1), group(7)]] var<uniform> tint_symbol_1 : tint_symbol;
-
-[[builtin(instance_index)]] var<in> inst_idx : u32;
-
-[[builtin(position)]] var<out> pos : vec4<f32>;
-
-fn test() -> u32 {
-  return (inst_idx + tint_symbol_1.first_instance_index);
-}
-
-[[stage(vertex)]]
-fn entry() {
-  test();
-  pos = vec4<f32>();
-}
-)";
-
-  DataMap config;
-  config.Add<FirstIndexOffset::BindingPoint>(1, 7);
-  auto got = Run<FirstIndexOffset>(src, std::move(config));
-
-  EXPECT_EQ(expect, str(got));
-
-  auto* data = got.data.Get<FirstIndexOffset::Data>();
-
-  ASSERT_NE(data, nullptr);
-  EXPECT_EQ(data->has_vertex_index, false);
-  EXPECT_EQ(data->has_instance_index, true);
-  EXPECT_EQ(data->first_vertex_offset, 0u);
-  EXPECT_EQ(data->first_instance_offset, 0u);
-}
-
-TEST_F(FirstIndexOffsetTest, OLD_BasicModuleBothIndex) {
-  auto* src = R"(
-[[builtin(instance_index)]] var<in> instance_idx : u32;
-[[builtin(vertex_index)]] var<in> vert_idx : u32;
-[[builtin(position)]] var<out> pos : vec4<f32>;
-
-fn test() -> u32 {
-  return instance_idx + vert_idx;
-}
-
-[[stage(vertex)]]
-fn entry() {
-  test();
-  pos = vec4<f32>();
-}
-)";
-
-  auto* expect = R"(
-[[block]]
-struct tint_symbol {
-  first_vertex_index : u32;
-  first_instance_index : u32;
-};
-
-[[binding(1), group(2)]] var<uniform> tint_symbol_1 : tint_symbol;
-
-[[builtin(instance_index)]] var<in> instance_idx : u32;
-
-[[builtin(vertex_index)]] var<in> vert_idx : u32;
-
-[[builtin(position)]] var<out> pos : vec4<f32>;
-
-fn test() -> u32 {
-  return ((instance_idx + tint_symbol_1.first_instance_index) + (vert_idx + tint_symbol_1.first_vertex_index));
-}
-
-[[stage(vertex)]]
-fn entry() {
-  test();
-  pos = vec4<f32>();
-}
-)";
-
-  DataMap config;
-  config.Add<FirstIndexOffset::BindingPoint>(1, 2);
-  auto got = Run<FirstIndexOffset>(src, std::move(config));
-
-  EXPECT_EQ(expect, str(got));
-
-  auto* data = got.data.Get<FirstIndexOffset::Data>();
-
-  ASSERT_NE(data, nullptr);
-  EXPECT_EQ(data->has_vertex_index, true);
-  EXPECT_EQ(data->has_instance_index, true);
-  EXPECT_EQ(data->first_vertex_offset, 0u);
-  EXPECT_EQ(data->first_instance_offset, 4u);
-}
-
-TEST_F(FirstIndexOffsetTest, OLD_NestedCalls) {
-  auto* src = R"(
-[[builtin(vertex_index)]] var<in> vert_idx : u32;
-[[builtin(position)]] var<out> pos : vec4<f32>;
-
-fn func1() -> u32 {
-  return vert_idx;
-}
-
-fn func2() -> u32 {
-  return func1();
-}
-
-[[stage(vertex)]]
-fn entry() {
-  func2();
-  pos = vec4<f32>();
-}
-)";
-
-  auto* expect = R"(
-[[block]]
-struct tint_symbol {
-  first_vertex_index : u32;
-};
-
-[[binding(1), group(2)]] var<uniform> tint_symbol_1 : tint_symbol;
-
-[[builtin(vertex_index)]] var<in> vert_idx : u32;
-
-[[builtin(position)]] var<out> pos : vec4<f32>;
-
-fn func1() -> u32 {
-  return (vert_idx + tint_symbol_1.first_vertex_index);
-}
-
-fn func2() -> u32 {
-  return func1();
-}
-
-[[stage(vertex)]]
-fn entry() {
-  func2();
-  pos = vec4<f32>();
-}
-)";
-
-  DataMap config;
-  config.Add<FirstIndexOffset::BindingPoint>(1, 2);
-  auto got = Run<FirstIndexOffset>(src, std::move(config));
-
-  EXPECT_EQ(expect, str(got));
-
-  auto* data = got.data.Get<FirstIndexOffset::Data>();
-
-  ASSERT_NE(data, nullptr);
-  EXPECT_EQ(data->has_vertex_index, true);
-  EXPECT_EQ(data->has_instance_index, false);
-  EXPECT_EQ(data->first_vertex_offset, 0u);
-  EXPECT_EQ(data->first_instance_offset, 0u);
 }
 
 }  // namespace

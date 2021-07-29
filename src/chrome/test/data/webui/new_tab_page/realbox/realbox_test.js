@@ -164,14 +164,36 @@ function createSearchMatch(modifiers = {}) {
 }
 
 /**
+ * @param {!Object=} modifiers Things to override about the returned result.
+ * @return {!search.mojom.AutocompleteMatch}
+ */
+function createCalculatorMatch(modifiers = {}) {
+  return Object.assign(
+      createAutocompleteMatch(), {
+        isSearchType: true,
+        contents: mojoString16('2 + 3'),
+        contentsClass: [{offset: 0, style: 0}],
+        description: mojoString16('5'),
+        descriptionClass: [{offset: 0, style: 0}],
+        destinationUrl: {url: 'https://www.google.com/search?q=2+%2B+3'},
+        fillIntoEdit: mojoString16('5'),
+        type: 'search-calculator-answer',
+        iconUrl: 'calculator.svg',
+      },
+      modifiers);
+}
+
+/**
  * Verifies the autocomplete match is showing.
  * @param {!search.mojom.AutocompleteMatch} match
  * @param {!Element} matchEl
  */
 function verifyMatch(match, matchEl) {
   assertEquals('option', matchEl.getAttribute('role'));
-  const matchContents = decodeString16(match.contents);
-  const matchDescription = decodeString16(match.description);
+  const matchContents =
+      decodeString16(match.answer ? match.answer.firstLine : match.contents);
+  const matchDescription = decodeString16(
+      match.answer ? match.answer.secondLine : match.description);
   const separatorText =
       matchDescription ? loadTimeData.getString('realboxSeparator') : '';
   assertEquals(
@@ -1946,6 +1968,33 @@ suite('NewTabPageRealboxTest', () => {
       });
 
   test(
+      'realbox icons is updated when url match is cut from realbox',
+      async () => {
+        realbox.$.input.value = 'www.test.com';
+        realbox.$.input.dispatchEvent(new InputEvent('input'));
+
+        const matches = [createUrlMatch(
+            {allowedToBeDefaultMatch: true, iconUrl: 'page.svg'})];
+
+        testProxy.callbackRouterRemote.autocompleteResultChanged({
+          input: mojoString16(realbox.$.input.value.trimLeft()),
+          matches,
+          suggestionGroupsMap: {},
+        });
+        await testProxy.callbackRouterRemote.$.flushForTesting();
+
+        assertIconMaskImageUrl(realbox.$.icon, 'page.svg');
+        // Select the entire input.
+        realbox.$.input.setSelectionRange(0, realbox.$.input.value.length);
+
+        let cutEvent = createClipboardEvent('cut');
+        realbox.$.input.dispatchEvent(cutEvent);
+        assertTrue(cutEvent.defaultPrevented);
+
+        assertIconMaskImageUrl(realbox.$.icon, 'search.svg');
+      });
+
+  test(
       'match icons are updated when entity images become available',
       async () => {
         const imageData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC=';
@@ -2200,4 +2249,73 @@ suite('NewTabPageRealboxTest', () => {
         // Input is cleared.
         assertEquals('', realbox.$.input.value);
       });
+
+  //============================================================================
+  // Test calculator answer type
+  //============================================================================
+
+  test('match calculator answer type', async () => {
+    const matches = [createCalculatorMatch()];
+
+    realbox.$.input.value = '2 + 3';
+    realbox.$.input.dispatchEvent(new InputEvent('input'));
+
+    testProxy.callbackRouterRemote.autocompleteResultChanged({
+      input: mojoString16(realbox.$.input.value.trimLeft()),
+      matches,
+      suggestionGroupsMap: {},
+    });
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+
+    assertTrue(areMatchesShowing());
+    let matchEls =
+        realbox.$.matches.shadowRoot.querySelectorAll('ntp-realbox-match');
+    assertEquals(1, matchEls.length);
+
+    verifyMatch(matches[0], matchEls[0]);
+    assertIconMaskImageUrl(matchEls[0].$.icon, 'calculator.svg');
+    assertIconMaskImageUrl(realbox.$.icon, 'search.svg');
+
+    // Separator is not displayed
+    assertEquals(
+        window.getComputedStyle(matchEls[0].$.separator).display, 'none');
+
+    let arrowDownEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,  // So it propagates across shadow DOM boundary.
+      key: 'ArrowDown',
+    });
+    realbox.$.input.dispatchEvent(arrowDownEvent);
+    assertTrue(arrowDownEvent.defaultPrevented);
+
+    assertTrue(matchEls[0].classList.contains(CLASSES.SELECTED));
+    assertEquals('5', realbox.$.input.value);
+    assertIconMaskImageUrl(realbox.$.icon, 'calculator.svg');
+  });
+
+  //============================================================================
+  // Test suggestion answer
+  //============================================================================
+
+  test('Test Rich Suggestion Answer for Verbatim Question', async () => {
+    realbox.$.input.value = 'When is Christmas Day';
+    realbox.$.input.dispatchEvent(new InputEvent('input'));
+    const matches = [createSearchMatch({
+      answer: {
+        firstLine: mojoString16('When is Christmas Day'),
+        secondLine: mojoString16('Saturday, December 25, 2021')
+      }
+    })];
+    testProxy.callbackRouterRemote.autocompleteResultChanged({
+      input: mojoString16(realbox.$.input.value.trimLeft()),
+      matches,
+      suggestionGroupsMap: {},
+    });
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+    assertTrue(areMatchesShowing());
+    let matchEls =
+        realbox.$.matches.shadowRoot.querySelectorAll('ntp-realbox-match');
+    verifyMatch(matches[0], matchEls[0]);
+  });
 });

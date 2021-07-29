@@ -208,7 +208,7 @@ class ThreadPool(object):
       stdout, _ = sigint_handler.wait(p, stdin)
       if timer.completed:
         stdout = 'Process timed out after %ss\n%s' % (self.timeout, stdout)
-      return p.returncode, stdout
+      return p.returncode, stdout.decode('utf-8', 'ignore');
 
   def CallCommand(self, test):
     """Runs an external program.
@@ -296,6 +296,7 @@ def _RightHandSideLinesImpl(affected_files):
 
 def prompt_should_continue(prompt_string):
   sys.stdout.write(prompt_string)
+  sys.stdout.flush()
   response = sys.stdin.readline().strip().lower()
   return response in ('y', 'yes')
 
@@ -1006,9 +1007,15 @@ class AffectedFile(object):
             self.AbsoluteLocalPath(), 'rU').splitlines()
       except IOError:
         pass  # File not found?  That's fine; maybe it was deleted.
+      except UnicodeDecodeError as e:
+        # log the filename since we're probably trying to read a binary
+        # file, and shouldn't be.
+        print('Error reading %s: %s' % (self.AbsoluteLocalPath(), e))
+        raise
+
     return self._cached_new_contents[:]
 
-  def ChangedContents(self):
+  def ChangedContents(self, keeplinebreaks=False):
     """Returns a list of tuples (line number, line text) of all new lines.
 
      This relies on the scm diff output describing each changed code section
@@ -1016,20 +1023,27 @@ class AffectedFile(object):
 
      ^@@ <old line num>,<old size> <new line num>,<new size> @@$
     """
-    if self._cached_changed_contents is not None:
+    # Don't return cached results when line breaks are requested.
+    if not keeplinebreaks and self._cached_changed_contents is not None:
       return self._cached_changed_contents[:]
-    self._cached_changed_contents = []
+    result = []
     line_num = 0
 
-    for line in self.GenerateScmDiff().splitlines():
+    # The keeplinebreaks parameter to splitlines must be True or else the
+    # CheckForWindowsLineEndings presubmit will be a NOP.
+    for line in self.GenerateScmDiff().splitlines(keeplinebreaks):
       m = re.match(r'^@@ [0-9\,\+\-]+ \+([0-9]+)\,[0-9]+ @@', line)
       if m:
         line_num = int(m.groups(1)[0])
         continue
       if line.startswith('+') and not line.startswith('++'):
-        self._cached_changed_contents.append((line_num, line[1:]))
+        result.append((line_num, line[1:]))
       if not line.startswith('-'):
         line_num += 1
+    # Don't cache results with line breaks.
+    if keeplinebreaks:
+      return result;
+    self._cached_changed_contents = result
     return self._cached_changed_contents[:]
 
   def __str__(self):
@@ -1295,7 +1309,7 @@ class GitChange(Change):
     root = root or self.RepositoryRoot()
     return subprocess.check_output(
         ['git', '-c', 'core.quotePath=false', 'ls-files', '--', '.'],
-        cwd=root).splitlines()
+        cwd=root).decode('utf-8', 'ignore').splitlines()
 
 
 def ListRelevantPresubmitFiles(files, root):
@@ -1523,7 +1537,7 @@ def DoPostUploadExecuter(change,
 
 class PresubmitExecuter(object):
   def __init__(self, change, committing, verbose, gerrit_obj, dry_run=None,
-               thread_pool=None, parallel=False):
+               thread_pool=None, parallel=False, use_python3=False):
     """
     Args:
       change: The Change object.
@@ -1532,6 +1546,8 @@ class PresubmitExecuter(object):
       dry_run: if true, some Checks will be skipped.
       parallel: if true, all tests reported via input_api.RunTests for all
                 PRESUBMIT files will be run in parallel.
+      use_python3: if true, will use python3 instead of python2 by default
+                if USE_PYTHON3 is not specified.
     """
     self.change = change
     self.committing = committing
@@ -1541,6 +1557,7 @@ class PresubmitExecuter(object):
     self.more_cc = []
     self.thread_pool = thread_pool
     self.parallel = parallel
+    self.use_python3 = use_python3
 
   def ExecPresubmitScript(self, script_text, presubmit_path):
     """Executes a single presubmit script.
@@ -1571,8 +1588,12 @@ class PresubmitExecuter(object):
     # python2 or python3. We need to do this without actually trying to
     # compile the text, since the text might compile in one but not the
     # other.
-    m = re.search('^USE_PYTHON3 = True$', script_text, flags=re.MULTILINE)
-    use_python3 = m is not None
+    m = re.search('^USE_PYTHON3 = (True|False)$', script_text,
+                  flags=re.MULTILINE)
+    if m:
+        use_python3 = m.group(1) == 'True'
+    else:
+        use_python3 = self.use_python3
     if (((sys.version_info.major == 2) and use_python3) or
         ((sys.version_info.major == 3) and not use_python3)):
       return []
@@ -1667,12 +1688,14 @@ class PresubmitExecuter(object):
       # TODO(crbug.com/953884): replace reraise with native py3:
       #   raise .. from e
       e_type, e_value, e_tb = sys.exc_info()
-      six.reraise(e_type, 'Evaluation of %s failed: %s' % (function_name,
-                                                           e_value),
-                  e_tb)
+      print('Evaluation of %s failed: %s' % (function_name, e_value))
+      six.reraise(e_type, e_value, e_tb)
 
+    elapsed_time = time_time() - start_time
+    if elapsed_time > 10.0:
+      sys.stdout.write(
+          '%s took %.1fs to run.\n' % (function_name, elapsed_time))
     if sink:
-      elapsed_time = time_time() - start_time
       status = rdb_wrapper.STATUS_PASS
       if any(r.fatal for r in result):
         status = rdb_wrapper.STATUS_FAIL
@@ -1699,7 +1722,8 @@ def DoPresubmitChecks(change,
                       gerrit_obj,
                       dry_run=None,
                       parallel=False,
-                      json_output=None):
+                      json_output=None,
+                      use_python3=False):
   """Runs all presubmit checks that apply to the files in the change.
 
   This finds all PRESUBMIT.py files in directories enclosing the files in the
@@ -1720,7 +1744,8 @@ def DoPresubmitChecks(change,
     dry_run: if true, some Checks will be skipped.
     parallel: if true, all tests specified by input_api.RunTests in all
               PRESUBMIT files will be run in parallel.
-
+    use_python3: if true, default to using Python3 for presubmit checks
+                 rather than Python2.
   Return:
     1 if presubmit checks failed or 0 otherwise.
   """
@@ -1732,7 +1757,7 @@ def DoPresubmitChecks(change,
 
     python_version = 'Python %s' % sys.version_info.major
     if committing:
-      sys.stdout.write('Running %s presubmit commit checks ...\n' % 
+      sys.stdout.write('Running %s presubmit commit checks ...\n' %
                        python_version)
     else:
       sys.stdout.write('Running %s presubmit upload checks ...\n' %
@@ -1745,7 +1770,7 @@ def DoPresubmitChecks(change,
     results = []
     thread_pool = ThreadPool()
     executer = PresubmitExecuter(change, committing, verbose, gerrit_obj,
-                                 dry_run, thread_pool, parallel)
+                                 dry_run, thread_pool, parallel, use_python3)
     if default_presubmit:
       if verbose:
         sys.stdout.write('Running default presubmit script.\n')
@@ -1996,6 +2021,8 @@ def main(argv=None):
                       help='List of files to be marked as modified when '
                       'executing presubmit or post-upload hooks. fnmatch '
                       'wildcards can also be used.')
+  parser.add_argument('--use-python3', action='store_true',
+                      help='Use python3 for presubmit checks by default')
   options = parser.parse_args(argv)
 
   log_level = logging.ERROR
@@ -2028,7 +2055,8 @@ def main(argv=None):
           gerrit_obj,
           options.dry_run,
           options.parallel,
-          options.json_output)
+          options.json_output,
+          options.use_python3)
   except PresubmitFailure as e:
     print(e, file=sys.stderr)
     print('Maybe your depot_tools is out of date?', file=sys.stderr)

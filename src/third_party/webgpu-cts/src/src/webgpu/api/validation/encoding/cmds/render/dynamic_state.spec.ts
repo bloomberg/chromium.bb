@@ -22,7 +22,6 @@ TODO: ensure existing tests cover these notes. Note many of these may be operati
 >     - used with a simple pipeline that {does, doesn't} use it
 `;
 
-import { params } from '../../../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
 import { ValidationTest } from '../../../validation_test.js';
 
@@ -133,7 +132,7 @@ export const g = makeTestGroup(F);
 
 g.test('setViewport,x_y_width_height_nonnegative')
   .desc('Test that the parameters of setViewport to define the box must be non-negative.')
-  .params([
+  .paramsSubcasesOnly([
     // Control case: everything to 0 is ok, covers the empty viewport case.
     { x: 0, y: 0, w: 0, h: 0 },
 
@@ -156,15 +155,15 @@ g.test('setViewport,xy_rect_contained_in_attachment')
   .desc(
     'Test that the rectangle defined by x, y, width, height must be contained in the attachments'
   )
-  .params(
-    params()
-      .combine([
+  .paramsSubcasesOnly(u =>
+    u
+      .combineWithParams([
         { attachmentWidth: 3, attachmentHeight: 5 },
         { attachmentWidth: 5, attachmentHeight: 3 },
         { attachmentWidth: 1024, attachmentHeight: 1 },
         { attachmentWidth: 1, attachmentHeight: 1024 },
       ])
-      .combine([
+      .combineWithParams([
         // Control case: a full viewport is valid.
         { dx: 0, dy: 0, dw: 0, dh: 0 },
 
@@ -198,7 +197,7 @@ g.test('setViewport,xy_rect_contained_in_attachment')
 
 g.test('setViewport,depth_rangeAndOrder')
   .desc('Test that 0 <= minDepth <= maxDepth <= 1')
-  .params([
+  .paramsSubcasesOnly([
     // Success cases
     { minDepth: 0, maxDepth: 1 },
     { minDepth: -0, maxDepth: -0 },
@@ -223,7 +222,7 @@ g.test('setScissorRect,x_y_width_height_nonnegative')
   .desc(
     'Test that the parameters of setScissorRect to define the box must be non-negative or a TypeError is thrown.'
   )
-  .params([
+  .paramsSubcasesOnly([
     // Control case: everything to 0 is ok, covers the empty scissor case.
     { x: 0, y: 0, w: 0, h: 0 },
 
@@ -246,15 +245,15 @@ g.test('setScissorRect,xy_rect_contained_in_attachment')
   .desc(
     'Test that the rectangle defined by x, y, width, height must be contained in the attachments'
   )
-  .params(
-    params()
-      .combine([
+  .paramsSubcasesOnly(u =>
+    u
+      .combineWithParams([
         { attachmentWidth: 3, attachmentHeight: 5 },
         { attachmentWidth: 5, attachmentHeight: 3 },
         { attachmentWidth: 1024, attachmentHeight: 1 },
         { attachmentWidth: 1, attachmentHeight: 1024 },
       ])
-      .combine([
+      .combineWithParams([
         // Control case: a full scissor is valid.
         { dx: 0, dy: 0, dw: 0, dh: 0 },
 
@@ -288,7 +287,7 @@ g.test('setScissorRect,xy_rect_contained_in_attachment')
 
 g.test('setBlendConstant')
   .desc('Test that almost any color value is valid for setBlendConstant')
-  .params([
+  .paramsSubcasesOnly([
     { r: 1.0, g: 1.0, b: 1.0, a: 1.0 },
     { r: -1.0, g: -1.0, b: -1.0, a: -1.0 },
     { r: Number.MAX_SAFE_INTEGER, g: Number.MIN_SAFE_INTEGER, b: -0, a: 100000 },
@@ -303,7 +302,7 @@ g.test('setBlendConstant')
 
 g.test('setStencilReference')
   .desc('Test that almost any stencil reference value is valid for setStencilReference')
-  .params([
+  .paramsSubcasesOnly([
     { value: 1 }, //
     { value: 0 },
     { value: 1000 },

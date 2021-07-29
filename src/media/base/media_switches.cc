@@ -186,8 +186,8 @@ const char kOverrideEnabledCdmInterfaceVersion[] =
 
 // Overrides hardware secure codecs support for testing. If specified, real
 // platform hardware secure codecs check will be skipped. Codecs are separated
-// by comma. Valid video codecs are "vp8", "vp9" and "avc1", and the only valid
-// audio codec is "vorbis". For example:
+// by comma. Valid video codecs are "vp8", "vp9", "avc1" and "hevc", and valid
+// audio codecs are "mp4a" and "vorbis". For example:
 //  --override-hardware-secure-codecs-for-testing=vp8,vp9
 //  --override-hardware-secure-codecs-for-testing=avc1
 // CENC encryption scheme is assumed to be supported for the specified codecs.
@@ -275,10 +275,10 @@ const base::Feature kMediaCapabilitiesWithParameters{
 const base::Feature kMediaCastOverlayButton{"MediaCastOverlayButton",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Use AndroidOverlay for more cases than just player-element fullscreen?  This
-// requires that |kOverlayFullscreenVideo| is true, else it is ignored.
-const base::Feature kUseAndroidOverlayAggressively{
-    "UseAndroidOverlayAggressively", base::FEATURE_ENABLED_BY_DEFAULT};
+// Use AndroidOverlay only if required for secure video playback. This requires
+// that |kOverlayFullscreenVideo| is true, else it is ignored.
+const base::Feature kUseAndroidOverlayForSecureOnly{
+    "UseAndroidOverlayForSecureOnly", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, RTCVideoDecoderAdapter will wrap a DecoderStream as a video
 // decoder, rather than using MojoVideoDecoder.  This causes the RTC external
@@ -315,6 +315,10 @@ const base::Feature kCdmProcessSiteIsolation{"CdmProcessSiteIsolation",
 const base::Feature kMemoryPressureBasedSourceBufferGC{
     "MemoryPressureBasedSourceBufferGC", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable binding multiple shared images to a single GpuMemoryBuffer.
+const base::Feature kMultiPlaneVideoSharedImages {
+  "MultiPlaneVideoSharedImages", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Approach original pre-REC MSE object URL autorevoking behavior, though await
 // actual attempt to use the object URL for attachment to perform revocation.
 // This will hopefully reduce runtime memory bloat for pages that do not
@@ -349,11 +353,11 @@ const base::Feature kD3D11VideoDecoderIgnoreWorkarounds{
 
 // Enable D3D11VideoDecoder to decode VP9 profile 2 (10 bit) video.
 const base::Feature kD3D11VideoDecoderVP9Profile2{
-    "D3D11VideoDecoderEnableVP9Profile2", base::FEATURE_DISABLED_BY_DEFAULT};
+    "D3D11VideoDecoderEnableVP9Profile2", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable D3D11VideoDecoder to decode AV1 video.
 const base::Feature kD3D11VideoDecoderAV1{"D3D11VideoDecoderEnableAV1",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Tell D3D11VideoDecoder not to switch the D3D11 device to multi-threaded mode.
 // This is to help us track down IGD crashes.
@@ -512,8 +516,12 @@ const base::Feature kVaapiVP9Encoder{"VaapiVP9Encoder",
 
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable VP9 k-SVC decoding with HW decoder for webrtc use case on ChromeOS.
-const base::Feature kVp9kSVCHWDecoding{"Vp9kSVCHWDecoding",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kVaapiVp9kSVCHWDecoding{"VaapiVp9kSVCHWDecoding",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+// Enable VP9 k-SVC encoding with HW encoder for webrtc use case on ChromeOS.
+const base::Feature kVaapiVp9kSVCHWEncoding{"VaapiVp9kSVCHWEncoding",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Inform video blitter of video color space.
@@ -699,7 +707,7 @@ const base::Feature kIncludeIRCamerasInDeviceEnumeration{
 // Enables asynchronous H264 HW encode acceleration using Media Foundation for
 // Windows.
 const base::Feature kMediaFoundationAsyncH264Encoding{
-    "MediaFoundationAsyncH264Encoding", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MediaFoundationAsyncH264Encoding", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables AV1 decode acceleration for Windows.
 const base::Feature MEDIA_EXPORT kMediaFoundationAV1Decoding{
@@ -724,7 +732,7 @@ const base::Feature MEDIA_EXPORT kMediaFoundationVP8Decoding{
 // (APO), driver, and hardware.
 // https://docs.microsoft.com/en-us/windows/win32/api/audioclient/ne-audioclient-audclnt_streamoptions
 const base::Feature MEDIA_EXPORT kWasapiRawAudioCapture{
-    "WASAPIRawAudioCapture", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WASAPIRawAudioCapture", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #endif  // defined(OS_WIN)
 
@@ -806,7 +814,7 @@ const base::Feature kMediaPowerExperiment{"MediaPowerExperiment",
 
 // Enable WebRTC actions for the Media Session API.
 const base::Feature kMediaSessionWebRTC{"MediaSessionWebRTC",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables flash to be ducked by audio focus. This is enabled on Chrome OS which
 // has audio focus enabled.
@@ -847,6 +855,12 @@ const base::Feature kKaleidoscopeForceShowFirstRunExperience{
     "KaleidoscopeForceShowFirstRunExperience",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Keypress detection which serves as input to noise suppression methods
+// in WebRTC clients. This functionality is enabled by default but it can be
+// disabled experemantally by using --disable-features=KeyPressMonitoring.
+const base::Feature kKeyPressMonitoring{"KeyPressMonitoring",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kUseFakeDeviceForMediaStream{
     "use-fake-device-for-media-stream", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -857,7 +871,7 @@ const base::Feature kBresenhamCadence{"BresenhamCadence",
 
 // Display the playback speed button on the media controls.
 const base::Feature kPlaybackSpeedButton{"PlaybackSpeedButton",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

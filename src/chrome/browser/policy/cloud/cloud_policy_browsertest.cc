@@ -25,6 +25,7 @@
 #include "chrome/browser/policy/cloud/cloud_policy_test_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -61,9 +62,9 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_chromeos.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/constants/dbus_paths.h"
+#include "chromeos/dbus/constants/dbus_paths.h"  // nogncheck
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
@@ -221,16 +222,26 @@ class CloudPolicyTest : public InProcessBrowserTest,
         browser()->profile()->GetUserCloudPolicyManagerChromeOS();
     ASSERT_TRUE(policy_manager);
 #else
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    base::FilePath dest_path =
+        g_browser_process->profile_manager()->user_data_dir();
+    profile_ = Profile::CreateProfile(
+        dest_path.Append(FILE_PATH_LITERAL("New Profile 1")), nullptr,
+        Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);
+    Profile* profile = profile_.get();
+#else
+    Profile* profile = browser()->profile();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
     // Mock a signed-in user. This is used by the UserCloudPolicyStore to pass
     // the username to the UserCloudPolicyValidator.
-    auto* identity_manager =
-        IdentityManagerFactory::GetForProfile(browser()->profile());
+    auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
     ASSERT_TRUE(identity_manager);
     signin::SetPrimaryAccount(identity_manager, GetTestUser(),
                               signin::ConsentLevel::kSync);
 
     UserCloudPolicyManager* policy_manager =
-        browser()->profile()->GetUserCloudPolicyManager();
+        profile->GetUserCloudPolicyManager();
     ASSERT_TRUE(policy_manager);
     policy_manager->Connect(
         g_browser_process->local_state(),
@@ -296,9 +307,23 @@ class CloudPolicyTest : public InProcessBrowserTest,
 #endif
   }
 
+  void TearDownOnMainThread() override {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    profile_.reset();
+#endif
+  }
+
+  Profile* profile() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    return profile_.get();
+#else
+    return browser()->profile();
+#endif
+  }
+
   PolicyService* GetPolicyService() {
     ProfilePolicyConnector* profile_connector =
-        browser()->profile()->GetProfilePolicyConnector();
+        profile()->GetProfilePolicyConnector();
     return profile_connector->policy_service();
   }
 
@@ -307,7 +332,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
     return static_cast<invalidation::FakeInvalidationService*>(
         static_cast<invalidation::ProfileInvalidationProvider*>(
             invalidation::ProfileInvalidationProviderFactory::GetInstance()
-                ->GetForProfile(browser()->profile()))
+                ->GetForProfile(profile()))
             ->GetInvalidationServiceForCustomSender(sender_id));
   }
 
@@ -334,9 +359,19 @@ class CloudPolicyTest : public InProcessBrowserTest,
   std::unique_ptr<LocalPolicyTestServer> test_server_;
   base::FilePath user_policy_key_file_;
   base::OnceClosure on_policy_updated_;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // For Lacros use non-main profile in these tests.
+  std::unique_ptr<Profile> profile_;
+#endif
 };
 
-IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
+// crbug.com/1224925 flaky on Win.
+#if defined(OS_WIN)
+#define MAYBE_FetchPolicy DISABLED_FetchPolicy
+#else
+#define MAYBE_FetchPolicy FetchPolicy
+#endif
+IN_PROC_BROWSER_TEST_F(CloudPolicyTest, MAYBE_FetchPolicy) {
   PolicyService* policy_service = GetPolicyService();
   {
     base::RunLoop run_loop;
@@ -386,7 +421,14 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, EnsureDefaultPoliciesSet) {
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(CloudPolicyTest, InvalidatePolicy) {
+// crbug.com/1224925 flaky on Win.
+// crbug.com/1230268 not working on Lacros.
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_InvalidatePolicy DISABLED_InvalidatePolicy
+#else
+#define MAYBE_InvalidatePolicy InvalidatePolicy
+#endif
+IN_PROC_BROWSER_TEST_F(CloudPolicyTest, MAYBE_InvalidatePolicy) {
   PolicyService* policy_service = GetPolicyService();
   policy_service->AddObserver(POLICY_DOMAIN_CHROME, this);
 

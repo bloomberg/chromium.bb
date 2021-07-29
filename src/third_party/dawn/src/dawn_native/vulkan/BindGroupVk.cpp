@@ -16,6 +16,7 @@
 
 #include "common/BitSetIterator.h"
 #include "common/ityp_stack_vec.h"
+#include "dawn_native/ExternalTexture.h"
 #include "dawn_native/vulkan/BindGroupLayoutVk.h"
 #include "dawn_native/vulkan/BufferVk.h"
 #include "dawn_native/vulkan/DeviceVk.h"
@@ -113,12 +114,31 @@ namespace dawn_native { namespace vulkan {
                     write.pImageInfo = &writeImageInfo[numWrites];
                     break;
                 }
+
+                case BindingInfoType::ExternalTexture: {
+                    const std::array<Ref<dawn_native::TextureViewBase>, kMaxPlanesPerFormat>&
+                        textureViews = GetBindingAsExternalTexture(bindingIndex)->GetTextureViews();
+
+                    // Only single-plane formats are supported right now, so ensure only one view
+                    // exists.
+                    ASSERT(textureViews[1].Get() == nullptr);
+                    ASSERT(textureViews[2].Get() == nullptr);
+
+                    TextureView* view = ToBackend(textureViews[0].Get());
+
+                    writeImageInfo[numWrites].imageView = view->GetHandle();
+                    writeImageInfo[numWrites].imageLayout = VulkanImageLayout(
+                        ToBackend(view->GetTexture()), wgpu::TextureUsage::Sampled);
+
+                    write.pImageInfo = &writeImageInfo[numWrites];
+                    break;
+                }
             }
 
             numWrites++;
         }
 
-        // TODO(cwallez@chromium.org): Batch these updates
+        // TODO(crbug.com/dawn/855): Batch these updates
         device->fn.UpdateDescriptorSets(device->GetVkDevice(), numWrites, writes.data(), 0,
                                         nullptr);
     }

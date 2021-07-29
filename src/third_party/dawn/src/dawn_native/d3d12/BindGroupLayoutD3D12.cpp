@@ -30,6 +30,7 @@ namespace dawn_native { namespace d3d12 {
                         case wgpu::BufferBindingType::Uniform:
                             return BindGroupLayout::DescriptorType::CBV;
                         case wgpu::BufferBindingType::Storage:
+                        case kInternalStorageBufferBinding:
                             return BindGroupLayout::DescriptorType::UAV;
                         case wgpu::BufferBindingType::ReadOnlyStorage:
                             return BindGroupLayout::DescriptorType::SRV;
@@ -41,6 +42,7 @@ namespace dawn_native { namespace d3d12 {
                     return BindGroupLayout::DescriptorType::Sampler;
 
                 case BindingInfoType::Texture:
+                case BindingInfoType::ExternalTexture:
                     return BindGroupLayout::DescriptorType::SRV;
 
                 case BindingInfoType::StorageTexture:
@@ -77,6 +79,8 @@ namespace dawn_native { namespace d3d12 {
             // dynamic resources in calculating the size of the descriptor heap.
             ASSERT(!bindingInfo.buffer.hasDynamicOffset);
 
+            // TODO(dawn:728) In the future, special handling will be needed for external textures
+            // here because they encompass multiple views.
             DescriptorType descriptorType = WGPUBindingInfoToDescriptorType(bindingInfo);
             mBindingOffsets[bindingIndex] = mDescriptorCounts[descriptorType]++;
         }
@@ -134,7 +138,8 @@ namespace dawn_native { namespace d3d12 {
                 continue;
             }
 
-            // TODO(shaobo.yan@intel.com): Implement dynamic buffer offset.
+            // TODO(dawn:728) In the future, special handling will be needed here for external
+            // textures because they encompass multiple views.
             DescriptorType descriptorType = WGPUBindingInfoToDescriptorType(bindingInfo);
             mBindingOffsets[bindingIndex] += descriptorOffsets[descriptorType];
         }

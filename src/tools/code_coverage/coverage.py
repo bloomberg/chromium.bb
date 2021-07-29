@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -17,7 +17,7 @@
       --args="use_clang_coverage=true is_component_build=false\\
               is_debug=false dcheck_always_on=true"
   gclient runhooks
-  python tools/code_coverage/coverage.py crypto_unittests url_unittests \\
+  vpython tools/code_coverage/coverage.py crypto_unittests url_unittests \\
       -b out/coverage -o out/report -c 'out/coverage/crypto_unittests' \\
       -c 'out/coverage/url_unittests --gtest_filter=URLParser.PathURL' \\
       -f url/ -f crypto/
@@ -32,7 +32,7 @@
 
   * Sample flow for running a test target with xvfb (e.g. unit_tests):
 
-  python tools/code_coverage/coverage.py unit_tests -b out/coverage \\
+  vpython tools/code_coverage/coverage.py unit_tests -b out/coverage \\
       -o out/report -c 'python testing/xvfb.py out/coverage/unit_tests'
 
   If you are building a fuzz target, you need to add "use_libfuzzer=true" GN
@@ -40,7 +40,7 @@
 
   * Sample workflow for a fuzz target (e.g. pdfium_fuzzer):
 
-  python tools/code_coverage/coverage.py pdfium_fuzzer \\
+  vpython tools/code_coverage/coverage.py pdfium_fuzzer \\
       -b out/coverage -o out/report \\
       -c 'out/coverage/pdfium_fuzzer -runs=0 <corpus_dir>' \\
       -f third_party/pdfium
@@ -49,11 +49,11 @@
     <corpus_dir> - directory containing samples files for this format.
 
   To learn more about generating code coverage reports for fuzz targets, see
-  https://chromium.googlesource.com/chromium/src/+/master/testing/libfuzzer/efficient_fuzzer.md#Code-Coverage
+  https://chromium.googlesource.com/chromium/src/+/main/testing/libfuzzer/efficient_fuzzer.md#Code-Coverage
 
   * Sample workflow for running Blink web tests:
 
-  python tools/code_coverage/coverage.py blink_tests \\
+  vpython tools/code_coverage/coverage.py blink_tests \\
       -wt -b out/coverage -o out/report -f third_party/blink
 
   If you need to pass arguments to run_web_tests.py, use
@@ -62,7 +62,7 @@
   For more options, please refer to tools/code_coverage/coverage.py -h.
 
   For an overview of how code coverage works in Chromium, please refer to
-  https://chromium.googlesource.com/chromium/src/+/master/docs/testing/code_coverage.md
+  https://chromium.googlesource.com/chromium/src/+/main/docs/testing/code_coverage.md
 """
 
 from __future__ import print_function
@@ -79,7 +79,12 @@ import re
 import shlex
 import shutil
 import subprocess
-import urllib2
+import six
+
+if six.PY2:
+  from urllib2 import urlopen
+else:
+  from urllib.request import urlopen
 
 sys.path.append(
     os.path.join(
@@ -154,8 +159,9 @@ def _ConfigureLLVMCoverageTools(args):
     LLVM_COV_PATH = os.path.join(llvm_bin_dir, 'llvm-cov')
     LLVM_PROFDATA_PATH = os.path.join(llvm_bin_dir, 'llvm-profdata')
   else:
-    subprocess.check_call(
-        ['tools/clang/scripts/update.py', '--package', 'coverage_tools'])
+    subprocess.check_call([
+        'python', 'tools/clang/scripts/update.py', '--package', 'coverage_tools'
+    ])
 
   if coverage_utils.GetHostPlatform() == 'win':
     LLVM_COV_PATH += '.exe'
@@ -224,6 +230,7 @@ def _GeneratePerFileLineByLineCoverageInFormat(binary_paths, profdata_file_path,
 
   subprocess_cmd = [
       LLVM_COV_PATH, 'show', '-format={}'.format(output_format),
+      '-compilation-dir={}'.format(BUILD_DIR),
       '-output-dir={}'.format(OUTPUT_DIR),
       '-instr-profile={}'.format(profdata_file_path), binary_paths[0]
   ]
@@ -340,7 +347,7 @@ def _GetTargetProfDataPathsByExecutingCommands(targets, commands):
     output_file_path = os.path.join(_GetLogsDirectoryPath(), output_file_name)
 
     profdata_file_path = None
-    for _ in xrange(MERGE_RETRIES):
+    for _ in range(MERGE_RETRIES):
       logging.info('Running command: "%s", the output is redirected to "%s".',
                    command, output_file_path)
 
@@ -609,6 +616,7 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters,
       logging.error("Binary %s does not exist", path)
   subprocess_cmd = [
       LLVM_COV_PATH, 'export', '-summary-only',
+      '-compilation-dir={}'.format(BUILD_DIR),
       '-instr-profile=' + profdata_file_path, binary_paths[0]
   ]
   subprocess_cmd.extend(
@@ -621,7 +629,7 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters,
   export_output = subprocess.check_output(subprocess_cmd)
 
   # Write output on the disk to be used by code coverage bot.
-  with open(_GetSummaryFilePath(), 'w') as f:
+  with open(_GetSummaryFilePath(), 'wb') as f:
     f.write(export_output)
 
   return export_output
@@ -997,8 +1005,9 @@ def Main():
   # Setup coverage binaries even when script is called with empty params. This
   # is used by coverage bot for initial setup.
   if len(sys.argv) == 1:
-    subprocess.check_call(
-        ['tools/clang/scripts/update.py', '--package', 'coverage_tools'])
+    subprocess.check_call([
+        'python', 'tools/clang/scripts/update.py', '--package', 'coverage_tools'
+    ])
     print(__doc__)
     return
 
@@ -1087,7 +1096,7 @@ def Main():
       args.ignore_filename_regex, args.format)
   component_mappings = None
   if not args.no_component_view:
-    component_mappings = json.load(urllib2.urlopen(COMPONENT_MAPPING_URL))
+    component_mappings = json.load(urlopen(COMPONENT_MAPPING_URL))
 
   # Call prepare here.
   processor = coverage_utils.CoverageReportPostProcessor(

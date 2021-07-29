@@ -18,7 +18,7 @@ Are you a Google employee? See
 *   You must have Git and Python v3 installed already (and `python3` must point
     to a Python v3 binary).
 
-Most development is done on Ubuntu (currently 16.04, Xenial Xerus). There are
+Most development is done on Ubuntu (currently 18.04, Bionic Beaver). There are
 some instructions for other distros below, but they are mostly unsupported.
 
 ## Install `depot_tools`
@@ -214,7 +214,8 @@ tracking trunk and is up to date with trunk and was gclient sync'ed at about the
 same time should build chrome in about 1/3 the time, and the cache misses as
 reported by `ccache -s` should barely increase.
 
-This is especially useful if you use `git-new-workdir` and keep multiple local
+This is especially useful if you use
+[git-worktree](http://git-scm.com/docs/git-worktree) and keep multiple local
 working directories going at once.
 
 #### Using tmpfs

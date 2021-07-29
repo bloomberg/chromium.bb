@@ -102,7 +102,10 @@ class SkiaOutputDevice {
   // cannot be initialized, but devices that don't draw to a SkSurface (i.e
   // |SkiaOutputDeviceVulkanSecondaryCB|) can override this to bypass the
   // check.
-  virtual std::unique_ptr<SkiaOutputDevice::ScopedPaint> BeginScopedPaint();
+  // `allocate_frame_buffer` indicates a new frame buffer should be allocated
+  // for this paint. Is set only when `UseDynamicFrameBufferAllocation` is set.
+  virtual std::unique_ptr<SkiaOutputDevice::ScopedPaint> BeginScopedPaint(
+      bool allocate_frame_buffer);
 
   // Changes the size of draw surface and invalidates it's contents.
   virtual bool Reshape(const gfx::Size& size,
@@ -125,6 +128,10 @@ class SkiaOutputDevice {
                              OutputSurfaceFrame frame);
   virtual void CommitOverlayPlanes(BufferPresentedCallback feedback,
                                    OutputSurfaceFrame frame);
+
+  // Release one frame buffer. Only called if `UseDynamicFrameBufferAllocation`
+  // is true.
+  virtual void ReleaseOneFrameBuffer();
 
   // Set the rectangle that will be drawn into on the surface.
   virtual bool SetDrawRectangle(const gfx::Rect& draw_rectangle);
@@ -159,6 +166,13 @@ class SkiaOutputDevice {
   virtual void EnsureBackbuffer();
   virtual void DiscardBackbuffer();
 
+  // Acknowledges a SwapBuffers request without actually attempting to swap.
+  // This should be called when the GPU thread decides to skip a swap that was
+  // invoked by the viz thread to ensure that we still run the relevant metrics
+  // bookkeeping.
+  virtual void SwapBuffersSkipped(BufferPresentedCallback feedback,
+                                  OutputSurfaceFrame frame);
+
   bool is_emulated_rgbx() const { return is_emulated_rgbx_; }
 
   void SetDrawTimings(base::TimeTicks submitted, base::TimeTicks started);
@@ -176,6 +190,7 @@ class SkiaOutputDevice {
              base::TimeTicks task_ready);
     SwapInfo(SwapInfo&& other);
     ~SwapInfo();
+    uint64_t SwapId();
     const gpu::SwapBuffersCompleteParams& Complete(
         gfx::SwapCompletionResult result,
         const absl::optional<gfx::Rect>& damage_area,
@@ -190,6 +205,7 @@ class SkiaOutputDevice {
 
   // Begin paint the back buffer.
   virtual SkSurface* BeginPaint(
+      bool allocate_frame_buffer,
       std::vector<GrBackendSemaphore>* end_semaphores) = 0;
 
   // End paint the back buffer.
@@ -244,6 +260,8 @@ class SkiaOutputDevice {
   std::unique_ptr<ui::LatencyTracker> latency_tracker_;
   // task runner for latency tracker.
   scoped_refptr<base::SequencedTaskRunner> latency_tracker_runner_;
+  // A mapping from skipped swap ID to its corresponding OutputSurfaceFrame.
+  base::flat_map<uint64_t, OutputSurfaceFrame> skipped_swap_info_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDevice);
 };

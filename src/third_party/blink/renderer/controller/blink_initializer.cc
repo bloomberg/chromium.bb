@@ -41,6 +41,7 @@
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_context_snapshot.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
 #include "third_party/blink/renderer/controller/blink_leak_detector.h"
 #include "third_party/blink/renderer/controller/dev_tools_frontend_impl.h"
@@ -75,10 +76,9 @@
 #include "third_party/blink/renderer/controller/user_level_memory_pressure_signal_generator.h"
 #endif
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
-#include "third_party/blink/renderer/bindings/core/v8/v8_context_snapshot.h"
-#else
-#include "third_party/blink/renderer/bindings/modules/v8/v8_context_snapshot_external_references.h"
+// #if expression should match the one in InitializeCommon
+#if !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_ARM64) && defined(OS_WIN)
+#include <windows.h>
 #endif
 
 namespace blink {
@@ -106,6 +106,7 @@ BlinkInitializer& GetBlinkInitializer() {
 }
 
 void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
+// #if expression should match the one around #include <windows.h>
 #if !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_ARM64) && defined(OS_WIN)
   // Reserve address space on 32 bit Windows, to make it likelier that large
   // array buffer allocations succeed.
@@ -127,12 +128,7 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
   // BlinkInitializer::Initialize() must be called before InitializeMainThread
   GetBlinkInitializer().Initialize();
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
   V8Initializer::InitializeMainThread(V8ContextSnapshot::GetReferenceTable());
-#else
-  V8Initializer::InitializeMainThread(
-      V8ContextSnapshotExternalReferences::GetTable());
-#endif
 
   GetBlinkInitializer().RegisterInterfaces(*binders);
 

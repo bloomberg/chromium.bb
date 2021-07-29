@@ -23,10 +23,10 @@ import {genConfigProto, RecordController, toPbtxt} from './record_controller';
 
 test('encodeConfig', () => {
   const config = createEmptyRecordConfig();
-  config.durationSeconds = 10;
+  config.durationMs = 20000;
   const result =
       TraceConfig.decode(genConfigProto(config, {os: 'Q', name: 'Android Q'}));
-  expect(result.durationMs).toBe(10000);
+  expect(result.durationMs).toBe(20000);
 });
 
 test('SysConfig', () => {
@@ -149,12 +149,25 @@ test('ChromeMemoryConfig', () => {
   const chromeConfigM = assertExists(metadataConfigSource.chromeConfig);
   const traceConfigM = assertExists(chromeConfigM.traceConfig);
 
-  const expectedTraceConfig = '{"record_mode":"record-until-full",' +
-      '"included_categories":["disabled-by-default-memory-infra"],' +
-      '"memory_dump_config":{"triggers":' +
-      '[{"mode":"detailed","periodic_interval_ms":10000}]}}';
+  const miConfigSource = assertExists(sources[2].config);
+  expect(miConfigSource.name).toBe('org.chromium.memory_instrumentation');
+  const chromeConfigI = assertExists(miConfigSource.chromeConfig);
+  const traceConfigI = assertExists(chromeConfigI.traceConfig);
+
+  const hpConfigSource = assertExists(sources[3].config);
+  expect(hpConfigSource.name).toBe('org.chromium.native_heap_profiler');
+  const chromeConfigH = assertExists(hpConfigSource.chromeConfig);
+  const traceConfigH = assertExists(chromeConfigH.traceConfig);
+
+  const expectedTraceConfig = '{\"record_mode\":\"record-until-full\",' +
+      '\"included_categories\":[\"disabled-by-default-memory-infra\"],' +
+      '\"memory_dump_config\":{\"allowed_dump_modes\":[\"background\",' +
+      '\"light\",\"detailed\"],\"triggers\":[{\"min_time_between_dumps_ms\":' +
+      '10000,\"mode\":\"detailed\",\"type\":\"periodic_interval\"}]}}';
   expect(traceConfigM).toEqual(expectedTraceConfig);
   expect(traceConfig).toEqual(expectedTraceConfig);
+  expect(traceConfigI).toEqual(expectedTraceConfig);
+  expect(traceConfigH).toEqual(expectedTraceConfig);
 });
 
 test('ChromeConfigRingBuffer', () => {

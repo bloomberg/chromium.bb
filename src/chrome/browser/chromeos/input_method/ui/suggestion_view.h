@@ -34,10 +34,13 @@ constexpr int kIndexFontSize = 10;
 constexpr int kAnnotationBorderThickness = 1;
 constexpr int kAnnotationCornerRadius = 2;
 constexpr int kPadding = 8;
-constexpr int kAnnotationPaddingHeight = 6;
+constexpr int kAnnotationPaddingLeft = 12;
+constexpr int kAnnotationPaddingBottom = 16;
+constexpr int kAnnotationPaddingTop = 6;
 constexpr char kTabKey[] = "tab";
 constexpr SkColor kConfirmedTextColor = gfx::kGoogleGrey900;
-constexpr SkColor kSuggestionColor = gfx::kGoogleGrey700;
+constexpr SkColor kSuggestionColor =
+    SkColorSetA(gfx::kGoogleGrey700, 0xB3);  // 70% opacity
 constexpr SkColor kButtonHighlightColor =
     SkColorSetA(SK_ColorBLACK, 0x0F);  // 6% Black.
 
@@ -58,6 +61,8 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::Button {
   void SetHighlighted(bool highlighted);
   void SetMinWidth(int width);
 
+  std::u16string GetSuggestionForTesting();
+
  private:
   friend class SuggestionWindowViewTest;
   FRIEND_TEST_ALL_PREFIXES(SuggestionWindowViewTest, ShortcutSettingTest);
@@ -66,19 +71,24 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::Button {
   gfx::Size CalculatePreferredSize() const override;
   void OnThemeChanged() override;
 
-  std::unique_ptr<views::View> CreateAnnotationLabel();
+  std::unique_ptr<views::View> CreateAnnotationContainer();
+  std::unique_ptr<views::View> CreateDownAndEnterAnnotationLabel();
+  std::unique_ptr<views::View> CreateTabAnnotationLabel();
 
   // Views created in the class will be part of tree of |this|, so these
   // child views will be deleted when |this| is deleted.
 
   void SetSuggestionText(const std::u16string& text,
-                         const size_t confirmed_length);
+                         const size_t confirmed_length,
+                         SkColor text_color);
 
   views::Label* index_label_ = nullptr;
   // The suggestion label renders suggestions.
   views::StyledLabel* suggestion_label_ = nullptr;
   // The annotation view renders annotations.
-  views::View* annotation_label_ = nullptr;
+  views::View* annotation_container_ = nullptr;
+  views::View* down_and_enter_annotation_label_ = nullptr;
+  views::View* tab_annotation_label_ = nullptr;
   views::ImageView* down_icon_ = nullptr;
   views::ImageView* arrow_icon_ = nullptr;
 

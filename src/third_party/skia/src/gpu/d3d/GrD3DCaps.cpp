@@ -44,6 +44,7 @@ GrD3DCaps::GrD3DCaps(const GrContextOptions& contextOptions, IDXGIAdapter1* adap
     // We always copy in/out of a transfer buffer so it's trivial to support row bytes.
     fReadPixelsRowBytesSupport = true;
     fWritePixelsRowBytesSupport = true;
+    fTransferPixelsToRowBytesSupport = true;
 
     fTransferFromBufferToTextureSupport = true;
     fTransferFromSurfaceToBufferSupport = true;
@@ -242,6 +243,7 @@ void GrD3DCaps::initShaderCaps(int vendorID, const D3D12_FEATURE_DATA_D3D12_OPTI
 
     shaderCaps->fIntegerSupport = true;
     shaderCaps->fVertexIDSupport = true;
+    shaderCaps->fInfinitySupport = true;
     shaderCaps->fBitManipulationSupport = true;
 
     shaderCaps->fFloatIs32Bits = true;
@@ -980,7 +982,8 @@ GrSwizzle GrD3DCaps::onGetReadSwizzle(const GrBackendFormat& format, GrColorType
             return ctInfo.fReadSwizzle;
         }
     }
-    SkDEBUGFAILF("Illegal color type (%d) and format (%d) combination.", colorType, dxgiFormat);
+    SkDEBUGFAILF("Illegal color type (%d) and format (%d) combination.",
+                 (int)colorType, (int)dxgiFormat);
     return {};
 }
 
@@ -994,7 +997,8 @@ GrSwizzle GrD3DCaps::getWriteSwizzle(const GrBackendFormat& format, GrColorType 
             return ctInfo.fWriteSwizzle;
         }
     }
-    SkDEBUGFAILF("Illegal color type (%d) and format (%d) combination.", colorType, dxgiFormat);
+    SkDEBUGFAILF("Illegal color type (%d) and format (%d) combination.",
+                 (int)colorType, (int)dxgiFormat);
     return {};
 }
 

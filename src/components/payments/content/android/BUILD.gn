@@ -20,6 +20,10 @@ static_library("android") {
     "journey_logger_android.cc",
     "journey_logger_android.h",
     "origin_security_checker_android.cc",
+    "payment_app_service_bridge.cc",
+    "payment_app_service_bridge.h",
+    "payment_credential_enrollment_bridge_android.cc",
+    "payment_credential_enrollment_bridge_android.h",
     "payment_feature_list.cc",
     "payment_feature_list.h",
     "payment_handler_host.cc",
@@ -49,6 +53,8 @@ static_library("android") {
     "//components/payments/content/utility",
     "//components/payments/core",
     "//components/ukm/content:content",
+    "//components/url_formatter",
+    "//components/webauthn/android",
     "//components/webdata/common",
     "//components/webdata_services",
     "//content/public/browser",
@@ -66,6 +72,8 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/components/payments/JniPaymentApp.java",
     "java/src/org/chromium/components/payments/JourneyLogger.java",
     "java/src/org/chromium/components/payments/OriginSecurityChecker.java",
+    "java/src/org/chromium/components/payments/PaymentAppServiceBridge.java",
+    "java/src/org/chromium/components/payments/PaymentCredentialEnrollmentBridgeAndroid.java",
     "java/src/org/chromium/components/payments/PaymentFeatureList.java",
     "java/src/org/chromium/components/payments/PaymentHandlerHost.java",
     "java/src/org/chromium/components/payments/PaymentHandlerNavigationThrottle.java",
@@ -82,9 +90,11 @@ generate_jni("jni_headers") {
 
 android_resources("minimal_java_resources") {
   sources = [
-    "//components/payments/content/android/google_pay_res/drawable/google_pay.xml",
-    "//components/payments/content/android/google_pay_res/values-night/colors.xml",
-    "//components/payments/content/android/google_pay_res/values/colors.xml",
+    "//components/payments/content/android/minimal_java_res/drawable-night/save_card.xml",
+    "//components/payments/content/android/minimal_java_res/drawable/google_pay.xml",
+    "//components/payments/content/android/minimal_java_res/drawable/save_card.xml",
+    "//components/payments/content/android/minimal_java_res/values-night/colors.xml",
+    "//components/payments/content/android/minimal_java_res/values/colors.xml",
   ]
 }
 
@@ -130,7 +140,10 @@ android_library("feature_list_java") {
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   sources =
       [ "java/src/org/chromium/components/payments/PaymentFeatureList.java" ]
-  deps = [ "//base:base_java" ]
+  deps = [
+    "//base:base_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+  ]
 }
 
 android_library("full_java") {
@@ -149,6 +162,8 @@ android_library("full_java") {
     "java/src/org/chromium/components/payments/JourneyLogger.java",
     "java/src/org/chromium/components/payments/MojoPaymentRequestGateKeeper.java",
     "java/src/org/chromium/components/payments/OriginSecurityChecker.java",
+    "java/src/org/chromium/components/payments/PaymentAppServiceBridge.java",
+    "java/src/org/chromium/components/payments/PaymentCredentialEnrollmentBridgeAndroid.java",
     "java/src/org/chromium/components/payments/PaymentDetailsConverter.java",
     "java/src/org/chromium/components/payments/PaymentHandlerNavigationThrottle.java",
     "java/src/org/chromium/components/payments/PaymentManifestDownloader.java",
@@ -170,6 +185,14 @@ android_library("full_java") {
     "java/src/org/chromium/components/payments/WebAppManifestSection.java",
     "java/src/org/chromium/components/payments/intent/IsReadyToPayServiceHelper.java",
     "java/src/org/chromium/components/payments/intent/WebPaymentIntentHelperTypeConverter.java",
+    "java/src/org/chromium/components/payments/secure_payment_confirmation/PaymentCredentialEnrollmentController.java",
+    "java/src/org/chromium/components/payments/secure_payment_confirmation/PaymentCredentialEnrollmentProperties.java",
+    "java/src/org/chromium/components/payments/secure_payment_confirmation/PaymentCredentialEnrollmentView.java",
+    "java/src/org/chromium/components/payments/secure_payment_confirmation/PaymentCredentialEnrollmentViewBinder.java",
+    "java/src/org/chromium/components/payments/secure_payment_confirmation/SecurePaymentConfirmationAuthnController.java",
+    "java/src/org/chromium/components/payments/secure_payment_confirmation/SecurePaymentConfirmationAuthnProperties.java",
+    "java/src/org/chromium/components/payments/secure_payment_confirmation/SecurePaymentConfirmationAuthnView.java",
+    "java/src/org/chromium/components/payments/secure_payment_confirmation/SecurePaymentConfirmationAuthnViewBinder.java",
   ]
   resources_package = "org.chromium.components.payments"
   deps = [
@@ -179,6 +202,7 @@ android_library("full_java") {
     ":service_java",
     "//base:base_java",
     "//components/autofill/android:autofill_java",
+    "//components/browser_ui/bottomsheet/android:java",
     "//components/embedder_support/android:util_java",
     "//components/page_info/android:java",
     "//components/payments/mojom:mojom_java",
@@ -310,6 +334,7 @@ java_library("junit") {
   testonly = true
   sources = [
     "junit/src/org/chromium/components/payments/PaymentRequestServiceTest.java",
+    "junit/src/org/chromium/components/payments/secure_payment_confirmation/SecurePaymentConfirmationAuthnTest.java",
   ]
   deps = [
     ":java",
@@ -317,8 +342,10 @@ java_library("junit") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//components/browser_ui/bottomsheet/android:java",
     "//components/payments/content/android:service_java",
     "//components/payments/mojom:mojom_java",
+    "//components/url_formatter/android:url_formatter_java",
     "//content/public/android:content_java",
     "//mojo/public/java:system_java",
     "//third_party/android_deps:material_design_java",
@@ -328,6 +355,7 @@ java_library("junit") {
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
+    "//ui/android:ui_no_recycler_view_java",
     "//url:gurl_java",
     "//url:gurl_junit_test_support",
     "//url:origin_java",

@@ -28,9 +28,6 @@ namespace extension_misc {
 // The extension id of the Calendar application.
 extern const char kCalendarAppId[];
 
-// The extension id of the Chrome Remote Desktop application.
-extern const char kChromeRemoteDesktopAppId[];
-
 // The extension id of the Cloud Print component application.
 extern const char kCloudPrintAppId[];
 
@@ -193,6 +190,15 @@ extern const char kChromeVoxExtensionPath[];
 extern const char kChromeVoxManifestFilename[];
 // The guest manifest filename of the ChromeVox extension.
 extern const char kChromeVoxGuestManifestFilename[];
+// The extension id of the Enhanced network TTS engine extension.
+extern const char kEnhancedNetworkTtsExtensionId[];
+// Path to preinstalled Enhanced network TTS engine extension (relative to
+// |chrome::DIR_RESOURCES|).
+extern const char kEnhancedNetworkTtsExtensionPath[];
+// The manifest filename of the Enhanced network TTS engine extension.
+extern const char kEnhancedNetworkTtsManifestFilename[];
+// The guest manifest filename of the Enhanced network TTS engine extension.
+extern const char kEnhancedNetworkTtsGuestManifestFilename[];
 // The extension id of the Select-to-speak extension.
 extern const char kSelectToSpeakExtensionId[];
 // Path to preinstalled Select-to-speak extension (relative to
@@ -214,9 +220,6 @@ extern const char kSwitchAccessGuestManifestFilename[];
 // Name of the manifest file in an extension when a special manifest is used
 // for guest mode.
 extern const char kGuestManifestFilename[];
-// Path to preinstalled Connectivity Diagnostics extension.
-extern const char kConnectivityDiagnosticsPath[];
-extern const char kConnectivityDiagnosticsLauncherPath[];
 // The extension id of the first run dialog application.
 extern const char kFirstRunDialogId[];
 // Path to preinstalled Google speech synthesis extension.
@@ -263,6 +266,10 @@ extern const char kMediaFileSystemPathPart[];
 // The key name of extension request timestamp used by the
 // prefs::kCloudExtensionRequestIds preference.
 extern const char kExtensionRequestTimestamp[];
+
+// The key name of the extension workflow request justification used by the
+// prefs::kCloudExtensionRequestIds preference.
+extern const char kExtensionWorkflowJustification[];
 }  // namespace extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

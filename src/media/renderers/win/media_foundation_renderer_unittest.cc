@@ -48,6 +48,7 @@ class MockMediaFoundationCdmProxy : public MediaFoundationCdmProxy {
   MOCK_METHOD0(RefreshTrustedInput, HRESULT());
   MOCK_METHOD2(ProcessContentEnabler,
                HRESULT(IUnknown* request, IMFAsyncResult* result));
+  MOCK_METHOD0(OnHardwareContextReset, void());
 
  protected:
   ~MockMediaFoundationCdmProxy() override;
@@ -102,7 +103,7 @@ class MediaFoundationRendererTest : public testing::Test {
         &pmp_server_);
 
     mf_renderer_ = std::make_unique<MediaFoundationRenderer>(
-        /*muted=*/false, task_environment_.GetMainThreadTaskRunner());
+        task_environment_.GetMainThreadTaskRunner());
 
     // Some default actions.
     ON_CALL(cdm_context_, GetMediaFoundationCdmProxy(_))

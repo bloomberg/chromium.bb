@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/network_logs_message_handler.h"
 #include "chrome/browser/ui/webui/chromeos/onc_import_message_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -32,6 +31,7 @@
 #include "chrome/grit/network_ui_resources_map.h"
 #include "chromeos/components/network_ui/network_diagnostics_resource_provider.h"
 #include "chromeos/components/network_ui/network_health_resource_provider.h"
+#include "chromeos/components/network_ui/traffic_counters_resource_provider.h"
 #include "chromeos/network/cellular_esim_profile_handler_impl.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -53,6 +53,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/strings/network_element_localized_strings_provider.h"
 
 namespace chromeos {
 
@@ -568,8 +569,9 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   network_diagnostics::AddResources(html);
   cellular_setup::AddLocalizedStrings(html);
   cellular_setup::AddNonStringLoadTimeData(html);
-  network_element::AddLocalizedStrings(html);
-  network_element::AddOncLocalizedStrings(html);
+  ui::network_element::AddLocalizedStrings(html);
+  ui::network_element::AddOncLocalizedStrings(html);
+  traffic_counters::AddResources(html);
   html->UseStringsJs();
 
   webui::SetupWebUIDataSource(

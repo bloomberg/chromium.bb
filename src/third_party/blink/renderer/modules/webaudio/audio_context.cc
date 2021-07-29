@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_context_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_timestamp.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_audiocontextlatencycategory_double.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -103,18 +104,23 @@ AudioContext* AudioContext::Create(Document& document,
       WebFeature::kAudioContextCrossOriginIframe);
 
   WebAudioLatencyHint latency_hint(WebAudioLatencyHint::kCategoryInteractive);
-  if (context_options->latencyHint().IsAudioContextLatencyCategory()) {
-    latency_hint = WebAudioLatencyHint(
-        context_options->latencyHint().GetAsAudioContextLatencyCategory());
-  } else if (context_options->latencyHint().IsDouble()) {
-    // This should be the requested output latency in seconds, without taking
-    // into account double buffering (same as baseLatency).
-    latency_hint =
-        WebAudioLatencyHint(context_options->latencyHint().GetAsDouble());
+  switch (context_options->latencyHint()->GetContentType()) {
+    case V8UnionAudioContextLatencyCategoryOrDouble::ContentType::
+        kAudioContextLatencyCategory:
+      latency_hint =
+          WebAudioLatencyHint(context_options->latencyHint()
+                                  ->GetAsAudioContextLatencyCategory()
+                                  .AsString());
+      break;
+    case V8UnionAudioContextLatencyCategoryOrDouble::ContentType::kDouble:
+      // This should be the requested output latency in seconds, without taking
+      // into account double buffering (same as baseLatency).
+      latency_hint =
+          WebAudioLatencyHint(context_options->latencyHint()->GetAsDouble());
 
-    base::UmaHistogramTimes(
-        "WebAudio.AudioContext.latencyHintMilliSeconds",
-        base::TimeDelta::FromSecondsD(latency_hint.Seconds()));
+      base::UmaHistogramTimes(
+          "WebAudio.AudioContext.latencyHintMilliSeconds",
+          base::TimeDelta::FromSecondsD(latency_hint.Seconds()));
   }
 
   base::UmaHistogramEnumeration(

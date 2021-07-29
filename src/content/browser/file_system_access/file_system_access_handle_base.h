@@ -5,20 +5,18 @@
 #ifndef CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_HANDLE_BASE_H_
 #define CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_HANDLE_BASE_H_
 
-#include <vector>
-
 #include "base/bind_post_task.h"
 #include "base/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/threading/sequence_bound.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/file_system/isolated_context.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_error.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
 namespace storage {
@@ -27,6 +25,8 @@ class FileSystemOperationRunner;
 }  // namespace storage
 
 namespace content {
+
+class WebContentsImpl;
 
 // Base class for File and Directory handle implementations. Holds data that is
 // common to both and (will) deal with functionality that is common as well,
@@ -47,6 +47,9 @@ class CONTENT_EXPORT FileSystemAccessHandleBase : public WebContentsObserver {
                              const BindingContext& context,
                              const storage::FileSystemURL& url,
                              const SharedHandleState& handle_state);
+  FileSystemAccessHandleBase(const FileSystemAccessHandleBase&) = delete;
+  FileSystemAccessHandleBase& operator=(const FileSystemAccessHandleBase&) =
+      delete;
   ~FileSystemAccessHandleBase() override;
 
   const storage::FileSystemURL& url() const { return url_; }
@@ -71,6 +74,13 @@ class CONTENT_EXPORT FileSystemAccessHandleBase : public WebContentsObserver {
       base::OnceCallback<void(blink::mojom::FileSystemAccessErrorPtr,
                               PermissionStatus)> callback);
 
+  // Implementation for the Remove and RemoveEntry methods in the
+  // blink::mojom::FileSystemAccessFileHandle and DirectoryHandle interfaces.
+  void DoRemove(const storage::FileSystemURL& url,
+                bool recurse,
+                base::OnceCallback<void(blink::mojom::FileSystemAccessErrorPtr)>
+                    callback);
+
   // Invokes |callback|, possibly after first requesting write permission. If
   // permission isn't granted, |permission_denied| is invoked instead. The
   // callbacks can be invoked synchronously.
@@ -87,9 +97,7 @@ class CONTENT_EXPORT FileSystemAccessHandleBase : public WebContentsObserver {
     return manager()->context();
   }
 
-  WebContentsImpl* web_contents() const {
-    return static_cast<WebContentsImpl*>(WebContentsObserver::web_contents());
-  }
+  WebContentsImpl* web_contents() const;
 
   virtual base::WeakPtr<FileSystemAccessHandleBase> AsWeakPtr() = 0;
 
@@ -192,8 +200,6 @@ class CONTENT_EXPORT FileSystemAccessHandleBase : public WebContentsObserver {
   const BindingContext context_;
   const storage::FileSystemURL url_;
   const SharedHandleState handle_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileSystemAccessHandleBase);
 };
 
 template <typename CallbackArgType>

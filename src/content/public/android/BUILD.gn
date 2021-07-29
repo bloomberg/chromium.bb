@@ -184,6 +184,7 @@ android_library("content_full_java") {
   ]
   srcjar_deps = [
     ":is_ready_to_pay_service_aidl",
+    "//content/browser:client_data_json_generated_enum",
     "//content/browser/accessibility:content_browser_accessibility_java_enums_srcjar",
     "//content/browser/sms:sms_provider_gms_backend_enum",
     "//content/public/browser:bluetooth_chooser_event_javagen",
@@ -199,6 +200,7 @@ android_library("content_full_java") {
     "java/src/org/chromium/content/browser/BindingManager.java",
     "java/src/org/chromium/content/browser/ChildProcessLauncherHelperImpl.java",
     "java/src/org/chromium/content/browser/ChildProcessRanking.java",
+    "java/src/org/chromium/content/browser/ClientDataJsonImpl.java",
     "java/src/org/chromium/content/browser/ContactsDialogHost.java",
     "java/src/org/chromium/content/browser/ContentApiHelperForM.java",
     "java/src/org/chromium/content/browser/ContentClassFactory.java",
@@ -232,9 +234,11 @@ android_library("content_full_java") {
     "java/src/org/chromium/content/browser/accessibility/AccessibilityDelegate.java",
     "java/src/org/chromium/content/browser/accessibility/AccessibilityEventDispatcher.java",
     "java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityState.java",
+    "java/src/org/chromium/content/browser/accessibility/OViewStructureBuilder.java",
     "java/src/org/chromium/content/browser/accessibility/OWebContentsAccessibility.java",
     "java/src/org/chromium/content/browser/accessibility/PieWebContentsAccessibility.java",
     "java/src/org/chromium/content/browser/accessibility/RWebContentsAccessibility.java",
+    "java/src/org/chromium/content/browser/accessibility/ViewStructureBuilder.java",
     "java/src/org/chromium/content/browser/accessibility/WebContentsAccessibilityDelegate.java",
     "java/src/org/chromium/content/browser/accessibility/WebContentsAccessibilityImpl.java",
     "java/src/org/chromium/content/browser/accessibility/captioning/CaptioningBridge.java",
@@ -313,10 +317,9 @@ android_library("content_full_java") {
     "java/src/org/chromium/content/browser/webcontents/EmptyInternalAccessDelegate.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsObserverProxy.java",
-    "java/src/org/chromium/content_public/browser/AccessibilitySnapshotCallback.java",
-    "java/src/org/chromium/content_public/browser/AccessibilitySnapshotNode.java",
     "java/src/org/chromium/content_public/browser/ActionModeCallbackHelper.java",
     "java/src/org/chromium/content_public/browser/ChildProcessLauncherHelper.java",
+    "java/src/org/chromium/content_public/browser/ClientDataJson.java",
     "java/src/org/chromium/content_public/browser/ContactsPicker.java",
     "java/src/org/chromium/content_public/browser/ContactsPickerDelegate.java",
     "java/src/org/chromium/content_public/browser/ContactsPickerListener.java",
@@ -325,7 +328,7 @@ android_library("content_full_java") {
     "java/src/org/chromium/content_public/browser/GestureListenerManager.java",
     "java/src/org/chromium/content_public/browser/GestureStateListener.java",
     "java/src/org/chromium/content_public/browser/GestureStateListenerWithScroll.java",
-    "java/src/org/chromium/content_public/browser/GlobalFrameRoutingId.java",
+    "java/src/org/chromium/content_public/browser/GlobalRenderFrameHostId.java",
     "java/src/org/chromium/content_public/browser/ImageDownloadCallback.java",
     "java/src/org/chromium/content_public/browser/ImeAdapter.java",
     "java/src/org/chromium/content_public/browser/ImeEventObserver.java",
@@ -384,6 +387,7 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
     "//content/public/browser/browsing_data_remover.h",
     "//content/public/browser/invalidate_type.h",
     "//content/public/browser/navigation_controller.h",
+    "//content/public/browser/render_frame_host.h",
     "//content/public/browser/visibility.h",
     "//content/public/common/console_message_level.h",
   ]
@@ -412,6 +416,7 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/BackgroundSyncNetworkObserver.java",
     "java/src/org/chromium/content/browser/BrowserStartupControllerImpl.java",
     "java/src/org/chromium/content/browser/ChildProcessLauncherHelperImpl.java",
+    "java/src/org/chromium/content/browser/ClientDataJsonImpl.java",
     "java/src/org/chromium/content/browser/ContactsDialogHost.java",
     "java/src/org/chromium/content/browser/ContentFeatureListImpl.java",
     "java/src/org/chromium/content/browser/ContentNfcDelegate.java",
@@ -431,6 +436,7 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/TracingControllerAndroidImpl.java",
     "java/src/org/chromium/content/browser/TtsPlatformImpl.java",
     "java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityState.java",
+    "java/src/org/chromium/content/browser/accessibility/ViewStructureBuilder.java",
     "java/src/org/chromium/content/browser/accessibility/WebContentsAccessibilityImpl.java",
     "java/src/org/chromium/content/browser/accessibility/captioning/CaptioningController.java",
     "java/src/org/chromium/content/browser/androidoverlay/AndroidOverlayProviderImpl.java",
@@ -584,7 +590,6 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/remoteobjects/RemoteObjectHostImplTest.java",
     "javatests/src/org/chromium/content/browser/scheduler/NativePostTaskTest.java",
     "javatests/src/org/chromium/content/browser/scheduler/UiThreadSchedulerTest.java",
-    "javatests/src/org/chromium/content/browser/webcontents/AccessibilitySnapshotTest.java",
     "javatests/src/org/chromium/content/browser/webcontents/WebContentsTest.java",
   ]
 
@@ -615,6 +620,7 @@ junit_binary("content_junit_tests") {
     "junit/src/org/chromium/content/browser/selection/MagnifierAnimatorTest.java",
     "junit/src/org/chromium/content/browser/selection/SelectionPopupControllerTest.java",
     "junit/src/org/chromium/content/browser/selection/SmartSelectionEventProcessorTest.java",
+    "junit/src/org/chromium/content/browser/sms/SmsProviderGmsTest.java",
   ]
   deps = [
     ":content_java",

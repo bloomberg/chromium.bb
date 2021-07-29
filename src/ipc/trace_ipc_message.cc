@@ -31,18 +31,11 @@ void WriteIpcMessageIdAsProtozero(uint32_t message_id,
     case NaClMsgStart:
       message_class = ChromeLegacyIpc::CLASS_NACL;
       break;
-    case GpuChannelMsgStart:
-      message_class = ChromeLegacyIpc::CLASS_GPU_CHANNEL;
-      break;
-    case MediaMsgStart:
-      message_class = ChromeLegacyIpc::CLASS_MEDIA;
-      break;
     case PpapiMsgStart:
       message_class = ChromeLegacyIpc::CLASS_PPAPI;
       break;
     case ExtensionMsgStart:
       message_class = ChromeLegacyIpc::CLASS_EXTENSION;
-      break;
       break;
     case ChromotingMsgStart:
       message_class = ChromeLegacyIpc::CLASS_CHROMOTING;
@@ -56,17 +49,11 @@ void WriteIpcMessageIdAsProtozero(uint32_t message_id,
     case GinJavaBridgeMsgStart:
       message_class = ChromeLegacyIpc::CLASS_GIN_JAVA_BRIDGE;
       break;
-    case ChromeUtilityPrintingMsgStart:
-      message_class = ChromeLegacyIpc::CLASS_CHROME_UTILITY_PRINTING;
-      break;
     case ExtensionsGuestViewMsgStart:
       message_class = ChromeLegacyIpc::CLASS_EXTENSIONS_GUEST_VIEW;
       break;
     case GuestViewMsgStart:
       message_class = ChromeLegacyIpc::CLASS_GUEST_VIEW;
-      break;
-    case MediaPlayerDelegateMsgStart:
-      message_class = ChromeLegacyIpc::CLASS_MEDIA_PLAYER_DELEGATE;
       break;
     case ExtensionWorkerMsgStart:
       message_class = ChromeLegacyIpc::CLASS_EXTENSION_WORKER;

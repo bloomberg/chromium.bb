@@ -429,6 +429,17 @@ void WebContentsAccessibilityAndroid::HandleScrolledToAnchor(
   Java_WebContentsAccessibilityImpl_handleScrolledToAnchor(env, obj, unique_id);
 }
 
+void WebContentsAccessibilityAndroid::HandleDialogModalOpened(
+    int32_t unique_id) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_WebContentsAccessibilityImpl_handleDialogModalOpened(env, obj,
+                                                            unique_id);
+}
+
 void WebContentsAccessibilityAndroid::AnnounceLiveRegionText(
     const std::u16string& text) {
   JNIEnv* env = AttachCurrentThread();
@@ -781,11 +792,10 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
 
   // Build a vector of child ids
   std::vector<int> child_ids;
-  for (BrowserAccessibility::PlatformChildIterator it =
-           node->PlatformChildrenBegin();
-       it != node->PlatformChildrenEnd(); ++it) {
-    auto* android_node = static_cast<BrowserAccessibilityAndroid*>(it.get());
-    child_ids.push_back(android_node->unique_id());
+  for (const auto& child : node->PlatformChildren()) {
+    const auto& android_node =
+        static_cast<const BrowserAccessibilityAndroid&>(child);
+    child_ids.push_back(android_node.unique_id());
   }
   if (child_ids.size()) {
     Java_WebContentsAccessibilityImpl_addAccessibilityNodeInfoChildren(
@@ -883,7 +893,8 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
   if (ui::IsDialog(node->GetRole())) {
     Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoPaneTitle(
         env, obj, info,
-        base::android::ConvertUTF16ToJavaString(env, node->GetInnerText()));
+        base::android::ConvertUTF16ToJavaString(
+            env, node->GetDialogModalMessageText()));
   }
 
   if (node->IsTextField()) {

@@ -21,7 +21,9 @@ hb_aat_layout_has_tracking
 <SECTION>
 <FILE>hb-blob</FILE>
 hb_blob_create
+hb_blob_create_or_fail
 hb_blob_create_from_file
+hb_blob_create_from_file_or_fail
 hb_blob_create_sub_blob
 hb_blob_copy_writable_or_fail
 hb_blob_destroy
@@ -599,6 +601,7 @@ HB_SET_VALUE_INVALID
 hb_set_add
 hb_set_add_range
 hb_set_allocation_successful
+hb_set_copy
 hb_set_clear
 hb_set_create
 hb_set_del

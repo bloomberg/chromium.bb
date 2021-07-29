@@ -49,8 +49,8 @@
 #include "content/public/browser/web_contents.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/public/cpp/ash_features.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "components/full_restore/features.h"
 #endif
 
 #if defined(OS_MAC)
@@ -97,7 +97,7 @@ bool SessionService::ShouldNewWindowStartSession(Browser* browser) {
   // automatically during the system startup phase. When Chrome browser is
   // created or launched by users, sessions might be restored based on the on
   // startup setting.
-  if (ash::features::IsFullRestoreEnabled()) {
+  if (full_restore::features::IsFullRestoreEnabled()) {
     // If there are other browser windows, or during the restoring process, or
     // restore from crash, sessions should not be restored.
     if (SessionRestore::IsRestoring(profile()) ||
@@ -408,7 +408,8 @@ bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
         (!tab_restore_service || !tab_restore_service->IsRestoring())) {
       SessionRestore::RestoreSession(
           profile(), browser,
-          (browser ? 0 : SessionRestore::ALWAYS_CREATE_TABBED_BROWSER) |
+          SessionRestore::RESTORE_BROWSER |
+              (browser ? 0 : SessionRestore::ALWAYS_CREATE_TABBED_BROWSER) |
               (restore_apps ? SessionRestore::RESTORE_APPS : 0),
           urls_to_open);
       return true;

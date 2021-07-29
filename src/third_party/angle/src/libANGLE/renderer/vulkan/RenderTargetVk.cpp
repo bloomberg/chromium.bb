@@ -46,9 +46,6 @@ void RenderTargetVk::init(vk::ImageHelper *image,
                           uint32_t layerCount,
                           RenderTargetTransience transience)
 {
-    // Either single-layered, or includes all layers.
-    ASSERT(layerCount == 1 || layerIndex == 0);
-
     mImage             = image;
     mImageViews        = imageViews;
     mResolveImage      = resolveImage;
@@ -79,8 +76,7 @@ vk::ImageOrBufferViewSubresourceSerial RenderTargetVk::getSubresourceSerialImpl(
     ASSERT(mLevelIndexGL.get() < std::numeric_limits<uint16_t>::max());
 
     vk::ImageOrBufferViewSubresourceSerial imageViewSerial = imageViews->getSubresourceSerial(
-        mLevelIndexGL, 1, mLayerIndex,
-        mLayerCount == 1 ? vk::LayerMode::Single : vk::LayerMode::All,
+        mLevelIndexGL, 1, mLayerIndex, vk::GetLayerMode(*mImage, mLayerCount),
         vk::SrgbDecodeMode::SkipDecode, gl::SrgbOverride::Default);
     return imageViewSerial;
 }
@@ -176,10 +172,9 @@ angle::Result RenderTargetVk::getImageViewImpl(ContextVk *contextVk,
                                                       imageViewOut);
     }
 
-    ASSERT(mode == gl::SrgbWriteControlMode::Default);
-
-    // Layered render targets view the whole level
-    return imageViews->getLevelDrawImageView(contextVk, image, levelVk, imageViewOut);
+    // Layered render targets view the whole level or a handful of layers in case of multiview.
+    return imageViews->getLevelDrawImageView(contextVk, image, levelVk, mLayerIndex, mLayerCount,
+                                             mode, imageViewOut);
 }
 
 angle::Result RenderTargetVk::getImageView(ContextVk *contextVk,
@@ -294,11 +289,15 @@ angle::Result RenderTargetVk::flushStagedUpdates(ContextVk *contextVk,
     ASSERT(mImage->valid() && (!isResolveImageOwnerOfData() || mResolveImage->valid()));
     ASSERT(framebufferLayerCount != 0);
 
-    // Note that the layer index for 3D textures is always zero according to Vulkan.
+    // It's impossible to defer clears to slices of a 3D images, as the clear applies to all the
+    // slices, while deferred clears only clear a single slice (where the framebuffer is attached).
+    // Additionally, the layer index for 3D textures is always zero according to Vulkan.
     uint32_t layerIndex = mLayerIndex;
     if (mImage->getType() == VK_IMAGE_TYPE_3D)
     {
-        layerIndex = 0;
+        layerIndex         = 0;
+        deferredClears     = nullptr;
+        deferredClearIndex = 0;
     }
 
     vk::ImageHelper *image = getOwnerOfData();

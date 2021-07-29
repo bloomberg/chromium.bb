@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
 import {assertEquals, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {MockVolumeManager} from '../../background/js/mock_volume_manager.m.js';
-import {VolumeInfoImpl} from '../../background/js/volume_info_impl.m.js';
-import { EntryList,FakeEntryImpl} from '../../common/js/files_app_entry_types.m.js';
-import {MockCommandLinePrivate} from '../../common/js/mock_chrome.m.js';
-import { MockFileEntry,MockFileSystem} from '../../common/js/mock_entry.m.js';
-import {reportPromise, waitUntil} from '../../common/js/test_error_reporting.m.js';
-import {util} from '../../common/js/util.m.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.m.js';
+import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
+import {VolumeInfoImpl} from '../../background/js/volume_info_impl.js';
+import { EntryList,FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
+import {MockCommandLinePrivate} from '../../common/js/mock_chrome.js';
+import { MockFileEntry,MockFileSystem} from '../../common/js/mock_entry.js';
+import {reportPromise, waitUntil} from '../../common/js/test_error_reporting.js';
+import {util} from '../../common/js/util.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 
-import {AndroidAppListModel} from './android_app_list_model.m.js';
-import {DirectoryModel} from './directory_model.m.js';
-import {createFakeAndroidAppListModel} from './fake_android_app_list_model.m.js';
-import {createFakeDirectoryModel} from './mock_directory_model.m.js';
-import {MockFolderShortcutDataModel} from './mock_folder_shortcut_data_model.m.js';
-import { NavigationListModel, NavigationModelAndroidAppItem,NavigationModelFakeItem, NavigationModelItemType, NavigationModelShortcutItem, NavigationModelVolumeItem, NavigationSection} from './navigation_list_model.m.js';
-// clang-format on
+import {AndroidAppListModel} from './android_app_list_model.js';
+import {DirectoryModel} from './directory_model.js';
+import {createFakeAndroidAppListModel} from './fake_android_app_list_model.js';
+import {createFakeDirectoryModel} from './mock_directory_model.js';
+import {MockFolderShortcutDataModel} from './mock_folder_shortcut_data_model.js';
+import { NavigationListModel, NavigationModelAndroidAppItem,NavigationModelFakeItem, NavigationModelItemType, NavigationModelShortcutItem, NavigationModelVolumeItem, NavigationSection} from './navigation_list_model.js';
 
 /**
  * Mock Recent fake entry.
@@ -57,8 +55,7 @@ let hoge;
 // Setup the test components.
 export function setUp() {
   // Mock LoadTimeData strings.
-  window.loadTimeData.resetForTesting();
-  window.loadTimeData.overrideValues({
+  window.loadTimeData.resetForTesting({
     MY_FILES_ROOT_LABEL: 'My files',
     DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
     DRIVE_DIRECTORY_LABEL: 'My Drive',

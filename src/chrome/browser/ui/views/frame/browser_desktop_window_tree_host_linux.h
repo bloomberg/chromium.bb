@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_LINUX_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"  // nogncheck
 
@@ -17,6 +18,8 @@ using DesktopWindowTreeHostLinuxImpl = views::DesktopWindowTreeHostLinux;
 
 class BrowserFrame;
 class BrowserView;
+class DesktopBrowserFrameAuraLinux;
+class DesktopBrowserFrameLacros;
 enum class TabDragKind;
 
 namespace views {
@@ -46,15 +49,29 @@ class BrowserDesktopWindowTreeHostLinux
   // views::DesktopWindowTreeHostLinuxImpl:
   void Init(const views::Widget::InitParams& params) override;
   void CloseNow() override;
+  bool SupportsMouseLock() override;
+  void LockMouse(aura::Window* window) override;
+  void UnlockMouse(aura::Window* window) override;
 
   // ui::X11ExtensionDelegate:
   bool IsOverrideRedirect(bool is_tiling_wm) const override;
 
   // ui::PlatformWindowDelegate
-  void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
+  void OnWindowStateChanged(ui::PlatformWindowState old_state,
+                            ui::PlatformWindowState new_state) override;
 
   BrowserView* browser_view_ = nullptr;
   BrowserFrame* browser_frame_ = nullptr;
+
+// TODO(crbug.com/1221374): Separate Lacros specific code into
+// browser_desktop_window_tree_host_lacros.cc.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  using DesktopBrowserFrameAuraPlatform = DesktopBrowserFrameLacros;
+#elif defined(OS_LINUX)
+  using DesktopBrowserFrameAuraPlatform = DesktopBrowserFrameAuraLinux;
+#else
+#error Unknown platform
+#endif
 
 #if defined(USE_DBUS_MENU)
   // Each browser frame maintains its own menu bar object because the lower

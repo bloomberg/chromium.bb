@@ -155,8 +155,21 @@ set(CORE_VALIDATION_LIBRARY_FILES
     core_validation_error_enums.h
     core_error_location.h
     core_error_location.cpp
-    core_validation_types.h
     base_node.h
+    device_memory_state.h
+    device_memory_state.cpp
+    buffer_state.h
+    cmd_buffer_state.h
+    cmd_buffer_state.cpp
+    image_state.h
+    image_state.cpp
+    pipeline_state.h
+    pipeline_state.cpp
+    query_state.h
+    ray_tracing_state.h
+    render_pass_state.h
+    render_pass_state.cpp
+    sampler_state.h
     drawdispatch.cpp
     convert_to_renderpass2.cpp
     descriptor_sets.cpp

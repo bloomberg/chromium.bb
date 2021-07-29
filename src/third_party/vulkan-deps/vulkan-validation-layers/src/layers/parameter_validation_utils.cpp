@@ -3259,18 +3259,6 @@ bool StatelessValidation::manual_PreCallValidateCreateSampler(VkDevice device, c
                                          pCreateInfo->borderColor, "VUID-VkSamplerCreateInfo-addressModeU-01078");
         }
 
-        // If any of addressModeU, addressModeV or addressModeW are VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE, the
-        // VK_KHR_sampler_mirror_clamp_to_edge extension must be enabled
-        if (!device_extensions.vk_khr_sampler_mirror_clamp_to_edge &&
-            ((pCreateInfo->addressModeU == VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE) ||
-             (pCreateInfo->addressModeV == VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE) ||
-             (pCreateInfo->addressModeW == VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE))) {
-            skip |=
-                LogError(device, "VUID-VkSamplerCreateInfo-addressModeU-01079",
-                         "vkCreateSampler(): A VkSamplerAddressMode value is set to VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE "
-                         "but the VK_KHR_sampler_mirror_clamp_to_edge extension has not been enabled.");
-        }
-
         // Checks for the IMG cubic filtering extension
         if (device_extensions.vk_img_filter_cubic) {
             if ((pCreateInfo->anisotropyEnable == VK_TRUE) &&
@@ -3971,6 +3959,39 @@ bool StatelessValidation::manual_PreCallValidateCmdDrawIndexedIndirectCountKHR(V
                                                                                VkDeviceSize countBufferOffset,
                                                                                uint32_t maxDrawCount, uint32_t stride) const {
     return ValidateCmdDrawIndexedIndirectCount(commandBuffer, offset, countBufferOffset, true);
+}
+
+bool StatelessValidation::manual_PreCallValidateCmdDrawMultiEXT(VkCommandBuffer commandBuffer, uint32_t drawCount,
+                                                                const VkMultiDrawInfoEXT *pVertexInfo, uint32_t instanceCount,
+                                                                uint32_t firstInstance, uint32_t stride) const {
+    bool skip = false;
+    if (stride & 3) {
+        skip |= LogError(commandBuffer, "VUID-vkCmdDrawMultiEXT-stride-04936",
+                         "CmdDrawMultiEXT: parameter, uint32_t stride (%" PRIu32 ") is not a multiple of 4.", stride);
+    }
+    if (drawCount && nullptr == pVertexInfo) {
+        skip |= LogError(commandBuffer, "VUID-vkCmdDrawMultiEXT-drawCount-04935",
+                         "CmdDrawMultiEXT: parameter, VkMultiDrawInfoEXT *pVertexInfo must be a valid pointer to memory containing "
+                         "one or more valid instances of VkMultiDrawInfoEXT structures");
+    }
+    return skip;
+}
+
+bool StatelessValidation::manual_PreCallValidateCmdDrawMultiIndexedEXT(VkCommandBuffer commandBuffer, uint32_t drawCount,
+                                                                       const VkMultiDrawIndexedInfoEXT *pIndexInfo,
+                                                                       uint32_t instanceCount, uint32_t firstInstance,
+                                                                       uint32_t stride, const int32_t *pVertexOffset) const {
+    bool skip = false;
+    if (stride & 3) {
+        skip |= LogError(commandBuffer, "VUID-vkCmdDrawMultiIndexedEXT-stride-04941",
+                         "CmdDrawMultiIndexedEXT: parameter, uint32_t stride (%" PRIu32 ") is not a multiple of 4.", stride);
+    }
+    if (drawCount && nullptr == pIndexInfo) {
+        skip |= LogError(commandBuffer, "VUID-vkCmdDrawMultiIndexedEXT-drawCount-04940",
+                         "CmdDrawMultiIndexedEXT: parameter, VkMultiDrawIndexedInfoEXT *pIndexInfo must be a valid pointer to "
+                         "memory containing one or more valid instances of VkMultiDrawIndexedInfoEXT structures");
+    }
+    return skip;
 }
 
 bool StatelessValidation::manual_PreCallValidateCmdClearAttachments(VkCommandBuffer commandBuffer, uint32_t attachmentCount,

@@ -6,14 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GRID_LAYOUT_NG_GRID_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid_interface.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_data.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
 
 namespace blink {
 
-class CORE_EXPORT LayoutNGGrid : public LayoutNGMixin<LayoutBlock>,
+class CORE_EXPORT LayoutNGGrid : public LayoutNGBlock,
                                  public LayoutNGGridInterface {
  public:
   explicit LayoutNGGrid(Element*);
@@ -32,7 +32,7 @@ class CORE_EXPORT LayoutNGGrid : public LayoutNGMixin<LayoutBlock>,
       GridTrackSizingDirection direction) const final;
   LayoutUnit GridGap(GridTrackSizingDirection) const final;
   LayoutUnit GridItemOffset(GridTrackSizingDirection) const final;
-  Vector<LayoutUnit> TrackSizesForComputedStyle(
+  Vector<LayoutUnit, 1> TrackSizesForComputedStyle(
       GridTrackSizingDirection direction) const final;
   Vector<LayoutUnit> RowPositions() const final;
   Vector<LayoutUnit> ColumnPositions() const final;
@@ -46,7 +46,7 @@ class CORE_EXPORT LayoutNGGrid : public LayoutNGMixin<LayoutBlock>,
  private:
   const NGGridData* GetGridData() const;
   Vector<LayoutUnit> ComputeTrackSizesInRange(
-      const NGGridData::RangeData& range,
+      const NGGridLayoutAlgorithmTrackCollection::Range& range,
       GridTrackSizingDirection direction) const;
   Vector<LayoutUnit> ComputeExpandedPositions(
       GridTrackSizingDirection direction) const;

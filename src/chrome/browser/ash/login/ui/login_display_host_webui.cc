@@ -46,6 +46,9 @@
 #include "chrome/browser/ash/login/ui/webui_accelerator_mapping.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/system/device_disabling_manager.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
@@ -59,9 +62,6 @@
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/enrollment_config.h"
-#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -72,6 +72,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/lacros_data_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
@@ -183,7 +184,7 @@ bool IsOobeComplete() {
   // Oobe is completed and we have a user or we are enterprise enrolled.
   return chromeos::StartupUtils::IsOobeCompleted() &&
          (!user_manager::UserManager::Get()->GetUsers().empty() ||
-          connector->IsEnterpriseManaged());
+          connector->IsDeviceEnterpriseManaged());
 }
 
 // Returns true if signin (not oobe) should be displayed.
@@ -193,7 +194,7 @@ bool ShouldShowSigninScreen(chromeos::OobeScreenId first_screen) {
 }
 
 void MaybeShowDeviceDisabledScreen() {
-  DCHECK(chromeos::LoginDisplayHost::default_host());
+  DCHECK(LoginDisplayHost::default_host());
   if (!g_browser_process->platform_part()->device_disabling_manager()) {
     // Device disabled check will be done in the DeviceDisablingManager.
     return;
@@ -202,7 +203,7 @@ void MaybeShowDeviceDisabledScreen() {
   if (!system::DeviceDisablingManager::IsDeviceDisabledDuringNormalOperation())
     return;
 
-  chromeos::LoginDisplayHost::default_host()->StartWizard(
+  LoginDisplayHost::default_host()->StartWizard(
       DeviceDisabledScreenView::kScreenId);
 }
 
@@ -238,15 +239,19 @@ void ShowLoginWizardFinish(
 
   // Create the LoginDisplayHost. Use the views-based implementation only for
   // the sign-in screen.
-  chromeos::LoginDisplayHost* display_host = nullptr;
-  if (chromeos::LoginDisplayHost::default_host()) {
+  LoginDisplayHost* display_host = nullptr;
+  if (LoginDisplayHost::default_host()) {
     // Tests may have already allocated an instance for us to use.
-    display_host = chromeos::LoginDisplayHost::default_host();
-  } else if (ShouldShowSigninScreen(first_screen)) {
-    display_host =
-        new chromeos::LoginDisplayHostMojo(DisplayedScreen::SIGN_IN_SCREEN);
+    display_host = LoginDisplayHost::default_host();
+  } else if (ShouldShowSigninScreen(first_screen) ||
+             first_screen == LacrosDataMigrationScreenView::kScreenId) {
+    // TODO(crbug.com/1178702): Once lacros is officially released,
+    // `ShowLoginWizard()` will no longer be called with lacros screen id.
+    // Instead simply call `SigninUI::StartBrowserDataMigration()` as part of
+    // the login flow.
+    display_host = new LoginDisplayHostMojo(DisplayedScreen::SIGN_IN_SCREEN);
   } else {
-    display_host = new chromeos::LoginDisplayHostWebUI();
+    display_host = new LoginDisplayHostWebUI();
   }
 
   // Restore system timezone.
@@ -278,7 +283,7 @@ void ShowLoginWizardFinish(
   // This step requires the session manager to have been initialized and login
   // display host to be created.
   DCHECK(session_manager::SessionManager::Get());
-  DCHECK(chromeos::LoginDisplayHost::default_host());
+  DCHECK(LoginDisplayHost::default_host());
   WallpaperControllerClientImpl::Get()->SetInitialWallpaper();
   // TODO(crbug.com/1105387): Part of initial screen logic.
   MaybeShowDeviceDisabledScreen();
@@ -346,7 +351,7 @@ std::string GetManagedLoginScreenLocale() {
   // compatibility, if dynamically switching locales on the login screen will be
   // implemented.
   std::string login_screen_locale;
-  if (login_screen_locales->empty() ||
+  if (login_screen_locales->GetList().empty() ||
       !login_screen_locales->GetString(0, &login_screen_locale))
     return std::string();
 
@@ -450,8 +455,6 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
   SessionManagerClient::Get()->AddObserver(this);
   CrasAudioHandler::Get()->AddAudioObserver(this);
 
-  display::Screen::GetScreen()->AddObserver(this);
-
   ui::DeviceDataManager::GetInstance()->AddObserver(this);
 
   // When we wait for WebUI to be initialized we wait for one of
@@ -476,7 +479,6 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
 
   SessionManagerClient::Get()->RemoveObserver(this);
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
 
   if (waiting_for_configuration_) {
     OobeConfiguration::Get()->RemoveObserver(this);
@@ -1063,6 +1065,10 @@ void LoginDisplayHostWebUI::VerifyOwnerForKiosk(base::OnceClosure) {
 void LoginDisplayHostWebUI::ShowPasswordChangedDialog(
     const AccountId& account_id,
     bool show_password_error) {
+  NOTREACHED();
+}
+
+void LoginDisplayHostWebUI::StartBrowserDataMigration() {
   NOTREACHED();
 }
 

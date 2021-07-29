@@ -50,16 +50,17 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
         quota_(0) {}
 
   // We don't mock them.
-  void NotifyOriginInUse(const url::Origin& origin) override {}
-  void NotifyOriginNoLongerInUse(const url::Origin& origin) override {}
+  void NotifyStorageKeyInUse(const blink::StorageKey& storage_key) override {}
+  void NotifyStorageKeyNoLongerInUse(
+      const blink::StorageKey& storage_key) override {}
   void SetUsageCacheEnabled(QuotaClientType client_id,
-                            const url::Origin& origin,
+                            const blink::StorageKey& storage_key,
                             blink::mojom::StorageType type,
                             bool enabled) override {}
 
   void NotifyStorageModified(
       QuotaClientType client_id,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       blink::mojom::StorageType type,
       int64_t delta,
       base::Time modification_time,
@@ -73,7 +74,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   }
 
   void GetUsageAndQuota(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       blink::mojom::StorageType type,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
       UsageAndQuotaCallback callback) override {
@@ -110,8 +111,9 @@ class QuotaBackendImplTest : public testing::Test,
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     in_memory_env_ = leveldb_chrome::NewMemEnv("quota");
-    file_util_.reset(ObfuscatedFileUtil::CreateForTesting(
-        nullptr, data_dir_.GetPath(), in_memory_env_.get(), is_incognito()));
+    file_util_ = ObfuscatedFileUtil::CreateForTesting(
+        /*special_storage_policy=*/nullptr, data_dir_.GetPath(),
+        in_memory_env_.get(), is_incognito());
     backend_ = std::make_unique<QuotaBackendImpl>(
         file_task_runner(), file_util_.get(), &file_system_usage_cache_,
         quota_manager_proxy_.get());

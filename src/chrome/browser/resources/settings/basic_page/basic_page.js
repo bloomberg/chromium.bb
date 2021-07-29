@@ -31,17 +31,17 @@ import '../default_browser_page/default_browser_page.js';
 // </if>
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {beforeNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {beforeNextRender, html, microTask, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 import {PageVisibility} from '../page_visibility.js';
 // <if expr="chromeos or lacros">
-import {PrefsBehavior} from '../prefs/prefs_behavior.js';
+import {PrefsBehavior, PrefsBehaviorInterface} from '../prefs/prefs_behavior.js';
 // </if>
 import {routes} from '../route.js';
-import {Route, RouteObserverBehavior, Router} from '../router.js';
+import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 import {getSearchManager, SearchResult} from '../search_settings.js';
-import {MainPageBehavior} from '../settings_page/main_page_behavior.js';
+import {MainPageMixin, MainPageMixinInterface} from '../settings_page/main_page_mixin.js';
 
 // <if expr="chromeos or lacros">
 const OS_BANNER_INTERACTION_METRIC_NAME =
@@ -60,109 +60,130 @@ const CrosSettingsOsBannerInteraction = {
 };
 // </if>
 
-Polymer({
-  is: 'settings-basic-page',
 
-  _template: html`{__html_template__}`,
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {MainPageMixinInterface}
+ * @implements {RouteObserverMixinInterface}
+ * @implements {PrefsBehaviorInterface}
+ */
+const SettingsBasicPageElementBase = mixinBehaviors(
+    [
+      // <if expr="chromeos or lacros">
+      PrefsBehavior,
+      // </if>
+    ],
+    MainPageMixin(RouteObserverMixin(PolymerElement)));
 
-  behaviors: [
-    MainPageBehavior, RouteObserverBehavior,
-    // <if expr="chromeos or lacros">
-    PrefsBehavior,
-    // </if>
-  ],
+/** @polymer */
+export class SettingsBasicPageElement extends SettingsBasicPageElementBase {
+  static get is() {
+    return 'settings-basic-page';
+  }
 
-  properties: {
-    /** Preferences state. */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-    /**
-     * Dictionary defining page visibility.
-     * @type {!PageVisibility}
-     */
-    pageVisibility: {
-      type: Object,
-      value() {
-        return {};
+  static get properties() {
+    return {
+      /** Preferences state. */
+      prefs: {
+        type: Object,
+        notify: true,
       },
-    },
 
-    advancedToggleExpanded: {
-      type: Boolean,
-      value: false,
-      notify: true,
-      observer: 'advancedToggleExpandedChanged_',
-    },
-
-    /**
-     * True if a section is fully expanded to hide other sections beneath it.
-     * False otherwise (even while animating a section open/closed).
-     * @private {boolean}
-     */
-    hasExpandedSection_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
-     * True if the basic page should currently display the reset profile banner.
-     * @private {boolean}
-     */
-    showResetProfileBanner_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('showResetProfileBanner');
+      /**
+       * Dictionary defining page visibility.
+       * @type {!PageVisibility}
+       */
+      pageVisibility: {
+        type: Object,
+        value() {
+          return {};
+        },
       },
-    },
 
-    // <if expr="chromeos or lacros">
-    /** @private */
-    showOSSettingsBanner_: {
-      type: Boolean,
-      computed: 'computeShowOSSettingsBanner_(' +
-          'prefs.settings.cros.show_os_banner.value, currentRoute_)',
-    },
-    // </if>
+      advancedToggleExpanded: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        observer: 'advancedToggleExpandedChanged_',
+      },
 
-    /** @private {!Route|undefined} */
-    currentRoute_: Object,
+      /**
+       * True if a section is fully expanded to hide other sections beneath it.
+       * False otherwise (even while animating a section open/closed).
+       * @private {boolean}
+       */
+      hasExpandedSection_: {
+        type: Boolean,
+        value: false,
+      },
 
-    /**
-     * Used to avoid handling a new toggle while currently toggling.
-     * @private
-     */
-    advancedTogglingInProgress_: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-    },
-  },
+      /**
+       * True if the basic page should currently display the reset profile
+       * banner.
+       * @private {boolean}
+       */
+      showResetProfileBanner_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('showResetProfileBanner');
+        },
+      },
 
-  hostAttributes: {
-    role: 'main',
-  },
+      // <if expr="chromeos or lacros">
+      /** @private */
+      showOSSettingsBanner_: {
+        type: Boolean,
+        computed: 'computeShowOSSettingsBanner_(' +
+            'prefs.settings.cros.show_os_banner.value, currentRoute_)',
+      },
+      // </if>
 
-  listeners: {
-    'subpage-expand': 'onSubpageExpanded_',
-  },
+      /** @private {!Route|undefined} */
+      currentRoute_: Object,
+
+      /**
+       * Used to avoid handling a new toggle while currently toggling.
+       * @private
+       */
+      advancedTogglingInProgress_: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
+    };
+  }
 
   // <if expr="chromeos or lacros">
-  /** @private {boolean} */
-  osBannerShowMetricRecorded_: false,
+  constructor() {
+    super();
+
+    /** @private {boolean} */
+    this.osBannerShowMetricRecorded_ = false;
+  }
   // </if>
 
   /** @override */
-  attached() {
-    this.currentRoute_ = Router.getInstance().getCurrentRoute();
-  },
+  ready() {
+    super.ready();
 
-  /**
-   * @param {!Route} newRoute
-   * @param {Route} oldRoute
-   */
+    this.setAttribute('role', 'main');
+    this.addEventListener('subpage-expand', this.onSubpageExpanded_);
+  }
+
+
+  /** @override */
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.currentRoute_ = Router.getInstance().getCurrentRoute();
+  }
+
+  /** @override */
   currentRouteChanged(newRoute, oldRoute) {
     this.currentRoute_ = newRoute;
 
@@ -180,14 +201,17 @@ Polymer({
       assert(!this.hasExpandedSection_);
     }
 
-    MainPageBehavior.currentRouteChanged.call(this, newRoute, oldRoute);
-  },
+    super.currentRouteChanged(newRoute, oldRoute);
+  }
 
-  // Override MainPageBehavior method.
+  /**
+   * Override MainPageMixin method.
+   * @override
+   */
   containsRoute(route) {
     return !route || routes.BASIC.contains(route) ||
         routes.ADVANCED.contains(route);
-  },
+  }
 
   /**
    * @param {boolean|undefined} visibility
@@ -196,7 +220,7 @@ Polymer({
    */
   showPage_(visibility) {
     return visibility !== false;
-  },
+  }
 
   /**
    * Queues a task to search the basic sections, then another for the advanced
@@ -207,14 +231,17 @@ Polymer({
    */
   searchContents(query) {
     const whenSearchDone = [
-      getSearchManager().search(query, assert(this.$$('#basicPage'))),
+      getSearchManager().search(
+          query, assert(this.shadowRoot.querySelector('#basicPage'))),
     ];
 
     if (this.pageVisibility.advancedSettings !== false) {
-      whenSearchDone.push(
-          this.$$('#advancedPageTemplate').get().then(function(advancedPage) {
-            return getSearchManager().search(query, advancedPage);
-          }));
+      whenSearchDone.push(this.shadowRoot.querySelector('#advancedPageTemplate')
+                              .get()
+                              .then(function(advancedPage) {
+                                return getSearchManager().search(
+                                    query, advancedPage);
+                              }));
     }
 
     return Promise.all(whenSearchDone).then(function(requests) {
@@ -231,7 +258,7 @@ Polymer({
         wasClearSearch: requests[0].isSame(''),
       };
     });
-  },
+  }
 
   // <if expr="chromeos or lacros">
   /**
@@ -261,7 +288,7 @@ Polymer({
       this.osBannerShowMetricRecorded_ = true;
     }
     return show;
-  },
+  }
 
   /** @private */
   onOSSettingsBannerClick_() {
@@ -270,7 +297,7 @@ Polymer({
         OS_BANNER_INTERACTION_METRIC_NAME,
         CrosSettingsOsBannerInteraction.Clicked,
         Object.keys(CrosSettingsOsBannerInteraction).length);
-  },
+  }
 
   /** @private */
   onOSSettingsBannerClosed_() {
@@ -279,13 +306,13 @@ Polymer({
         OS_BANNER_INTERACTION_METRIC_NAME,
         CrosSettingsOsBannerInteraction.Closed,
         Object.keys(CrosSettingsOsBannerInteraction).length);
-  },
+  }
   // </if>
 
   /** @private */
   onResetProfileBannerClosed_() {
     this.showResetProfileBanner_ = false;
-  },
+  }
 
   /**
    * Hides everything but the newly expanded subpage.
@@ -293,7 +320,7 @@ Polymer({
    */
   onSubpageExpanded_() {
     this.hasExpandedSection_ = true;
-  },
+  }
 
   /**
    * Render the advanced page now (don't wait for idle).
@@ -307,31 +334,44 @@ Polymer({
     // In Polymer2, async() does not wait long enough for layout to complete.
     // beforeNextRender() must be used instead.
     beforeNextRender(this, () => {
-      this.$$('#advancedPageTemplate').get();
+      this.shadowRoot.querySelector('#advancedPageTemplate').get();
     });
-  },
+  }
 
+  /**
+   * @param {string} eventName
+   * @param {*=} detail
+   * @private
+   */
+  fire_(eventName, detail) {
+    this.dispatchEvent(
+        new CustomEvent(eventName, {bubbles: true, composed: true, detail}));
+  }
+
+  /** @private */
   advancedToggleClicked_() {
     if (this.advancedTogglingInProgress_) {
       return;
     }
 
     this.advancedTogglingInProgress_ = true;
-    const toggle = this.$$('#toggleContainer');
+    const toggle = this.shadowRoot.querySelector('#toggleContainer');
     if (!this.advancedToggleExpanded) {
       this.advancedToggleExpanded = true;
-      this.async(() => {
-        this.$$('#advancedPageTemplate').get().then(() => {
-          this.fire('scroll-to-top', {
-            top: toggle.offsetTop,
-            callback: () => {
-              this.advancedTogglingInProgress_ = false;
-            }
-          });
-        });
+      microTask.run(() => {
+        this.shadowRoot.querySelector('#advancedPageTemplate')
+            .get()
+            .then(() => {
+              this.fire_('scroll-to-top', {
+                top: toggle.offsetTop,
+                callback: () => {
+                  this.advancedTogglingInProgress_ = false;
+                }
+              });
+            });
       });
     } else {
-      this.fire('scroll-to-bottom', {
+      this.fire_('scroll-to-bottom', {
         bottom: toggle.offsetTop + toggle.offsetHeight + 24,
         callback: () => {
           this.advancedToggleExpanded = false;
@@ -339,7 +379,7 @@ Polymer({
         }
       });
     }
-  },
+  }
 
   /**
    * @param {boolean} inSearchMode
@@ -350,7 +390,7 @@ Polymer({
   showAdvancedToggle_(inSearchMode, hasExpandedSection) {
     return !inSearchMode && !hasExpandedSection &&
         !loadTimeData.getBoolean('enableLandingPageRedesign');
-  },
+  }
 
   /**
    * @param {!Route} currentRoute
@@ -362,7 +402,7 @@ Polymer({
    */
   showBasicPage_(currentRoute, inSearchMode, hasExpandedSection) {
     return !hasExpandedSection || routes.BASIC.contains(currentRoute);
-  },
+  }
 
   /**
    * @param {!Route} currentRoute
@@ -378,7 +418,7 @@ Polymer({
     return hasExpandedSection ?
         (routes.ADVANCED && routes.ADVANCED.contains(currentRoute)) :
         advancedToggleExpanded || inSearchMode;
-  },
+  }
 
   /**
    * @param {(boolean|undefined)} visibility
@@ -387,7 +427,7 @@ Polymer({
    */
   showAdvancedSettings_(visibility) {
     return visibility !== false;
-  },
+  }
 
   /**
    * @param {boolean} opened Whether the menu is expanded.
@@ -396,7 +436,7 @@ Polymer({
    */
   getArrowIcon_(opened) {
     return opened ? 'cr:arrow-drop-up' : 'cr:arrow-drop-down';
-  },
+  }
 
   /**
    * @param {boolean} bool
@@ -405,5 +445,7 @@ Polymer({
    */
   boolToString_(bool) {
     return bool.toString();
-  },
-});
+  }
+}
+
+customElements.define(SettingsBasicPageElement.is, SettingsBasicPageElement);

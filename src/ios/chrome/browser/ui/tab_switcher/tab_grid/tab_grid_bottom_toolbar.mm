@@ -27,6 +27,8 @@
   NSLayoutConstraint* _largeNewTabButtonBottomAnchor;
   TabGridNewTabButton* _smallNewTabButton;
   TabGridNewTabButton* _largeNewTabButton;
+  UIBarButtonItem* _doneButton;
+  UIBarButtonItem* _closeAllOrUndoButton;
   UIBarButtonItem* _addToButton;
   UIBarButtonItem* _closeTabsButton;
   UIBarButtonItem* _shareButton;
@@ -49,7 +51,7 @@
 // Controls hit testing of the bottom toolbar. When the toolbar is transparent,
 // only respond to tapping on the new tab button.
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent*)event {
-  if ([self shouldUseCompactLayout]) {
+  if ([self shouldShowFullBar]) {
     return [super pointInside:point withEvent:event];
   }
   // Only floating new tab button is tappable.
@@ -58,12 +60,13 @@
                                withEvent:event];
 }
 
-// Returns UIToolbar's intrinsicContentSize for compact layout, and CGSizeZero
-// for floating button layout.
+// Returns UIToolbar's intrinsicContentSize based on the orientation and the
+// mode.
 - (CGSize)intrinsicContentSize {
-  if ([self shouldUseCompactLayout]) {
+  if ([self shouldShowFullBar]) {
     return _toolbar.intrinsicContentSize;
   }
+  // Return CGSizeZero for floating button layout.
   return CGSizeZero;
 }
 
@@ -86,13 +89,17 @@
 }
 
 - (void)setMode:(TabGridMode)mode {
+  if (_mode == mode)
+    return;
   _mode = mode;
+  // Reset selected tabs count when mode changes.
+  self.selectedTabsCount = 0;
   [self updateLayout];
 }
 
 - (void)setSelectedTabsCount:(int)count {
   _selectedTabsCount = count;
-  [self updateSelectionButtonsTitle];
+  [self updateCloseTabsButtonTitle];
 }
 
 - (void)setNewTabButtonTarget:(id)target action:(SEL)action {
@@ -104,15 +111,52 @@
                forControlEvents:UIControlEventTouchUpInside];
 }
 
+- (void)setCloseAllButtonTarget:(id)target action:(SEL)action {
+  _closeAllOrUndoButton.target = target;
+  _closeAllOrUndoButton.action = action;
+}
+
+- (void)setDoneButtonTarget:(id)target action:(SEL)action {
+  _doneButton.target = target;
+  _doneButton.action = action;
+}
+
 - (void)setNewTabButtonEnabled:(BOOL)enabled {
   _smallNewTabButton.enabled = enabled;
   _largeNewTabButton.enabled = enabled;
 }
 
-- (void)setSelectionModeButtonsEnabled:(BOOL)enabled {
-  _addToButton.enabled = enabled;
-  _closeTabsButton.enabled = enabled;
-  _shareButton.enabled = enabled;
+- (void)setDoneButtonEnabled:(BOOL)enabled {
+  _doneButton.enabled = enabled;
+}
+
+- (void)setCloseAllButtonEnabled:(BOOL)enabled {
+  _closeAllOrUndoButton.enabled = enabled;
+}
+
+- (void)useUndoCloseAll:(BOOL)useUndo {
+  _closeAllOrUndoButton.enabled = YES;
+  if (useUndo) {
+    _closeAllOrUndoButton.title =
+        l10n_util::GetNSString(IDS_IOS_TAB_GRID_UNDO_CLOSE_ALL_BUTTON);
+    // Setting the |accessibilityIdentifier| seems to trigger layout, which
+    // causes an infinite loop.
+    if (_closeAllOrUndoButton.accessibilityIdentifier !=
+        kTabGridUndoCloseAllButtonIdentifier) {
+      _closeAllOrUndoButton.accessibilityIdentifier =
+          kTabGridUndoCloseAllButtonIdentifier;
+    }
+  } else {
+    _closeAllOrUndoButton.title =
+        l10n_util::GetNSString(IDS_IOS_TAB_GRID_CLOSE_ALL_BUTTON);
+    // Setting the |accessibilityIdentifier| seems to trigger layout, which
+    // causes an infinite loop.
+    if (_closeAllOrUndoButton.accessibilityIdentifier !=
+        kTabGridCloseAllButtonIdentifier) {
+      _closeAllOrUndoButton.accessibilityIdentifier =
+          kTabGridCloseAllButtonIdentifier;
+    }
+  }
 }
 
 - (void)hide {
@@ -123,6 +167,37 @@
 - (void)show {
   _smallNewTabButton.alpha = 1.0;
   _largeNewTabButton.alpha = 1.0;
+}
+
+#pragma mark Close Tabs
+
+- (void)setCloseTabsButtonTarget:(id)target action:(SEL)action {
+  _closeTabsButton.target = target;
+  _closeTabsButton.action = action;
+}
+
+- (void)setCloseTabsButtonEnabled:(BOOL)enabled {
+  _closeTabsButton.enabled = enabled;
+}
+
+#pragma mark Share Tabs
+
+- (void)setShareTabsButtonTarget:(id)target action:(SEL)action {
+  _shareButton.target = target;
+  _shareButton.action = action;
+}
+- (void)setShareTabsButtonEnabled:(BOOL)enabled {
+  _shareButton.enabled = enabled;
+}
+
+#pragma mark Add To
+
+- (void)setAddToButtonMenu:(UIMenu*)menu API_AVAILABLE(ios(14.0)) {
+  _addToButton.menu = menu;
+}
+
+- (void)setAddToButtonEnabled:(BOOL)enabled {
+  _addToButton.enabled = enabled;
 }
 
 #pragma mark - Private
@@ -139,12 +214,15 @@
   [_toolbar setShadowImage:[[UIImage alloc] init]
         forToolbarPosition:UIBarPositionAny];
 
-  _leadingButton = [[UIBarButtonItem alloc] init];
-  _leadingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
+  _closeAllOrUndoButton = [[UIBarButtonItem alloc] init];
+  _closeAllOrUndoButton.tintColor =
+      UIColorFromRGB(kTabGridToolbarTextButtonColor);
 
-  _trailingButton = [[UIBarButtonItem alloc] init];
-  _trailingButton.style = UIBarButtonItemStyleDone;
-  _trailingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
+  _doneButton = [[UIBarButtonItem alloc] init];
+  _doneButton.style = UIBarButtonItemStyleDone;
+  _doneButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
+  _doneButton.title = l10n_util::GetNSString(IDS_IOS_TAB_GRID_DONE_BUTTON);
+  _doneButton.accessibilityIdentifier = kTabGridDoneButtonIdentifier;
 
   _spaceItem = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
@@ -166,17 +244,18 @@
     _addToButton = [[UIBarButtonItem alloc] init];
     _addToButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
     _addToButton.title = l10n_util::GetNSString(IDS_IOS_TAB_GRID_ADD_TO_BUTTON);
-    _addToButton.accessibilityIdentifier = kTabGridAddToButtonIdentifier;
+    _addToButton.accessibilityIdentifier = kTabGridEditAddToButtonIdentifier;
     _shareButton = [[UIBarButtonItem alloc]
         initWithBarButtonSystemItem:UIBarButtonSystemItemAction
                              target:nil
                              action:nil];
     _shareButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
-    _shareButton.accessibilityIdentifier = kTabGridShareButtonIdentifier;
+    _shareButton.accessibilityIdentifier = kTabGridEditShareButtonIdentifier;
     _closeTabsButton = [[UIBarButtonItem alloc] init];
     _closeTabsButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
-    _closeTabsButton.accessibilityIdentifier = kTabGridCloseButtonIdentifier;
-    [self updateSelectionButtonsTitle];
+    _closeTabsButton.accessibilityIdentifier =
+        kTabGridEditCloseTabsButtonIdentifier;
+    [self updateCloseTabsButtonTitle];
   }
 
   _compactConstraints = @[
@@ -222,10 +301,9 @@
   _newTabButtonItem.title = _largeNewTabButton.accessibilityLabel;
 }
 
-- (void)updateSelectionButtonsTitle {
-  _closeTabsButton.title =
-      base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
-          IDS_IOS_TAB_GRID_CLOSE_TABS_BUTTON, _selectedTabsCount));
+- (void)updateCloseTabsButtonTitle {
+  _closeTabsButton.title = l10n_util::GetPluralNSStringF(
+      IDS_IOS_TAB_GRID_CLOSE_TABS_BUTTON, _selectedTabsCount);
 }
 
 - (void)updateLayout {
@@ -243,15 +321,17 @@
     return;
   }
 
+  UIBarButtonItem* leadingButton = _closeAllOrUndoButton;
+  UIBarButtonItem* trailingButton = _doneButton;
+
   if ([self shouldUseCompactLayout]) {
     // For incognito/regular pages, display all 3 buttons;
     // For remote tabs page, only display new tab button.
     if (self.page == TabGridPageRemoteTabs) {
-      [_toolbar setItems:@[ _spaceItem, self.trailingButton ]];
+      [_toolbar setItems:@[ _spaceItem, trailingButton ]];
     } else {
       [_toolbar setItems:@[
-        self.leadingButton, _spaceItem, _newTabButtonItem, _spaceItem,
-        self.trailingButton
+        leadingButton, _spaceItem, _newTabButtonItem, _spaceItem, trailingButton
       ]];
     }
 
@@ -274,6 +354,12 @@
       [NSLayoutConstraint activateConstraints:_floatingConstraints];
     }
   }
+}
+
+// Returns YES if the full toolbar should be shown instead of the floating
+// button.
+- (BOOL)shouldShowFullBar {
+  return [self shouldUseCompactLayout] || self.mode == TabGridModeSelection;
 }
 
 // Returns YES if should use compact bottom toolbar layout.

@@ -10,10 +10,11 @@
 #include <bitset>
 #include <limits>
 
+#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
-#include "base/partition_alloc_buildflags.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 
 #if !defined(PA_HAS_64_BITS_POINTERS)
 
@@ -31,37 +32,52 @@ class BASE_EXPORT AddressPoolManagerBitmap {
   static constexpr uint64_t kGiB = 1024 * 1024 * 1024ull;
   static constexpr uint64_t kAddressSpaceSize = 4ull * kGiB;
 
-  // If !BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT),
-  // BRP pool includes only normal buckets. Despite normal buckets operate at
-  // the 2MB super page granularity, we need to lower granularity down to
-  // partition page level to eliminate the guard pages at the ends. This is
-  // needed so that pointers immediately past an allocation that immediately
-  // precede a super page in BRP pool don't accidentally fall into that pool.
-  // If BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT), BRP pool includes both normal
-  // buckets and direct-maps. Because of the guard pages, we still need to use
-  // PartitionPageSize(). c.f. GetDirectMapMetadataAndGuardPagesSize().
-  // As long as DirectMapAllocationGranularity() is no smaller than
-  // PageAllocationGranularity(), which it is, we don't need to decrease
-  // the bitmap granularity any further.
+  // For BRP pool, we use partition page granularity to eliminate the guard
+  // pages from the bitmap at the ends:
+  // - Eliminating the guard page at the beginning is needed so that pointers
+  //   to the end of an allocation that immediately precede a super page in BRP
+  //   pool don't accidentally fall into that pool.
+  // - Eliminating the guard page at the end is to ensure that the last page
+  //   of the address space isn't in the BRP pool. This allows using sentinels
+  //   like reinterpret_cast<void*>(-1) without a risk of triggering BRP logic
+  //   on an invalid address. (Note, 64-bit systems don't have this problem as
+  //   the upper half of the address space always belongs to the OS.)
+  //
+  // Note, direct map allocations also belong to this pool. The same logic as
+  // above applies. It is important to note, however, that the granularity used
+  // here has to be a minimum of partition page size and direct map allocation
+  // granularity. Since DirectMapAllocationGranularity() is no smaller than
+  // PageAllocationGranularity(), we don't need to decrease the bitmap
+  // granularity any further.
   static constexpr size_t kBitShiftOfBRPPoolBitmap = PartitionPageShift();
   static constexpr size_t kBytesPer1BitOfBRPPoolBitmap = PartitionPageSize();
+  static_assert(kBytesPer1BitOfBRPPoolBitmap == 1 << kBitShiftOfBRPPoolBitmap,
+                "");
   static constexpr size_t kGuardOffsetOfBRPPoolBitmap = 1;
   static constexpr size_t kGuardBitsOfBRPPoolBitmap = 2;
   static constexpr size_t kBRPPoolBits =
       kAddressSpaceSize / kBytesPer1BitOfBRPPoolBitmap;
 
-  // Non-BRP pool includes both normal bucket and direct map allocations, so
-  // DirectMapAllocationGranularity() has to be used. No need to eliminate guard
-  // pages at the ends, as this is a BackupRefPtr-specific concern.
+  // Non-BRP pool may include both normal bucket and direct map allocations, so
+  // the bitmap granularity has to be at least as small as
+  // DirectMapAllocationGranularity(). No need to eliminate guard pages at the
+  // ends, as this is a BackupRefPtr-specific concern, hence no need to lower
+  // the granularity to partition page size.
+  static constexpr size_t kBitShiftOfNonBRPPoolBitmap =
+      DirectMapAllocationGranularityShift();
+  static constexpr size_t kBytesPer1BitOfNonBRPPoolBitmap =
+      DirectMapAllocationGranularity();
+  static_assert(kBytesPer1BitOfNonBRPPoolBitmap ==
+                    1 << kBitShiftOfNonBRPPoolBitmap,
+                "");
   static constexpr size_t kNonBRPPoolBits =
-      kAddressSpaceSize / DirectMapAllocationGranularity();
+      kAddressSpaceSize / kBytesPer1BitOfNonBRPPoolBitmap;
 
   // Returns false for nullptr.
   static bool IsManagedByNonBRPPool(const void* address) {
     uintptr_t address_as_uintptr = reinterpret_cast<uintptr_t>(address);
     static_assert(
-        std::numeric_limits<uintptr_t>::max() /
-                DirectMapAllocationGranularity() <
+        std::numeric_limits<uintptr_t>::max() >> kBitShiftOfNonBRPPoolBitmap <
             non_brp_pool_bits_.size(),
         "The bitmap is too small, will result in unchecked out of bounds "
         "accesses.");
@@ -69,8 +85,7 @@ class BASE_EXPORT AddressPoolManagerBitmap {
     // is responsible for guaranteeing that the address is inside a valid
     // allocation and the deallocation call won't race with this call.
     return TS_UNCHECKED_READ(
-        non_brp_pool_bits_)[address_as_uintptr /
-                            DirectMapAllocationGranularity()];
+        non_brp_pool_bits_)[address_as_uintptr >> kBitShiftOfNonBRPPoolBitmap];
   }
 
   // Returns false for nullptr.
@@ -87,7 +102,7 @@ class BASE_EXPORT AddressPoolManagerBitmap {
         brp_pool_bits_)[address_as_uintptr >> kBitShiftOfBRPPoolBitmap];
   }
 
-#if BUILDFLAG(USE_BRP_POOL_BLOCKLIST)
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
   static void IncrementOutsideOfBRPPoolPtrRefCount(const void* address) {
     uintptr_t address_as_uintptr = reinterpret_cast<uintptr_t>(address);
 
@@ -138,7 +153,7 @@ class BASE_EXPORT AddressPoolManagerBitmap {
                std::memory_order_relaxed) == 0;
 #endif
   }
-#endif  // BUILDFLAG(USE_BRP_POOL_BLOCKLIST)
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
  private:
   friend class AddressPoolManager;
@@ -147,14 +162,14 @@ class BASE_EXPORT AddressPoolManagerBitmap {
 
   static std::bitset<kNonBRPPoolBits> non_brp_pool_bits_ GUARDED_BY(GetLock());
   static std::bitset<kBRPPoolBits> brp_pool_bits_ GUARDED_BY(GetLock());
-#if BUILDFLAG(USE_BRP_POOL_BLOCKLIST)
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
 #if BUILDFLAG(NEVER_REMOVE_FROM_BRP_POOL_BLOCKLIST)
   static std::array<std::atomic_bool, kAddressSpaceSize / kSuperPageSize>
       brp_forbidden_super_page_map_;
 #endif
   static std::array<std::atomic_uint32_t, kAddressSpaceSize / kSuperPageSize>
       super_page_refcount_map_;
-#endif  // BUILDFLAG(USE_BRP_POOL_BLOCKLIST)
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 };
 
 }  // namespace internal

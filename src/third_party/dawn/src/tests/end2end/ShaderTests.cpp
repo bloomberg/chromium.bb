@@ -35,9 +35,9 @@ TEST_P(ShaderTests, ComputeLog2) {
     data : array<u32, 19>;
 };
 
-[[group(0), binding(0)]] var<storage> buf : [[access(read_write)]] Buf;
+[[group(0), binding(0)]] var<storage, read_write> buf : Buf;
 
-[[stage(compute)]] fn main() {
+[[stage(compute), workgroup_size(1)]] fn main() {
     let factor : f32 = 1.0001;
 
     buf.data[0] = u32(log2(1.0 * factor));
@@ -62,8 +62,8 @@ TEST_P(ShaderTests, ComputeLog2) {
 })";
 
     wgpu::ComputePipelineDescriptor csDesc;
-    csDesc.computeStage.module = utils::CreateShaderModule(device, shader.c_str());
-    csDesc.computeStage.entryPoint = "main";
+    csDesc.compute.module = utils::CreateShaderModule(device, shader.c_str());
+    csDesc.compute.entryPoint = "main";
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&csDesc);
 
     wgpu::BindGroup bindGroup =
@@ -87,7 +87,7 @@ TEST_P(ShaderTests, ComputeLog2) {
 }
 
 TEST_P(ShaderTests, BadWGSL) {
-    DAWN_SKIP_TEST_IF(HasToggleEnabled("skip_validation"));
+    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("skip_validation"));
 
     std::string shader = R"(
 I am an invalid shader and should never pass validation!
@@ -101,7 +101,7 @@ TEST_P(ShaderTests, WGSLParamIO) {
     std::string vertexShader = R"(
 [[stage(vertex)]]
 fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
-    let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+    var pos = array<vec2<f32>, 3>(
         vec2<f32>(-1.0,  1.0),
         vec2<f32>( 1.0,  1.0),
         vec2<f32>( 0.0, -1.0));
@@ -116,10 +116,10 @@ fn main([[builtin(position)]] fragCoord : vec4<f32>) -> [[location(0)]] vec4<f32
 })";
     wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fragmentShader.c_str());
 
-    utils::ComboRenderPipelineDescriptor2 rpDesc;
+    utils::ComboRenderPipelineDescriptor rpDesc;
     rpDesc.vertex.module = vsModule;
     rpDesc.cFragment.module = fsModule;
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&rpDesc);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&rpDesc);
 }
 
 // Tests that a vertex shader using struct function parameters and return values for shader stage
@@ -152,7 +152,7 @@ fn main([[location(0)]] color : vec4<f32>) -> [[location(0)]] vec4<f32> {
 })";
     wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fragmentShader.c_str());
 
-    utils::ComboRenderPipelineDescriptor2 rpDesc;
+    utils::ComboRenderPipelineDescriptor rpDesc;
     rpDesc.vertex.module = vsModule;
     rpDesc.cFragment.module = fsModule;
     rpDesc.vertex.bufferCount = 1;
@@ -162,7 +162,7 @@ fn main([[location(0)]] color : vec4<f32>) -> [[location(0)]] vec4<f32> {
     rpDesc.cAttributes[0].format = wgpu::VertexFormat::Float32x3;
     rpDesc.cAttributes[1].shaderLocation = 1;
     rpDesc.cAttributes[1].format = wgpu::VertexFormat::Float32x4;
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&rpDesc);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&rpDesc);
 }
 
 // Tests that shaders using struct function parameters and return values for shader stage I/O
@@ -200,7 +200,7 @@ fn main(input : FragmentIn) -> [[location(0)]] vec4<f32> {
 })";
     wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fragmentShader.c_str());
 
-    utils::ComboRenderPipelineDescriptor2 rpDesc;
+    utils::ComboRenderPipelineDescriptor rpDesc;
     rpDesc.vertex.module = vsModule;
     rpDesc.cFragment.module = fsModule;
     rpDesc.vertex.bufferCount = 1;
@@ -210,7 +210,7 @@ fn main(input : FragmentIn) -> [[location(0)]] vec4<f32> {
     rpDesc.cAttributes[0].format = wgpu::VertexFormat::Float32x3;
     rpDesc.cAttributes[1].shaderLocation = 1;
     rpDesc.cAttributes[1].format = wgpu::VertexFormat::Float32x4;
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&rpDesc);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&rpDesc);
 }
 
 // Tests that shaders I/O structs that us compatible locations but are not sorted by hand can link.
@@ -247,7 +247,7 @@ fn main(input : FragmentIn) -> [[location(0)]] vec4<f32> {
 })";
     wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fragmentShader.c_str());
 
-    utils::ComboRenderPipelineDescriptor2 rpDesc;
+    utils::ComboRenderPipelineDescriptor rpDesc;
     rpDesc.vertex.module = vsModule;
     rpDesc.cFragment.module = fsModule;
     rpDesc.vertex.bufferCount = 1;
@@ -257,13 +257,13 @@ fn main(input : FragmentIn) -> [[location(0)]] vec4<f32> {
     rpDesc.cAttributes[0].format = wgpu::VertexFormat::Float32x3;
     rpDesc.cAttributes[1].shaderLocation = 1;
     rpDesc.cAttributes[1].format = wgpu::VertexFormat::Float32x4;
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&rpDesc);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&rpDesc);
 }
 
 // Tests that shaders I/O structs can be shared between vertex and fragment shaders.
 TEST_P(ShaderTests, WGSLSharedStructIO) {
     // TODO(tint:714): Not yet implemeneted in tint yet, but intended to work.
-    DAWN_SKIP_TEST_IF(IsD3D12() || IsVulkan() || IsMetal() || IsOpenGL() || IsOpenGLES());
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() || IsVulkan() || IsMetal() || IsOpenGL() || IsOpenGLES());
 
     std::string shader = R"(
 struct VertexIn {
@@ -290,7 +290,7 @@ fn fragmentMain(input : VertexOut) -> [[location(0)]] vec4<f32> {
 })";
     wgpu::ShaderModule shaderModule = utils::CreateShaderModule(device, shader.c_str());
 
-    utils::ComboRenderPipelineDescriptor2 rpDesc;
+    utils::ComboRenderPipelineDescriptor rpDesc;
     rpDesc.vertex.module = shaderModule;
     rpDesc.vertex.entryPoint = "vertexMain";
     rpDesc.cFragment.module = shaderModule;
@@ -302,7 +302,24 @@ fn fragmentMain(input : VertexOut) -> [[location(0)]] vec4<f32> {
     rpDesc.cAttributes[0].format = wgpu::VertexFormat::Float32x3;
     rpDesc.cAttributes[1].shaderLocation = 1;
     rpDesc.cAttributes[1].format = wgpu::VertexFormat::Float32x4;
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&rpDesc);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&rpDesc);
+}
+
+// Feature currently not implemented in Tint, so should fail validation.
+TEST_P(ShaderTests, PipelineOverridableUsed) {
+    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("skip_validation"));
+    DAWN_TEST_UNSUPPORTED_IF(!HasToggleEnabled("use_tint_generator"));
+
+    std::string shader = R"(
+[[override]] let foo : f32;
+
+[[stage(compute), workgroup_size(1)]]
+fn ep_func() {
+  var local_foo : f32;
+  local_foo = foo;
+  return;
+})";
+    ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, shader.c_str()));
 }
 
 DAWN_INSTANTIATE_TEST(ShaderTests,

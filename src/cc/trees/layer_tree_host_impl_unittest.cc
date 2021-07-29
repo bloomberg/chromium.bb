@@ -264,7 +264,9 @@ class LayerTreeHostImplTest : public testing::Test,
       uint32_t frame_token,
       PresentationTimeCallbackBuffer::PendingCallbacks activated,
       const viz::FrameTimingDetails& details) override {
-    std::move(activated.main_thread_callbacks);
+    // We don't call main thread callbacks in this test.
+    activated.main_thread_callbacks.clear();
+
     host_impl_->NotifyDidPresentCompositorFrameOnImplThread(
         frame_token, std::move(activated.compositor_thread_callbacks), details);
   }
@@ -887,6 +889,16 @@ class CommitToPendingTreeLayerTreeHostImplTest : public LayerTreeHostImplTest {
   void SetUp() override {
     LayerTreeSettings settings = DefaultSettings();
     settings.commit_to_active_tree = false;
+    CreateHostImpl(settings, CreateLayerTreeFrameSink());
+  }
+};
+
+class OccludedSurfaceThrottlingLayerTreeHostImplTest
+    : public LayerTreeHostImplTest {
+ public:
+  void SetUp() override {
+    LayerTreeSettings settings = DefaultSettings();
+    settings.enable_compositing_based_throttling = true;
     CreateHostImpl(settings, CreateLayerTreeFrameSink());
   }
 };
@@ -1679,10 +1691,8 @@ class LayerTreeHostImplTestInvokeMainThreadCallbacks
     auto main_thread_callbacks = std::move(activated.main_thread_callbacks);
     host_impl_->NotifyDidPresentCompositorFrameOnImplThread(
         frame_token, std::move(activated.compositor_thread_callbacks), details);
-    for (LayerTreeHost::PresentationTimeCallback& callback :
-         main_thread_callbacks) {
+    for (auto& callback : main_thread_callbacks)
       std::move(callback).Run(details.presentation_feedback);
-    }
   }
 };
 
@@ -1692,25 +1702,27 @@ TEST_F(LayerTreeHostImplTestInvokeMainThreadCallbacks,
        PresentationFeedbackCallbacksFire) {
   bool compositor_thread_callback_fired = false;
   bool main_thread_callback_fired = false;
-  gfx::PresentationFeedback feedback_seen_by_compositor_thread_callback;
+  base::TimeTicks presentation_time_seen_by_compositor_thread_callback;
   gfx::PresentationFeedback feedback_seen_by_main_thread_callback;
 
   // Register a compositor-thread callback to run when the frame for
   // |frame_token_1| gets presented.
   constexpr uint32_t frame_token_1 = 1;
   host_impl_->RegisterCompositorPresentationTimeCallback(
-      frame_token_1, base::BindLambdaForTesting(
-                         [&](const gfx::PresentationFeedback& feedback) {
-                           compositor_thread_callback_fired = true;
-                           feedback_seen_by_compositor_thread_callback =
-                               feedback;
-                         }));
+      frame_token_1,
+      base::BindLambdaForTesting([&](base::TimeTicks presentation_timestamp) {
+        DCHECK(presentation_time_seen_by_compositor_thread_callback.is_null());
+        DCHECK(!presentation_timestamp.is_null());
+        compositor_thread_callback_fired = true;
+        presentation_time_seen_by_compositor_thread_callback =
+            presentation_timestamp;
+      }));
 
   // Register a main-thread callback to run when the frame for |frame_token_2|
   // gets presented.
   constexpr uint32_t frame_token_2 = 2;
   ASSERT_GT(frame_token_2, frame_token_1);
-  host_impl_->RegisterMainThreadPresentationTimeCallback(
+  host_impl_->RegisterMainThreadPresentationTimeCallbackForTesting(
       frame_token_2, base::BindLambdaForTesting(
                          [&](const gfx::PresentationFeedback& feedback) {
                            main_thread_callback_fired = true;
@@ -1723,8 +1735,8 @@ TEST_F(LayerTreeHostImplTestInvokeMainThreadCallbacks,
   host_impl_->DidPresentCompositorFrame(frame_token_1, mock_details);
 
   EXPECT_TRUE(compositor_thread_callback_fired);
-  EXPECT_EQ(feedback_seen_by_compositor_thread_callback,
-            mock_details.presentation_feedback);
+  EXPECT_EQ(presentation_time_seen_by_compositor_thread_callback,
+            mock_details.presentation_feedback.timestamp);
 
   // Since |frame_token_2| is strictly greater than |frame_token_1|, the
   // main-thread callback must remain queued for now.
@@ -3242,7 +3254,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollNodeWithoutScrollLayer) {
     EXPECT_FALSE(status.needs_main_thread_hit_test);
   } else {
     EXPECT_EQ(ScrollThread::SCROLL_ON_MAIN_THREAD, status.thread);
-    EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
+    EXPECT_EQ(MainThreadScrollingReason::kNoScrollingLayer,
               status.main_thread_scrolling_reasons);
   }
 }
@@ -12017,7 +12029,7 @@ class LayerTreeHostImplWithBrowserControlsTest : public LayerTreeHostImplTest {
     settings.commit_to_active_tree = false;
     CreateHostImpl(settings, CreateLayerTreeFrameSink());
     host_impl_->active_tree()->SetBrowserControlsParams(
-        {top_controls_height_, 0, 0, 0, false, false});
+        {static_cast<float>(top_controls_height_), 0, 0, 0, false, false});
     host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1.f, 1.f);
   }
 
@@ -18081,6 +18093,33 @@ TEST_F(UnifiedScrollingTest, CompositedWithSquashedLayerMutatesTransform) {
   TestUncompositedScrollingState(/*mutates_transform_tree=*/true);
 
   ScrollEnd();
+}
+
+// Verifies that when a surface layer is occluded, its frame sink id will be
+// marked as qualified for throttling.
+TEST_F(OccludedSurfaceThrottlingLayerTreeHostImplTest,
+       ThrottleOccludedSurface) {
+  LayerTreeImpl* tree = host_impl_->active_tree();
+  gfx::Rect viewport_rect(0, 0, 800, 600);
+  auto* root = SetupRootLayer<LayerImpl>(tree, viewport_rect.size());
+
+  auto* occluded = AddLayer<SurfaceLayerImpl>(tree);
+  occluded->SetBounds(gfx::Size(400, 300));
+  occluded->SetDrawsContent(true);
+  viz::SurfaceId start = MakeSurfaceId(viz::FrameSinkId(1, 2), 1);
+  viz::SurfaceId end = MakeSurfaceId(viz::FrameSinkId(3, 4), 1);
+  occluded->SetRange(viz::SurfaceRange(start, end), 2u);
+  CopyProperties(root, occluded);
+
+  auto* occluder = AddLayer<SolidColorLayerImpl>(tree);
+  occluder->SetBounds(gfx::Size(400, 400));
+  occluder->SetDrawsContent(true);
+  occluder->SetContentsOpaque(true);
+  CopyProperties(root, occluder);
+
+  DrawFrame();
+  EXPECT_EQ(host_impl_->GetFrameSinksToThrottleForTesting(),
+            base::flat_set<viz::FrameSinkId>{end.frame_sink_id()});
 }
 
 TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestSimple) {

@@ -10,21 +10,24 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/bitrate.h"
 #include "media/base/bitstream_buffer.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_bitrate_allocation.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -199,12 +202,28 @@ webrtc::VideoEncoder::EncoderInfo CopyToWebrtcEncoderInfo(
   return info;
 }
 
+media::VideoEncodeAccelerator::Config::InterLayerPredMode
+CopyFromWebRtcInterLayerPredMode(
+    const webrtc::InterLayerPredMode inter_layer_pred) {
+  switch (inter_layer_pred) {
+    case webrtc::InterLayerPredMode::kOff:
+      return media::VideoEncodeAccelerator::Config::InterLayerPredMode::kOff;
+    case webrtc::InterLayerPredMode::kOn:
+      return media::VideoEncodeAccelerator::Config::InterLayerPredMode::kOn;
+    case webrtc::InterLayerPredMode::kOnKeyPic:
+      return media::VideoEncodeAccelerator::Config::InterLayerPredMode::
+          kOnKeyPic;
+  }
+}
+
 // Create VEA::Config::SpatialLayer from |codec_settings|. If some config of
 // |codec_settings| is not supported, returns false.
 bool CreateSpatialLayersConfig(
     const webrtc::VideoCodec& codec_settings,
     std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>*
-        spatial_layers) {
+        spatial_layers,
+    media::VideoEncodeAccelerator::Config::InterLayerPredMode*
+        inter_layer_pred) {
   if (codec_settings.codecType == webrtc::kVideoCodecVP8 &&
       codec_settings.mode == webrtc::VideoCodecMode::kScreensharing &&
       codec_settings.VP8().numberOfTemporalLayers > 1) {
@@ -219,10 +238,12 @@ bool CreateSpatialLayersConfig(
       return false;
     }
   }
+
   if (codec_settings.codecType == webrtc::kVideoCodecVP9 &&
-      codec_settings.VP9().numberOfSpatialLayers > 1) {
+      codec_settings.VP9().numberOfSpatialLayers > 1 &&
+      !RTCVideoEncoder::Vp9HwSupportForSpatialLayers()) {
     DVLOG(1)
-        << "VP9 SVC not yet supported by HW codecs, falling back to sofware.";
+        << "VP9 SVC not yet supported by HW codecs, falling back to software.";
     return false;
   }
 
@@ -267,6 +288,8 @@ bool CreateSpatialLayersConfig(
           sl.num_of_temporal_layers =
               base::saturated_cast<uint8_t>(rtc_sl.numberOfTemporalLayers);
         }
+        *inter_layer_pred = CopyFromWebRtcInterLayerPredMode(
+            codec_settings.VP9().interLayerPred);
       }
       break;
     default:
@@ -337,6 +360,8 @@ class RTCVideoEncoder::Impl
   Impl(media::GpuVideoAcceleratorFactories* gpu_factories,
        webrtc::VideoCodecType video_codec_type,
        webrtc::VideoContentType video_content_type);
+  Impl(const Impl&) = delete;
+  Impl& operator=(const Impl&) = delete;
 
   // Create the VEA and call Initialize() on it.  Called once per instantiation,
   // and then the instance is bound forevermore to whichever thread made the
@@ -350,6 +375,8 @@ class RTCVideoEncoder::Impl
       bool is_constrained_h264,
       const std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>&
           spatial_layers,
+      media::VideoEncodeAccelerator::Config::InterLayerPredMode
+          inter_layer_pred,
       SignaledValue init_event);
 
   webrtc::VideoEncoder::EncoderInfo GetEncoderInfo() const;
@@ -518,6 +545,11 @@ class RTCVideoEncoder::Impl
                       webrtc::kMaxPreferredPixelFormats>
       preferred_pixel_formats_;
 
+  // The reslutions of active spatial layer, only used when |Vp9Metadata| is
+  // contained in |BitstreamBufferMetadata|. it will be updated when key frame
+  // is produced.
+  std::vector<gfx::Size> current_spatial_layer_resolutions_;
+
   // Protect |status_| and |encoder_info_|. |status_| is read or written on
   // |gpu_task_runner_| in Impl. It can be read in RTCVideoEncoder on other
   // threads.
@@ -528,8 +560,6 @@ class RTCVideoEncoder::Impl
   // Instead, we cache an error status here and return it the next time an
   // interface entry point is called. This is protected by |lock_|.
   int32_t status_ GUARDED_BY(lock_);
-
-  DISALLOW_COPY_AND_ASSIGN(Impl);
 };
 
 RTCVideoEncoder::Impl::Impl(media::GpuVideoAcceleratorFactories* gpu_factories,
@@ -548,9 +578,17 @@ RTCVideoEncoder::Impl::Impl(media::GpuVideoAcceleratorFactories* gpu_factories,
   DETACH_FROM_SEQUENCE(sequence_checker_);
 
   // The default values of EncoderInfo.
+  // TODO(crbug.com/1228804): These settings should be set at the time
+  // RTCVideoEncoder is constructed instead of done here.
   encoder_info_.scaling_settings = webrtc::VideoEncoder::ScalingSettings::kOff;
+#if defined(OS_ANDROID)
+  // MediaCodec requires 16x16 alignment, see https://crbug.com/1084702.
+  encoder_info_.requested_resolution_alignment = 16;
+  encoder_info_.apply_alignment_to_all_simulcast_layers = true;
+#else
   encoder_info_.requested_resolution_alignment = 1;
   encoder_info_.apply_alignment_to_all_simulcast_layers = false;
+#endif
   encoder_info_.supports_native_handle = true;
   encoder_info_.implementation_name = "ExternalEncoder";
   encoder_info_.has_trusted_rate_controller = true;
@@ -571,6 +609,7 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
     bool is_constrained_h264,
     const std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>&
         spatial_layers,
+    media::VideoEncodeAccelerator::Config::InterLayerPredMode inter_layer_pred,
     SignaledValue init_event) {
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -638,12 +677,13 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
     encoder_info_.preferred_pixel_formats = preferred_pixel_formats_;
   }
   const media::VideoEncodeAccelerator::Config config(
-      pixel_format, input_visible_size_, profile, bitrate * 1000, absl::nullopt,
+      pixel_format, input_visible_size_, profile,
+      media::Bitrate::ConstantBitrate(bitrate * 1000), absl::nullopt,
       absl::nullopt, absl::nullopt, is_constrained_h264, storage_type,
       video_content_type_ == webrtc::VideoContentType::SCREENSHARE
           ? media::VideoEncodeAccelerator::Config::ContentType::kDisplay
           : media::VideoEncodeAccelerator::Config::ContentType::kCamera,
-      spatial_layers);
+      spatial_layers, inter_layer_pred);
   if (!video_encoder_->Initialize(config, this)) {
     LogAndNotifyError(FROM_HERE, "Error initializing video_encoder",
                       media::VideoEncodeAccelerator::kInvalidArgumentError);
@@ -904,10 +944,16 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
       if (front_timestamps.media_timestamp_ == metadata.timestamp) {
         rtp_timestamp = front_timestamps.rtp_timestamp;
         capture_timestamp_ms = front_timestamps.capture_time_ms;
-        pending_timestamps_.pop_front();
+        // Remove pending timestamp at the top spatial layer in the case of SVC
+        // encoding.
+        if (!metadata.vp9 || metadata.vp9->end_of_picture) {
+          pending_timestamps_.pop_front();
+        }
         break;
       }
-      pending_timestamps_.pop_front();
+      if (!metadata.vp9 || metadata.vp9->end_of_picture) {
+        pending_timestamps_.pop_front();
+      }
     }
     DCHECK(rtp_timestamp.has_value());
   }
@@ -941,29 +987,54 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
       info.codecSpecific.VP8.keyIdx = -1;
       break;
     case webrtc::kVideoCodecVP9: {
-      bool key_frame =
-          image._frameType == webrtc::VideoFrameType::kVideoFrameKey;
       webrtc::CodecSpecificInfoVP9& vp9 = info.codecSpecific.VP9;
-      info.end_of_picture = true;
       if (metadata.vp9) {
-        // Temporal layer stream.
-        vp9.first_frame_in_picture = true;
+        // Temporal and/or spatial layer stream.
+        if (!metadata.vp9->spatial_layer_resolutions.empty()) {
+          current_spatial_layer_resolutions_ =
+              metadata.vp9->spatial_layer_resolutions;
+        }
+
+        const size_t spatial_index = metadata.vp9->spatial_idx;
+        if (spatial_index >= current_spatial_layer_resolutions_.size()) {
+          LogAndNotifyError(
+              FROM_HERE, "invalid spatial index",
+              media::VideoEncodeAccelerator::kPlatformFailureError);
+          return;
+        }
+        image.SetSpatialIndex(spatial_index);
+        image._encodedWidth =
+            current_spatial_layer_resolutions_[spatial_index].width();
+        image._encodedHeight =
+            current_spatial_layer_resolutions_[spatial_index].height();
+
+        vp9.first_frame_in_picture = spatial_index == 0;
         vp9.inter_pic_predicted = metadata.vp9->has_reference;
-        vp9.flexible_mode = true;
-        vp9.non_ref_for_inter_layer_pred = false;
+        vp9.non_ref_for_inter_layer_pred =
+            !metadata.vp9->referenced_by_upper_spatial_layers;
         vp9.temporal_idx = metadata.vp9->temporal_idx;
         vp9.temporal_up_switch = metadata.vp9->temporal_up_switch;
-        vp9.inter_layer_predicted = false;
-        vp9.gof_idx = 0;
+        vp9.inter_layer_predicted =
+            metadata.vp9->reference_lower_spatial_layers;
         vp9.num_ref_pics = metadata.vp9->p_diffs.size();
         for (size_t i = 0; i < metadata.vp9->p_diffs.size(); ++i)
           vp9.p_diff[i] = metadata.vp9->p_diffs[i];
-        vp9.ss_data_available = key_frame;
-        vp9.first_active_layer = 0u;
-        vp9.spatial_layer_resolution_present = true;
-        vp9.num_spatial_layers = 1u;
-        vp9.width[0] = image._encodedWidth;
-        vp9.height[0] = image._encodedHeight;
+        vp9.ss_data_available = metadata.key_frame;
+        vp9.first_active_layer = 0;
+        vp9.num_spatial_layers = current_spatial_layer_resolutions_.size();
+        if (vp9.ss_data_available) {
+          vp9.spatial_layer_resolution_present = true;
+          vp9.gof.num_frames_in_gof = 0;
+          for (size_t i = 0; i < vp9.num_spatial_layers; ++i) {
+            vp9.width[i] =
+                current_spatial_layer_resolutions_[spatial_index].width();
+            vp9.height[i] =
+                current_spatial_layer_resolutions_[spatial_index].height();
+          }
+        }
+        vp9.flexible_mode = true;
+        vp9.gof_idx = 0;
+        info.end_of_picture = metadata.vp9->end_of_picture;
       } else {
         // Simple stream, neither temporal nor spatial layer stream.
         vp9.flexible_mode = false;
@@ -974,9 +1045,9 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
         vp9.num_spatial_layers = 1;
         vp9.first_frame_in_picture = true;
         vp9.spatial_layer_resolution_present = false;
-        vp9.inter_pic_predicted = !key_frame;
-        vp9.ss_data_available = key_frame;
-        if (key_frame) {
+        vp9.inter_pic_predicted = !metadata.key_frame;
+        vp9.ss_data_available = metadata.key_frame;
+        if (vp9.ss_data_available) {
           vp9.spatial_layer_resolution_present = true;
           vp9.width[0] = image._encodedWidth;
           vp9.height[0] = image._encodedHeight;
@@ -986,6 +1057,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
           vp9.gof.num_ref_pics[0] = 1;
           vp9.gof.pid_diff[0][0] = 1;
         }
+        info.end_of_picture = true;
       }
     } break;
     default:
@@ -1067,11 +1139,9 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   // conditions are met.
   bool requires_copy =
       buffer->type() != webrtc::VideoFrameBuffer::Type::kNative;
-  bool optimized_scaling = false;
   if (!requires_copy) {
-    const WebRtcVideoFrameAdapterInterface* frame_adapter =
-        static_cast<WebRtcVideoFrameAdapterInterface*>(buffer.get());
-    optimized_scaling = frame_adapter->SupportsOptimizedScaling();
+    const WebRtcVideoFrameAdapter* frame_adapter =
+        static_cast<WebRtcVideoFrameAdapter*>(buffer.get());
     frame = frame_adapter->getMediaVideoFrame();
     const media::VideoFrame::StorageType storage = frame->storage_type();
     const bool is_shmem_frame = storage == media::VideoFrame::STORAGE_SHMEM;
@@ -1085,6 +1155,16 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
     const base::TimeDelta timestamp =
         frame ? frame->timestamp()
               : base::TimeDelta::FromMilliseconds(next_frame->ntp_time_ms());
+    // TODO(https://crbug.com/1194500): Android (e.g. android-pie-arm64-rel)
+    // and CrOS does not support the optimzed path, perhaps due to not
+    // supporting STORAGE_GPU_MEMORY_BUFFER or NV12? When this is fixed, remove
+    // the special casing on platform and the legacy code path.
+    bool optimized_scaling =
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+        buffer->type() == webrtc::VideoFrameBuffer::Type::kNative;
+#else
+        false;
+#endif
     if (optimized_scaling) {
       DCHECK_EQ(buffer->type(), webrtc::VideoFrameBuffer::Type::kNative);
       auto scaled_buffer = buffer->Scale(input_visible_size_.width(),
@@ -1111,9 +1191,8 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
         return;
       }
     } else {
-      // TODO(https://crbug.com/1194500): When LegacyWebRtcVideoFrameAdapter is
-      // removed, remove this code path in favor of the above code path. This
-      // will allow us to remove |input_buffers_|.
+      // TODO(https://crbug.com/1194500): Remove this code path in favor of the
+      // above code path. This will allow us to remove |input_buffers_|.
       std::pair<base::UnsafeSharedMemoryRegion,
                 base::WritableSharedMemoryMapping>* input_buffer =
           input_buffers_[index].get();
@@ -1213,7 +1292,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput() {
     frame->set_timestamp(
         base::TimeDelta::FromMilliseconds(next_frame->ntp_time_ms()));
   } else {
-    frame = static_cast<WebRtcVideoFrameAdapterInterface*>(
+    frame = static_cast<WebRtcVideoFrameAdapter*>(
                 next_frame->video_frame_buffer().get())
                 ->getMediaVideoFrame();
   }
@@ -1368,8 +1447,12 @@ int32_t RTCVideoEncoder::InitEncode(
 
   std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>
       spatial_layers;
-  if (!CreateSpatialLayersConfig(*codec_settings, &spatial_layers))
+  auto inter_layer_pred =
+      media::VideoEncodeAccelerator::Config::InterLayerPredMode::kOff;
+  if (!CreateSpatialLayersConfig(*codec_settings, &spatial_layers,
+                                 &inter_layer_pred)) {
     return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
+  }
 
   // This wait is necessary because this task is completed in GPU process
   // asynchronously but WebRTC API is synchronous.
@@ -1385,7 +1468,7 @@ int32_t RTCVideoEncoder::InitEncode(
           scoped_refptr<Impl>(impl_),
           gfx::Size(codec_settings->width, codec_settings->height),
           codec_settings->startBitrate, profile_, is_constrained_h264_,
-          spatial_layers,
+          spatial_layers, inter_layer_pred,
           SignaledValue(&initialization_waiter, &initialization_retval)));
 
   // webrtc::VideoEncoder expects this call to be synchronous.
@@ -1492,10 +1575,29 @@ void RTCVideoEncoder::SetRates(
 
 webrtc::VideoEncoder::EncoderInfo RTCVideoEncoder::GetEncoderInfo() const {
   webrtc::VideoEncoder::EncoderInfo info;
+#if defined(OS_ANDROID)
+  // MediaCodec requires 16x16 alignment, see https://crbug.com/1084702. We
+  // normally override this in |impl_|, but sometimes this method is called
+  // before |impl_| is created, so we need to override it here too.
+  info.requested_resolution_alignment = 16;
+  info.apply_alignment_to_all_simulcast_layers = true;
+#endif
+
   if (impl_)
     info = impl_->GetEncoderInfo();
-
   return info;
+}
+
+// static
+bool RTCVideoEncoder::Vp9HwSupportForSpatialLayers() {
+  // TODO(crbug.com/1217919): Query spatial scalability support for the HW
+  // encoder instead of checking OS.
+  // Underlying encoder will check the spatial SVC encoding capability on CrOS.
+#if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
+  return base::FeatureList::IsEnabled(media::kVaapiVp9kSVCHWEncoding);
+#endif
+  // Spatial layers are not supported by hardware encoders.
+  return false;
 }
 
 }  // namespace blink

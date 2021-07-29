@@ -7,6 +7,7 @@
 
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class DesktopMediaPickerViews;
 
@@ -30,6 +31,8 @@ class DesktopMediaPickerViewsTestApi {
   ~DesktopMediaPickerViewsTestApi();
 
   void set_picker(DesktopMediaPickerViews* picker) { picker_ = picker; }
+
+  bool AudioSupported(DesktopMediaList::Type type) const;
 
   void FocusAudioCheckbox();
   void PressMouseOnSourceAtIndex(size_t index, bool double_click = false);

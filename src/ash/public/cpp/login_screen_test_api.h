@@ -36,13 +36,14 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static bool IsCancelButtonShown();
   static bool IsParentAccessButtonShown();
   static bool IsEnterpriseEnrollmentButtonShown();
+  static bool IsOsInstallButtonShown();
   static bool IsWarningBubbleShown();
   static bool IsUserAddingScreenIndicatorShown();
   static bool IsSystemInfoShown();
   static bool IsPasswordFieldShown(const AccountId& account_id);
   static bool IsDisplayPasswordButtonShown(const AccountId& account_id);
   static bool IsManagedIconShown(const AccountId& account_id);
-  static bool IsManagedMessageInMenuShown(const AccountId& account_id);
+  static bool IsManagedMessageInDialogShown(const AccountId& account_id);
   static bool IsForcedOnlineSignin(const AccountId& account_id);
   static void SubmitPassword(const AccountId& account_id,
                              const std::string& password,
@@ -56,6 +57,7 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static bool ClickCancelButton();
   static bool ClickGuestButton();
   static bool ClickEnterpriseEnrollmentButton();
+  static bool ClickOsInstallButton();
   static bool PressAccelerator(const ui::Accelerator& accelerator);
   static bool WaitForUiUpdate(int64_t previous_update_count);
   static int GetUsersCount();

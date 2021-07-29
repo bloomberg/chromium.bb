@@ -22,6 +22,10 @@ suite('NewTabPageCustomizeDialogTest', () => {
     PolymerTest.clearBody();
 
     handler = TestBrowserProxy.fromClass(newTabPage.mojom.PageHandlerRemote);
+    handler.setResultFor('getMostVisitedSettings', Promise.resolve({
+      customLinksEnabled: false,
+      shortcutsVisible: false,
+    }));
     handler.setResultFor('getBackgroundCollections', Promise.resolve({
       collections: [],
     }));
@@ -157,6 +161,13 @@ suite('NewTabPageCustomizeDialogTest', () => {
         image: {imageUrl: {url: 'https://example.com/other.png'}},
       };
       assertFalse(customizeDialog.$.refreshToggle.checked);
+    });
+
+    test('clicking back', () => {
+      customizeDialog.$.backgrounds.selectedCollection = {id: 'landscape'};
+      customizeDialog.$.pages.scrollTop = 100;
+      customizeDialog.shadowRoot.querySelector('.icon-arrow-back').click();
+      assertEquals(customizeDialog.$.pages.scrollTop, 0);
     });
 
     test('clicking cancel', () => {

@@ -93,8 +93,8 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
 #include "components/security_interstitials/content/cert_report_helper.h"
@@ -127,6 +127,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_entry_restore_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_details.h"
@@ -149,6 +150,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
@@ -5406,7 +5408,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, RestoreHasSSLState) {
           url, content::Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD,
           false, std::string(), tab->GetBrowserContext(),
           nullptr /* blob_url_loader_factory */);
-  restored_entry->SetPageState(entry->GetPageState());
+  std::unique_ptr<content::NavigationEntryRestoreContext> context =
+      content::NavigationEntryRestoreContext::Create();
+  restored_entry->SetPageState(entry->GetPageState(), context.get());
 
   WebContents::CreateParams params(tab->GetBrowserContext());
   std::unique_ptr<WebContents> tab2 = WebContents::Create(params);
@@ -9073,6 +9077,210 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithEnhancedProtectionMessage,
   ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(contents));
   ExpectInterstitialElementHidden(contents, "enhanced-protection-message",
                                   true /* expect_hidden */);
+}
+
+class SSLPrerenderTest : public InProcessBrowserTest {
+ public:
+  SSLPrerenderTest()
+      : prerender_helper_(base::BindRepeating(&SSLPrerenderTest::web_contents,
+                                              base::Unretained(this))) {}
+
+  ~SSLPrerenderTest() override = default;
+  SSLPrerenderTest(const SSLPrerenderTest&) = delete;
+  SSLPrerenderTest& operator=(const SSLPrerenderTest&) = delete;
+
+  void SetUpOnMainThread() override {
+    web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  void RestartServerToRequireCerts() {
+    // Make the server ask for client certificates.
+    ASSERT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
+    auto port = test_server_->port();
+    test_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    net::SSLServerConfig ssl_config;
+    ssl_config.client_cert_type =
+        net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
+    test_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+    test_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+    ASSERT_TRUE(test_server_->Start(port));
+  }
+
+  content::WebContents* web_contents() { return web_contents_; }
+
+ protected:
+  content::WebContents* web_contents_ = nullptr;
+  std::unique_ptr<net::EmbeddedTestServer> test_server_;
+  content::test::PrerenderTestHelper prerender_helper_;
+  // base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that prerendering will be cancelled if the server asks for client
+// certificates.
+// Disabled due to https://crbug.com/1226770
+IN_PROC_BROWSER_TEST_F(SSLPrerenderTest,
+                       DISABLED_ServerRequireClientCert_Navigation) {
+  base::HistogramTester histogram_tester;
+  test_server_ = std::make_unique<net::EmbeddedTestServer>(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  test_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+  ASSERT_TRUE(test_server_->Start());
+
+  // Navigate to an initial page.
+  const GURL kInitialUrl = test_server_->GetURL("/empty.html");
+  ui_test_utils::NavigateToURL(browser(), kInitialUrl);
+
+  RestartServerToRequireCerts();
+
+  content::test::PrerenderHostRegistryObserver registry_observer(
+      *web_contents());
+  const GURL kPrerenderingUrl = test_server_->GetURL("/title1.html");
+
+  // Start prerendering `kPrerenderingUrl`.
+  prerender_helper_.AddPrerenderAsync(kPrerenderingUrl);
+  registry_observer.WaitForTrigger(kPrerenderingUrl);
+
+  int host_id = prerender_helper_.GetHostForUrl(kPrerenderingUrl);
+  content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
+
+  // The prerender should be destroyed due to SSL cert requests.
+  host_observer.WaitForDestroyed();
+  EXPECT_EQ(prerender_helper_.GetHostForUrl(kPrerenderingUrl),
+            content::RenderFrameHost::kNoFrameTreeNodeId);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus",
+      /*kClientCertRequested*/ 19, 1);
+}
+
+// Tests that prerendering will be cancelled if the server asks for client
+// certificates.
+IN_PROC_BROWSER_TEST_F(SSLPrerenderTest, ServerRequireClientCert_SubResource) {
+  base::HistogramTester histogram_tester;
+  test_server_ = std::make_unique<net::EmbeddedTestServer>(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  test_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+  ASSERT_TRUE(test_server_->Start());
+
+  // Navigate to an initial page.
+  const GURL kInitialUrl = test_server_->GetURL("/empty.html");
+  ui_test_utils::NavigateToURL(browser(), kInitialUrl);
+  content::test::PrerenderHostRegistryObserver registry_observer(
+      *web_contents());
+
+  // Start prerendering `kPrerenderingUrl`.
+  const GURL kPrerenderingUrl = test_server_->GetURL("/title1.html");
+  int host_id = prerender_helper_.AddPrerender(kPrerenderingUrl);
+  content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
+
+  RestartServerToRequireCerts();
+  ASSERT_NE(prerender_helper_.GetHostForUrl(kPrerenderingUrl),
+            content::RenderFrameHost::kNoFrameTreeNodeId);
+
+  std::string fetch_subresource_script = R"(
+        const imgElement = document.createElement('img');
+        imgElement.src = '/load_image/image.png';
+        document.body.appendChild(imgElement);
+  )";
+  ignore_result(
+      content::ExecJs(prerender_helper_.GetPrerenderedMainFrameHost(host_id),
+                      fetch_subresource_script));
+
+  // The prerender should be destroyed due to SSL cert requests.
+  host_observer.WaitForDestroyed();
+  EXPECT_EQ(prerender_helper_.GetHostForUrl(kPrerenderingUrl),
+            content::RenderFrameHost::kNoFrameTreeNodeId);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus",
+      /*kClientCertRequested*/ 19, 1);
+}
+
+// Tests that prerendering will be cancelled if the server asks for client
+// certificates, even if the main resource request is intercepted and sent by a
+// service worker.
+IN_PROC_BROWSER_TEST_F(SSLPrerenderTest,
+                       ServerRequireClientCert_SWMainResource) {
+  base::HistogramTester histogram_tester;
+  test_server_ = std::make_unique<net::EmbeddedTestServer>(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  test_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+  ASSERT_TRUE(test_server_->Start());
+
+  // Register a service worker that intercepts resource requests.
+  const GURL kInitialUrl =
+      test_server_->GetURL("/service_worker/create_service_worker.html");
+  ui_test_utils::NavigateToURL(browser(), kInitialUrl);
+  EXPECT_EQ("DONE",
+            content::EvalJs(web_contents(),
+                            "register('fetch_event_respond_with_fetch.js');"));
+
+  RestartServerToRequireCerts();
+  content::test::PrerenderHostRegistryObserver registry_observer(
+      *web_contents());
+
+  // Prerender a page, and the server asks for a client cert.
+  // The resource request should be sent by the registered service worker.
+  const GURL kPrerenderingUrl =
+      test_server_->GetURL("/service_worker/fetch_from_page.html");
+  prerender_helper_.AddPrerenderAsync(kPrerenderingUrl);
+  registry_observer.WaitForTrigger(kPrerenderingUrl);
+  int host_id = prerender_helper_.GetHostForUrl(kPrerenderingUrl);
+
+  // The prerender should be destroyed due to client cert requests.
+  content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
+  host_observer.WaitForDestroyed();
+  EXPECT_EQ(prerender_helper_.GetHostForUrl(kPrerenderingUrl),
+            content::RenderFrameHost::kNoFrameTreeNodeId);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus",
+      /*kClientCertRequested*/ 19, 1);
+}
+
+// Tests that prerendering will be cancelled if the server asks for client
+// certificates, even if the subresource request is intercepted by a service
+// worker.
+IN_PROC_BROWSER_TEST_F(SSLPrerenderTest,
+                       ServerRequireClientCert_SWSubResource) {
+  base::HistogramTester histogram_tester;
+  test_server_ = std::make_unique<net::EmbeddedTestServer>(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  test_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+  ASSERT_TRUE(test_server_->Start());
+
+  const GURL kInitialUrl = test_server_->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), kInitialUrl);
+
+  // Prerender a page, then register a service worker that intercepts resource
+  // requests.
+  const GURL kPrerenderingUrl =
+      test_server_->GetURL("/service_worker/create_service_worker.html");
+  int host_id = prerender_helper_.AddPrerender(kPrerenderingUrl);
+  EXPECT_EQ("DONE", content::EvalJs(
+                        prerender_helper_.GetPrerenderedMainFrameHost(host_id),
+                        "register('fetch_event_respond_with_fetch.js');"));
+  content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
+  RestartServerToRequireCerts();
+
+  // Try to fetch a sub resource through the registered service worker. The
+  // server should ask for a client certificate, which leads to the cancellation
+  // of prerendering.
+  std::string resource_url =
+      test_server_->GetURL("/service_worker/empty.js").spec();
+  ignore_result(
+      content::ExecJs(prerender_helper_.GetPrerenderedMainFrameHost(host_id),
+                      content::JsReplace("fetch($1);", resource_url)));
+
+  // Check the prerender was destroyed due to the client cert request.
+  host_observer.WaitForDestroyed();
+  EXPECT_EQ(prerender_helper_.GetHostForUrl(kPrerenderingUrl),
+            content::RenderFrameHost::kNoFrameTreeNodeId);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus",
+      /*kClientCertRequested*/ 19, 1);
 }
 
 // TODO(jcampan): more tests to do below.

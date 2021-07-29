@@ -31,7 +31,6 @@
 #include <memory>
 
 #include "base/dcheck_is_on.h"
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_filter.h"
@@ -68,11 +67,30 @@ class PaintController;
 class Path;
 struct TextRunPaintInfo;
 
+// Tiling parameters for the DrawImageTiled() method.
+struct ImageTilingInfo {
+  // The part of the Image (the |image| argument to the method) to tile. It's in
+  // the space of the image.
+  FloatRect image_rect;
+
+  // Scale factor from image space to destination space. Will include
+  // image-resolution information.
+  FloatSize scale{1.0f, 1.0f};
+
+  // Origin of the full image in destination space.
+  FloatPoint phase;
+
+  // Additional spacing between tiles in destination space.
+  FloatSize spacing;
+};
+
 class PLATFORM_EXPORT GraphicsContext {
   USING_FAST_MALLOC(GraphicsContext);
 
  public:
   explicit GraphicsContext(PaintController&);
+  GraphicsContext(const GraphicsContext&) = delete;
+  GraphicsContext& operator=(const GraphicsContext&) = delete;
   ~GraphicsContext();
 
   // Copy configs such as printing, dark mode, device scale factor etc. from
@@ -238,22 +256,20 @@ class PLATFORM_EXPORT GraphicsContext {
                  Image::ImageDecodingMode,
                  const FloatRect& dest_rect,
                  const FloatRect* src_rect = nullptr,
-                 bool has_filter_property = false,
+                 bool has_disable_dark_mode_style = false,
                  SkBlendMode = SkBlendMode::kSrcOver,
                  RespectImageOrientationEnum = kRespectImageOrientation);
   void DrawImageRRect(Image*,
                       Image::ImageDecodingMode,
                       const FloatRoundedRect& dest,
                       const FloatRect& src_rect,
-                      bool has_filter_property = false,
+                      bool has_disable_dark_mode_style = false,
                       SkBlendMode = SkBlendMode::kSrcOver,
                       RespectImageOrientationEnum = kRespectImageOrientation);
   void DrawImageTiled(Image* image,
                       const FloatRect& dest_rect,
-                      const FloatRect& src_rect,
-                      const FloatSize& scale_src_to_dest,
-                      const FloatPoint& phase,
-                      const FloatSize& repeat_spacing,
+                      const ImageTilingInfo& tiling_info,
+                      bool has_disable_dark_mode_style = false,
                       SkBlendMode = SkBlendMode::kSrcOver,
                       RespectImageOrientationEnum = kRespectImageOrientation);
 
@@ -307,6 +323,14 @@ class PLATFORM_EXPORT GraphicsContext {
   // if we can change that to use the four parameter version above.
   void DrawText(const Font&,
                 const TextRunPaintInfo&,
+                const FloatPoint&,
+                const PaintFlags&,
+                DOMNodeId);
+
+  // TODO(layout-dev): This method is only used by NGTextPainter, see if the
+  // four parameter overload can be removed or if it can wrap this method.
+  void DrawText(const Font&,
+                const NGTextFragmentPaintInfo&,
                 const FloatPoint&,
                 const PaintFlags&,
                 DOMNodeId);
@@ -542,8 +566,6 @@ class PLATFORM_EXPORT GraphicsContext {
 
   // The current node ID, which is used for marked content in a tagged PDF.
   DOMNodeId dom_node_id_ = kInvalidDOMNodeId;
-
-  DISALLOW_COPY_AND_ASSIGN(GraphicsContext);
 };
 
 }  // namespace blink

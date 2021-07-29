@@ -9,20 +9,29 @@
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
+
 namespace sharing_hub {
+
+class SharingHubModel;
 
 class SharingHubSubMenuModel : public ui::SimpleMenuModel,
                                public ui::SimpleMenuModel::Delegate {
  public:
   explicit SharingHubSubMenuModel(Browser* browser);
+  ~SharingHubSubMenuModel() override;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
+  SharingHubModel* GetSharingHubModel() const;
   void Build(content::WebContents* web_contents);
+  bool IsThirdPartyAction(int id);
+
   Browser* browser_;
+  content::WebContents* web_contents_;
+  std::vector<int> third_party_action_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(SharingHubSubMenuModel);
 };

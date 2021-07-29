@@ -20,10 +20,10 @@
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "components/safe_browsing/core/db/database_manager.h"
-#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
-#include "components/safe_browsing/core/features.h"
-#include "components/safe_browsing/core/web_ui/constants.h"
+#include "components/safe_browsing/core/browser/db/database_manager.h"
+#include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/web_ui_constants.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
@@ -181,7 +181,7 @@ void AwUrlCheckerDelegateImpl::StartApplicationResponse(
       security_interstitial_tab_helper->IsDisplayingInterstitial()) {
     // In this case we are about to leave an interstitial due to the user
     // clicking proceed on it, we shouldn't call OnSafeBrowsingHit again.
-    resource.callback_thread->PostTask(
+    resource.callback_sequence->PostTask(
         FROM_HERE, base::BindOnce(resource.callback, true /* proceed */,
                                   false /* showed_interstitial */));
     return;
@@ -208,6 +208,9 @@ void AwUrlCheckerDelegateImpl::DoApplicationResponse(
     SafeBrowsingAction action,
     bool reporting) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
+  // |web_contents_getter| can return null after RenderFrameHost is destroyed.
+  if (!web_contents)
+    return;
 
   if (!reporting) {
     AwBrowserContext* browser_context =

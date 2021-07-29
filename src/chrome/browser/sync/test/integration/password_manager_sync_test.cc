@@ -21,23 +21,25 @@
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/test/fake_server/fake_server_nigori_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -253,6 +255,12 @@ class PasswordManagerSyncTest : public SyncTest {
     form.username_value = base::UTF8ToUTF16(username);
     form.password_value = base::UTF8ToUTF16(password);
     form.date_created = base::Time::Now();
+    // TODO(crbug.com/1223022): Once all places that operate changes on forms
+    // via UpdateLogin properly set |password_issues|, setting them to an empty
+    // map should be part of the default constructor.
+    form.password_issues =
+        base::flat_map<password_manager::InsecureType,
+                       password_manager::InsecurityMetadata>();
     return form;
   }
 
@@ -285,8 +293,8 @@ class PasswordManagerSyncTest : public SyncTest {
 
   // Adds a credential to the local store.
   void AddLocalCredential(const password_manager::PasswordForm& form) {
-    scoped_refptr<password_manager::PasswordStore> password_store =
-        passwords_helper::GetPasswordStore(0);
+    scoped_refptr<password_manager::PasswordStoreInterface> password_store =
+        passwords_helper::GetProfilePasswordStoreInterface(0);
     password_store->AddLogin(form);
     // Do a roundtrip to the DB thread, to make sure the new password is stored
     // before doing anything else that might depend on it.
@@ -297,8 +305,8 @@ class PasswordManagerSyncTest : public SyncTest {
   // returns them.
   std::vector<std::unique_ptr<password_manager::PasswordForm>>
   GetAllLoginsFromProfilePasswordStore() {
-    scoped_refptr<password_manager::PasswordStore> password_store =
-        passwords_helper::GetPasswordStore(0);
+    scoped_refptr<password_manager::PasswordStoreInterface> password_store =
+        passwords_helper::GetProfilePasswordStoreInterface(0);
     PasswordStoreResultsObserver syncer;
     password_store->GetAllLoginsWithAffiliationAndBrandingInformation(&syncer);
     return syncer.WaitForResults();
@@ -308,8 +316,8 @@ class PasswordManagerSyncTest : public SyncTest {
   // returns them.
   std::vector<std::unique_ptr<password_manager::PasswordForm>>
   GetAllLoginsFromAccountPasswordStore() {
-    scoped_refptr<password_manager::PasswordStore> password_store =
-        passwords_helper::GetAccountPasswordStore(0);
+    scoped_refptr<password_manager::PasswordStoreInterface> password_store =
+        passwords_helper::GetAccountPasswordStoreInterface(0);
     PasswordStoreResultsObserver syncer;
     password_store->GetAllLoginsWithAffiliationAndBrandingInformation(&syncer);
     return syncer.WaitForResults();

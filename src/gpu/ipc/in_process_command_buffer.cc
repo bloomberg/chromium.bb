@@ -298,7 +298,7 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
   // would be kept alive by VizProcessContextProvider. If no |task_sequence| is
   // passed in, create one here.
   if (task_sequence) {
-    task_sequence_ = task_sequence;
+    task_sequence_ = std::move(task_sequence);
   } else {
     task_scheduler_holder_ =
         std::make_unique<gpu::GpuTaskSchedulerHelper>(task_executor_);
@@ -562,11 +562,6 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
                                      context_group_->feature_info());
       }
 
-      if (base::ThreadTaskRunnerHandle::IsSet()) {
-        gr_cache_controller_.emplace(context_state_.get(),
-                                     base::ThreadTaskRunnerHandle::Get());
-      }
-
       context_ = context_state_->context();
       decoder_.reset(raster::RasterDecoder::Create(
           this, command_buffer_.get(), task_executor_->outputter(),
@@ -697,7 +692,6 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
     surface_->PrepareToDestroy(have_context);
 
   if (decoder_) {
-    gr_cache_controller_.reset();
     decoder_->Destroy(have_context);
     decoder_.reset();
   }
@@ -1224,8 +1218,7 @@ void InProcessCommandBuffer::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {
 
 void InProcessCommandBuffer::ScheduleGrContextCleanup() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
-  if (gr_cache_controller_)
-    gr_cache_controller_->ScheduleGrContextCleanup();
+  context_state_->ScheduleGrContextCleanup();
 }
 
 void InProcessCommandBuffer::HandleReturnData(base::span<const uint8_t> data) {
@@ -1265,10 +1258,11 @@ void InProcessCommandBuffer::SignalSyncToken(const SyncToken& sync_token,
 void InProcessCommandBuffer::SignalSyncTokenOnGpuThread(
     const SyncToken& sync_token,
     base::OnceClosure callback) {
-  base::RepeatingClosure maybe_pass_callback =
-      base::AdaptCallbackForRepeating(WrapClientCallback(std::move(callback)));
-  if (!sync_point_client_state_->Wait(sync_token, maybe_pass_callback)) {
-    maybe_pass_callback.Run();
+  auto callback_pair =
+      base::SplitOnceCallback(WrapClientCallback(std::move(callback)));
+  if (!sync_point_client_state_->Wait(sync_token,
+                                      std::move(callback_pair.first))) {
+    std::move(callback_pair.second).Run();
   }
 }
 
@@ -1444,7 +1438,8 @@ void InProcessCommandBuffer::DidCreateAcceleratedSurfaceChildWindow(
 #endif
 
 void InProcessCommandBuffer::DidSwapBuffersComplete(
-    SwapBuffersCompleteParams params) {
+    SwapBuffersCompleteParams params,
+    gfx::GpuFenceHandle release_fence) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
 
   auto& pending_swap = pending_swap_completed_params_.front();
@@ -1458,7 +1453,7 @@ void InProcessCommandBuffer::DidSwapBuffersComplete(
 
   PostOrRunClientCallback(base::BindOnce(
       &InProcessCommandBuffer::DidSwapBuffersCompleteOnOriginThread,
-      client_thread_weak_ptr_, std::move(params)));
+      client_thread_weak_ptr_, std::move(params), std::move(release_fence)));
 }
 
 const gles2::FeatureInfo* InProcessCommandBuffer::GetFeatureInfo() const {
@@ -1484,10 +1479,12 @@ void InProcessCommandBuffer::BufferPresented(
 }
 
 void InProcessCommandBuffer::DidSwapBuffersCompleteOnOriginThread(
-    SwapBuffersCompleteParams params) {
+    SwapBuffersCompleteParams params,
+    gfx::GpuFenceHandle release_fence) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   if (gpu_control_client_)
-    gpu_control_client_->OnGpuControlSwapBuffersCompleted(params);
+    gpu_control_client_->OnGpuControlSwapBuffersCompleted(
+        params, std::move(release_fence));
 }
 
 void InProcessCommandBuffer::BufferPresentedOnOriginThread(

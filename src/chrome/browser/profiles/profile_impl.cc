@@ -171,21 +171,21 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/account_manager/account_manager.h"
 #include "ash/components/account_manager/account_manager_factory.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
+#include "chrome/browser/ash/policy/active_directory/active_directory_policy_manager.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/ash/policy/core/user_policy_manager_builder_chromeos.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/locale_change_guard.h"
-#include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_builder_chromeos.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -240,6 +240,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "components/policy/core/common/async_policy_provider.h"
+#include "components/policy/core/common/policy_loader_lacros.h"
+#include "components/policy/core/common/policy_proto_decoders.h"
 #include "components/signin/public/base/signin_switches.h"
 #endif
 
@@ -334,43 +337,6 @@ bool LocaleNotChanged(const std::string& pref_locale,
   return pref_locale == new_locale_converted;
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-bool IsDeviceAccountSignedIn(const Profile* const profile) {
-  const crosapi::mojom::BrowserInitParams* const init_params =
-      chromeos::LacrosChromeServiceImpl::Get()->init_params();
-  // We will need to check for the presence of the Device Account in a few lines
-  // below but for Guest and Managed Guest Sessions, "Device Account" is
-  // meaningless. Hence, we don't need any further checks. Early exit here.
-  if (init_params->session_type == crosapi::mojom::SessionType::kGuestSession ||
-      init_params->session_type ==
-          crosapi::mojom::SessionType::kPublicSession) {
-    return true;
-  }
-
-  if (init_params->device_mode != crosapi::mojom::DeviceMode::kConsumer &&
-      init_params->device_mode != crosapi::mojom::DeviceMode::kEnterprise) {
-    return true;
-  }
-
-  // Ash did not send any value, not even an empty string. This can only happen
-  // if we have an old version of Ash. Early exit.
-  if (!init_params->device_account_gaia_id.has_value())
-    return true;
-
-  // Profile must have the Device Account signed in. This is a temporary check
-  // until this is guaranteed via go/cros-dent-1-lacros.
-  ProfileAttributesStorage& profile_attributes_storage =
-      g_browser_process->profile_manager()->GetProfileAttributesStorage();
-  ProfileAttributesEntry* entry =
-      profile_attributes_storage.GetProfileAttributesWithPath(
-          profile->GetPath());
-  if (!entry) {
-    return false;
-  }
-  return entry->GetGAIAId() == init_params->device_account_gaia_id;
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace
 
@@ -508,13 +474,8 @@ ProfileImpl::ProfileImpl(
 #endif
 
   if (path == ProfileManager::GetGuestProfilePath()) {
-    if (IsEphemeralGuestProfileEnabled()) {
-      profile_metrics::SetBrowserProfileType(
-          this, profile_metrics::BrowserProfileType::kEphemeralGuest);
-    } else {
       profile_metrics::SetBrowserProfileType(
           this, profile_metrics::BrowserProfileType::kGuest);
-    }
   } else if (path == ProfileManager::GetSystemProfilePath()) {
     profile_metrics::SetBrowserProfileType(
         this, profile_metrics::BrowserProfileType::kSystem);
@@ -566,6 +527,9 @@ ProfileImpl::ProfileImpl(
   }
 #endif
 
+  if (delegate_)
+    delegate_->OnProfileCreationStarted(this, create_mode);
+
   if (async_prefs) {
     // Wait for the notification that prefs has been loaded
     // (successfully or not).  Note that we can use base::Unretained
@@ -577,9 +541,8 @@ ProfileImpl::ProfileImpl(
     // Prefs were loaded synchronously so we can continue directly.
     OnPrefsLoaded(create_mode, true);
   }
-
 #if !defined(OS_ANDROID)
-  if (IsGuestSession() || IsEphemeralGuestProfile()) {
+  if (IsGuestSession()) {
     PrefService* local_state = g_browser_process->local_state();
     DCHECK(local_state);
     base::UmaHistogramBoolean(
@@ -621,6 +584,7 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
   bool force_immediate_policy_load = !async_prefs;
 
   policy::UserCloudPolicyManager* user_cloud_policy_manager;
+  policy::ConfigurationPolicyProvider* policy_provider;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (force_immediate_policy_load)
     ash::DeviceSettingsService::Get()->LoadImmediately();
@@ -630,16 +594,34 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
       &user_cloud_policy_manager_chromeos_, &active_directory_policy_manager_);
 
   user_cloud_policy_manager = nullptr;
-#else
-  user_cloud_policy_manager_ = CreateUserCloudPolicyManager(
-      GetPath(), GetPolicySchemaRegistryService()->registry(),
-      force_immediate_policy_load, io_task_runner_);
-  user_cloud_policy_manager = user_cloud_policy_manager_.get();
+  policy_provider = GetUserCloudPolicyManagerChromeOS();
+  if (!policy_provider) {
+    policy_provider = GetActiveDirectoryPolicyManager();
+  }
+#else  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (IsMainProfile()) {
+    auto loader = std::make_unique<policy::PolicyLoaderLacros>(
+        io_task_runner_, policy::PolicyPerProfileFilter::kTrue);
+    user_policy_provider_ = std::make_unique<policy::AsyncPolicyProvider>(
+        schema_registry_service_->registry(), std::move(loader));
+    user_policy_provider_->Init(schema_registry_service_->registry());
+    policy_provider = user_policy_provider_.get();
+    user_cloud_policy_manager = nullptr;
+  } else
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  {
+    user_cloud_policy_manager_ = CreateUserCloudPolicyManager(
+        GetPath(), GetPolicySchemaRegistryService()->registry(),
+        force_immediate_policy_load, io_task_runner_);
+    user_cloud_policy_manager = user_cloud_policy_manager_.get();
+    policy_provider = user_cloud_policy_manager;
+  }
 #endif
   profile_policy_connector_ =
       policy::CreateProfilePolicyConnectorForBrowserContext(
           schema_registry_service_->registry(), user_cloud_policy_manager,
-          g_browser_process->browser_policy_connector(),
+          policy_provider, g_browser_process->browser_policy_connector(),
           force_immediate_policy_load, this);
 
   bool is_signin_profile = false;
@@ -673,7 +655,7 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
   key_->SetPrefs(prefs_.get());
 }
 
-void ProfileImpl::DoFinalInit() {
+void ProfileImpl::DoFinalInit(CreateMode create_mode) {
   TRACE_EVENT0("browser", "ProfileImpl::DoFinalInit");
 
   PrefService* prefs = GetPrefs();
@@ -797,14 +779,16 @@ void ProfileImpl::DoFinalInit() {
                               std::make_unique<PrefsInternalsSource>(this));
 
   if (delegate_) {
-    TRACE_EVENT0("browser", "ProfileImpl::DoFileInit:DelegateOnProfileCreated");
+    TRACE_EVENT0("browser",
+                 "ProfileImpl::DoFinalInit:DelegateOnProfileCreationFinished");
     // Fails if the browser is shutting down. This is done to avoid
     // launching new UI, finalising profile creation, etc. which
     // would trigger a crash down the line. See ...
     const bool shutting_down = g_browser_process->IsShuttingDown();
-    delegate_->OnProfileCreated(this, !shutting_down, IsNewProfile());
+    delegate_->OnProfileCreationFinished(this, create_mode, !shutting_down,
+                                         IsNewProfile());
     // The current Profile may be immediately deleted as part of
-    // the call to OnProfileCreated(...) if the initialisation is
+    // the call to OnProfileCreationFinished(...) if the initialisation is
     // reported as a failure, thus no code should be executed past
     // that point.
     if (shutting_down)
@@ -939,24 +923,9 @@ bool ProfileImpl::IsOffTheRecord() const {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 bool ProfileImpl::IsMainProfile() const {
   // Profile must be at "Default" path.
-  if (GetBaseName().value() != chrome::kInitialProfile)
-    return false;
-
-  // Until go/cros-dent-1-lacros is launched, the user could have signed into
-  // `this` Lacros Profile with a different account than the "Device Account"
-  // used to sign into Ash. We need to return `false` in this case in spite of
-  // the fact that this may mean that Lacros does not have _any_ Main Profile.
-  // This is acceptable because the check for `IsMainProfile` is done by
-  // sensitive services like Policy and Certs and we do not want to expose the
-  // Device Account's certs to non-Device Accounts (Think of the case when the
-  // Device Account has sensitive Enterprise SSL client certs).
-  // TODO(sinhak): Remove this after launching go/cros-dent-1-lacros.
-  const crosapi::mojom::BrowserInitParams* init_params =
-      chromeos::LacrosChromeServiceImpl::Get()->init_params();
-  if (!init_params->use_new_account_manager)
-    return IsDeviceAccountSignedIn(this);
-
-  return true;
+  // `IdentityManager' will guarantee that the Chrome OS Device Account is
+  // signed into `this' Profile, if it's the Main Profile.
+  return Profile::IsMainProfilePath(GetPath());
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -1062,7 +1031,7 @@ ExtensionSpecialStoragePolicy* ProfileImpl::GetExtensionSpecialStoragePolicy() {
 #endif
 }
 
-void ProfileImpl::OnLocaleReady() {
+void ProfileImpl::OnLocaleReady(CreateMode create_mode) {
   TRACE_EVENT0("browser", "ProfileImpl::OnLocaleReady");
 
   // Migrate obsolete prefs.
@@ -1099,14 +1068,14 @@ void ProfileImpl::OnLocaleReady() {
       this);
 
   ChromeVersionService::OnProfileLoaded(prefs_.get(), IsNewProfile());
-  DoFinalInit();
+  DoFinalInit(create_mode);
 }
 
 void ProfileImpl::OnPrefsLoaded(CreateMode create_mode, bool success) {
   TRACE_EVENT0("browser", "ProfileImpl::OnPrefsLoaded");
   if (!success) {
     if (delegate_)
-      delegate_->OnProfileCreated(this, false, false);
+      delegate_->OnProfileCreationFinished(this, create_mode, false, false);
     return;
   }
 
@@ -1115,7 +1084,7 @@ void ProfileImpl::OnPrefsLoaded(CreateMode create_mode, bool success) {
   // the line. See crbug.com/625646
   if (g_browser_process->IsShuttingDown()) {
     if (delegate_)
-      delegate_->OnProfileCreated(this, false, false);
+      delegate_->OnProfileCreationFinished(this, create_mode, false, false);
     return;
   }
 
@@ -1123,14 +1092,14 @@ void ProfileImpl::OnPrefsLoaded(CreateMode create_mode, bool success) {
   if (create_mode == CREATE_MODE_SYNCHRONOUS) {
     // Synchronous create mode implies that either it is restart after crash,
     // or we are in tests. In both cases the first loaded locale is correct.
-    OnLocaleReady();
+    OnLocaleReady(create_mode);
   } else {
     ash::UserSessionManager::GetInstance()->RespectLocalePreferenceWrapper(
-        this,
-        base::BindOnce(&ProfileImpl::OnLocaleReady, base::Unretained(this)));
+        this, base::BindOnce(&ProfileImpl::OnLocaleReady,
+                             base::Unretained(this), create_mode));
   }
 #else
-  OnLocaleReady();
+  OnLocaleReady(create_mode);
 #endif
 }
 
@@ -1237,7 +1206,11 @@ ProfileImpl::configuration_policy_provider() {
   if (active_directory_policy_manager_)
     return active_directory_policy_manager_.get();
   return nullptr;
-#else
+#else  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (user_policy_provider_)
+    return user_policy_provider_.get();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   return user_cloud_policy_manager_.get();
 #endif
 }

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/websocket_handshake_request_info.h"
@@ -216,10 +216,10 @@ void WebRequestInfoInitParams::InitializeWebViewAndFrameData(
 
     // For subresource loads we attempt to resolve the FrameData immediately.
     frame_data = ExtensionApiFrameIdMap::Get()->GetFrameData(
-        content::GlobalFrameRoutingId(render_process_id, frame_id));
+        content::GlobalRenderFrameHostId(render_process_id, frame_id));
 
     parent_routing_id =
-        content::GlobalFrameRoutingId(render_process_id, frame_id);
+        content::GlobalRenderFrameHostId(render_process_id, frame_id);
   }
 }
 

@@ -24,12 +24,16 @@
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_navigation_button_container.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_toolbar_button_container.h"
+#include "chrome/browser/ui/views/web_apps/frame_toolbar/window_controls_overlay_toggle_button.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -40,6 +44,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "url/gurl.h"
@@ -238,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, ThemeChange) {
       toolbar_button_provider->GetAppMenuButton();
 
   const SkColor original_ink_drop_color =
-      app_menu_button->ink_drop()->GetBaseColor();
+      views::InkDrop::Get(app_menu_button)->GetBaseColor();
 
   {
     content::ThemeChangeWaiter theme_change_waiter(web_contents);
@@ -247,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, ThemeChange) {
                                 "setAttribute('content', '#246')"));
     theme_change_waiter.Wait();
 
-    EXPECT_NE(app_menu_button->ink_drop()->GetBaseColor(),
+    EXPECT_NE(views::InkDrop::Get(app_menu_button)->GetBaseColor(),
               original_ink_drop_color);
   }
 
@@ -257,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, ThemeChange) {
         web_contents, "document.getElementById('theme-color').remove()"));
     theme_change_waiter.Wait();
 
-    EXPECT_EQ(app_menu_button->ink_drop()->GetBaseColor(),
+    EXPECT_EQ(views::InkDrop::Get(app_menu_button)->GetBaseColor(),
               original_ink_drop_color);
   }
 #endif
@@ -388,4 +393,76 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_NoElidedExtensionsMenu,
 
   // There should be no menu entry for opening the Extensions menu.
   EXPECT_FALSE(IsMenuCommandEnabled(WebAppMenuModel::kExtensionsMenuCommandId));
+}
+
+class WebAppFrameToolbarBrowserTest_WindowControlsOverlay
+    : public WebAppFrameToolbarBrowserTest {
+ public:
+  WebAppFrameToolbarBrowserTest_WindowControlsOverlay() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kWebAppWindowControlsOverlay);
+  }
+
+  void InstallAndLaunchWebApp() {
+    const GURL& start_url = GURL("https://test.org");
+    std::vector<blink::mojom::DisplayMode> display_overrides;
+    display_overrides.emplace_back(
+        web_app::DisplayMode::kWindowControlsOverlay);
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->start_url = start_url;
+    web_app_info->scope = start_url.GetWithoutFilename();
+    web_app_info->title = u"A minimal-ui app";
+    web_app_info->display_mode = web_app::DisplayMode::kStandalone;
+    web_app_info->open_as_window = true;
+    web_app_info->display_override = display_overrides;
+
+    helper()->InstallAndLaunchCustomWebApp(browser(), std::move(web_app_info),
+                                           start_url);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
+                       HideToggleButtonWhenCCTIsVisible) {
+  InstallAndLaunchWebApp();
+  EXPECT_TRUE(helper()->browser_view()->AppUsesWindowControlsOverlay());
+
+  WebAppToolbarButtonContainer* toolbar_button_container =
+      helper()->web_app_frame_toolbar()->get_right_container_for_testing();
+
+  // Start with app in standalone mode.
+  EXPECT_FALSE(helper()->browser_view()->IsWindowControlsOverlayEnabled());
+  // Ensure the CCT is hidden before running checks.
+  helper()->browser_view()->UpdateCustomTabBarVisibility(/*visible*/ false,
+                                                         /*animate*/ false);
+
+  // Verify that the WCO toggle button shows when app is in standalone mode.
+  EXPECT_TRUE(toolbar_button_container->window_controls_overlay_toggle_button()
+                  ->GetVisible());
+
+  // Show CCT and verify the toggle button hides.
+  helper()->browser_view()->UpdateCustomTabBarVisibility(/*visible*/ true,
+                                                         /*animate*/ false);
+  EXPECT_FALSE(toolbar_button_container->window_controls_overlay_toggle_button()
+                   ->GetVisible());
+
+  // Hide CCT and enable window controls overlay.
+  helper()->browser_view()->UpdateCustomTabBarVisibility(/*visible*/ false,
+                                                         /*animate*/ false);
+  helper()->browser_view()->ToggleWindowControlsOverlayEnabled();
+
+  // Verify that the app entered window controls overlay mode.
+  EXPECT_TRUE(helper()->browser_view()->IsWindowControlsOverlayEnabled());
+
+  // Verify that the WCO toggle button shows when app is in WCO mode.
+  EXPECT_TRUE(toolbar_button_container->window_controls_overlay_toggle_button()
+                  ->GetVisible());
+
+  // Show CCT and verify the toggle button hides.
+  helper()->browser_view()->UpdateCustomTabBarVisibility(/*visible*/ true,
+                                                         /*animate*/ false);
+  EXPECT_FALSE(toolbar_button_container->window_controls_overlay_toggle_button()
+                   ->GetVisible());
 }

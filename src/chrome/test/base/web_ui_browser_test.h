@@ -19,7 +19,35 @@
 
 namespace {
 class WebUITestMessageHandler;
-class WebUICoverageObserver;
+
+// Observes new DevToolsAgentHost's and ensures code coverage is enabled and
+// can be collected.
+class WebUICoverageObserver : public content::DevToolsAgentHostObserver {
+ public:
+  explicit WebUICoverageObserver(base::FilePath devtools_code_coverage_dir);
+  ~WebUICoverageObserver() override;
+
+  bool CoverageEnabled();
+  void CollectCoverage(const std::string& test_name);
+
+ protected:
+  // content::DevToolsAgentHostObserver
+  bool ShouldForceDevToolsAgentHostCreation() override;
+  void DevToolsAgentHostCreated(content::DevToolsAgentHost* host) override;
+  void DevToolsAgentHostAttached(content::DevToolsAgentHost* host) override;
+  void DevToolsAgentHostNavigated(content::DevToolsAgentHost* host) override;
+  void DevToolsAgentHostDetached(content::DevToolsAgentHost* host) override;
+  void DevToolsAgentHostCrashed(content::DevToolsAgentHost* host,
+                                base::TerminationStatus status) override;
+
+ private:
+  using DevToolsAgentMap =  // agent hosts: have a unique devtools listener
+      std::map<content::DevToolsAgentHost*,
+               std::unique_ptr<coverage::DevToolsListener>>;
+  base::FilePath devtools_code_coverage_dir_;
+  DevToolsAgentMap devtools_agent_;
+};
+
 }  // namespace
 
 namespace base {
@@ -144,6 +172,9 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
     test_handler_ = std::move(test_handler);
   }
 
+  // Handles collection of code coverage.
+  std::unique_ptr<WebUICoverageObserver> coverage_handler_;
+
  private:
   // Loads all libraries added with AddLibrary(), and calls |function_name| with
   // |function_arguments|. When |is_test| is true, the framework wraps
@@ -163,8 +194,8 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
 
   // Tracks the frames for which we've preloaded libraries.
   //
-  // We use `GlobalFrameRoutingId` because in certain cases, e.g. COOP/COEP, the
-  // frame gets swapped during the navigation and we get two calls to
+  // We use `GlobalRenderFrameHostId` because in certain cases, e.g. COOP/COEP,
+  // the frame gets swapped during the navigation and we get two calls to
   // `WebContentsObserver::RenderFrameCreated()` (where we preload libraries).
   //
   // In the COOP/COEP case, `RenderFrameCreated()` is called for a speculative
@@ -173,7 +204,7 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
   // we'll create a different RFH for that SiteInstance and dispatch
   // `RenderFrameCreated()` for that RFH (and throw away the old speculative
   // RFH).
-  std::set<content::GlobalFrameRoutingId> libraries_preloaded_for_frames_;
+  std::set<content::GlobalRenderFrameHostId> libraries_preloaded_for_frames_;
 
   // Saves the states of |test_fixture| and |test_name| for calling
   // PreloadJavascriptLibraries().
@@ -187,8 +218,6 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
   std::unique_ptr<TestChromeWebUIControllerFactory> test_factory_;
   std::unique_ptr<content::ScopedWebUIControllerFactoryRegistration>
       factory_registration_;
-
-  std::unique_ptr<WebUICoverageObserver> coverage_handler_;
 };
 
 class WebUIBrowserTest : public BaseWebUIBrowserTest {
@@ -197,6 +226,8 @@ class WebUIBrowserTest : public BaseWebUIBrowserTest {
   ~WebUIBrowserTest() override;
 
   void SetupHandlers() override;
+
+  void CollectCoverage(const std::string& test_name);
 
  private:
   // Owned by |test_handler_| in BaseWebUIBrowserTest.

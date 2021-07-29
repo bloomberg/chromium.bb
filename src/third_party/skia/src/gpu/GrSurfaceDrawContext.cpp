@@ -25,10 +25,8 @@
 #include "src/core/SkMatrixPriv.h"
 #include "src/core/SkMatrixProvider.h"
 #include "src/core/SkRRectPriv.h"
-#include "src/core/SkSurfacePriv.h"
 #include "src/gpu/GrAppliedClip.h"
 #include "src/gpu/GrAttachment.h"
-#include "src/gpu/GrAuditTrail.h"
 #include "src/gpu/GrBlurUtils.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrClip.h"
@@ -40,7 +38,6 @@
 #include "src/gpu/GrImageContextPriv.h"
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrMemoryPool.h"
-#include "src/gpu/GrPathRenderer.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRenderTarget.h"
 #include "src/gpu/GrResourceProvider.h"
@@ -50,7 +47,9 @@
 #include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrBicubicEffect.h"
 #include "src/gpu/effects/GrBlendFragmentProcessor.h"
+#include "src/gpu/effects/GrDisableColorXP.h"
 #include "src/gpu/effects/GrRRectEffect.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/geometry/GrQuad.h"
 #include "src/gpu/geometry/GrQuadUtils.h"
 #include "src/gpu/geometry/GrStyledShape.h"
@@ -69,8 +68,13 @@
 #include "src/gpu/ops/GrShadowRRectOp.h"
 #include "src/gpu/ops/GrStrokeRectOp.h"
 #include "src/gpu/ops/GrTextureOp.h"
+#include "src/gpu/tessellate/GrTessellationPathRenderer.h"
 #include "src/gpu/text/GrSDFTControl.h"
 #include "src/gpu/text/GrTextBlobCache.h"
+
+#if SK_GPU_V1
+#include "src/gpu/GrPathRenderer.h"
+#endif
 
 #define ASSERT_OWNED_RESOURCE(R) SkASSERT(!(R) || (R)->getContext() == this->drawingManager()->getContext())
 #define ASSERT_SINGLE_OWNER        GR_ASSERT_SINGLE_OWNER(this->singleOwner())
@@ -92,28 +96,28 @@ private:
     GrDrawingManager* fDrawingManager;
 };
 
-std::unique_ptr<GrSurfaceDrawContext> GrSurfaceDrawContext::Make(GrRecordingContext* context,
+std::unique_ptr<GrSurfaceDrawContext> GrSurfaceDrawContext::Make(GrRecordingContext* rContext,
                                                                  GrColorType colorType,
-                                                                 sk_sp<SkColorSpace> colorSpace,
                                                                  sk_sp<GrSurfaceProxy> proxy,
+                                                                 sk_sp<SkColorSpace> colorSpace,
                                                                  GrSurfaceOrigin origin,
                                                                  const SkSurfaceProps& surfaceProps,
                                                                  bool flushTimeOpsTask) {
-    if (!proxy) {
+    if (!rContext || !proxy) {
         return nullptr;
     }
 
     const GrBackendFormat& format = proxy->backendFormat();
     GrSwizzle readSwizzle, writeSwizzle;
     if (colorType != GrColorType::kUnknown) {
-        readSwizzle = context->priv().caps()->getReadSwizzle(format, colorType);
-        writeSwizzle = context->priv().caps()->getWriteSwizzle(format, colorType);
+        readSwizzle = rContext->priv().caps()->getReadSwizzle(format, colorType);
+        writeSwizzle = rContext->priv().caps()->getWriteSwizzle(format, colorType);
     }
 
     GrSurfaceProxyView readView (           proxy, origin,  readSwizzle);
     GrSurfaceProxyView writeView(std::move(proxy), origin, writeSwizzle);
 
-    return std::make_unique<GrSurfaceDrawContext>(context,
+    return std::make_unique<GrSurfaceDrawContext>(rContext,
                                                   std::move(readView),
                                                   std::move(writeView),
                                                   colorType,
@@ -171,7 +175,7 @@ std::unique_ptr<GrSurfaceDrawContext> GrSurfaceDrawContext::Make(
 }
 
 std::unique_ptr<GrSurfaceDrawContext> GrSurfaceDrawContext::Make(
-        GrRecordingContext* context,
+        GrRecordingContext* rContext,
         GrColorType colorType,
         sk_sp<SkColorSpace> colorSpace,
         SkBackingFit fit,
@@ -182,32 +186,32 @@ std::unique_ptr<GrSurfaceDrawContext> GrSurfaceDrawContext::Make(
         GrProtected isProtected,
         GrSurfaceOrigin origin,
         SkBudgeted budgeted) {
-    auto format = context->priv().caps()->getDefaultBackendFormat(colorType, GrRenderable::kYes);
+    auto format = rContext->priv().caps()->getDefaultBackendFormat(colorType, GrRenderable::kYes);
     if (!format.isValid()) {
         return nullptr;
     }
-    sk_sp<GrTextureProxy> proxy = context->priv().proxyProvider()->createProxy(format,
-                                                                               dimensions,
-                                                                               GrRenderable::kYes,
-                                                                               sampleCnt,
-                                                                               mipMapped,
-                                                                               fit,
-                                                                               budgeted,
-                                                                               isProtected);
+    sk_sp<GrTextureProxy> proxy = rContext->priv().proxyProvider()->createProxy(format,
+                                                                                dimensions,
+                                                                                GrRenderable::kYes,
+                                                                                sampleCnt,
+                                                                                mipMapped,
+                                                                                fit,
+                                                                                budgeted,
+                                                                                isProtected);
     if (!proxy) {
         return nullptr;
     }
 
-    return GrSurfaceDrawContext::Make(context,
+    return GrSurfaceDrawContext::Make(rContext,
                                       colorType,
-                                      std::move(colorSpace),
                                       std::move(proxy),
+                                      std::move(colorSpace),
                                       origin,
                                       surfaceProps);
 }
 
 std::unique_ptr<GrSurfaceDrawContext> GrSurfaceDrawContext::MakeWithFallback(
-        GrRecordingContext* context,
+        GrRecordingContext* rContext,
         GrColorType colorType,
         sk_sp<SkColorSpace> colorSpace,
         SkBackingFit fit,
@@ -218,11 +222,12 @@ std::unique_ptr<GrSurfaceDrawContext> GrSurfaceDrawContext::MakeWithFallback(
         GrProtected isProtected,
         GrSurfaceOrigin origin,
         SkBudgeted budgeted) {
-    auto [ct, format] = GetFallbackColorTypeAndFormat(context, colorType, sampleCnt);
+    const GrCaps* caps = rContext->priv().caps();
+    auto [ct, format] = caps->getFallbackColorTypeAndFormat(colorType, sampleCnt);
     if (ct == GrColorType::kUnknown) {
         return nullptr;
     }
-    return GrSurfaceDrawContext::Make(context, ct, colorSpace, fit, dimensions, surfaceProps,
+    return GrSurfaceDrawContext::Make(rContext, ct, colorSpace, fit, dimensions, surfaceProps,
                                       sampleCnt, mipMapped, isProtected, origin, budgeted);
 }
 
@@ -243,29 +248,12 @@ std::unique_ptr<GrSurfaceDrawContext> GrSurfaceDrawContext::MakeFromBackendTextu
         return nullptr;
     }
 
-    return GrSurfaceDrawContext::Make(context, colorType, std::move(colorSpace), std::move(proxy),
+    return GrSurfaceDrawContext::Make(context, colorType, std::move(proxy), std::move(colorSpace),
                                       origin, surfaceProps);
 }
 
-std::unique_ptr<GrSurfaceDrawContext> GrSurfaceDrawContext::MakeFromVulkanSecondaryCB(
-        GrRecordingContext* context,
-        const SkImageInfo& imageInfo,
-        const GrVkDrawableInfo& vkInfo,
-        const SkSurfaceProps& props) {
-    sk_sp<GrSurfaceProxy> proxy(
-            context->priv().proxyProvider()->wrapVulkanSecondaryCBAsRenderTarget(imageInfo,
-                                                                                 vkInfo));
-    if (!proxy) {
-        return nullptr;
-    }
-
-    return GrSurfaceDrawContext::Make(context, SkColorTypeToGrColorType(imageInfo.colorType()),
-                                      imageInfo.refColorSpace(), std::move(proxy),
-                                      kTopLeft_GrSurfaceOrigin, props);
-}
-
 // In MDB mode the reffing of the 'getLastOpsTask' call's result allows in-progress
-// GrOpsTask to be picked up and added to by renderTargetContexts lower in the call
+// GrOpsTask to be picked up and added to by SurfaceDrawContexts lower in the call
 // stack. When this occurs with a closed GrOpsTask, a new one will be allocated
 // when the surfaceDrawContext attempts to use it (via getOpsTask).
 GrSurfaceDrawContext::GrSurfaceDrawContext(GrRecordingContext* context,
@@ -282,7 +270,7 @@ GrSurfaceDrawContext::GrSurfaceDrawContext(GrRecordingContext* context,
                                flushTimeOpsTask)
         , fSurfaceProps(surfaceProps)
         , fCanUseDynamicMSAA(
-                (fSurfaceProps.flags() & kDMSAA_SkSurfacePropsPrivateFlag) &&
+                (fSurfaceProps.flags() & SkSurfaceProps::kDynamicMSAA_Flag) &&
                 context->priv().caps()->supportsDynamicMSAA(this->asRenderTargetProxy()))
         , fGlyphPainter(*this) {
     SkDEBUGCODE(this->validate();)
@@ -310,9 +298,8 @@ void GrSurfaceDrawContext::willReplaceOpsTask(GrOpsTask* prevTask, GrOpsTask* ne
 
 inline GrAAType GrSurfaceDrawContext::chooseAAType(GrAA aa) {
     if (fCanUseDynamicMSAA) {
-        // Trigger dmsaa by default if the render target has it. Coverage ops that know how to
-        // handle both single and multisample targets without popping will do so without calling
-        // chooseAAType.
+        // Always trigger DMSAA when it's available. The coverage ops that know how to handle both
+        // single and multisample targets without popping will do so without calling chooseAAType.
         return GrAAType::kMSAA;
     }
     if (GrAA::kNo == aa) {
@@ -324,13 +311,6 @@ inline GrAAType GrSurfaceDrawContext::chooseAAType(GrAA aa) {
         return GrAAType::kNone;
     }
     return (this->numSamples() > 1) ? GrAAType::kMSAA : GrAAType::kCoverage;
-}
-
-GrMipmapped GrSurfaceDrawContext::mipmapped() const {
-    if (const GrTextureProxy* proxy = this->asTextureProxy()) {
-        return proxy->mipmapped();
-    }
-    return GrMipmapped::kNo;
 }
 
 void GrSurfaceDrawContext::drawGlyphRunListNoCache(const GrClip* clip,
@@ -497,7 +477,12 @@ GrSurfaceDrawContext::QuadOptimization GrSurfaceDrawContext::attemptQuadOptimiza
     if (!quad->fDevice.isFinite() || drawBounds.isEmpty() ||
         GrClip::IsOutsideClip(rtRect, drawBounds)) {
         return QuadOptimization::kDiscarded;
+    } else if (GrQuadUtils::WillUseHairline(quad->fDevice, GrAAType::kCoverage, quad->fEdgeFlags)) {
+        // Don't try to apply the clip early if we know rendering will use hairline methods, as this
+        // has an effect on the op bounds not otherwise taken into account in this function.
+        return QuadOptimization::kCropped;
     }
+
     auto conservativeCrop = [&]() {
         static constexpr int kLargeDrawLimit = 15000;
         // Crop the quad to the render target. This doesn't change the visual results of drawing but
@@ -540,6 +525,16 @@ GrSurfaceDrawContext::QuadOptimization GrSurfaceDrawContext::attemptQuadOptimiza
     SkASSERT(result.fEffect == GrClip::Effect::kClipped && result.fIsRRect);
     SkRect clippedBounds = result.fRRect.getBounds();
     clippedBounds.intersect(rtRect);
+    if (!drawBounds.intersect(clippedBounds)) {
+        // Our fractional bounds aren't actually inside the clip. GrClip::preApply() can sometimes
+        // think in terms of rounded-out bounds. Discard the draw.
+        return QuadOptimization::kDiscarded;
+    }
+    // Guard against the clipped draw turning into a hairline draw after intersection
+    if (drawBounds.width() < 1.f || drawBounds.height() < 1.f) {
+        return QuadOptimization::kCropped;
+    }
+
     if (result.fRRect.isRect()) {
         // No rounded corners, so we might be able to become a native clear or we might be able to
         // modify geometry and edge flags to represent intersected shape of clip and draw.
@@ -744,10 +739,19 @@ void GrSurfaceDrawContext::drawRect(const GrClip* clip,
         return;
     } else if ((stroke.getStyle() == SkStrokeRec::kStroke_Style ||
                 stroke.getStyle() == SkStrokeRec::kHairline_Style) &&
-               (rect.width() && rect.height())) {
+               rect.width()                                        &&
+               rect.height()                                       &&
+               !this->caps()->reducedShaderMode()) {
         // Only use the StrokeRectOp for non-empty rectangles. Empty rectangles will be processed by
         // GrStyledShape to handle stroke caps and dashing properly.
-        GrAAType aaType = (fCanUseDynamicMSAA) ? GrAAType::kCoverage : this->chooseAAType(aa);
+        //
+        // http://skbug.com/12206 -- there is a double-blend issue with the bevel version of
+        // AAStrokeRectOp, and if we increase the AA bloat for MSAA it becomes more pronounced.
+        // Don't use the bevel version with DMSAA.
+        GrAAType aaType = (fCanUseDynamicMSAA &&
+                           stroke.getJoin() == SkPaint::kMiter_Join &&
+                           stroke.getMiter() >= SK_ScalarSqrt2) ? GrAAType::kCoverage
+                                                                : this->chooseAAType(aa);
         GrOp::Owner op = GrStrokeRectOp::Make(
                 fContext, std::move(paint), aaType, viewMatrix, rect, stroke);
         // op may be null if the stroke is not supported or if using coverage aa and the view matrix
@@ -806,8 +810,8 @@ void GrSurfaceDrawContext::fillRectToRect(const GrClip* clip,
             croppedLocal = localRect;
         }
 
-        if (auto op = GrFillRRectOp::Make(fContext, std::move(paint), viewMatrix,
-                                          SkRRect::MakeRect(croppedRect), croppedLocal,
+        if (auto op = GrFillRRectOp::Make(fContext, this->arenaAlloc(), std::move(paint),
+                                          viewMatrix, SkRRect::MakeRect(croppedRect), croppedLocal,
                                           GrAA::kYes)) {
             this->addDrawOp(optimizedClip, std::move(op));
             return;
@@ -896,6 +900,7 @@ bool GrSurfaceDrawContext::stencilPath(const GrHardClip* clip,
                                        GrAA doStencilMSAA,
                                        const SkMatrix& viewMatrix,
                                        const SkPath& path) {
+#if SK_GPU_V1
     SkIRect clipBounds = clip ? clip->getConservativeBounds()
                               : SkIRect::MakeSize(this->dimensions());
     GrStyledShape shape(path, GrStyledShape::DoSimplify::kNo);
@@ -919,7 +924,7 @@ bool GrSurfaceDrawContext::stencilPath(const GrHardClip* clip,
 
     GrPathRenderer::StencilPathArgs args;
     args.fContext = fContext;
-    args.fRenderTargetContext = this;
+    args.fSurfaceDrawContext = this;
     args.fClip = clip;
     args.fClipConservativeBounds = &clipBounds;
     args.fViewMatrix = &viewMatrix;
@@ -927,6 +932,9 @@ bool GrSurfaceDrawContext::stencilPath(const GrHardClip* clip,
     args.fDoStencilMSAA = doStencilMSAA;
     pr->stencilPath(args);
     return true;
+#else
+    return false;
+#endif // SK_GPU_V1
 }
 
 void GrSurfaceDrawContext::drawTextureSet(const GrClip* clip,
@@ -970,7 +978,7 @@ void GrSurfaceDrawContext::drawVertices(const GrClip* clip,
     AutoCheckFlush acf(this->drawingManager());
 
     SkASSERT(vertices);
-    GrAAType aaType = this->chooseAAType(GrAA::kNo);
+    GrAAType aaType = fCanUseDynamicMSAA ? GrAAType::kMSAA : this->chooseAAType(GrAA::kNo);
     GrOp::Owner op =
             GrDrawVerticesOp::Make(fContext, std::move(paint), std::move(vertices), matrixProvider,
                                    aaType, this->colorInfo().refColorSpaceXformFromSRGB(),
@@ -1062,28 +1070,25 @@ void GrSurfaceDrawContext::drawRRect(const GrClip* origClip,
     AutoCheckFlush acf(this->drawingManager());
 
     GrAAType aaType = this->chooseAAType(aa);
-    bool preferFillRRectOverCircle = aaType == GrAAType::kCoverage        &&
-                                     this->caps()->drawInstancedSupport() &&
-                                     this->caps()->reducedShaderMode();
 
     GrOp::Owner op;
-    if (!preferFillRRectOverCircle                             &&
-        GrAAType::kCoverage == aaType                          &&
+    if (aaType == GrAAType::kCoverage                          &&
+        !fCanUseDynamicMSAA                                    &&
+        !this->caps()->reducedShaderMode()                     &&
         rrect.isSimple()                                       &&
         rrect.getSimpleRadii().fX == rrect.getSimpleRadii().fY &&
         viewMatrix.rectStaysRect() && viewMatrix.isSimilarity()) {
-        // In coverage mode, we draw axis-aligned circular roundrects with the GrOvalOpFactory
-        // to avoid perf regressions on some platforms.
+        // In specific cases we use a dedicated circular round rect op to try and get better perf.
         assert_alive(paint);
-        op = GrOvalOpFactory::MakeCircularRRectOp(
-                fContext, std::move(paint), viewMatrix, rrect, stroke, this->caps()->shaderCaps());
+        op = GrOvalOpFactory::MakeCircularRRectOp(fContext, std::move(paint), viewMatrix, rrect,
+                                                  stroke, this->caps()->shaderCaps());
     }
     if (!op && style.isSimpleFill()) {
         assert_alive(paint);
-        op = GrFillRRectOp::Make(fContext, std::move(paint), viewMatrix, rrect, rrect.rect(),
-                                 GrAA(aaType != GrAAType::kNone));
+        op = GrFillRRectOp::Make(fContext, this->arenaAlloc(), std::move(paint), viewMatrix, rrect,
+                                 rrect.rect(), GrAA(aaType != GrAAType::kNone));
     }
-    if (!op && (GrAAType::kCoverage == aaType || fCanUseDynamicMSAA)) {
+    if (!op && (aaType == GrAAType::kCoverage || fCanUseDynamicMSAA)) {
         assert_alive(paint);
         op = GrOvalOpFactory::MakeRRectOp(
                 fContext, std::move(paint), viewMatrix, rrect, stroke, this->caps()->shaderCaps());
@@ -1338,9 +1343,11 @@ void GrSurfaceDrawContext::drawRegion(const GrClip* clip,
         return this->drawPath(clip, std::move(paint), aa, viewMatrix, path, style);
     }
 
-    GrAAType aaType = this->chooseAAType(GrAA::kNo);
-    GrOp::Owner op = GrRegionOp::Make(fContext, std::move(paint), viewMatrix, region,
-                                      aaType, ss);
+    GrAAType aaType = (this->numSamples() > 1 &&
+                       !this->caps()->multisampleDisableSupport())
+                    ? GrAAType::kMSAA
+                    : GrAAType::kNone;
+    GrOp::Owner op = GrRegionOp::Make(fContext, std::move(paint), viewMatrix, region, aaType, ss);
     this->addDrawOp(clip, std::move(op));
 }
 
@@ -1370,18 +1377,14 @@ void GrSurfaceDrawContext::drawOval(const GrClip* clip,
 
     GrAAType aaType = this->chooseAAType(aa);
 
-    bool preferFillRRectOverCircle = aaType == GrAAType::kCoverage        &&
-                                     this->caps()->drawInstancedSupport() &&
-                                     this->caps()->reducedShaderMode();
-
     GrOp::Owner op;
-    if (!preferFillRRectOverCircle         &&
-        GrAAType::kCoverage == aaType      &&
+    if (aaType == GrAAType::kCoverage      &&
+        !fCanUseDynamicMSAA                &&
+        !this->caps()->reducedShaderMode() &&
         oval.width() > SK_ScalarNearlyZero &&
         oval.width() == oval.height()      &&
         viewMatrix.isSimilarity()) {
-        // We don't draw true circles as round rects in coverage mode, because it can
-        // cause perf regressions on some platforms as compared to the dedicated circle Op.
+        // In specific cases we use a dedicated circle op to try and get better perf.
         assert_alive(paint);
         op = GrOvalOpFactory::MakeCircleOp(fContext, std::move(paint), viewMatrix, oval, style,
                                            this->caps()->shaderCaps());
@@ -1393,10 +1396,10 @@ void GrSurfaceDrawContext::drawOval(const GrClip* clip,
         // inside the oval's inner diamond). Given these optimizations, it's a clear win to draw
         // ovals the exact same way we do round rects.
         assert_alive(paint);
-        op = GrFillRRectOp::Make(fContext, std::move(paint), viewMatrix, SkRRect::MakeOval(oval),
-                                 oval, GrAA(aaType != GrAAType::kNone));
+        op = GrFillRRectOp::Make(fContext, this->arenaAlloc(), std::move(paint), viewMatrix,
+                                 SkRRect::MakeOval(oval), oval, GrAA(aaType != GrAAType::kNone));
     }
-    if (!op && (GrAAType::kCoverage == aaType || fCanUseDynamicMSAA)) {
+    if (!op && (aaType == GrAAType::kCoverage || fCanUseDynamicMSAA)) {
         assert_alive(paint);
         op = GrOvalOpFactory::MakeOvalOp(fContext, std::move(paint), viewMatrix, oval, style,
                                          this->caps()->shaderCaps());
@@ -1429,7 +1432,7 @@ void GrSurfaceDrawContext::drawArc(const GrClip* clip,
     AutoCheckFlush acf(this->drawingManager());
 
     GrAAType aaType = this->chooseAAType(aa);
-    if (GrAAType::kCoverage == aaType || fCanUseDynamicMSAA) {
+    if (aaType == GrAAType::kCoverage) {
         const GrShaderCaps* shaderCaps = this->caps()->shaderCaps();
         GrOp::Owner op = GrOvalOpFactory::MakeArcOp(fContext,
                                                     std::move(paint),
@@ -1507,8 +1510,9 @@ bool GrSurfaceDrawContext::waitOnSemaphores(int numSemaphores,
     std::unique_ptr<std::unique_ptr<GrSemaphore>[]> grSemaphores(
             new std::unique_ptr<GrSemaphore>[numSemaphores]);
     for (int i = 0; i < numSemaphores; ++i) {
-        grSemaphores[i] = resourceProvider->wrapBackendSemaphore(
-                waitSemaphores[i], GrResourceProvider::SemaphoreWrapType::kWillWait, ownership);
+        grSemaphores[i] = resourceProvider->wrapBackendSemaphore(waitSemaphores[i],
+                                                                 GrSemaphoreWrapType::kWillWait,
+                                                                 ownership);
     }
     this->drawingManager()->newWaitRenderTask(this->asSurfaceProxyRef(), std::move(grSemaphores),
                                               numSemaphores);
@@ -1554,9 +1558,11 @@ void GrSurfaceDrawContext::drawShape(const GrClip* clip,
                                      /* attemptDrawSimple */ true);
 }
 
+#if SK_GPU_V1
 static SkIRect get_clip_bounds(const GrSurfaceDrawContext* rtc, const GrClip* clip) {
     return clip ? clip->getConservativeBounds() : SkIRect::MakeWH(rtc->width(), rtc->height());
 }
+#endif // SK_GPU_V1
 
 bool GrSurfaceDrawContext::drawAndStencilPath(const GrHardClip* clip,
                                               const GrUserStencilSettings* ss,
@@ -1565,6 +1571,7 @@ bool GrSurfaceDrawContext::drawAndStencilPath(const GrHardClip* clip,
                                               GrAA aa,
                                               const SkMatrix& viewMatrix,
                                               const SkPath& path) {
+#if SK_GPU_V1
     ASSERT_SINGLE_OWNER
     RETURN_FALSE_IF_ABANDONED
     SkDEBUGCODE(this->validate();)
@@ -1623,6 +1630,9 @@ bool GrSurfaceDrawContext::drawAndStencilPath(const GrHardClip* clip,
                                       this->colorInfo().isLinearlyBlended()};
     pr->drawPath(args);
     return true;
+#else
+    return false;
+#endif
 }
 
 SkBudgeted GrSurfaceDrawContext::isBudgeted() const {
@@ -1718,8 +1728,10 @@ bool GrSurfaceDrawContext::drawSimpleShape(const GrClip* clip, GrPaint* paint, G
             }
             this->drawRRect(clip, std::move(*paint), aa, viewMatrix, rrect, shape.style());
             return true;
-        } else if (GrAAType::kCoverage == aaType && shape.style().isSimpleFill() &&
-                   viewMatrix.rectStaysRect()) {
+        } else if (GrAAType::kCoverage == aaType &&
+                   shape.style().isSimpleFill()  &&
+                   viewMatrix.rectStaysRect()    &&
+                   !this->caps()->reducedShaderMode()) {
             // TODO: the rectStaysRect restriction could be lifted if we were willing to apply the
             // matrix to all the points individually rather than just to the rect
             SkRect rects[2];
@@ -1744,6 +1756,7 @@ void GrSurfaceDrawContext::drawShapeUsingPathRenderer(const GrClip* clip,
                                                       const SkMatrix& viewMatrix,
                                                       GrStyledShape&& shape,
                                                       bool attemptDrawSimple) {
+#if SK_GPU_V1
     ASSERT_SINGLE_OWNER
     RETURN_IF_ABANDONED
     GR_CREATE_TRACE_MARKER_CONTEXT("GrSurfaceDrawContext", "internalDrawPath", fContext);
@@ -1754,7 +1767,8 @@ void GrSurfaceDrawContext::drawShapeUsingPathRenderer(const GrClip* clip,
 
     SkIRect clipConservativeBounds = get_clip_bounds(this, clip);
 
-    GrAAType aaType = this->chooseAAType(aa);
+    // Always allow paths to trigger DMSAA.
+    GrAAType aaType = fCanUseDynamicMSAA ? GrAAType::kMSAA : this->chooseAAType(aa);
 
     GrPathRenderer::CanDrawPathArgs canDrawArgs;
     canDrawArgs.fCaps = this->caps();
@@ -1852,6 +1866,7 @@ void GrSurfaceDrawContext::drawShapeUsingPathRenderer(const GrClip* clip,
                                       aaType,
                                       this->colorInfo().isLinearlyBlended()};
     pr->drawPath(args);
+#endif
 }
 
 static void op_bounds(SkRect* bounds, const GrOp* op) {
@@ -1896,24 +1911,17 @@ void GrSurfaceDrawContext::addDrawOp(const GrClip* clip,
     SkRect bounds;
     op_bounds(&bounds, op.get());
     GrAppliedClip appliedClip(this->dimensions(), this->asSurfaceProxy()->backingStoreDimensions());
-    GrDrawOp::FixedFunctionFlags fixedFunctionFlags = drawOp->fixedFunctionFlags();
-    bool usesHWAA = fixedFunctionFlags & GrDrawOp::FixedFunctionFlags::kUsesHWAA;
-    bool usesUserStencilBits = fixedFunctionFlags & GrDrawOp::FixedFunctionFlags::kUsesStencil;
-
-    if (usesUserStencilBits) {  // Stencil clipping will call setNeedsStencil on its own, if needed.
-        this->setNeedsStencil();
-    }
-
+    const bool opUsesMSAA = drawOp->usesMSAA();
     bool skipDraw = false;
     if (clip) {
         // Have a complex clip, so defer to its early clip culling
         GrAAType aaType;
-        if (usesHWAA) {
+        if (opUsesMSAA) {
             aaType = GrAAType::kMSAA;
         } else {
             aaType = op->hasAABloat() ? GrAAType::kCoverage : GrAAType::kNone;
         }
-        skipDraw = clip->apply(fContext, this, aaType, usesUserStencilBits,
+        skipDraw = clip->apply(fContext, this, drawOp, aaType,
                                &appliedClip, &bounds) == GrClip::Effect::kClippedOut;
     } else {
         // No clipping, so just clip the bounds against the logical render target dimensions
@@ -1927,14 +1935,52 @@ void GrSurfaceDrawContext::addDrawOp(const GrClip* clip,
     GrClampType clampType = GrColorTypeClampType(this->colorInfo().colorType());
     GrProcessorSet::Analysis analysis = drawOp->finalize(*this->caps(), &appliedClip, clampType);
 
+    const bool opUsesStencil = drawOp->usesStencil();
+
+    // Always trigger DMSAA when there is stencil. This ensures stencil contents get properly
+    // preserved between render passes, if needed.
+    const bool drawNeedsMSAA = opUsesMSAA || (fCanUseDynamicMSAA && opUsesStencil);
+
     // Must be called before setDstProxyView so that it sees the final bounds of the op.
     op->setClippedBounds(bounds);
 
-    GrXferProcessor::DstProxyView dstProxyView;
+    // Determine if the Op will trigger the use of a separate DMSAA attachment that requires manual
+    // resolves.
+    // TODO: Currently usesAttachmentIfDMSAA checks if this is a textureProxy or not. This check is
+    // really only for GL which uses a normal texture sampling when using barriers. For Vulkan it
+    // is possible to use the msaa buffer as an input attachment even if this is not a texture.
+    // However, support for that is not fully implemented yet in Vulkan. Once it is, this check
+    // should change to a virtual caps check that returns whether we need to break up an OpsTask
+    // if it has barriers and we are about to promote to MSAA.
+    bool usesAttachmentIfDMSAA =
+            fCanUseDynamicMSAA &&
+            (!this->caps()->msaaResolvesAutomatically() || !this->asTextureProxy());
+    bool opRequiresDMSAAAttachment = usesAttachmentIfDMSAA && drawNeedsMSAA;
+    bool opTriggersDMSAAAttachment =
+            opRequiresDMSAAAttachment && !this->getOpsTask()->usesMSAASurface();
+    if (opTriggersDMSAAAttachment) {
+        // This will be the op that actually triggers use of a DMSAA attachment. Texture barriers
+        // can't be moved to a DMSAA attachment, so if there already are any on the current opsTask
+        // then we need to split.
+        if (this->getOpsTask()->renderPassXferBarriers() & GrXferBarrierFlags::kTexture) {
+            SkASSERT(!this->getOpsTask()->isColorNoOp());
+            this->replaceOpsTask()->setCannotMergeBackward();
+        }
+    }
+
+    GrDstProxyView dstProxyView;
     if (analysis.requiresDstTexture()) {
-        if (!this->setupDstProxyView(*op, &dstProxyView)) {
+        if (!this->setupDstProxyView(drawOp->bounds(), drawNeedsMSAA, &dstProxyView)) {
             return;
         }
+#ifdef SK_DEBUG
+        if (fCanUseDynamicMSAA && drawNeedsMSAA && !this->caps()->msaaResolvesAutomatically()) {
+            // Since we aren't literally writing to the render target texture while using a DMSAA
+            // attachment, we need to resolve that texture before sampling it. Ensure the current
+            // opsTask got closed off in order to initiate an implicit resolve.
+            SkASSERT(this->getOpsTask()->isEmpty());
+        }
+#endif
     }
 
     auto opsTask = this->getOpsTask();
@@ -1942,8 +1988,14 @@ void GrSurfaceDrawContext::addDrawOp(const GrClip* clip,
         willAddFn(op.get(), opsTask->uniqueID());
     }
 
+    // Note if the op needs stencil. Stencil clipping already called setNeedsStencil for itself, if
+    // needed.
+    if (opUsesStencil) {
+        this->setNeedsStencil();
+    }
+
 #if GR_GPU_STATS && GR_TEST_UTILS
-    if (fCanUseDynamicMSAA && usesHWAA) {
+    if (fCanUseDynamicMSAA && drawNeedsMSAA) {
         if (!opsTask->usesMSAASurface()) {
             fContext->priv().dmsaaStats().fNumMultisampleRenderPasses++;
         }
@@ -1951,19 +2003,20 @@ void GrSurfaceDrawContext::addDrawOp(const GrClip* clip,
     }
 #endif
 
-    opsTask->addDrawOp(this->drawingManager(), std::move(op), fixedFunctionFlags, analysis,
+    opsTask->addDrawOp(this->drawingManager(), std::move(op), drawNeedsMSAA, analysis,
                        std::move(appliedClip), dstProxyView,
                        GrTextureResolveManager(this->drawingManager()), *this->caps());
 
 #ifdef SK_DEBUG
-    if (fCanUseDynamicMSAA && usesHWAA) {
+    if (fCanUseDynamicMSAA && drawNeedsMSAA) {
         SkASSERT(opsTask->usesMSAASurface());
     }
 #endif
 }
 
-bool GrSurfaceDrawContext::setupDstProxyView(const GrOp& op,
-                                             GrXferProcessor::DstProxyView* dstProxyView) {
+bool GrSurfaceDrawContext::setupDstProxyView(const SkRect& opBounds,
+                                             bool opRequiresMSAA,
+                                             GrDstProxyView* dstProxyView) {
     // If we are wrapping a vulkan secondary command buffer, we can't make a dst copy because we
     // don't actually have a VkImage to make a copy of. Additionally we don't have the power to
     // start and stop the render pass in order to make the copy.
@@ -1971,21 +2024,56 @@ bool GrSurfaceDrawContext::setupDstProxyView(const GrOp& op,
         return false;
     }
 
-    if (fDstSampleType == GrDstSampleType::kNone) {
-        fDstSampleType = this->caps()->getDstSampleTypeForProxy(this->asRenderTargetProxy());
-    }
-    SkASSERT(fDstSampleType != GrDstSampleType::kNone);
+    // First get the dstSampleFlags as if we will put the draw into the current GrOpsTask
+    auto dstSampleFlags = this->caps()->getDstSampleFlagsForProxy(
+            this->asRenderTargetProxy(), this->getOpsTask()->usesMSAASurface() || opRequiresMSAA);
 
-    if (GrDstSampleTypeDirectlySamplesDst(fDstSampleType)) {
-        // The render target is a texture or input attachment, so we can read from it directly in
-        // the shader. The XP will be responsible to detect this situation and request a texture
-        // barrier.
+    // If we don't have barriers for this draw then we will definitely be breaking up the GrOpsTask.
+    // However, if using dynamic MSAA, the new GrOpsTask will not have MSAA already enabled on it
+    // and that may allow us to use texture barriers. So we check if we can use barriers on the new
+    // ops task and then break it up if so.
+    if (!(dstSampleFlags & GrDstSampleFlags::kRequiresTextureBarrier) &&
+        fCanUseDynamicMSAA && this->getOpsTask()->usesMSAASurface() && !opRequiresMSAA) {
+        auto newFlags =
+                this->caps()->getDstSampleFlagsForProxy(this->asRenderTargetProxy(),
+                                                        false/*=opRequiresMSAA*/);
+        if (newFlags & GrDstSampleFlags::kRequiresTextureBarrier) {
+            // We can't have an empty ops task if we are in DMSAA and the ops task already returns
+            // true for usesMSAASurface.
+            SkASSERT(!this->getOpsTask()->isColorNoOp());
+            this->replaceOpsTask()->setCannotMergeBackward();
+            dstSampleFlags = newFlags;
+        }
+    }
+
+    if (dstSampleFlags & GrDstSampleFlags::kRequiresTextureBarrier) {
+        // If we require a barrier to sample the dst it means we are sampling the RT itself
+        // either as a texture or input attachment. In this case we don't need to break up the
+        // GrOpsTask.
         dstProxyView->setProxyView(this->readSurfaceView());
         dstProxyView->setOffset(0, 0);
-        dstProxyView->setDstSampleType(fDstSampleType);
+        dstProxyView->setDstSampleFlags(dstSampleFlags);
         return true;
     }
-    SkASSERT(fDstSampleType == GrDstSampleType::kAsTextureCopy);
+    SkASSERT(dstSampleFlags == GrDstSampleFlags::kNone);
+
+    // We are using a different surface from the main color attachment to sample the dst from. If we
+    // are in DMSAA we can just use the single sampled RT texture itself. Otherwise, we must do a
+    // copy.
+    // We do have to check if we ended up here becasue we don't have texture barriers but do have
+    // msaaResolvesAutomatically (i.e. render-to-msaa-texture). In that case there will be no op or
+    // barrier between draws to flush the render target before being used as a texture in the next
+    // draw. So in that case we just fall through to doing a copy.
+    if (fCanUseDynamicMSAA && opRequiresMSAA && this->asTextureProxy() &&
+        !this->caps()->msaaResolvesAutomatically()) {
+        this->replaceOpsTaskIfModifiesColor()->setCannotMergeBackward();
+        dstProxyView->setProxyView(this->readSurfaceView());
+        dstProxyView->setOffset(0, 0);
+        dstProxyView->setDstSampleFlags(dstSampleFlags);
+        return true;
+    }
+
+    // Now we fallback to doing a copy.
 
     GrColorType colorType = this->colorInfo().colorType();
     // MSAA consideration: When there is support for reading MSAA samples in the shader we could
@@ -1998,7 +2086,7 @@ bool GrSurfaceDrawContext::setupDstProxyView(const GrOp& op,
         // If we don't need the whole source, restrict to the op's bounds. We add an extra pixel
         // of padding to account for AA bloat and the unpredictable rounding of coords near pixel
         // centers during rasterization.
-        SkIRect conservativeDrawBounds = op.bounds().roundOut();
+        SkIRect conservativeDrawBounds = opBounds.roundOut();
         conservativeDrawBounds.outset(1, 1);
         SkAssertResult(copyRect.intersect(conservativeDrawBounds));
     }
@@ -2024,6 +2112,13 @@ bool GrSurfaceDrawContext::setupDstProxyView(const GrOp& op,
 
     dstProxyView->setProxyView({std::move(copy), this->origin(), this->readSwizzle()});
     dstProxyView->setOffset(dstOffset);
-    dstProxyView->setDstSampleType(fDstSampleType);
+    dstProxyView->setDstSampleFlags(dstSampleFlags);
     return true;
+}
+
+GrOpsTask* GrSurfaceDrawContext::replaceOpsTaskIfModifiesColor() {
+    if (!this->getOpsTask()->isColorNoOp()) {
+        this->replaceOpsTask();
+    }
+    return this->getOpsTask();
 }

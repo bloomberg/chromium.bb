@@ -20,6 +20,11 @@ function getTestMethodData(credentialIdentifier) {
           (credentialIdentifier ? atob(credentialIdentifier) : 'cred'),
           (c) => c.charCodeAt(0))],
       networkData: Uint8Array.from('network_data', (c) => c.charCodeAt(0)),
+      challenge: Uint8Array.from('network_data', (c) => c.charCodeAt(0)),
+      instrument: {
+        displayName: 'display_name_for_instrument',
+        icon: window.location.origin + '/icon.png',
+      },
       timeout: 60000,
       fallbackUrl: 'https://fallback.example/url',
   }}];
@@ -95,6 +100,28 @@ async function createPaymentCredential(icon) { // eslint-disable-line no-unused-
 async function createCredentialAndReturnItsIdentifier(icon) { // eslint-disable-line no-unused-vars, max-len
   const credential = await createAndReturnPaymentCredential(icon);
   return btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+}
+
+/**
+ * Creates a secure payment confirmation credential and returns its
+ * clientDataJSON.type field.
+ * @param {string} icon - The URL of the icon for the credential.
+ * @return {string} - The clientDataJson.type field of the new credential.
+ */
+async function createCredentialAndReturnClientDataType(icon) { // eslint-disable-line no-unused-vars, max-len
+  const credential = await createAndReturnPaymentCredential(icon);
+  return JSON.parse(String.fromCharCode(...new Uint8Array(
+      credential.response.clientDataJSON))).type;
+}
+
+/**
+ * Creates a secure payment confirmation credential and returns its type.
+ * @param {string} icon - The URL of the icon for the credential.
+ * @return {string} - Either "PaymentCredential" or "PublicKeyCredential".
+ */
+async function createCredentialAndReturnItsType(icon) { // eslint-disable-line no-unused-vars, max-len
+  const credential = await createAndReturnPaymentCredential(icon);
+  return credential.constructor.name;
 }
 
 /**

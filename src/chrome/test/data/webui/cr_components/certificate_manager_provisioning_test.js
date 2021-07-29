@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 import 'chrome://settings/strings.m.js';
-import 'chrome://resources/cr_components/certificate_manager/certificate_provisioning_details_dialog.js';
-import 'chrome://resources/cr_components/certificate_manager/certificate_provisioning_entry.js';
-import 'chrome://resources/cr_components/certificate_manager/certificate_provisioning_list.js';
 
-import {CertificateProvisioningActionEventDetail, CertificateProvisioningViewDetailsActionEvent} from 'chrome://resources/cr_components/certificate_manager/certificate_manager_types.js';
-import {CertificateProvisioningBrowserProxy, CertificateProvisioningBrowserProxyImpl, CertificateProvisioningProcess} from 'chrome://resources/cr_components/certificate_manager/certificate_provisioning_browser_proxy.js';
+import {CertificateProvisioningViewDetailsActionEvent} from 'chrome://resources/cr_components/certificate_manager/certificate_manager_types.js';
+import {CertificateProvisioningBrowserProxyImpl} from 'chrome://resources/cr_components/certificate_manager/certificate_provisioning_browser_proxy.js';
+import {CertificateProvisioningDetailsDialogElement} from 'chrome://resources/cr_components/certificate_manager/certificate_provisioning_details_dialog.js';
+import {CertificateProvisioningEntryElement} from 'chrome://resources/cr_components/certificate_manager/certificate_provisioning_entry.js';
+import {CertificateProvisioningListElement} from 'chrome://resources/cr_components/certificate_manager/certificate_provisioning_list.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -88,14 +88,14 @@ suite('CertificateProvisioningEntryTests', function() {
 
   setup(function() {
     browserProxy = new TestCertificateProvisioningBrowserProxy();
-    CertificateProvisioningBrowserProxyImpl.instance_ = browserProxy;
+    CertificateProvisioningBrowserProxyImpl.setInstance(browserProxy);
     entry = /** @type {!CertificateProvisioningEntryElement} */ (
         document.createElement('certificate-provisioning-entry'));
     entry.model = createSampleCertificateProvisioningProcess(false);
     document.body.appendChild(entry);
 
     // Bring up the popup menu for the following tests to use.
-    entry.$$('#dots').click();
+    entry.shadowRoot.querySelector('#dots').click();
     flush();
   });
 
@@ -105,7 +105,7 @@ suite('CertificateProvisioningEntryTests', function() {
 
   // Test case where 'Details' option is tapped.
   test('MenuOptions_Details', function() {
-    const detailsButton = entry.$$('#details');
+    const detailsButton = entry.shadowRoot.querySelector('#details');
     const waitForActionEvent = actionEventToPromise();
     detailsButton.click();
     return waitForActionEvent.then(function(event) {
@@ -126,7 +126,7 @@ suite('CertificateManagerProvisioningTests', function() {
 
   setup(function() {
     browserProxy = new TestCertificateProvisioningBrowserProxy();
-    CertificateProvisioningBrowserProxyImpl.instance_ = browserProxy;
+    CertificateProvisioningBrowserProxyImpl.setInstance(browserProxy);
     certProvisioningList =
         /** @type {!CertificateProvisioningListElement} */ (
             document.createElement('certificate-provisioning-list'));
@@ -162,28 +162,35 @@ suite('CertificateManagerProvisioningTests', function() {
     const anchorForTest = document.createElement('a');
     document.body.appendChild(anchorForTest);
 
-    assertFalse(!!certProvisioningList.$$(dialogId));
+    assertFalse(!!certProvisioningList.shadowRoot.querySelector(dialogId));
     const whenDialogOpen =
         eventToPromise('cr-dialog-open', certProvisioningList);
-    certProvisioningList.fire(
-        CertificateProvisioningViewDetailsActionEvent,
-        /** @type {!CertificateProvisioningActionEventDetail} */ ({
-          model: createSampleCertificateProvisioningProcess(false),
-          anchor: anchorForTest
+    certProvisioningList.dispatchEvent(
+        new CustomEvent(CertificateProvisioningViewDetailsActionEvent, {
+          bubbles: true,
+          composed: true,
+          detail:
+              /** @type {!CertificateProvisioningActionEventDetail} */ ({
+                model: createSampleCertificateProvisioningProcess(false),
+                anchor: anchorForTest
+              })
         }));
 
     return whenDialogOpen
         .then(() => {
           const dialog =
               /** @type {!CertificateProvisioningDetailsDialogElement} */ (
-                  certProvisioningList.$$(dialogId));
+                  certProvisioningList.shadowRoot.querySelector(dialogId));
           assertTrue(!!dialog);
           const whenDialogClosed = eventToPromise('close', dialog);
-          dialog.$$('#dialog').$$('#close').click();
+          dialog.shadowRoot.querySelector('#dialog')
+              .shadowRoot.querySelector('#close')
+              .click();
           return whenDialogClosed;
         })
         .then(() => {
-          const dialog = certProvisioningList.$$(dialogId);
+          const dialog =
+              certProvisioningList.shadowRoot.querySelector(dialogId);
           assertFalse(!!dialog);
         });
   });
@@ -202,7 +209,7 @@ suite('DetailsDialogTests', function() {
     document.body.innerHTML = '';
 
     browserProxy = new TestCertificateProvisioningBrowserProxy();
-    CertificateProvisioningBrowserProxyImpl.instance_ = browserProxy;
+    CertificateProvisioningBrowserProxyImpl.setInstance(browserProxy);
 
     certProvisioningList =
         /** @type {!CertificateProvisioningListElement} */ (
@@ -214,21 +221,25 @@ suite('DetailsDialogTests', function() {
 
     // Open the details dialog for testing.
     const dialogId = 'certificate-provisioning-details-dialog';
-    assertFalse(!!certProvisioningList.$$(dialogId));
+    assertFalse(!!certProvisioningList.shadowRoot.querySelector(dialogId));
     const whenDialogOpen =
         eventToPromise('cr-dialog-open', certProvisioningList);
-    certProvisioningList.fire(
-        CertificateProvisioningViewDetailsActionEvent,
-        /** @type {!CertificateProvisioningActionEventDetail} */ ({
-          model: createSampleCertificateProvisioningProcess(false),
-          anchor: anchorForTest
+    certProvisioningList.dispatchEvent(
+        new CustomEvent(CertificateProvisioningViewDetailsActionEvent, {
+          bubbles: true,
+          composed: true,
+          detail:
+              /** @type {!CertificateProvisioningActionEventDetail} */ ({
+                model: createSampleCertificateProvisioningProcess(false),
+                anchor: anchorForTest
+              })
         }));
     await whenDialogOpen;
     dialog = /** @type {!CertificateProvisioningDetailsDialogElement} */ (
-        certProvisioningList.$$(dialogId));
+        certProvisioningList.shadowRoot.querySelector(dialogId));
     // Check if the dialog is initialized and opened.
     assertTrue(!!dialog);
-    assertTrue(dialog.$$('#dialog').open);
+    assertTrue(dialog.shadowRoot.querySelector('#dialog').open);
   });
 
   test('RefreshProcess', async function() {
@@ -241,7 +252,7 @@ suite('DetailsDialogTests', function() {
     assertEquals(dialog.model.certProfileId, certProfileId);
     assertEquals(dialog.model.isDeviceWide, isDeviceWide);
     // Check that the dialog is still open.
-    assertTrue(dialog.$$('#dialog').open);
+    assertTrue(dialog.shadowRoot.querySelector('#dialog').open);
   });
 
   /**
@@ -272,6 +283,6 @@ suite('DetailsDialogTests', function() {
     webUIListenerCallback('certificate-provisioning-processes-changed', []);
     flush();
     // Check that the dialog closes if the process no longer exists.
-    assertFalse(dialog.$$('#dialog').open);
+    assertFalse(dialog.shadowRoot.querySelector('#dialog').open);
   });
 });

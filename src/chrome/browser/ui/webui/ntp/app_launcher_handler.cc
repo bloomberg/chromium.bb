@@ -53,12 +53,11 @@
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_finalizer_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -149,7 +148,7 @@ bool IsYoutubeExtension(const std::string& extension_id) {
 }
 
 void GetWebAppBasicInfo(const web_app::AppId& app_id,
-                        const web_app::AppRegistrar& app_registrar,
+                        const web_app::WebAppRegistrar& app_registrar,
                         base::DictionaryValue* info) {
   info->SetString(kInfoIdKey, app_id);
   info->SetString(kInfoNameKey, app_registrar.GetAppShortName(app_id));
@@ -611,7 +610,7 @@ void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
   PrefService* prefs = profile->GetPrefs();
 
   std::set<web_app::AppId> web_app_ids;
-  web_app::AppRegistrar& registrar = web_app_provider_->registrar();
+  web_app::WebAppRegistrar& registrar = web_app_provider_->registrar();
   for (const web_app::AppId& web_app_id : registrar.GetAppIds()) {
     // The Youtube app is harded to be a 'bookmark app', however it is not, it
     // is a platform app.
@@ -758,7 +757,7 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
   GURL full_launch_url;
   apps::mojom::LaunchContainer launch_container;
 
-  web_app::AppRegistrar& registrar = web_app_provider_->registrar();
+  web_app::WebAppRegistrar& registrar = web_app_provider_->registrar();
   if (registrar.IsInstalled(extension_id) &&
       !IsYoutubeExtension(extension_id)) {
     type = extensions::Manifest::Type::TYPE_HOSTED_APP;
@@ -1055,22 +1054,21 @@ void AppLauncherHandler::HandleShowAppInfo(const base::ListValue* args) {
 }
 
 void AppLauncherHandler::HandleReorderApps(const base::ListValue* args) {
-  CHECK(args->GetSize() == 2);
+  base::Value::ConstListView args_list = args->GetList();
+  CHECK_EQ(args_list.size(), 2u);
 
-  std::string dragged_app_id;
-  const base::ListValue* app_order;
-  CHECK(args->GetString(0, &dragged_app_id));
-  CHECK(args->GetList(1, &app_order));
+  std::string dragged_app_id = args_list[0].GetString();
+  base::Value::ConstListView app_order = args_list[1].GetList();
 
   std::string predecessor_to_moved_ext;
   std::string successor_to_moved_ext;
-  for (size_t i = 0; i < app_order->GetSize(); ++i) {
-    std::string value;
-    if (app_order->GetString(i, &value) && value == dragged_app_id) {
+  for (size_t i = 0; i < app_order.size(); ++i) {
+    const std::string* value = app_order[i].GetIfString();
+    if (value && *value == dragged_app_id) {
       if (i > 0)
-        CHECK(app_order->GetString(i - 1, &predecessor_to_moved_ext));
-      if (i + 1 < app_order->GetSize())
-        CHECK(app_order->GetString(i + 1, &successor_to_moved_ext));
+        predecessor_to_moved_ext = app_order[i - 1].GetString();
+      if (i + 1 < app_order.size())
+        successor_to_moved_ext = app_order[i + 1].GetString();
       break;
     }
   }
@@ -1311,19 +1309,6 @@ void AppLauncherHandler::ExtensionEnableFlowAborted(bool user_initiated) {
     NOTIMPLEMENTED();
     return;
   }
-
-  // We record the histograms here because ExtensionUninstallCanceled is also
-  // called when the extension uninstall dialog is canceled.
-  const Extension* extension =
-      extensions::ExtensionRegistry::Get(extension_service_->profile())
-          ->GetExtensionById(extension_id_prompting_,
-                             extensions::ExtensionRegistry::ENABLED |
-                                 extensions::ExtensionRegistry::DISABLED |
-                                 extensions::ExtensionRegistry::TERMINATED);
-  std::string histogram_name = user_initiated ? "ReEnableCancel"
-                                              : "ReEnableAbort";
-  extensions::ExtensionService::RecordPermissionMessagesHistogram(
-      extension, histogram_name.c_str());
 
   extension_enable_flow_.reset();
   CleanupAfterUninstall();

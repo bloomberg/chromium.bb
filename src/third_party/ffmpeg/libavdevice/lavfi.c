@@ -446,7 +446,7 @@ static int lavfi_read_packet(AVFormatContext *avctx, AVPacket *pkt)
 
     frame_metadata = frame->metadata;
     if (frame_metadata) {
-        int size;
+        size_t size;
         uint8_t *metadata = av_packet_pack_dictionary(frame_metadata, &size);
 
         if (!metadata) {
@@ -494,7 +494,7 @@ static const AVClass lavfi_class = {
     .category   = AV_CLASS_CATEGORY_DEVICE_INPUT,
 };
 
-AVInputFormat ff_lavfi_demuxer = {
+const AVInputFormat ff_lavfi_demuxer = {
     .name           = "lavfi",
     .long_name      = NULL_IF_CONFIG_SMALL("Libavfilter virtual input device"),
     .priv_data_size = sizeof(LavfiContext),

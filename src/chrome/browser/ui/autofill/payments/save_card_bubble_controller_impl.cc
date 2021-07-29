@@ -14,7 +14,6 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_base.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
 #include "chrome/browser/ui/autofill/payments/payments_ui_constants.h"
@@ -23,6 +22,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/hats/trust_safety_sentiment_service.h"
+#include "chrome/browser/ui/hats/trust_safety_sentiment_service_factory.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
@@ -267,7 +268,10 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
   switch (current_bubble_type_) {
     case BubbleType::UPLOAD_SAVE: {
       DCHECK(!upload_save_card_prompt_callback_.is_null());
-
+      if (auto* sentiment_service =
+              TrustSafetySentimentServiceFactory::GetForProfile(GetProfile())) {
+        sentiment_service->SavedCard();
+      }
       std::u16string name_provided_by_user;
       if (!user_provided_card_details.cardholder_name.empty()) {
         // Log whether the name was changed by the user or simply accepted
@@ -287,6 +291,10 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
     }
     case BubbleType::LOCAL_SAVE:
       DCHECK(!local_save_card_prompt_callback_.is_null());
+      if (auto* sentiment_service =
+              TrustSafetySentimentServiceFactory::GetForProfile(GetProfile())) {
+        sentiment_service->SavedCard();
+      }
       // Show an animated card saved confirmation message next time
       // UpdatePageActionIcon() is called.
       should_show_card_saved_label_animation_ = true;
@@ -530,10 +538,8 @@ void SaveCardBubbleControllerImpl::FetchAccountInfo() {
       PersonalDataManagerFactory::GetForProfile(profile);
   if (!personal_data_manager)
     return;
-  absl::optional<AccountInfo> account_info =
-      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
-          personal_data_manager->GetAccountInfoForPaymentsServer());
-  account_info_ = account_info.value_or(AccountInfo{});
+  account_info_ = identity_manager->FindExtendedAccountInfo(
+      personal_data_manager->GetAccountInfoForPaymentsServer());
 }
 
 void SaveCardBubbleControllerImpl::ShowBubble() {

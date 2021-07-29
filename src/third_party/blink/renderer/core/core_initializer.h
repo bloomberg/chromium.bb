@@ -38,6 +38,10 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
+namespace display {
+struct ScreenInfos;
+}
+
 namespace mojo {
 class BinderMap;
 }
@@ -53,7 +57,6 @@ class LocalFrame;
 class MediaControls;
 class Page;
 class PictureInPictureController;
-struct ScreenInfos;
 class Settings;
 class ShadowRoot;
 class WebLocalFrameClient;
@@ -124,11 +127,19 @@ class CORE_EXPORT CoreInitializer {
       Page* clone_from_page,
       const SessionStorageNamespaceId& clone_to_namespace) = 0;
 
+  // Evicts the cached data of Session Storage. Called after dispatching a
+  // document unload or freeze event to avoid reusing old data in the cache in
+  // case the same renderer process is reused after the session storage has been
+  // modified by another renderer process. (Eg: Back navigation from a
+  // prerendered page.)
+  virtual void EvictSessionStorageCachedData(Page*) = 0;
+
   virtual void DidChangeManifest(LocalFrame&) = 0;
   virtual void NotifyOrientationChanged(LocalFrame&) = 0;
   // Called with an updated set of ScreenInfos for a local root frame
   // during a visual property update.
-  virtual void DidUpdateScreens(LocalFrame& frame, const ScreenInfos&) = 0;
+  virtual void DidUpdateScreens(LocalFrame& frame,
+                                const display::ScreenInfos&) = 0;
 
  protected:
   // CoreInitializer is only instantiated by subclass ModulesInitializer.

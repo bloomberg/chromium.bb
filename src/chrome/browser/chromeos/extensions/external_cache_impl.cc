@@ -131,7 +131,7 @@ void ExternalCacheImpl::RemoveExtensions(
     return;
 
   for (size_t i = 0; i < ids.size(); ++i) {
-    extensions_->Remove(ids[i], nullptr);
+    extensions_->RemovePath(ids[i]);
     RemoveCachedExtension(ids[i]);
   }
   UpdateExtensionLoader();
@@ -139,7 +139,7 @@ void ExternalCacheImpl::RemoveExtensions(
 
 void ExternalCacheImpl::RemoveCachedExtension(
     const extensions::ExtensionId& id) {
-  cached_extensions_->Remove(id, nullptr);
+  cached_extensions_->RemovePath(id);
   local_cache_.RemoveExtension(id, std::string());
 
   if (delegate_)
@@ -248,7 +248,7 @@ void ExternalCacheImpl::CheckCache() {
   }
 
   cached_extensions_->Clear();
-  for (const auto& entry : extensions_->DictItems()) {
+  for (const auto entry : extensions_->DictItems()) {
     if (!entry.second.is_dict()) {
       LOG(ERROR) << "ExternalCacheImpl found bad entry with type "
                  << entry.second.type();

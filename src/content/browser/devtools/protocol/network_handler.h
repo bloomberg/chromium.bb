@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
@@ -44,7 +43,6 @@ class DevToolsAgentHostImpl;
 class DevToolsIOContext;
 class DevToolsURLLoaderInterceptor;
 class RenderFrameHostImpl;
-class RenderProcessHost;
 class NavigationRequest;
 class SignedExchangeEnvelope;
 class StoragePartition;
@@ -169,7 +167,8 @@ class NetworkHandler : public DevToolsDomainHandler,
   // associated with the NetworkHandler itself (which is the token of the local
   // root frame).
   bool MaybeCreateProxyForInterception(
-      RenderProcessHost* rph,
+      int process_id,
+      StoragePartition* storage_partition,
       const base::UnguessableToken& frame_token,
       bool is_navigation,
       bool is_download,
@@ -229,6 +228,20 @@ class NetworkHandler : public DevToolsDomainHandler,
   void OnTrustTokenOperationDone(
       const std::string& devtools_request_id,
       const network::mojom::TrustTokenOperationResult& result);
+  void OnSubresourceWebBundleMetadata(const std::string& devtools_request_id,
+                                      const std::vector<GURL>& urls);
+  void OnSubresourceWebBundleMetadataError(
+      const std::string& devtools_request_id,
+      const std::string& error_message);
+  void OnSubresourceWebBundleInnerResponse(
+      const std::string& inner_request_devtools_id,
+      const GURL& url,
+      const absl::optional<std::string>& bundle_request_devtools_id);
+  void OnSubresourceWebBundleInnerResponseError(
+      const std::string& inner_request_devtools_id,
+      const GURL& url,
+      const std::string& error_message,
+      const absl::optional<std::string>& bundle_request_devtools_id);
 
   bool enabled() const { return enabled_; }
 

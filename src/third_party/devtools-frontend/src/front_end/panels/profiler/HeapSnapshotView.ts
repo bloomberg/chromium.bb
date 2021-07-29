@@ -313,6 +313,7 @@ export class HeapSnapshotView extends UI.View.SimpleView implements DataDisplayD
     if (isHeapTimeline) {
       this._createOverview();
     }
+    const hasAllocationStacks = instance.trackingHeapSnapshotProfileType.recordAllocationStacksSetting().get();
 
     this._parentDataDisplayDelegate = dataDisplayDelegate;
 
@@ -344,7 +345,7 @@ export class HeapSnapshotView extends UI.View.SimpleView implements DataDisplayD
 
     this._allocationDataGrid = null;
 
-    if (isHeapTimeline) {
+    if (isHeapTimeline && hasAllocationStacks) {
       this._allocationDataGrid = new AllocationDataGrid(heapProfilerModel, this);
       this._allocationDataGrid.addEventListener(
           DataGrid.DataGrid.Events.SelectedNode, this._onSelectAllocationNode, this);
@@ -779,7 +780,7 @@ export class HeapSnapshotView extends UI.View.SimpleView implements DataDisplayD
     const option = this._perspectiveSelect.options().find(option => option.value === String(perspectiveIndex));
     this._perspectiveSelect.select((option as Element));
     this._changePerspective(perspectiveIndex);
-    return promise;
+    await promise;
   }
 
   async _updateDataSourceAndView(): Promise<void> {
@@ -1164,19 +1165,19 @@ export class StatisticsPerspective extends Perspective {
 }
 
 export class HeapSnapshotProfileType extends ProfileType implements
-    SDK.SDKModel.SDKModelObserver<SDK.HeapProfilerModel.HeapProfilerModel> {
+    SDK.TargetManager.SDKModelObserver<SDK.HeapProfilerModel.HeapProfilerModel> {
   _treatGlobalObjectsAsRoots: Common.Settings.Setting<boolean>;
   _captureNumericValue: Common.Settings.Setting<boolean>;
   _customContent: HTMLElement|null;
   constructor(id?: string, title?: string) {
     super(id || HeapSnapshotProfileType.TypeId, title || i18nString(UIStrings.heapSnapshot));
-    SDK.SDKModel.TargetManager.instance().observeModels(SDK.HeapProfilerModel.HeapProfilerModel, this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().observeModels(SDK.HeapProfilerModel.HeapProfilerModel, this);
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.HeapProfilerModel.HeapProfilerModel, SDK.HeapProfilerModel.Events.ResetProfiles, this._resetProfiles, this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.HeapProfilerModel.HeapProfilerModel, SDK.HeapProfilerModel.Events.AddHeapSnapshotChunk,
         this._addHeapSnapshotChunk, this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.HeapProfilerModel.HeapProfilerModel, SDK.HeapProfilerModel.Events.ReportHeapSnapshotProgress,
         this._reportHeapSnapshotProgress, this);
     this._treatGlobalObjectsAsRoots =
@@ -1436,6 +1437,10 @@ export class TrackingHeapSnapshotProfileType extends HeapSnapshotProfileType {
     if (this._customContent) {
       this._customContent.checkboxElement.disabled = !enable;
     }
+  }
+
+  recordAllocationStacksSetting(): Common.Settings.Setting<boolean> {
+    return this._recordAllocationStacksSetting;
   }
 
   _addNewProfile(): SDK.HeapProfilerModel.HeapProfilerModel|null {

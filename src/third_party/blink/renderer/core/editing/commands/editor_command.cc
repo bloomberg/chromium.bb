@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/ime/edit_context.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/editing/kill_ring.h"
 #include "third_party/blink/renderer/core/editing/selection_modifier.h"
@@ -1948,6 +1949,41 @@ bool EditorCommand::Execute(const String& parameter,
       // 'beforeinput' event handler may destroy target frame.
       if (frame_->GetDocument()->GetFrame() != frame_)
         return false;
+    }
+
+    // If EditContext is active, we may return early and not execute the
+    // command.
+    if (auto* edit_context =
+            frame_->GetInputMethodController().GetActiveEditContext()) {
+      // From EditContext's point of view, there are 3 kinds of commands:
+      switch (command_->command_type) {
+        case EditingCommandType::kToggleBold:
+        case EditingCommandType::kToggleItalic:
+        case EditingCommandType::kToggleUnderline:
+        case EditingCommandType::kInsertTab:
+        case EditingCommandType::kInsertBacktab:
+        case EditingCommandType::kInsertNewline:
+        case EditingCommandType::kInsertLineBreak:
+          // 1) BeforeInput event only, ex ctrl+B or <enter>.
+          return true;
+        case EditingCommandType::kDeleteBackward:
+          // 2) BeforeInput event + EditContext behavior, ex. backspace/delete.
+          edit_context->DeleteBackward();
+          return true;
+        case EditingCommandType::kDeleteForward:
+          edit_context->DeleteForward();
+          return true;
+        case EditingCommandType::kDeleteWordBackward:
+          edit_context->DeleteWordBackward();
+          return true;
+        case EditingCommandType::kDeleteWordForward:
+          edit_context->DeleteWordForward();
+          return true;
+        default:
+          // 3) BeforeInput event + default DOM behavior, ex. caret navigation.
+          // In this case, it's no-op for EditContext.
+          break;
+      }
     }
   }
 

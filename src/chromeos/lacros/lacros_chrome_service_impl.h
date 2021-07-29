@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/check.h"
@@ -31,11 +32,9 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-class GURL;
-
 namespace chromeos {
 
-class LacrosChromeServiceDelegate;
+class NativeThemeCache;
 class SystemIdleCache;
 
 // Forward declaration for class defined in .cc file that holds most of the
@@ -64,7 +63,7 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
   class Observer {
    public:
     // Called when the new policy data is received from Ash.
-    virtual void NotifyPolicyUpdate(
+    virtual void OnPolicyUpdated(
         const std::vector<uint8_t>& policy_fetch_response) {}
 
    protected:
@@ -85,14 +84,19 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
 
   // This class is expected to be constructed and destroyed on the same
   // sequence.
-  explicit LacrosChromeServiceImpl(
-      std::unique_ptr<LacrosChromeServiceDelegate> delegate);
+  LacrosChromeServiceImpl();
+  LacrosChromeServiceImpl(const LacrosChromeServiceImpl&) = delete;
+  LacrosChromeServiceImpl& operator=(const LacrosChromeServiceImpl&) = delete;
   ~LacrosChromeServiceImpl();
 
   // This can be called on any thread. This call allows LacrosChromeServiceImpl
   // to start receiving messages from ash-chrome.
-  void BindReceiver(
-      mojo::PendingReceiver<crosapi::mojom::BrowserService> receiver);
+  // |browser_version| is the version of lacros-chrome displayed to user in
+  // feedback report, etc.
+  // It includes both browser version and channel in the format of:
+  // {browser version} {channel}
+  // For example, "87.0.0.1 dev", "86.0.4240.38 beta".
+  void BindReceiver(const std::string& browser_version);
 
   // Each of these functions guards usage of access to the corresponding remote.
   // Keep these in alphabetical order.
@@ -109,6 +113,12 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
   // Methods to add/remove observer. Safe to call from any thread.
   void AddObserver(Observer* obs);
   void RemoveObserver(Observer* obs);
+
+  // Notifies that the device account policy is updated with the input data
+  // to observers. The data comes as serialized blob of PolicyFetchResponse
+  // object.
+  // This must be called on the affined sequence.
+  void NotifyPolicyUpdated(const std::vector<uint8_t>& policy);
 
   // Returns whether this interface uses the automatic registration system to be
   // available for immediate use at startup. Any crosapi interface can be
@@ -273,33 +283,6 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
             uint32_t MethodMinVersion>
   class InterfaceEntry;
 
-  // Creates a new window on the affine sequence.
-  void NewWindowAffineSequence(bool incognito);
-
-  // Creates a new tab on the affine sequence.
-  void NewTabAffineSequence();
-
-  // Restores a tab on the affine sequence.
-  void RestoreTabAffineSequence();
-
-  using GetFeedbackDataCallback = base::OnceCallback<void(base::Value)>;
-  // Gets feedback data on the affine sequence.
-  void GetFeedbackDataAffineSequence(GetFeedbackDataCallback callback);
-
-  using GetHistogramsCallback = base::OnceCallback<void(const std::string&)>;
-  // Gets histograms on the affine sequence.
-  void GetHistogramsAffineSequence(GetHistogramsCallback callback);
-
-  using GetActiveTabUrlCallback =
-      base::OnceCallback<void(const absl::optional<GURL>&)>;
-  // Gets Url of the active tab on the affine sequence.
-  void GetActiveTabUrlAffineSequence(GetActiveTabUrlCallback callback);
-
-  // Update device account policy with the input data. The data comes as
-  // serialized blob of PolicyFetchResponse object.
-  void UpdateDeviceAccountPolicyAffineSequence(
-      const std::vector<uint8_t>& policy);
-
   // Returns ash's version of the Crosapi mojo interface version. This
   // determines which interface methods are available. This is safe to call from
   // any sequence. This can only be called after BindReceiver().
@@ -307,6 +290,9 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
 
   // Requests ash-chrome to send idle info updates.
   void StartSystemIdleCache();
+
+  // Requests ash-chrome to send native theme info updates.
+  void StartNativeThemeCache();
 
   // This function binds a pending receiver or remote by posting the
   // corresponding bind task to the |never_blocking_sequence_|.
@@ -336,15 +322,22 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
   // this functional for tests without modifying production code
   static bool disable_crosapi_for_testing_;
 
-  // Delegate instance to inject Chrome dependent code. Must only be used on the
+  // BrowserService implementation injected by chrome/. Must only be used on the
   // affine sequence.
-  std::unique_ptr<LacrosChromeServiceDelegate> delegate_;
+  // TODO(hidehiko): Remove this.
+  std::unique_ptr<crosapi::mojom::BrowserService> browser_service_;
 
   // Parameters passed from ash-chrome.
   crosapi::mojom::BrowserInitParamsPtr init_params_;
 
   // Receiver and cache of system idle info updates.
   std::unique_ptr<SystemIdleCache> system_idle_cache_;
+
+  // Receiver and cache of native theme info updates.
+  std::unique_ptr<NativeThemeCache> native_theme_cache_;
+
+  // A sequence that is guaranteed to never block.
+  scoped_refptr<base::SequencedTaskRunner> never_blocking_sequence_;
 
   // This member is instantiated on the affine sequence alongside the
   // constructor. All subsequent invocations of this member, including
@@ -357,9 +350,6 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
   // dereferenced on the |never_blocking_sequence_|.
   base::WeakPtr<LacrosChromeServiceImplNeverBlockingState>
       weak_sequenced_state_;
-
-  // A sequence that is guaranteed to never block.
-  scoped_refptr<base::SequencedTaskRunner> never_blocking_sequence_;
 
   // Set to true after BindReceiver() is called.
   bool did_bind_receiver_ = false;

@@ -1,0 +1,27 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void sign_dd790e() {
+  float res = sign(1.0f);
+}
+
+vertex tint_symbol vertex_main() {
+  sign_dd790e();
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  sign_dd790e();
+  return;
+}
+
+kernel void compute_main() {
+  sign_dd790e();
+  return;
+}
+

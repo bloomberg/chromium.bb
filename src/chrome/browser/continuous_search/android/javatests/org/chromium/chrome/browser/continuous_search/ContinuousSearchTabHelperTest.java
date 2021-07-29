@@ -88,8 +88,9 @@ public class ContinuousSearchTabHelperTest {
             mSearchUrl = url;
             mQuery = query;
             new Handler().postDelayed(() -> {
-                mListener.onResult(new ContinuousNavigationMetadata(
-                        mSearchUrl, mQuery, 0, new ArrayList<PageGroup>()));
+                mListener.onResult(new ContinuousNavigationMetadata(mSearchUrl, mQuery,
+                        new ContinuousNavigationMetadata.Provider(0, null, 0),
+                        new ArrayList<PageGroup>()));
             }, 300);
         }
 
@@ -242,8 +243,8 @@ public class ContinuousSearchTabHelperTest {
 
         // Invalidate the data.
         loadUrl(tab, new LoadUrlParams(UrlConstants.ABOUT_URL));
-        observer.mInvalidateCallbackHelper.waitForFirst(
-                "Timed out waiting for SearchResultUserDataObserver#onInvalidate", 5000,
+        observer.mInvalidateCallbackHelper.waitForCallback(
+                "Timed out waiting for SearchResultUserDataObserver#onInvalidate", 0, 1, 5000,
                 TimeUnit.MILLISECONDS);
     }
 }

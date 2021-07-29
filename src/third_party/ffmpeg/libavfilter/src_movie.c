@@ -205,7 +205,7 @@ static int guess_channel_layout(MovieStream *st, int st_index, void *log_ctx)
 static av_cold int movie_common_init(AVFilterContext *ctx)
 {
     MovieContext *movie = ctx->priv;
-    AVInputFormat *iformat = NULL;
+    const AVInputFormat *iformat = NULL;
     int64_t timestamp;
     int nb_streams = 1, ret, i;
     char default_streams[16], *stream_specs, *spec, *cursor;
@@ -637,7 +637,7 @@ static int process_command(AVFilterContext *ctx, const char *cmd, const char *ar
 
 AVFILTER_DEFINE_CLASS(movie);
 
-AVFilter ff_avsrc_movie = {
+const AVFilter ff_avsrc_movie = {
     .name          = "movie",
     .description   = NULL_IF_CONFIG_SMALL("Read from a movie source."),
     .priv_size     = sizeof(MovieContext),
@@ -659,7 +659,7 @@ AVFilter ff_avsrc_movie = {
 #define amovie_options movie_options
 AVFILTER_DEFINE_CLASS(amovie);
 
-AVFilter ff_avsrc_amovie = {
+const AVFilter ff_avsrc_amovie = {
     .name          = "amovie",
     .description   = NULL_IF_CONFIG_SMALL("Read audio from a movie source."),
     .priv_size     = sizeof(MovieContext),

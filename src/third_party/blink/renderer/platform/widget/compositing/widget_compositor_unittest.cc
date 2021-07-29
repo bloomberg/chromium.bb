@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/widget/compositing/widget_compositor.h"
 
+#include "base/macros.h"
 #include "base/test/task_environment.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/layer_tree_host.h"
@@ -29,7 +30,8 @@ class StubWidgetBaseClient : public WidgetBaseClient {
     return WebInputEventResult::kNotHandled;
   }
   bool SupportsBufferedTouchEvents() override { return false; }
-  bool WillHandleGestureEvent(const WebGestureEvent&) override { return false; }
+  void WillHandleGestureEvent(const WebGestureEvent&, bool* suppress) override {
+  }
   void WillHandleMouseEvent(const WebMouseEvent&) override {}
   void ObserveGestureEventAndResult(const WebGestureEvent&,
                                     const gfx::Vector2dF&,
@@ -38,11 +40,13 @@ class StubWidgetBaseClient : public WidgetBaseClient {
   void FocusChanged(bool) override {}
   void UpdateVisualProperties(
       const VisualProperties& visual_properties) override {}
-  const ScreenInfo& GetOriginalScreenInfo() override { return screen_info_; }
+  const display::ScreenInfo& GetOriginalScreenInfo() override {
+    return screen_info_;
+  }
   gfx::Rect ViewportVisibleRect() override { return gfx::Rect(); }
 
  private:
-  ScreenInfo screen_info_;
+  display::ScreenInfo screen_info_;
 };
 
 class FakeWidgetCompositor : public WidgetCompositor {

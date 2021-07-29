@@ -337,7 +337,7 @@ bool PrefetchProxyTabHelper::IsProfileEligible() const {
 void PrefetchProxyTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!navigation_handle->IsInMainFrame()) {
+  if (!navigation_handle->IsInPrimaryMainFrame()) {
     return;
   }
 
@@ -577,7 +577,7 @@ PrefetchProxyTabHelper::ComputeAfterSRPMetricsBeforeCommit(
 void PrefetchProxyTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!navigation_handle->IsInMainFrame()) {
+  if (!navigation_handle->IsInPrimaryMainFrame()) {
     return;
   }
 
@@ -1581,7 +1581,7 @@ void PrefetchProxyTabHelper::CreateIsolatedURLLoaderFactory() {
 
   auto context_params = network::mojom::NetworkContextParams::New();
   context_params->context_name = "PrefetchProxy";
-  context_params->user_agent = content::GetFrozenUserAgent(
+  context_params->user_agent = content::GetReducedUserAgent(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseMobileUserAgent),
       version_info::GetMajorVersionNumber());
@@ -1616,7 +1616,7 @@ void PrefetchProxyTabHelper::CreateIsolatedURLLoaderFactory() {
   context_params->enable_expect_ct_reporting = false;
   context_params->enable_domain_reliability = false;
 
-  content::GetNetworkService()->CreateNetworkContext(
+  content::CreateNetworkContextInNetworkService(
       page_->isolated_network_context_.BindNewPipeAndPassReceiver(),
       std::move(context_params));
 

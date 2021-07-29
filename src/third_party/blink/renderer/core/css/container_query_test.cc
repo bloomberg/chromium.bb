@@ -6,9 +6,11 @@
 
 #include "third_party/blink/renderer/core/css/css_container_rule.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -49,6 +51,21 @@ class ContainerQueryTest : public PageTestBase,
   // relies on MediaQuerySet.
   MediaQuerySet& GetMediaQuerySet(ContainerQuery& container_query) {
     return *container_query.media_queries_;
+  }
+
+  const CSSValue* ComputedValue(Element* element, String property_name) {
+    CSSPropertyRef ref(property_name, GetDocument());
+    DCHECK(ref.IsValid());
+    return ref.GetProperty().CSSValueFromComputedStyle(
+        element->ComputedStyleRef(),
+        /* layout_object */ nullptr,
+        /* allow_visited_style */ false);
+  }
+
+  String ComputedValueString(Element* element, String property_name) {
+    if (const CSSValue* value = ComputedValue(element, property_name))
+      return value->CssText();
+    return g_null_atom;
   }
 };
 
@@ -193,6 +210,142 @@ TEST_F(ContainerQueryTest, QueriedAxes) {
   // another way to author a container query that queries no axes (or make it
   // illegal altogether).
   EXPECT_EQ(none, QueriedAxes("(resolution: 150dpi)"));
+}
+
+TEST_F(ContainerQueryTest, QueryZoom) {
+  GetFrame().SetPageZoomFactor(2.0f);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #container1 {
+        width: 100px;
+        height: 200px;
+        container-type: inline-size block-size;
+      }
+      #container2 {
+        width: 200px;
+        height: 400px;
+        container-type: inline-size block-size;
+      }
+      @container (width: 100px) {
+        div { --w100:1; }
+      }
+      @container (width: 200px) {
+        div { --w200:1; }
+      }
+      @container (height: 200px) {
+        div { --h200:1; }
+      }
+      @container (height: 400px) {
+        div { --h400:1; }
+      }
+    </style>
+    <div id=container1>
+      <div id=target1></div>
+    </div>
+    <div id=container2>
+      <div id=target2></div>
+    </div>
+  )HTML");
+
+  Element* target1 = GetDocument().getElementById("target1");
+  Element* target2 = GetDocument().getElementById("target2");
+  ASSERT_TRUE(target1);
+  ASSERT_TRUE(target2);
+
+  EXPECT_TRUE(target1->ComputedStyleRef().GetVariableData("--w100"));
+  EXPECT_TRUE(target1->ComputedStyleRef().GetVariableData("--h200"));
+  EXPECT_FALSE(target1->ComputedStyleRef().GetVariableData("--w200"));
+  EXPECT_FALSE(target1->ComputedStyleRef().GetVariableData("--h400"));
+
+  EXPECT_FALSE(target2->ComputedStyleRef().GetVariableData("--w100"));
+  EXPECT_FALSE(target2->ComputedStyleRef().GetVariableData("--h200"));
+  EXPECT_TRUE(target2->ComputedStyleRef().GetVariableData("--w200"));
+  EXPECT_TRUE(target2->ComputedStyleRef().GetVariableData("--h400"));
+}
+
+TEST_F(ContainerQueryTest, ContainerUnitsViewportFallback) {
+  using css_test_helpers::RegisterProperty;
+
+  ScopedCSSContainerRelativeUnitsForTest feature(true);
+
+  RegisterProperty(GetDocument(), "--qw", "<length>", "0px", false);
+  RegisterProperty(GetDocument(), "--qi", "<length>", "0px", false);
+  RegisterProperty(GetDocument(), "--qh", "<length>", "0px", false);
+  RegisterProperty(GetDocument(), "--qb", "<length>", "0px", false);
+  RegisterProperty(GetDocument(), "--qmin", "<length>", "0px", false);
+  RegisterProperty(GetDocument(), "--qmax", "<length>", "0px", false);
+  RegisterProperty(GetDocument(), "--fallback-w", "<length>", "0px", false);
+  RegisterProperty(GetDocument(), "--fallback-h", "<length>", "0px", false);
+  RegisterProperty(GetDocument(), "--fallback-min-qi-vh", "<length>", "0px",
+                   false);
+  RegisterProperty(GetDocument(), "--fallback-min-qb-vw", "<length>", "0px",
+                   false);
+  RegisterProperty(GetDocument(), "--fallback-max-qi-vh", "<length>", "0px",
+                   false);
+  RegisterProperty(GetDocument(), "--fallback-max-qb-vw", "<length>", "0px",
+                   false);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #inline, #block {
+        width: 100px;
+        height: 100px;
+      }
+      #inline {
+        container-type: inline-size;
+      }
+      #block {
+        container-type: block-size;
+      }
+      #inline_target, #block_target {
+        --qw: 10qw;
+        --qi: 10qi;
+        --qh: 10qh;
+        --qb: 10qb;
+        --qmin: 10qmin;
+        --qmax: 10qmax;
+        --fallback-w: 10vw;
+        --fallback-h: 10vh;
+        --fallback-min-qi-vh: min(10qi, 10vh);
+        --fallback-min-qb-vw: min(10qb, 10vw);
+        --fallback-max-qi-vh: max(10qi, 10vh);
+        --fallback-max-qb-vw: max(10qb, 10vw);
+      }
+    </style>
+    <div id=inline>
+      <div id="inline_target"></div>
+    </div>
+    <div id=block>
+      <div id="block_target"></div>
+    </div>
+  )HTML");
+
+  Element* inline_target = GetDocument().getElementById("inline_target");
+  ASSERT_TRUE(inline_target);
+  EXPECT_EQ(ComputedValueString(inline_target, "--qw"), "10px");
+  EXPECT_EQ(ComputedValueString(inline_target, "--qi"), "10px");
+  EXPECT_EQ(ComputedValueString(inline_target, "--qh"),
+            ComputedValueString(inline_target, "--fallback-h"));
+  EXPECT_EQ(ComputedValueString(inline_target, "--qb"),
+            ComputedValueString(inline_target, "--fallback-h"));
+  EXPECT_EQ(ComputedValueString(inline_target, "--qmin"),
+            ComputedValueString(inline_target, "--fallback-min-qi-vh"));
+  EXPECT_EQ(ComputedValueString(inline_target, "--qmax"),
+            ComputedValueString(inline_target, "--fallback-max-qi-vh"));
+
+  Element* block_target = GetDocument().getElementById("block_target");
+  ASSERT_TRUE(block_target);
+  EXPECT_EQ(ComputedValueString(block_target, "--qw"),
+            ComputedValueString(block_target, "--fallback-w"));
+  EXPECT_EQ(ComputedValueString(block_target, "--qi"),
+            ComputedValueString(block_target, "--fallback-w"));
+  EXPECT_EQ(ComputedValueString(block_target, "--qh"), "10px");
+  EXPECT_EQ(ComputedValueString(block_target, "--qb"), "10px");
+  EXPECT_EQ(ComputedValueString(block_target, "--qmin"),
+            ComputedValueString(block_target, "--fallback-min-qb-vw"));
+  EXPECT_EQ(ComputedValueString(block_target, "--qmax"),
+            ComputedValueString(block_target, "--fallback-max-qb-vw"));
 }
 
 }  // namespace blink

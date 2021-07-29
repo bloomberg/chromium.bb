@@ -21,6 +21,7 @@
 
 #include "source/opt/build_module.h"
 #include "src/ast/bitcast_expression.h"
+#include "src/ast/interpolate_decoration.h"
 #include "src/ast/override_decoration.h"
 #include "src/ast/struct_block_decoration.h"
 #include "src/ast/type_name.h"
@@ -445,6 +446,9 @@ ast::Decoration* ParserImpl::ConvertMemberDecoration(
     case SpvDecorationColMajor:
       // WGSL only supports column major matrices.
       return nullptr;
+    case SpvDecorationRelaxedPrecision:
+      // WGSL doesn't support relaxed precision.
+      return nullptr;
     case SpvDecorationRowMajor:
       Fail() << "WGSL does not support row-major matrices: can't "
                 "translate member "
@@ -574,6 +578,9 @@ bool ParserImpl::ParseInternalModuleExceptFunctions() {
     return false;
   }
   if (!RegisterUserAndStructMemberNames()) {
+    return false;
+  }
+  if (!RegisterWorkgroupSizeBuiltin()) {
     return false;
   }
   if (!RegisterEntryPoints()) {
@@ -716,31 +723,119 @@ bool ParserImpl::IsValidIdentifier(const std::string& str) {
   return true;
 }
 
+bool ParserImpl::RegisterWorkgroupSizeBuiltin() {
+  WorkgroupSizeInfo& info = workgroup_size_builtin_;
+  for (const spvtools::opt::Instruction& inst : module_->annotations()) {
+    if (inst.opcode() != SpvOpDecorate) {
+      continue;
+    }
+    if (inst.GetSingleWordInOperand(1) != SpvDecorationBuiltIn) {
+      continue;
+    }
+    if (inst.GetSingleWordInOperand(2) != SpvBuiltInWorkgroupSize) {
+      continue;
+    }
+    info.id = inst.GetSingleWordInOperand(0);
+  }
+  if (info.id == 0) {
+    return true;
+  }
+  // Gather the values.
+  const spvtools::opt::Instruction* composite_def =
+      def_use_mgr_->GetDef(info.id);
+  if (!composite_def) {
+    return Fail() << "Invalid WorkgroupSize builtin value";
+  }
+  // SPIR-V validation checks that the result is a 3-element vector of 32-bit
+  // integer scalars (signed or unsigned).  Rely on validation to check the
+  // type.  In theory the instruction could be OpConstantNull and still
+  // pass validation, but that would be non-sensical.  Be a little more
+  // stringent here and check for specific opcodes.  WGSL does not support
+  // const-expr yet, so avoid supporting OpSpecConstantOp here.
+  // TODO(dneto): See https://github.com/gpuweb/gpuweb/issues/1272 for WGSL
+  // const_expr proposals.
+  if ((composite_def->opcode() != SpvOpSpecConstantComposite &&
+       composite_def->opcode() != SpvOpConstantComposite)) {
+    return Fail() << "Invalid WorkgroupSize builtin.  Expected 3-element "
+                     "OpSpecConstantComposite or OpConstantComposite:  "
+                  << composite_def->PrettyPrint();
+  }
+  info.type_id = composite_def->type_id();
+  // Extract the component type from the vector type.
+  info.component_type_id =
+      def_use_mgr_->GetDef(info.type_id)->GetSingleWordInOperand(0);
+
+  /// Sets the ID and value of the index'th member of the composite constant.
+  /// Returns false and emits a diagnostic on error.
+  auto set_param = [this, composite_def](uint32_t* id_ptr, uint32_t* value_ptr,
+                                         int index) -> bool {
+    const auto id = composite_def->GetSingleWordInOperand(index);
+    const auto* def = def_use_mgr_->GetDef(id);
+    if (!def ||
+        (def->opcode() != SpvOpSpecConstant &&
+         def->opcode() != SpvOpConstant) ||
+        (def->NumInOperands() != 1)) {
+      return Fail() << "invalid component " << index << " of workgroupsize "
+                    << (def ? def->PrettyPrint()
+                            : std::string("no definition"));
+    }
+    *id_ptr = id;
+    // Use the default value of a spec constant.
+    *value_ptr = def->GetSingleWordInOperand(0);
+    return true;
+  };
+
+  return set_param(&info.x_id, &info.x_value, 0) &&
+         set_param(&info.y_id, &info.y_value, 1) &&
+         set_param(&info.z_id, &info.z_value, 2);
+}
+
 bool ParserImpl::RegisterEntryPoints() {
+  // Mapping from entry point ID to GridSize computed from LocalSize
+  // decorations.
+  std::unordered_map<uint32_t, GridSize> local_size;
+  for (const spvtools::opt::Instruction& inst : module_->execution_modes()) {
+    auto mode = static_cast<SpvExecutionMode>(inst.GetSingleWordInOperand(1));
+    if (mode == SpvExecutionModeLocalSize) {
+      if (inst.NumInOperands() != 5) {
+        // This won't even get past SPIR-V binary parsing.
+        return Fail() << "invalid LocalSize execution mode: "
+                      << inst.PrettyPrint();
+      }
+      uint32_t function_id = inst.GetSingleWordInOperand(0);
+      local_size[function_id] = GridSize{inst.GetSingleWordInOperand(2),
+                                         inst.GetSingleWordInOperand(3),
+                                         inst.GetSingleWordInOperand(4)};
+    }
+  }
+
   for (const spvtools::opt::Instruction& entry_point :
        module_->entry_points()) {
     const auto stage = SpvExecutionModel(entry_point.GetSingleWordInOperand(0));
     const uint32_t function_id = entry_point.GetSingleWordInOperand(1);
 
     const std::string ep_name = entry_point.GetOperand(2).AsString();
+    if (!IsValidIdentifier(ep_name)) {
+      return Fail() << "entry point name is not a valid WGSL identifier: "
+                    << ep_name;
+    }
 
     bool owns_inner_implementation = false;
     std::string inner_implementation_name;
 
-    if (hlsl_style_pipeline_io_) {
-      auto where = function_to_ep_info_.find(function_id);
-      if (where == function_to_ep_info_.end()) {
-        // If this is the first entry point to have function_id as its
-        // implementation, then this entry point is responsible for generating
-        // the inner implementation.
-        owns_inner_implementation = true;
-        inner_implementation_name = namer_.MakeDerivedName(ep_name);
-      } else {
-        // Reuse the inner implementation owned by the first entry point.
-        inner_implementation_name = where->second[0].inner_name;
-      }
+    auto where = function_to_ep_info_.find(function_id);
+    if (where == function_to_ep_info_.end()) {
+      // If this is the first entry point to have function_id as its
+      // implementation, then this entry point is responsible for generating
+      // the inner implementation.
+      owns_inner_implementation = true;
+      inner_implementation_name = namer_.MakeDerivedName(ep_name);
+    } else {
+      // Reuse the inner implementation owned by the first entry point.
+      inner_implementation_name = where->second[0].inner_name;
     }
-    TINT_ASSERT(ep_name != inner_implementation_name);
+    TINT_ASSERT(Reader, !inner_implementation_name.empty());
+    TINT_ASSERT(Reader, ep_name != inner_implementation_name);
 
     tint::UniqueVector<uint32_t> inputs;
     tint::UniqueVector<uint32_t> outputs;
@@ -765,11 +860,30 @@ bool ParserImpl::RegisterEntryPoints() {
     std::vector<uint32_t> sorted_outputs(outputs.begin(), outputs.end());
     std::sort(sorted_inputs.begin(), sorted_inputs.end());
 
+    const auto ast_stage = enum_converter_.ToPipelineStage(stage);
+    GridSize wgsize;
+    if (ast_stage == ast::PipelineStage::kCompute) {
+      if (workgroup_size_builtin_.id) {
+        // Store the default values.
+        // WGSL allows specializing these, but this code doesn't support that
+        // yet. https://github.com/gpuweb/gpuweb/issues/1442
+        wgsize = GridSize{workgroup_size_builtin_.x_value,
+                          workgroup_size_builtin_.y_value,
+                          workgroup_size_builtin_.z_value};
+      } else {
+        // Use the LocalSize execution mode.  This is the second choice.
+        auto where_local_size = local_size.find(function_id);
+        if (where_local_size != local_size.end()) {
+          wgsize = where_local_size->second;
+        }
+      }
+    }
     function_to_ep_info_[function_id].emplace_back(
-        ep_name, enum_converter_.ToPipelineStage(stage),
-        owns_inner_implementation, inner_implementation_name,
-        std::move(sorted_inputs), std::move(sorted_outputs));
+        ep_name, ast_stage, owns_inner_implementation,
+        inner_implementation_name, std::move(sorted_inputs),
+        std::move(sorted_outputs), wgsize);
   }
+
   // The enum conversion could have failed, so return the existing status value.
   return success_;
 }
@@ -980,19 +1094,28 @@ const Type* ParserImpl::ConvertType(
     bool is_non_writable = false;
     ast::DecorationList ast_member_decorations;
     for (auto& decoration : GetDecorationsForMember(type_id, member_index)) {
-      if (decoration[0] == SpvDecorationNonWritable) {
-        // WGSL doesn't represent individual members as non-writable. Instead,
-        // apply the ReadOnly access control to the containing struct if all
-        // the members are non-writable.
-        is_non_writable = true;
-      } else {
-        auto* ast_member_decoration =
-            ConvertMemberDecoration(type_id, member_index, decoration);
-        if (!success_) {
-          return nullptr;
-        }
-        if (ast_member_decoration) {
-          ast_member_decorations.push_back(ast_member_decoration);
+      switch (decoration[0]) {
+        case SpvDecorationNonWritable:
+
+          // WGSL doesn't represent individual members as non-writable. Instead,
+          // apply the ReadOnly access control to the containing struct if all
+          // the members are non-writable.
+          is_non_writable = true;
+          break;
+        case SpvDecorationLocation:
+        case SpvDecorationFlat:
+          // IO decorations are handled when emitting the entry point.
+          break;
+        default: {
+          auto* ast_member_decoration =
+              ConvertMemberDecoration(type_id, member_index, decoration);
+          if (!success_) {
+            return nullptr;
+          }
+          if (ast_member_decoration) {
+            ast_member_decorations.push_back(ast_member_decoration);
+          }
+          break;
         }
       }
     }
@@ -1021,7 +1144,7 @@ const Type* ParserImpl::ConvertType(
   // Now make the struct.
   auto sym = builder_.Symbols().Register(name);
   ast::DecorationList ast_struct_decorations;
-  if (is_block_decorated) {
+  if (is_block_decorated && struct_types_for_buffers_.count(type_id)) {
     ast_struct_decorations.emplace_back(
         create<ast::StructBlockDecoration>(Source{}));
   }
@@ -1030,14 +1153,16 @@ const Type* ParserImpl::ConvertType(
   if (num_non_writable_members == members.size()) {
     read_only_struct_types_.insert(ast_struct->name());
   }
-  AddConstructedType(sym, ast_struct);
-  return ty_.Struct(sym, std::move(ast_member_types));
+  AddTypeDecl(sym, ast_struct);
+  const auto* result = ty_.Struct(sym, std::move(ast_member_types));
+  struct_id_for_symbol_[sym] = type_id;
+  return result;
 }
 
-void ParserImpl::AddConstructedType(Symbol name, ast::NamedType* type) {
-  auto iter = constructed_types_.insert(name);
+void ParserImpl::AddTypeDecl(Symbol name, ast::TypeDecl* decl) {
+  auto iter = declared_types_.insert(name);
   if (iter.second) {
-    builder_.AST().AddConstructedType(type);
+    builder_.AST().AddTypeDecl(decl);
   }
 }
 
@@ -1050,7 +1175,8 @@ const Type* ParserImpl::ConvertType(uint32_t type_id,
 
   if (pointee_type_id == builtin_position_.struct_type_id) {
     builtin_position_.pointer_type_id = type_id;
-    builtin_position_.storage_class = storage_class;
+    // Pipeline IO builtins map to private variables.
+    builtin_position_.storage_class = SpvStorageClassPrivate;
     return nullptr;
   }
   auto* ast_elem_ty = ConvertType(pointee_type_id, PtrAs::Ptr);
@@ -1073,13 +1199,10 @@ const Type* ParserImpl::ConvertType(uint32_t type_id,
     remap_buffer_block_type_.insert(type_id);
   }
 
-  if (hlsl_style_pipeline_io_) {
-    // When using HLSL-style pipeline IO, intput and output variables
-    // are mapped to private variables.
-    if (ast_storage_class == ast::StorageClass::kInput ||
-        ast_storage_class == ast::StorageClass::kOutput) {
-      ast_storage_class = ast::StorageClass::kPrivate;
-    }
+  // Pipeline intput and output variables map to private variables.
+  if (ast_storage_class == ast::StorageClass::kInput ||
+      ast_storage_class == ast::StorageClass::kOutput) {
+    ast_storage_class = ast::StorageClass::kPrivate;
   }
   switch (ptr_as) {
     case PtrAs::Ref:
@@ -1095,6 +1218,37 @@ bool ParserImpl::RegisterTypes() {
   if (!success_) {
     return false;
   }
+
+  // First record the structure types that should have a `block` decoration
+  // in WGSL. In particular, exclude user-defined pipeline IO in a
+  // block-decorated struct.
+  for (const auto& type_or_value : module_->types_values()) {
+    if (type_or_value.opcode() != SpvOpVariable) {
+      continue;
+    }
+    const auto& var = type_or_value;
+    const auto spirv_storage_class =
+        SpvStorageClass(var.GetSingleWordInOperand(0));
+    if ((spirv_storage_class != SpvStorageClassStorageBuffer) &&
+        (spirv_storage_class != SpvStorageClassUniform)) {
+      continue;
+    }
+    const auto* ptr_type = def_use_mgr_->GetDef(var.type_id());
+    if (ptr_type->opcode() != SpvOpTypePointer) {
+      return Fail() << "OpVariable type expected to be a pointer: "
+                    << var.PrettyPrint();
+    }
+    const auto* store_type =
+        def_use_mgr_->GetDef(ptr_type->GetSingleWordInOperand(1));
+    if (store_type->opcode() == SpvOpTypeStruct) {
+      struct_types_for_buffers_.insert(store_type->result_id());
+    } else {
+      Fail() << "WGSL does not support arrays of buffers: "
+             << var.PrettyPrint();
+    }
+  }
+
+  // Now convert each type.
   for (auto& type_or_const : module_->types_values()) {
     const auto* type = type_mgr_->GetType(type_or_const.result_id());
     if (type == nullptr) {
@@ -1163,7 +1317,13 @@ bool ParserImpl::EmitScalarSpecConstants() {
       ast::DecorationList spec_id_decos;
       for (const auto& deco : GetDecorationsFor(inst.result_id())) {
         if ((deco.size() == 2) && (deco[0] == SpvDecorationSpecId)) {
-          auto* cid = create<ast::OverrideDecoration>(Source{}, deco[1]);
+          const uint32_t id = deco[1];
+          if (id > 65535) {
+            return Fail() << "SpecId too large. WGSL override IDs must be "
+                             "between 0 and 65535: ID %"
+                          << inst.result_id() << " has SpecId " << id;
+          }
+          auto* cid = create<ast::OverrideDecoration>(Source{}, id);
           spec_id_decos.push_back(cid);
           break;
         }
@@ -1217,7 +1377,7 @@ const Type* ParserImpl::MaybeGenerateAlias(
       builder_.ty.alias(sym, ast_underlying_type->Build(builder_));
 
   // Record this new alias as the AST type for this SPIR-V ID.
-  AddConstructedType(sym, ast_alias_type);
+  AddTypeDecl(sym, ast_alias_type);
 
   return ty_.Alias(sym, ast_underlying_type);
 }
@@ -1240,6 +1400,8 @@ bool ParserImpl::EmitModuleScopeVariables() {
          (spirv_storage_class == SpvStorageClassOutput))) {
       // Skip emitting gl_PerVertex.
       builtin_position_.per_vertex_var_id = var.result_id();
+      builtin_position_.per_vertex_var_init_id =
+          var.NumInOperands() > 1 ? var.GetSingleWordInOperand(1) : 0u;
       continue;
     }
     switch (enum_converter_.ToStorageClass(spirv_storage_class)) {
@@ -1305,15 +1467,33 @@ bool ParserImpl::EmitModuleScopeVariables() {
     // Make sure the variable has a name.
     namer_.SuggestSanitizedName(builtin_position_.per_vertex_var_id,
                                 "gl_Position");
-    auto* var = MakeVariable(
+    ast::Expression* ast_constructor = nullptr;
+    if (builtin_position_.per_vertex_var_init_id) {
+      // The initializer is complex.
+      const auto* init =
+          def_use_mgr_->GetDef(builtin_position_.per_vertex_var_init_id);
+      switch (init->opcode()) {
+        case SpvOpConstantComposite:
+        case SpvOpSpecConstantComposite:
+          ast_constructor = MakeConstantExpression(
+                                init->GetSingleWordInOperand(
+                                    builtin_position_.position_member_index))
+                                .expr;
+          break;
+        default:
+          return Fail() << "gl_PerVertex initializer too complex. only "
+                           "OpCompositeConstruct and OpSpecConstantComposite "
+                           "are supported: "
+                        << init->PrettyPrint();
+      }
+    }
+    auto* ast_var = MakeVariable(
         builtin_position_.per_vertex_var_id,
         enum_converter_.ToStorageClass(builtin_position_.storage_class),
-        ConvertType(builtin_position_.position_member_type_id), false, nullptr,
-        ast::DecorationList{
-            create<ast::BuiltinDecoration>(Source{}, ast::Builtin::kPosition),
-        });
+        ConvertType(builtin_position_.position_member_type_id), false,
+        ast_constructor, {});
 
-    builder_.AST().AddGlobalVariable(var);
+    builder_.AST().AddGlobalVariable(ast_var);
   }
   return success_;
 }
@@ -1354,6 +1534,7 @@ ast::Variable* ParserImpl::MakeVariable(uint32_t id,
     return nullptr;
   }
 
+  ast::Access access = ast::Access::kUndefined;
   if (sc == ast::StorageClass::kStorage) {
     bool read_only = false;
     if (auto* tn = storage_type->As<Named>()) {
@@ -1361,9 +1542,7 @@ ast::Variable* ParserImpl::MakeVariable(uint32_t id,
     }
 
     // Apply the access(read) or access(read_write) modifier.
-    auto access = read_only ? ast::AccessControl::kReadOnly
-                            : ast::AccessControl::kReadWrite;
-    storage_type = ty_.AccessControl(storage_type, access);
+    access = read_only ? ast::Access::kRead : ast::Access::kReadWrite;
   }
 
   // Handle variables (textures and samplers) are always in the handle
@@ -1372,12 +1551,9 @@ ast::Variable* ParserImpl::MakeVariable(uint32_t id,
     sc = ast::StorageClass::kNone;
   }
 
-  // In almost all cases, copy the decorations from SPIR-V to the variable.
-  // But avoid doing so when converting pipeline IO to private variables.
-  if (sc != ast::StorageClass::kPrivate) {
-    if (!ConvertDecorationsForVariable(id, &storage_type, &decorations)) {
-      return nullptr;
-    }
+  if (!ConvertDecorationsForVariable(id, &storage_type, &decorations,
+                                     sc != ast::StorageClass::kPrivate)) {
+    return nullptr;
   }
 
   std::string name = namer_.Name(id);
@@ -1387,14 +1563,14 @@ ast::Variable* ParserImpl::MakeVariable(uint32_t id,
   // `var` declarations will have a resolved type of ref<storage>, but at the
   // AST level both `var` and `let` are declared with the same type.
   return create<ast::Variable>(Source{}, builder_.Symbols().Register(name), sc,
-                               storage_type->Build(builder_), is_const,
+                               access, storage_type->Build(builder_), is_const,
                                constructor, decorations);
 }
 
-bool ParserImpl::ConvertDecorationsForVariable(
-    uint32_t id,
-    const Type** type,
-    ast::DecorationList* decorations) {
+bool ParserImpl::ConvertDecorationsForVariable(uint32_t id,
+                                               const Type** store_type,
+                                               ast::DecorationList* decorations,
+                                               bool transfer_pipeline_io) {
   for (auto& deco : GetDecorationsFor(id)) {
     if (deco.empty()) {
       return Fail() << "malformed decoration on ID " << id << ": it is empty";
@@ -1412,13 +1588,20 @@ bool ParserImpl::ConvertDecorationsForVariable(
         case SpvBuiltInSampleId:
         case SpvBuiltInVertexIndex:
         case SpvBuiltInInstanceIndex:
-          // The SPIR-V variable is likely to be signed (because GLSL
-          // requires signed), but WGSL requires unsigned.  Handle specially
+        case SpvBuiltInLocalInvocationId:
+        case SpvBuiltInLocalInvocationIndex:
+        case SpvBuiltInGlobalInvocationId:
+        case SpvBuiltInWorkgroupId:
+        case SpvBuiltInNumWorkgroups:
+          // The SPIR-V variable may signed (because GLSL requires signed for
+          // some of these), but WGSL requires unsigned.  Handle specially
           // so we always perform the conversion at load and store.
-          if (auto* forced_type = UnsignedTypeFor(*type)) {
+          special_builtins_[id] = spv_builtin;
+          if (auto* forced_type = UnsignedTypeFor(*store_type)) {
             // Requires conversion and special handling in code generation.
-            special_builtins_[id] = spv_builtin;
-            *type = forced_type;
+            if (transfer_pipeline_io) {
+              *store_type = forced_type;
+            }
           }
           break;
         case SpvBuiltInSampleMask: {
@@ -1432,7 +1615,9 @@ bool ParserImpl::ConvertDecorationsForVariable(
                       "SampleMask must be an array of 1 element.";
           }
           special_builtins_[id] = spv_builtin;
-          *type = ty_.U32();
+          if (transfer_pipeline_io) {
+            *store_type = ty_.U32();
+          }
           break;
         }
         default:
@@ -1443,16 +1628,31 @@ bool ParserImpl::ConvertDecorationsForVariable(
         // A diagnostic has already been emitted.
         return false;
       }
-      decorations->emplace_back(
-          create<ast::BuiltinDecoration>(Source{}, ast_builtin));
+      if (transfer_pipeline_io) {
+        decorations->emplace_back(
+            create<ast::BuiltinDecoration>(Source{}, ast_builtin));
+      }
     }
     if (deco[0] == SpvDecorationLocation) {
       if (deco.size() != 2) {
         return Fail() << "malformed Location decoration on ID " << id
                       << ": requires one literal operand";
       }
-      decorations->emplace_back(
-          create<ast::LocationDecoration>(Source{}, deco[1]));
+      if (transfer_pipeline_io) {
+        decorations->emplace_back(
+            create<ast::LocationDecoration>(Source{}, deco[1]));
+      }
+    }
+    if (deco[0] == SpvDecorationFlat) {
+      if (transfer_pipeline_io) {
+        // In WGSL, integral types are always flat, and so the decoration
+        // is never specified.
+        if (!(*store_type)->IsIntegerScalarOrVector()) {
+          decorations->emplace_back(create<ast::InterpolateDecoration>(
+              Source{}, ast::InterpolationType::kFlat,
+              ast::InterpolationSampling::kNone));
+        }
+      }
     }
     if (deco[0] == SpvDecorationDescriptorSet) {
       if (deco.size() == 1) {
@@ -1474,10 +1674,59 @@ bool ParserImpl::ConvertDecorationsForVariable(
   return success();
 }
 
+bool ParserImpl::CanMakeConstantExpression(uint32_t id) {
+  if ((id == workgroup_size_builtin_.id) ||
+      (id == workgroup_size_builtin_.x_id) ||
+      (id == workgroup_size_builtin_.y_id) ||
+      (id == workgroup_size_builtin_.z_id)) {
+    return true;
+  }
+  const auto* inst = def_use_mgr_->GetDef(id);
+  if (!inst) {
+    return false;
+  }
+  if (inst->opcode() == SpvOpUndef) {
+    return true;
+  }
+  return nullptr != constant_mgr_->FindDeclaredConstant(id);
+}
+
 TypedExpression ParserImpl::MakeConstantExpression(uint32_t id) {
   if (!success_) {
     return {};
   }
+
+  // Handle the special cases for workgroup sizing.
+  if (id == workgroup_size_builtin_.id) {
+    auto x = MakeConstantExpression(workgroup_size_builtin_.x_id);
+    auto y = MakeConstantExpression(workgroup_size_builtin_.y_id);
+    auto z = MakeConstantExpression(workgroup_size_builtin_.z_id);
+    auto* ast_type = ty_.Vector(x.type, 3);
+    return {ast_type, create<ast::TypeConstructorExpression>(
+                          Source{}, ast_type->Build(builder_),
+                          ast::ExpressionList{x.expr, y.expr, z.expr})};
+  } else if (id == workgroup_size_builtin_.x_id) {
+    return MakeConstantExpressionForSpirvConstant(
+        Source{}, ConvertType(workgroup_size_builtin_.component_type_id),
+        constant_mgr_->GetConstant(
+            type_mgr_->GetType(workgroup_size_builtin_.component_type_id),
+            {workgroup_size_builtin_.x_value}));
+  } else if (id == workgroup_size_builtin_.y_id) {
+    return MakeConstantExpressionForSpirvConstant(
+        Source{}, ConvertType(workgroup_size_builtin_.component_type_id),
+        constant_mgr_->GetConstant(
+            type_mgr_->GetType(workgroup_size_builtin_.component_type_id),
+            {workgroup_size_builtin_.y_value}));
+  } else if (id == workgroup_size_builtin_.z_id) {
+    return MakeConstantExpressionForSpirvConstant(
+        Source{}, ConvertType(workgroup_size_builtin_.component_type_id),
+        constant_mgr_->GetConstant(
+            type_mgr_->GetType(workgroup_size_builtin_.component_type_id),
+            {workgroup_size_builtin_.z_value}));
+  }
+
+  // Handle the general case where a constant is already registered
+  // with the SPIR-V optimizer's analysis framework.
   const auto* inst = def_use_mgr_->GetDef(id);
   if (inst == nullptr) {
     Fail() << "ID " << id << " is not a registered instruction";
@@ -1501,7 +1750,15 @@ TypedExpression ParserImpl::MakeConstantExpression(uint32_t id) {
   }
 
   auto source = GetSourceForInst(inst);
-  auto* ast_type = original_ast_type->UnwrapAliasAndAccess();
+  return MakeConstantExpressionForSpirvConstant(source, original_ast_type,
+                                                spirv_const);
+}
+
+TypedExpression ParserImpl::MakeConstantExpressionForSpirvConstant(
+    Source source,
+    const Type* original_ast_type,
+    const spvtools::opt::analysis::Constant* spirv_const) {
+  auto* ast_type = original_ast_type->UnwrapAlias();
 
   // TODO(dneto): Note: NullConstant for int, uint, float map to a regular 0.
   // So canonicalization should map that way too.
@@ -1556,12 +1813,10 @@ TypedExpression ParserImpl::MakeConstantExpression(uint32_t id) {
                                    Source{}, original_ast_type->Build(builder_),
                                    std::move(ast_components))};
   }
-  auto* spirv_null_const = spirv_const->AsNullConstant();
-  if (spirv_null_const != nullptr) {
+  if (spirv_const->AsNullConstant()) {
     return {original_ast_type, MakeNullValue(original_ast_type)};
   }
-  Fail() << "Unhandled constant type " << inst->type_id() << " for value ID "
-         << id;
+  Fail() << "Unhandled constant type ";
   return {};
 }
 
@@ -1577,7 +1832,7 @@ ast::Expression* ParserImpl::MakeNullValue(const Type* type) {
   }
 
   auto* original_type = type;
-  type = type->UnwrapAliasAndAccess();
+  type = type->UnwrapAlias();
 
   if (type->Is<Bool>()) {
     return create<ast::ScalarConstructorExpression>(
@@ -2123,15 +2378,13 @@ const Pointer* ParserImpl::GetTypeForHandleVar(
         ast_store_type = ty_.SampledTexture(dim, ast_sampled_component_type);
       }
     } else {
-      const auto access = usage.IsStorageReadTexture()
-                              ? ast::AccessControl::kReadOnly
-                              : ast::AccessControl::kWriteOnly;
+      const auto access = usage.IsStorageReadTexture() ? ast::Access::kRead
+                                                       : ast::Access::kWrite;
       const auto format = enum_converter_.ToImageFormat(image_type->format());
       if (format == ast::ImageFormat::kNone) {
         return nullptr;
       }
-      ast_store_type =
-          ty_.AccessControl(ty_.StorageTexture(dim, format), access);
+      ast_store_type = ty_.StorageTexture(dim, format, access);
     }
   } else {
     Fail() << "unsupported: UniformConstant variable is not a recognized "
@@ -2418,6 +2671,36 @@ const spvtools::opt::Instruction* ParserImpl::GetInstructionForTest(
     uint32_t id) const {
   return def_use_mgr_ ? def_use_mgr_->GetDef(id) : nullptr;
 }
+
+std::string ParserImpl::GetMemberName(const Struct& struct_type,
+                                      int member_index) {
+  auto where = struct_id_for_symbol_.find(struct_type.name);
+  if (where == struct_id_for_symbol_.end()) {
+    Fail() << "no structure type registered for symbol";
+    return "";
+  }
+  return namer_.GetMemberName(where->second, member_index);
+}
+
+ast::Decoration* ParserImpl::GetMemberLocation(const Struct& struct_type,
+                                               int member_index) {
+  auto where = struct_id_for_symbol_.find(struct_type.name);
+  if (where == struct_id_for_symbol_.end()) {
+    Fail() << "no structure type registered for symbol";
+    return nullptr;
+  }
+  const auto type_id = where->second;
+  for (auto& deco : GetDecorationsForMember(type_id, member_index)) {
+    if ((deco.size() == 2) && (deco[0] == SpvDecorationLocation)) {
+      return create<ast::LocationDecoration>(Source{}, deco[1]);
+    }
+  }
+  return nullptr;
+}
+
+WorkgroupSizeInfo::WorkgroupSizeInfo() = default;
+
+WorkgroupSizeInfo::~WorkgroupSizeInfo() = default;
 
 }  // namespace spirv
 }  // namespace reader

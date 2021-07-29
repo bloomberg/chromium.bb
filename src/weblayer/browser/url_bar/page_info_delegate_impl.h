@@ -9,6 +9,7 @@
 
 #include "build/build_config.h"
 #include "components/browsing_data/content/local_shared_objects_container.h"
+#include "components/page_info/page_info.h"
 #include "components/page_info/page_info_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -41,6 +42,10 @@ class PageInfoDelegateImpl : public PageInfoDelegate {
   void OpenCertificateDialog(net::X509Certificate* certificate) override;
   void OpenConnectionHelpCenterPage(const ui::Event& event) override;
   void OpenSafetyTipHelpCenterPage() override;
+  void OpenContentSettingsExceptions(
+      ContentSettingsType content_settings_type) override;
+  void OnPageInfoActionOccurred(PageInfo::PageInfoAction action) override;
+  void OnUIClosing() override;
 #endif
 
   permissions::PermissionDecisionAutoBlocker* GetPermissionDecisionAutoblocker()

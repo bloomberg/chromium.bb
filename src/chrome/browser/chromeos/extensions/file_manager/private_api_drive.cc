@@ -28,15 +28,15 @@
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/drivefs_native_message_host.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
+#include "chrome/browser/ash/file_manager/file_tasks.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/url_util.h"
 #include "chrome/browser/ash/file_system_provider/mount_path_util.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
-#include "chrome/browser/chromeos/file_manager/file_tasks.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/file_manager/url_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -59,6 +59,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/drive_api_url_generator.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -68,9 +69,9 @@
 
 using content::BrowserThread;
 
-using chromeos::file_system_provider::EntryMetadata;
-using chromeos::file_system_provider::ProvidedFileSystemInterface;
-using chromeos::file_system_provider::util::FileSystemURLParser;
+using ash::file_system_provider::EntryMetadata;
+using ash::file_system_provider::ProvidedFileSystemInterface;
+using ash::file_system_provider::util::FileSystemURLParser;
 using extensions::api::file_manager_private::EntryProperties;
 using extensions::api::file_manager_private::EntryPropertyName;
 using file_manager::util::EntryDefinition;
@@ -738,7 +739,8 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnSearchDriveFs(
     base::DictionaryValue dict;
     std::string highlight;
     base::Value* value = entry.FindKey("fileFullPath");
-    if (value && value->GetAsString(&highlight)) {
+    if (value && value->is_string()) {
+      highlight = value->GetString();
       base::FilePath path(highlight);
       if (!drive::internal::FindAndHighlight(path.BaseName().value(), queries,
                                              &highlight)) {
@@ -858,7 +860,7 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
   const CoreAccountId& account_id =
       identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
   std::vector<std::string> scopes;
-  scopes.emplace_back("https://www.googleapis.com/auth/drive.readonly");
+  scopes.emplace_back(GaiaConstants::kDriveReadOnlyOAuth2Scope);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       browser_context()
@@ -871,7 +873,7 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
 }
 
 void FileManagerPrivateInternalGetDownloadUrlFunction::OnTokenFetched(
-    google_apis::DriveApiErrorCode code,
+    google_apis::ApiErrorCode code,
     const std::string& access_token) {
   if (code != google_apis::HTTP_SUCCESS) {
     // Intentionally returns a blank.

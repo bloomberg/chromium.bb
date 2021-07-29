@@ -18,6 +18,7 @@
 
 class GrMtlGpu;
 class GrMtlPipelineStateDataManager;
+class GrMtlRenderCommandEncoder;
 class GrMtlSampler;
 class GrMtlTexture;
 class GrPipeline;
@@ -50,13 +51,13 @@ public:
     void setTextures(const GrGeometryProcessor&,
                      const GrPipeline&,
                      const GrSurfaceProxy* const geomProcTextures[]);
-    void bindTextures(id<MTLRenderCommandEncoder> renderCmdEncoder);
+    void bindTextures(GrMtlRenderCommandEncoder* renderCmdEncoder);
 
-    void setDrawState(id<MTLRenderCommandEncoder>,
+    void setDrawState(GrMtlRenderCommandEncoder*,
                       const GrSwizzle& writeSwizzle,
                       const GrXferProcessor&);
 
-    static void SetDynamicScissorRectState(id<MTLRenderCommandEncoder> renderCmdEncoder,
+    static void SetDynamicScissorRectState(GrMtlRenderCommandEncoder* renderCmdEncoder,
                                            const GrRenderTarget* renderTarget,
                                            GrSurfaceOrigin rtOrigin,
                                            SkIRect scissorRect);
@@ -79,34 +80,15 @@ private:
             fRenderTargetSize.fHeight = -1;
             fRenderTargetOrigin = (GrSurfaceOrigin)-1;
         }
-
-        /**
-        * Gets a float4 that adjusts the position from Skia device coords to Metals normalized
-        * device coords. Assuming the transformed position, pos, is a homogeneous float3, the vec,
-        * v, is applied as such:
-        * pos.x = dot(v.xy, pos.xz)
-        * pos.y = dot(v.zw, pos.yz)
-        */
-        void getRTAdjustmentVec(float* destVec) {
-            destVec[0] = 2.f / fRenderTargetSize.fWidth;
-            destVec[1] = -1.f;
-            if (kBottomLeft_GrSurfaceOrigin == fRenderTargetOrigin) {
-                destVec[2] = -2.f / fRenderTargetSize.fHeight;
-                destVec[3] = 1.f;
-            } else {
-                destVec[2] = 2.f / fRenderTargetSize.fHeight;
-                destVec[3] = -1.f;
-            }
-        }
     };
 
     void setRenderTargetState(const GrRenderTarget*, GrSurfaceOrigin);
 
-    void bindUniforms(id<MTLRenderCommandEncoder>);
+    void bindUniforms(GrMtlRenderCommandEncoder*);
 
-    void setBlendConstants(id<MTLRenderCommandEncoder>, const GrSwizzle&, const GrXferProcessor&);
+    void setBlendConstants(GrMtlRenderCommandEncoder*, const GrSwizzle&, const GrXferProcessor&);
 
-    void setDepthStencilState(id<MTLRenderCommandEncoder> renderCmdEncoder);
+    void setDepthStencilState(GrMtlRenderCommandEncoder* renderCmdEncoder);
 
     struct SamplerBindings {
         GrMtlSampler*  fSampler;

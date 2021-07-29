@@ -24,6 +24,7 @@
 [<ph name="SERVICE_SCRIPT_NAME" />] のチェックボックスがすでにオンになっている場合は、いったんオフにしてもう一度オンにしてください。</translation>
 <translation id="225614027745146050">ようこそ</translation>
 <translation id="2320166752086256636">キーボードを非表示</translation>
+<translation id="2329392777730037872">クライアントで <ph name="URL" /> を開けませんでした。</translation>
 <translation id="2333212046079545895">Copyright 2021 Google LLC. All Rights Reserved.</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="2366718077645204424">ホストにアクセスできません。お使いのネットワークの設定が原因であることが考えられます。</translation>
@@ -67,6 +68,7 @@
 <translation id="4176825807642096119">アクセス コード</translation>
 <translation id="4227991223508142681">ユーティリティ プロビジョニングをホストします</translation>
 <translation id="4240294130679914010">Chromoting ホスト アンインストーラ</translation>
+<translation id="4257751272692708833"><ph name="PRODUCT_NAME" /> URL Forwarder</translation>
 <translation id="4277736576214464567">アクセス コードが無効です。もう一度入力してください。</translation>
 <translation id="4281844954008187215">利用規約</translation>
 <translation id="4405930547258349619">コア ライブラリ</translation>
@@ -87,6 +89,7 @@
 <translation id="4867841927763172006">PrtScn を送信</translation>
 <translation id="4974476491460646149"><ph name="HOSTNAME" /> との接続が切断されました</translation>
 <translation id="4985296110227979402">リモート接続に使用するパソコンを最初に設定しておく必要があります</translation>
+<translation id="4987330545941822761">Chrome リモート デスクトップでは、URL をローカルで開くブラウザを決定できません。下のリストから選択してください。</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" />（オフライン）</translation>
 <translation id="507204348399810022"><ph name="HOSTNAME" /> へのリモート接続を無効にしてもよろしいですか？</translation>
 <translation id="5170982930780719864">ホスト ID が無効です。</translation>
@@ -121,6 +124,7 @@
 <translation id="6612717000975622067">Ctrl-Alt-Del を送信</translation>
 <translation id="6654753848497929428">共有</translation>
 <translation id="677755392401385740">次のユーザーのホストを開始しました: <ph name="HOST_USERNAME" />。</translation>
+<translation id="6902524959760471898"><ph name="PRODUCT_NAME" /> クライアントで URL を開くヘルパー アプリケーション</translation>
 <translation id="6939719207673461467">キーボードを表示/非表示</translation>
 <translation id="6963936880795878952">無効な PIN を使用した接続が試みられたため、リモートのパソコンへの接続が一時的にブロックされています。しばらくしてからもう一度お試しください。</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -133,6 +137,7 @@
 <translation id="7144878232160441200">再読み込み</translation>
 <translation id="7312846573060934304">ホストはオフラインです。</translation>
 <translation id="7319983568955948908">共有を停止</translation>
+<translation id="7359298090707901886">選択されたブラウザでは、ローカルマシンで URL を開けません。</translation>
 <translation id="7401733114166276557">Chrome リモート デスクトップ</translation>
 <translation id="7434397035092923453">次のクライアントのアクセスを拒否しました: <ph name="CLIENT_USERNAME" />。</translation>
 <translation id="7444276978508498879">次のクライアントが接続しました: <ph name="CLIENT_USERNAME" />。</translation>

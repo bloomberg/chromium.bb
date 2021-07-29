@@ -38,7 +38,6 @@
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
-import type * as ProtocolClient from '../protocol_client/protocol_client.js'; // eslint-disable-line no-unused-vars
 import * as Root from '../root/root.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
@@ -48,17 +47,20 @@ import {FrameManager} from './FrameManager.js';
 import {OverlayModel} from './OverlayModel.js';
 import type {RemoteObject} from './RemoteObject.js'; // eslint-disable-line no-unused-vars
 import {RuntimeModel} from './RuntimeModel.js';
-import type {Target} from './SDKModel.js';
-import {Capability, SDKModel, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';
+import {Capability} from './Target.js';
+import {SDKModel} from './SDKModel.js';
+import {TargetManager} from './TargetManager.js';
+import {ResourceTreeModel} from './ResourceTreeModel.js';
 
 export class DOMNode {
   _domModel: DOMModel;
   _agent: ProtocolProxyApi.DOMApi;
   ownerDocument!: DOMDocument|null;
   _isInShadowTree!: boolean;
-  id!: number;
+  id!: Protocol.DOM.NodeId;
   index: number|undefined;
-  _backendNodeId!: number;
+  _backendNodeId!: Protocol.DOM.BackendNodeId;
   _nodeType!: number;
   _nodeName!: string;
   _localName!: string;
@@ -163,11 +165,9 @@ export class DOMNode {
       this._contentDocument.parentNode = this;
       this._children = [];
     } else if ((payload.nodeName === 'IFRAME' || payload.nodeName === 'PORTAL') && payload.frameId) {
-      const childTarget = TargetManager.instance().targetById(payload.frameId);
-      const childModel = childTarget ? childTarget.model(DOMModel) : null;
-      if (childModel) {
-        this._childDocumentPromiseForTesting = childModel.requestDocument();
-      }
+      // At this point we know we are in an OOPIF, otherwise payload.contentDocument would have been set.
+      this._childDocumentPromiseForTesting =
+          this.createChildDocumentPromiseForTesting(payload.frameId, this._domModel.target());
       this._children = [];
     }
 
@@ -205,6 +205,15 @@ export class DOMNode {
     }
   }
 
+  private async createChildDocumentPromiseForTesting(frameId: string, notInTarget: Target): Promise<DOMDocument|null> {
+    const frame = await FrameManager.instance().getOrWaitForFrame(frameId, notInTarget);
+    const childModel = frame.resourceTreeModel()?.target().model(DOMModel);
+    if (childModel) {
+      return childModel.requestDocument();
+    }
+    return null;
+  }
+
   isAdFrameNode(): boolean {
     if (this.isIframe() && this._frameOwnerFrameId) {
       const frame = FrameManager.instance().getFrame(this._frameOwnerFrameId);
@@ -234,7 +243,7 @@ export class DOMNode {
     return this._domModel;
   }
 
-  backendNodeId(): number {
+  backendNodeId(): Protocol.DOM.BackendNodeId {
     return this._backendNodeId;
   }
 
@@ -389,7 +398,7 @@ export class DOMNode {
       name: string,
       // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      callback?: ((arg0: ProtocolClient.InspectorBackend.ProtocolError|null, arg1: DOMNode|null) => any)): void {
+      callback?: ((arg0: string|null, arg1: DOMNode|null) => any)): void {
     this._agent.invoke_setNodeName({nodeId: this.id, name}).then(response => {
       if (!response.getError()) {
         this._domModel.markUndoableState();
@@ -410,7 +419,7 @@ export class DOMNode {
 
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setNodeValue(value: string, callback?: ((arg0: ProtocolClient.InspectorBackend.ProtocolError|null) => any)): void {
+  setNodeValue(value: string, callback?: ((arg0: string|null) => any)): void {
     this._agent.invoke_setNodeValue({nodeId: this.id, value}).then(response => {
       if (!response.getError()) {
         this._domModel.markUndoableState();
@@ -430,7 +439,7 @@ export class DOMNode {
       name: string, text: string,
       // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      callback?: ((arg0: ProtocolClient.InspectorBackend.ProtocolError|null) => any)): void {
+      callback?: ((arg0: string|null) => any)): void {
     this._agent.invoke_setAttributesAsText({nodeId: this.id, text, name}).then(response => {
       if (!response.getError()) {
         this._domModel.markUndoableState();
@@ -445,7 +454,7 @@ export class DOMNode {
       name: string, value: string,
       // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      callback?: ((arg0: ProtocolClient.InspectorBackend.ProtocolError|null) => any)): void {
+      callback?: ((arg0: string|null) => any)): void {
     this._agent.invoke_setAttributeValue({nodeId: this.id, name, value}).then(response => {
       if (!response.getError()) {
         this._domModel.markUndoableState();
@@ -495,7 +504,7 @@ export class DOMNode {
 
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setOuterHTML(html: string, callback?: ((arg0: ProtocolClient.InspectorBackend.ProtocolError|null) => any)): void {
+  setOuterHTML(html: string, callback?: ((arg0: string|null) => any)): void {
     this._agent.invoke_setOuterHTML({nodeId: this.id, outerHTML: html}).then(response => {
       if (!response.getError()) {
         this._domModel.markUndoableState();
@@ -509,8 +518,8 @@ export class DOMNode {
   removeNode(callback?: (
       // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (arg0: ProtocolClient.InspectorBackend.ProtocolError|null, arg1?: Protocol.DOM.NodeId|undefined) => any)): void {
-    this._agent.invoke_removeNode({nodeId: this.id}).then(response => {
+      (arg0: string|null, arg1?: Protocol.DOM.NodeId|undefined) => any)): Promise<void> {
+    return this._agent.invoke_removeNode({nodeId: this.id}).then(response => {
       if (!response.getError()) {
         this._domModel.markUndoableState();
       }
@@ -713,7 +722,7 @@ export class DOMNode {
       targetNode: DOMNode, anchorNode: DOMNode|null,
       // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      callback?: ((arg0: ProtocolClient.InspectorBackend.ProtocolError|null, arg1: DOMNode|null) => any)): void {
+      callback?: ((arg0: string|null, arg1: DOMNode|null) => any)): void {
     this._agent
         .invoke_copyTo(
             {nodeId: this.id, targetNodeId: targetNode.id, insertBeforeNodeId: anchorNode ? anchorNode.id : undefined})
@@ -731,7 +740,7 @@ export class DOMNode {
       targetNode: DOMNode, anchorNode: DOMNode|null,
       // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      callback?: ((arg0: ProtocolClient.InspectorBackend.ProtocolError|null, arg1: DOMNode|null) => any)): void {
+      callback?: ((arg0: string|null, arg1: DOMNode|null) => any)): void {
     this._agent
         .invoke_moveTo(
             {nodeId: this.id, targetNodeId: targetNode.id, insertBeforeNodeId: anchorNode ? anchorNode.id : undefined})
@@ -950,9 +959,9 @@ export namespace DOMNode {
 
 export class DeferredDOMNode {
   _domModel: DOMModel;
-  _backendNodeId: number;
+  _backendNodeId: Protocol.DOM.BackendNodeId;
 
-  constructor(target: Target, backendNodeId: number) {
+  constructor(target: Target, backendNodeId: Protocol.DOM.BackendNodeId) {
     this._domModel = (target.model(DOMModel) as DOMModel);
     this._backendNodeId = backendNodeId;
   }
@@ -966,7 +975,7 @@ export class DeferredDOMNode {
     return nodeIds && nodeIds.get(this._backendNodeId) || null;
   }
 
-  backendNodeId(): number {
+  backendNodeId(): Protocol.DOM.BackendNodeId {
     return this._backendNodeId;
   }
 
@@ -983,7 +992,7 @@ export class DOMNodeShortcut {
   nodeType: number;
   nodeName: string;
   deferredNode: DeferredDOMNode;
-  constructor(target: Target, backendNodeId: number, nodeType: number, nodeName: string) {
+  constructor(target: Target, backendNodeId: Protocol.DOM.BackendNodeId, nodeType: number, nodeName: string) {
     this.nodeType = nodeType;
     this.nodeName = nodeName;
     this.deferredNode = new DeferredDOMNode(target, backendNodeId);
@@ -1011,7 +1020,7 @@ export class DOMModel extends SDKModel {
     [x: number]: DOMNode,
   };
   _document: DOMDocument|null;
-  _attributeLoadNodeIds: Set<number>;
+  _attributeLoadNodeIds: Set<Protocol.DOM.NodeId>;
   _runtimeModel: RuntimeModel;
   _lastMutationId!: number;
   _pendingDocumentRequestPromise: Promise<DOMDocument|null>|null;
@@ -1114,9 +1123,12 @@ export class DOMModel extends SDKModel {
     const parentModel = this.parentModel();
     if (parentModel && !this._frameOwnerNode) {
       await parentModel.requestDocument();
-      const response = await parentModel._agent.invoke_getFrameOwner({frameId: this.target().id()});
-      if (!response.getError() && response.nodeId) {
-        this._frameOwnerNode = parentModel.nodeForId(response.nodeId);
+      const mainFrame = this.target().model(ResourceTreeModel)?.mainFrame;
+      if (mainFrame) {
+        const response = await parentModel._agent.invoke_getFrameOwner({frameId: mainFrame.id});
+        if (!response.getError() && response.nodeId) {
+          this._frameOwnerNode = parentModel.nodeForId(response.nodeId);
+        }
       }
     }
 
@@ -1151,14 +1163,15 @@ export class DOMModel extends SDKModel {
         .then(({nodeId}) => nodeId);
   }
 
-  async pushNodesByBackendIdsToFrontend(backendNodeIds: Set<number>): Promise<Map<number, DOMNode|null>|null> {
+  async pushNodesByBackendIdsToFrontend(backendNodeIds: Set<Protocol.DOM.BackendNodeId>):
+      Promise<Map<Protocol.DOM.BackendNodeId, DOMNode|null>|null> {
     await this.requestDocument();
     const backendNodeIdsArray = [...backendNodeIds];
     const {nodeIds} = await this._agent.invoke_pushNodesByBackendIdsToFrontend({backendNodeIds: backendNodeIdsArray});
     if (!nodeIds) {
       return null;
     }
-    const map = new Map<number, DOMNode|null>();
+    const map = new Map<Protocol.DOM.BackendNodeId, DOMNode|null>();
     for (let i = 0; i < nodeIds.length; ++i) {
       if (nodeIds[i]) {
         map.set(backendNodeIdsArray[i], this.nodeForId(nodeIds[i]));
@@ -1428,15 +1441,15 @@ export class DOMModel extends SDKModel {
     delete this._searchId;
   }
 
-  classNamesPromise(nodeId: number): Promise<string[]> {
+  classNamesPromise(nodeId: Protocol.DOM.NodeId): Promise<string[]> {
     return this._agent.invoke_collectClassNamesFromSubtree({nodeId}).then(({classNames}) => classNames || []);
   }
 
-  querySelector(nodeId: number, selector: string): Promise<number|null> {
+  querySelector(nodeId: Protocol.DOM.NodeId, selector: string): Promise<number|null> {
     return this._agent.invoke_querySelector({nodeId, selector}).then(({nodeId}) => nodeId);
   }
 
-  querySelectorAll(nodeId: number, selector: string): Promise<number[]|null> {
+  querySelectorAll(nodeId: Protocol.DOM.NodeId, selector: string): Promise<number[]|null> {
     return this._agent.invoke_querySelectorAll({nodeId, selector}).then(({nodeIds}) => nodeIds);
   }
 
@@ -1450,6 +1463,14 @@ export class DOMModel extends SDKModel {
       return null;
     }
     return this.nodeForId(response.nodeId);
+  }
+
+  async getContainerForNode(nodeId: Protocol.DOM.NodeId, containerName?: string): Promise<DOMNode|null> {
+    const {nodeId: containerNodeId} = await this._agent.invoke_getContainerForNode({nodeId, containerName});
+    if (!containerNodeId) {
+      return null;
+    }
+    return this.nodeForId(containerNodeId);
   }
 
   pushObjectAsNodeToFrontend(object: RemoteObject): Promise<DOMNode|null> {

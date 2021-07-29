@@ -18,7 +18,6 @@
 #include "base/process/process_handle.h"
 #include "base/process/process_info.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -30,6 +29,10 @@
 // On POSIX, the fd is shared using the mapping in GlobalDescriptors.
 #if defined(OS_POSIX) && !defined(OS_NACL)
 #include "base/posix/global_descriptors.h"
+#endif
+
+#if defined(OS_WIN)
+#include <windows.h>
 #endif
 
 namespace base {

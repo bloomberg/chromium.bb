@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ТБ/с</translation>
 <translation id="2353636109065292463">Интернет байланысы тексерілуде.</translation>
 <translation id="2388990488038464401">Осы нөмірге телефоныңыздан қоңырау шалынсын ба?</translation>
+<translation id="2435457462613246316">Құпия сөзді көрсету</translation>
 <translation id="24452542372838207">Хабарландыруды жаю</translation>
 <translation id="2445449901874883781">Жоғары тығыздықты пайдалану</translation>
 <translation id="2482878487686419369">Хабарландырулар</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 жыл бұрын}other{# жыл бұрын}}</translation>
 <translation id="2878511608894704031">Барлығын жою</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 күнде}other{# күнде}}</translation>
+<translation id="2922712708897119705"><ph name="COLUMN_NAME" /> бағаны кему реті бойынша сұрыпталған.</translation>
 <translation id="2931838996092594335">басады</translation>
 <translation id="2981684127883932071">Ұсыныстарды көрсету</translation>
 <translation id="3036649622769666520">Файлдарды ашу</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Мәзір</translation>
 <translation id="3909791450649380159">Қи&amp;ып алу</translation>
 <translation id="3990502903496589789">Оң жақ шеті</translation>
+<translation id="3994749195054421561"><ph name="COLUMN_NAME" /> бағаны өсу реті бойынша сұрыпталған.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 хабарландыру оқылмаған}other{# хабарландыру оқылмаған}}</translation>
 <translation id="4202807286478387388">секіру</translation>
 <translation id="4250229828105606438">Скриншот</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Буферден өшіру.</translation>
 <translation id="4316910396681052118">БАРЛЫҚ ҚОЛДАНБАЛАР</translation>
 <translation id="4491109536499578614">Кескін</translation>
+<translation id="4565377596337484307">Құпия сөзді жасыру</translation>
 <translation id="4588090240171750605">Оңға айналдыру</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, рейтингісі: <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, қолданба ұсынысы</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /> бет</translation>
 <translation id="6022924867608035986">Іздеу жолағының мәтінін өшіру</translation>
 <translation id="6040143037577758943">Жабу</translation>
+<translation id="6117103120090651229">Ортадағы түйме</translation>
 <translation id="6119846243427417423">белсендіру</translation>
 <translation id="6129953537138746214">Бос орын</translation>
 <translation id="6134259848159370930">Құрылғыдан, қолданбалардан, параметрлерден және интернеттен іздеңіз.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Барлық қолданбаларды көрсету</translation>
 <translation id="6165508094623778733">Толығырақ</translation>
 <translation id="6166852626429024716">Құрылғыдан, қолданбалардан, параметрлерден және интернеттен іздеу...</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> таңдалды.</translation>
 <translation id="6264365405983206840">&amp;Барлығын таңдау</translation>
 <translation id="6351032674660237738">ҚОЛДАНБА ҰСЫНЫСТАРЫ</translation>
 <translation id="6364916375976753737">Солға айналдыру</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 минут қалды}other{# минут қалды}}</translation>
 <translation id="7430878839542012341">Бұл іздеу шартын тарихтан өшіру керек пе?</translation>
+<translation id="7437971918971306061"><ph name="COLUMN_NAME" /> бағаны сұрыпталмаған.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
 <translation id="7507604095951736240">Эмоджи</translation>
 <translation id="7620655452534002301">Жойылды.</translation>

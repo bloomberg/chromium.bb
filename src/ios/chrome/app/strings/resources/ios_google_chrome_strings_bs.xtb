@@ -4,6 +4,7 @@
 <translation id="1096883626080133124">Obavite više s jednostavnim i sigurnim Google Chromeom koji je brži nego ikad</translation>
 <translation id="1282031177488366470">Pomozite nam da poboljšamo funkcije i performanse Chromea</translation>
 <translation id="1314663809820920746">I dalje ćete moći pregledati sve oznake, historiju, lozinke i druge postavke na ovom uređaju. Ako nešto promijenite, te promjene se neće sinhronizirati s vašim Google računom.</translation>
+<translation id="139135165841384604">Obavite više s Chromeom</translation>
 <translation id="1479202195792305274">Chrome može provjeravati vaše lozinke kada se prijavite pomoću Google računa.</translation>
 <translation id="1493827051843127077">Postavite Chrome kao zadani preglednik da sinhronizirate kartice, lozinke i informacije o plaćanju na svim uređajima</translation>
 <translation id="1504372625950710826">Chrome nije mogao provjeriti ima li ažuriranja. Predlažemo da provjerite internetsku vezu.</translation>
@@ -14,6 +15,7 @@
 <translation id="2009224836393115614">Chrome nije mogao provjeriti vaše lozinke. Predlažemo da provjerite internetsku vezu.</translation>
 <translation id="2147651015520127414">Chrome je potvrdio da <ph name="ISSUER" /> izdaje potvrdu ove web lokacije.</translation>
 <translation id="2199719347983604670">Podaci od Sinhronizacije Chromea</translation>
+<translation id="2313070403598893276">Google Chrome je jednostavan, siguran i brži nego ikad</translation>
 <translation id="2342919707875585281">Chrome dijeli vašu lokaciju s web lokacijama koje vi odobrite.</translation>
 <translation id="2347208864470321755">Kada je ova funkcija uključena, Chrome će za stranice koje su napisane na drugim jezicima ponuditi prijevod pomoću Google Prevodioca. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="2415682770504543561">Postavite Chrome kao zadani preglednik</translation>
@@ -32,9 +34,9 @@
 <translation id="3196546062792660320">Chrome vam štedi vrijeme povezivanjem vaših računa s webom. Možete dodati ili ukloniti račune u Postavkama.</translation>
 <translation id="3282568296779691940">Prijava na Chrome</translation>
 <translation id="3345341804167540816">Koristite Chrome svugdje</translation>
-<translation id="3455456143708465450">Da iskoristite sve prednosti Chromea, prijavite se pomoću Google računa</translation>
 <translation id="3522659714780527202">Da vidite kartice s bilo kojeg uređaja na kojem koristite Chrome, uključite sinhronizaciju</translation>
 <translation id="3533694711092285624">Nema sačuvanih lozinki. Chrome može provjeravati vaše lozinke kada ih sačuvate.</translation>
+<translation id="3634910711516114487">Da iskoristite sve prednosti Chromea, prijavite se na Chrome pomoću Google računa</translation>
 <translation id="3706101708757577809">Sada možete koristiti Chrome svaki put kada dodirnete linkove u porukama, dokumentima i drugim aplikacijama.</translation>
 <translation id="3720541637541300822">Zaključaj anonimne kartice pri zatvaranju Chromea</translation>
 <translation id="384394811301901750">Google Chrome trenutno ne može koristiti vašu kameru</translation>
@@ -64,7 +66,7 @@
 <translation id="6063091872902370735">Omogućite prijavu pomoću Chromea</translation>
 <translation id="6181930887571472871">Pređite na Chrome</translation>
 <translation id="6238746320622508509">Omogućite Chromeu da zaključa vaše anonimne kartice.</translation>
-<translation id="6573431926118603307">Kartice koje ste otvorili u Chromeu na drugim uređajima prikazat će se ovdje.</translation>
+<translation id="6427126399757991875">Vaša organizacija postavlja Chrome...</translation>
 <translation id="6600954340915313787">Kopirano u Chrome</translation>
 <translation id="6634107063912726160">Kada se odjavite Chrome neće sinhronizirati nove podatke s vašim Google računom. Prethodno sinhronizirani podaci ostaju na računu.</translation>
 <translation id="6648150602980899529">Prijavljujete se s računom kojim upravlja domena <ph name="DOMAIN" /> i dajete njenom administratoru kontrolu nad vašim podacima iz Chromea. Vaši podaci će se trajno povezati s ovim računom. Odjavom iz Chromea izbrisat će se vaši podaci iz ovog uređaja, ali će ostati pohranjeni na vašem Google računu.</translation>
@@ -78,7 +80,6 @@
 <translation id="7172660552945675509">Savjet: <ph name="BEGIN_LINK" />Premjestite Chrome na priključnu stranicu<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome koristi Face ID za odobravanje pristupa vašim lozinkama.</translation>
 <translation id="7261678641327190792">Chrome ne može provjeriti vaše lozinke</translation>
-<translation id="7265369419224458312">Ovdje pristupite karticama koje ste otvorili na računaru. Samo otvorite Chrome na računaru, idite u Meni i odaberite "Prijava na Chrome…”</translation>
 <translation id="7272930098487145294">Da sačuvate slike, dodirnite Postavke da omogućite Chromeu dodavanje u vaše fotografije</translation>
 <translation id="7275945473750112644">Računom upravlja <ph name="HOSTED_DOMAIN" />, stoga će se vaši podaci Chromea obrisati s ovog uređaja</translation>
 <translation id="7400722733683201933">O Google Chromeu</translation>

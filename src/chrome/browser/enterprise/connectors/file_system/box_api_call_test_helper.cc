@@ -5,8 +5,10 @@
 #include "chrome/browser/enterprise/connectors/file_system/box_api_call_test_helper.h"
 
 #include "base/check_op.h"
+#include "base/strings/stringprintf.h"
 
 namespace enterprise_connectors {
+const char kFileSystemBoxGetFileFolderUrl[] = "https://api.box.com/2.0/files";
 const char kFileSystemBoxFindFolderUrl[] =
     "https://api.box.com/2.0/search?type=folder&query=ChromeDownloads";
 const char kFileSystemBoxCreateFolderUrl[] = "https://api.box.com/2.0/folders";
@@ -16,6 +18,36 @@ const char kFileSystemBoxDirectUploadUrl[] =
     "https://upload.box.com/api/2.0/files/content";
 
 const char kEmptyResponseBody[] = R"({})";
+
+const char kFileSystemBoxClientErrorResponseBodyFormat[] = R"({
+  "type": "error",
+  "code": "%s",
+  "help_url": "http://developers.box.com/docs/#errors",
+  "message": "Dummy message",
+  "request_id": "abcdef123456",
+  "status": %d
+})";
+
+// Request id extracted from the generic error response body above.
+const char kFileSystemBoxClientErrorResponseRequestId[] = "abcdef123456";
+
+std::string CreateFailureResponse(int http_code, const char* box_error) {
+  return base::StringPrintf(kFileSystemBoxClientErrorResponseBodyFormat,
+                            box_error, http_code);
+}
+
+// For box Get File Folder
+const char kFileSystemBoxGetFileFolderFileId[] = "123";
+const char kFileSystemBoxGetFileFolderResponseBody[] = R"({
+    "id": 12345,
+    "parent": {
+      "id": 23456
+    }
+  })";
+const char kFileSystemBoxGetFileFolderResponseFolderId[] = "23456";
+
+// For Box Pre-Upload Steps/////////////////////////////////////////////////////
+
 const char kFileSystemBoxFindFolderResponseBody[] = R"({
     "entries": [
       {
@@ -116,6 +148,20 @@ const char kFileSystemBoxChunkedUploadCreateSessionResponseBody[] = R"({
 // kFileSystemBoxChunkedUploadCreateSessionResponseBody, as it's used to verify
 // extracted part_size from body above.
 const size_t kFileSystemBoxChunkedUploadCreateSessionResponsePartSize = 7340032;
+
+const char kFileSystemBoxChunkedUploadPartResponseBodyFormat[] = R"({
+  "part": {
+    "offset": %d,
+    "part_id": "6F2D3486",
+    "sha1": "134b65991ed521fcfe4724b7d814ab8ded5185dc",
+    "size": %d
+  }
+})";
+
+std::string CreateChunkedUploadPartResponse(int offset, int size) {
+  return base::StringPrintf(kFileSystemBoxChunkedUploadPartResponseBodyFormat,
+                            offset, size);
+}
 
 void GenerateFileContent(size_t part_size,
                          size_t total_size,
@@ -224,6 +270,7 @@ const char kFileSystemBoxUploadResponseBody[] = R"({
 })";
 
 // File id should match up id extracted from above.
+const char kFileSystemBoxUploadResponseFileId[] = "314159";
 const char kFileSystemBoxUploadResponseFileUrl[] =
     "https://app.box.com/file/314159";
 

@@ -6,18 +6,18 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/html_to_js.gni")
 import("../settings.gni")
 
-js_type_check("closure_compile_module") {
+js_type_check("closure_compile") {
   is_polymer3 = true
   closure_flags = settings_closure_flags
   deps = [
-    ":main_page_behavior",
+    ":main_page_mixin",
     ":settings_animated_pages",
     ":settings_section",
     ":settings_subpage",
   ]
 }
 
-js_library("main_page_behavior") {
+js_library("main_page_mixin") {
   deps = [
     ":settings_section",
     "..:route",
@@ -55,6 +55,7 @@ js_library("settings_subpage") {
     "//ui/webui/resources/cr_elements:find_shortcut_behavior",
     "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
     "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:event_tracker.m",
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:util.m",

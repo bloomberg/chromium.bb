@@ -14,10 +14,10 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -321,12 +321,15 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
         }
         break;
       case CredentialFieldType::kSingleUsername:
-        processed_field = FindField(processed_fields, prediction);
-        if (processed_field) {
-          result->username = processed_field->field;
-          result->is_single_username = true;
-          result->ClearAllPasswordFields();
-          return;
+        if (base::FeatureList::IsEnabled(
+                password_manager::features::kUsernameFirstFlowFilling)) {
+          processed_field = FindField(processed_fields, prediction);
+          if (processed_field) {
+            result->username = processed_field->field;
+            result->is_single_username = true;
+            result->ClearAllPasswordFields();
+            return;
+          }
         }
         break;
       case CredentialFieldType::kCurrentPassword:

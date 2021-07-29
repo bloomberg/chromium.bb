@@ -331,14 +331,15 @@ static sk_sp<SkImageFilter> make_blue(sk_sp<SkImageFilter> input, const SkIRect*
 
 static sk_sp<SkSpecialSurface> create_empty_special_surface(GrRecordingContext* rContext,
                                                             int widthHeight) {
+
+    const SkImageInfo ii = SkImageInfo::Make({ widthHeight, widthHeight },
+                                             kRGBA_8888_SkColorType,
+                                             kPremul_SkAlphaType);
+
     if (rContext) {
-        return SkSpecialSurface::MakeRenderTarget(rContext, widthHeight, widthHeight,
-                                                  GrColorType::kRGBA_8888, nullptr,
-                                                  SkSurfaceProps());
+        return SkSpecialSurface::MakeRenderTarget(rContext, ii, SkSurfaceProps());
     } else {
-        const SkImageInfo info = SkImageInfo::MakeN32(widthHeight, widthHeight,
-                                                      kOpaque_SkAlphaType);
-        return SkSpecialSurface::MakeRaster(info, SkSurfaceProps());
+        return SkSpecialSurface::MakeRaster(ii, SkSurfaceProps());
     }
 }
 
@@ -1785,26 +1786,27 @@ DEF_TEST(ImageFilterComplexCTM, reporter) {
     sk_sp<SkColorFilter> cf = SkColorFilters::Blend(SK_ColorRED, SkBlendMode::kSrcATop);
     sk_sp<SkImageFilter> cfif = SkImageFilters::ColorFilter(cf, nullptr);    // can handle
     sk_sp<SkImageFilter> blif = SkImageFilters::Blur(3, 3, nullptr);         // cannot handle
+    using MatrixCapability = SkImageFilter_Base::MatrixCapability;
 
     struct {
         sk_sp<SkImageFilter> fFilter;
-        bool                 fExpectCanHandle;
+        MatrixCapability     fExpectCapability;
     } recs[] = {
-        { cfif,                                  true  },
-        { SkImageFilters::ColorFilter(cf, cfif), true  },
-        { SkImageFilters::Merge(cfif, cfif),     true  },
-        { SkImageFilters::Compose(cfif, cfif),   true  },
+        { cfif,                                  MatrixCapability::kComplex },
+        { SkImageFilters::ColorFilter(cf, cfif), MatrixCapability::kComplex },
+        { SkImageFilters::Merge(cfif, cfif),     MatrixCapability::kComplex },
+        { SkImageFilters::Compose(cfif, cfif),   MatrixCapability::kComplex },
 
-        { blif,                                  false },
-        { SkImageFilters::Blur(3, 3, cfif),      false },
-        { SkImageFilters::ColorFilter(cf, blif), false },
-        { SkImageFilters::Merge(cfif, blif),     false },
-        { SkImageFilters::Compose(blif, cfif),   false },
+        { blif,                                  MatrixCapability::kScaleTranslate },
+        { SkImageFilters::Blur(3, 3, cfif),      MatrixCapability::kScaleTranslate },
+        { SkImageFilters::ColorFilter(cf, blif), MatrixCapability::kScaleTranslate },
+        { SkImageFilters::Merge(cfif, blif),     MatrixCapability::kScaleTranslate },
+        { SkImageFilters::Compose(blif, cfif),   MatrixCapability::kScaleTranslate },
     };
 
     for (const auto& rec : recs) {
-        const bool canHandle = as_IFB(rec.fFilter)->canHandleComplexCTM();
-        REPORTER_ASSERT(reporter, canHandle == rec.fExpectCanHandle);
+        const MatrixCapability capability = as_IFB(rec.fFilter)->getCTMCapability();
+        REPORTER_ASSERT(reporter, capability == rec.fExpectCapability);
     }
 }
 

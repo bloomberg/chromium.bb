@@ -49,6 +49,35 @@ else:
   platform_uselibs += ['libpng']
   platform_libs = ['m', 'jpeg', 'dl']
 
+if 'WAYLAND_SCANNER_wayland_scanner' in bld.env.keys():
+    def wayland_scanner_cmd(arg, src):
+        return '%s %s < %s > ${TGT}' % (bld.env['WAYLAND_SCANNER_wayland_scanner'], arg, src)
+
+    def wayland_proto_src_path(proto, ver):
+        wp_dir = bld.env['WAYLAND_PROTOCOLS_pkgdatadir']
+        if ver == 'stable':
+            return '%s/stable/%s/%s.xml' % (wp_dir, proto, proto)
+        else:
+            return '%s/unstable/%s/%s-unstable-%s.xml' % (wp_dir, proto, proto, ver)
+
+    def wayland_client_protocol(proto, ver, dst_base):
+        src_path = wayland_proto_src_path(proto, ver)
+        out = '%s-client-protocol.h' % dst_base
+        return bld(rule = wayland_scanner_cmd('client-header', src_path),
+                   target = out,
+                   name = out,
+                   ext_out = ['.h'])
+
+    def wayland_protocol_code(proto, ver, dst_base):
+        src_path = wayland_proto_src_path(proto, ver)
+        out = '%s-protocol.c' % dst_base
+        return bld(rule = wayland_scanner_cmd('private-code', src_path),
+                   target = out,
+                   name = out)
+
+    wayland_client_protocol('xdg-shell', 'stable', 'xdg-shell')
+    wayland_protocol_code('xdg-shell', 'stable', 'xdg-shell')
+
 flavor_sources = {
   'dispmanx-glesv2' : common_flavor_sources + ['native-state-dispmanx.cpp', 'gl-state-egl.cpp'],
   'drm-gl' : common_flavor_sources + ['native-state-drm.cpp', 'gl-state-egl.cpp'],
@@ -68,8 +97,8 @@ flavor_uselibs = {
   'drm-glesv2' : ['drm', 'gbm', 'udev', 'glad-egl-drm', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
   'mir-gl' : ['mirclient', 'glad-egl-mir', 'glad-gl', 'matrix-gl', 'common-gl'],
   'mir-glesv2' : ['mirclient', 'glad-egl-mir', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
-  'wayland-gl' : ['wayland-client', 'wayland-egl', 'glad-egl-wayland', 'glad-gl', 'matrix-gl', 'common-gl'],
-  'wayland-glesv2' : ['wayland-client', 'wayland-egl', 'glad-egl-wayland', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
+  'wayland-gl' : ['wayland-client', 'wayland-egl', 'wayland-cursor', 'glad-egl-wayland', 'glad-gl', 'matrix-gl', 'common-gl'],
+  'wayland-glesv2' : ['wayland-client', 'wayland-egl', 'wayland-cursor', 'glad-egl-wayland', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
   'win32-gl': ['glad-gl', 'glad-wgl', 'matrix-gl', 'common-gl'],
   'win32-glesv2': ['glad-egl-win32', 'glad-glesv2', 'matrix-glesv2', 'common-glesv2'],
   'x11-gl' : ['x11', 'glad-gl', 'glad-glx', 'matrix-gl', 'common-gl'],
@@ -102,6 +131,32 @@ flavor_libs = {
   'x11-gl' : [],
   'x11-glesv2' : [],
 }
+flavor_depends_on = {
+  'dispmanx-glesv2' : [],
+  'drm-gl' : [],
+  'drm-glesv2' : [],
+  'mir-gl' : [],
+  'mir-glesv2' : [],
+  'wayland-gl' : ['xdg-shell-client-protocol.h', 'xdg-shell-protocol.c'],
+  'wayland-glesv2' : ['xdg-shell-client-protocol.h', 'xdg-shell-protocol.c'],
+  'win32-gl': [],
+  'win32-glesv2' : [],
+  'x11-gl' : [],
+  'x11-glesv2' : [],
+}
+flavor_sources_gen = {
+  'dispmanx-glesv2' : [],
+  'drm-gl' : [],
+  'drm-glesv2' : [],
+  'mir-gl' : [],
+  'mir-glesv2' : [],
+  'wayland-gl' : [bld.path.find_or_declare('xdg-shell-protocol.c')],
+  'wayland-glesv2' : [bld.path.find_or_declare('xdg-shell-protocol.c')],
+  'win32-gl': [],
+  'win32-glesv2' : [],
+  'x11-gl' : [],
+  'x11-glesv2' : [],
+}
 egl_platform_defines = {
   'dispmanx' : ['MESA_EGL_NO_X11_HEADERS'],
   'drm' : ['__GBM__'],
@@ -120,7 +175,7 @@ for name in bld.env.keys():
         flavor = name.replace('FLAVOR_', '').lower().replace('_', '-')
         egl_platform = flavor.split('-')[0]
         target = bld.env[name]
-        bld(
+        node = bld(
             features     = ['cxx', 'cprogram'],
             source       = flavor_sources[flavor],
             target       = target,
@@ -128,8 +183,11 @@ for name in bld.env.keys():
             lib          = platform_libs + flavor_libs[flavor],
             includes     = ['.'] + platform_includes,
             defines      = common_defines + flavor_defines[flavor] +
-                           egl_platform_defines[egl_platform]
+                           egl_platform_defines[egl_platform],
+            depends_on   = flavor_depends_on[flavor]
             )
+        if flavor_sources_gen[flavor]:
+            node.source.extend(flavor_sources_gen[flavor])
         all_uselibs |= set(flavor_uselibs[flavor] + platform_uselibs)
 
 # Build glad-egl for all used EGL platforms

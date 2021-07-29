@@ -71,8 +71,8 @@ class MockPipelineClient : public Pipeline::Client {
   MOCK_METHOD1(OnVideoOpacityChange, void(bool));
   MOCK_METHOD1(OnVideoFrameRateChange, void(absl::optional<int>));
   MOCK_METHOD0(OnVideoAverageKeyframeDistanceUpdate, void());
-  MOCK_METHOD1(OnAudioDecoderChange, void(const AudioDecoderInfo&));
-  MOCK_METHOD1(OnVideoDecoderChange, void(const VideoDecoderInfo&));
+  MOCK_METHOD1(OnAudioPipelineInfoChange, void(const AudioPipelineInfo&));
+  MOCK_METHOD1(OnVideoPipelineInfoChange, void(const VideoPipelineInfo&));
   MOCK_METHOD1(OnRemotePlayStateChange, void(MediaStatus::State state));
 };
 
@@ -573,7 +573,9 @@ class MockCdmClient {
                void(const std::string& session_id,
                     CdmMessageType message_type,
                     const std::vector<uint8_t>& message));
-  MOCK_METHOD1(OnSessionClosed, void(const std::string& session_id));
+  MOCK_METHOD2(OnSessionClosed,
+               void(const std::string& session_id,
+                    CdmSessionClosedReason reason));
 
   // Add OnSessionKeysChangeCalled() function so we can store |keys_info|.
   MOCK_METHOD2(OnSessionKeysChangeCalled,
@@ -637,7 +639,9 @@ class MockCdmContext : public CdmContext {
   MOCK_METHOD1(GetMediaFoundationCdmProxy,
                bool(GetMediaFoundationCdmProxyCB get_mf_cdm_proxy_cb));
 #endif
-
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  MOCK_METHOD0(GetChromeOsCdmContext, chromeos::ChromeOsCdmContext*());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   absl::optional<base::UnguessableToken> GetCdmId() const override;
 
   void set_cdm_id(const base::UnguessableToken& cdm_id);
@@ -740,7 +744,8 @@ class MockCdm : public ContentDecryptionModule {
   void CallSessionMessageCB(const std::string& session_id,
                             CdmMessageType message_type,
                             const std::vector<uint8_t>& message);
-  void CallSessionClosedCB(const std::string& session_id);
+  void CallSessionClosedCB(const std::string& session_id,
+                           CdmSessionClosedReason reason);
   void CallSessionKeysChangeCB(const std::string& session_id,
                                bool has_additional_usable_key,
                                CdmKeysInfo keys_info);

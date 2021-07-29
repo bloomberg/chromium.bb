@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "url/mojom/origin_mojom_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
@@ -14,14 +15,26 @@
 namespace mojo {
 
 // static
-bool StructTraits<autofill::mojom::LocalFrameTokenDataView,
-                  autofill::LocalFrameToken>::
-    Read(autofill::mojom::LocalFrameTokenDataView data,
-         autofill::LocalFrameToken* out) {
+bool StructTraits<autofill::mojom::FrameTokenDataView, autofill::FrameToken>::
+    Read(autofill::mojom::FrameTokenDataView data, autofill::FrameToken* out) {
   base::UnguessableToken token;
   if (!data.ReadToken(&token))
     return false;
-  *out = autofill::LocalFrameToken(token);
+  if (data.is_local())
+    *out = autofill::LocalFrameToken(token);
+  else
+    *out = autofill::RemoteFrameToken(token);
+  return true;
+}
+
+// static
+bool StructTraits<autofill::mojom::FrameTokenWithPredecessorDataView,
+                  autofill::FrameTokenWithPredecessor>::
+    Read(autofill::mojom::FrameTokenWithPredecessorDataView data,
+         autofill::FrameTokenWithPredecessor* out) {
+  if (!data.ReadToken(&out->token))
+    return false;
+  out->predecessor = data.predecessor();
   return true;
 }
 
@@ -40,6 +53,18 @@ bool StructTraits<autofill::mojom::FieldRendererIdDataView,
     Read(autofill::mojom::FieldRendererIdDataView data,
          autofill::FieldRendererId* out) {
   *out = autofill::FieldRendererId(data.id());
+  return true;
+}
+
+// static
+bool StructTraits<
+    autofill::mojom::SelectOptionDataView,
+    autofill::SelectOption>::Read(autofill::mojom::SelectOptionDataView data,
+                                  autofill::SelectOption* out) {
+  if (!data.ReadValue(&out->value))
+    return false;
+  if (!data.ReadContent(&out->content))
+    return false;
   return true;
 }
 
@@ -81,10 +106,10 @@ bool StructTraits<
 
   out->properties_mask = data.properties_mask();
 
-  if (!data.ReadHostFrame(&out->host_frame))
+  if (!data.ReadUniqueRendererId(&out->unique_renderer_id))
     return false;
 
-  if (!data.ReadUniqueRendererId(&out->unique_renderer_id))
+  if (!data.ReadHostFormId(&out->host_form_id))
     return false;
 
   out->form_control_ax_id = data.form_control_ax_id();
@@ -108,9 +133,7 @@ bool StructTraits<
   if (!data.ReadUserInput(&out->user_input))
     return false;
 
-  if (!data.ReadOptionValues(&out->option_values))
-    return false;
-  if (!data.ReadOptionContents(&out->option_contents))
+  if (!data.ReadOptions(&out->options))
     return false;
 
   if (!data.ReadLabelSource(&out->label_source))
@@ -159,10 +182,10 @@ bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
 
   out->is_form_tag = data.is_form_tag();
 
-  if (!data.ReadHostFrame(&out->host_frame))
+  if (!data.ReadUniqueRendererId(&out->unique_renderer_id))
     return false;
 
-  if (!data.ReadUniqueRendererId(&out->unique_renderer_id))
+  if (!data.ReadChildFrames(&out->child_frames))
     return false;
 
   if (!data.ReadSubmissionEvent(&out->submission_event))
@@ -185,6 +208,8 @@ bool StructTraits<autofill::mojom::FormFieldDataPredictionsDataView,
                   autofill::FormFieldDataPredictions>::
     Read(autofill::mojom::FormFieldDataPredictionsDataView data,
          autofill::FormFieldDataPredictions* out) {
+  if (!data.ReadHostFormSignature(&out->host_form_signature))
+    return false;
   if (!data.ReadSignature(&out->signature))
     return false;
   if (!data.ReadHeuristicType(&out->heuristic_type))

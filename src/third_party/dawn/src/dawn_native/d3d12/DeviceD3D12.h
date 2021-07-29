@@ -155,7 +155,7 @@ namespace dawn_native { namespace d3d12 {
         ResultOrError<Ref<QuerySetBase>> CreateQuerySetImpl(
             const QuerySetDescriptor* descriptor) override;
         ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipelineImpl(
-            const RenderPipelineDescriptor2* descriptor) override;
+            const RenderPipelineDescriptor* descriptor) override;
         ResultOrError<Ref<SamplerBase>> CreateSamplerImpl(
             const SamplerDescriptor* descriptor) override;
         ResultOrError<Ref<ShaderModuleBase>> CreateShaderModuleImpl(
@@ -172,6 +172,10 @@ namespace dawn_native { namespace d3d12 {
         ResultOrError<Ref<TextureViewBase>> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) override;
+        void CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
+                                            size_t blueprintHash,
+                                            WGPUCreateComputePipelineAsyncCallback callback,
+                                            void* userdata) override;
 
         void ShutDownImpl() override;
         MaybeError WaitForIdleForDestruction() override;

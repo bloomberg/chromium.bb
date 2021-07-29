@@ -12,8 +12,8 @@
 #include <sys/ioctl.h>
 
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -27,7 +27,7 @@
 #include "device/udev_linux/udev.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/dbus/permission_broker/permission_broker_client.h"
+#include "chromeos/dbus/permission_broker/permission_broker_client.h"  // nogncheck
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace device {
@@ -51,7 +51,8 @@ const size_t kSpecialKeys[] = {
     // Start, Back, and Guide buttons are often reported as Consumer Home or
     // Back.
     KEY_HOMEPAGE, KEY_BACK,
-};
+    // Record is used for Xbox Series X's share button over BT.
+    KEY_RECORD};
 const size_t kSpecialKeysLen = base::size(kSpecialKeys);
 
 #define LONG_BITS (CHAR_BIT * sizeof(long))
@@ -198,6 +199,7 @@ uint16_t HexStringToUInt16WithDefault(base::StringPiece input,
   return static_cast<uint16_t>(out);
 }
 
+// TODO(huangs): Enable for IS_CHROMEOS_LACROS for crbug.com/1217124..
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void OnOpenPathSuccess(
     chromeos::PermissionBrokerClient::OpenPathCallback callback,
@@ -393,7 +395,7 @@ bool GamepadDeviceLinux::ReadEvdevSpecialKeys(Gamepad* pad) {
   ssize_t bytes_read;
   while ((bytes_read = HANDLE_EINTR(
               read(evdev_fd_.get(), &ev, sizeof(input_event)))) > 0) {
-    if (size_t{bytes_read} < sizeof(input_event))
+    if (static_cast<size_t>(bytes_read) < sizeof(input_event))
       break;
     if (ev.type != EV_KEY)
       continue;

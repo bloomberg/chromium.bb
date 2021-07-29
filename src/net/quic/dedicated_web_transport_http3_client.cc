@@ -5,8 +5,8 @@
 #include "net/quic/dedicated_web_transport_http3_client.h"
 
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
 #include "base/strings/abseil_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/url_util.h"
@@ -19,6 +19,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_connection.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/url_request/url_request_context.h"
+#include "url/scheme_host_port.h"
 
 namespace net {
 
@@ -287,6 +288,9 @@ int DedicatedWebTransportHttp3Client::DoInit() {
   if (url_.scheme_piece() != url::kHttpsScheme)
     return ERR_DISALLOWED_URL_SCHEME;
 
+  if (!IsPortAllowedForScheme(url_.EffectiveIntPort(), url_.scheme_piece()))
+    return ERR_UNSAFE_PORT;
+
   // TODO(vasilvv): check if QUIC is disabled by policy.
 
   // Ensure that for the duration of the origin trial, a fixed QUIC transport
@@ -336,7 +340,7 @@ int DedicatedWebTransportHttp3Client::DoResolveHost() {
   next_connect_state_ = CONNECT_STATE_RESOLVE_HOST_COMPLETE;
   HostResolver::ResolveHostParameters parameters;
   resolve_host_request_ = context_->host_resolver()->CreateRequest(
-      HostPortPair::FromURL(url_), isolation_key_, net_log_, absl::nullopt);
+      url::SchemeHostPort(url_), isolation_key_, net_log_, absl::nullopt);
   return resolve_host_request_->Start(base::BindOnce(
       &DedicatedWebTransportHttp3Client::DoLoop, base::Unretained(this)));
 }

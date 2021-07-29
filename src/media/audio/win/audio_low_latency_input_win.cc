@@ -14,10 +14,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -230,7 +230,7 @@ bool InitializeUWPSupport() {
       DLOG(WARNING) << "AudioCaptureEffectsManager requires Windows 10";
       return false;
     }
-    DCHECK_GE(base::win::OSInfo::GetInstance()->version_number().build, 10240);
+    DCHECK_GE(base::win::OSInfo::GetInstance()->version_number().build, 10240u);
 
     // Provide access to Core WinRT/UWP functions and load all required HSTRING
     // functions available from Win8 and onwards. ScopedHString is a wrapper
@@ -424,8 +424,14 @@ AudioInputStream::OpenOutcome WASAPIAudioInputStream::Open() {
     return OpenOutcome::kSuccess;
   }
 
-  return (hr == E_ACCESSDENIED) ? OpenOutcome::kFailedSystemPermissions
-                                : OpenOutcome::kFailed;
+  switch (hr) {
+    case E_ACCESSDENIED:
+      return OpenOutcome::kFailedSystemPermissions;
+    case AUDCLNT_E_DEVICE_IN_USE:
+      return OpenOutcome::kFailedInUse;
+    default:
+      return OpenOutcome::kFailed;
+  }
 }
 
 void WASAPIAudioInputStream::Start(AudioInputCallback* callback) {

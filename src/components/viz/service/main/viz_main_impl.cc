@@ -39,7 +39,7 @@ std::unique_ptr<base::Thread> CreateAndStartIOThread() {
   if (base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority))
     thread_options.priority = base::ThreadPriority::DISPLAY;
   auto io_thread = std::make_unique<base::Thread>("GpuIOThread");
-  CHECK(io_thread->StartWithOptions(thread_options));
+  CHECK(io_thread->StartWithOptions(std::move(thread_options)));
   return io_thread;
 }
 
@@ -284,10 +284,16 @@ void VizMainImpl::StopDebugStream() {
 #endif
 
 scoped_refptr<gpu::SharedContextState> VizMainImpl::GetSharedContextState() {
+  // This method should be only called for GLRenderer and not for SkiaRenderer.
+  // Hence adding DCHECK since DrDc only works with SkiaRenderer.
+  DCHECK(!features::IsDrDcEnabled());
   return gpu_service_->GetContextState();
 }
 
 scoped_refptr<gl::GLShareGroup> VizMainImpl::GetShareGroup() {
+  // This method should be only called for GLRenderer and not for SkiaRenderer.
+  // Hence adding DCHECK since DrDc only works with SkiaRenderer.
+  DCHECK(!features::IsDrDcEnabled());
   return gpu_service_->share_group();
 }
 
@@ -298,7 +304,6 @@ void VizMainImpl::ExitProcess(ExitCode immediate_exit_code) {
     // Atomically shut down GPU process to make it faster and simpler.
     base::Process::TerminateCurrentProcessImmediately(
         static_cast<int>(immediate_exit_code));
-    return;
   }
 
   // Close mojom::VizMain bindings first so the browser can't try to reconnect.

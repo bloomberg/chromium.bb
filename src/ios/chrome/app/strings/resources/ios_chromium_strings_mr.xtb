@@ -6,10 +6,12 @@
 <translation id="1257458525759135959">इमेज सेव्ह करण्यासाठी, तुमच्या फोटोंमध्ये Chromium ला जोडण्यासाठी सेटिंग्ज वर टॅप करा</translation>
 <translation id="1289216811211435351">Chromium वर स्विच करा</translation>
 <translation id="1361748954329991663">Chromium कालबाह्य झाले आहे. <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> मध्ये अपडेट उपलब्ध नसल्यास, तुमचे डिव्हाइस यापुढे Chromium च्या नवीन आवृत्तींना सपोर्ट करत नाही याची शक्यता आहे.</translation>
+<translation id="1370204544543370355">Chromium चा पुरेपूर वापर करण्यासाठी, तुमचे Google खाते वापरून Chromium मध्ये साइन इन करा</translation>
 <translation id="1431818719585918472">Chromium ला तुमचे गुप्त टॅब लॉक करू द्या.</translation>
 <translation id="1472013873724362412">तुमचे खाते Chromium वर कार्य करत नाही. कृपया तुमच्या डोमेन ॲडमिनिस्ट्रेटरशी संपर्क साधा किंवा साइन इन करण्यासाठी एक नियमित Google खाते वापरा.</translation>
 <translation id="1507010443238049608">Chromium च्या वैशिष्ट्ये आणि परफॉर्मन्समध्ये सुधारणा करण्यात मदत करा</translation>
 <translation id="1531155317299575425">Chromium मध्ये साइन इन करण्यासाठी सूचना दाखवते.</translation>
+<translation id="1584569488888892906">Chromium हे सोपे, सुरक्षित आणि नेहमीपेक्षा जलद आहे</translation>
 <translation id="1617663976202781617">Chromium सिंकवरील डेटा</translation>
 <translation id="1736662517232558588">Chromium डेटा साफ करण्यात आला</translation>
 <translation id="1838412507805038478"><ph name="ISSUER" /> ने या वेबसाइटचे सर्टिफिकेट जारी केले हे Chromium ने पडताळले.</translation>
@@ -17,7 +19,6 @@
 <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="2006345422933397527">Chromium ला अपडेट तपासता आली नाहीत. तुमचे इंटरनेट कनेक्शन तपासून पाहा.</translation>
 <translation id="2054703085270098503">Chromium सह सुरक्षित राहा</translation>
-<translation id="2075400798887076382">तुम्ही तुमच्या कॉंप्युटरवर उघडलेल्‍या टॅबमध्‍ये, थेट येथून ॲक्सेस करा. तुमच्या कॉंप्युटरवर फक्त Chromium उघडा, मेनूवर जा आणि "Chromium वर साइन इन करा…" निवडा</translation>
 <translation id="2168108852149185974">Chromium क्रॅश होण्याचे कारण काही ॲड-ऑन आहेत. कृपया ती अनइंस्टॉल करा:</translation>
 <translation id="2178608107313874732">Chromium आत्ता तुमचा कॅमेरा वापरू शकत नाही</translation>
 <translation id="2195025571279539885">Chromium ने या साइटवरून पुढील वेळी <ph name="LANGUAGE_NAME" /> पेज भाषांतरित करण्याची ऑफर द्यावी असे तुम्हाला वाटते?</translation>
@@ -42,10 +43,8 @@
 <translation id="4585809515399340748">तुम्ही आता केव्हाही मेसेज, दस्तऐवज आणि इतर अ‍ॅप्समध्ये लिंकवर टॅप केल्यास, Chromium वापरू शकता.</translation>
 <translation id="4681781466797808448">Chromium स्कॅनर सुरू करा</translation>
 <translation id="4736424910885271643">तुमचे खाते <ph name="HOSTED_DOMAIN" /> द्वारे व्यवस्थापित केले जात असल्याने, या डिव्हाइसवरून तुमचा Chromium डेटा साफ केला जाईल</translation>
-<translation id="4787850887676698916">आपल्या अन्य डिव्हाइसवर तुम्ही Chromium मध्ये उघडलेले टॅब येथे दिसतील.</translation>
 <translation id="4806326830773390517">Google कडे वापर आकडेवारी आणि क्रॅश अहवाल पाठवून Chromium मध्ये सुधारणा करण्यात मदत करा</translation>
 <translation id="4828317641996116749">Chromium ला सर्व पासवर्ड तपासता आले नाहीत. नंतर पुन्हा प्रयत्न करा.</translation>
-<translation id="4852878756222711218">Chromium चा पुरेपूर वापर करण्यासाठी, तुमचे Google खाते वापरून साइन इन करा</translation>
 <translation id="4985291216379576555">ऑफलाइन, Chromium अपडेट तपासू शकत नाही</translation>
 <translation id="4999538639245140991">तुम्ही <ph name="SIGNOUT_MANAGED_DOMAIN" /> द्वारे व्यवस्थापित केलेल्या खात्यातून साइन आउट केले आहे, तुमचा Chromium डेटा या डिव्हाइसवरून हटवला जाईल. तुमचा डेटा तुमच्या Google खाते मध्ये असेल.</translation>
 <translation id="5171868502429358653">Chromium वर साइन इन करा</translation>
@@ -55,6 +54,7 @@
 <translation id="5521125884468363740">तुम्ही जेथून Chromium वापरत असाल तेथून तुमचे टॅब पाहण्यासाठी, साइन इन करा आणि सिंक सुरू करा</translation>
 <translation id="5573014823074921752">Chromium टीप. आणखी टॅब पर्यायांसाठी, तुमच्या स्क्रीनच्या तळाशी किंवा सर्वात वर असलेल्या टूलबारवरील टॅब दाखवा बटणाला स्पर्श करा आणि धरून ठेवा.</translation>
 <translation id="5700709190537129682">Chromium तुमचे पासवर्ड तपासू शकत नाही</translation>
+<translation id="5715349567881822785">Chromium वापरून आणखी बरेच काही करा</translation>
 <translation id="5742135483959137648">लिंक उघडण्यासाठी Chromium वापरा</translation>
 <translation id="5777187867430702742">Chromium पेज</translation>
 <translation id="5862307444128926510">Chromium वर तुमचे स्‍वागत आहे</translation>
@@ -69,6 +69,7 @@
 <translation id="632825460376924298">Chromium मध्ये साइन-इन करण्याची अनुमती द्या</translation>
 <translation id="6337530241089703714">या डिव्हाइसवरून तुमचा Chromium डेटा साफ करायचा की ठेवायचा ते निवडा</translation>
 <translation id="6424492062988593837">Chrome आता सर्वोत्तम झाले आहे! नवीन आवृत्ती उपलब्ध आहे.</translation>
+<translation id="6752854822223394465">तुमची संस्था Chromium सेट करत आहे...</translation>
 <translation id="6820823224820483452">Chromium ला सर्व पासवर्ड तपासता आले नाहीत. उद्या पुन्हा प्रयत्न करा.</translation>
 <translation id="6827294685447036764">तुम्ही Chromium ला तुमचे स्थान जाणून घेण्याची परवानगी दिल्यास, Chromium हे तुम्ही अनुमती दिलेल्या कोणत्याही साइटला ते पाठवते. साइटकडे तुम्हाला दाखवण्यासाठी जवळपासची दुकाने किंवा बातम्या यांसारखी स्थानिक माहिती असल्यास, त्या कदाचित तुमचे स्थान मागू शकतात.</translation>
 <translation id="7018284295775193585">Chromium अपडेट करू शकत नाही</translation>

@@ -53,6 +53,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/origin.h"
+#include "url/scheme_host_port.h"
 
 namespace net {
 
@@ -121,6 +122,7 @@ enum QuicConnectionMigrationStatus {
   MIGRATION_STATUS_ON_WRITE_ERROR_DISABLED,
   MIGRATION_STATUS_PATH_DEGRADING_BEFORE_HANDSHAKE_CONFIRMED,
   MIGRATION_STATUS_IDLE_MIGRATION_TIMEOUT,
+  MIGRATION_STATUS_NO_UNUSED_CONNECTION_ID,
   MIGRATION_STATUS_MAX
 };
 
@@ -195,7 +197,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // Constructs a handle to |session| which was created via the alternative
     // server |destination|.
     Handle(const base::WeakPtr<QuicChromiumClientSession>& session,
-           const HostPortPair& destination);
+           url::SchemeHostPort destination);
     Handle(const Handle& other) = delete;
     ~Handle() override;
 
@@ -266,7 +268,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     quic::QuicServerId server_id() const { return server_id_; }
 
     // Returns the alternative server used for this session.
-    HostPortPair destination() const { return destination_; }
+    const url::SchemeHostPort& destination() const { return destination_; }
 
     // Returns the session's net log.
     const NetLogWithSource& net_log() const { return net_log_; }
@@ -322,7 +324,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // Underlying session which may be destroyed before this handle.
     base::WeakPtr<QuicChromiumClientSession> session_;
 
-    HostPortPair destination_;
+    url::SchemeHostPort destination_;
 
     // Stream request created by |RequestStream()|.
     std::unique_ptr<StreamRequest> stream_request_;
@@ -743,7 +745,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   // Returns a Handle to this session.
   std::unique_ptr<QuicChromiumClientSession::Handle> CreateHandle(
-      const HostPortPair& destination);
+      url::SchemeHostPort destination);
 
   // Returns the number of client hello messages that have been sent on the
   // crypto stream. If the handshake has completed then this is one greater

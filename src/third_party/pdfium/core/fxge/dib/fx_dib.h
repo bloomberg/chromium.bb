@@ -29,12 +29,6 @@ enum class FXDIB_Format : uint16_t {
   kArgb = 0x220,
 };
 
-struct PixelWeight {
-  int m_SrcStart;
-  int m_SrcEnd;
-  int m_Weights[1];
-};
-
 using FX_ARGB = uint32_t;
 using FX_CMYK = uint32_t;
 

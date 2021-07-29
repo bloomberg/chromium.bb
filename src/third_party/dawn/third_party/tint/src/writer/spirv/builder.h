@@ -27,6 +27,7 @@
 #include "src/ast/continue_statement.h"
 #include "src/ast/discard_statement.h"
 #include "src/ast/if_statement.h"
+#include "src/ast/interpolate_decoration.h"
 #include "src/ast/loop_statement.h"
 #include "src/ast/return_statement.h"
 #include "src/ast/switch_statement.h"
@@ -192,7 +193,7 @@ class Builder {
   /// @param operands the variable operands
   void push_function_var(const OperandList& operands) {
     if (functions_.empty()) {
-      TINT_ICE(builder_.Diagnostics())
+      TINT_ICE(Writer, builder_.Diagnostics())
           << "push_function_var() called without a function";
     }
     functions_.back().push_var(operands);
@@ -207,6 +208,15 @@ class Builder {
   /// @param storage the storage class that this builtin is being used with
   /// @returns the SPIR-V builtin or SpvBuiltInMax on error.
   SpvBuiltIn ConvertBuiltin(ast::Builtin builtin, ast::StorageClass storage);
+
+  /// Converts an interpolate attribute to SPIR-V decorations and pushes a
+  /// capability if needed.
+  /// @param id the id to decorate
+  /// @param type the interpolation type
+  /// @param sampling the interpolation sampling
+  void AddInterpolationDecorations(uint32_t id,
+                                   ast::InterpolationType type,
+                                   ast::InterpolationSampling sampling);
 
   /// Generates a label for the given id. Emits an error and returns false if
   /// we're currently outside a function.
@@ -263,9 +273,9 @@ class Builder {
   /// @param type the type to generate for
   /// @param struct_id the struct id
   /// @param member_idx the member index
-  void GenerateMemberAccessControlIfNeeded(const sem::Type* type,
-                                           uint32_t struct_id,
-                                           uint32_t member_idx);
+  void GenerateMemberAccessIfNeeded(const sem::Type* type,
+                                    uint32_t struct_id,
+                                    uint32_t member_idx);
   /// Generates a function variable
   /// @param var the variable
   /// @returns true if the variable was generated
@@ -306,8 +316,10 @@ class Builder {
   /// @param stmt the statement to generate
   /// @returns true on success
   bool GenerateIfStatement(ast::IfStatement* stmt);
-  /// Generates an import instruction
-  void GenerateGLSLstd450Import();
+  /// Generates an import instruction for the "GLSL.std.450" extended
+  /// instruction set, if one doesn't exist yet, and returns the import ID.
+  /// @returns the import ID, or 0 on error.
+  uint32_t GetGLSLstd450Import();
   /// Generates a constructor expression
   /// @param var the variable generated for, nullptr if no variable associated.
   /// @param expr the expression to generate
@@ -363,10 +375,19 @@ class Builder {
                                 spirv::Operand result_type,
                                 spirv::Operand result_id);
   /// Generates a control barrier statement.
-  /// @param intrinsic the semantic information for the barrier intrinsic
-  /// parameters
+  /// @param intrinsic the semantic information for the barrier intrinsic call
   /// @returns true on success
   bool GenerateControlBarrierIntrinsic(const sem::Intrinsic* intrinsic);
+  /// Generates an atomic intrinsic call.
+  /// @param call the call expression
+  /// @param intrinsic the semantic information for the atomic intrinsic call
+  /// @param result_type result type operand of the texture instruction
+  /// @param result_id result identifier operand of the texture instruction
+  /// @returns true on success
+  bool GenerateAtomicIntrinsic(ast::CallExpression* call,
+                               const sem::Intrinsic* intrinsic,
+                               Operand result_type,
+                               Operand result_id);
   /// Generates a sampled image
   /// @param texture_type the texture type
   /// @param texture_operand the texture operand
@@ -380,9 +401,11 @@ class Builder {
   /// of the right type.
   /// @param to_type the type we're casting too
   /// @param from_expr the expression to cast
+  /// @param is_global_init if this is a global initializer
   /// @returns the expression ID on success or 0 otherwise
   uint32_t GenerateCastOrCopyOrPassthrough(const sem::Type* to_type,
-                                           ast::Expression* from_expr);
+                                           ast::Expression* from_expr,
+                                           bool is_global_init);
   /// Generates a loop statement
   /// @param stmt the statement to generate
   /// @returns true on successful generation
@@ -472,6 +495,24 @@ class Builder {
   /// @param result the result operand
   /// @returns true if the vector was successfully generated
   bool GenerateVectorType(const sem::Vector* vec, const Operand& result);
+
+  /// Generates instructions to splat `scalar_id` into a vector of type
+  /// `vec_type`
+  /// @param scalar_id scalar to splat
+  /// @param vec_type type of vector
+  /// @returns id of the new vector
+  uint32_t GenerateSplat(uint32_t scalar_id, const sem::Type* vec_type);
+
+  /// Generates instructions to add or subtract two matrices
+  /// @param lhs_id id of multiplicand
+  /// @param rhs_id id of multiplier
+  /// @param type type of both matrices and of result
+  /// @param op one of `spv::Op::OpFAdd` or `spv::Op::OpFSub`
+  /// @returns id of the result matrix
+  uint32_t GenerateMatrixAddOrSub(uint32_t lhs_id,
+                                  uint32_t rhs_id,
+                                  const sem::Matrix* type,
+                                  spv::Op op);
 
   /// Converts AST image format to SPIR-V and pushes an appropriate capability.
   /// @param format AST image format type

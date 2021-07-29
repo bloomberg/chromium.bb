@@ -48,7 +48,14 @@ class ResizeConfirmationDialogView : public views::BoxLayoutView {
       delete;
   ~ResizeConfirmationDialogView() override;
 
+  // Shows confirmation dialog for asking user if really want to enable resizing
+  // for the resize-locked ARC app.
+  static void Show(aura::Window* parent, ResizeConfirmationCallback callback);
+
+  // views::View:
   gfx::Size CalculatePreferredSize() const override;
+  void AddedToWidget() override;
+  void OnThemeChanged() override;
 
  private:
   std::unique_ptr<views::View> MakeContentsView();
@@ -62,11 +69,6 @@ class ResizeConfirmationDialogView : public views::BoxLayoutView {
   views::MdTextButton* accept_button_{nullptr};
   views::MdTextButton* cancel_button_{nullptr};
 };
-
-// Shows confirmation dialog for asking user if really want to perform resize
-// operation for the resize-locked ARC app.
-void ShowResizeConfirmationDialog(aura::Window* parent,
-                                  ResizeConfirmationCallback callback);
 
 }  // namespace arc
 

@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ТБ/сек</translation>
 <translation id="2353636109065292463">Връзката с интернет се проверява</translation>
 <translation id="2388990488038464401">Искате ли да се обадите на този номер от телефона си?</translation>
+<translation id="2435457462613246316">Показване на паролата</translation>
 <translation id="24452542372838207">Разгъване на известието</translation>
 <translation id="2445449901874883781">Използване на висока плътност</translation>
 <translation id="2482878487686419369">Известия</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{Преди 1 година}other{Преди # години}}</translation>
 <translation id="2878511608894704031">Изтриване на всички</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{след 1 д}other{след # д}}</translation>
+<translation id="2922712708897119705">Колоната <ph name="COLUMN_NAME" /> е сортирана в низходящ ред.</translation>
 <translation id="2931838996092594335">кликвам</translation>
 <translation id="2981684127883932071">Показани са предложения</translation>
 <translation id="3036649622769666520">Отваряне на файлове</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3909791450649380159">Изрязва&amp;не</translation>
 <translation id="3990502903496589789">Десн край</translation>
+<translation id="3994749195054421561">Колоната <ph name="COLUMN_NAME" /> е сортирана във възходящ ред.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 непрочетено известие}other{# непрочетени известия}}</translation>
 <translation id="4202807286478387388">преминаване</translation>
 <translation id="4250229828105606438">Eкранна снимка</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Премахване от буферната памет.</translation>
 <translation id="4316910396681052118">ВСИЧКИ ПРИЛОЖЕНИЯ</translation>
 <translation id="4491109536499578614">Изображение</translation>
+<translation id="4565377596337484307">Скриване на паролата</translation>
 <translation id="4588090240171750605">Превъртане надясно</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, оценка със звезди: <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, препоръка за приложение</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Страница <ph name="SELECTED_PAGE" /> от <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Изчистване на текста от полето за търсене</translation>
 <translation id="6040143037577758943">Затваряне</translation>
+<translation id="6117103120090651229">Бутон в центъра</translation>
 <translation id="6119846243427417423">активиране</translation>
 <translation id="6129953537138746214">Интервал</translation>
 <translation id="6134259848159370930">Търсете в устройството, приложенията, настройките и мрежата.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Разгъване на списъка с всички приложения</translation>
 <translation id="6165508094623778733">Научете повече</translation>
 <translation id="6166852626429024716">Търсете в устройството, приложенията, настройките и мрежата...</translation>
+<translation id="6237461503717005873">Избрахте <ph name="ROW_NAME" />.</translation>
 <translation id="6264365405983206840">Избиране на &amp;всички</translation>
 <translation id="6351032674660237738">ПРЕДЛОЖЕНИЯ ЗА ПРИЛОЖЕНИЯ</translation>
 <translation id="6364916375976753737">Превъртане наляво</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Остава 1 минута}other{Остават # минути}}</translation>
 <translation id="7430878839542012341">Да се изтрие ли това търсене от историята ви?</translation>
+<translation id="7437971918971306061">Сортирането на колоната <ph name="COLUMN_NAME" /> бе отменено.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
 <translation id="7507604095951736240">Емоджи</translation>
 <translation id="7620655452534002301">Премахнато.</translation>

@@ -70,16 +70,12 @@ const std::vector<const char*> NotNumericMonthsContentsWithPlaceholder() {
 }
 
 // Returns the index of |value| in |values|.
-void GetIndexOfValue(const std::vector<std::u16string>& values,
-                     const std::u16string& value,
-                     size_t* index) {
-  for (size_t i = 0; i < values.size(); ++i) {
-    if (values[i] == value) {
-      *index = i;
-      return;
-    }
-  }
-  ASSERT_TRUE(false) << "Passing invalid arguments to GetIndexOfValue";
+size_t GetIndexOfValue(const std::vector<SelectOption>& values,
+                       const std::u16string& value) {
+  size_t i =
+      base::ranges::find(values, value, &SelectOption::value) - values.begin();
+  CHECK_LT(i, values.size()) << "Passing invalid arguments to GetIndexOfValue";
+  return i;
 }
 
 // Creates the select field from the specified |values| and |contents| and tests
@@ -100,14 +96,14 @@ void TestFillingExpirationMonth(const std::vector<const char*>& values,
   CreditCard card = test::GetCreditCard();
   card.SetExpirationMonth(3);
   filler.FillFormField(field, &card, &field, /*cvc=*/std::u16string());
-  GetIndexOfValue(field.option_values, field.value, &content_index);
-  EXPECT_EQ(u"Mar", field.option_contents[content_index]);
+  content_index = GetIndexOfValue(field.options, field.value);
+  EXPECT_EQ(u"Mar", field.options[content_index].content);
 
   // Try a two-digit month.
   card.SetExpirationMonth(11);
   filler.FillFormField(field, &card, &field, /*cvc=*/std::u16string());
-  GetIndexOfValue(field.option_values, field.value, &content_index);
-  EXPECT_EQ(u"Nov", field.option_contents[content_index]);
+  content_index = GetIndexOfValue(field.options, field.value);
+  EXPECT_EQ(u"Nov", field.options[content_index].content);
 }
 
 void TestFillingInvalidFields(const std::u16string& state,
@@ -167,6 +163,9 @@ class AutofillFieldFillerTest : public testing::Test {
 
 TEST_F(AutofillFieldFillerTest, Type) {
   AutofillField field;
+  AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
+      prediction;
+
   ASSERT_EQ(NO_SERVER_DATA, field.server_type());
   ASSERT_EQ(UNKNOWN_TYPE, field.heuristic_type());
 
@@ -179,7 +178,8 @@ TEST_F(AutofillFieldFillerTest, Type) {
   EXPECT_EQ(FieldTypeGroup::kName, field.Type().group());
 
   // Set the server type and check it.
-  field.set_server_type(ADDRESS_BILLING_LINE1);
+  prediction.set_type(ADDRESS_BILLING_LINE1);
+  field.set_server_predictions({prediction});
   EXPECT_EQ(ADDRESS_HOME_LINE1, field.Type().GetStorableType());
   EXPECT_EQ(FieldTypeGroup::kAddressBilling, field.Type().group());
 
@@ -189,12 +189,14 @@ TEST_F(AutofillFieldFillerTest, Type) {
   EXPECT_EQ(FieldTypeGroup::kAddressBilling, field.Type().group());
 
   // Checks that setting server type resets overall type.
-  field.set_server_type(ADDRESS_BILLING_LINE1);
+  prediction.set_type(ADDRESS_BILLING_LINE1);
+  field.set_server_predictions({prediction});
   EXPECT_EQ(ADDRESS_HOME_LINE1, field.Type().GetStorableType());
   EXPECT_EQ(FieldTypeGroup::kAddressBilling, field.Type().group());
 
   // Remove the server type to make sure the heuristic type is preserved.
-  field.set_server_type(NO_SERVER_DATA);
+  prediction.set_type(NO_SERVER_DATA);
+  field.set_server_predictions({prediction});
   EXPECT_EQ(NAME_FIRST, field.Type().GetStorableType());
   EXPECT_EQ(FieldTypeGroup::kName, field.Type().group());
 
@@ -236,22 +238,27 @@ TEST_F(AutofillFieldFillerTest, Type_CreditCardOverrideHtml_Heuristics) {
 // unrecognized autocomplete attribute.
 TEST_F(AutofillFieldFillerTest, Type_CreditCardOverrideHtml_ServerPredicitons) {
   AutofillField field;
+  AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
+      prediction;
 
   field.SetHtmlType(HTML_TYPE_UNRECOGNIZED, HTML_MODE_NONE);
 
   // A credit card server prediction overrides the unrecognized type.
-  field.set_server_type(CREDIT_CARD_NUMBER);
+  prediction.set_type(CREDIT_CARD_NUMBER);
+  field.set_server_predictions({prediction});
   EXPECT_EQ(CREDIT_CARD_NUMBER, field.Type().GetStorableType());
 
   // A non credit card server prediction doesn't override the unrecognized
   // type.
-  field.set_server_type(NAME_FIRST);
+  prediction.set_type(NAME_FIRST);
+  field.set_server_predictions({prediction});
   EXPECT_EQ(UNKNOWN_TYPE, field.Type().GetStorableType());
 
   // A credit card server prediction doesn't override a known specified html
   // type.
   field.SetHtmlType(HTML_TYPE_NAME, HTML_MODE_NONE);
-  field.set_server_type(CREDIT_CARD_NUMBER);
+  prediction.set_type(CREDIT_CARD_NUMBER);
+  field.set_server_predictions({prediction});
   EXPECT_EQ(NAME_FULL, field.Type().GetStorableType());
 }
 
@@ -261,30 +268,37 @@ TEST_F(AutofillFieldFillerTest, Type_CreditCardOverrideHtml_ServerPredicitons) {
 TEST_F(AutofillFieldFillerTest,
        Type_ServerPredictionOfCityAndNumber_OverrideHtml) {
   AutofillField field;
+  AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
+      prediction;
 
   field.SetHtmlType(HTML_TYPE_TEL, HTML_MODE_NONE);
 
-  field.set_server_type(PHONE_HOME_CITY_AND_NUMBER);
+  prediction.set_type(PHONE_HOME_CITY_AND_NUMBER);
+  field.set_server_predictions({prediction});
   EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER, field.Type().GetStorableType());
 
   // Overrides to another number format.
-  field.set_server_type(PHONE_HOME_NUMBER);
+  prediction.set_type(PHONE_HOME_NUMBER);
+  field.set_server_predictions({prediction});
   EXPECT_EQ(PHONE_HOME_NUMBER, field.Type().GetStorableType());
 
   // Overrides autocomplete=tel-national too.
   field.SetHtmlType(HTML_TYPE_TEL_NATIONAL, HTML_MODE_NONE);
-  field.set_server_type(PHONE_HOME_WHOLE_NUMBER);
+  prediction.set_type(PHONE_HOME_WHOLE_NUMBER);
+  field.set_server_predictions({prediction});
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER, field.Type().GetStorableType());
 
   // If autocomplete=tel-national but server says it's not a phone field,
   // do not override.
   field.SetHtmlType(HTML_TYPE_TEL_NATIONAL, HTML_MODE_NONE);
-  field.set_server_type(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
+  prediction.set_type(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
+  field.set_server_predictions({prediction});
   EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER, field.Type().GetStorableType());
 
   // If html type not specified, we still use server prediction.
   field.SetHtmlType(HTML_TYPE_UNSPECIFIED, HTML_MODE_NONE);
-  field.set_server_type(PHONE_HOME_CITY_AND_NUMBER);
+  prediction.set_type(PHONE_HOME_CITY_AND_NUMBER);
+  field.set_server_predictions({prediction});
   EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER, field.Type().GetStorableType());
 }
 
@@ -302,6 +316,8 @@ TEST_F(AutofillFieldFillerTest, IsEmpty) {
 
 TEST_F(AutofillFieldFillerTest, FieldSignatureAsStr) {
   AutofillField field;
+  AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
+      prediction;
   ASSERT_EQ(std::u16string(), field.name);
   ASSERT_EQ(std::string(), field.form_control_type);
 
@@ -321,12 +337,15 @@ TEST_F(AutofillFieldFillerTest, FieldSignatureAsStr) {
   EXPECT_EQ("502192749", field.FieldSignatureAsStr());
 
   // Server type does not affect FieldSignature.
-  field.set_server_type(NAME_LAST);
+  prediction.set_type(NAME_LAST);
+  field.set_server_predictions({prediction});
   EXPECT_EQ("502192749", field.FieldSignatureAsStr());
 }
 
 TEST_F(AutofillFieldFillerTest, IsFieldFillable) {
   AutofillField field;
+  AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
+      prediction;
   ASSERT_EQ(UNKNOWN_TYPE, field.Type().GetStorableType());
 
   // Type is unknown.
@@ -338,12 +357,14 @@ TEST_F(AutofillFieldFillerTest, IsFieldFillable) {
 
   // Only server type is set.
   field.set_heuristic_type(UNKNOWN_TYPE);
-  field.set_server_type(NAME_LAST);
+  prediction.set_type(NAME_LAST);
+  field.set_server_predictions({prediction});
   EXPECT_TRUE(field.IsFieldFillable());
 
   // Both types set.
   field.set_heuristic_type(NAME_FIRST);
-  field.set_server_type(NAME_LAST);
+  prediction.set_type(NAME_LAST);
+  field.set_server_predictions({prediction});
   EXPECT_TRUE(field.IsFieldFillable());
 
   // Field has autocomplete="off" set. Since autofill was able to make a
@@ -789,8 +810,8 @@ TEST_F(AutofillFieldFillerTest, FillSelectControlByValue) {
 
   // Set semantically empty contents for each option, so that only the values
   // can be used for matching.
-  for (size_t i = 0; i < field.option_contents.size(); ++i)
-    field.option_contents[i] = base::NumberToString16(i);
+  for (size_t i = 0; i < field.options.size(); ++i)
+    field.options[i].content = base::NumberToString16(i);
 
   address()->SetRawInfo(NAME_FIRST, u"Meenie");
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
@@ -811,8 +832,8 @@ TEST_F(AutofillFieldFillerTest, FillSelectControlByContents) {
 
   // Set semantically empty values for each option, so that only the contents
   // can be used for matching.
-  for (size_t i = 0; i < field.option_values.size(); ++i)
-    field.option_values[i] = base::NumberToString16(i);
+  for (size_t i = 0; i < field.options.size(); ++i)
+    field.options[i].value = base::NumberToString16(i);
 
   address()->SetRawInfo(NAME_FIRST, u"Miney");
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
@@ -1287,8 +1308,11 @@ TEST_F(AutofillFieldFillerTest, FillStreetAddressTextArea) {
 
 TEST_F(AutofillFieldFillerTest, FillStreetAddressTextField) {
   AutofillField field;
+  AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction
+      prediction;
   field.form_control_type = "text";
-  field.set_server_type(ADDRESS_HOME_STREET_ADDRESS);
+  prediction.set_type(ADDRESS_HOME_STREET_ADDRESS);
+  field.set_server_predictions({prediction});
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
 
   std::u16string value = u"123 Fake St.\nApt. 42";

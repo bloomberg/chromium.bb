@@ -35,6 +35,8 @@ extern const base::Feature kProactivelyThrottleLowPriorityRequests;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kCrossOriginEmbedderPolicyCredentialless;
 COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kCrossOriginEmbedderPolicyCredentiallessOriginTrial;
+COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kCrossOriginOpenerPolicy;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kCrossOriginOpenerPolicyReporting;
@@ -44,8 +46,6 @@ COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kCrossOriginOpenerPolicyAccessReporting;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kCrossOriginOpenerPolicyByDefault;
-COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::Feature kCrossOriginIsolated;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kSplitAuthCacheByNetworkIsolationKey;
 COMPONENT_EXPORT(NETWORK_CPP)
@@ -57,8 +57,6 @@ extern const base::FeatureParam<std::string>
     kDnsOverHttpsUpgradeDisabledProvidersParam;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kDisableKeepaliveFetch;
-COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::Feature kRequestInitiatorSiteLockEnfocement;
 
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kTrustTokens;
@@ -86,6 +84,15 @@ extern const base::Feature kFtpProtocol;
 
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kSCTAuditingRetryAndPersistReports;
+
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kLoaderDataPipeTuningFeature;
+
+COMPONENT_EXPORT(NETWORK_CPP)
+extern uint32_t GetDataPipeDefaultAllocationSize();
+
+COMPONENT_EXPORT(NETWORK_CPP)
+extern uint32_t GetLoaderChunkSize();
 
 }  // namespace features
 }  // namespace network

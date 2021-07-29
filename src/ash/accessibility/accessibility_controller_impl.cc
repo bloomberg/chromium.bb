@@ -19,6 +19,8 @@
 #include "ash/accessibility/ui/accessibility_panel_layout_manager.h"
 #include "ash/components/audio/cras_audio_handler.h"
 #include "ash/components/audio/sounds.h"
+#include "ash/constants/ash_constants.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/events/accessibility_event_rewriter.h"
 #include "ash/events/select_to_speak_event_handler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
@@ -28,7 +30,6 @@
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/accessibility_controller_client.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -55,6 +56,7 @@
 #include "components/prefs/pref_service.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/aura/aura_window_properties.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_size.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -161,6 +163,7 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kAccessibilityCursorColorEnabled,
     prefs::kAccessibilityCursorColor,
     prefs::kAccessibilityDictationEnabled,
+    prefs::kAccessibilityDictationLocale,
     prefs::kAccessibilityFocusHighlightEnabled,
     prefs::kAccessibilityHighContrastEnabled,
     prefs::kAccessibilityLargeCursorEnabled,
@@ -636,6 +639,12 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
                                 false);
   registry->RegisterBooleanPref(
       prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled, false);
+
+  // Not syncable because it might change depending on application locale,
+  // user settings, and because different languages can cause SODA
+  // speech recognition download.
+  registry->RegisterStringPref(prefs::kAccessibilityDictationLocale,
+                               std::string());
 
   // A pref in this list is associated with accepting for the first time,
   // enabling of some pref above. Non-syncable like all of the above prefs.
@@ -1349,6 +1358,22 @@ void AccessibilityControllerImpl::OnActiveUserPrefServiceChanged(
   ObservePrefs(prefs);
 }
 
+void AccessibilityControllerImpl::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  // Everything behind the lock screen is in
+  // kShellWindowId_NonLockScreenContainersContainer. If the session state is
+  // changed to block the user session due to the lock screen or similar,
+  // everything in that window should be made invisible for accessibility.
+  // This keeps a11y features from being able to access parts of the tree
+  // that are visibly hidden behind the lock screen.
+  aura::Window* container =
+      Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                          kShellWindowId_NonLockScreenContainersContainer);
+  container->SetProperty(
+      ui::kAXConsiderInvisibleAndIgnoreChildren,
+      Shell::Get()->session_controller()->IsUserSessionBlocked());
+}
+
 AccessibilityEventRewriter*
 AccessibilityControllerImpl::GetAccessibilityEventRewriterForTest() {
   return accessibility_event_rewriter_;
@@ -1733,7 +1758,7 @@ void AccessibilityControllerImpl::UpdateSwitchAccessKeyCodesFromPref(
   const base::DictionaryValue* key_codes_pref =
       active_user_prefs_->GetDictionary(pref_key);
   std::map<int, std::set<std::string>> key_codes;
-  for (const auto& v : key_codes_pref->DictItems()) {
+  for (const auto v : key_codes_pref->DictItems()) {
     int key_code;
     if (!base::StringToInt(v.first, &key_code)) {
       NOTREACHED();
@@ -1758,8 +1783,8 @@ void AccessibilityControllerImpl::UpdateSwitchAccessKeyCodesFromPref(
     base::UmaHistogramEnumeration(uma_name, uma_value);
   }
 
-    accessibility_event_rewriter_->SetKeyCodesForSwitchAccessCommand(key_codes,
-                                                                     command);
+  accessibility_event_rewriter_->SetKeyCodesForSwitchAccessCommand(key_codes,
+                                                                   command);
 }
 
 void AccessibilityControllerImpl::UpdateSwitchAccessAutoScanEnabledFromPref() {

@@ -15,6 +15,7 @@
 #include "extensions/common/api/automation_internal.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_messages.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class BrowserContext;
@@ -51,6 +52,8 @@ class AutomationEventRouterInterface {
       content::BrowserContext* browser_context = nullptr) = 0;
 
   // Notify the source extension of the result to getTextLocation.
+  // Currently only supported by ARC++ in response to
+  // ax::mojom::Action::kGetTextLocation.
   virtual void DispatchGetTextLocationDataResult(
       const ui::AXActionData& data,
       const absl::optional<gfx::Rect>& rect) = 0;

@@ -782,20 +782,22 @@ void PipelineImpl::RendererWrapper::OnStatisticsUpdate(
   shared_state_.statistics.audio_memory_usage += stats.audio_memory_usage;
   shared_state_.statistics.video_memory_usage += stats.video_memory_usage;
 
-  if (stats.audio_decoder_info.decoder_type != AudioDecoderType::kUnknown &&
-      stats.audio_decoder_info != shared_state_.statistics.audio_decoder_info) {
-    shared_state_.statistics.audio_decoder_info = stats.audio_decoder_info;
+  if (stats.audio_pipeline_info.decoder_type != AudioDecoderType::kUnknown &&
+      stats.audio_pipeline_info !=
+          shared_state_.statistics.audio_pipeline_info) {
+    shared_state_.statistics.audio_pipeline_info = stats.audio_pipeline_info;
     main_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&PipelineImpl::OnAudioDecoderChange,
-                                  weak_pipeline_, stats.audio_decoder_info));
+        FROM_HERE, base::BindOnce(&PipelineImpl::OnAudioPipelineInfoChange,
+                                  weak_pipeline_, stats.audio_pipeline_info));
   }
 
-  if (stats.video_decoder_info.decoder_type != VideoDecoderType::kUnknown &&
-      stats.video_decoder_info != shared_state_.statistics.video_decoder_info) {
-    shared_state_.statistics.video_decoder_info = stats.video_decoder_info;
+  if (stats.video_pipeline_info.decoder_type != VideoDecoderType::kUnknown &&
+      stats.video_pipeline_info !=
+          shared_state_.statistics.video_pipeline_info) {
+    shared_state_.statistics.video_pipeline_info = stats.video_pipeline_info;
     main_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&PipelineImpl::OnVideoDecoderChange,
-                                  weak_pipeline_, stats.video_decoder_info));
+        FROM_HERE, base::BindOnce(&PipelineImpl::OnVideoPipelineInfoChange,
+                                  weak_pipeline_, stats.video_pipeline_info));
   }
 
   if (stats.video_frame_duration_average != kNoTimestamp) {
@@ -1271,7 +1273,7 @@ void PipelineImpl::Stop() {
 }
 
 void PipelineImpl::Seek(base::TimeDelta time, PipelineStatusCallback seek_cb) {
-  DVLOG(2) << __func__ << " to " << time.InMicroseconds();
+  DVLOG(2) << __func__ << " to " << time;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(seek_cb);
 
@@ -1331,7 +1333,7 @@ bool PipelineImpl::IsRunning() const {
 }
 
 bool PipelineImpl::IsSuspended() const {
-  DVLOG(2) << __func__;
+  DVLOG(2) << __func__ << "(" << is_suspended_ << ")";
   DCHECK(thread_checker_.CalledOnValidThread());
   return is_suspended_;
 }
@@ -1639,22 +1641,22 @@ void PipelineImpl::OnVideoAverageKeyframeDistanceUpdate() {
   client_->OnVideoAverageKeyframeDistanceUpdate();
 }
 
-void PipelineImpl::OnAudioDecoderChange(const AudioDecoderInfo& info) {
+void PipelineImpl::OnAudioPipelineInfoChange(const AudioPipelineInfo& info) {
   DVLOG(2) << __func__ << ": info=" << info;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
 
   DCHECK(client_);
-  client_->OnAudioDecoderChange(info);
+  client_->OnAudioPipelineInfoChange(info);
 }
 
-void PipelineImpl::OnVideoDecoderChange(const VideoDecoderInfo& info) {
+void PipelineImpl::OnVideoPipelineInfoChange(const VideoPipelineInfo& info) {
   DVLOG(2) << __func__ << ": info=" << info;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
 
   DCHECK(client_);
-  client_->OnVideoDecoderChange(info);
+  client_->OnVideoPipelineInfoChange(info);
 }
 
 void PipelineImpl::OnSeekDone(bool is_suspended) {

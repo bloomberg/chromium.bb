@@ -104,7 +104,7 @@ class LiveCaptionSpeechRecognitionHostTest : public InProcessBrowserTest {
                                            std::string text,
                                            bool expected_success) {
     remotes_[frame_host]->OnSpeechRecognitionRecognitionEvent(
-        media::mojom::SpeechRecognitionResult::New(text, /*is_final=*/false),
+        media::SpeechRecognitionResult(text, /*is_final=*/false),
         base::BindOnce(&LiveCaptionSpeechRecognitionHostTest::
                            DispatchTranscriptionCallback,
                        base::Unretained(this), expected_success));
@@ -155,8 +155,9 @@ class LiveCaptionSpeechRecognitionHostTest : public InProcessBrowserTest {
       remotes_;
 };
 
+// Disabled due to flaky crashes; https://crbug.com/1216304.
 IN_PROC_BROWSER_TEST_F(LiveCaptionSpeechRecognitionHostTest,
-                       DestroysWithoutCrashing) {
+                       DISABLED_DestroysWithoutCrashing) {
   content::RenderFrameHost* frame_host =
       browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
   CreateLiveCaptionSpeechRecognitionHost(frame_host);

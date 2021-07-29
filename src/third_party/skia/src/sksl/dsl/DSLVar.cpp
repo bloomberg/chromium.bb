@@ -21,63 +21,25 @@ namespace SkSL {
 
 namespace dsl {
 
-DSLVar::DSLVar(const char* name)
-    : fType(kVoid_Type)
-    , fRawName(name)
-    , fName(name)
-    , fDeclared(true) {
-#if SK_SUPPORT_GPU && !defined(SKSL_STANDALONE)
-    if (!strcmp(name, "sk_SampleCoord")) {
-        fName = DSLWriter::CurrentEmitArgs()->fSampleCoord;
-        // The actual sk_SampleCoord variable hasn't been created by GrGLSLFPFragmentBuilder yet, so
-        // if we attempt to look it up in the symbol table we'll get null. As we are currently
-        // converting all DSL code into strings rather than nodes, all we really need is a
-        // correctly-named variable with the right type, so we just create a placeholder for it.
-        // TODO(skia/11330): we'll need to fix this when switching over to nodes.
-        const SkSL::Modifiers* modifiers = DSLWriter::Context().fModifiersPool->add(
-                SkSL::Modifiers(SkSL::Layout(/*flags=*/0, /*location=*/-1, /*offset=*/-1,
-                                             /*binding=*/-1, /*index=*/-1, /*set=*/-1,
-                                             SK_MAIN_COORDS_BUILTIN, /*inputAttachmentIndex=*/-1,
-                                             Layout::kUnspecified_Primitive, /*maxVertices=*/1,
-                                             /*invocations=*/-1, /*when=*/"",
-                                             Layout::CType::kDefault),
-                                SkSL::Modifiers::kNo_Flag));
+DSLVarBase::DSLVarBase(DSLType type, skstd::string_view name, DSLExpression initialValue)
+    : DSLVarBase(DSLModifiers(), std::move(type), name, std::move(initialValue)) {}
 
-        fVar = DSLWriter::SymbolTable()->takeOwnershipOfIRNode(std::make_unique<SkSL::Variable>(
-                /*offset=*/-1,
-                modifiers,
-                fName,
-                DSLWriter::Context().fTypes.fFloat2.get(),
-                /*builtin=*/true,
-                SkSL::VariableStorage::kGlobal));
-        return;
-    }
-#endif
-    const SkSL::Symbol* result = (*DSLWriter::SymbolTable())[fName];
-    SkASSERTF(result, "could not find '%s' in symbol table", fName);
-    fVar = &result->as<SkSL::Variable>();
-}
+DSLVarBase::DSLVarBase(DSLType type, DSLExpression initialValue)
+    : DSLVarBase(type, "var", std::move(initialValue)) {}
 
-DSLVar::DSLVar(DSLType type, const char* name, DSLExpression initialValue)
-    : DSLVar(DSLModifiers(), std::move(type), name, std::move(initialValue)) {}
+DSLVarBase::DSLVarBase(DSLModifiers modifiers, DSLType type, DSLExpression initialValue)
+    : DSLVarBase(modifiers, type, "var", std::move(initialValue)) {}
 
-DSLVar::DSLVar(DSLType type, DSLExpression initialValue)
-    : DSLVar(type, "var", std::move(initialValue)) {}
-
-DSLVar::DSLVar(DSLModifiers modifiers, DSLType type, DSLExpression initialValue)
-    : DSLVar(modifiers, type, "var", std::move(initialValue)) {}
-
-DSLVar::DSLVar(DSLModifiers modifiers, DSLType type, const char* name, DSLExpression initialValue)
+DSLVarBase::DSLVarBase(DSLModifiers modifiers, DSLType type, skstd::string_view name,
+                       DSLExpression initialValue)
     : fModifiers(std::move(modifiers))
     , fType(std::move(type))
     , fRawName(name)
     , fName(fType.skslType().isOpaque() ? name : DSLWriter::Name(name))
     , fInitialValue(std::move(initialValue))
-    , fStorage(Variable::Storage::kLocal)
     , fDeclared(DSLWriter::MarkVarsDeclared()) {
-#if SK_SUPPORT_GPU && !defined(SKSL_STANDALONE)
     if (fModifiers.fModifiers.fFlags & Modifiers::kUniform_Flag) {
-        fStorage = Variable::Storage::kGlobal;
+#if SK_SUPPORT_GPU && !defined(SKSL_STANDALONE)
         if (DSLWriter::InFragmentProcessor()) {
             const SkSL::Type& skslType = type.skslType();
             GrSLType grslType;
@@ -99,23 +61,26 @@ DSLVar::DSLVar(DSLModifiers modifiers, DSLType type, const char* name, DSLExpres
                                                                  &DSLWriter::CurrentEmitArgs()->fFp,
                                                                  kFragment_GrShaderFlag,
                                                                  grslType,
-                                                                 this->name(),
+                                                                 String(this->name()).c_str(),
                                                                  count,
                                                                  &name).toIndex();
             fName = name;
         }
-    }
 #endif // SK_SUPPORT_GPU && !defined(SKSL_STANDALONE)
-}
-
-DSLVar::~DSLVar() {
-    if (!fDeclared) {
-        DSLWriter::ReportError(String::printf("error: variable '%s' was destroyed without being "
-                                              "declared\n", fRawName).c_str());
     }
 }
 
-void DSLVar::swap(DSLVar& other) {
+DSLVarBase::~DSLVarBase() {
+    if (fDeclaration && !fDeclared) {
+        DSLWriter::ReportError(String::printf("error: variable '%.*s' was destroyed without being "
+                                              "declared\n",
+                                              (int)fRawName.length(),
+                                              fRawName.data()).c_str());
+    }
+}
+
+void DSLVarBase::swap(DSLVarBase& other) {
+    SkASSERT(this->storage() == other.storage());
     std::swap(fModifiers, other.fModifiers);
     std::swap(fType, other.fType);
     std::swap(fUniformHandle, other.fUniformHandle);
@@ -124,17 +89,88 @@ void DSLVar::swap(DSLVar& other) {
     std::swap(fRawName, other.fRawName);
     std::swap(fName, other.fName);
     std::swap(fInitialValue.fExpression, other.fInitialValue.fExpression);
-    std::swap(fStorage, other.fStorage);
     std::swap(fDeclared, other.fDeclared);
 }
 
-DSLPossibleExpression DSLVar::operator[](DSLExpression&& index) {
+void DSLVar::swap(DSLVar& other) {
+    INHERITED::swap(other);
+}
+
+VariableStorage DSLVar::storage() const {
+    return VariableStorage::kLocal;
+}
+
+DSLGlobalVar::DSLGlobalVar(const char* name)
+    : INHERITED(kVoid_Type, name, DSLExpression()) {
+    fName = name;
+    DSLWriter::MarkDeclared(*this);
+#if SK_SUPPORT_GPU && !defined(SKSL_STANDALONE)
+    if (!strcmp(name, "sk_SampleCoord")) {
+        fName = DSLWriter::CurrentEmitArgs()->fSampleCoord;
+        // The actual sk_SampleCoord variable hasn't been created by GrGLSLFPFragmentBuilder yet, so
+        // if we attempt to look it up in the symbol table we'll get null. As we are currently
+        // converting all DSL code into strings rather than nodes, all we really need is a
+        // correctly-named variable with the right type, so we just create a placeholder for it.
+        // TODO(skia/11330): we'll need to fix this when switching over to nodes.
+        const SkSL::Modifiers* modifiers = DSLWriter::Context().fModifiersPool->add(
+                SkSL::Modifiers(SkSL::Layout(/*flags=*/0, /*location=*/-1, /*offset=*/-1,
+                                             /*binding=*/-1, /*index=*/-1, /*set=*/-1,
+                                             SK_MAIN_COORDS_BUILTIN, /*inputAttachmentIndex=*/-1,
+                                             Layout::kUnspecified_Primitive, /*maxVertices=*/1,
+                                             /*invocations=*/-1),
+                                SkSL::Modifiers::kNo_Flag));
+
+        fVar = DSLWriter::SymbolTable()->takeOwnershipOfIRNode(std::make_unique<SkSL::Variable>(
+                /*offset=*/-1,
+                modifiers,
+                fName,
+                DSLWriter::Context().fTypes.fFloat2.get(),
+                /*builtin=*/true,
+                SkSL::VariableStorage::kGlobal));
+        return;
+    }
+#endif
+    const SkSL::Symbol* result = (*DSLWriter::SymbolTable())[fName];
+    SkASSERTF(result, "could not find '%.*s' in symbol table", (int)fName.length(), fName.data());
+    fVar = &result->as<SkSL::Variable>();
+}
+
+void DSLGlobalVar::swap(DSLGlobalVar& other) {
+    INHERITED::swap(other);
+}
+
+VariableStorage DSLGlobalVar::storage() const {
+    return VariableStorage::kGlobal;
+}
+
+void DSLParameter::swap(DSLParameter& other) {
+    INHERITED::swap(other);
+}
+
+VariableStorage DSLParameter::storage() const {
+    return VariableStorage::kParameter;
+}
+
+
+DSLPossibleExpression DSLVarBase::operator[](DSLExpression&& index) {
     return DSLExpression(*this)[std::move(index)];
 }
 
-DSLPossibleExpression DSLVar::operator=(DSLExpression expr) {
+DSLPossibleExpression DSLVarBase::assign(DSLExpression expr) {
     return DSLWriter::ConvertBinary(DSLExpression(*this).release(), SkSL::Token::Kind::TK_EQ,
                                     expr.release());
+}
+
+DSLPossibleExpression DSLVar::operator=(DSLExpression expr) {
+    return this->assign(std::move(expr));
+}
+
+DSLPossibleExpression DSLGlobalVar::operator=(DSLExpression expr) {
+    return this->assign(std::move(expr));
+}
+
+DSLPossibleExpression DSLParameter::operator=(DSLExpression expr) {
+    return this->assign(std::move(expr));
 }
 
 } // namespace dsl

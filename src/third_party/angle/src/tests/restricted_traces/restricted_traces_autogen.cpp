@@ -19,7 +19,9 @@
 #include "asphalt_8/asphalt_8_capture_context1.h"
 #include "avakin_life/avakin_life_capture_context1.h"
 #include "aztec_ruins/aztec_ruins_capture_context1.h"
+#include "beach_buggy_racing/beach_buggy_racing_capture_context1.h"
 #include "brawl_stars/brawl_stars_capture_context1.h"
+#include "bricks_breaker_quest/bricks_breaker_quest_capture_context2.h"
 #include "bubble_shooter/bubble_shooter_capture_context5.h"
 #include "bus_simulator_indonesia/bus_simulator_indonesia_capture_context1.h"
 #include "call_break_offline_card_game/call_break_offline_card_game_capture_context2.h"
@@ -31,6 +33,7 @@
 #include "cod_mobile/cod_mobile_capture_context1.h"
 #include "coin_master/coin_master_capture_context1.h"
 #include "command_and_conquer_rivals/command_and_conquer_rivals_capture_context2.h"
+#include "cookie_run_kingdom/cookie_run_kingdom_capture_context2.h"
 #include "disney_tsum_tsum/disney_tsum_tsum_capture_context3.h"
 #include "dr_driving/dr_driving_capture_context3.h"
 #include "dragon_ball_legends/dragon_ball_legends_capture_context1.h"
@@ -40,10 +43,12 @@
 #include "eight_ball_pool/eight_ball_pool_capture_context1.h"
 #include "extreme_car_driving_simulator/extreme_car_driving_simulator_capture_context1.h"
 #include "fallout_shelter_online/fallout_shelter_online_capture_context1.h"
+#include "farm_heroes_saga/farm_heroes_saga_capture_context2.h"
 #include "fate_grand_order/fate_grand_order_capture_context1.h"
 #include "fifa_mobile/fifa_mobile_capture_context1.h"
 #include "free_fire/free_fire_capture_context1.h"
 #include "gardenscapes/gardenscapes_capture_context1.h"
+#include "genshin_impact/genshin_impact_capture_context3.h"
 #include "google_maps/google_maps_capture_context1.h"
 #include "happy_color/happy_color_capture_context1.h"
 #include "hay_day/hay_day_capture_context1.h"
@@ -62,6 +67,7 @@
 #include "magic_tiles_3/magic_tiles_3_capture_context1.h"
 #include "manhattan_10/manhattan_10_capture_context1.h"
 #include "manhattan_31/manhattan_31_capture_context1.h"
+#include "mario_kart_tour/mario_kart_tour_capture_context1.h"
 #include "marvel_contest_of_champions/marvel_contest_of_champions_capture_context1.h"
 #include "messenger_lite/messenger_lite_capture_context1.h"
 #include "minecraft/minecraft_capture_context1.h"
@@ -69,6 +75,7 @@
 #include "nba2k20_800/nba2k20_800_capture_context1.h"
 #include "one_punch_man/one_punch_man_capture_context1.h"
 #include "plants_vs_zombies_2/plants_vs_zombies_2_capture_context1.h"
+#include "pokemon_go/pokemon_go_capture_context2.h"
 #include "professional_baseball_spirits/professional_baseball_spirits_capture_context1.h"
 #include "pubg_mobile_lite/pubg_mobile_lite_capture_context1.h"
 #include "ragnarok_m_eternal_love/ragnarok_m_eternal_love_capture_context1.h"
@@ -80,16 +87,20 @@
 #include "romancing_saga/romancing_saga_capture_context1.h"
 #include "rope_hero_vice_town/rope_hero_vice_town_capture_context1.h"
 #include "saint_seiya_awakening/saint_seiya_awakening_capture_context1.h"
+#include "sakura_school_simulator/sakura_school_simulator_capture_context2.h"
 #include "shadow_fight_2/shadow_fight_2_capture_context1.h"
 #include "slingshot_test1/slingshot_test1_capture_context2.h"
 #include "slingshot_test2/slingshot_test2_capture_context2.h"
 #include "sniper_3d/sniper_3d_capture_context1.h"
 #include "standoff_2/standoff_2_capture_context1.h"
+#include "subway_princess_runner/subway_princess_runner_capture_context2.h"
 #include "subway_surfers/subway_surfers_capture_context1.h"
 #include "summoners_war/summoners_war_capture_context2.h"
 #include "talking_tom_hero_dash/talking_tom_hero_dash_capture_context1.h"
 #include "temple_run_2/temple_run_2_capture_context1.h"
 #include "temple_run_300/temple_run_300_capture_context1.h"
+#include "toon_blast/toon_blast_capture_context2.h"
+#include "township/township_capture_context2.h"
 #include "trex_200/trex_200_capture_context1.h"
 #include "whatsapp/whatsapp_capture_context1.h"
 #include "world_of_tanks_blitz/world_of_tanks_blitz_capture_context1.h"
@@ -131,10 +142,21 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
      {aztec_ruins::kReplayContextClientMajorVersion, aztec_ruins::kReplayContextClientMinorVersion,
       aztec_ruins::kReplayFrameStart, aztec_ruins::kReplayFrameEnd,
       aztec_ruins::kReplayDrawSurfaceWidth, aztec_ruins::kReplayDrawSurfaceHeight, "aztec_ruins"}},
+    {RestrictedTraceID::beach_buggy_racing,
+     {beach_buggy_racing::kReplayContextClientMajorVersion,
+      beach_buggy_racing::kReplayContextClientMinorVersion, beach_buggy_racing::kReplayFrameStart,
+      beach_buggy_racing::kReplayFrameEnd, beach_buggy_racing::kReplayDrawSurfaceWidth,
+      beach_buggy_racing::kReplayDrawSurfaceHeight, "beach_buggy_racing"}},
     {RestrictedTraceID::brawl_stars,
      {brawl_stars::kReplayContextClientMajorVersion, brawl_stars::kReplayContextClientMinorVersion,
       brawl_stars::kReplayFrameStart, brawl_stars::kReplayFrameEnd,
       brawl_stars::kReplayDrawSurfaceWidth, brawl_stars::kReplayDrawSurfaceHeight, "brawl_stars"}},
+    {RestrictedTraceID::bricks_breaker_quest,
+     {bricks_breaker_quest::kReplayContextClientMajorVersion,
+      bricks_breaker_quest::kReplayContextClientMinorVersion,
+      bricks_breaker_quest::kReplayFrameStart, bricks_breaker_quest::kReplayFrameEnd,
+      bricks_breaker_quest::kReplayDrawSurfaceWidth, bricks_breaker_quest::kReplayDrawSurfaceHeight,
+      "bricks_breaker_quest"}},
     {RestrictedTraceID::bubble_shooter,
      {bubble_shooter::kReplayContextClientMajorVersion,
       bubble_shooter::kReplayContextClientMinorVersion, bubble_shooter::kReplayFrameStart,
@@ -194,6 +216,11 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
       command_and_conquer_rivals::kReplayFrameStart, command_and_conquer_rivals::kReplayFrameEnd,
       command_and_conquer_rivals::kReplayDrawSurfaceWidth,
       command_and_conquer_rivals::kReplayDrawSurfaceHeight, "command_and_conquer_rivals"}},
+    {RestrictedTraceID::cookie_run_kingdom,
+     {cookie_run_kingdom::kReplayContextClientMajorVersion,
+      cookie_run_kingdom::kReplayContextClientMinorVersion, cookie_run_kingdom::kReplayFrameStart,
+      cookie_run_kingdom::kReplayFrameEnd, cookie_run_kingdom::kReplayDrawSurfaceWidth,
+      cookie_run_kingdom::kReplayDrawSurfaceHeight, "cookie_run_kingdom"}},
     {RestrictedTraceID::disney_tsum_tsum,
      {disney_tsum_tsum::kReplayContextClientMajorVersion,
       disney_tsum_tsum::kReplayContextClientMinorVersion, disney_tsum_tsum::kReplayFrameStart,
@@ -239,6 +266,11 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
       fallout_shelter_online::kReplayFrameStart, fallout_shelter_online::kReplayFrameEnd,
       fallout_shelter_online::kReplayDrawSurfaceWidth,
       fallout_shelter_online::kReplayDrawSurfaceHeight, "fallout_shelter_online"}},
+    {RestrictedTraceID::farm_heroes_saga,
+     {farm_heroes_saga::kReplayContextClientMajorVersion,
+      farm_heroes_saga::kReplayContextClientMinorVersion, farm_heroes_saga::kReplayFrameStart,
+      farm_heroes_saga::kReplayFrameEnd, farm_heroes_saga::kReplayDrawSurfaceWidth,
+      farm_heroes_saga::kReplayDrawSurfaceHeight, "farm_heroes_saga"}},
     {RestrictedTraceID::fate_grand_order,
      {fate_grand_order::kReplayContextClientMajorVersion,
       fate_grand_order::kReplayContextClientMinorVersion, fate_grand_order::kReplayFrameStart,
@@ -257,6 +289,11 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
       gardenscapes::kReplayContextClientMinorVersion, gardenscapes::kReplayFrameStart,
       gardenscapes::kReplayFrameEnd, gardenscapes::kReplayDrawSurfaceWidth,
       gardenscapes::kReplayDrawSurfaceHeight, "gardenscapes"}},
+    {RestrictedTraceID::genshin_impact,
+     {genshin_impact::kReplayContextClientMajorVersion,
+      genshin_impact::kReplayContextClientMinorVersion, genshin_impact::kReplayFrameStart,
+      genshin_impact::kReplayFrameEnd, genshin_impact::kReplayDrawSurfaceWidth,
+      genshin_impact::kReplayDrawSurfaceHeight, "genshin_impact"}},
     {RestrictedTraceID::google_maps,
      {google_maps::kReplayContextClientMajorVersion, google_maps::kReplayContextClientMinorVersion,
       google_maps::kReplayFrameStart, google_maps::kReplayFrameEnd,
@@ -339,6 +376,11 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
       manhattan_31::kReplayContextClientMinorVersion, manhattan_31::kReplayFrameStart,
       manhattan_31::kReplayFrameEnd, manhattan_31::kReplayDrawSurfaceWidth,
       manhattan_31::kReplayDrawSurfaceHeight, "manhattan_31"}},
+    {RestrictedTraceID::mario_kart_tour,
+     {mario_kart_tour::kReplayContextClientMajorVersion,
+      mario_kart_tour::kReplayContextClientMinorVersion, mario_kart_tour::kReplayFrameStart,
+      mario_kart_tour::kReplayFrameEnd, mario_kart_tour::kReplayDrawSurfaceWidth,
+      mario_kart_tour::kReplayDrawSurfaceHeight, "mario_kart_tour"}},
     {RestrictedTraceID::marvel_contest_of_champions,
      {marvel_contest_of_champions::kReplayContextClientMajorVersion,
       marvel_contest_of_champions::kReplayContextClientMinorVersion,
@@ -373,6 +415,10 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
       plants_vs_zombies_2::kReplayContextClientMinorVersion, plants_vs_zombies_2::kReplayFrameStart,
       plants_vs_zombies_2::kReplayFrameEnd, plants_vs_zombies_2::kReplayDrawSurfaceWidth,
       plants_vs_zombies_2::kReplayDrawSurfaceHeight, "plants_vs_zombies_2"}},
+    {RestrictedTraceID::pokemon_go,
+     {pokemon_go::kReplayContextClientMajorVersion, pokemon_go::kReplayContextClientMinorVersion,
+      pokemon_go::kReplayFrameStart, pokemon_go::kReplayFrameEnd,
+      pokemon_go::kReplayDrawSurfaceWidth, pokemon_go::kReplayDrawSurfaceHeight, "pokemon_go"}},
     {RestrictedTraceID::professional_baseball_spirits,
      {professional_baseball_spirits::kReplayContextClientMajorVersion,
       professional_baseball_spirits::kReplayContextClientMinorVersion,
@@ -434,6 +480,12 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
       saint_seiya_awakening::kReplayFrameStart, saint_seiya_awakening::kReplayFrameEnd,
       saint_seiya_awakening::kReplayDrawSurfaceWidth,
       saint_seiya_awakening::kReplayDrawSurfaceHeight, "saint_seiya_awakening"}},
+    {RestrictedTraceID::sakura_school_simulator,
+     {sakura_school_simulator::kReplayContextClientMajorVersion,
+      sakura_school_simulator::kReplayContextClientMinorVersion,
+      sakura_school_simulator::kReplayFrameStart, sakura_school_simulator::kReplayFrameEnd,
+      sakura_school_simulator::kReplayDrawSurfaceWidth,
+      sakura_school_simulator::kReplayDrawSurfaceHeight, "sakura_school_simulator"}},
     {RestrictedTraceID::shadow_fight_2,
      {shadow_fight_2::kReplayContextClientMajorVersion,
       shadow_fight_2::kReplayContextClientMinorVersion, shadow_fight_2::kReplayFrameStart,
@@ -457,6 +509,12 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
      {standoff_2::kReplayContextClientMajorVersion, standoff_2::kReplayContextClientMinorVersion,
       standoff_2::kReplayFrameStart, standoff_2::kReplayFrameEnd,
       standoff_2::kReplayDrawSurfaceWidth, standoff_2::kReplayDrawSurfaceHeight, "standoff_2"}},
+    {RestrictedTraceID::subway_princess_runner,
+     {subway_princess_runner::kReplayContextClientMajorVersion,
+      subway_princess_runner::kReplayContextClientMinorVersion,
+      subway_princess_runner::kReplayFrameStart, subway_princess_runner::kReplayFrameEnd,
+      subway_princess_runner::kReplayDrawSurfaceWidth,
+      subway_princess_runner::kReplayDrawSurfaceHeight, "subway_princess_runner"}},
     {RestrictedTraceID::subway_surfers,
      {subway_surfers::kReplayContextClientMajorVersion,
       subway_surfers::kReplayContextClientMinorVersion, subway_surfers::kReplayFrameStart,
@@ -483,6 +541,14 @@ constexpr angle::PackedEnumMap<RestrictedTraceID, TraceInfo> kTraceInfos = {
       temple_run_300::kReplayContextClientMinorVersion, temple_run_300::kReplayFrameStart,
       temple_run_300::kReplayFrameEnd, temple_run_300::kReplayDrawSurfaceWidth,
       temple_run_300::kReplayDrawSurfaceHeight, "temple_run_300"}},
+    {RestrictedTraceID::toon_blast,
+     {toon_blast::kReplayContextClientMajorVersion, toon_blast::kReplayContextClientMinorVersion,
+      toon_blast::kReplayFrameStart, toon_blast::kReplayFrameEnd,
+      toon_blast::kReplayDrawSurfaceWidth, toon_blast::kReplayDrawSurfaceHeight, "toon_blast"}},
+    {RestrictedTraceID::township,
+     {township::kReplayContextClientMajorVersion, township::kReplayContextClientMinorVersion,
+      township::kReplayFrameStart, township::kReplayFrameEnd, township::kReplayDrawSurfaceWidth,
+      township::kReplayDrawSurfaceHeight, "township"}},
     {RestrictedTraceID::trex_200,
      {trex_200::kReplayContextClientMajorVersion, trex_200::kReplayContextClientMinorVersion,
       trex_200::kReplayFrameStart, trex_200::kReplayFrameEnd, trex_200::kReplayDrawSurfaceWidth,

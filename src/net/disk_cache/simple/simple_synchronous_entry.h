@@ -46,6 +46,7 @@ NET_EXPORT_PRIVATE extern const char
 NET_EXPORT_PRIVATE int GetSimpleCachePrefetchSize();
 
 class SimpleSynchronousEntry;
+struct RangeResult;
 
 // This class handles the passing of data about the entry between
 // SimpleEntryImplementation and SimpleSynchronousEntry and the computation of
@@ -142,15 +143,10 @@ class SimpleSynchronousEntry {
   };
 
   struct ReadResult {
-    ReadResult()
-        : crc_updated(false),
-          crc_performed_verify(false),
-          crc_verify_ok(false) {}
+    ReadResult() : crc_updated(false) {}
     int result;
     uint32_t updated_crc32;  // only relevant if crc_updated set
     bool crc_updated;
-    bool crc_performed_verify;  // only relevant if crc_updated set
-    bool crc_verify_ok;         // only relevant if crc_updated set
   };
 
   struct WriteRequest {
@@ -269,8 +265,7 @@ class SimpleSynchronousEntry {
                        SimpleEntryStat* out_entry_stat,
                        int* out_result);
   void GetAvailableRange(const SparseRequest& in_entry_op,
-                         int64_t* out_start,
-                         int* out_result);
+                         RangeResult* out_result);
 
   // Close all streams, and add write EOF records to streams indicated by the
   // CRCRecord entries in |crc32s_to_write|.

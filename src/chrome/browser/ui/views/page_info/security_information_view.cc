@@ -7,12 +7,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
 #include "components/page_info/features.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
@@ -58,6 +59,8 @@ SecurityInformationView::SecurityInformationView(int side_margin) {
     // labels after more UI is implemented.
     security_summary_label->SetTextContext(
         views::style::CONTEXT_DIALOG_BODY_TEXT);
+    security_summary_label->SetID(
+        PageInfoViewFactory::VIEW_ID_PAGE_INFO_SECURITY_SUMMARY_LABEL);
     security_summary_label_ =
         layout->AddView(std::move(security_summary_label), 1.0, 1.0,
                         views::GridLayout::FILL, views::GridLayout::LEADING);
@@ -72,6 +75,8 @@ SecurityInformationView::SecurityInformationView(int side_margin) {
 
   start_secondary_row();
   auto security_details_label = std::make_unique<views::StyledLabel>();
+  security_details_label->SetID(
+      PageInfoViewFactory::VIEW_ID_PAGE_INFO_SECURITY_DETAILS_LABEL);
   security_details_label_ =
       layout->AddView(std::move(security_details_label), 1.0, 1.0,
                       views::GridLayout::FILL, views::GridLayout::LEADING);
@@ -218,13 +223,13 @@ void SecurityInformationView::AddPasswordReuseButtons(
         l10n_util::GetStringUTF16(change_password_template));
     change_password_button->SetProminent(true);
     change_password_button->SetID(
-        PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
+        PageInfoViewFactory::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
   }
   auto allowlist_password_reuse_button = std::make_unique<views::MdTextButton>(
       password_reuse_callback,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_ALLOWLIST_PASSWORD_REUSE_BUTTON));
   allowlist_password_reuse_button->SetID(
-      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_ALLOWLIST_PASSWORD_REUSE);
+      PageInfoViewFactory::VIEW_ID_PAGE_INFO_BUTTON_ALLOWLIST_PASSWORD_REUSE);
 
   int kSpacingBetweenButtons = 8;
   int change_password_button_size =
@@ -237,9 +242,12 @@ void SecurityInformationView::AddPasswordReuseButtons(
       (password_reuse_button_container_->width() - kSpacingBetweenButtons) >=
       (change_password_button_size +
        allowlist_password_reuse_button->CalculatePreferredSize().width());
+  bool is_page_info_v2 =
+      base::FeatureList::IsEnabled(page_info::kPageInfoV2Desktop);
   auto layout = std::make_unique<views::BoxLayout>(
-      can_fit_in_one_line ? views::BoxLayout::Orientation::kHorizontal
-                          : views::BoxLayout::Orientation::kVertical,
+      can_fit_in_one_line || is_page_info_v2
+          ? views::BoxLayout::Orientation::kHorizontal
+          : views::BoxLayout::Orientation::kVertical,
       gfx::Insets(), kSpacingBetweenButtons);
   // Make buttons left-aligned. For RTL languages, buttons will automatically
   // become right-aligned.

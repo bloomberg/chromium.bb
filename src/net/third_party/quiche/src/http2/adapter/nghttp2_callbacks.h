@@ -13,6 +13,13 @@ namespace callbacks {
 // beginning of its lifetime. It is expected that |user_data| holds an
 // Http2VisitorInterface.
 
+// Callback once the library is ready to send serialized frames.
+ssize_t OnReadyToSend(nghttp2_session* session,
+                      const uint8_t* data,
+                      size_t length,
+                      int flags,
+                      void* user_data);
+
 // Callback once a frame header has been received.
 int OnBeginFrame(nghttp2_session* session, const nghttp2_frame_hd* header,
                  void* user_data);
@@ -31,7 +38,19 @@ int OnHeader(nghttp2_session* session, const nghttp2_frame* frame,
              nghttp2_rcbuf* name, nghttp2_rcbuf* value, uint8_t flags,
              void* user_data);
 
-// Callback once a chunk of data (from a DATA frame payload) has been received.
+// Invoked immediately before sending a frame.
+int OnBeforeFrameSent(nghttp2_session* session, const nghttp2_frame* frame,
+                      void* user_data);
+
+// Invoked immediately after a frame is sent.
+int OnFrameSent(nghttp2_session* session, const nghttp2_frame* frame,
+                void* user_data);
+
+// Invoked when an invalid frame is received.
+int OnInvalidFrameReceived(nghttp2_session* session, const nghttp2_frame* frame,
+                           int lib_error_code, void* user_data);
+
+// Invoked when a chunk of data (from a DATA frame payload) has been received.
 int OnDataChunk(nghttp2_session* session, uint8_t flags,
                 Http2StreamId stream_id, const uint8_t* data, size_t len,
                 void* user_data);
@@ -40,13 +59,25 @@ int OnDataChunk(nghttp2_session* session, uint8_t flags,
 int OnStreamClosed(nghttp2_session* session, Http2StreamId stream_id,
                    uint32_t error_code, void* user_data);
 
-// Callback once nghttp2 is ready to read data from |source| into |dest_buffer|.
-ssize_t OnReadyToReadDataForStream(nghttp2_session* session,
-                                   Http2StreamId stream_id,
-                                   uint8_t* dest_buffer, size_t max_length,
-                                   uint32_t* data_flags,
-                                   nghttp2_data_source* source,
-                                   void* user_data);
+// Invoked when nghttp2 has a chunk of extension frame data to pass to the
+// application.
+int OnExtensionChunkReceived(nghttp2_session* session,
+                             const nghttp2_frame_hd* hd, const uint8_t* data,
+                             size_t len, void* user_data);
+
+// Invoked when nghttp2 wants the application to unpack an extension payload.
+int OnUnpackExtensionCallback(nghttp2_session* session, void** payload,
+                              const nghttp2_frame_hd* hd, void* user_data);
+
+// Invoked when nghttp2 is ready to pack an extension payload. Returns the
+// number of bytes serialized to |buf|.
+ssize_t OnPackExtensionCallback(nghttp2_session* session, uint8_t* buf,
+                                size_t len, const nghttp2_frame* frame,
+                                void* user_data);
+
+// Invoked when the library has an error message to deliver.
+int OnError(nghttp2_session* session, int lib_error_code, const char* msg,
+            size_t len, void* user_data);
 
 nghttp2_session_callbacks_unique_ptr Create();
 

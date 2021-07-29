@@ -10,16 +10,15 @@
 #include <objidl.h>
 #include <shellapi.h>
 #include <shlobj.h>
+#include <cstdint>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/check_op.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -40,7 +39,6 @@
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
@@ -56,7 +54,8 @@ class AnonymousImpersonator {
   AnonymousImpersonator() {
     must_revert_ = ::ImpersonateAnonymousToken(::GetCurrentThread());
   }
-
+  AnonymousImpersonator(const AnonymousImpersonator&) = delete;
+  AnonymousImpersonator& operator=(const AnonymousImpersonator&) = delete;
   ~AnonymousImpersonator() {
     if (must_revert_)
       ::RevertToSelf();
@@ -64,7 +63,6 @@ class AnonymousImpersonator {
 
  private:
   BOOL must_revert_;
-  DISALLOW_COPY_AND_ASSIGN(AnonymousImpersonator);
 };
 
 // A scoper to manage acquiring and automatically releasing the clipboard.
@@ -225,10 +223,6 @@ void TrimAfterNull(StringType* result) {
 }
 
 bool ReadFilenamesAvailable() {
-  // Only support filenames if chrome://flags#clipboard-filenames is enabled.
-  if (!base::FeatureList::IsEnabled(features::kClipboardFilenames))
-    return false;
-
   return ::IsClipboardFormatAvailable(
              ClipboardFormatType::GetCFHDropType().ToFormatEtc().cfFormat) ||
          ::IsClipboardFormatAvailable(
@@ -276,6 +270,17 @@ bool ClipboardWin::IsFormatAvailable(
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   if (format == ClipboardFormatType::GetFilenameType())
     return ReadFilenamesAvailable();
+  // Chrome can retrieve an image from the clipboard as either a bitmap or PNG.
+  if (format == ClipboardFormatType::GetPngType() ||
+      format == ClipboardFormatType::GetBitmapType()) {
+    return ::IsClipboardFormatAvailable(
+               ClipboardFormatType::GetPngType().ToFormatEtc().cfFormat) !=
+               FALSE ||
+           ::IsClipboardFormatAvailable(
+               ClipboardFormatType::GetBitmapType().ToFormatEtc().cfFormat) !=
+               FALSE;
+  }
+
   return ::IsClipboardFormatAvailable(format.ToFormatEtc().cfFormat) != FALSE;
 }
 
@@ -346,8 +351,11 @@ ClipboardWin::ReadAvailablePlatformSpecificFormatNames(
   cf_format = ::EnumClipboardFormats(cf_format);
   while (cf_format) {
     std::string type_name = ClipboardFormatType(cf_format).GetName();
+    // Search for custom types if we couldn't find a standard format.
+    if (type_name.empty())
+      type_name = ClipboardFormatType(cf_format).GetCustomPlatformName();
     if (!type_name.empty())
-      types.push_back(base::UTF8ToUTF16(type_name));
+      types.push_back(base::ASCIIToUTF16(type_name));
     cf_format = ::EnumClipboardFormats(cf_format);
   }
   return types;
@@ -505,8 +513,16 @@ void ClipboardWin::ReadRTF(ClipboardBuffer buffer,
 void ClipboardWin::ReadPng(ClipboardBuffer buffer,
                            const DataTransferEndpoint* data_dst,
                            ReadPngCallback callback) const {
-  // TODO(crbug.com/1201018): Implement this.
-  NOTIMPLEMENTED();
+  RecordRead(ClipboardFormatMetric::kPng);
+  std::vector<uint8_t> data = ReadPngInternal(buffer);
+  // On Windows, PNG and bitmap are separate formats. Read PNG if possible,
+  // otherwise fall back to reading as a bitmap.
+  if (data.empty()) {
+    SkBitmap bitmap = ReadImageInternal(buffer);
+    gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, /*discard_transparency=*/false,
+                                      &data);
+  }
+  std::move(callback).Run(data);
 }
 
 // |data_dst| is not used. It's only passed to be consistent with other
@@ -666,37 +682,19 @@ void ClipboardWin::ReadData(const ClipboardFormatType& format,
 
 // |data_src| is not used. It's only passed to be consistent with other
 // platforms.
-void ClipboardWin::WritePortableRepresentations(
+void ClipboardWin::WritePortableAndPlatformRepresentations(
     ClipboardBuffer buffer,
     const ObjectMap& objects,
-    std::unique_ptr<DataTransferEndpoint> data_src) {
-  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
-
-  ScopedClipboard clipboard;
-  if (!clipboard.Acquire(GetClipboardWindow()))
-    return;
-
-  ::EmptyClipboard();
-
-  for (const auto& object : objects)
-    DispatchPortableRepresentation(object.first, object.second);
-}
-
-// |data_src| is not used. It's only passed to be consistent with other
-// platforms.
-void ClipboardWin::WritePlatformRepresentations(
-    ClipboardBuffer buffer,
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
     std::unique_ptr<DataTransferEndpoint> data_src) {
-  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
-
   ScopedClipboard clipboard;
   if (!clipboard.Acquire(GetClipboardWindow()))
     return;
-
   ::EmptyClipboard();
 
   DispatchPlatformRepresentations(std::move(platform_representations));
+  for (const auto& object : objects)
+    DispatchPortableRepresentation(object.first, object.second);
 }
 
 void ClipboardWin::WriteText(const char* text_data, size_t text_len) {
@@ -799,6 +797,26 @@ void ClipboardWin::WriteData(const ClipboardFormatType& format,
   WriteToClipboard(format, hdata);
 }
 
+std::vector<uint8_t> ClipboardWin::ReadPngInternal(
+    ClipboardBuffer buffer) const {
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
+
+  // Acquire the clipboard.
+  ScopedClipboard clipboard;
+  if (!clipboard.Acquire(GetClipboardWindow()))
+    return std::vector<uint8_t>();
+
+  HANDLE data = ::GetClipboardData(
+      ClipboardFormatType::GetPngType().ToFormatEtc().cfFormat);
+
+  if (!data)
+    return std::vector<uint8_t>();
+
+  std::string result(static_cast<const char*>(::GlobalLock(data)),
+                     ::GlobalSize(data));
+  ::GlobalUnlock(data);
+  return std::vector<uint8_t>(result.begin(), result.end());
+}
 
 SkBitmap ClipboardWin::ReadImageInternal(ClipboardBuffer buffer) const {
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);

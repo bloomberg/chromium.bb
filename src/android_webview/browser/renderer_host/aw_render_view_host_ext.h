@@ -71,7 +71,6 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   // Sets the initial page scale. This overrides initial scale set by
   // the meta viewport tag.
   void SetInitialPageScale(double page_scale_factor);
-  void SetBackgroundColor(SkColor c);
   void SetWillSuppressErrorPage(bool suppress);
 
   void SmoothScroll(int target_x, int target_y, base::TimeDelta duration);
@@ -99,8 +98,6 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
 
   AwRenderViewHostExtClient* client_;
 
-  SkColor background_color_;
-
   // Authoritative copy of hit test data on the browser side. This is updated
   // as a result of DoHitTest called explicitly or when the FocusedNodeChanged
   // is called in AwRenderViewExt.
@@ -111,7 +108,7 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   // Some WebView users might want to show their own error pages / logic.
   bool will_suppress_error_page_ = false;
 
-  content::GlobalFrameRoutingId main_frame_global_id_;
+  content::GlobalRenderFrameHostId main_frame_global_id_;
 
   content::WebContentsFrameReceiverSet<mojom::FrameHost> frame_host_receivers_;
 

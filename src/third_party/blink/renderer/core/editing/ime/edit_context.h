@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_IME_EDIT_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_IME_EDIT_CONTEXT_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/platform/web_text_input_mode.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
@@ -176,6 +175,11 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
   // For English typing.
   bool InsertText(const WebString& text);
 
+  void DeleteBackward();
+  void DeleteForward();
+  void DeleteWordBackward();
+  void DeleteWordForward();
+
   bool IsVirtualKeyboardPolicyManual() const override;
   bool IsEditContextActive() const override;
   // Returns whether show()/hide() API is called from virtualkeyboard or not.
@@ -199,6 +203,8 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
   WebTextInputMode GetInputModeOfEditContext() const;
 
   InputMethodController& GetInputMethodController() const;
+
+  void DeleteCurrentSelection();
 
   // Events fired to JS.
   // Fires compositionstart event to JS whenever user starts a composition.

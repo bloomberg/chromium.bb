@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as dom from '../../../dom.js';
+import {I18nString} from '../../../i18n_string.js';
 import {speak} from '../../../toast.js';
 
 /**
@@ -32,6 +33,20 @@ export class RecordTime {
      * @private
      */
     this.ticks_ = 0;
+
+    /**
+     * The timestamp when the recording starts.
+     * @type {number}
+     * @private
+     */
+    this.startTimestamp_ = 0;
+
+    /**
+     * The total duration of the recording in milliseconds.
+     * @type {number}
+     * @private
+     */
+    this.totalDuration_ = 0;
   }
 
   /**
@@ -61,6 +76,7 @@ export class RecordTime {
   start({resume}) {
     if (!resume) {
       this.ticks_ = 0;
+      this.totalDuration_ = 0;
     }
     this.update_(this.ticks_);
     this.recordTime_.hidden = false;
@@ -69,25 +85,42 @@ export class RecordTime {
       this.ticks_++;
       this.update_(this.ticks_);
     }, 1000);
+
+    this.startTimestamp_ = performance.now();
   }
 
   /**
    * Stops counting and showing the elapsed recording time.
    * @param {{pause: boolean}} param If the time count is paused temporarily.
-   * @return {number} Recorded time in 1 minute buckets.
    */
   stop({pause}) {
-    speak('status_msg_recording_stopped');
+    speak(I18nString.STATUS_MSG_RECORDING_STOPPED);
     if (this.tickTimeout_) {
       clearInterval(this.tickTimeout_);
       this.tickTimeout_ = null;
     }
-    const mins = Math.ceil(this.ticks_ / 60);
     if (!pause) {
       this.ticks_ = 0;
       this.recordTime_.hidden = true;
       this.update_(0);
     }
-    return mins;
+
+    this.totalDuration_ += performance.now() - this.startTimestamp_;
+  }
+
+  /**
+   * Returns the recorded duration in minutes.
+   * @return {number}
+   */
+  inMinutes() {
+    return Math.ceil(this.totalDuration_ / 1000 / 60);
+  }
+
+  /**
+   * Returns the recorded duration in milliseconds.
+   * @return {number}
+   */
+  inMilliseconds() {
+    return this.totalDuration_;
   }
 }

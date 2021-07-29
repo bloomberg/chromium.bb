@@ -13,6 +13,8 @@
 #include "base/time/time.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 
+class DeviceOAuth2TokenService;
+
 namespace policy {
 
 // Remote command that would start Chrome Remote Desktop host and return auth
@@ -26,8 +28,8 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
     // Failed as required services are not launched on the device.
     FAILURE_SERVICES_NOT_READY = 1,
 
-    // Failed as device is not running in Kiosk mode.
-    FAILURE_NOT_A_KIOSK = 2,
+    // Failure as the current user type does not support remotely starting CRD.
+    FAILURE_UNSUPPORTED_USER_TYPE = 2,
 
     // Failed as device is currently in use and no interruptUser flag is set.
     FAILURE_NOT_IDLE = 3,
@@ -36,7 +38,7 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
     FAILURE_NO_OAUTH_TOKEN = 4,
 
     // Failed as we could not get ICE configuration for whatever reason.
-    FAILURE_NO_ICE_CONFIG = 5,
+    // deprecated FAILURE_NO_ICE_CONFIG = 5,
 
     // Failure during attempt to start CRD host and obtain CRD token.
     FAILURE_CRD_HOST_ERROR = 6,
@@ -47,11 +49,18 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
   using ErrorCallback =
       base::OnceCallback<void(ResultCode, const std::string&)>;
 
-  // A delegate interface used by DeviceCommandStartCRDSessionJob to retrieve
-  // its dependencies.
+  // Delegate that will start a session with the CRD native host.
   class Delegate {
    public:
-    virtual ~Delegate() {}
+    // Session parameters used to start the CRD host.
+    struct SessionParameters {
+      std::string oauth_token = "";
+      std::string user_name = "";
+      bool terminate_upon_input = false;
+      bool show_confirmation_dialog = false;
+    };
+
+    virtual ~Delegate() = default;
 
     // Check if there exists an active CRD session.
     virtual bool HasActiveSession() const = 0;
@@ -59,22 +68,8 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
     // Run |callback| once active CRD session is terminated.
     virtual void TerminateSession(base::OnceClosure callback) = 0;
 
-    // Check if required system services are ready.
-    virtual bool AreServicesReady() const = 0;
-
-    // Check if device is running an auto-launched Kiosk.
-    virtual bool IsRunningKiosk() const = 0;
-
-    // Return current user idleness period.
-    virtual base::TimeDelta GetIdlenessPeriod() const = 0;
-
-    // Attempts to get OAuth token for CRD Host.
-    virtual void FetchOAuthToken(OAuthTokenCallback success_callback,
-                                 ErrorCallback error_callback) = 0;
-
     // Attempts to start CRD host and get Auth Code.
-    virtual void StartCRDHostAndGetCode(const std::string& oauth_token,
-                                        bool terminate_upon_input,
+    virtual void StartCRDHostAndGetCode(const SessionParameters& parameters,
                                         AccessCodeCallback success_callback,
                                         ErrorCallback error_callback) = 0;
   };
@@ -85,6 +80,10 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
   // RemoteCommandJob:
   enterprise_management::RemoteCommand_Type GetType() const override;
 
+  // Set a Fake OAuth token that will be used once the next time we need to
+  // fetch an oauth token.
+  void SetOAuthTokenForTest(const std::string& token);
+
  protected:
   // RemoteCommandJob:
   bool ParseCommandPayload(const std::string& command_payload) override;
@@ -93,13 +92,44 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
   void TerminateImpl() override;
 
  private:
+  class OAuthTokenFetcher;
   class ResultPayload;
+
+  enum class UserType {
+    kAutoLaunchedKiosk,
+    kNonAutoLaunchedKiosk,
+    kNoUser,
+    kAffiliatedUser,
+    kManagedGuestSession,
+    kOther,
+  };
+  const char* UserTypeToString(UserType value) const;
+
+  // Check if all required system services (singletons) are ready.
+  bool AreServicesReady() const;
+  bool UserTypeSupportsCRD() const;
+  UserType GetUserType() const;
+  bool IsRunningAutoLaunchedKiosk() const;
+  bool IsDeviceIdle() const;
+  base::TimeDelta GetDeviceIdlenessPeriod() const;
+
+  void FetchOAuthTokenASync(OAuthTokenCallback on_success,
+                            ErrorCallback on_error);
 
   // Finishes command with error code and optional message.
   void FinishWithError(ResultCode result_code, const std::string& message);
+  void FinishWithNotIdleError();
 
   void OnOAuthTokenReceived(const std::string& token);
   void OnAccessCodeReceived(const std::string& access_code);
+
+  std::string GetRobotAccountUserName() const;
+
+  bool ShouldShowConfirmationDialog() const;
+
+  DeviceOAuth2TokenService* oauth_service() const;
+
+  std::unique_ptr<OAuthTokenFetcher> oauth_token_fetcher_;
 
   // The callback that will be called when the access code was successfully
   // obtained.
@@ -117,13 +147,15 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
   // user.
   bool terminate_upon_input_ = false;
 
-  std::string oauth_token_;
+  // Fake OAuth token that will be used once the next time we need to fetch an
+  // oauth token.
+  absl::optional<std::string> oauth_token_for_test_;
 
   // The Delegate is used to interact with chrome services and CRD host.
   // Owned by DeviceCommandsFactoryChromeOS.
   Delegate* delegate_;
 
-  bool terminate_session_attemtpted_;
+  bool terminate_session_attempted_ = false;
 
   base::WeakPtrFactory<DeviceCommandStartCRDSessionJob> weak_factory_{this};
 

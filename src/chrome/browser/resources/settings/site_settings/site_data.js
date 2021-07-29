@@ -20,19 +20,18 @@ import './site_data_entry.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
-import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ListPropertyUpdateBehavior, ListPropertyUpdateBehaviorInterface} from 'chrome://resources/js/list_property_update_behavior.m.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, microTask, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {GlobalScrollTargetBehavior, GlobalScrollTargetBehaviorImpl} from '../global_scroll_target_behavior.js';
+import {BaseMixin, BaseMixinInterface} from '../base_mixin.js';
+import {GlobalScrollTargetMixin} from '../global_scroll_target_mixin.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
 import {routes} from '../route.js';
 import {Route, RouteObserverBehavior, Router} from '../router.js';
 
 import {LocalDataBrowserProxy, LocalDataBrowserProxyImpl, LocalDataItem} from './local_data_browser_proxy.js';
-import {SiteSettingsBehavior} from './site_settings_behavior.js';
 
 /**
  * @typedef {{
@@ -43,81 +42,93 @@ import {SiteSettingsBehavior} from './site_settings_behavior.js';
  */
 let CookieRemovePacket;
 
-Polymer({
-  is: 'site-data',
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {ListPropertyUpdateBehaviorInterface}
+ * @implements {BaseMixinInterface}
+ * @implements {WebUIListenerBehaviorInterface}
+ */
+const SiteDataElementBase = mixinBehaviors(
+    [ListPropertyUpdateBehavior, WebUIListenerBehavior],
+    GlobalScrollTargetMixin(BaseMixin(PolymerElement)));
 
-  _template: html`{__html_template__}`,
+/** @polymer */
+class SiteDataElement extends SiteDataElementBase {
+  static get is() {
+    return 'site-data';
+  }
 
-  behaviors: [
-    I18nBehavior,
-    ListPropertyUpdateBehavior,
-    GlobalScrollTargetBehavior,
-    WebUIListenerBehavior,
-  ],
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-  properties: {
-    /**
-     * The current filter applied to the cookie data list.
-     */
-    filter: {
-      observer: 'onFilterChanged_',
-      notify: true,
-      type: String,
-    },
-
-    /** @type {!Map<string, (string|Function)>} */
-    focusConfig: {
-      type: Object,
-      observer: 'focusConfigChanged_',
-    },
-
-    isLoading_: Boolean,
-
-    /** @type {!Array<!LocalDataItem>} */
-    sites: {
-      type: Array,
-      value() {
-        return [];
+  static get properties() {
+    return {
+      /**
+       * The current filter applied to the cookie data list.
+       */
+      filter: {
+        observer: 'onFilterChanged_',
+        notify: true,
+        type: String,
       },
-    },
+
+      /** @type {!Map<string, (string|Function)>} */
+      focusConfig: {
+        type: Object,
+        observer: 'focusConfigChanged_',
+      },
+
+      isLoading_: Boolean,
+
+      /** @type {!Array<!LocalDataItem>} */
+      sites: {
+        type: Array,
+        value() {
+          return [];
+        },
+      },
+
+      /**
+       * GlobalScrollTargetMixin
+       * @override
+       */
+      subpageRoute: {
+        type: Object,
+        value: routes.SITE_SETTINGS_SITE_DATA,
+      },
+
+      /** @private */
+      lastFocused_: Object,
+
+      /** @private */
+      listBlurred_: Boolean,
+    };
+  }
+
+  constructor() {
+    super();
+
+    /** @private {!LocalDataBrowserProxy} */
+    this.browserProxy_ = LocalDataBrowserProxyImpl.getInstance();
 
     /**
-     * GlobalScrollTargetBehavior
-     * @override
+     * When navigating to site data details sub-page, |lastSelected_| holds the
+     * site name as well as the index of the selected site. This is used when
+     * navigating back to site data in order to focus on the correct site.
+     * @private {!{item: !LocalDataItem, index: number}|null}
      */
-    subpageRoute: {
-      type: Object,
-      value: routes.SITE_SETTINGS_SITE_DATA,
-    },
-
-    /** @private */
-    lastFocused_: Object,
-
-    /** @private */
-    listBlurred_: Boolean,
-  },
-
-  /** @private {LocalDataBrowserProxy} */
-  browserProxy_: null,
-
-  /**
-   * When navigating to site data details sub-page, |lastSelected_| holds the
-   * site name as well as the index of the selected site. This is used when
-   * navigating back to site data in order to focus on the correct site.
-   * @private {!{item: !LocalDataItem, index: number}|null}
-   */
-  lastSelected_: null,
-
-  /** @override */
-  created() {
-    this.browserProxy_ = LocalDataBrowserProxyImpl.getInstance();
-  },
+    this.lastSelected_ = null;
+  }
 
   /** @override */
   ready() {
+    super.ready();
+
     this.addWebUIListener(
         'on-tree-item-removed', this.updateSiteList_.bind(this));
-  },
+  }
 
   /**
    * Reload cookies when the site data page is visited.
@@ -128,7 +139,7 @@ Polymer({
    * @protected
    */
   currentRouteChanged(currentRoute, previousRoute) {
-    GlobalScrollTargetBehaviorImpl.currentRouteChanged.call(this, currentRoute);
+    super.currentRouteChanged(currentRoute);
     // Reload cookies on navigation to the site data page from a different
     // page. Avoid reloading on repeated navigations to the same page, as these
     // are likely search queries.
@@ -142,7 +153,7 @@ Polymer({
       ironList.scrollToIndex(0);
       this.browserProxy_.reloadCookies().then(this.updateSiteList_.bind(this));
     }
-  },
+  }
 
   /**
    * @param {!Map<string, (string|Function)>} newConfig
@@ -158,7 +169,7 @@ Polymer({
     // element, with additional entries that correspond to subpage trigger
     // elements residing in this element's Shadow DOM.
     if (routes.SITE_SETTINGS_DATA_DETAILS) {
-      const onNavigatedTo = () => this.async(() => {
+      const onNavigatedTo = () => microTask.run(() => {
         if (this.lastSelected_ === null || this.sites.length === 0) {
           return;
         }
@@ -182,7 +193,7 @@ Polymer({
       this.focusConfig.set(
           routes.SITE_SETTINGS_DATA_DETAILS.path, onNavigatedTo);
     }
-  },
+  }
 
   /**
    * @param {number} index
@@ -195,7 +206,7 @@ Polymer({
     const siteToSelect = this.sites[index].site.replace(/[.]/g, '\\.');
     const button = this.$$(`#siteItem_${siteToSelect}`).$$('.subpage-arrow');
     focusWithoutInk(assert(button));
-  },
+  }
 
   /**
    * @param {string} current
@@ -212,7 +223,7 @@ Polymer({
       return;
     }
     this.updateSiteList_();
-  },
+  }
 
   /**
    * Gather all the site data.
@@ -225,7 +236,7 @@ Polymer({
       this.isLoading_ = false;
       this.fire('site-data-list-complete');
     });
-  },
+  }
 
   /**
    * Returns the string to use for the Remove label.
@@ -238,27 +249,27 @@ Polymer({
       return loadTimeData.getString('siteSettingsCookieRemoveAll');
     }
     return loadTimeData.getString('siteSettingsCookieRemoveAllShown');
-  },
+  }
 
   /** @private */
   onCloseDialog_() {
     this.$.confirmDeleteDialog.close();
-  },
+  }
 
   /** @private */
   onCloseThirdPartyDialog_() {
     this.$.confirmDeleteThirdPartyDialog.close();
-  },
+  }
 
   /** @private */
   onConfirmDeleteDialogClosed_() {
     focusWithoutInk(assert(this.$.removeShowingSites));
-  },
+  }
 
   /** @private */
   onConfirmDeleteThirdPartyDialogClosed_() {
     focusWithoutInk(assert(this.$.removeAllThirdPartyCookies));
-  },
+  }
 
   /**
    * Shows a dialog to confirm the deletion of multiple sites.
@@ -268,7 +279,7 @@ Polymer({
   onRemoveShowingSitesTap_(e) {
     e.preventDefault();
     this.$.confirmDeleteDialog.showModal();
-  },
+  }
 
   /**
    * Shows a dialog to confirm the deletion of cookies available
@@ -278,7 +289,7 @@ Polymer({
   onRemoveThirdPartyCookiesTap_(e) {
     e.preventDefault();
     this.$.confirmDeleteThirdPartyDialog.showModal();
-  },
+  }
 
   /**
    * Called when deletion for all showing sites has been confirmed.
@@ -299,7 +310,7 @@ Polymer({
       // We just deleted all items found by the filter, let's reset the filter.
       this.fire('clear-subpage-search');
     }
-  },
+  }
 
   /**
    * Called when deletion of all third-party cookies and site data has been
@@ -311,7 +322,7 @@ Polymer({
     this.browserProxy_.removeAllThirdPartyCookies().then(() => {
       this.updateSiteList_();
     });
-  },
+  }
 
   /**
    * @param {!{model: !{item: !LocalDataItem, index: number}}} event
@@ -326,7 +337,7 @@ Polymer({
         routes.SITE_SETTINGS_DATA_DETAILS,
         new URLSearchParams('site=' + event.model.item.site));
     this.lastSelected_ = event.model;
-  },
+  }
 
   /**
    * @private
@@ -335,5 +346,7 @@ Polymer({
   showRemoveThirdPartyCookies_() {
     return loadTimeData.getBoolean('enableRemovingAllThirdPartyCookies') &&
         this.sites.length > 0 && this.filter.length === 0;
-  },
-});
+  }
+}
+
+customElements.define(SiteDataElement.is, SiteDataElement);

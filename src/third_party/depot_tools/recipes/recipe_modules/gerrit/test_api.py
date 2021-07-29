@@ -32,6 +32,34 @@ class GerritTestApi(recipe_test_api.RecipeTestApi):
     data.update(kwargs)
     return data
 
+  @staticmethod
+  def _related_changes_data(**kwargs):
+    data = {
+        "changes": [{
+            "project": "gerrit",
+            "change_id": "Ic62ae3103fca2214904dbf2faf4c861b5f0ae9b5",
+            "commit": {
+                "commit": "78847477532e386f5a2185a4e8c90b2509e354e3",
+                "parents": [{
+                    "commit": "bb499510bbcdbc9164d96b0dbabb4aa45f59a87e"
+                }],
+                "author": {
+                    "name": "Example Name",
+                    "email": "example@example.com",
+                    "date": "2014-07-12 15:04:24.000000000",
+                    "tz": 120
+                },
+                "subject": "Remove Solr"
+            },
+            "_change_number": 58478,
+            "_revision_number": 2,
+            "_current_revision_number": 2,
+            "status": "NEW"
+        }]
+    }
+    data.update(kwargs)
+    return data
+
   def _make_gerrit_response_json(self, data):
     return self.m.json.output(data)
 
@@ -56,3 +84,6 @@ class GerritTestApi(recipe_test_api.RecipeTestApi):
 
   def get_move_change_response_data(self, **kwargs):
     return self._make_gerrit_response_json([self._gerrit_change_data(**kwargs)])
+
+  def get_related_changes_response_data(self, **kwargs):
+    return self._make_gerrit_response_json(self._related_changes_data(**kwargs))

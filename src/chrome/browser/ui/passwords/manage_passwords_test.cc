@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/interactive_test_utils.h"
 #include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -53,6 +52,9 @@ ManagePasswordsTest::ManagePasswordsTest() {
   password_form_.url = GURL(kTestOrigin);
   password_form_.username_value = kTestUsername;
   password_form_.password_value = u"test_password";
+  password_form_.password_issues =
+      base::flat_map<password_manager::InsecureType,
+                     password_manager::InsecurityMetadata>();
 
   federated_form_.signon_realm =
       "federation://example.com/somelongeroriginurl.com";
@@ -138,6 +140,10 @@ void ManagePasswordsTest::SetupSafeState() {
       password_manager::prefs::kLastTimePasswordCheckCompleted,
       (base::Time::Now() - base::TimeDelta::FromMinutes(1)).ToDoubleT());
   SetupPendingPassword();
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                          ServiceAccessType::IMPLICIT_ACCESS);
+  password_store->AddLogin(password_form_);
   GetController()->SavePassword(password_form_.username_value,
                                 password_form_.password_value);
   GetController()->OnBubbleHidden();
@@ -155,11 +161,12 @@ void ManagePasswordsTest::SetupMoreToFixState() {
       PasswordStoreFactory::GetForProfile(browser()->profile(),
                                           ServiceAccessType::IMPLICIT_ACCESS);
   // This is an unrelated insecure credential that should still be fixed.
-  password_manager::InsecureCredential credential(
-      "https://somesite.com/", kTestUsername, base::Time(),
-      password_manager::InsecureType::kLeaked,
-      password_manager::IsMuted(false));
-  password_store->AddInsecureCredential(credential);
+  password_manager::PasswordForm to_be_fixed = password_form_;
+  to_be_fixed.signon_realm = "https://somesite.com/";
+  to_be_fixed.password_issues->insert({password_manager::InsecureType::kLeaked,
+                                       password_manager::InsecurityMetadata()});
+  password_store->AddLogin(to_be_fixed);
+  password_store->AddLogin(password_form_);
   SetupPendingPassword();
   GetController()->SavePassword(password_form_.username_value,
                                 password_form_.password_value);

@@ -6,7 +6,9 @@
 #define IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_SIGNIN_UTILS_H_
 
 #import <UIKit/UIKit.h>
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 
+class ChromeAccountManagerService;
 class ChromeBrowserState;
 class PrefService;
 
@@ -25,7 +27,7 @@ bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browser_state,
 //   + increases the sign-in promo display count.
 //   + Gaia ids list.
 // Separated out into a discrete function to allow overriding when testing.
-void RecordVersionSeen(PrefService* pref_service,
+void RecordVersionSeen(ChromeAccountManagerService* account_manager_service,
                        const base::Version& current_version);
 
 // Returns a boolean indicating whether browser sign-in is allowed across the
@@ -34,6 +36,10 @@ bool IsSigninAllowed(const PrefService* prefs);
 
 // Returns a boolean indicating whether policy allows browser sign-in.
 bool IsSigninAllowedByPolicy(const PrefService* prefs);
+
+// Returns the current sign-in state of primary identity.
+IdentitySigninState GetPrimaryIdentitySigninState(
+    ChromeBrowserState* browser_state);
 
 }  // namespace signin
 

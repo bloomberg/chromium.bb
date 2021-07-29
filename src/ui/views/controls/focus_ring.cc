@@ -10,22 +10,30 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/theme_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/cascading_property.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
 
+DEFINE_UI_CLASS_PROPERTY_TYPE(views::FocusRing*)
+
 namespace views {
 
 namespace {
+
+DEFINE_UI_CLASS_PROPERTY_KEY(FocusRing*, kFocusRingIdKey, nullptr)
 
 bool IsPathUsable(const SkPath& path) {
   return !path.isEmpty() && (path.isRect(nullptr) || path.isOval(nullptr) ||
@@ -37,8 +45,27 @@ ui::NativeTheme::ColorId ColorIdForValidity(bool valid) {
                : ui::NativeTheme::kColorId_AlertSeverityHigh;
 }
 
+SkColor GetBackgroundColor(View* view) {
+  const absl::optional<SkColor> color =
+      GetCascadingProperty(view, kCascadingBackgroundColor);
+  return color.value_or(view->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_WindowBackground));
+}
+
+SkColor GetColor(View* focus_ring, bool valid) {
+  const SkColor default_color =
+      focus_ring->GetNativeTheme()->GetSystemColor(ColorIdForValidity(valid));
+
+  if (!valid)
+    return default_color;
+
+  return color_utils::PickGoogleColor(
+      default_color, GetBackgroundColor(focus_ring),
+      color_utils::kMinimumVisibleContrastRatio);
+}
+
 double GetCornerRadius() {
-  double thickness = PlatformStyle::kFocusHaloThickness / 2.f;
+  const double thickness = PlatformStyle::kFocusHaloThickness / 2.f;
   return FocusableBorder::kCornerRadiusDp + thickness;
 }
 
@@ -62,17 +89,30 @@ SkPath GetHighlightPathInternal(const View* view) {
 }  // namespace
 
 // static
-FocusRing* FocusRing::Install(View* parent) {
-  if (IsViewClass<Button>(parent)) {
-    // Ensure we don't install dual focus rings on a button.
-    Button* button = static_cast<Button*>(parent);
-    if (button->GetInstallFocusRingOnFocus())
-      button->SetInstallFocusRingOnFocus(false);
-  }
+void FocusRing::Install(View* host) {
+  FocusRing::Remove(host);
   auto ring = base::WrapUnique<FocusRing>(new FocusRing());
   ring->InvalidateLayout();
   ring->SchedulePaint();
-  return parent->AddChildView(std::move(ring));
+  host->SetProperty(kFocusRingIdKey, host->AddChildView(std::move(ring)));
+}
+
+FocusRing* FocusRing::Get(View* host) {
+  return host->GetProperty(kFocusRingIdKey);
+}
+
+const FocusRing* FocusRing::Get(const View* host) {
+  return host->GetProperty(kFocusRingIdKey);
+}
+
+void FocusRing::Remove(View* host) {
+  // Note that the FocusRing is owned by the View hierarchy, so we can't just
+  // clear the key.
+  FocusRing* const focus_ring = FocusRing::Get(host);
+  if (!focus_ring)
+    return;
+  host->RemoveChildViewT(focus_ring);
+  host->ClearProperty(kFocusRingIdKey);
 }
 
 FocusRing::~FocusRing() = default;
@@ -96,11 +136,6 @@ void FocusRing::SetHasFocusPredicate(const ViewPredicate& predicate) {
 
 void FocusRing::SetColor(absl::optional<SkColor> color) {
   color_ = color;
-  SchedulePaint();
-}
-
-void FocusRing::SetShouldPaintFocusAura(bool should_paint_focus_aura) {
-  should_paint_focus_aura_ = should_paint_focus_aura;
   SchedulePaint();
 }
 
@@ -153,26 +188,13 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
     return;
   }
 
-  const SkRRect ring_rect = GetRingRoundRect();
-
-  if (should_paint_focus_aura_) {
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setColor(GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_FocusAuraColor));
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-
-    canvas->sk_canvas()->drawRRect(ring_rect, flags);
-  }
-
   cc::PaintFlags paint;
   paint.setAntiAlias(true);
-  paint.setColor(color_.value_or(
-      GetNativeTheme()->GetSystemColor(ColorIdForValidity(!invalid_))));
+  paint.setColor(color_.value_or(GetColor(this, !invalid_)));
   paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setStrokeWidth(PlatformStyle::kFocusHaloThickness);
 
-  canvas->sk_canvas()->drawRRect(ring_rect, paint);
+  canvas->sk_canvas()->drawRRect(GetRingRoundRect(), paint);
 }
 
 SkRRect FocusRing::GetRingRoundRect() const {

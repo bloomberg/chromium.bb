@@ -10,14 +10,16 @@
 #include "chromeos/services/ime/input_engine.h"
 #include "chromeos/services/ime/public/cpp/shared_lib/interfaces.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "chromeos/services/ime/public/mojom/input_method.mojom.h"
+#include "chromeos/services/ime/public/mojom/input_method_host.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace ime {
-
-// Only used in tests to set a fake `ImeDecoder::EntryPoints`.
-void FakeDecoderEntryPointsForTesting(
-    const ImeDecoder::EntryPoints& decoder_entry_points);
 
 // An enhanced implementation of the basic InputEngine that uses a built-in
 // shared library for handling key events.
@@ -28,28 +30,14 @@ class SystemEngine : public InputEngine {
   SystemEngine& operator=(const SystemEngine&) = delete;
   ~SystemEngine() override;
 
-  // InputEngine overrides:
+  // Binds the mojom::InputMethod interface to this object and returns true if
+  // the given ime_spec is supported by the engine.
   bool BindRequest(const std::string& ime_spec,
-                   mojo::PendingReceiver<mojom::InputChannel> receiver,
-                   mojo::PendingRemote<mojom::InputChannel> remote,
-                   const std::vector<uint8_t>& extra) override;
+                   mojo::PendingReceiver<mojom::InputMethod> receiver,
+                   mojo::PendingRemote<mojom::InputMethodHost> host);
 
-  void ProcessMessage(const std::vector<uint8_t>& message,
-                      ProcessMessageCallback callback) override;
-  void OnInputMethodChanged(const std::string& engine_id) override;
-  void OnFocus(mojom::InputFieldInfoPtr input_field_info) override;
-  void OnBlur() override;
-  void OnKeyEvent(mojom::PhysicalKeyEventPtr event,
-                  OnKeyEventCallback callback) override;
-  void OnSurroundingTextChanged(
-      const std::string& text,
-      uint32_t offset,
-      mojom::SelectionRangePtr selection_range) override;
-  void OnCompositionCanceled() override;
-
-  // Handle the suggestion response returned from a call to
-  // remote->RequestSuggestions().
-  void OnSuggestionsReturned(mojom::SuggestionsResponsePtr response);
+  // InputEngine:
+  bool IsConnected() override;
 
  private:
   // Try to load the decoding functions from some decoder shared library.
@@ -59,24 +47,9 @@ class SystemEngine : public InputEngine {
   // Returns whether the decoder shared library supports this ime_spec.
   bool IsImeSupportedByDecoder(const std::string& ime_spec);
 
-  // Called when there's a reply from the shared library.
-  // Deserializes |message| and converts it into Mojo calls to the receiver.
-  void OnReply(const std::vector<uint8_t>& message,
-               mojo::Remote<mojom::InputChannel>& remote);
-
   ImeCrosPlatform* platform_ = nullptr;
 
   absl::optional<ImeDecoder::EntryPoints> decoder_entry_points_;
-
-  mojo::Receiver<mojom::InputChannel> decoder_channel_receiver_;
-
-  // Whether `decoder_channel_receiver_` is connected.
-  bool is_decoder_receiver_connected_ = false;
-
-  // Sequence ID for protobuf messages sent from the engine.
-  uint64_t current_seq_id_ = 0;
-
-  std::map<uint64_t, OnKeyEventCallback> pending_key_event_callbacks_;
 };
 
 }  // namespace ime

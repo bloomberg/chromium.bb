@@ -4,11 +4,14 @@
 <translation id="1005230401424685968">YYYY</translation>
 <translation id="1013952917065545813">En son kapattığınız sekmeleri yeniden açmak için buraya geri gelebilirsiniz</translation>
 <translation id="1016495303386450659">Öğe güncellendi</translation>
-<translation id="1027850213405719822">Bu işlem senkronizasyonu kapatır.</translation>
 <translation id="1044891598689252897">Siteler normal şekilde çalışır</translation>
 <translation id="1047726139967079566">Bu Sayfaya Yer İşareti Koy...</translation>
 <translation id="1049743911850919806">Gizli mod</translation>
 <translation id="105093091697134113">Aşağıdaki hesaplar, üçüncü taraf kaynaklı veri ihlali nedeniyle açığa çıkan şifreler kullanıyor veya bu hesapların şifreleriyle yanıltıcı bir web sitesine giriş yapılmış. Hesabınızın güvende kalması için bu şifreleri hemen değiştirin.</translation>
+<translation id="105214722824962652">Google Hesaplarınızdaki oturumlarınız kapatılmaz. <ph name="BEGIN_LINK" />Diğer etkinlik biçimleri<ph name="END_LINK" />, oturum açtığınızda Google Hesabınıza kaydedilebilir. Bunları istediğiniz zaman silebilirsiniz.
+
+        
+Arama motorunuz <ph name="DSE_NAME" />. Arama geçmişinizi silmek için arama motorunuzun talimatlarını (varsa) inceleyin.</translation>
 <translation id="1063454504051558093">Diğer Şifreyi Kullan...</translation>
 <translation id="1066060668811609597">Senkronizasyonu yönetin</translation>
 <translation id="1076421457278169141">Kod tarandı</translation>
@@ -51,12 +54,12 @@
 <translation id="1377255359165588604">Senkronizasyonun çalışması durdu.</translation>
 <translation id="1377321085342047638">Kart Numarası</translation>
 <translation id="1383876407941801731">Ara</translation>
-<translation id="1389974829397082527">Burada yer işareti yok</translation>
 <translation id="1400642268715879018">Son 4 Hafta</translation>
 <translation id="1407135791313364759">Tümünü aç</translation>
 <translation id="1430915738399379752">Yazdır</translation>
 <translation id="1449835205994625556">Şifreyi Gizle</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> öğe</translation>
+<translation id="149095475893949513">Bu web sitesi bir yapılandırma profili indirmeye çalışıyor.</translation>
 <translation id="1491277525950327607">Ayarı açıp kapatmak için iki kez dokunun</translation>
 <translation id="1492417797159476138">Bu site için bu kullanıcı adını zaten kaydettiniz</translation>
 <translation id="1509486075633541495">Web sitesinde oturum açın</translation>
@@ -88,7 +91,6 @@
 <translation id="1692118695553449118">Senkronizasyon açık.</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> yer işareti seçildi</translation>
 <translation id="1740468249224277719">Yüklemek için iki kez dokunun.</translation>
-<translation id="1746815479209538200">Web'e göz atmak için yeni bir sekme ekleyin.</translation>
 <translation id="1752547299766512813">Şifreleri Kaydet</translation>
 <translation id="1753905327828125965">En Çok Ziyaret Edilenler</translation>
 <translation id="1803264062614276815">Kart Sahibinin Adı</translation>
@@ -96,6 +98,7 @@
 <translation id="1813414402673211292">Tarama Verilerini Temizle</translation>
 <translation id="1815941218935345331">Şifre kodu</translation>
 <translation id="1820259098641718022">Okuma Listesine eklendi</translation>
+<translation id="1832848789136765277">Senkronize edilen verilerinize her zaman erişebileceğinizden emin olmak için kimliğinizi doğrulayın</translation>
 <translation id="1870148520156231997">Şifreyi Göster</translation>
 <translation id="1872096359983322073">Flaş</translation>
 <translation id="1894205589103145703">Oturum açılırken bir hata oluştu.</translation>
@@ -103,25 +106,24 @@
 <translation id="1923342640370224680">Son Bir Saat</translation>
 <translation id="1941314575388338491">Kopyalamak için iki kez dokunun.</translation>
 <translation id="1952172573699511566">Web siteleri, mümkün olduğunda metni tercih ettiğiniz dilde gösterir.</translation>
-<translation id="1952728750904661634">Yönetilen hesapla oturum açın</translation>
 <translation id="1965935827552890526">Açık olan diğer Chrome pencerenizde yaptığınız işlemi tamamlayın.</translation>
 <translation id="1973912524893600642">Verileri Koru</translation>
 <translation id="1974060860693918893">Gelişmiş</translation>
 <translation id="1989112275319619282">Göz at</translation>
 <translation id="2015722694326466240">Şifreleri görmek için öncelikle cihazınızda bir şifre kodu ayarlamanız gerekir.</translation>
+<translation id="2021670401941426298">Arama geçmişinizi silmek için arama motorunuzun bununla ilgili talimatlarını (varsa) inceleyin.</translation>
 <translation id="2022352537516230970">iPhone'unuz için geliştirildi</translation>
 <translation id="2073572773299281212"><ph name="DAYS" /> Gün Önce Etkindi</translation>
 <translation id="2074131957428911366">Neyin senkronize edileceğini istediğiniz zaman <ph name="BEGIN_LINK" />ayarlardan<ph name="END_LINK" /> seçebilirsiniz.</translation>
 <translation id="2079545284768500474">Geri al</translation>
-<translation id="2086623437239112659">Kayıtlı oturum açma bilgileriniz güncel olmayabilir.</translation>
 <translation id="209018056901015185">Masaüstü Sitesi İste</translation>
 <translation id="2103075008456228677">history.google.com'u aç</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> öğe taşındı</translation>
+<translation id="212623074644302906">Okuma Listesi'ne eklemeyi öner</translation>
 <translation id="2139867232736819575">Kopyalanan Metni Ara</translation>
 <translation id="214201757571129614">Oturum aç…</translation>
 <translation id="2149973817440762519">Yer İşaretini Düzenle</translation>
 <translation id="2175927920773552910">QR Kodu</translation>
-<translation id="2198757192731523470">Google; Arama, reklamlar ve diğer Google hizmetlerini kişiselleştirmek için geçmişinizi kullanabilir</translation>
 <translation id="2218443599109088993">Uzaklaştır</translation>
 <translation id="2230173723195178503">Web sayfası yüklendi</translation>
 <translation id="2239626343334228536">Göz atma verileri temizleniyor...</translation>
@@ -177,6 +179,7 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="2783054063075604403">Bağlantı Oluşturulamadı</translation>
 <translation id="2800683595868705743">Sekme Değiştirici'den Çık</translation>
 <translation id="2815198996063984598">2. Varsayılan Tarayıcı Uygulaması'na dokunun</translation>
+<translation id="2820289420301699633">Yöneticiniz, Chrome üzerinde kontrole sahip ve Chrome'un verilerine ulaşabilir</translation>
 <translation id="2830972654601096923">Adresleri Yönet...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2840687315230832938">İlk Senkronizasyon Kurulumu Tamamlanmadı</translation>
@@ -197,6 +200,7 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="2932085390869194046">Şifre Öner...</translation>
 <translation id="2952581218264071393">1. Chrome Ayarlarını açın</translation>
 <translation id="2958718410589002129">Şifreler</translation>
+<translation id="2961210776189273067">Unvan</translation>
 <translation id="2964349545761222050">Üçüncü Taraf Çerezlerini Engelle</translation>
 <translation id="2969979262385602596">Oturum açılamadı. Daha sonra tekrar deneyin.</translation>
 <translation id="2975121486251958312">Sadece Gizli Mod Kullanılabilir</translation>
@@ -204,6 +208,10 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="298306318844797842">Ödeme Yöntemi Ekle...</translation>
 <translation id="2989805286512600854">Yeni Sekmede Aç</translation>
 <translation id="3037605927509011580">Hay aksi!</translation>
+<translation id="3076846064362030967">Google Hesaplarınızdaki oturumlarınız kapatılmaz. <ph name="BEGIN_LINK" />Diğer etkinlik biçimleri<ph name="END_LINK" />, oturum açtığınızda Google Hesabınıza kaydedilebilir. Bunları istediğiniz zaman silebilirsiniz.
+
+
+Arama geçmişinizi silmek için arama motorunuzun bununla ilgili talimatlarını (varsa) inceleyin.</translation>
 <translation id="3080525922482950719">Sayfaları daha sonra veya çevrimdışı okumak için kaydedebilirsiniz</translation>
 <translation id="3081338492074632642">Kaydettiğiniz şifrenin <ph name="WEBSITE" /> için kullandığınız şifreyle eşleştiğinden emin olun</translation>
 <translation id="3112556859945124369">İşaretle…</translation>
@@ -238,12 +246,12 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="3371831930909698441">Çeviri kullanılabilir. Kullanılabilen seçenekler sayfanın altına yakın bir yerdedir.</translation>
 <translation id="3393920035788932672">İzin Verilen Pop-up'lar</translation>
 <translation id="3399930248910934354">Chrome Ayarlarını Aç</translation>
+<translation id="3404744938087714423">Oturum kapatıldığında senkronizasyon devre dışı kalır.</translation>
 <translation id="3425644765244388016">Kart İçin Takma Ad</translation>
 <translation id="3433057996795775706">Bu şifre kaldırıldığında <ph name="WEBSITE" /> üzerindeki hesabınız silinmez. Başka kişilerin ulaşamaması için <ph name="WEBSITE" /> sitesindeki şifrenizi değiştirin.</translation>
 <translation id="3443810440409579745">Sekme alındı.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> dk.</translation>
 <translation id="3448016392200048164">Bölünmüş Görünüm</translation>
-<translation id="3454224729131972583">Unvan</translation>
 <translation id="345565170154308620">Şifreleri Yönet...</translation>
 <translation id="3469166899695866866">İndirme Durdurulsun mu?</translation>
 <translation id="3470502288861289375">Kopyalanıyor...</translation>
@@ -262,7 +270,6 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="3533436815740441613">Yeni Sekme</translation>
 <translation id="3551320343578183772">Sekmeyi Kapat</translation>
 <translation id="3581564640715911333">Diğer dillerdeki sayfaları çevirmeyi öner</translation>
-<translation id="3588492282865875287">Oturum Kapatılsın mı?</translation>
 <translation id="3588820906588687999">Resmi Yeni Sekmede Aç</translation>
 <translation id="359441731697487922">Varsayılan Tarayıcı Uygulamanız yaparak bağlantıları Chrome'da otomatik bir şekilde açabilirsiniz.
       
@@ -271,6 +278,7 @@ Aşağıdaki adımları uygulayın:</translation>
 <translation id="3607167657931203000">Verileri Otomatik Doldur</translation>
 <translation id="3609785682760573515">Senkronize ediliyor...</translation>
 <translation id="3638472932233958418">Web Sayfalarını Önceden Yükle</translation>
+<translation id="3661160521073045932">Yapılandırma Profili Mevcut</translation>
 <translation id="3670030362669914947">Numara</translation>
 <translation id="3691593122358196899">Yer işareti <ph name="FOLDER_TITLE" /> klasörüne eklendi</translation>
 <translation id="3709582977625132201">Okunmadı Olarak İşaretle</translation>
@@ -302,7 +310,6 @@ Aşağıdaki adımları uygulayın:</translation>
 <translation id="4042870976416480368">Sayfada Bul</translation>
 <translation id="4049507953662678203">Ağ bağlantınız olduğundan emin olun ve tekrar deneyin.</translation>
 <translation id="4079195788735381731">Kuruluşunuz, oturumunuzu kapattı</translation>
-<translation id="4082688844002261427">Tarama geçmişinizin Arama, reklamlar ve diğer hizmetleri kişiselleştirmek için nasıl kullanıldığını kontrol edin</translation>
 <translation id="408404951701638773">Arama çubuğuna artık daha kolay erişilebilir</translation>
 <translation id="411254640334432676">İndirme başarısız oldu.</translation>
 <translation id="4112644173421521737">Ara</translation>
@@ -390,12 +397,14 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="4979397965658815378">Yer işaretleri, şifreler, geçmiş ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için Google Hesabınızla oturum açın.</translation>
 <translation id="5005498671520578047">Şifreyi kopyalayın</translation>
 <translation id="5017828934289857214">Daha Sonra Hatırlat</translation>
+<translation id="5037676449506322593">Tümünü Seç</translation>
 <translation id="5039804452771397117">İzin ver</translation>
 <translation id="5056446788882570708"><ph name="TIME" /> sorunlar bulundu.</translation>
 <translation id="5059136629401106827">Tamam</translation>
 <translation id="5062321486222145940">Google Drive'ı yükle</translation>
 <translation id="5083464117946352670">Dosya boyutu belirlenemiyor.</translation>
 <translation id="5090832849094901128">Bu şifre kaldırıldığında <ph name="WEBSITE" /> üzerindeki hesabınız silinmez.</translation>
+<translation id="5092117651143801290">Sayfaları daha sonra veya çevrimdışı okumak için kaydedebilirsiniz. Chrome, uzun sayfaları kaydetmek isteyip istemediğinizi sorar.</translation>
 <translation id="5094827893301452931">Tweet tamamlandı.</translation>
 <translation id="5118764316110575523">Kapalı</translation>
 <translation id="5127805178023152808">Senkronizasyon kapalı</translation>
@@ -403,6 +412,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5140288047769711648">Chrome bu şifreyi sizin için hatırlar. Sizin şifreyi hatırlamanız gerekmez.</translation>
 <translation id="5150492518600715772">Cihazıma Gönder</translation>
 <translation id="5168414296986405587">iPadOS için geliştirildi</translation>
+<translation id="5173088371991956744">Senkronizasyonun, Kimliğinizi Doğrulaması Gerekiyor</translation>
 <translation id="5181140330217080051">İndiriliyor</translation>
 <translation id="5186185447130319458">Gizli</translation>
 <translation id="5188482106078495165">Çerez ayarlarınız tüm sekmelere uygulanır. Açık bir sekmeye yeni bir ayar uygulamak için sekmeyi yeniden yükleyin.</translation>
@@ -410,6 +420,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5197255632782567636">İnternet</translation>
 <translation id="5210365745912300556">Sekmeyi kapat</translation>
 <translation id="5228579091201413441">Senkronizasyonu etkinleştir</translation>
+<translation id="5232485538978018676">Yönetilen Hesapla Oturum Açın</translation>
 <translation id="5234764350956374838">Kapat</translation>
 <translation id="5245322853195994030">Senkronizasyonu iptal et</translation>
 <translation id="5271549068863921519">Şifreyi kaydet</translation>
@@ -438,6 +449,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve cihazlarınızın aynı iCloud hesabını kullanması gerekir.</translation>
 <translation id="5551897871312988470">Çevirmeyi Öner</translation>
 <translation id="5556459405103347317">Yeniden Yükle</translation>
+<translation id="5580834567471114021">Sonrası için Okuma Listesi'ne eklensin mi?</translation>
 <translation id="5592679540098330836"><ph name="NAME" /> için senkronizasyonu aç</translation>
 <translation id="5614553682702429503">Şifre kaydedilsin mi?</translation>
 <translation id="5626245204502895507">Dosya şu anda indirilemedi.</translation>
@@ -455,7 +467,6 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="5738887413654608789">Bu işlem çevrenizdeki öğelere dayalı olarak ilgili web sayfalarını keşfetmenize olanak sağlar.</translation>
 <translation id="5758631781033351321">Okuma listenizi burada bulabilirsiniz</translation>
 <translation id="5782227691023083829">Çevriliyor...</translation>
-<translation id="5797070761912323120">Google; Arama, reklamlar ve diğer Google hizmetlerini kişiselleştirmek için geçmişinizi kullanabilir</translation>
 <translation id="5803566855766646066">Bu yeni kartı silmek istediğinizden emin misiniz?</translation>
 <translation id="5812974770859303494">Ekle…</translation>
 <translation id="5816228676161003208">Böylece, sesinizi kullanarak daha hızlı arama yapabilirsiniz.</translation>
@@ -493,6 +504,7 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="6059830886158432458">Haberlerinizi ve aktivitenizi buradan yönetin</translation>
 <translation id="6066301408025741299">İptal etmek için hafifçe vurun.</translation>
 <translation id="60829778314739003">Kabul Et ve Devam Et</translation>
+<translation id="6084848228346514841">Sekme Seçin</translation>
 <translation id="6108923351542677676">Kurulum devam ediyor…</translation>
 <translation id="6119050551270742952">Geçerli Web sayfası Gizli modda</translation>
 <translation id="6122191549521593678">Çevrimiçi</translation>
@@ -591,6 +603,7 @@ Gizli moddayken siteler, örneğin reklamları kişiselleştirmek amacıyla fark
 <translation id="681368974849482173">Öğe oluşturuldu</translation>
 <translation id="6830804042318138535">Devamını Oku</translation>
 <translation id="6831043979455480757">Çevir</translation>
+<translation id="6842136130964845393">Kayıtlı şifrelerinize her zaman erişebileceğinizden emin olmak için kimliğinizi doğrulayın</translation>
 <translation id="6851516051005285358">Masaüstü Sitesi İste</translation>
 <translation id="6858855187367714033">Tarandı</translation>
 <translation id="6859944681507688231">QR kodunu veya kredi kartını taramak için ayarlardan kamerayı etkinleştirin.</translation>
@@ -622,6 +635,7 @@ Gizli moddayken siteler, örneğin reklamları kişiselleştirmek amacıyla fark
 <translation id="7108338896283013870">Gizle</translation>
 <translation id="7133798577887235672">Tam Ad</translation>
 <translation id="7136892417564438900">Kamera kullanılamıyor</translation>
+<translation id="7153999225810839758">Okuma süresi <ph name="TIME" /> dakika</translation>
 <translation id="7159472599653637159">Mobil Site İste</translation>
 <translation id="7162168282402939716">Gizli Sekmelerin Kilidini <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /> ile Aç</translation>
 <translation id="7172852049901402487">Şifrelerinizi güvenlik sorunlarına karşı koruyun.</translation>
@@ -651,6 +665,7 @@ Gizli moddayken siteler, örneğin reklamları kişiselleştirmek amacıyla fark
 <translation id="7409985198648820906">Okunmamış <ph name="UNREAD_COUNT" /> makale.</translation>
 <translation id="7412027924265291969">Devam</translation>
 <translation id="7425346204213733349">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızda yaptığınız değişiklikler artık Google Hesabınız ile senkronize edilmeyecek. Ancak, mevcut verileriniz Google Hesabınızda saklanmaya devam edecek.</translation>
+<translation id="7431991332293347422">Göz atma geçmişinizin Arama ve diğer hizmetleri kişiselleştirmek için nasıl kullanıldığını kontrol edin</translation>
 <translation id="7435356471928173109">Yöneticiniz tarafından kapatıldı</translation>
 <translation id="7454057999980797137">Eyalet / İlçe</translation>
 <translation id="7456847797759667638">Konumu Aç...</translation>
@@ -674,7 +689,6 @@ Gizli moddayken siteler, örneğin reklamları kişiselleştirmek amacıyla fark
 <translation id="7646772052135772216">Şifre senkronizasyonu çalışmıyor</translation>
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="7658239707568436148">İptal</translation>
-<translation id="766891008101699113">Web'e gizli modda göz atmak için yeni bir sekme ekleyin.</translation>
 <translation id="7671141431838911305">YÜKLE</translation>
 <translation id="7701040980221191251">Yok</translation>
 <translation id="7741325291586284254">Yeni Gizli Sekme Sayfası</translation>
@@ -696,7 +710,6 @@ Hesabınız <ph name="HOSTED_DOMAIN" /> tarafından yönetildiği için oturumun
 <translation id="7887198238286927132">Gizliliğinizi korumak için Chrome bu alanı otomatik olarak doldurmayacaktır.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Şifreleri Dışa Aktar...</translation>
-<translation id="7947953824732555851">Kabul et ve oturum aç</translation>
 <translation id="794799177247607889">Günlüğe Kaydetmeyi Durdur</translation>
 <translation id="7953440832920792856">{COUNT,plural, =0{Güvenliği ihlal edilmiş şifre yok}=1{Güvenliği ihlal edilmiş {COUNT} şifre var}other{Güvenliği ihlal edilmiş {COUNT} şifre var}}</translation>
 <translation id="7961015016161918242">Hiçbir Zaman</translation>
@@ -710,6 +723,7 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="802154636333426148">İndirilemedi</translation>
 <translation id="8023878949384262191">Seçimi genişletir.</translation>
 <translation id="8027581147000338959">Yeni Pencerede Aç</translation>
+<translation id="804225253087497565"><ph name="BEGIN_LINK" />Arama geçmişi<ph name="END_LINK" /> ve <ph name="BEGIN_LINK" />diğer etkinlik biçimleri<ph name="END_LINK" />, oturum açtığınızda Google Hesabınıza kaydedilebilir. Bunları istediğiniz zaman silebilirsiniz.</translation>
 <translation id="804427445359061970">Diğer cihazlarınızdaki sekmeleri burada bulabilirsiniz</translation>
 <translation id="8059533439631660104">Bölümü daraltır.</translation>
 <translation id="8065292699993359127">URL'leri Chrome'da Gizli modda aç</translation>
@@ -727,6 +741,7 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="8206354486702514201">Bu seçenek, yöneticiniz tarafınızdan denetleniyor.</translation>
 <translation id="8225985093977202398">Önbelleğe Alınan Resimler ve Dosyalar</translation>
 <translation id="8261506727792406068">Sil</translation>
+<translation id="8271720166617117963">Kabul Et ve Oturum Aç</translation>
 <translation id="8281781826761538115">Varsayılan - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8281886186245836920">Atla</translation>
 <translation id="8283172974887967105">Ayarla…</translation>
@@ -761,6 +776,7 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="8548878600947630424">Sayfada bul...</translation>
 <translation id="8574235780160508979">Chrome'un Hizmet Şartları 31 Mart'ta değişiyor. <ph name="BEGIN_LINK" />Lütfen inceleyin<ph name="END_LINK" /></translation>
 <translation id="8588404856427128947">Kapalı</translation>
+<translation id="8590913940444621808">Asla Sorma</translation>
 <translation id="8591976964826315682">Gizli modda üçüncü taraf çerezleri engelle</translation>
 <translation id="8605219856220328675">Sekmeyi kapat.</translation>
 <translation id="8620640915598389714">Düzenle</translation>
@@ -769,6 +785,7 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="8654802032646794042">İptal</translation>
 <translation id="8668210798914567634">Bu sayfa Okuma Listenize kaydedildi.</translation>
 <translation id="8680787084697685621">Hesap oturum açma ayrıntıları eski.</translation>
+<translation id="8691262314411702087">Nelerin Senkronize Edileceğini Seçin</translation>
 <translation id="8693663554456874301">{count,plural, =1{Sekmeyi Kapat}other{Sekmeleri Kapat}}</translation>
 <translation id="8706588385081740091">Şifreler</translation>
 <translation id="8717864919010420084">Bağlantıyı Kopyala</translation>
@@ -784,6 +801,7 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
 <translation id="8820817407110198400">Yer işaretleri</translation>
 <translation id="8840513115188359703">Google Hesaplarınızdaki oturumlarınız kapatılmaz.</translation>
+<translation id="8868471676553493380">{count,plural, =1{{count} Sekme}other{{count} Sekme}}</translation>
 <translation id="8870413625673593573">Son Kapatılan</translation>
 <translation id="8876882697946675716">Cihazlarınızı Senkronize Durumda Tutun</translation>
 <translation id="8881801611828450202">Bu Resmi <ph name="SEARCH_ENGINE" /> Üzerinde Ara</translation>
@@ -791,9 +809,10 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="8917490105272468696">Evet, istiyorum</translation>
 <translation id="895541991026785598">Sorun Bildirin</translation>
 <translation id="8976382372951310360">Yardım</translation>
+<translation id="8976414606286374109">Kartlar Google Hesabı'nıza kaydedildi.</translation>
 <translation id="8981454092730389528">Google Etkinlik Kontrolleri</translation>
 <translation id="8985320356172329008">Google'da Şu Hesapla Oturum Açıldı:</translation>
-<translation id="8996526648899750015">Hesap ekle...</translation>
+<translation id="9000089900434778519">Arama motorunuz <ph name="DSE_NAME" />. Arama geçmişinizi silmek için arama motorunuzun talimatlarını (varsa) inceleyin.</translation>
 <translation id="9034759925968272072">Google Hesabınızdaki oturumunuz kapatılmayacaktır. Google hesabınızla ilişkili başka biçimlerde tarama geçmişi <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> adresinde bulunabilir.</translation>
 <translation id="9037965129289936994">Orijinali Göster</translation>
 <translation id="9039373489628511875">Bant Genişliği</translation>
@@ -807,6 +826,7 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="9094033019050270033">Şifreyi güncelle</translation>
 <translation id="9100610230175265781">Parola gerekli</translation>
 <translation id="9107664647686727385">Güvenliği ihlal edilmiş şifreleri kontrol edin</translation>
+<translation id="9124387962554796433">Google; Arama ve diğer Google hizmetlerini kişiselleştirmek için geçmişinizi kullanabilir.</translation>
 <translation id="9137526406337347448">Google Hizmetleri</translation>
 <translation id="9148126808321036104">Tekrar oturum açın</translation>
 <translation id="9152539721251340337">QR Kodu oluşturma</translation>

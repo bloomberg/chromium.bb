@@ -4,14 +4,15 @@
 
 #include "third_party/blink/renderer/core/events/pointer_event_factory.h"
 
-#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_pointer_event_init.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/pointer_type_names.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "ui/display/screen_info.h"
 
 namespace blink {
 
@@ -138,6 +139,26 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
 
 }  // namespace
 
+// static
+const AtomicString& PointerEventFactory::PointerTypeNameForWebPointPointerType(
+    WebPointerProperties::PointerType type) {
+  // TODO(mustaq): Fix when the spec starts supporting hovering erasers.
+  // See spec https://github.com/w3c/pointerevents/issues/134
+  switch (type) {
+    case WebPointerProperties::PointerType::kUnknown:
+      return g_empty_atom;
+    case WebPointerProperties::PointerType::kTouch:
+      return pointer_type_names::kTouch;
+    case WebPointerProperties::PointerType::kPen:
+      return pointer_type_names::kPen;
+    case WebPointerProperties::PointerType::kMouse:
+      return pointer_type_names::kMouse;
+    default:
+      NOTREACHED();
+      return g_empty_atom;
+  }
+}
+
 HeapVector<Member<PointerEvent>> PointerEventFactory::CreateEventSequence(
     const WebPointerEvent& web_pointer_event,
     const PointerEventInit* pointer_event_init,
@@ -196,6 +217,7 @@ HeapVector<Member<PointerEvent>> PointerEventFactory::CreateEventSequence(
   return result;
 }
 
+const PointerId PointerEventFactory::kReservedNonPointerId = -1;
 const PointerId PointerEventFactory::kInvalidId = 0;
 
 // Mouse id is 1 to behave the same as MS Edge for compatibility reasons.
@@ -616,26 +638,6 @@ PointerId PointerEventFactory::GetPointerEventId(
   if (pointer_incoming_id_mapping_.Contains(id))
     return pointer_incoming_id_mapping_.at(id);
   return kInvalidId;
-}
-
-// static
-const char* PointerEventFactory::PointerTypeNameForWebPointPointerType(
-    WebPointerProperties::PointerType type) {
-  switch (type) {
-    case WebPointerProperties::PointerType::kUnknown:
-      return "";
-    case WebPointerProperties::PointerType::kTouch:
-      return "touch";
-    case WebPointerProperties::PointerType::kPen:
-      return "pen";
-    case WebPointerProperties::PointerType::kMouse:
-      return "mouse";
-    default:
-      // TODO(mustaq): Fix when the spec starts supporting hovering erasers.
-      // See spec https://github.com/w3c/pointerevents/issues/134
-      NOTREACHED();
-      return "";
-  }
 }
 
 }  // namespace blink

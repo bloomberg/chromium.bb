@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -19,7 +20,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -40,7 +40,7 @@
 #include "storage/browser/test/sandbox_file_system_test_helper.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace storage {
 
@@ -70,11 +70,10 @@ class FileSystemOperationImplTest : public testing::Test {
   }
 
   void TearDown() override {
-    // Let the client go away before dropping a ref of the quota manager proxy.
-    quota_manager_proxy()->SimulateQuotaManagerDestroyed();
     quota_manager_ = nullptr;
     quota_manager_proxy_ = nullptr;
     sandbox_file_system_.TearDown();
+    task_environment_.RunUntilIdle();
   }
 
   FileSystemOperationRunner* operation_runner() {
@@ -258,7 +257,7 @@ class FileSystemOperationImplTest : public testing::Test {
   void GrantQuotaForCurrentUsage() {
     int64_t usage;
     GetUsageAndQuota(&usage, nullptr);
-    quota_manager()->SetQuota(sandbox_file_system_.origin(),
+    quota_manager()->SetQuota(blink::StorageKey(sandbox_file_system_.origin()),
                               sandbox_file_system_.storage_type(), usage);
   }
 
@@ -271,7 +270,7 @@ class FileSystemOperationImplTest : public testing::Test {
   void AddQuota(int64_t quota_delta) {
     int64_t quota;
     GetUsageAndQuota(nullptr, &quota);
-    quota_manager()->SetQuota(sandbox_file_system_.origin(),
+    quota_manager()->SetQuota(blink::StorageKey(sandbox_file_system_.origin()),
                               sandbox_file_system_.storage_type(),
                               quota + quota_delta);
   }

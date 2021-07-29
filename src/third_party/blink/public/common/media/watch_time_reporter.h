@@ -25,10 +25,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
 
-namespace media {
-class WatchTimeReporterTest;
-}
-
 namespace blink {
 
 // Class for monitoring and reporting watch time in response to various state
@@ -92,6 +88,8 @@ class BLINK_COMMON_EXPORT WatchTimeReporter : base::PowerStateObserver {
                     media::mojom::MediaMetricsProvider* provider,
                     scoped_refptr<base::SequencedTaskRunner> task_runner,
                     const base::TickClock* tick_clock = nullptr);
+  WatchTimeReporter(const WatchTimeReporter&) = delete;
+  WatchTimeReporter& operator=(const WatchTimeReporter&) = delete;
   ~WatchTimeReporter() override;
 
   // These methods are used to ensure that watch time is only reported for media
@@ -159,7 +157,7 @@ class BLINK_COMMON_EXPORT WatchTimeReporter : base::PowerStateObserver {
   void OnDurationChanged(base::TimeDelta duration);
 
  private:
-  friend class media::WatchTimeReporterTest;
+  friend class WatchTimeReporterTest;
 
   // Internal constructor for marking background status.
   WatchTimeReporter(media::mojom::PlaybackPropertiesPtr properties,
@@ -265,8 +263,6 @@ class BLINK_COMMON_EXPORT WatchTimeReporter : base::PowerStateObserver {
   // Similar to the above, but for muted audio+video watch time. Configured as
   // an audio+video WatchTimeReporter with |is_muted_| set to true.
   std::unique_ptr<WatchTimeReporter> muted_reporter_;
-
-  DISALLOW_COPY_AND_ASSIGN(WatchTimeReporter);
 };
 
 }  // namespace blink

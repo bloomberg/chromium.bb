@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "ui/ozone/platform/wayland/test/test_zwp_primary_selection.h"
 
 namespace wl {
 
@@ -70,6 +71,12 @@ bool TestWaylandServerThread::Start(const ServerConfig& config) {
 
   if (!data_device_manager_.Initialize(display_.get()))
     return false;
+  if (config.primary_selection_protocol != PrimarySelectionProtocol::kNone) {
+    // TODO(crbug.com/1204670): Support gtk primary selection.
+    primary_selection_device_manager_.reset(CreateTestSelectionManagerZwp());
+    if (!primary_selection_device_manager_->Initialize(display_.get()))
+      return false;
+  }
   if (!seat_.Initialize(display_.get()))
     return false;
   if (config.shell_version == ShellVersion::kV6) {
@@ -80,6 +87,8 @@ bool TestWaylandServerThread::Start(const ServerConfig& config) {
       return false;
   }
   if (!zwp_text_input_manager_v1_.Initialize(display_.get()))
+    return false;
+  if (!zwp_linux_explicit_synchronization_v1_.Initialize(display_.get()))
     return false;
   if (!zwp_linux_dmabuf_v1_.Initialize(display_.get()))
     return false;

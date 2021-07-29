@@ -42,10 +42,11 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
+#include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
@@ -146,6 +147,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
 enum SyncState {
   kSyncDisabledByAdministrator,
+  kSyncConsentOff,
   kSyncOff,
   kSyncEnabledWithNoSelectedTypes,
   kSyncEnabledWithError,
@@ -154,28 +156,32 @@ enum SyncState {
 
 SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   syncer::SyncService* syncService =
-      ProfileSyncServiceFactory::GetForBrowserState(browserState);
+      SyncServiceFactory::GetForBrowserState(browserState);
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(browserState);
-  // Sync is disabled by administrator policy.
+  SyncSetupService::SyncServiceState errorState =
+      syncSetupService->GetSyncServiceState();
   if (syncService->GetDisableReasons().Has(
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
+    // Sync is disabled by administrator policy.
     return kSyncDisabledByAdministrator;
-    // User has completed Sync setup in sign-in flow.
-  } else if (syncSetupService->IsFirstSetupComplete() &&
-             syncSetupService->IsSyncEnabled()) {
+  } else if (!syncSetupService->IsFirstSetupComplete()) {
+    // User has not completed Sync setup in sign-in flow.
+    return kSyncConsentOff;
+  } else if (!syncSetupService->CanSyncFeatureStart()) {
+    // Sync engine is off.
+    return kSyncOff;
+  } else if (base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency) &&
+             syncService->GetUserSettings()->GetSelectedTypes().Empty()) {
     // User has deselected all sync data types.
-    if (syncService->GetUserSettings()->GetSelectedTypes().Empty()) {
-      return kSyncEnabledWithNoSelectedTypes;
-    }
-    SyncSetupService::SyncServiceState errorState =
-        syncSetupService->GetSyncServiceState();
-    if (IsTransientSyncError(errorState)) {
-      return kSyncEnabled;
-    }
+    // With pre-MICE, the sync status should be kSyncEnabled to show the same
+    // value than the sync toggle.
+    return kSyncEnabledWithNoSelectedTypes;
+  } else if (!IsTransientSyncError(errorState)) {
+    // Sync error.
     return kSyncEnabledWithError;
   }
-  return kSyncOff;
+  return kSyncEnabled;
 }
 
 }  // namespace
@@ -323,7 +329,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
     _identityObserverBridge.reset(
         new signin::IdentityManagerObserverBridge(identityManager, self));
     syncer::SyncService* syncService =
-        ProfileSyncServiceFactory::GetForBrowserState(_browserState);
+        SyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserverBridge.reset(new SyncObserverBridge(self, syncService));
 
     _showMemoryDebugToolsEnabled = [[PrefBackedBoolean alloc]
@@ -333,7 +339,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 
     AuthenticationService* authService =
         AuthenticationServiceFactory::GetForBrowserState(_browserState);
-    _identity = authService->GetAuthenticatedIdentity();
+    _identity = authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
     _identityServiceObserver.reset(
         new ChromeIdentityServiceObserverBridge(self));
 
@@ -544,7 +550,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   if (!signin::IsSigninAllowed(_browserState->GetPrefs())) {
     // Ensure that the user sign-in state always reflects the sign-in allowed
     // preference.
-    DCHECK(!authService->IsAuthenticated());
+    DCHECK(!authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin));
     item = signin::IsSigninAllowedByPolicy(_browserState->GetPrefs())
                ? [self signinDisabledTextItem]
                : [self signinDisabledByPolicyTextItem];
@@ -552,10 +558,14 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
     // Create the sign-in promo mediator if it doesn't exist.
     if (!_signinPromoViewMediator) {
       _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
-          initWithBrowserState:_browserState
-                   accessPoint:signin_metrics::AccessPoint::
-                                   ACCESS_POINT_SETTINGS
-                     presenter:self /* id<SigninPresenter> */];
+          initWithAccountManagerService:ChromeAccountManagerServiceFactory::
+                                            GetForBrowserState(_browserState)
+                            authService:AuthenticationServiceFactory::
+                                            GetForBrowserState(_browserState)
+                            prefService:_browserState->GetPrefs()
+                            accessPoint:signin_metrics::AccessPoint::
+                                            ACCESS_POINT_SETTINGS
+                              presenter:self];
       _signinPromoViewMediator.consumer = self;
     }
     TableViewSigninPromoItem* signinPromoItem =
@@ -569,7 +579,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
     [_signinPromoViewMediator signinPromoViewIsVisible];
 
     item = signinPromoItem;
-  } else if (!authService->IsAuthenticated()) {
+  } else if (!authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
     AccountSignInItem* signInTextItem =
         [[AccountSignInItem alloc] initWithType:SettingsItemTypeSignInButton];
     signInTextItem.accessibilityIdentifier = kSettingsSignInCellId;
@@ -607,7 +617,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   TableViewModel<TableViewItem*>* model = self.tableViewModel;
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(_browserState);
-  if (authService->IsAuthenticated()) {
+  if (authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
     // Account profile item.
     [model addItem:[self accountCellItem]
         toSectionWithIdentifier:SettingsSectionIdentifierAccount];
@@ -617,7 +627,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   // Add Sync & Google Services cell.
   if (base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency)) {
     // Sync item.
-    if (authService->IsAuthenticated()) {
+    if (authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
       [model addItem:[self googleSyncDetailItem]
           toSectionWithIdentifier:SettingsSectionIdentifierAccount];
     }
@@ -643,21 +653,23 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
          [SigninPromoViewMediator
              shouldDisplaySigninPromoViewWithAccessPoint:
                  signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-                                            browserState:_browserState] &&
-         !authService->IsAuthenticated();
+                                             prefService:_browserState
+                                                             ->GetPrefs()] &&
+         !authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin);
 }
 
 // Returns YES if the Sync service is available and all promos have not been
 // previously closed or seen too many times by a single user account.
 - (BOOL)shouldDisplaySyncPromo {
-  syncer::SyncService* syncService =
-      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
+  SyncSetupService* syncSetupService =
+      SyncSetupServiceFactory::GetForBrowserState(_browserState);
   return base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency) &&
          [SigninPromoViewMediator
              shouldDisplaySigninPromoViewWithAccessPoint:
                  signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-                                            browserState:_browserState] &&
-         !syncService->IsSyncFeatureEnabled();
+                                             prefService:_browserState
+                                                             ->GetPrefs()] &&
+         !syncSetupService->IsFirstSetupComplete();
 }
 
 #pragma mark - Model Items
@@ -713,7 +725,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
       l10n_util::GetNSString(IDS_IOS_NOT_SIGNED_IN_SETTING_TITLE);
   signinDisabledItem.image =
       CircularImageFromImage(ios::GetChromeBrowserProvider()
-                                 ->GetSigninResourcesProvider()
+                                 .GetSigninResourcesProvider()
                                  ->GetDefaultAvatar(),
                              kAccountProfilePhotoDimension);
   signinDisabledItem.enabled = NO;
@@ -1204,11 +1216,17 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
     case SettingsItemTypeGoogleSync: {
       base::RecordAction(base::UserMetricsAction("Settings.Sync"));
       switch (GetSyncStateFromBrowserState(_browserState)) {
-        case kSyncOff: {
+        case kSyncConsentOff: {
           [self showSignInWithIdentity:nil
                            promoAction:signin_metrics::PromoAction::
                                            PROMO_ACTION_NO_SIGNIN_PROMO
                             completion:nil];
+          break;
+        }
+        case kSyncOff: {
+          DCHECK(
+              base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency));
+          [self showGoogleSync];
           break;
         }
         case kSyncEnabled:
@@ -1497,7 +1515,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 - (void)updateIdentityAccountItem:(TableViewAccountItem*)identityAccountItem {
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(_browserState);
-  _identity = authService->GetAuthenticatedIdentity();
+  _identity = authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   if (!_identity) {
     // This could occur during the sign out process. Just ignore as the account
     // cell will be replaced by the "Sign in" button.
@@ -1544,12 +1562,12 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
     (SettingsImageDetailTextItem*)googleServicesItem {
   googleServicesItem.detailTextColor = nil;
   syncer::SyncService* syncService =
-      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
+      SyncServiceFactory::GetForBrowserState(_browserState);
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(_browserState);
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(_browserState);
-  if (!authService->IsAuthenticated()) {
+  if (!authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
     // No sync status when the user is not signed-in.
     googleServicesItem.detailText = nil;
     googleServicesItem.image =
@@ -1571,7 +1589,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
         GetSyncErrorDescriptionForSyncSetupService(syncSetupService);
     googleServicesItem.image =
         [UIImage imageNamed:kSyncAndGoogleServicesSyncErrorImageName];
-  } else if (syncSetupService->IsSyncEnabled()) {
+  } else if (syncSetupService->CanSyncFeatureStart()) {
     googleServicesItem.detailText =
         l10n_util::GetNSString(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNC_ON);
     googleServicesItem.image =
@@ -1595,11 +1613,12 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
       googleSyncItem.iconImageName = kSyncAndGoogleServicesSyncOffImageName;
       break;
     }
-    case kSyncOff: {
+    case kSyncConsentOff: {
       googleSyncItem.detailText = l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
       googleSyncItem.iconImageName = kSyncAndGoogleServicesSyncOffImageName;
       break;
     }
+    case kSyncOff:
     case kSyncEnabledWithNoSelectedTypes: {
       googleSyncItem.detailText = nil;
       googleSyncItem.iconImageName = kSyncAndGoogleServicesSyncOffImageName;
@@ -1646,7 +1665,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(_browserState);
-  if (authService->IsAuthenticated()) {
+  if (authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
     if (_googleSyncDetailItem) {
       [self updateGoogleSyncDetailItem:_googleSyncDetailItem];
       [self reconfigureCellsForItems:@[ _googleSyncDetailItem ]];
@@ -1773,16 +1792,16 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 // Image used for loggedin user account that supports caching.
 - (UIImage*)userAccountImage {
   UIImage* image = ios::GetChromeBrowserProvider()
-                       ->GetChromeIdentityService()
+                       .GetChromeIdentityService()
                        ->GetCachedAvatarForIdentity(_identity);
   if (!image) {
     image = ios::GetChromeBrowserProvider()
-                ->GetSigninResourcesProvider()
+                .GetSigninResourcesProvider()
                 ->GetDefaultAvatar();
     // No cached image, trigger a fetch, which will notify all observers
     // (including the corresponding AccountViewBase).
     ios::GetChromeBrowserProvider()
-        ->GetChromeIdentityService()
+        .GetChromeIdentityService()
         ->GetAvatarForIdentity(_identity, nil);
   }
 
@@ -2061,6 +2080,10 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   DCHECK_EQ(_manageSyncSettingsCoordinator, coordinator);
   [_manageSyncSettingsCoordinator stop];
   _manageSyncSettingsCoordinator = nil;
+}
+
+- (NSString*)manageSyncSettingsCoordinatorTitle {
+  return l10n_util::GetNSString(IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE);
 }
 
 @end

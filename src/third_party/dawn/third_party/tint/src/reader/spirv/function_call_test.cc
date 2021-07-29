@@ -25,8 +25,16 @@ namespace {
 using ::testing::Eq;
 using ::testing::HasSubstr;
 
+std::string Preamble() {
+  return R"(
+     OpCapability Shader
+     OpMemoryModel Logical Simple
+     OpEntryPoint Vertex %100 "x_100"
+)";
+}
+
 TEST_F(SpvParserTest, EmitStatement_VoidCallNoParams) {
-  auto p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(Preamble() + R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
 
@@ -59,13 +67,23 @@ TEST_F(SpvParserTest, EmitStatement_VoidCallNoParams) {
     }
     Return{}
   }
+  Function $3 -> __void
+  StageDecoration{vertex}
+  ()
+  {
+    Call[not set]{
+      Identifier[not set]{$2}
+      (
+      )
+    }
+  }
 }
 )";
   EXPECT_EQ(expect, got);
 }
 
 TEST_F(SpvParserTest, EmitStatement_ScalarCallNoParams) {
-  auto p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(Preamble() + R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %uint = OpTypeInt 32 0
@@ -92,6 +110,7 @@ TEST_F(SpvParserTest, EmitStatement_ScalarCallNoParams) {
   VariableConst{
     x_1
     none
+    undefined
     __u32
     {
       Call[not set]{
@@ -117,7 +136,7 @@ Return{})"));
 }
 
 TEST_F(SpvParserTest, EmitStatement_ScalarCallNoParamsUsedTwice) {
-  auto p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(Preamble() + R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %uint = OpTypeInt 32 0
@@ -143,11 +162,13 @@ TEST_F(SpvParserTest, EmitStatement_ScalarCallNoParamsUsedTwice) {
   {
     auto fe = p->function_emitter(100);
     EXPECT_TRUE(fe.EmitBody()) << p->error();
-    EXPECT_THAT(ToString(p->builder(), fe.ast_body()),
-                HasSubstr(R"(VariableDeclStatement{
+    const auto got = ToString(p->builder(), fe.ast_body());
+    const std::string expected =
+        R"(VariableDeclStatement{
   Variable{
     x_10
     none
+    undefined
     __u32
   }
 }
@@ -155,6 +176,7 @@ VariableDeclStatement{
   VariableConst{
     x_1
     none
+    undefined
     __u32
     {
       Call[not set]{
@@ -173,7 +195,9 @@ Assignment{
   Identifier[not set]{x_10}
   Identifier[not set]{x_1}
 }
-Return{})"));
+Return{}
+)";
+    EXPECT_EQ(got, expected);
   }
   {
     auto fe = p->function_emitter(50);
@@ -187,7 +211,7 @@ Return{})"));
 }
 
 TEST_F(SpvParserTest, EmitStatement_CallWithParams) {
-  auto p = parser(test::Assemble(R"(
+  auto p = parser(test::Assemble(Preamble() + R"(
      %void = OpTypeVoid
      %voidfn = OpTypeFunction %void
      %uint = OpTypeInt 32 0
@@ -212,17 +236,19 @@ TEST_F(SpvParserTest, EmitStatement_CallWithParams) {
   ASSERT_TRUE(p->BuildAndParseInternalModule()) << p->error();
   EXPECT_TRUE(p->error().empty());
   const auto program_ast_str = p->program().to_str();
-  EXPECT_THAT(program_ast_str, HasSubstr(R"(Module{
+  const std::string expected = R"(Module{
   Function x_50 -> __u32
   (
     VariableConst{
       x_51
       none
+      undefined
       __u32
     }
     VariableConst{
       x_52
       none
+      undefined
       __u32
     }
   )
@@ -237,13 +263,14 @@ TEST_F(SpvParserTest, EmitStatement_CallWithParams) {
       }
     }
   }
-  Function x_100 -> __void
+  Function x_100_1 -> __void
   ()
   {
     VariableDeclStatement{
       VariableConst{
         x_1
         none
+        undefined
         __u32
         {
           Call[not set]{
@@ -258,7 +285,19 @@ TEST_F(SpvParserTest, EmitStatement_CallWithParams) {
     }
     Return{}
   }
-})")) << program_ast_str;
+  Function x_100 -> __void
+  StageDecoration{vertex}
+  ()
+  {
+    Call[not set]{
+      Identifier[not set]{x_100_1}
+      (
+      )
+    }
+  }
+}
+)";
+  EXPECT_EQ(program_ast_str, expected);
 }
 
 }  // namespace

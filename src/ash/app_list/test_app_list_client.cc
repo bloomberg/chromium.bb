@@ -13,6 +13,10 @@ namespace ash {
 TestAppListClient::TestAppListClient() = default;
 TestAppListClient::~TestAppListClient() = default;
 
+void TestAppListClient::StartSearch(const std::u16string& trimmed_query) {
+  last_search_query_ = trimmed_query;
+}
+
 void TestAppListClient::InvokeSearchResultAction(const std::string& result_id,
                                                  int action_index) {
   invoked_result_actions_.push_back(std::make_pair(result_id, action_index));
@@ -22,6 +26,13 @@ void TestAppListClient::GetSearchResultContextMenuModel(
     const std::string& result_id,
     GetContextMenuModelCallback callback) {
   std::move(callback).Run(nullptr);
+}
+
+void TestAppListClient::ActivateItem(int profile_id,
+                                     const std::string& id,
+                                     int event_flags) {
+  activate_item_count_++;
+  activate_item_last_id_ = id;
 }
 
 void TestAppListClient::GetContextMenuModel(

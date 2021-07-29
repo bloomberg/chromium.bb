@@ -14,16 +14,19 @@
 #include "base/strings/string_util.h"
 #include "base/version.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/service_worker_context_observer.h"
 #include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/browser/service_worker/worker_id.h"
 #include "extensions/common/activation_sequence.h"
 #include "extensions/common/extension_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
+class ServiceWorkerContext;
 }
 
 namespace extensions {
@@ -72,7 +75,8 @@ class Extension;
 //
 // TODO(lazyboy): Clean up queue when extension is unloaded/uninstalled.
 class ServiceWorkerTaskQueue : public KeyedService,
-                               public LazyContextTaskQueue {
+                               public LazyContextTaskQueue,
+                               public content::ServiceWorkerContextObserver {
  public:
   explicit ServiceWorkerTaskQueue(content::BrowserContext* browser_context);
   ~ServiceWorkerTaskQueue() override;
@@ -121,6 +125,12 @@ class ServiceWorkerTaskQueue : public KeyedService,
   // activated.
   absl::optional<ActivationSequence> GetCurrentSequence(
       const ExtensionId& extension_id) const;
+
+  // content::ServiceWorkerContextObserver:
+  void OnReportConsoleMessage(int64_t version_id,
+                              const GURL& scope,
+                              const content::ConsoleMessage& message) override;
+  void OnDestruct(content::ServiceWorkerContext* context) override;
 
   class TestObserver {
    public:
@@ -194,7 +204,19 @@ class ServiceWorkerTaskQueue : public KeyedService,
 
   WorkerState* GetWorkerState(const SequencedContextId& context_id);
 
+  content::ServiceWorkerContext* GetServiceWorkerContext(
+      const ExtensionId& extension_id);
+
+  // Starts and stops observing |service_worker_context|.
+  //
+  // The methods ensure that many:1 relationship of SWContext:SWContextObserver
+  // is preserved correctly.
+  void StartObserving(content::ServiceWorkerContext* service_worker_context);
+  void StopObserving(content::ServiceWorkerContext* service_worker_context);
+
   int next_activation_sequence_ = 0;
+
+  std::multiset<content::ServiceWorkerContext*> observing_worker_contexts_;
 
   // The state of worker of each activated extension.
   std::map<SequencedContextId, WorkerState> worker_state_map_;

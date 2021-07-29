@@ -25,12 +25,16 @@ group("blink") {
     "//third_party/blink/renderer/modules",
     "//third_party/blink/renderer/platform",
   ]
+  if (use_blink_extensions_chromeos) {
+    deps += [ "//third_party/blink/renderer/extensions/chromeos" ]
+  }
 }
 
 group("test_support") {
   testonly = true
   public_deps = [
     ":test_headers",
+    "//third_party/blink/common:test_support",
     "//third_party/blink/renderer/core/exported:test_support",
     "//third_party/blink/renderer/modules/exported:test_support",
     "//third_party/blink/renderer/modules/mediastream:test_support",
@@ -93,6 +97,7 @@ if (is_android) {
 source_set("test_headers") {
   testonly = true
   sources = [
+    "common/origin_trials/scoped_test_origin_trial_policy.h",
     "platform/scheduler/test/renderer_scheduler_test_support.h",
     "platform/scheduler/test/web_fake_thread_scheduler.h",
     "platform/scheduler/test/web_mock_thread_scheduler.h",
@@ -221,6 +226,7 @@ source_set("blink_headers") {
     "platform/web_inband_text_track_client.h",
     "platform/web_input_event_result.h",
     "platform/web_isolated_world_info.h",
+    "platform/web_loader_freeze_mode.h",
     "platform/web_media_key_system_configuration.h",
     "platform/web_media_key_system_media_capability.h",
     "platform/web_media_player.h",

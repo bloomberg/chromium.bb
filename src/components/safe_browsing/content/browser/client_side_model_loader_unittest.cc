@@ -22,14 +22,15 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/core/features.h"
-#include "components/safe_browsing/core/proto/client_model.pb.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/proto/client_model.pb.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -376,14 +377,14 @@ TEST_F(ModelLoaderTest, ModelNamesTest) {
   EXPECT_EQ(ModelLoader::FillInModelName(false, 5),
             "client_model_v5_variation_5.pb");
 
-  // No Finch setup. Should default to 8.
+  // No Finch setup. Should default to 9.
   std::unique_ptr<ModelLoader> loader;
   loader = std::make_unique<ModelLoader>(base::RepeatingClosure(), nullptr,
                                          false /* is_extended_reporting */);
-  EXPECT_EQ(loader->name(), "client_model_v5_variation_8.pb");
+  EXPECT_EQ(loader->name(), "client_model_v5_variation_9.pb");
   EXPECT_EQ(loader->url_.spec(),
             "https://ssl.gstatic.com/safebrowsing/csd/"
-            "client_model_v5_variation_8.pb");
+            "client_model_v5_variation_9.pb");
 
   // Model 1, no extended reporting.
   SetFinchModelNumber(1);

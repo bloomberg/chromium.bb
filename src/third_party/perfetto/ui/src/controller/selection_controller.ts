@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {assertTrue} from '../base/logging';
 import {Arg, Args} from '../common/arg_types';
 import {Engine} from '../common/engine';
 import {
   NUM,
   singleRow,
-  singleRowUntyped,
   slowlyCountRows,
   STR
 } from '../common/query_iterator';
@@ -122,17 +122,16 @@ export class SelectionController extends Controller<'main'> {
       promisedArgs = this.getArgs(argSetId);
     }
 
-    const promisedDetails = this.args.engine.query(`
+    const promisedDetails = this.args.engine.queryV2(`
       SELECT * FROM ${leafTable} WHERE id = ${selectedId};
     `);
 
     const [details, args, description] =
         await Promise.all([promisedDetails, promisedArgs, promisedDescription]);
 
-    const row = singleRowUntyped(details);
-    if (row === undefined) {
-      return;
-    }
+    if (details.numRows() <= 0) return;
+    const rowIter = details.iter({});
+    assertTrue(rowIter.valid());
 
     // A few columns are hard coded as part of the SliceDetails interface.
     // Long term these should be handled generically as args but for now
@@ -142,7 +141,8 @@ export class SelectionController extends Controller<'main'> {
     let name = undefined;
     let category = undefined;
 
-    for (const [k, v] of Object.entries(row)) {
+    for (const k of details.columns()) {
+      const v = rowIter.get(k);
       switch (k) {
         case 'id':
           break;
@@ -359,32 +359,37 @@ export class SelectionController extends Controller<'main'> {
     // Find the ts of the first sched_wakeup before the current slice.
     const queryWakeupTs = `select ts from instants where name = '${event}'
     and ref = ${utid} and ts < ${ts} order by ts desc limit 1`;
-    const wakeupRow = await this.args.engine.queryOneRow(queryWakeupTs);
+    const wakeResult = await this.args.engine.queryV2(queryWakeupTs);
+    if (wakeResult.numRows() === 0) {
+      return undefined;
+    }
+    const wakeupTs = wakeResult.firstRow({ts: NUM}).ts;
+
     // Find the previous sched slice for the current utid.
     const queryPrevSched = `select ts from sched where utid = ${utid}
     and ts < ${ts} order by ts desc limit 1`;
-    const prevSchedRow = await this.args.engine.queryOneRow(queryPrevSched);
+    const prevSchedResult = await this.args.engine.queryV2(queryPrevSched);
+
     // If this is the first sched slice for this utid or if the wakeup found
     // was after the previous slice then we know the wakeup was for this slice.
-    if (wakeupRow[0] === undefined ||
-        (prevSchedRow[0] !== undefined && wakeupRow[0] < prevSchedRow[0])) {
+    if (prevSchedResult.numRows() === 0 ||
+        wakeupTs < prevSchedResult.firstRow({ts: NUM}).ts) {
       return undefined;
     }
-    const wakeupTs = wakeupRow[0];
     // Find the sched slice with the utid of the waker running when the
     // sched wakeup occurred. This is the waker.
     const queryWaker = `select utid, cpu from sched where utid =
     (select utid from raw where name = '${event}' and ts = ${wakeupTs})
     and ts < ${wakeupTs} and ts + dur >= ${wakeupTs};`;
-    const wakerRow = await this.args.engine.queryOneRow(queryWaker);
-    if (wakerRow) {
-      return {
-        wakeupTs: fromNs(wakeupTs),
-        wakerUtid: wakerRow[0],
-        wakerCpu: wakerRow[1]
-      };
-    } else {
+    const wakerResult = await this.args.engine.queryV2(queryWaker);
+    if (wakerResult.numRows() === 0) {
       return undefined;
     }
+    const wakerRow = wakerResult.firstRow({utid: NUM, cpu: NUM});
+    return {
+      wakeupTs: fromNs(wakeupTs),
+      wakerUtid: wakerRow.utid,
+      wakerCpu: wakerRow.cpu
+    };
   }
 }

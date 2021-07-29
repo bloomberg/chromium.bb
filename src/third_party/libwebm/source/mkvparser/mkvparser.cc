@@ -54,9 +54,9 @@ Type* SafeArrayAlloc(unsigned long long num_elements,
 
 void GetVersion(int& major, int& minor, int& build, int& revision) {
   major = 1;
-  minor = 0;
+  minor = 1;
   build = 0;
-  revision = 30;
+  revision = 0;
 }
 
 long long ReadUInt(IMkvReader* pReader, long long pos, long& len) {
@@ -1502,8 +1502,8 @@ long SeekHead::Parse() {
 
   // first count the seek head entries
 
-  int entry_count = 0;
-  int void_element_count = 0;
+  long long entry_count = 0;
+  long long void_element_count = 0;
 
   while (pos < stop) {
     long long id, size;
@@ -1513,10 +1513,15 @@ long SeekHead::Parse() {
     if (status < 0)  // error
       return status;
 
-    if (id == libwebm::kMkvSeek)
+    if (id == libwebm::kMkvSeek) {
       ++entry_count;
-    else if (id == libwebm::kMkvVoid)
+      if (entry_count > INT_MAX)
+        return E_PARSE_FAILED;
+    } else if (id == libwebm::kMkvVoid) {
       ++void_element_count;
+      if (void_element_count > INT_MAX)
+        return E_PARSE_FAILED;
+    }
 
     pos += size;  // consume payload
 
@@ -1582,13 +1587,13 @@ long SeekHead::Parse() {
 
   ptrdiff_t count_ = ptrdiff_t(pEntry - m_entries);
   assert(count_ >= 0);
-  assert(count_ <= entry_count);
+  assert(static_cast<long long>(count_) <= entry_count);
 
   m_entry_count = static_cast<int>(count_);
 
   count_ = ptrdiff_t(pVoidElement - m_void_elements);
   assert(count_ >= 0);
-  assert(count_ <= void_element_count);
+  assert(static_cast<long long>(count_) <= void_element_count);
 
   m_void_element_count = static_cast<int>(count_);
 
@@ -2299,7 +2304,7 @@ bool CuePoint::Load(IMkvReader* pReader) {
   long long pos = pos_;
 
   // First count number of track positions
-
+  unsigned long long track_positions_count = 0;
   while (pos < stop) {
     long len;
 
@@ -2323,11 +2328,16 @@ bool CuePoint::Load(IMkvReader* pReader) {
     if (id == libwebm::kMkvCueTime)
       m_timecode = UnserializeUInt(pReader, pos, size);
 
-    else if (id == libwebm::kMkvCueTrackPositions)
-      ++m_track_positions_count;
+    else if (id == libwebm::kMkvCueTrackPositions) {
+      ++track_positions_count;
+      if (track_positions_count > UINT_MAX)
+        return E_PARSE_FAILED;
+    }
 
     pos += size;  // consume payload
   }
+
+  m_track_positions_count = static_cast<size_t>(track_positions_count);
 
   if (m_timecode < 0 || m_track_positions_count <= 0) {
     return false;
@@ -4194,8 +4204,8 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
   const long long stop = start + size;
 
   // Count ContentCompression and ContentEncryption elements.
-  int compression_count = 0;
-  int encryption_count = 0;
+  long long compression_count = 0;
+  long long encryption_count = 0;
 
   while (pos < stop) {
     long long id, size;
@@ -4203,11 +4213,17 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
     if (status < 0)  // error
       return status;
 
-    if (id == libwebm::kMkvContentCompression)
+    if (id == libwebm::kMkvContentCompression) {
       ++compression_count;
+      if (compression_count > INT_MAX)
+        return E_PARSE_FAILED;
+    }
 
-    if (id == libwebm::kMkvContentEncryption)
+    if (id == libwebm::kMkvContentEncryption) {
       ++encryption_count;
+      if (encryption_count > INT_MAX)
+        return E_PARSE_FAILED;
+    }
 
     pos += size;  // consume payload
     if (pos > stop)
@@ -4230,6 +4246,7 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
         new (std::nothrow) ContentEncryption*[encryption_count];
     if (!encryption_entries_) {
       delete[] compression_entries_;
+      compression_entries_ = NULL;
       return -1;
     }
     encryption_entries_end_ = encryption_entries_;
@@ -4261,6 +4278,7 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
         delete compression;
         return status;
       }
+      assert(compression_count > 0);
       *compression_entries_end_++ = compression;
     } else if (id == libwebm::kMkvContentEncryption) {
       ContentEncryption* const encryption =
@@ -4273,6 +4291,7 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
         delete encryption;
         return status;
       }
+      assert(encryption_count > 0);
       *encryption_entries_end_++ = encryption;
     }
 
@@ -4323,6 +4342,12 @@ long ContentEncoding::ParseCompressionEntry(long long start, long long size,
       if (read_status) {
         delete[] buf;
         return status;
+      }
+
+      // There should be only one settings element per content compression.
+      if (compression->settings != NULL) {
+        delete[] buf;
+        return E_FILE_FORMAT_INVALID;
       }
 
       compression->settings = buf;
@@ -4909,7 +4934,7 @@ long Track::ParseContentEncodingsEntry(long long start, long long size) {
   const long long stop = start + size;
 
   // Count ContentEncoding elements.
-  int count = 0;
+  long long count = 0;
   while (pos < stop) {
     long long id, size;
     const long status = ParseElementHeader(pReader, pos, stop, id, size);
@@ -4917,8 +4942,11 @@ long Track::ParseContentEncodingsEntry(long long start, long long size) {
       return status;
 
     // pos now designates start of element
-    if (id == libwebm::kMkvContentEncoding)
+    if (id == libwebm::kMkvContentEncoding) {
       ++count;
+      if (count > INT_MAX)
+        return E_PARSE_FAILED;
+    }
 
     pos += size;  // consume payload
     if (pos > stop)
@@ -5220,6 +5248,8 @@ bool Projection::Parse(IMkvReader* reader, long long start, long long size,
 
       projection_ptr->type = static_cast<ProjectionType>(projection_type);
     } else if (child_id == libwebm::kMkvProjectionPrivate) {
+      if (projection_ptr->private_data != NULL)
+        return false;
       unsigned char* data = SafeArrayAlloc<unsigned char>(1, child_size);
 
       if (data == NULL)
@@ -5277,6 +5307,7 @@ VideoTrack::VideoTrack(Segment* pSegment, long long element_start,
       m_projection(NULL) {}
 
 VideoTrack::~VideoTrack() {
+  delete[] m_colour_space;
   delete m_colour;
   delete m_projection;
 }
@@ -5298,7 +5329,7 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
   long long stereo_mode = 0;
 
   double rate = 0.0;
-  char* colour_space = NULL;
+  std::unique_ptr<char[]> colour_space_ptr;
 
   IMkvReader* const pReader = pSegment->m_pReader;
 
@@ -5311,7 +5342,7 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
 
   const long long stop = pos + s.size;
 
-  Colour* colour = NULL;
+  std::unique_ptr<Colour> colour_ptr;
   std::unique_ptr<Projection> projection_ptr;
 
   while (pos < stop) {
@@ -5361,8 +5392,12 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
       if (rate <= 0)
         return E_FILE_FORMAT_INVALID;
     } else if (id == libwebm::kMkvColour) {
-      if (!Colour::Parse(pReader, pos, size, &colour))
+      Colour* colour = NULL;
+      if (!Colour::Parse(pReader, pos, size, &colour)) {
         return E_FILE_FORMAT_INVALID;
+      } else {
+        colour_ptr.reset(colour);
+      }
     } else if (id == libwebm::kMkvProjection) {
       Projection* projection = NULL;
       if (!Projection::Parse(pReader, pos, size, &projection)) {
@@ -5371,9 +5406,11 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
         projection_ptr.reset(projection);
       }
     } else if (id == libwebm::kMkvColourSpace) {
+      char* colour_space = NULL;
       const long status = UnserializeString(pReader, pos, size, colour_space);
       if (status < 0)
         return status;
+      colour_space_ptr.reset(colour_space);
     }
 
     pos += size;  // consume payload
@@ -5404,8 +5441,8 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
   pTrack->m_display_unit = display_unit;
   pTrack->m_stereo_mode = stereo_mode;
   pTrack->m_rate = rate;
-  pTrack->m_colour = colour;
-  pTrack->m_colour_space = colour_space;
+  pTrack->m_colour = colour_ptr.release();
+  pTrack->m_colour_space = colour_space_ptr.release();
   pTrack->m_projection = projection_ptr.release();
 
   pResult = pTrack;
@@ -5635,7 +5672,7 @@ long Tracks::Parse() {
   const long long stop = m_start + m_size;
   IMkvReader* const pReader = m_pSegment->m_pReader;
 
-  int count = 0;
+  long long count = 0;
   long long pos = m_start;
 
   while (pos < stop) {
@@ -5649,8 +5686,11 @@ long Tracks::Parse() {
     if (size == 0)  // weird
       continue;
 
-    if (id == libwebm::kMkvTrackEntry)
+    if (id == libwebm::kMkvTrackEntry) {
       ++count;
+      if (count > INT_MAX)
+        return E_PARSE_FAILED;
+    }
 
     pos += size;  // consume payload
     if (pos > stop)

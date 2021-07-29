@@ -89,6 +89,12 @@ String EmptyChromeClient::AcceptLanguages() {
   return String();
 }
 
+bool EmptyChromeClient::StartDeferringCommits(LocalFrame& main_frame,
+                                              base::TimeDelta timeout,
+                                              cc::PaintHoldingReason reason) {
+  return false;
+}
+
 void EmptyLocalFrameClient::BeginNavigation(
     const ResourceRequest&,
     mojom::RequestContextFrameType,
@@ -137,6 +143,10 @@ std::pair<RemoteFrame*, PortalToken> EmptyLocalFrameClient::CreatePortal(
 }
 
 RemoteFrame* EmptyLocalFrameClient::AdoptPortal(HTMLPortalElement*) {
+  return nullptr;
+}
+
+RemoteFrame* EmptyLocalFrameClient::CreateFencedFrame(HTMLFencedFrameElement*) {
   return nullptr;
 }
 

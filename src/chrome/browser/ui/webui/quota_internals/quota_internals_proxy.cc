@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_handler.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
 #include "url/origin.h"
 
@@ -74,7 +75,7 @@ void QuotaInternalsProxy::TriggerStoragePressure(
                                   this, origin, quota_manager));
     return;
   }
-  quota_manager->SimulateStoragePressure(origin);
+  quota_manager->SimulateStoragePressure(blink::StorageKey(origin));
 }
 
 QuotaInternalsProxy::~QuotaInternalsProxy() = default;
@@ -144,7 +145,7 @@ void QuotaInternalsProxy::DidDumpBucketTable(
   origin_info.reserve(entries.size());
 
   for (const auto& entry : entries) {
-    PerOriginStorageInfo info(entry.origin.GetURL(), entry.type);
+    PerOriginStorageInfo info(entry.storage_key.origin().GetURL(), entry.type);
     info.set_used_count(entry.use_count);
     info.set_last_access_time(entry.last_accessed);
     info.set_last_modified_time(entry.last_modified);
@@ -181,20 +182,21 @@ void QuotaInternalsProxy::DidGetHostUsage(
 void QuotaInternalsProxy::RequestPerOriginInfo(StorageType type) {
   DCHECK(quota_manager_.get());
 
-  std::set<url::Origin> origins = quota_manager_->GetCachedOrigins(type);
+  std::set<blink::StorageKey> storage_keys =
+      quota_manager_->GetCachedStorageKeys(type);
 
   std::vector<PerOriginStorageInfo> origin_info;
-  origin_info.reserve(origins.size());
+  origin_info.reserve(storage_keys.size());
 
   std::set<std::string> hosts;
   std::vector<PerHostStorageInfo> host_info;
 
-  for (const url::Origin& origin : origins) {
-    PerOriginStorageInfo info(origin.GetURL(), type);
-    info.set_in_use(quota_manager_->IsOriginInUse(origin));
+  for (const blink::StorageKey& storage_key : storage_keys) {
+    PerOriginStorageInfo info(storage_key.origin().GetURL(), type);
+    info.set_in_use(quota_manager_->IsStorageKeyInUse(storage_key));
     origin_info.push_back(info);
 
-    const std::string& host = origin.host();
+    const std::string& host = storage_key.origin().host();
     if (hosts.insert(host).second) {
       PerHostStorageInfo info(host, type);
       host_info.push_back(info);

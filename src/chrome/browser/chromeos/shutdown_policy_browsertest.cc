@@ -7,7 +7,6 @@
 
 #include "ash/constants/ash_switches.h"
 #include "ash/login_status.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/system_tray_test_api.h"
@@ -23,10 +22,10 @@
 #include "chrome/browser/ash/login/lock/screen_locker_tester.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
+#include "chrome/browser/ash/policy/core/device_policy_builder.h"
+#include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -181,7 +180,7 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
     ShutdownPolicyBaseTest::SetUpOnMainThread();
 
     // Bring up the locker screen.
-    chromeos::ScreenLockerTester().Lock();
+    ScreenLockerTester().Lock();
   }
 
   void TearDownOnMainThread() override {

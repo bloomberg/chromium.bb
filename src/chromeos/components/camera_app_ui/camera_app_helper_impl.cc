@@ -31,6 +31,20 @@ mojom::ScreenState ToMojoScreenState(ash::ScreenBacklightState s) {
   }
 }
 
+mojom::FileMonitorResult ToMojoFileMonitorResult(
+    CameraAppUIDelegate::FileMonitorResult result) {
+  switch (result) {
+    case CameraAppUIDelegate::FileMonitorResult::DELETED:
+      return mojom::FileMonitorResult::DELETED;
+    case CameraAppUIDelegate::FileMonitorResult::CANCELED:
+      return mojom::FileMonitorResult::CANCELED;
+    case CameraAppUIDelegate::FileMonitorResult::ERROR:
+      return mojom::FileMonitorResult::ERROR;
+    default:
+      NOTREACHED();
+  }
+}
+
 bool HasExternalScreen() {
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
     if (!display.IsInternal()) {
@@ -66,17 +80,16 @@ CameraAppHelperImpl::CameraAppHelperImpl(
       has_external_screen_(HasExternalScreen()),
       pending_intent_id_(absl::nullopt),
       window_(window) {
+  DCHECK(camera_app_ui);
   DCHECK(window);
   window->SetProperty(ash::kCanConsumeSystemKeysKey, true);
   ash::TabletMode::Get()->AddObserver(this);
   ash::ScreenBacklight::Get()->AddObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
 }
 
 CameraAppHelperImpl::~CameraAppHelperImpl() {
   ash::TabletMode::Get()->RemoveObserver(this);
   ash::ScreenBacklight::Get()->RemoveObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
 
   if (pending_intent_id_.has_value()) {
     camera_result_callback_.Run(*pending_intent_id_,
@@ -89,10 +102,7 @@ void CameraAppHelperImpl::Bind(
     mojo::PendingReceiver<mojom::CameraAppHelper> receiver) {
   receiver_.reset();
   receiver_.Bind(std::move(receiver));
-
-  if (camera_app_ui_) {
-    pending_intent_id_ = ParseIntentIdFromUrl(camera_app_ui_->url());
-  }
+  pending_intent_id_ = ParseIntentIdFromUrl(camera_app_ui_->url());
 }
 
 void CameraAppHelperImpl::HandleCameraResult(
@@ -138,7 +148,6 @@ void CameraAppHelperImpl::SetScreenStateMonitor(
 
 void CameraAppHelperImpl::IsMetricsAndCrashReportingEnabled(
     IsMetricsAndCrashReportingEnabledCallback callback) {
-  DCHECK_NE(camera_app_ui_, nullptr);
   std::move(callback).Run(
       camera_app_ui_->delegate()->IsMetricsAndCrashReportingEnabled());
 }
@@ -161,27 +170,22 @@ void CameraAppHelperImpl::CheckExternalScreenState() {
 }
 
 void CameraAppHelperImpl::OpenFileInGallery(const std::string& name) {
-  DCHECK_NE(camera_app_ui_, nullptr);
   camera_app_ui_->delegate()->OpenFileInGallery(name);
 }
 
 void CameraAppHelperImpl::OpenFeedbackDialog(const std::string& placeholder) {
-  DCHECK_NE(camera_app_ui_, nullptr);
   camera_app_ui_->delegate()->OpenFeedbackDialog(placeholder);
 }
 
 void CameraAppHelperImpl::SetCameraUsageMonitor(
     mojo::PendingRemote<CameraUsageOwnershipMonitor> usage_monitor,
     SetCameraUsageMonitorCallback callback) {
-  DCHECK_NE(camera_app_ui_, nullptr);
   camera_app_ui_->app_window_manager()->SetCameraUsageMonitor(
       window_, std::move(usage_monitor), std::move(callback));
 }
 
 void CameraAppHelperImpl::GetWindowStateController(
     GetWindowStateControllerCallback callback) {
-  DCHECK_NE(camera_app_ui_, nullptr);
-
   if (!window_state_controller_) {
     window_state_controller_ =
         std::make_unique<chromeos::CameraAppWindowStateController>(
@@ -196,10 +200,6 @@ void CameraAppHelperImpl::GetWindowStateController(
 
 void CameraAppHelperImpl::SendNewCaptureBroadcast(bool is_video,
                                                   const std::string& name) {
-  // This function is only supported on SWA.
-  if (camera_app_ui_ == nullptr) {
-    return;
-  }
   auto file_path = camera_app_ui_->delegate()->GetFilePathInArcByName(name);
   if (file_path.empty()) {
     LOG(ERROR) << "Drop the broadcast request due to invalid file path in ARC "
@@ -208,6 +208,18 @@ void CameraAppHelperImpl::SendNewCaptureBroadcast(bool is_video,
     return;
   }
   send_broadcast_callback_.Run(is_video, file_path);
+}
+
+void CameraAppHelperImpl::MonitorFileDeletion(
+    const std::string& name,
+    MonitorFileDeletionCallback callback) {
+  camera_app_ui_->delegate()->MonitorFileDeletion(
+      name, base::BindOnce(
+                [](MonitorFileDeletionCallback callback,
+                   CameraAppUIDelegate::FileMonitorResult result) {
+                  std::move(callback).Run(ToMojoFileMonitorResult(result));
+                },
+                std::move(callback)));
 }
 
 void CameraAppHelperImpl::OnTabletModeStarted() {

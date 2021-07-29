@@ -6,7 +6,9 @@
 
 #include <stdint.h>
 
+#include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "base/check_op.h"
+#include "base/unguessable_token.h"
 #include "chromeos/components/personalization_app/mojom/personalization_app.mojom-forward.h"
 #include "chromeos/components/personalization_app/mojom/personalization_app.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -43,13 +45,45 @@ void FakePersonalizationAppUiDelegate::FetchImagesForCollection(
     FetchImagesForCollectionCallback callback) {
   DCHECK_EQ(collection_id, kFakeCollectionId);
   std::vector<chromeos::personalization_app::mojom::WallpaperImagePtr> images;
-  images.push_back(
-      chromeos::personalization_app::mojom::WallpaperImage::New(GURL(), 0));
+  images.push_back(chromeos::personalization_app::mojom::WallpaperImage::New(
+      GURL(), std::vector<std::string>(), 0));
   std::move(callback).Run(std::move(images));
+}
+
+void FakePersonalizationAppUiDelegate::GetLocalImages(
+    GetLocalImagesCallback callback) {
+  std::move(callback).Run({});
+}
+
+void FakePersonalizationAppUiDelegate::GetLocalImageThumbnail(
+    const base::UnguessableToken& id,
+    GetLocalImageThumbnailCallback callback) {
+  std::move(callback).Run(std::string());
+}
+
+void FakePersonalizationAppUiDelegate::GetCurrentWallpaper(
+    GetCurrentWallpaperCallback callback) {
+  std::move(callback).Run(
+      chromeos::personalization_app::mojom::CurrentWallpaper::New(
+          GURL("https://test.googleusercontent.com/0"),
+          std::vector<std::string>({"this is a test"}),
+          ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER,
+          ash::WallpaperType::CUSTOMIZED));
 }
 
 void FakePersonalizationAppUiDelegate::SelectWallpaper(
     uint64_t image_asset_id,
     SelectWallpaperCallback callback) {
   std::move(callback).Run(/*success=*/true);
+}
+
+void FakePersonalizationAppUiDelegate::SelectLocalImage(
+    const base::UnguessableToken& token,
+    SelectLocalImageCallback callback) {
+  std::move(callback).Run(/*success=*/true);
+}
+
+void FakePersonalizationAppUiDelegate::SetCustomWallpaperLayout(
+    ash::WallpaperLayout layout) {
+  return;
 }

@@ -52,10 +52,11 @@ using ResolverIntrinsicDerivativeTest = ResolverTestWithParam<std::string>;
 TEST_P(ResolverIntrinsicDerivativeTest, Scalar) {
   auto name = GetParam();
 
-  Global("ident", ty.f32(), ast::StorageClass::kInput);
+  Global("ident", ty.f32(), ast::StorageClass::kPrivate);
 
   auto* expr = Call(name, "ident");
-  WrapInFunction(expr);
+  Func("func", {}, ty.void_(), {Ignore(expr)},
+       {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
@@ -65,10 +66,11 @@ TEST_P(ResolverIntrinsicDerivativeTest, Scalar) {
 
 TEST_P(ResolverIntrinsicDerivativeTest, Vector) {
   auto name = GetParam();
-  Global("ident", ty.vec4<f32>(), ast::StorageClass::kInput);
+  Global("ident", ty.vec4<f32>(), ast::StorageClass::kPrivate);
 
   auto* expr = Call(name, "ident");
-  WrapInFunction(expr);
+  Func("func", {}, ty.void_(), {Ignore(expr)},
+       {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
@@ -109,7 +111,7 @@ using ResolverIntrinsic = ResolverTestWithParam<std::string>;
 TEST_P(ResolverIntrinsic, Test) {
   auto name = GetParam();
 
-  Global("my_var", ty.vec3<bool>(), ast::StorageClass::kInput);
+  Global("my_var", ty.vec3<bool>(), ast::StorageClass::kPrivate);
 
   auto* expr = Call(name, "my_var");
   WrapInFunction(expr);
@@ -127,7 +129,7 @@ using ResolverIntrinsicTest_FloatMethod = ResolverTestWithParam<std::string>;
 TEST_P(ResolverIntrinsicTest_FloatMethod, Vector) {
   auto name = GetParam();
 
-  Global("my_var", ty.vec3<f32>(), ast::StorageClass::kInput);
+  Global("my_var", ty.vec3<f32>(), ast::StorageClass::kPrivate);
 
   auto* expr = Call(name, "my_var");
   WrapInFunction(expr);
@@ -143,7 +145,7 @@ TEST_P(ResolverIntrinsicTest_FloatMethod, Vector) {
 TEST_P(ResolverIntrinsicTest_FloatMethod, Scalar) {
   auto name = GetParam();
 
-  Global("my_var", ty.f32(), ast::StorageClass::kInput);
+  Global("my_var", ty.f32(), ast::StorageClass::kPrivate);
 
   auto* expr = Call(name, "my_var");
   WrapInFunction(expr);
@@ -157,7 +159,7 @@ TEST_P(ResolverIntrinsicTest_FloatMethod, Scalar) {
 TEST_P(ResolverIntrinsicTest_FloatMethod, MissingParam) {
   auto name = GetParam();
 
-  Global("my_var", ty.f32(), ast::StorageClass::kInput);
+  Global("my_var", ty.f32(), ast::StorageClass::kPrivate);
 
   auto* expr = Call(name);
   WrapInFunction(expr);
@@ -174,7 +176,7 @@ TEST_P(ResolverIntrinsicTest_FloatMethod, MissingParam) {
 TEST_P(ResolverIntrinsicTest_FloatMethod, TooManyParams) {
   auto name = GetParam();
 
-  Global("my_var", ty.f32(), ast::StorageClass::kInput);
+  Global("my_var", ty.f32(), ast::StorageClass::kPrivate);
 
   auto* expr = Call(name, "my_var", 1.23f);
   WrapInFunction(expr);
@@ -243,8 +245,8 @@ class ResolverIntrinsicTest_TextureOperation
                       const ast::Type* type,
                       ast::ExpressionList* call_params) {
     if (type->UnwrapAll()->is_handle()) {
-      Global(name, type, ast::StorageClass::kNone, nullptr,
-             {
+      Global(name, type,
+             ast::DecorationList{
                  create<ast::BindingDecoration>(0),
                  create<ast::GroupDecoration>(0),
              });
@@ -274,13 +276,11 @@ TEST_P(ResolverIntrinsicTest_StorageTextureOperation, TextureLoadRo) {
   auto format = GetParam().format;
 
   auto* coords_type = GetCoordsType(dim, ty.i32());
-  auto* texture_type = ty.storage_texture(dim, format);
-  auto* ro_texture_type =
-      ty.access(ast::AccessControl::kReadOnly, texture_type);
+  auto* texture_type = ty.storage_texture(dim, format, ast::Access::kRead);
 
   ast::ExpressionList call_params;
 
-  add_call_param("texture", ro_texture_type, &call_params);
+  add_call_param("texture", texture_type, &call_params);
   add_call_param("coords", coords_type, &call_params);
 
   if (ast::IsTextureArray(dim)) {
@@ -378,7 +378,7 @@ INSTANTIATE_TEST_SUITE_P(
                     TextureTestParams{ast::TextureDimension::k3d}));
 
 TEST_F(ResolverIntrinsicTest, Dot_Vec2) {
-  Global("my_var", ty.vec2<f32>(), ast::StorageClass::kInput);
+  Global("my_var", ty.vec2<f32>(), ast::StorageClass::kPrivate);
 
   auto* expr = Call("dot", "my_var", "my_var");
   WrapInFunction(expr);
@@ -390,7 +390,7 @@ TEST_F(ResolverIntrinsicTest, Dot_Vec2) {
 }
 
 TEST_F(ResolverIntrinsicTest, Dot_Vec3) {
-  Global("my_var", ty.vec3<f32>(), ast::StorageClass::kInput);
+  Global("my_var", ty.vec3<f32>(), ast::StorageClass::kPrivate);
 
   auto* expr = Call("dot", "my_var", "my_var");
   WrapInFunction(expr);
@@ -402,7 +402,7 @@ TEST_F(ResolverIntrinsicTest, Dot_Vec3) {
 }
 
 TEST_F(ResolverIntrinsicTest, Dot_Vec4) {
-  Global("my_var", ty.vec4<f32>(), ast::StorageClass::kInput);
+  Global("my_var", ty.vec4<f32>(), ast::StorageClass::kPrivate);
 
   auto* expr = Call("dot", "my_var", "my_var");
   WrapInFunction(expr);
@@ -428,7 +428,7 @@ TEST_F(ResolverIntrinsicTest, Dot_Error_Scalar) {
 }
 
 TEST_F(ResolverIntrinsicTest, Dot_Error_VectorInt) {
-  Global("my_var", ty.vec4<i32>(), ast::StorageClass::kInput);
+  Global("my_var", ty.vec4<i32>(), ast::StorageClass::kPrivate);
 
   auto* expr = Call("dot", "my_var", "my_var");
   WrapInFunction(expr);
@@ -444,9 +444,9 @@ TEST_F(ResolverIntrinsicTest, Dot_Error_VectorInt) {
 }
 
 TEST_F(ResolverIntrinsicTest, Select) {
-  Global("my_var", ty.vec3<f32>(), ast::StorageClass::kInput);
+  Global("my_var", ty.vec3<f32>(), ast::StorageClass::kPrivate);
 
-  Global("bool_var", ty.vec3<bool>(), ast::StorageClass::kInput);
+  Global("bool_var", ty.vec3<bool>(), ast::StorageClass::kPrivate);
 
   auto* expr = Call("select", "my_var", "my_var", "bool_var");
   WrapInFunction(expr);
@@ -468,9 +468,10 @@ TEST_F(ResolverIntrinsicTest, Select_Error_NoParams) {
   EXPECT_EQ(r()->error(),
             R"(error: no matching call to select()
 
-2 candidate functions:
-  select(T, T, bool) -> T  where: T is scalar
-  select(vecN<T>, vecN<T>, vecN<bool>) -> vecN<T>  where: T is scalar
+3 candidate functions:
+  select(T, T, bool) -> T  where: T is f32, i32, u32 or bool
+  select(vecN<T>, vecN<T>, bool) -> vecN<T>  where: T is f32, i32, u32 or bool
+  select(vecN<T>, vecN<T>, vecN<bool>) -> vecN<T>  where: T is f32, i32, u32 or bool
 )");
 }
 
@@ -483,9 +484,10 @@ TEST_F(ResolverIntrinsicTest, Select_Error_SelectorInt) {
   EXPECT_EQ(r()->error(),
             R"(error: no matching call to select(i32, i32, i32)
 
-2 candidate functions:
-  select(T, T, bool) -> T  where: T is scalar
-  select(vecN<T>, vecN<T>, vecN<bool>) -> vecN<T>  where: T is scalar
+3 candidate functions:
+  select(T, T, bool) -> T  where: T is f32, i32, u32 or bool
+  select(vecN<T>, vecN<T>, bool) -> vecN<T>  where: T is f32, i32, u32 or bool
+  select(vecN<T>, vecN<T>, vecN<bool>) -> vecN<T>  where: T is f32, i32, u32 or bool
 )");
 }
 
@@ -500,9 +502,10 @@ TEST_F(ResolverIntrinsicTest, Select_Error_Matrix) {
   EXPECT_EQ(r()->error(),
             R"(error: no matching call to select(mat2x2<f32>, mat2x2<f32>, bool)
 
-2 candidate functions:
-  select(T, T, bool) -> T  where: T is scalar
-  select(vecN<T>, vecN<T>, vecN<bool>) -> vecN<T>  where: T is scalar
+3 candidate functions:
+  select(T, T, bool) -> T  where: T is f32, i32, u32 or bool
+  select(vecN<T>, vecN<T>, bool) -> vecN<T>  where: T is f32, i32, u32 or bool
+  select(vecN<T>, vecN<T>, vecN<bool>) -> vecN<T>  where: T is f32, i32, u32 or bool
 )");
 }
 
@@ -515,9 +518,10 @@ TEST_F(ResolverIntrinsicTest, Select_Error_MismatchTypes) {
   EXPECT_EQ(r()->error(),
             R"(error: no matching call to select(f32, vec2<f32>, bool)
 
-2 candidate functions:
-  select(T, T, bool) -> T  where: T is scalar
-  select(vecN<T>, vecN<T>, vecN<bool>) -> vecN<T>  where: T is scalar
+3 candidate functions:
+  select(T, T, bool) -> T  where: T is f32, i32, u32 or bool
+  select(vecN<T>, vecN<T>, bool) -> vecN<T>  where: T is f32, i32, u32 or bool
+  select(vecN<T>, vecN<T>, vecN<bool>) -> vecN<T>  where: T is f32, i32, u32 or bool
 )");
 }
 
@@ -531,9 +535,10 @@ TEST_F(ResolverIntrinsicTest, Select_Error_MismatchVectorSize) {
   EXPECT_EQ(r()->error(),
             R"(error: no matching call to select(vec2<f32>, vec3<f32>, bool)
 
-2 candidate functions:
-  select(T, T, bool) -> T  where: T is scalar
-  select(vecN<T>, vecN<T>, vecN<bool>) -> vecN<T>  where: T is scalar
+3 candidate functions:
+  select(T, T, bool) -> T  where: T is f32, i32, u32 or bool
+  select(vecN<T>, vecN<T>, bool) -> vecN<T>  where: T is f32, i32, u32 or bool
+  select(vecN<T>, vecN<T>, vecN<bool>) -> vecN<T>  where: T is f32, i32, u32 or bool
 )");
 }
 
@@ -582,8 +587,8 @@ using ResolverIntrinsicTest_DataPacking = ResolverTestWithParam<IntrinsicData>;
 TEST_P(ResolverIntrinsicTest_DataPacking, InferType) {
   auto param = GetParam();
 
-  bool pack4 = param.intrinsic == IntrinsicType::kPack4x8Snorm ||
-               param.intrinsic == IntrinsicType::kPack4x8Unorm;
+  bool pack4 = param.intrinsic == IntrinsicType::kPack4x8snorm ||
+               param.intrinsic == IntrinsicType::kPack4x8unorm;
 
   auto* call = pack4 ? Call(param.name, vec4<f32>(1.f, 2.f, 3.f, 4.f))
                      : Call(param.name, vec2<f32>(1.f, 2.f));
@@ -597,8 +602,8 @@ TEST_P(ResolverIntrinsicTest_DataPacking, InferType) {
 TEST_P(ResolverIntrinsicTest_DataPacking, Error_IncorrectParamType) {
   auto param = GetParam();
 
-  bool pack4 = param.intrinsic == IntrinsicType::kPack4x8Snorm ||
-               param.intrinsic == IntrinsicType::kPack4x8Unorm;
+  bool pack4 = param.intrinsic == IntrinsicType::kPack4x8snorm ||
+               param.intrinsic == IntrinsicType::kPack4x8unorm;
 
   auto* call = pack4 ? Call(param.name, vec4<i32>(1, 2, 3, 4))
                      : Call(param.name, vec2<i32>(1, 2));
@@ -625,8 +630,8 @@ TEST_P(ResolverIntrinsicTest_DataPacking, Error_NoParams) {
 TEST_P(ResolverIntrinsicTest_DataPacking, Error_TooManyParams) {
   auto param = GetParam();
 
-  bool pack4 = param.intrinsic == IntrinsicType::kPack4x8Snorm ||
-               param.intrinsic == IntrinsicType::kPack4x8Unorm;
+  bool pack4 = param.intrinsic == IntrinsicType::kPack4x8snorm ||
+               param.intrinsic == IntrinsicType::kPack4x8unorm;
 
   auto* call = pack4 ? Call(param.name, vec4<f32>(1.f, 2.f, 3.f, 4.f), 1.0f)
                      : Call(param.name, vec2<f32>(1.f, 2.f), 1.0f);
@@ -642,19 +647,19 @@ INSTANTIATE_TEST_SUITE_P(
     ResolverTest,
     ResolverIntrinsicTest_DataPacking,
     testing::Values(
-        IntrinsicData{"pack4x8snorm", IntrinsicType::kPack4x8Snorm},
-        IntrinsicData{"pack4x8unorm", IntrinsicType::kPack4x8Unorm},
-        IntrinsicData{"pack2x16snorm", IntrinsicType::kPack2x16Snorm},
-        IntrinsicData{"pack2x16unorm", IntrinsicType::kPack2x16Unorm},
-        IntrinsicData{"pack2x16float", IntrinsicType::kPack2x16Float}));
+        IntrinsicData{"pack4x8snorm", IntrinsicType::kPack4x8snorm},
+        IntrinsicData{"pack4x8unorm", IntrinsicType::kPack4x8unorm},
+        IntrinsicData{"pack2x16snorm", IntrinsicType::kPack2x16snorm},
+        IntrinsicData{"pack2x16unorm", IntrinsicType::kPack2x16unorm},
+        IntrinsicData{"pack2x16float", IntrinsicType::kPack2x16float}));
 
 using ResolverIntrinsicTest_DataUnpacking =
     ResolverTestWithParam<IntrinsicData>;
 TEST_P(ResolverIntrinsicTest_DataUnpacking, InferType) {
   auto param = GetParam();
 
-  bool pack4 = param.intrinsic == IntrinsicType::kUnpack4x8Snorm ||
-               param.intrinsic == IntrinsicType::kUnpack4x8Unorm;
+  bool pack4 = param.intrinsic == IntrinsicType::kUnpack4x8snorm ||
+               param.intrinsic == IntrinsicType::kUnpack4x8unorm;
 
   auto* call = Call(param.name, 1u);
   WrapInFunction(call);
@@ -673,11 +678,11 @@ INSTANTIATE_TEST_SUITE_P(
     ResolverTest,
     ResolverIntrinsicTest_DataUnpacking,
     testing::Values(
-        IntrinsicData{"unpack4x8snorm", IntrinsicType::kUnpack4x8Snorm},
-        IntrinsicData{"unpack4x8unorm", IntrinsicType::kUnpack4x8Unorm},
-        IntrinsicData{"unpack2x16snorm", IntrinsicType::kUnpack2x16Snorm},
-        IntrinsicData{"unpack2x16unorm", IntrinsicType::kUnpack2x16Unorm},
-        IntrinsicData{"unpack2x16float", IntrinsicType::kUnpack2x16Float}));
+        IntrinsicData{"unpack4x8snorm", IntrinsicType::kUnpack4x8snorm},
+        IntrinsicData{"unpack4x8unorm", IntrinsicType::kUnpack4x8unorm},
+        IntrinsicData{"unpack2x16snorm", IntrinsicType::kUnpack2x16snorm},
+        IntrinsicData{"unpack2x16unorm", IntrinsicType::kUnpack2x16unorm},
+        IntrinsicData{"unpack2x16float", IntrinsicType::kUnpack2x16float}));
 
 using ResolverIntrinsicTest_SingleParam = ResolverTestWithParam<IntrinsicData>;
 TEST_P(ResolverIntrinsicTest_SingleParam, Scalar) {
@@ -768,14 +773,13 @@ TEST_F(ResolverIntrinsicDataTest, ArrayLength_Vector) {
   auto* ary = ty.array<i32>();
   auto* str = Structure("S", {Member("x", ary)},
                         {create<ast::StructBlockDecoration>()});
-  auto* ac = ty.access(ast::AccessControl::kReadOnly, str);
-  Global("a", ac, ast::StorageClass::kStorage, nullptr,
-         {
+  Global("a", ty.Of(str), ast::StorageClass::kStorage, ast::Access::kRead,
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
          });
 
-  auto* call = Call("arrayLength", MemberAccessor("a", "x"));
+  auto* call = Call("arrayLength", AddressOf(MemberAccessor("a", "x")));
   WrapInFunction(call);
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -785,16 +789,19 @@ TEST_F(ResolverIntrinsicDataTest, ArrayLength_Vector) {
 }
 
 TEST_F(ResolverIntrinsicDataTest, ArrayLength_Error_ArraySized) {
-  Global("arr", ty.array<int, 4>(), ast::StorageClass::kInput);
-  auto* call = Call("arrayLength", "arr");
+  Global("arr", ty.array<int, 4>(), ast::StorageClass::kPrivate);
+  auto* call = Call("arrayLength", AddressOf("arr"));
   WrapInFunction(call);
 
   EXPECT_FALSE(r()->Resolve());
 
-  EXPECT_EQ(r()->error(),
-            "error: no matching call to arrayLength(array<i32, 4>)\n\n"
-            "1 candidate function:\n"
-            "  arrayLength(array<T>) -> u32\n");
+  EXPECT_EQ(
+      r()->error(),
+      R"(error: no matching call to arrayLength(ptr<private, array<i32, 4>, read_write>)
+
+1 candidate function:
+  arrayLength(ptr<storage, array<T>, A>) -> u32
+)");
 }
 
 TEST_F(ResolverIntrinsicDataTest, Normalize_Vector) {
@@ -814,10 +821,11 @@ TEST_F(ResolverIntrinsicDataTest, Normalize_Error_NoParams) {
 
   EXPECT_FALSE(r()->Resolve());
 
-  EXPECT_EQ(r()->error(),
-            "error: no matching call to normalize()\n\n"
-            "1 candidate function:\n"
-            "  normalize(vecN<f32>) -> vecN<f32>\n");
+  EXPECT_EQ(r()->error(), R"(error: no matching call to normalize()
+
+1 candidate function:
+  normalize(vecN<f32>) -> vecN<f32>
+)");
 }
 
 TEST_F(ResolverIntrinsicDataTest, FrexpScalar) {
@@ -850,12 +858,14 @@ TEST_F(ResolverIntrinsicDataTest, Frexp_Error_FirstParamInt) {
 
   EXPECT_FALSE(r()->Resolve());
 
-  EXPECT_EQ(r()->error(),
-            "error: no matching call to frexp(i32, ptr<workgroup, i32>)\n\n"
-            "2 candidate functions:\n"
-            "  frexp(f32, ptr<T>) -> f32  where: T is i32 or u32\n"
-            "  frexp(vecN<f32>, ptr<vecN<T>>) -> vecN<f32>  "
-            "where: T is i32 or u32\n");
+  EXPECT_EQ(
+      r()->error(),
+      R"(error: no matching call to frexp(i32, ptr<workgroup, i32, read_write>)
+
+2 candidate functions:
+  frexp(f32, ptr<S, i32, A>) -> f32  where: S is function, private or workgroup
+  frexp(vecN<f32>, ptr<S, vecN<i32>, A>) -> vecN<f32>  where: S is function, private or workgroup
+)");
 }
 
 TEST_F(ResolverIntrinsicDataTest, Frexp_Error_SecondParamFloatPtr) {
@@ -865,12 +875,14 @@ TEST_F(ResolverIntrinsicDataTest, Frexp_Error_SecondParamFloatPtr) {
 
   EXPECT_FALSE(r()->Resolve());
 
-  EXPECT_EQ(r()->error(),
-            "error: no matching call to frexp(f32, ptr<workgroup, f32>)\n\n"
-            "2 candidate functions:\n"
-            "  frexp(f32, ptr<T>) -> f32  where: T is i32 or u32\n"
-            "  frexp(vecN<f32>, ptr<vecN<T>>) -> vecN<f32>  "
-            "where: T is i32 or u32\n");
+  EXPECT_EQ(
+      r()->error(),
+      R"(error: no matching call to frexp(f32, ptr<workgroup, f32, read_write>)
+
+2 candidate functions:
+  frexp(f32, ptr<S, i32, A>) -> f32  where: S is function, private or workgroup
+  frexp(vecN<f32>, ptr<S, vecN<i32>, A>) -> vecN<f32>  where: S is function, private or workgroup
+)");
 }
 
 TEST_F(ResolverIntrinsicDataTest, Frexp_Error_SecondParamNotAPointer) {
@@ -879,12 +891,12 @@ TEST_F(ResolverIntrinsicDataTest, Frexp_Error_SecondParamNotAPointer) {
 
   EXPECT_FALSE(r()->Resolve());
 
-  EXPECT_EQ(r()->error(),
-            "error: no matching call to frexp(f32, i32)\n\n"
-            "2 candidate functions:\n"
-            "  frexp(f32, ptr<T>) -> f32  where: T is i32 or u32\n"
-            "  frexp(vecN<f32>, ptr<vecN<T>>) -> vecN<f32>  "
-            "where: T is i32 or u32\n");
+  EXPECT_EQ(r()->error(), R"(error: no matching call to frexp(f32, i32)
+
+2 candidate functions:
+  frexp(f32, ptr<S, i32, A>) -> f32  where: S is function, private or workgroup
+  frexp(vecN<f32>, ptr<S, vecN<i32>, A>) -> vecN<f32>  where: S is function, private or workgroup
+)");
 }
 
 TEST_F(ResolverIntrinsicDataTest, Frexp_Error_VectorSizesDontMatch) {
@@ -896,11 +908,11 @@ TEST_F(ResolverIntrinsicDataTest, Frexp_Error_VectorSizesDontMatch) {
 
   EXPECT_EQ(
       r()->error(),
-      R"(error: no matching call to frexp(vec2<f32>, ptr<workgroup, vec4<i32>>)
+      R"(error: no matching call to frexp(vec2<f32>, ptr<workgroup, vec4<i32>, read_write>)
 
 2 candidate functions:
-  frexp(f32, ptr<T>) -> f32  where: T is i32 or u32
-  frexp(vecN<f32>, ptr<vecN<T>>) -> vecN<f32>  where: T is i32 or u32
+  frexp(vecN<f32>, ptr<S, vecN<i32>, A>) -> vecN<f32>  where: S is function, private or workgroup
+  frexp(f32, ptr<S, i32, A>) -> f32  where: S is function, private or workgroup
 )");
 }
 
@@ -934,11 +946,14 @@ TEST_F(ResolverIntrinsicDataTest, Modf_Error_FirstParamInt) {
 
   EXPECT_FALSE(r()->Resolve());
 
-  EXPECT_EQ(r()->error(),
-            "error: no matching call to modf(i32, ptr<workgroup, f32>)\n\n"
-            "2 candidate functions:\n"
-            "  modf(f32, ptr<f32>) -> f32\n"
-            "  modf(vecN<f32>, ptr<vecN<f32>>) -> vecN<f32>\n");
+  EXPECT_EQ(
+      r()->error(),
+      R"(error: no matching call to modf(i32, ptr<workgroup, f32, read_write>)
+
+2 candidate functions:
+  modf(f32, ptr<S, f32, A>) -> f32  where: S is function, private or workgroup
+  modf(vecN<f32>, ptr<S, vecN<f32>, A>) -> vecN<f32>  where: S is function, private or workgroup
+)");
 }
 
 TEST_F(ResolverIntrinsicDataTest, Modf_Error_SecondParamIntPtr) {
@@ -948,11 +963,14 @@ TEST_F(ResolverIntrinsicDataTest, Modf_Error_SecondParamIntPtr) {
 
   EXPECT_FALSE(r()->Resolve());
 
-  EXPECT_EQ(r()->error(),
-            "error: no matching call to modf(f32, ptr<workgroup, i32>)\n\n"
-            "2 candidate functions:\n"
-            "  modf(f32, ptr<f32>) -> f32\n"
-            "  modf(vecN<f32>, ptr<vecN<f32>>) -> vecN<f32>\n");
+  EXPECT_EQ(
+      r()->error(),
+      R"(error: no matching call to modf(f32, ptr<workgroup, i32, read_write>)
+
+2 candidate functions:
+  modf(f32, ptr<S, f32, A>) -> f32  where: S is function, private or workgroup
+  modf(vecN<f32>, ptr<S, vecN<f32>, A>) -> vecN<f32>  where: S is function, private or workgroup
+)");
 }
 
 TEST_F(ResolverIntrinsicDataTest, Modf_Error_SecondParamNotAPointer) {
@@ -961,11 +979,12 @@ TEST_F(ResolverIntrinsicDataTest, Modf_Error_SecondParamNotAPointer) {
 
   EXPECT_FALSE(r()->Resolve());
 
-  EXPECT_EQ(r()->error(),
-            "error: no matching call to modf(f32, f32)\n\n"
-            "2 candidate functions:\n"
-            "  modf(f32, ptr<f32>) -> f32\n"
-            "  modf(vecN<f32>, ptr<vecN<f32>>) -> vecN<f32>\n");
+  EXPECT_EQ(r()->error(), R"(error: no matching call to modf(f32, f32)
+
+2 candidate functions:
+  modf(f32, ptr<S, f32, A>) -> f32  where: S is function, private or workgroup
+  modf(vecN<f32>, ptr<S, vecN<f32>, A>) -> vecN<f32>  where: S is function, private or workgroup
+)");
 }
 
 TEST_F(ResolverIntrinsicDataTest, Modf_Error_VectorSizesDontMatch) {
@@ -977,11 +996,11 @@ TEST_F(ResolverIntrinsicDataTest, Modf_Error_VectorSizesDontMatch) {
 
   EXPECT_EQ(
       r()->error(),
-      R"(error: no matching call to modf(vec2<f32>, ptr<workgroup, vec4<f32>>)
+      R"(error: no matching call to modf(vec2<f32>, ptr<workgroup, vec4<f32>, read_write>)
 
 2 candidate functions:
-  modf(vecN<f32>, ptr<vecN<f32>>) -> vecN<f32>
-  modf(f32, ptr<f32>) -> f32
+  modf(vecN<f32>, ptr<S, vecN<f32>, A>) -> vecN<f32>  where: S is function, private or workgroup
+  modf(f32, ptr<S, f32, A>) -> f32  where: S is function, private or workgroup
 )");
 }
 
@@ -1171,8 +1190,7 @@ INSTANTIATE_TEST_SUITE_P(
     ResolverIntrinsicTest_TwoParam,
     testing::Values(IntrinsicData{"atan2", IntrinsicType::kAtan2},
                     IntrinsicData{"pow", IntrinsicType::kPow},
-                    IntrinsicData{"step", IntrinsicType::kStep},
-                    IntrinsicData{"reflect", IntrinsicType::kReflect}));
+                    IntrinsicData{"step", IntrinsicType::kStep}));
 
 TEST_F(ResolverIntrinsicTest, Distance_Scalar) {
   auto* call = Call("distance", 1.f, 1.f);
@@ -1350,8 +1368,7 @@ INSTANTIATE_TEST_SUITE_P(
     ResolverIntrinsicTest_ThreeParam,
     testing::Values(IntrinsicData{"mix", IntrinsicType::kMix},
                     IntrinsicData{"smoothStep", IntrinsicType::kSmoothStep},
-                    IntrinsicData{"fma", IntrinsicType::kFma},
-                    IntrinsicData{"faceForward", IntrinsicType::kFaceForward}));
+                    IntrinsicData{"fma", IntrinsicType::kFma}));
 
 using ResolverIntrinsicTest_ThreeParam_FloatOrInt =
     ResolverTestWithParam<IntrinsicData>;
@@ -1654,10 +1671,11 @@ TEST_F(ResolverIntrinsicTest, Determinant_NotSquare) {
 
   EXPECT_FALSE(r()->Resolve());
 
-  EXPECT_EQ(r()->error(),
-            "error: no matching call to determinant(mat2x3<f32>)\n\n"
-            "1 candidate function:\n"
-            "  determinant(matNxN<f32>) -> f32\n");
+  EXPECT_EQ(r()->error(), R"(error: no matching call to determinant(mat2x3<f32>)
+
+1 candidate function:
+  determinant(matNxN<f32>) -> f32
+)");
 }
 
 TEST_F(ResolverIntrinsicTest, Determinant_NotMatrix) {
@@ -1668,10 +1686,11 @@ TEST_F(ResolverIntrinsicTest, Determinant_NotMatrix) {
 
   EXPECT_FALSE(r()->Resolve());
 
-  EXPECT_EQ(r()->error(),
-            "error: no matching call to determinant(f32)\n\n"
-            "1 candidate function:\n"
-            "  determinant(matNxN<f32>) -> f32\n");
+  EXPECT_EQ(r()->error(), R"(error: no matching call to determinant(f32)
+
+1 candidate function:
+  determinant(matNxN<f32>) -> f32
+)");
 }
 
 using ResolverIntrinsicTest_Texture =
@@ -1852,6 +1871,18 @@ const char* expected_texture_overload(
       return R"(textureSampleCompare(texture, sampler, coords, depth_ref))";
     case ValidTextureOverload::kSampleCompareDepthCubeArrayF32:
       return R"(textureSampleCompare(texture, sampler, coords, array_index, depth_ref))";
+    case ValidTextureOverload::kSampleCompareLevelDepth2dF32:
+      return R"(textureSampleCompare(texture, sampler, coords, depth_ref))";
+    case ValidTextureOverload::kSampleCompareLevelDepth2dOffsetF32:
+      return R"(textureSampleCompare(texture, sampler, coords, depth_ref, offset))";
+    case ValidTextureOverload::kSampleCompareLevelDepth2dArrayF32:
+      return R"(textureSampleCompare(texture, sampler, coords, array_index, depth_ref))";
+    case ValidTextureOverload::kSampleCompareLevelDepth2dArrayOffsetF32:
+      return R"(textureSampleCompare(texture, sampler, coords, array_index, depth_ref, offset))";
+    case ValidTextureOverload::kSampleCompareLevelDepthCubeF32:
+      return R"(textureSampleCompare(texture, sampler, coords, depth_ref))";
+    case ValidTextureOverload::kSampleCompareLevelDepthCubeArrayF32:
+      return R"(textureSampleCompare(texture, sampler, coords, array_index, depth_ref))";
     case ValidTextureOverload::kLoad1dLevelF32:
       return R"(textureLoad(texture, coords, level))";
     case ValidTextureOverload::kLoad1dLevelU32:
@@ -1928,7 +1959,8 @@ TEST_P(ResolverIntrinsicTest_Texture, Call) {
   param.buildSamplerVariable(this);
 
   auto* call = Call(param.function, param.args(this));
-  WrapInFunction(call);
+  Func("func", {}, ty.void_(), {Ignore(call)},
+       {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
 
   ASSERT_TRUE(r()->Resolve()) << r()->error();
 
@@ -1940,16 +1972,16 @@ TEST_P(ResolverIntrinsicTest_Texture, Call) {
         EXPECT_TRUE(TypeOf(call)->Is<sem::I32>());
         break;
       case ast::TextureDimension::k2d:
-      case ast::TextureDimension::k2dArray: {
+      case ast::TextureDimension::k2dArray:
+      case ast::TextureDimension::kCube:
+      case ast::TextureDimension::kCubeArray: {
         auto* vec = As<sem::Vector>(TypeOf(call));
         ASSERT_NE(vec, nullptr);
         EXPECT_EQ(vec->size(), 2u);
         EXPECT_TRUE(vec->type()->Is<sem::I32>());
         break;
       }
-      case ast::TextureDimension::k3d:
-      case ast::TextureDimension::kCube:
-      case ast::TextureDimension::kCubeArray: {
+      case ast::TextureDimension::k3d: {
         auto* vec = As<sem::Vector>(TypeOf(call));
         ASSERT_NE(vec, nullptr);
         EXPECT_EQ(vec->size(), 3u);

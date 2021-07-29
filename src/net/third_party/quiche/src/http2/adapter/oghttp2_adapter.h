@@ -19,6 +19,7 @@ class OgHttp2Adapter : public Http2Adapter {
   ~OgHttp2Adapter();
 
   // From Http2Adapter.
+  bool IsServerSession() const override;
   ssize_t ProcessBytes(absl::string_view bytes) override;
   void SubmitSettings(absl::Span<const Http2Setting> settings) override;
   void SubmitPriorityForStream(Http2StreamId stream_id,
@@ -26,17 +27,37 @@ class OgHttp2Adapter : public Http2Adapter {
                                int weight,
                                bool exclusive) override;
   void SubmitPing(Http2PingId ping_id) override;
+  void SubmitShutdownNotice() override;
   void SubmitGoAway(Http2StreamId last_accepted_stream_id,
                     Http2ErrorCode error_code,
                     absl::string_view opaque_data) override;
   void SubmitWindowUpdate(Http2StreamId stream_id,
                           int window_increment) override;
   void SubmitMetadata(Http2StreamId stream_id, bool fin) override;
-  std::string GetBytesToWrite(absl::optional<size_t> max_bytes) override;
-  int GetPeerConnectionWindow() const override;
+  int Send() override;
+  int GetSendWindowSize() const override;
+  int GetStreamSendWindowSize(Http2StreamId stream_id) const override;
+  int GetStreamReceiveWindowLimit(Http2StreamId stream_id) const override;
+  int GetStreamReceiveWindowSize(Http2StreamId stream_id) const override;
+  int GetReceiveWindowSize() const override;
+  int GetHpackEncoderDynamicTableSize() const override;
+  int GetHpackDecoderDynamicTableSize() const override;
+  Http2StreamId GetHighestReceivedStreamId() const override;
   void MarkDataConsumedForStream(Http2StreamId stream_id,
                                  size_t num_bytes) override;
   void SubmitRst(Http2StreamId stream_id, Http2ErrorCode error_code) override;
+  int32_t SubmitRequest(absl::Span<const Header> headers,
+                        std::unique_ptr<DataFrameSource> data_source,
+                        void* user_data) override;
+  int SubmitResponse(Http2StreamId stream_id, absl::Span<const Header> headers,
+                     std::unique_ptr<DataFrameSource> data_source) override;
+
+  int SubmitTrailer(Http2StreamId stream_id,
+                    absl::Span<const Header> trailers) override;
+
+  void SetStreamUserData(Http2StreamId stream_id, void* user_data) override;
+  void* GetStreamUserData(Http2StreamId stream_id) override;
+  bool ResumeStream(Http2StreamId stream_id) override;
 
   const Http2Session& session() const;
 

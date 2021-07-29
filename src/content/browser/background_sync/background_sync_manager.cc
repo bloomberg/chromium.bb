@@ -19,7 +19,6 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/background_sync/background_sync_metrics.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -33,6 +32,7 @@
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -784,7 +784,7 @@ void BackgroundSyncManager::RegisterCheckIfHasMainFrame(
     StatusAndRegistrationCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  ServiceWorkerRegistration* sw_registration =
+  scoped_refptr<ServiceWorkerRegistration> sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);
   if (!sw_registration || !sw_registration->active_version()) {
     RecordFailureAndPostError(GetBackgroundSyncType(options),
@@ -836,7 +836,7 @@ void BackgroundSyncManager::RegisterImpl(
     return;
   }
 
-  ServiceWorkerRegistration* sw_registration =
+  scoped_refptr<ServiceWorkerRegistration> sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);
   if (!sw_registration || !sw_registration->active_version()) {
     RecordFailureAndPostError(GetBackgroundSyncType(options),
@@ -876,7 +876,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
   }
   DCHECK_EQ(permission_statuses.first, PermissionStatus::GRANTED);
 
-  ServiceWorkerRegistration* sw_registration =
+  scoped_refptr<ServiceWorkerRegistration> sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);
   if (!sw_registration || !sw_registration->active_version()) {
     // The service worker was shut down in the interim.
@@ -978,7 +978,7 @@ void BackgroundSyncManager::RegisterDidGetDelay(
   if (registration.sync_type() == BackgroundSyncType::PERIODIC)
     registration.set_delay_until(clock_->Now() + delay);
 
-  ServiceWorkerRegistration* sw_registration =
+  scoped_refptr<ServiceWorkerRegistration> sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);
   if (!sw_registration || !sw_registration->active_version()) {
     // The service worker was shut down in the interim.
@@ -1315,7 +1315,7 @@ void BackgroundSyncManager::StoreDataInBackend(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   service_worker_context_->StoreRegistrationUserData(
-      sw_registration_id, storage::StorageKey(origin), {{backend_key, data}},
+      sw_registration_id, blink::StorageKey(origin), {{backend_key, data}},
       std::move(callback));
 }
 
@@ -1362,7 +1362,7 @@ void BackgroundSyncManager::DispatchSyncEvent(
   if (devtools_context_->IsRecording(
           DevToolsBackgroundService::kBackgroundSync)) {
     devtools_context_->LogBackgroundServiceEventOnCoreThread(
-        active_version->registration_id(), active_version->origin(),
+        active_version->registration_id(), active_version->key().origin(),
         DevToolsBackgroundService::kBackgroundSync,
         /* event_name= */ "Dispatched sync event",
         /* instance_id= */ tag,
@@ -1404,7 +1404,7 @@ void BackgroundSyncManager::DispatchPeriodicSyncEvent(
   if (devtools_context_->IsRecording(
           DevToolsBackgroundService::kPeriodicBackgroundSync)) {
     devtools_context_->LogBackgroundServiceEventOnCoreThread(
-        active_version->registration_id(), active_version->origin(),
+        active_version->registration_id(), active_version->key().origin(),
         DevToolsBackgroundService::kPeriodicBackgroundSync,
         /* event_name= */ "Dispatched periodicsync event",
         /* instance_id= */ tag,
@@ -1414,7 +1414,7 @@ void BackgroundSyncManager::DispatchPeriodicSyncEvent(
 
 void BackgroundSyncManager::HasMainFrameWindowClient(const url::Origin& origin,
                                                      BoolCallback callback) {
-  service_worker_context_->HasMainFrameWindowClient(storage::StorageKey(origin),
+  service_worker_context_->HasMainFrameWindowClient(blink::StorageKey(origin),
                                                     std::move(callback));
 }
 
@@ -1954,7 +1954,7 @@ void BackgroundSyncManager::FireReadyEventsImpl(
     // BackgroundSyncRegistrations should be changed to use StorageKey.
     service_worker_context_->FindReadyRegistrationForId(
         service_worker_registration_id,
-        storage::StorageKey(
+        blink::StorageKey(
             active_registrations_[service_worker_registration_id].origin),
         base::BindOnce(
             &BackgroundSyncManager::FireReadyEventsDidFindRegistration,

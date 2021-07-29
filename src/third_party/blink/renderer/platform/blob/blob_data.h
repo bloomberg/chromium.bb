@@ -43,6 +43,7 @@
 #include "base/thread_annotations.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -103,6 +104,8 @@ class PLATFORM_EXPORT BlobData {
 
   explicit BlobData(
       FileCompositionStatus = FileCompositionStatus::NO_UNKNOWN_SIZE_FILES);
+  BlobData(const BlobData&) = delete;
+  BlobData& operator=(const BlobData&) = delete;
   ~BlobData();
 
   // Calling append* on objects returned by createFor___WithUnknownSize will
@@ -166,8 +169,6 @@ class PLATFORM_EXPORT BlobData {
   Vector<mojom::blink::DataElementPtr> elements_;
   size_t current_memory_population_ = 0;
   BlobBytesProvider* last_bytes_provider_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(BlobData);
 };
 
 class PLATFORM_EXPORT BlobDataHandle

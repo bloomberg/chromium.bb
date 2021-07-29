@@ -1,6 +1,6 @@
 Name: R8
 URL: https://r8.googlesource.com/r8
-Version: 3.1.2-dev
+Version: 3.1.13.alpha
 License: BSD 3-Clause
 License File: NOT_SHIPPED
 Security Critical: no
@@ -35,14 +35,16 @@ autoninja -C out/Debug third_party/r8:custom_d8_java
 cp out/Debug/obj/third_party/r8/custom_d8_java.javac.jar third_party/r8/custom_d8.jar
 
 * For a new version of r8:
-  * Find the latest successful run of the build bot:
-    * https://ci.chromium.org/p/chromium/builders/ci/3pp-linux-amd64-packager
-    * The bot autoruns every 6 hours. Ping a trooper to trigger it if you need it sooner.
-      * https://luci-scheduler.appspot.com/jobs/chromium/3pp-linux-amd64-packager
-  * Go to its log page and look under:
-    * Expand "building chromium/third_party/r8" to see the CIPD instance ID.
+  * Find the latest instance from:
+    https://chrome-infra-packages.appspot.com/p/chromium/third_party/r8/+/
+    * These instances are uploaded by the build bot:
+      https://ci.chromium.org/p/chromium/builders/ci/3pp-linux-amd64-packager
+      * The bot autoruns every 6 hours. Ping a trooper or a clank build core dev to
+        trigger it if you need it sooner:
+        https://luci-scheduler.appspot.com/jobs/chromium/3pp-linux-amd64-packager
   * Copy this instance ID to the r8 entry in //DEPS.
-  * Update this file with the new version string and submit.
+  * Update this file with the new version string for that instance and submit.
+    * Use the version after the @ sign.
 
 * If patching fails:
 git clone https://r8.googlesource.com/r8
@@ -56,7 +58,7 @@ git checkout -b my_branch
 git am $CHROMIUM_SRC/third_party/r8/3pp/patches/*.patch
   * Fix patch conflicts.
   * Save new patches. Change number if expecting more or fewer patches:
-git format-patch -2 -o $CHROMIUM_SRC/third_party/r8/3pp/patches
+git format-patch origin/main..HEAD -o $CHROMIUM_SRC/third_party/r8/3pp/patches
   * Submit these fixed patches and the bot will automatically retry.
 
 * Local development (see above for setting up the r8 repo and applying patches):

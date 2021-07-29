@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/paint/svg_inline_text_box_painter.h"
 
 #include <memory>
+
+#include "base/stl_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
@@ -379,9 +381,12 @@ void SVGInlineTextBoxPainter::PaintDecoration(const PaintInfo& paint_info,
         if (decoration_style.HasFill()) {
           PaintFlags fill_flags;
           if (!SVGObjectPainter(*decoration_layout_object)
-                   .PreparePaint(paint_info, decoration_style, kApplyToFillMode,
-                                 fill_flags))
+                   .PreparePaint(paint_info.context,
+                                 paint_info.IsRenderingClipPathAsMaskImage(),
+                                 decoration_style, kApplyToFillMode,
+                                 fill_flags)) {
             break;
+          }
           fill_flags.setAntiAlias(true);
           paint_info.context.DrawPath(path.GetSkPath(), fill_flags);
         }
@@ -390,9 +395,12 @@ void SVGInlineTextBoxPainter::PaintDecoration(const PaintInfo& paint_info,
         if (decoration_style.HasVisibleStroke()) {
           PaintFlags stroke_flags;
           if (!SVGObjectPainter(*decoration_layout_object)
-                   .PreparePaint(paint_info, decoration_style,
-                                 kApplyToStrokeMode, stroke_flags))
+                   .PreparePaint(paint_info.context,
+                                 paint_info.IsRenderingClipPathAsMaskImage(),
+                                 decoration_style, kApplyToStrokeMode,
+                                 stroke_flags)) {
             break;
+          }
           stroke_flags.setAntiAlias(true);
           float stroke_scale_factor = decoration_style.VectorEffect() ==
                                               EVectorEffect::kNonScalingStroke
@@ -441,9 +449,13 @@ bool SVGInlineTextBoxPainter::SetupTextPaint(
   }
 
   if (!SVGObjectPainter(ParentInlineLayoutObject())
-           .PreparePaint(paint_info, style, resource_mode, flags,
-                         base::OptionalOrNullptr(paint_server_transform)))
+           .PreparePaint(paint_info.context,
+                         paint_info.IsRenderingClipPathAsMaskImage(), style,
+                         resource_mode, flags,
+                         base::OptionalOrNullptr(paint_server_transform))) {
     return false;
+  }
+
   flags.setAntiAlias(true);
 
   if (style.TextShadow() &&
@@ -677,11 +689,7 @@ void SVGInlineTextBoxPainter::PaintTextMarkerForeground(
     return;
 
   Color text_color = LayoutTheme::GetTheme().PlatformTextSearchColor(
-      marker.IsActiveMatch(),
-      svg_inline_text_box_.GetLineLayoutItem()
-          .GetDocument()
-          .InForcedColorsMode(),
-      style.UsedColorScheme());
+      marker.IsActiveMatch(), style.UsedColorScheme());
 
   PaintFlags fill_flags;
   fill_flags.setColor(text_color.Rgb());
@@ -724,11 +732,7 @@ void SVGInlineTextBoxPainter::PaintTextMarkerBackground(
     return;
 
   Color color = LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(
-      marker.IsActiveMatch(),
-      svg_inline_text_box_.GetLineLayoutItem()
-          .GetDocument()
-          .InForcedColorsMode(),
-      style.UsedColorScheme());
+      marker.IsActiveMatch(), style.UsedColorScheme());
   for (const SVGTextFragmentWithRange& text_match_info : text_match_info_list) {
     const SVGTextFragment& fragment = text_match_info.fragment;
 

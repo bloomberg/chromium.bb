@@ -110,15 +110,6 @@ class TabAndroid : public base::SupportsUserData {
   bool IsCustomTab();
   bool IsHidden();
 
-  bool should_add_api2_transition_to_future_navigations() const {
-    return should_add_api2_transition_to_future_navigations_;
-  }
-
-  bool hide_future_navigations() const { return hide_future_navigations_; }
-
-  bool should_block_new_notification_requests() const {
-    return should_block_new_notification_requests_;
-  }
   // Observers -----------------------------------------------------------------
 
   // Adds/Removes an Observer.
@@ -155,32 +146,11 @@ class TabAndroid : public base::SupportsUserData {
       const base::android::JavaParamRef<jstring>& jtitle);
 
   void LoadOriginalImage(JNIEnv* env);
-  void SetAddApi2TransitionToFutureNavigations(JNIEnv* env,
-                                               jboolean should_add);
-  jboolean GetAddApi2TransitionToFutureNavigations(JNIEnv* env) {
-    return should_add_api2_transition_to_future_navigations_;
-  }
-  void SetHideFutureNavigations(JNIEnv* env, jboolean hide);
-  jboolean GetHideFutureNavigations(JNIEnv* env) {
-    return hide_future_navigations_;
-  }
-  void SetShouldBlockNewNotificationRequests(JNIEnv* env, jboolean value);
-  jboolean GetShouldBlockNewNotificationRequests(JNIEnv* env) {
-    return should_block_new_notification_requests_;
-  }
-
   scoped_refptr<content::DevToolsAgentHost> GetDevToolsAgentHost();
 
   void SetDevToolsAgentHost(scoped_refptr<content::DevToolsAgentHost> host);
 
  private:
-  // Calls set_hide_future_navigations() on the HistoryTabHelper associated
-  // with |web_contents_|.
-  void PropagateHideFutureNavigationsToHistoryTabHelper();
-
-  // Calls SetBlockNewNotificationRequests() on NotificationPermissionContext.
-  void PropagateBlockNewNotificationRequestsToWebContents();
-
   JavaObjectWeakGlobalRef weak_java_tab_;
 
   // Identifier of the window the tab is in.
@@ -193,9 +163,6 @@ class TabAndroid : public base::SupportsUserData {
       web_contents_delegate_;
   scoped_refptr<content::DevToolsAgentHost> devtools_host_;
   std::unique_ptr<browser_sync::SyncedTabDelegateAndroid> synced_tab_delegate_;
-  bool should_add_api2_transition_to_future_navigations_ = false;
-  bool hide_future_navigations_ = false;
-  bool should_block_new_notification_requests_ = false;
 
   base::ObserverList<Observer> observers_;
 

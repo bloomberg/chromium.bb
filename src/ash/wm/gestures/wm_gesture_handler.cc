@@ -4,8 +4,8 @@
 
 #include "ash/wm/gestures/wm_gesture_handler.h"
 
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/toast_data.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -120,14 +120,15 @@ bool Handle3FingerVerticalScroll(float scroll_y) {
     base::RecordAction(base::UserMetricsAction("Touchpad_Gesture_Overview"));
     if (overview_controller->AcceptSelection())
       return true;
-    overview_controller->EndOverview();
+    overview_controller->EndOverview(OverviewEndAction::k3FingerVerticalScroll);
   } else {
     auto* window_cycle_controller = Shell::Get()->window_cycle_controller();
     if (window_cycle_controller->IsCycling())
       window_cycle_controller->CancelCycling();
 
     base::RecordAction(base::UserMetricsAction("Touchpad_Gesture_Overview"));
-    overview_controller->StartOverview();
+    overview_controller->StartOverview(
+        OverviewStartAction::k3FingerVerticalScroll);
   }
 
   return true;
@@ -184,15 +185,6 @@ bool WmGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
   if (Shell::Get()->screen_pinning_controller()->IsPinned())
     return false;
 
-  // Also disable horizontal touchpad swipe when alt-tab is open. See
-  // crbug.com/1204345.
-  float delta_x = event.x_offset();
-  float delta_y = event.y_offset();
-  if (Shell::Get()->window_cycle_controller()->IsWindowListVisible() &&
-      std::fabs(delta_x) > std::fabs(delta_y)) {
-    return false;
-  }
-
   // ET_SCROLL_FLING_CANCEL means a touchpad swipe has started.
   if (event.type() == ui::ET_SCROLL_FLING_CANCEL) {
     scroll_data_ = ScrollData();
@@ -207,7 +199,8 @@ bool WmGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
   }
   DCHECK_EQ(ui::ET_SCROLL, event.type());
 
-  return ProcessEventImpl(event.finger_count(), delta_x, delta_y);
+  return ProcessEventImpl(event.finger_count(), event.x_offset(),
+                          event.y_offset());
 }
 
 bool WmGestureHandler::ProcessEventImpl(int finger_count,

@@ -35,8 +35,8 @@
 #include "fxjs/js_define.h"
 #include "fxjs/js_resources.h"
 #include "third_party/base/check.h"
+#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/optional.h"
-#include "third_party/base/stl_util.h"
 
 // static
 const JSMethodSpec CJS_PublicMethods::GlobalFunctionSpecs[] = {
@@ -222,7 +222,7 @@ Optional<double> ApplyNamedOperation(const wchar_t* sFunction,
     return std::min(dValue1, dValue2);
   if (FXSYS_wcsicmp(sFunction, L"MAX") == 0)
     return std::max(dValue1, dValue2);
-  return {};
+  return pdfium::nullopt;
 }
 
 }  // namespace
@@ -1367,7 +1367,7 @@ CJS_Result CJS_PublicMethods::AFSimple_Calculate(
   if (wcscmp(sFunction.c_str(), L"AVG") == 0 && nFieldsCount > 0)
     dValue /= nFieldsCount;
 
-  dValue = floor(dValue * FXSYS_pow(10, 6) + 0.49) / FXSYS_pow(10, 6);
+  dValue = floor(dValue * powf(10, 6) + 0.49) / powf(10, 6);
 
   CJS_EventContext* pContext = pRuntime->GetCurrentEventContext();
   if (pContext->GetEventRecorder()->HasValue()) {

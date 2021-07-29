@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/query_parser/query_parser.h"
@@ -239,13 +238,6 @@ class URLDatabase {
   // Deletes any search corresponding to `url_id`.
   bool DeleteKeywordSearchTermForURL(URLID url_id);
 
-  // This is a cover for VisitDatabase::GetVisitsForURL(). It's here to avoid
-  // changing a ton of callback code that currently takes a UrlDatabase.
-  //
-  // TODO(https://crbug.com/1141501): this is for an experiment, and will be
-  // removed once data is collected from experiment.
-  virtual bool GetVisitsForUrl2(URLID url_id, VisitVector* visits);
-
  protected:
   friend class VisitDatabase;
 
@@ -301,7 +293,7 @@ class URLDatabase {
 
   // Convenience to fill a URLRow. Must be in sync with the fields in
   // kHistoryURLRowFields.
-  static void FillURLRow(const sql::Statement& s, URLRow* i);
+  static void FillURLRow(sql::Statement& s, URLRow* i);
 
   // Returns the database for the functions in this interface. The descendant of
   // this class implements these functions to return its objects.

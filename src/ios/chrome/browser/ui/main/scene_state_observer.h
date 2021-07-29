@@ -26,12 +26,15 @@ enum SceneActivationLevel : NSUInteger;
 - (void)sceneStateWillHideModalOverlay:(SceneState*)sceneState;
 // Notifies when presentingModalOverlay has been set to false.
 - (void)sceneStateDidHideModalOverlay:(SceneState*)sceneState;
-// Notifies when hasInitializedUI has been set.
-- (void)sceneStateHasInitializedUI:(SceneState*)sceneState;
+// Notifies when UIEnabled has been set to true. Is only fired once during the
+// scene's life period when the scene UI has initialized.
+- (void)sceneStateDidEnableUI:(SceneState*)sceneState;
+// Notifies when UIEnabled has been set to false. Is only fired once during the
+// scene's life period when the scene UI is tearing down.
+- (void)sceneStateDidDisableUI:(SceneState*)sceneState;
 // Notifies when URLContexts have been added to |URLContextsToOpen|.
 - (void)sceneState:(SceneState*)sceneState
-    hasPendingURLs:(NSSet<UIOpenURLContext*>*)URLContexts
-    API_AVAILABLE(ios(13));
+    hasPendingURLs:(NSSet<UIOpenURLContext*>*)URLContexts;
 // Notifies that a new activity request has been received.
 - (void)sceneState:(SceneState*)sceneState
     receivedUserActivity:(NSUserActivity*)userActivity;

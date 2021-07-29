@@ -7,8 +7,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/capabilities.h"
@@ -64,9 +64,7 @@ void ValidateLogEntry(base::ListValue *entries,
   std::string message;
   ASSERT_TRUE(entry->GetString("message", &message));
   EXPECT_EQ(expected_message, message);
-  double timestamp = 0;
-  EXPECT_TRUE(entry->GetDouble("timestamp", &timestamp));
-  EXPECT_LT(0, timestamp);
+  EXPECT_LT(0, entry->FindDoubleKey("timestamp").value());
 }
 
 }  // namespace

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {quoteString} from 'chrome://resources/js/util.m.js';
+import {get as deepGet} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import Fuse from './fuse.js';
 import {TabData} from './tab_data.js';
@@ -27,25 +28,30 @@ export function fuzzySearch(input, records, options) {
   // present in the input string.
   // To address these shortcomings we use the exactSearch implementation below
   // if the options indicate an exact matching algorithm should be used.
-  performance.mark('search_algorithm:benchmark_begin');
+  performance.mark('tab_search:search_algorithm:metric_begin');
   let result;
   if (options.threshold === 0.0) {
     result = exactSearch(input, records, options);
   } else {
+    const keyNames = options.keys.reduce((acc, {name}) => {
+      acc.push(name);
+      return acc;
+    }, []);
     result = new Fuse(records, options).search(input).map(result => {
-      const titleMatch = result.matches.find(e => e.key === 'tab.title');
-      const hostnameMatch = result.matches.find(e => e.key === 'hostname');
       const item = cloneTabDataObj(result.item);
-      if (titleMatch) {
-        item.titleHighlightRanges = convertToRanges(titleMatch.indices);
-      }
-      if (hostnameMatch) {
-        item.hostnameHighlightRanges = convertToRanges(hostnameMatch.indices);
-      }
+      item.highlightRanges = keyNames.reduce((acc, key) => {
+        const match = result.matches.find(e => e.key === key);
+        if (match) {
+          acc[key] = convertToRanges(match.indices);
+        }
+
+        return acc;
+      }, {});
+
       return item;
     });
   }
-  performance.mark('search_algorithm:benchmark_end');
+  performance.mark('tab_search:search_algorithm:metric_end');
   return result;
 }
 
@@ -55,7 +61,9 @@ export function fuzzySearch(input, records, options) {
  */
 function cloneTabDataObj(tabData) {
   const clone = Object.assign({}, tabData);
-  Object.setPrototypeOf(clone, TabData.prototype);
+  clone.highlightRanges = {};
+  Object.setPrototypeOf(clone, Object.getPrototypeOf(tabData));
+
   return /** @type {!TabData} */ (clone);
 }
 
@@ -77,12 +85,12 @@ function convertToRanges(matches) {
 /**
  * The exact match algorithm returns records ranked according to the following
  * priorities (highest to lowest priority):
- * 1. All items with |title| or |hostname| matching the searchText at the
- *    beginning of the string.
- * 2. All items with |title| or |hostname| matching the searchText at the
- *    beginning of a word in the string.
- * 3. All remaining items with |title| or |hostname| matching the searchText
- *    elsewhere in the string.
+ * 1. All items with a search key matching the searchText at the beginning of
+ *    the string.
+ * 2. All items with a search key matching the searchText at the beginning of a
+ *    word in the string.
+ * 3. All remaining items with a search key matching the searchText elsewhere in
+ *    the string.
  * @param {string} searchText
  * @param {!Array<!TabData>} records
  * @param {!Object} options
@@ -93,35 +101,42 @@ function exactSearch(searchText, records, options) {
     return records;
   }
 
-  // Controls how heavily weighted the tab's title is relative to the hostname
-  // in the scoring function.
-  const key =
-      options.keys ? options.keys.find(e => e.name === 'tab.title') : undefined;
-  const titleToHostnameWeightRatio = key ? key.weight : 1;
-  // Default distance to calculate score for title/hostname based on match
+  // Default distance to calculate score for search fields based on match
   // position.
   const defaultDistance = 200;
   const distance = options.distance || defaultDistance;
 
+  // Controls how heavily weighted the search field weights are relative to each
+  // other in the scoring function.
+  const searchFieldWeights = options.keys.reduce((acc, {name, weight}) => {
+    acc[name] = weight;
+    return acc;
+  }, {});
+
   // Perform an exact match search with range discovery.
   const exactMatches = [];
-  for (const tab of records) {
-    const titleHighlightRanges = getRanges(tab.tab.title, searchText);
-    const hostnameHighlightRanges = getRanges(tab.hostname, searchText);
-    if (!titleHighlightRanges.length && !hostnameHighlightRanges.length) {
-      continue;
+  for (const tabDataRecord of records) {
+    let matchFound = false;
+    const matchedRecord = cloneTabDataObj(tabDataRecord);
+    // Searches for fields or nested fields in the record.
+    for (const fieldPath in searchFieldWeights) {
+      const text =
+          /** @type {string} */ (deepGet(tabDataRecord, fieldPath));
+      if (text) {
+        const ranges = getRanges(text, searchText);
+        if (ranges.length !== 0) {
+          matchedRecord.highlightRanges[fieldPath] = ranges;
+          matchFound = true;
+        }
+      }
     }
-    const matchedTab = cloneTabDataObj(tab);
-    if (titleHighlightRanges.length) {
-      matchedTab.titleHighlightRanges = titleHighlightRanges;
+
+    if (matchFound) {
+      exactMatches.push({
+        tab: matchedRecord,
+        score: scoringFunction(matchedRecord, distance, searchFieldWeights)
+      });
     }
-    if (hostnameHighlightRanges.length) {
-      matchedTab.hostnameHighlightRanges = hostnameHighlightRanges;
-    }
-    exactMatches.push({
-      tab: matchedTab,
-      score: scoringFunction(matchedTab, distance, titleToHostnameWeightRatio)
-    });
   }
 
   // Sort by score.
@@ -132,11 +147,12 @@ function exactSearch(searchText, records, options) {
   const itemsMatchingWordStart = [];
   const others = [];
   const wordStartRegexp = new RegExp(`\\b${quoteString(searchText)}`, 'i');
+  const keys = Object.keys(searchFieldWeights);
   for (const {tab} of exactMatches) {
     // Find matches that occur at the beginning of the string.
-    if (hasMatchStringStart(tab)) {
+    if (hasMatchStringStart(tab, keys)) {
       itemsMatchingStringStart.push(tab);
-    } else if (hasRegexMatch(tab, wordStartRegexp)) {
+    } else if (hasRegexMatch(tab, wordStartRegexp, keys)) {
       itemsMatchingWordStart.push(tab);
     } else {
       others.push(tab);
@@ -146,30 +162,30 @@ function exactSearch(searchText, records, options) {
 }
 
 /**
- * Determines whether the given tab has a title or hostname with identified
- * matches at the beginning of the string.
+ * Determines whether the given tab has a search field with identified matches
+ * at the beginning of the string.
  * @param {!TabData} tab
+ * @param {!Array<string>} keys
  * @return {boolean}
  */
-function hasMatchStringStart(tab) {
-  return (tab.titleHighlightRanges !== undefined &&
-          tab.titleHighlightRanges[0].start === 0) ||
-      (tab.hostnameHighlightRanges !== undefined &&
-       tab.hostnameHighlightRanges[0].start === 0);
+function hasMatchStringStart(tab, keys) {
+  return keys.some(
+      (key) => tab.highlightRanges[key] !== undefined &&
+          tab.highlightRanges[key][0].start === 0);
 }
 
 /**
  * Determines whether the given tab has a match for the given regexp in its
- * title or hostname.
+ * search fields.
  * @param {!TabData} tab
  * @param {RegExp} regexp
+ * @param {!Array<string>} keys
  * @return {boolean}
  */
-function hasRegexMatch(tab, regexp) {
-  return (tab.titleHighlightRanges !== undefined &&
-          tab.tab.title.search(regexp) !== -1) ||
-      (tab.hostnameHighlightRanges !== undefined &&
-       tab.hostname.search(regexp) !== -1);
+function hasRegexMatch(tab, regexp, keys) {
+  return keys.some(
+      (key) => tab.highlightRanges[key] !== undefined &&
+          deepGet(tab, key).search(regexp) !== -1);
 }
 
 /**
@@ -194,28 +210,26 @@ function getRanges(target, searchText) {
 }
 
 /**
- * A scoring function based on match indices of title and hostname.
+ * A scoring function based on match indices of specified search fields.
  * Matches near the beginning of the string will have a higher score than
  * matches near the end of the string. Multiple matches will have a higher score
  * than single matches.
- * @param {!TabData} tab
+ * @param {!TabData} tabData
  * @param {number} distance
- * @param {number} titleToHostnameWeightRatio
+ * @param {!Object} searchFieldWeights
  */
-function scoringFunction(tab, distance, titleToHostnameWeightRatio) {
+function scoringFunction(tabData, distance, searchFieldWeights) {
   let score = 0;
   // For every match, map the match index in [0, distance] to a scalar value in
   // [1, 0].
-  if (tab.titleHighlightRanges) {
-    for (const {start} of tab.titleHighlightRanges) {
-      score += Math.max((distance - start) / distance, 0) *
-          titleToHostnameWeightRatio;
+  for (const key in searchFieldWeights) {
+    if (tabData.highlightRanges[key]) {
+      for (const {start} of tabData.highlightRanges[key]) {
+        score += Math.max((distance - start) / distance, 0) *
+            searchFieldWeights[key];
+      }
     }
   }
-  if (tab.hostnameHighlightRanges) {
-    for (const {start} of tab.hostnameHighlightRanges) {
-      score += Math.max((distance - start) / distance, 0);
-    }
-  }
+
   return score;
 }

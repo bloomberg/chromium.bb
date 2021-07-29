@@ -250,11 +250,11 @@ export class CSSMatchedStyles {
   }
 
   hasMatchingSelectors(rule: CSSStyleRule): boolean {
-    const matchingSelectors = this.matchingSelectors(rule);
+    const matchingSelectors = this.getMatchingSelectors(rule);
     return matchingSelectors.length > 0 && this.mediaMatches(rule.style);
   }
 
-  matchingSelectors(rule: CSSStyleRule): number[] {
+  getMatchingSelectors(rule: CSSStyleRule): number[] {
     const node = this.nodeForStyle(rule.style);
     if (!node || typeof node.id !== 'number') {
       return [];
@@ -272,9 +272,7 @@ export class CSSMatchedStyles {
     return result;
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  recomputeMatchingSelectors(rule: CSSStyleRule): Promise<any> {
+  async recomputeMatchingSelectors(rule: CSSStyleRule): Promise<void> {
     const node = this.nodeForStyle(rule.style);
     if (!node) {
       return Promise.resolve();
@@ -283,7 +281,7 @@ export class CSSMatchedStyles {
     for (const selector of rule.selectors) {
       promises.push(querySelector.call(this, node, selector.text));
     }
-    return Promise.all(promises);
+    await Promise.all(promises);
 
     async function querySelector(this: CSSMatchedStyles, node: DOMNode, selectorText: string): Promise<void> {
       const ownerDocument = node.ownerDocument;
@@ -314,9 +312,7 @@ export class CSSMatchedStyles {
     }
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  addNewRule(rule: CSSStyleRule, node: DOMNode): Promise<any> {
+  addNewRule(rule: CSSStyleRule, node: DOMNode): Promise<void> {
     this._addedStyles.set(rule.style, node);
     return this.recomputeMatchingSelectors(rule);
   }
@@ -381,7 +377,7 @@ export class CSSMatchedStyles {
 
   availableCSSVariables(style: CSSStyleDeclaration): string[] {
     const domCascade = this._styleToDOMCascade.get(style) || null;
-    return domCascade ? domCascade.availableCSSVariables(style) : [];
+    return domCascade ? domCascade.findAvailableCSSVariables(style) : [];
   }
 
   computeCSSVariable(style: CSSStyleDeclaration, variableName: string): string|null {
@@ -464,7 +460,7 @@ class NodeCascade {
         }
 
         const canonicalName = metadata.canonicalPropertyName(property.name);
-        const isPropShorthand = Boolean(metadata.longhands(canonicalName));
+        const isPropShorthand = Boolean(metadata.getLonghands(canonicalName));
 
         if (isPropShorthand) {
           const longhandsFromShort =
@@ -501,7 +497,7 @@ class NodeCascade {
 class DOMInheritanceCascade {
   _nodeCascades: NodeCascade[];
   _propertiesState: Map<CSSProperty, PropertyState>;
-  _availableCSSVariables: Map<NodeCascade, Map<string, string>>;
+  _availableCSSVariables: Map<NodeCascade, Map<string, string|null>>;
   _computedCSSVariables: Map<NodeCascade, Map<string, string|null>>;
   _initialized: boolean;
   _styleToNodeCascade: Map<CSSStyleDeclaration, NodeCascade>;
@@ -520,7 +516,7 @@ class DOMInheritanceCascade {
     }
   }
 
-  availableCSSVariables(style: CSSStyleDeclaration): string[] {
+  findAvailableCSSVariables(style: CSSStyleDeclaration): string[] {
     const nodeCascade = this._styleToNodeCascade.get(style);
     if (!nodeCascade) {
       return [];
@@ -590,7 +586,7 @@ class DOMInheritanceCascade {
   }
 
   _innerComputeCSSVariable(
-      availableCSSVariables: Map<string, string>, computedCSSVariables: Map<string, string|null>,
+      availableCSSVariables: Map<string, string|null>, computedCSSVariables: Map<string, string|null>,
       variableName: string): string|null {
     if (!availableCSSVariables.has(variableName)) {
       return null;
@@ -610,8 +606,8 @@ class DOMInheritanceCascade {
   }
 
   _innerComputeValue(
-      availableCSSVariables: Map<string, string>, computedCSSVariables: Map<string, string|null>, value: string): string
-      |null {
+      availableCSSVariables: Map<string, string|null>, computedCSSVariables: Map<string, string|null>,
+      value: string): string|null {
     const results = TextUtils.TextUtils.Utils.splitStringByRegexes(value, [VariableRegex]);
     const tokens = [];
     for (const result of results) {
@@ -707,7 +703,7 @@ class DOMInheritanceCascade {
     }
 
     // Work inheritance chain backwards to compute visible CSS Variables.
-    const accumulatedCSSVariables = new Map<string, string>();
+    const accumulatedCSSVariables = new Map<string, string|null>();
     for (let i = this._nodeCascades.length - 1; i >= 0; --i) {
       const nodeCascade = this._nodeCascades[i];
       const variableNames = [];
@@ -726,8 +722,6 @@ class DOMInheritanceCascade {
       for (const variableName of variableNames) {
         accumulatedCSSVariables.delete(variableName);
         accumulatedCSSVariables.set(
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-            // @ts-expect-error
             variableName, this._innerComputeCSSVariable(availableCSSVariablesMap, computedVariablesMap, variableName));
       }
     }

@@ -20,10 +20,13 @@
 #include "ash/system/tray/tray_info_label.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_toggle_button.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/ui/vector_icons/vector_icons.h"
 #include "services/device/public/cpp/bluetooth/bluetooth_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
@@ -37,6 +40,7 @@ namespace tray {
 namespace {
 
 const int kDisabledPanelLabelBaselineY = 20;
+const int kEnterpriseManagedIconSizeDip = 20;
 
 // Returns corresponding device type icons for given Bluetooth device types and
 // connection states.
@@ -313,6 +317,21 @@ int BluetoothDetailedView::AddSameTypeDevicesToScrollList(
           icon, AshColorProvider::Get()->GetContentLayerColor(
                     AshColorProvider::ContentLayerType::kIconColorPrimary)));
     }
+
+    if (device->is_blocked_by_policy) {
+      if (container->right_view()) {
+        container->SetRightViewVisible(true);
+      } else {
+        gfx::ImageSkia enterprise_managed_icon = CreateVectorIcon(
+            chromeos::kEnterpriseIcon, kEnterpriseManagedIconSizeDip,
+            gfx::kGoogleGrey100);
+        container->AddRightIcon(enterprise_managed_icon,
+                                enterprise_managed_icon.width());
+      }
+    } else if (container->right_view()) {
+      container->SetRightViewVisible(false);
+    }
+
     container->SetAccessibleName(
         device::GetBluetoothDeviceLabelForAccessibility(device));
     switch (device->connection_state) {

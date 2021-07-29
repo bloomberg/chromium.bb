@@ -71,10 +71,10 @@ Optional<WideString> CXFA_Barcode::GetCharEncoding() {
 Optional<bool> CXFA_Barcode::GetChecksum() {
   Optional<XFA_AttributeValue> checksum =
       JSObject()->TryEnum(XFA_Attribute::Checksum, true);
-  if (!checksum)
-    return {};
+  if (!checksum.has_value())
+    return pdfium::nullopt;
 
-  switch (*checksum) {
+  switch (checksum.value()) {
     case XFA_AttributeValue::None:
       return {false};
     case XFA_AttributeValue::Auto:
@@ -85,60 +85,60 @@ Optional<bool> CXFA_Barcode::GetChecksum() {
     default:
       break;
   }
-  return {};
+  return pdfium::nullopt;
 }
 
 Optional<int32_t> CXFA_Barcode::GetDataLength() {
   Optional<WideString> wsDataLength =
       JSObject()->TryCData(XFA_Attribute::DataLength, true);
-  if (!wsDataLength)
-    return {};
+  if (!wsDataLength.has_value())
+    return pdfium::nullopt;
 
-  return {FXSYS_wtoi(wsDataLength->c_str())};
+  return FXSYS_wtoi(wsDataLength->c_str());
 }
 
 Optional<char> CXFA_Barcode::GetStartChar() {
   Optional<WideString> wsStartEndChar =
       JSObject()->TryCData(XFA_Attribute::StartChar, true);
-  if (!wsStartEndChar || wsStartEndChar->IsEmpty())
-    return {};
+  if (!wsStartEndChar.has_value() || wsStartEndChar->IsEmpty())
+    return pdfium::nullopt;
 
-  return {static_cast<char>((*wsStartEndChar)[0])};
+  return static_cast<char>(wsStartEndChar.value()[0]);
 }
 
 Optional<char> CXFA_Barcode::GetEndChar() {
   Optional<WideString> wsStartEndChar =
       JSObject()->TryCData(XFA_Attribute::EndChar, true);
-  if (!wsStartEndChar || wsStartEndChar->IsEmpty())
-    return {};
+  if (!wsStartEndChar.has_value() || wsStartEndChar->IsEmpty())
+    return pdfium::nullopt;
 
-  return {static_cast<char>((*wsStartEndChar)[0])};
+  return static_cast<char>(wsStartEndChar.value()[0]);
 }
 
 Optional<int32_t> CXFA_Barcode::GetECLevel() {
   Optional<WideString> wsECLevel =
       JSObject()->TryCData(XFA_Attribute::ErrorCorrectionLevel, true);
-  if (!wsECLevel)
-    return {};
-  return {FXSYS_wtoi(wsECLevel->c_str())};
+  if (!wsECLevel.has_value())
+    return pdfium::nullopt;
+  return FXSYS_wtoi(wsECLevel->c_str());
 }
 
 Optional<int32_t> CXFA_Barcode::GetModuleWidth() {
   Optional<CXFA_Measurement> moduleWidthHeight =
       JSObject()->TryMeasure(XFA_Attribute::ModuleWidth, true);
-  if (!moduleWidthHeight)
-    return {};
+  if (!moduleWidthHeight.has_value())
+    return pdfium::nullopt;
 
-  return {static_cast<int32_t>(moduleWidthHeight->ToUnit(XFA_Unit::Pt))};
+  return static_cast<int32_t>(moduleWidthHeight->ToUnit(XFA_Unit::Pt));
 }
 
 Optional<int32_t> CXFA_Barcode::GetModuleHeight() {
   Optional<CXFA_Measurement> moduleWidthHeight =
       JSObject()->TryMeasure(XFA_Attribute::ModuleHeight, true);
-  if (!moduleWidthHeight)
-    return {};
+  if (!moduleWidthHeight.has_value())
+    return pdfium::nullopt;
 
-  return {static_cast<int32_t>(moduleWidthHeight->ToUnit(XFA_Unit::Pt))};
+  return static_cast<int32_t>(moduleWidthHeight->ToUnit(XFA_Unit::Pt));
 }
 
 Optional<bool> CXFA_Barcode::GetPrintChecksum() {
@@ -156,20 +156,21 @@ Optional<bool> CXFA_Barcode::GetTruncate() {
 Optional<int8_t> CXFA_Barcode::GetWideNarrowRatio() {
   Optional<WideString> wsWideNarrowRatio =
       JSObject()->TryCData(XFA_Attribute::WideNarrowRatio, true);
-  if (!wsWideNarrowRatio)
-    return {};
+  if (!wsWideNarrowRatio.has_value())
+    return pdfium::nullopt;
 
   Optional<size_t> ptPos = wsWideNarrowRatio->Find(':');
-  if (!ptPos)
-    return {static_cast<int8_t>(FXSYS_wtoi(wsWideNarrowRatio->c_str()))};
+  if (!ptPos.has_value())
+    return static_cast<int8_t>(FXSYS_wtoi(wsWideNarrowRatio->c_str()));
 
   int32_t fB = FXSYS_wtoi(
-      wsWideNarrowRatio->Last(wsWideNarrowRatio->GetLength() - (*ptPos + 1))
+      wsWideNarrowRatio
+          ->Last(wsWideNarrowRatio->GetLength() - (ptPos.value() + 1))
           .c_str());
   if (!fB)
-    return {0};
+    return 0;
 
-  int32_t fA = FXSYS_wtoi(wsWideNarrowRatio->First(*ptPos).c_str());
+  int32_t fA = FXSYS_wtoi(wsWideNarrowRatio->First(ptPos.value()).c_str());
   float result = static_cast<float>(fA) / static_cast<float>(fB);
-  return {static_cast<int8_t>(result)};
+  return static_cast<int8_t>(result);
 }

@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
+#include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
@@ -20,10 +21,19 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/android/tab_web_contents_delegate_android.h"
+#endif
 
 namespace signin {
 
@@ -49,7 +59,22 @@ class BrowserContextData : public base::SupportsUserData::Data {
       profile->SetUserData(kBrowserContextUserDataKey, base::WrapUnique(self));
     }
 
+#if defined(OS_ANDROID)
+    bool is_custom_tab = false;
+    content::WebContents* web_contents = web_contents_getter.Run();
+    if (web_contents) {
+      auto* delegate =
+          TabAndroid::FromWebContents(web_contents)
+              ? static_cast<android::TabWebContentsDelegateAndroid*>(
+                    web_contents->GetDelegate())
+              : nullptr;
+      is_custom_tab = delegate && delegate->IsCustomTab();
+    }
+    auto delegate = std::make_unique<HeaderModificationDelegateImpl>(
+        profile, /*incognito_enabled=*/!is_custom_tab);
+#else
     auto delegate = std::make_unique<HeaderModificationDelegateImpl>(profile);
+#endif
     auto proxy = std::make_unique<ProxyingURLLoaderFactory>(
         std::move(delegate), std::move(web_contents_getter),
         std::move(receiver), std::move(target_factory),

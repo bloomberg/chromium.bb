@@ -11,13 +11,13 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequence_checker.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -157,8 +157,8 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
 
     std::vector<VASurfaceID> va_surfaces;
     if (!vaapi_wrapper_->CreateContextAndSurfaces(
-            va_format, input_size, VaapiWrapper::SurfaceUsageHint::kGeneric, 1,
-            &va_surfaces)) {
+            va_format, input_size, {VaapiWrapper::SurfaceUsageHint::kGeneric},
+            1, &va_surfaces)) {
       VLOGF(1) << "Failed to create VA surface";
       notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
       return;
@@ -377,7 +377,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
     std::vector<VASurfaceID> va_surfaces;
     if (!vaapi_wrapper_->CreateContextAndSurfaces(
             VA_RT_FORMAT_YUV420, input_size,
-            VaapiWrapper::SurfaceUsageHint::kGeneric, 1, &va_surfaces)) {
+            {VaapiWrapper::SurfaceUsageHint::kGeneric}, 1, &va_surfaces)) {
       VLOGF(1) << "Failed to create VA surface";
       notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
       return;

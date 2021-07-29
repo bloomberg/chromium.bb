@@ -21,6 +21,7 @@
 #include "ash/shell.h"
 #include "ash/style/scoped_light_mode_as_default.h"
 #include "ash/wm/window_util.h"
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -54,6 +55,12 @@ namespace {
 
 constexpr char kImageDataKey[] = "imageData";
 constexpr char kTextDataKey[] = "textData";
+constexpr char kFormatDataKey[] = "displayFormat";
+
+constexpr char kPngFormat[] = "png";
+constexpr char kHtmlFormat[] = "html";
+constexpr char kTextFormat[] = "text";
+constexpr char kFileFormat[] = "file";
 
 ui::ClipboardNonBacked* GetClipboard() {
   auto* clipboard = ui::ClipboardNonBacked::GetForCurrentThread();
@@ -320,20 +327,23 @@ base::Value ClipboardHistoryControllerImpl::GetHistoryValues(
 
     base::Value item_value(base::Value::Type::DICTIONARY);
     switch (ash::ClipboardHistoryUtil::CalculateDisplayFormat(item.data())) {
-      case ash::ClipboardHistoryUtil::ClipboardHistoryDisplayFormat::kBitmap:
-        item_value.SetKey(
-            kImageDataKey,
-            base::Value(webui::GetBitmapDataUrl(item.data().bitmap())));
+      case ash::ClipboardHistoryUtil::ClipboardHistoryDisplayFormat::kPng:
+        item_value.SetKey(kImageDataKey, base::Value(webui::GetPngDataUrl(
+                                             item.data().png().data(),
+                                             item.data().png().size())));
+        item_value.SetKey(kFormatDataKey, base::Value(kPngFormat));
         break;
       case ash::ClipboardHistoryUtil::ClipboardHistoryDisplayFormat::kHtml: {
         const SkBitmap& bitmap =
             *(resource_manager_->GetImageModel(item).GetImage().ToSkBitmap());
         item_value.SetKey(kImageDataKey,
                           base::Value(webui::GetBitmapDataUrl(bitmap)));
+        item_value.SetKey(kFormatDataKey, base::Value(kHtmlFormat));
         break;
       }
       case ash::ClipboardHistoryUtil::ClipboardHistoryDisplayFormat::kText:
         item_value.SetKey(kTextDataKey, base::Value(item.data().text()));
+        item_value.SetKey(kFormatDataKey, base::Value(kTextFormat));
         break;
       case ash::ClipboardHistoryUtil::ClipboardHistoryDisplayFormat::kFile: {
         std::string file_name =
@@ -344,10 +354,13 @@ base::Value ClipboardHistoryControllerImpl::GetHistoryValues(
             *ClipboardHistoryUtil::GetIconForFileClipboardItem(item, file_name)
                  .bitmap());
         item_value.SetKey(kImageDataKey, base::Value(data_url));
+        item_value.SetKey(kFormatDataKey, base::Value(kFileFormat));
         break;
       }
     }
     item_value.SetKey("id", base::Value(item.id().ToString()));
+    item_value.SetKey("timeCopied",
+                      base::Value(item.time_copied().ToJsTimeIgnoringNull()));
     item_results.Append(std::move(item_value));
   }
 

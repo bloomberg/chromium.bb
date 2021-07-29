@@ -7,7 +7,7 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 
-import {Events, throttlingManager} from './ThrottlingManager.js';
+import {throttlingManager} from './ThrottlingManager.js';
 
 import type {Conditions, ConditionsList, MobileThrottlingConditionsGroup} from './ThrottlingPresets.js';
 import {ThrottlingPresets} from './ThrottlingPresets.js';
@@ -42,7 +42,8 @@ export class MobileThrottlingSelector {
       selectCallback: (arg0: number) => void) {
     this._populateCallback = populateCallback;
     this._selectCallback = selectCallback;
-    throttlingManager().addEventListener(Events.RateChanged, this._conditionsChanged, this);
+    SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener(
+        SDK.CPUThrottlingManager.Events.RateChanged, this._conditionsChanged, this);
     SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener(
         SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged, this._conditionsChanged, this);
     this._options = this._populateOptions();
@@ -66,7 +67,7 @@ export class MobileThrottlingSelector {
 
   _conditionsChanged(): void {
     const networkConditions = SDK.NetworkManager.MultitargetNetworkManager.instance().networkConditions();
-    const cpuThrottlingRate = throttlingManager().cpuThrottlingRate();
+    const cpuThrottlingRate = SDK.CPUThrottlingManager.CPUThrottlingManager.instance().cpuThrottlingRate();
     for (let index = 0; index < this._options.length; ++index) {
       const option = this._options[index];
       if (option && 'network' in option && option.network === networkConditions &&

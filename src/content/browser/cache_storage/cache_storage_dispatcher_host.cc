@@ -29,6 +29,7 @@
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
@@ -150,8 +151,9 @@ bool ResponseBlockedByCrossOriginResourcePolicy(
   return CrossOriginResourcePolicy::IsBlockedByHeaderValue(
              response->url_list.back(), response->url_list.front(),
              document_origin, corp_header_value, RequestMode::kNoCors,
-             document_origin, network::mojom::RequestDestination::kEmpty,
-             document_coep, coep_reporter ? coep_reporter.get() : nullptr)
+             network::mojom::RequestDestination::kEmpty,
+             response->request_include_credentials, document_coep,
+             coep_reporter ? coep_reporter.get() : nullptr)
       .has_value();
 }
 
@@ -167,14 +169,14 @@ class CacheStorageDispatcherHost::CacheImpl
   explicit CacheImpl(
       CacheStorageDispatcherHost* host,
       CacheStorageCacheHandle cache_handle,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       const CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter,
       storage::mojom::CacheStorageOwner owner)
       : host_(host),
         cache_handle_(std::move(cache_handle)),
-        origin_(origin),
+        storage_key_(storage_key),
         cross_origin_embedder_policy_(cross_origin_embedder_policy),
         coep_reporter_(std::move(coep_reporter)),
         owner_(owner) {
@@ -248,7 +250,7 @@ class CacheStorageDispatcherHost::CacheImpl
           // against the requesting document's origin and
           // Cross-Origin-Embedder-Policy (COEP).
           if (ResponseBlockedByCrossOriginResourcePolicy(
-                  response.get(), self->origin_,
+                  response.get(), self->storage_key_.origin(),
                   self->cross_origin_embedder_policy_, self->coep_reporter_)) {
             std::move(callback).Run(blink::mojom::MatchResult::NewStatus(
                 CacheStorageError::kErrorCrossOriginResourcePolicy));
@@ -332,7 +334,7 @@ class CacheStorageDispatcherHost::CacheImpl
           // Cross-Origin-Embedder-Policy (COEP).
           for (const auto& response : responses) {
             if (ResponseBlockedByCrossOriginResourcePolicy(
-                    response.get(), self->origin_,
+                    response.get(), self->storage_key_.origin(),
                     self->cross_origin_embedder_policy_,
                     self->coep_reporter_)) {
               std::move(callback).Run(blink::mojom::MatchAllResult::NewStatus(
@@ -413,7 +415,7 @@ class CacheStorageDispatcherHost::CacheImpl
           // Cross-Origin-Embedder-Policy (COEP).
           for (const auto& entry : entries) {
             if (ResponseBlockedByCrossOriginResourcePolicy(
-                    entry->response.get(), self->origin_,
+                    entry->response.get(), self->storage_key_.origin(),
                     self->cross_origin_embedder_policy_,
                     self->coep_reporter_)) {
               std::move(callback).Run(
@@ -604,7 +606,7 @@ class CacheStorageDispatcherHost::CacheImpl
   CacheStorageDispatcherHost* const host_;
 
   CacheStorageCacheHandle cache_handle_;
-  const url::Origin origin_;
+  const blink::StorageKey storage_key_;
   const CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
   mojo::Remote<network::mojom::CrossOriginEmbedderPolicyReporter>
       coep_reporter_;
@@ -624,14 +626,14 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
  public:
   CacheStorageImpl(
       CacheStorageDispatcherHost* host,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       bool incognito,
       const CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter,
       storage::mojom::CacheStorageOwner owner)
       : host_(host),
-        origin_(origin),
+        storage_key_(storage_key),
         cross_origin_embedder_policy_(cross_origin_embedder_policy),
         coep_reporter_(std::move(coep_reporter)),
         owner_(owner) {
@@ -823,7 +825,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
           // against the requesting document's origin and
           // Cross-Origin-Embedder-Policy (COEP).
           if (ResponseBlockedByCrossOriginResourcePolicy(
-                  response.get(), self->origin_,
+                  response.get(), self->storage_key_.origin(),
                   self->cross_origin_embedder_policy_, self->coep_reporter_)) {
             std::move(callback).Run(blink::mojom::MatchResult::NewStatus(
                 CacheStorageError::kErrorCrossOriginResourcePolicy));
@@ -909,7 +911,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
                 coep_reporter.InitWithNewPipeAndPassReceiver());
           }
           auto cache_impl = std::make_unique<CacheImpl>(
-              self->host_, std::move(cache_handle), self->origin_,
+              self->host_, std::move(cache_handle), self->storage_key_,
               self->cross_origin_embedder_policy_, std::move(coep_reporter),
               self->owner_);
           self->host_->AddCacheReceiver(
@@ -940,14 +942,14 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(host_);
     if (!cache_storage_handle_.value())
-      cache_storage_handle_ = host_->OpenCacheStorage(origin_, owner_);
+      cache_storage_handle_ = host_->OpenCacheStorage(storage_key_, owner_);
     return cache_storage_handle_.value();
   }
 
   // Owns this.
   CacheStorageDispatcherHost* const host_;
 
-  const url::Origin origin_;
+  const blink::StorageKey storage_key_;
   const CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
   mojo::Remote<network::mojom::CrossOriginEmbedderPolicyReporter>
       coep_reporter_;
@@ -973,13 +975,13 @@ void CacheStorageDispatcherHost::AddReceiver(
     const CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter,
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     storage::mojom::CacheStorageOwner owner,
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool incognito = context_ ? context_->is_incognito() : false;
   auto impl = std::make_unique<CacheStorageImpl>(
-      this, origin, incognito, cross_origin_embedder_policy,
+      this, storage_key, incognito, cross_origin_embedder_policy,
       std::move(coep_reporter), owner);
   receivers_.Add(std::move(impl), std::move(receiver));
 }
@@ -992,17 +994,17 @@ void CacheStorageDispatcherHost::AddCacheReceiver(
 }
 
 CacheStorageHandle CacheStorageDispatcherHost::OpenCacheStorage(
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     storage::mojom::CacheStorageOwner owner) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!context_ || !OriginCanAccessCacheStorage(origin))
+  if (!context_ || !OriginCanAccessCacheStorage(storage_key.origin()))
     return CacheStorageHandle();
 
   scoped_refptr<CacheStorageManager> manager = context_->cache_manager();
   if (!manager)
     return CacheStorageHandle();
 
-  return manager->OpenCacheStorage(origin, owner);
+  return manager->OpenCacheStorage(storage_key, owner);
 }
 
 }  // namespace content

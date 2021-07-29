@@ -99,6 +99,11 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
                {Param("app_id", app_id), Param("path", path.MaybeAsASCII())});
   }
 
+  void SetServerStarts(int value) const override {
+    RunCommand("set_first_registration_counter",
+               {Param("value", base::NumberToString(value))});
+  }
+
   void ExpectAppUnregisteredExistenceCheckerPath(
       const std::string& app_id) const override {
     RunCommand("expect_app_unregistered_existence_checker_path",
@@ -123,6 +128,12 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void WaitForServerExit() const override {
     updater::test::WaitForServerExit(kUpdaterScope);
   }
+
+#if defined(OS_WIN)
+  void ExpectInterfacesRegistered() const override {
+    RunCommand("expect_interfaces_registered");
+  }
+#endif  // OS_WIN
 
   base::FilePath GetDifferentUserPath() const override {
 #if defined(OS_MAC)

@@ -40,11 +40,15 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
                  apps::mojom::OptionalBool pinned) override;
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
+  void SetResizeLocked(const std::string& app_id, bool locked) override;
   void Uninstall(const std::string& app_id) override;
   void OpenNativeSettings(const std::string& app_id) override;
+  void SetPreferredApp(const std::string& app_id,
+                       bool is_preferred_app) override;
 
  private:
   app_management::mojom::AppPtr CreateUIAppPtr(const apps::AppUpdate& update);
+  std::vector<std::string> GetSupportedLinksList(const std::string& app_id);
 
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override;

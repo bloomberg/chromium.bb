@@ -17,13 +17,13 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/address_family.h"
@@ -304,7 +304,8 @@ MockWriteResult StaticSocketDataProvider::OnWrite(const std::string& data) {
     return MockWriteResult(SYNCHRONOUS, data.length());
   }
   EXPECT_FALSE(helper_.AllWriteDataConsumed())
-      << "No more mock data to match write:\n"
+      << "No more mock data to match write:\nFormatted write data:\n"
+      << printer_->PrintWrite(data) << "Raw write data:\n"
       << HexDump(data);
   if (helper_.AllWriteDataConsumed()) {
     return MockWriteResult(SYNCHRONOUS, ERR_UNEXPECTED);
@@ -496,7 +497,8 @@ MockRead SequencedSocketData::OnRead() {
 MockWriteResult SequencedSocketData::OnWrite(const std::string& data) {
   CHECK_EQ(IDLE, write_state_);
   CHECK(!helper_.AllWriteDataConsumed())
-      << "\nNo more mock data to match write:\n"
+      << "\nNo more mock data to match write:\nFormatted write data:\n"
+      << printer_->PrintWrite(data) << "Raw write data:\n"
       << HexDump(data);
 
   NET_TRACE(1, " *** ") << "sequence_number: " << sequence_number_;
@@ -1557,16 +1559,20 @@ void MockSSLClientSocket::Disconnect() {
 void MockSSLClientSocket::RunConfirmHandshakeCallback(
     CompletionOnceCallback callback,
     int result) {
+  DCHECK(in_confirm_handshake_);
+  in_confirm_handshake_ = false;
   data_->is_confirm_data_consumed = true;
   std::move(callback).Run(result);
 }
 
 int MockSSLClientSocket::ConfirmHandshake(CompletionOnceCallback callback) {
   DCHECK(stream_socket_->IsConnected());
+  DCHECK(!in_confirm_handshake_);
   if (data_->is_confirm_data_consumed)
     return data_->confirm.result;
   RunClosureIfNonNull(std::move(data_->confirm_callback));
   if (data_->confirm.mode == ASYNC) {
+    in_confirm_handshake_ = true;
     RunCallbackAsync(
         base::BindOnce(&MockSSLClientSocket::RunConfirmHandshakeCallback,
                        base::Unretained(this), std::move(callback)),
@@ -1574,6 +1580,11 @@ int MockSSLClientSocket::ConfirmHandshake(CompletionOnceCallback callback) {
     return ERR_IO_PENDING;
   }
   data_->is_confirm_data_consumed = true;
+  if (data_->confirm.result == ERR_IO_PENDING) {
+    // `MockConfirm(SYNCHRONOUS, ERR_IO_PENDING)` means `ConfirmHandshake()`
+    // never completes.
+    in_confirm_handshake_ = true;
+  }
   return data_->confirm.result;
 }
 

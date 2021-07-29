@@ -18,10 +18,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "content/public/browser/navigation_controller.h"
@@ -54,7 +53,7 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
   if (source_tabstrip->count() == 1)
     chrome::NewTab(source_browser);
   target_browser->tab_strip_model()->AppendWebContents(
-      source_tabstrip->DetachWebContentsAt(
+      source_tabstrip->DetachWebContentsAtForInsertion(
           source_tabstrip->GetIndexOfWebContents(contents)),
       true);
   target_browser->window()->Show();
@@ -133,8 +132,7 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
   // entered the app's scope. The minimal-ui Back button will be initially
   // disabled if the previous page was outside scope. Packaged apps are not
   // affected.
-  AppRegistrar& registrar =
-      WebAppProviderBase::GetProviderBase(profile)->registrar();
+  WebAppRegistrar& registrar = WebAppProvider::Get(profile)->registrar();
   if (registrar.IsInstalled(app_id)) {
     absl::optional<GURL> app_scope = registrar.GetAppScope(app_id);
     if (!app_scope)
@@ -143,7 +141,7 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
     PrunePreScopeNavigationHistory(*app_scope, contents);
   }
 
-  if (registrar.IsInExperimentalTabbedWindowMode(app_id)) {
+  if (registrar.IsTabbedWindowModeEnabled(app_id)) {
     for (Browser* browser : *BrowserList::GetInstance()) {
       if (AppBrowserController::IsForWebApp(browser, app_id))
         return ::ReparentWebContentsIntoAppBrowser(contents, browser);
@@ -155,20 +153,6 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
       Browser::Create(Browser::CreateParams::CreateForApp(
           GenerateApplicationNameFromAppId(app_id), true /* trusted_source */,
           gfx::Rect(), profile, true /* user_gesture */)));
-}
-
-Browser* ReparentWebContentsForFocusMode(content::WebContents* contents) {
-  DCHECK(base::FeatureList::IsEnabled(features::kFocusMode));
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  // TODO(crbug.com/941577): Remove DCHECK when focus mode is permitted in guest
-  // and incognito sessions.
-  DCHECK(!profile->IsOffTheRecord());
-  Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
-      GenerateApplicationNameForFocusMode(), true /* trusted_source */,
-      gfx::Rect(), profile, true /* user_gesture */));
-  browser_params.is_focus_mode = true;
-  return ::ReparentWebContentsIntoAppBrowser(contents,
-                                             Browser::Create(browser_params));
 }
 
 void SetAppPrefsForWebContents(content::WebContents* web_contents) {

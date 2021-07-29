@@ -14,22 +14,28 @@
 
 #include "src/inspector/inspector.h"
 
+#include <limits>
 #include <utility>
 
 #include "src/ast/bool_literal.h"
+#include "src/ast/call_expression.h"
 #include "src/ast/float_literal.h"
+#include "src/ast/interpolate_decoration.h"
+#include "src/ast/location_decoration.h"
 #include "src/ast/module.h"
 #include "src/ast/override_decoration.h"
 #include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/sint_literal.h"
 #include "src/ast/uint_literal.h"
 #include "src/sem/array.h"
+#include "src/sem/call.h"
 #include "src/sem/f32_type.h"
 #include "src/sem/function.h"
 #include "src/sem/i32_type.h"
 #include "src/sem/matrix_type.h"
 #include "src/sem/multisampled_texture_type.h"
 #include "src/sem/sampled_texture_type.h"
+#include "src/sem/statement.h"
 #include "src/sem/storage_texture_type.h"
 #include "src/sem/struct.h"
 #include "src/sem/u32_type.h"
@@ -44,7 +50,7 @@ namespace {
 
 void AppendResourceBindings(std::vector<ResourceBinding>* dest,
                             const std::vector<ResourceBinding>& orig) {
-  TINT_ASSERT(dest);
+  TINT_ASSERT(Inspector, dest);
   if (!dest) {
     return;
   }
@@ -53,129 +59,66 @@ void AppendResourceBindings(std::vector<ResourceBinding>* dest,
   dest->insert(dest->end(), orig.begin(), orig.end());
 }
 
-ResourceBinding::TextureDimension
-TypeTextureDimensionToResourceBindingTextureDimension(
-    const ast::TextureDimension& type_dim) {
-  switch (type_dim) {
-    case ast::TextureDimension::k1d:
-      return ResourceBinding::TextureDimension::k1d;
-    case ast::TextureDimension::k2d:
-      return ResourceBinding::TextureDimension::k2d;
-    case ast::TextureDimension::k2dArray:
-      return ResourceBinding::TextureDimension::k2dArray;
-    case ast::TextureDimension::k3d:
-      return ResourceBinding::TextureDimension::k3d;
-    case ast::TextureDimension::kCube:
-      return ResourceBinding::TextureDimension::kCube;
-    case ast::TextureDimension::kCubeArray:
-      return ResourceBinding::TextureDimension::kCubeArray;
-    case ast::TextureDimension::kNone:
-      return ResourceBinding::TextureDimension::kNone;
+std::tuple<ComponentType, CompositionType> CalculateComponentAndComposition(
+    const sem::Type* type) {
+  if (type->is_float_scalar()) {
+    return {ComponentType::kFloat, CompositionType::kScalar};
+  } else if (type->is_float_vector()) {
+    auto* vec = type->As<sem::Vector>();
+    if (vec->size() == 2) {
+      return {ComponentType::kFloat, CompositionType::kVec2};
+    } else if (vec->size() == 3) {
+      return {ComponentType::kFloat, CompositionType::kVec3};
+    } else if (vec->size() == 4) {
+      return {ComponentType::kFloat, CompositionType::kVec4};
+    }
+  } else if (type->is_unsigned_integer_scalar()) {
+    return {ComponentType::kUInt, CompositionType::kScalar};
+  } else if (type->is_unsigned_integer_vector()) {
+    auto* vec = type->As<sem::Vector>();
+    if (vec->size() == 2) {
+      return {ComponentType::kUInt, CompositionType::kVec2};
+    } else if (vec->size() == 3) {
+      return {ComponentType::kUInt, CompositionType::kVec3};
+    } else if (vec->size() == 4) {
+      return {ComponentType::kUInt, CompositionType::kVec4};
+    }
+  } else if (type->is_signed_integer_scalar()) {
+    return {ComponentType::kSInt, CompositionType::kScalar};
+  } else if (type->is_signed_integer_vector()) {
+    auto* vec = type->As<sem::Vector>();
+    if (vec->size() == 2) {
+      return {ComponentType::kSInt, CompositionType::kVec2};
+    } else if (vec->size() == 3) {
+      return {ComponentType::kSInt, CompositionType::kVec3};
+    } else if (vec->size() == 4) {
+      return {ComponentType::kSInt, CompositionType::kVec4};
+    }
   }
-  return ResourceBinding::TextureDimension::kNone;
+  return {ComponentType::kUnknown, CompositionType::kUnknown};
 }
 
-ResourceBinding::SampledKind BaseTypeToSampledKind(const sem::Type* base_type) {
-  if (!base_type) {
-    return ResourceBinding::SampledKind::kUnknown;
+std::tuple<InterpolationType, InterpolationSampling> CalculateInterpolationData(
+    const sem::Type* type,
+    const ast::DecorationList& decorations) {
+  auto* interpolation_decoration =
+      ast::GetDecoration<ast::InterpolateDecoration>(decorations);
+  if (type->is_integer_scalar_or_vector()) {
+    return {InterpolationType::kFlat, InterpolationSampling::kNone};
   }
 
-  if (auto* at = base_type->As<sem::Array>()) {
-    base_type = const_cast<sem::Type*>(at->ElemType());
-  } else if (auto* mt = base_type->As<sem::Matrix>()) {
-    base_type = mt->type();
-  } else if (auto* vt = base_type->As<sem::Vector>()) {
-    base_type = vt->type();
+  if (!interpolation_decoration) {
+    return {InterpolationType::kPerspective, InterpolationSampling::kCenter};
   }
 
-  if (base_type->Is<sem::F32>()) {
-    return ResourceBinding::SampledKind::kFloat;
-  } else if (base_type->Is<sem::U32>()) {
-    return ResourceBinding::SampledKind::kUInt;
-  } else if (base_type->Is<sem::I32>()) {
-    return ResourceBinding::SampledKind::kSInt;
-  } else {
-    return ResourceBinding::SampledKind::kUnknown;
+  auto interpolation_type = interpolation_decoration->type();
+  auto sampling = interpolation_decoration->sampling();
+  if (interpolation_type != ast::InterpolationType::kFlat &&
+      sampling == ast::InterpolationSampling::kNone) {
+    sampling = ast::InterpolationSampling::kCenter;
   }
-}
-
-ResourceBinding::ImageFormat TypeImageFormatToResourceBindingImageFormat(
-    const ast::ImageFormat& image_format) {
-  switch (image_format) {
-    case ast::ImageFormat::kR8Unorm:
-      return ResourceBinding::ImageFormat::kR8Unorm;
-    case ast::ImageFormat::kR8Snorm:
-      return ResourceBinding::ImageFormat::kR8Snorm;
-    case ast::ImageFormat::kR8Uint:
-      return ResourceBinding::ImageFormat::kR8Uint;
-    case ast::ImageFormat::kR8Sint:
-      return ResourceBinding::ImageFormat::kR8Sint;
-    case ast::ImageFormat::kR16Uint:
-      return ResourceBinding::ImageFormat::kR16Uint;
-    case ast::ImageFormat::kR16Sint:
-      return ResourceBinding::ImageFormat::kR16Sint;
-    case ast::ImageFormat::kR16Float:
-      return ResourceBinding::ImageFormat::kR16Float;
-    case ast::ImageFormat::kRg8Unorm:
-      return ResourceBinding::ImageFormat::kRg8Unorm;
-    case ast::ImageFormat::kRg8Snorm:
-      return ResourceBinding::ImageFormat::kRg8Snorm;
-    case ast::ImageFormat::kRg8Uint:
-      return ResourceBinding::ImageFormat::kRg8Uint;
-    case ast::ImageFormat::kRg8Sint:
-      return ResourceBinding::ImageFormat::kRg8Sint;
-    case ast::ImageFormat::kR32Uint:
-      return ResourceBinding::ImageFormat::kR32Uint;
-    case ast::ImageFormat::kR32Sint:
-      return ResourceBinding::ImageFormat::kR32Sint;
-    case ast::ImageFormat::kR32Float:
-      return ResourceBinding::ImageFormat::kR32Float;
-    case ast::ImageFormat::kRg16Uint:
-      return ResourceBinding::ImageFormat::kRg16Uint;
-    case ast::ImageFormat::kRg16Sint:
-      return ResourceBinding::ImageFormat::kRg16Sint;
-    case ast::ImageFormat::kRg16Float:
-      return ResourceBinding::ImageFormat::kRg16Float;
-    case ast::ImageFormat::kRgba8Unorm:
-      return ResourceBinding::ImageFormat::kRgba8Unorm;
-    case ast::ImageFormat::kRgba8UnormSrgb:
-      return ResourceBinding::ImageFormat::kRgba8UnormSrgb;
-    case ast::ImageFormat::kRgba8Snorm:
-      return ResourceBinding::ImageFormat::kRgba8Snorm;
-    case ast::ImageFormat::kRgba8Uint:
-      return ResourceBinding::ImageFormat::kRgba8Uint;
-    case ast::ImageFormat::kRgba8Sint:
-      return ResourceBinding::ImageFormat::kRgba8Sint;
-    case ast::ImageFormat::kBgra8Unorm:
-      return ResourceBinding::ImageFormat::kBgra8Unorm;
-    case ast::ImageFormat::kBgra8UnormSrgb:
-      return ResourceBinding::ImageFormat::kBgra8UnormSrgb;
-    case ast::ImageFormat::kRgb10A2Unorm:
-      return ResourceBinding::ImageFormat::kRgb10A2Unorm;
-    case ast::ImageFormat::kRg11B10Float:
-      return ResourceBinding::ImageFormat::kRg11B10Float;
-    case ast::ImageFormat::kRg32Uint:
-      return ResourceBinding::ImageFormat::kRg32Uint;
-    case ast::ImageFormat::kRg32Sint:
-      return ResourceBinding::ImageFormat::kRg32Sint;
-    case ast::ImageFormat::kRg32Float:
-      return ResourceBinding::ImageFormat::kRg32Float;
-    case ast::ImageFormat::kRgba16Uint:
-      return ResourceBinding::ImageFormat::kRgba16Uint;
-    case ast::ImageFormat::kRgba16Sint:
-      return ResourceBinding::ImageFormat::kRgba16Sint;
-    case ast::ImageFormat::kRgba16Float:
-      return ResourceBinding::ImageFormat::kRgba16Float;
-    case ast::ImageFormat::kRgba32Uint:
-      return ResourceBinding::ImageFormat::kRgba32Uint;
-    case ast::ImageFormat::kRgba32Sint:
-      return ResourceBinding::ImageFormat::kRgba32Sint;
-    case ast::ImageFormat::kRgba32Float:
-      return ResourceBinding::ImageFormat::kRgba32Float;
-    case ast::ImageFormat::kNone:
-      return ResourceBinding::ImageFormat::kNone;
-  }
-  return ResourceBinding::ImageFormat::kNone;
+  return {ASTToInspectorInterpolationType(interpolation_type),
+          ASTToInspectorInterpolationSampling(sampling)};
 }
 
 }  // namespace
@@ -206,7 +149,7 @@ std::vector<EntryPoint> Inspector::GetEntryPoints() {
     if (wgsize[0].overridable_const || wgsize[1].overridable_const ||
         wgsize[2].overridable_const) {
       // TODO(crbug.com/tint/713): Handle overridable constants.
-      TINT_ASSERT(false);
+      TINT_ASSERT(Inspector, false);
     }
 
     for (auto* param : sem->Parameters()) {
@@ -222,41 +165,18 @@ std::vector<EntryPoint> Inspector::GetEntryPoints() {
                                   entry_point.output_variables);
     }
 
-    // TODO(crbug.com/tint/697): Remove this.
+    entry_point.sample_mask_used = ContainsSampleMaskBuiltin(
+        sem->ReturnType(), func->return_type_decorations());
+
     for (auto* var : sem->ReferencedModuleVariables()) {
       auto* decl = var->Declaration();
 
       auto name = program_->Symbols().NameFor(decl->symbol());
-      if (ast::HasDecoration<ast::BuiltinDecoration>(decl->decorations())) {
-        continue;
-      }
 
-      StageVariable stage_variable;
-      stage_variable.name = name;
-
-      stage_variable.component_type = ComponentType::kUnknown;
-      auto* type = var->Type()->UnwrapRef();
-      if (type->is_float_scalar_or_vector() || type->is_float_matrix()) {
-        stage_variable.component_type = ComponentType::kFloat;
-      } else if (type->is_unsigned_scalar_or_vector()) {
-        stage_variable.component_type = ComponentType::kUInt;
-      } else if (type->is_signed_scalar_or_vector()) {
-        stage_variable.component_type = ComponentType::kSInt;
-      }
-
-      auto* location_decoration =
-          ast::GetDecoration<ast::LocationDecoration>(decl->decorations());
-      if (location_decoration) {
-        stage_variable.has_location_decoration = true;
-        stage_variable.location_decoration = location_decoration->value();
-      } else {
-        stage_variable.has_location_decoration = false;
-      }
-
-      if (var->StorageClass() == ast::StorageClass::kInput) {
-        entry_point.input_variables.push_back(stage_variable);
-      } else if (var->StorageClass() == ast::StorageClass::kOutput) {
-        entry_point.output_variables.push_back(stage_variable);
+      if (var->IsPipelineConstant()) {
+        OverridableConstant overridable_constant;
+        overridable_constant.name = name;
+        entry_point.overridable_constants.push_back(overridable_constant);
       }
     }
 
@@ -362,6 +282,33 @@ std::map<std::string, uint32_t> Inspector::GetConstantNameToIdMap() {
   return result;
 }
 
+uint32_t Inspector::GetStorageSize(const std::string& entry_point) {
+  auto* func = FindEntryPointByName(entry_point);
+  if (!func) {
+    return 0;
+  }
+
+  size_t size = 0;
+  auto* func_sem = program_->Sem().Get(func);
+  for (auto& ruv : func_sem->ReferencedUniformVariables()) {
+    const sem::Struct* s = ruv.first->Type()->UnwrapRef()->As<sem::Struct>();
+    if (s && s->IsBlockDecorated()) {
+      size += s->Size();
+    }
+  }
+  for (auto& rsv : func_sem->ReferencedStorageBufferVariables()) {
+    const sem::Struct* s = rsv.first->Type()->UnwrapRef()->As<sem::Struct>();
+    if (s) {
+      size += s->Size();
+    }
+  }
+
+  if (size > std::numeric_limits<uint32_t>::max()) {
+    return std::numeric_limits<uint32_t>::max();
+  }
+  return static_cast<uint32_t>(size);
+}
+
 std::vector<ResourceBinding> Inspector::GetResourceBindings(
     const std::string& entry_point) {
   auto* func = FindEntryPointByName(entry_point);
@@ -449,6 +396,8 @@ std::vector<ResourceBinding> Inspector::GetSamplerResourceBindings(
     return {};
   }
 
+  GenerateSamplerTargets();
+
   std::vector<ResourceBinding> result;
 
   auto* func_sem = program_->Sem().Get(func);
@@ -472,6 +421,8 @@ std::vector<ResourceBinding> Inspector::GetComparisonSamplerResourceBindings(
   if (!func) {
     return {};
   }
+
+  GenerateSamplerTargets();
 
   std::vector<ResourceBinding> result;
 
@@ -567,6 +518,22 @@ std::vector<ResourceBinding> Inspector::GetExternalTextureResourceBindings(
   return result;
 }
 
+std::vector<SamplerTexturePair> Inspector::GetSamplerTextureUses(
+    const std::string& entry_point) {
+  auto* func = FindEntryPointByName(entry_point);
+  if (!func) {
+    return {};
+  }
+
+  GenerateSamplerTargets();
+
+  auto it = sampler_targets_->find(entry_point);
+  if (it == sampler_targets_->end()) {
+    return {};
+  }
+  return it->second;
+}
+
 ast::Function* Inspector::FindEntryPointByName(const std::string& name) {
   auto* func = program_->AST().Functions().Find(program_->Symbols().Get(name));
   if (!func) {
@@ -609,22 +576,44 @@ void Inspector::AddEntryPointInOutVariables(
 
   StageVariable stage_variable;
   stage_variable.name = name;
-  stage_variable.component_type = ComponentType::kUnknown;
-  if (unwrapped_type->is_float_scalar_or_vector() ||
-      unwrapped_type->is_float_matrix()) {
-    stage_variable.component_type = ComponentType::kFloat;
-  } else if (unwrapped_type->is_unsigned_scalar_or_vector()) {
-    stage_variable.component_type = ComponentType::kUInt;
-  } else if (unwrapped_type->is_signed_scalar_or_vector()) {
-    stage_variable.component_type = ComponentType::kSInt;
-  }
+  std::tie(stage_variable.component_type, stage_variable.composition_type) =
+      CalculateComponentAndComposition(type);
 
   auto* location = ast::GetDecoration<ast::LocationDecoration>(decorations);
-  TINT_ASSERT(location != nullptr);
+  TINT_ASSERT(Inspector, location != nullptr);
   stage_variable.has_location_decoration = true;
   stage_variable.location_decoration = location->value();
 
+  std::tie(stage_variable.interpolation_type,
+           stage_variable.interpolation_sampling) =
+      CalculateInterpolationData(type, decorations);
+
   variables.push_back(stage_variable);
+}
+
+bool Inspector::ContainsSampleMaskBuiltin(
+    sem::Type* type,
+    const ast::DecorationList& decorations) const {
+  auto* unwrapped_type = type->UnwrapRef();
+
+  if (auto* struct_ty = unwrapped_type->As<sem::Struct>()) {
+    // Recurse into members.
+    for (auto* member : struct_ty->Members()) {
+      if (ContainsSampleMaskBuiltin(member->Type(),
+                                    member->Declaration()->decorations())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Base case: check for [[builtin(sample_mask)]]
+  auto* builtin = ast::GetDecoration<ast::BuiltinDecoration>(decorations);
+  if (!builtin || builtin->value() != ast::Builtin::kSampleMask) {
+    return false;
+  }
+
+  return true;
 }
 
 std::vector<ResourceBinding> Inspector::GetStorageBufferResourceBindingsImpl(
@@ -641,11 +630,7 @@ std::vector<ResourceBinding> Inspector::GetStorageBufferResourceBindingsImpl(
     auto* var = rsv.first;
     auto binding_info = rsv.second;
 
-    if (var->AccessControl() == ast::AccessControl::kInvalid) {
-      continue;
-    }
-
-    if (read_only != (var->AccessControl() == ast::AccessControl::kReadOnly)) {
+    if (read_only != (var->Access() == ast::Access::kRead)) {
       continue;
     }
 
@@ -727,8 +712,7 @@ std::vector<ResourceBinding> Inspector::GetStorageTextureResourceBindingsImpl(
 
     auto* texture_type = var->Type()->UnwrapRef()->As<sem::StorageTexture>();
 
-    if (read_only !=
-        (texture_type->access_control() == ast::AccessControl::kReadOnly)) {
+    if (read_only != (texture_type->access() == ast::Access::kRead)) {
       continue;
     }
 
@@ -751,6 +735,77 @@ std::vector<ResourceBinding> Inspector::GetStorageTextureResourceBindingsImpl(
   }
 
   return result;
+}
+
+void Inspector::GenerateSamplerTargets() {
+  // Do not re-generate, since |program_| should not change during the lifetime
+  // of the inspector.
+  if (sampler_targets_ != nullptr) {
+    return;
+  }
+
+  sampler_targets_ = std::make_unique<
+      std::unordered_map<std::string, UniqueVector<SamplerTexturePair>>>();
+
+  auto& sem = program_->Sem();
+
+  for (auto* node : program_->ASTNodes().Objects()) {
+    auto* c = node->As<ast::CallExpression>();
+    if (!c) {
+      continue;
+    }
+
+    auto* call = sem.Get(c);
+    if (!call) {
+      continue;
+    }
+
+    auto* i = call->Target()->As<sem::Intrinsic>();
+    if (!i) {
+      continue;
+    }
+
+    const auto& params = i->Parameters();
+    int sampler_index = sem::IndexOf(params, sem::ParameterUsage::kSampler);
+    if (sampler_index == -1) {
+      continue;
+    }
+
+    int texture_index = sem::IndexOf(params, sem::ParameterUsage::kTexture);
+    if (texture_index == -1) {
+      continue;
+    }
+
+    auto* call_func = call->Stmt()->Function();
+    std::vector<Symbol> entry_points;
+    if (call_func->IsEntryPoint()) {
+      entry_points = {call_func->symbol()};
+    } else {
+      entry_points = sem.Get(call_func)->AncestorEntryPoints();
+    }
+
+    if (entry_points.empty()) {
+      continue;
+    }
+
+    auto* s = c->params()[sampler_index];
+    auto* sampler = sem.Get<sem::VariableUser>(s)->Variable();
+    sem::BindingPoint sampler_binding_point = {
+        sampler->Declaration()->binding_point().group->value(),
+        sampler->Declaration()->binding_point().binding->value()};
+
+    auto* t = c->params()[texture_index];
+    auto* texture = sem.Get<sem::VariableUser>(t)->Variable();
+    sem::BindingPoint texture_binding_point = {
+        texture->Declaration()->binding_point().group->value(),
+        texture->Declaration()->binding_point().binding->value()};
+
+    for (auto entry_point : entry_points) {
+      const auto& ep_name = program_->Symbols().NameFor(entry_point);
+      (*sampler_targets_)[ep_name].add(
+          {sampler_binding_point, texture_binding_point});
+    }
+  }
 }
 
 }  // namespace inspector

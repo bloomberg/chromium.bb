@@ -52,7 +52,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Quota.AvailableDiskSpace2" units="MB"
-    expires_after="2021-08-15">
+    expires_after="2022-07-07">
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -63,6 +63,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Quota.DaysBetweenRepeatedOriginEvictions" units="units"
     expires_after="2021-11-29">
+  <obsolete>
+    Removed as of 2021/05.
+  </obsolete>
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -95,8 +98,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
-    The number of times the evicted origin was accessed. Logged when the origin
-    is evicted.
+    The number of times the evicted storage key was accessed. Logged when the
+    storage key is evicted. Prior to M93, evictions were based on the Origin,
+    not StorageKey, but we chose not to rename the metric in order to maintain
+    historical data.
   </summary>
 </histogram>
 
@@ -105,8 +110,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
-    The number of days since the evicted origin was last accessed. Logged when
-    the origin is evicted.
+    The number of days since the evicted storage key was last accessed. Logged
+    when the storage key is evicted. Prior to M93, evictions were based on the
+    Origin, not StorageKey, but we chose not to rename the metric in order to
+    maintain historical data.
   </summary>
 </histogram>
 
@@ -114,7 +121,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="2021-09-05">
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
-  <summary>Number of evicted origins in an hour.</summary>
+  <summary>
+    Number of evicted storage keys in an hour. Prior to M93, evictions were
+    based on the Origin, not StorageKey, but we chose not to rename the metric
+    in order to maintain historical data.
+  </summary>
 </histogram>
 
 <histogram name="Quota.EvictionRoundsPerHour" units="units"
@@ -134,13 +145,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Quota.GlobalUsageOfPersistentStorage" units="MB"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>jarrydg@chromium.org</owner>
   <summary>Global usage of persistent storage.</summary>
 </histogram>
 
 <histogram name="Quota.GlobalUsageOfTemporaryStorage" units="MB"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>jarrydg@chromium.org</owner>
   <summary>Global usage of temporary storage.</summary>
 </histogram>
@@ -149,7 +160,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="2022-05-18">
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
-  <summary>Number of evicted origins per round.</summary>
+  <summary>
+    Number of evicted storage keys per round. Prior to M93, evictions were based
+    on the Origin, not StorageKey, but we chose not to rename the metric in
+    order to maintain historical data.
+  </summary>
 </histogram>
 
 <histogram name="Quota.OSAccomodationDelta" units="MB" expires_after="M85">
@@ -225,7 +240,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Quota.SkippedInvalidOriginUsage" enum="InvalidOriginReason"
-    expires_after="2021-08-04">
+    expires_after="2022-07-07">
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -269,7 +284,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Quota.UsageByOrigin" units="MB" expires_after="2021-07-03">
+<histogram name="Quota.UsageByOrigin" units="MB" expires_after="2022-07-07">
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>

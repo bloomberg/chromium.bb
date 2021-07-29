@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "build/build_config.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -16,7 +17,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -27,6 +27,7 @@
 #include "content/shell/browser/shell.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -35,9 +36,9 @@ namespace {
 constexpr char kBaseDataDir[] = "content/test/data/conversions/";
 }
 
-class ConversionsOriginTrialBrowserTestBase : public ContentBrowserTest {
+class ConversionsOriginTrialBrowserTest : public ContentBrowserTest {
  public:
-  ConversionsOriginTrialBrowserTestBase() = default;
+  ConversionsOriginTrialBrowserTest() = default;
 
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
@@ -64,17 +65,6 @@ class ConversionsOriginTrialBrowserTestBase : public ContentBrowserTest {
   std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor_;
 };
 
-class ConversionsOriginTrialBrowserTest
-    : public ConversionsOriginTrialBrowserTestBase {
- public:
-  ConversionsOriginTrialBrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialBrowserTest,
                        OriginTrialEnabled_FeatureDetected) {
   EXPECT_TRUE(NavigateToURL(
@@ -83,6 +73,7 @@ IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialBrowserTest,
   EXPECT_EQ(true, EvalJs(shell(),
                          "document.featurePolicy.features().includes('"
                          "attribution-reporting')"));
+  EXPECT_EQ(true, EvalJs(shell(), "window.attributionReporting === undefined"));
 }
 
 IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialBrowserTest,
@@ -94,18 +85,26 @@ IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialBrowserTest,
   EXPECT_EQ(false, EvalJs(shell(),
                           "document.featurePolicy.features().includes('"
                           "conversion-measurement')"));
+  EXPECT_EQ(true, EvalJs(shell(), "window.attributionReporting === undefined"));
 }
 
+#if defined(OS_LINUX)
+// TODO(https://crbug.com/1121464): Flaky on linux.
+#define MAYBE_OriginTrialEnabled_ImpressionRegistered DISABLED_OriginTrialEnabled_ImpressionRegistered
+#else
+#define MAYBE_OriginTrialEnabled_ImpressionRegistered OriginTrialEnabled_ImpressionRegistered
+#endif
+
 IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialBrowserTest,
-                       OriginTrialEnabled_ImpressionRegistered) {
+                       MAYBE_OriginTrialEnabled_ImpressionRegistered) {
   EXPECT_TRUE(NavigateToURL(
       shell(), GURL("https://example.test/impression_with_origin_trial.html")));
 
   EXPECT_TRUE(ExecJs(shell(), R"(
-    createImpressionTag("link" /* id */,
-                        "https://example.test/page_with_conversion_redirect.html" /* url */,
-                        "1" /* impression data */,
-                        "https://example.test/" /* conversion_destination */);)"));
+    createImpressionTag({id: 'link',
+                        url: 'https://example.test/page_with_conversion_redirect.html',
+                        data: '1',
+                        destination: 'https://example.test/'});)"));
 
   TestNavigationObserver observer(web_contents());
   EXPECT_TRUE(ExecJs(shell(), "simulateClick('link');"));
@@ -132,10 +131,11 @@ IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialBrowserTest,
 // UrlLoadInterceptor cannot properly redirect the conversion pings.
 
 class ConversionsOriginTrialNoBrowserFeatureBrowserTest
-    : public ConversionsOriginTrialBrowserTestBase {
+    : public ConversionsOriginTrialBrowserTest {
  public:
   ConversionsOriginTrialNoBrowserFeatureBrowserTest() {
-    feature_list_.InitAndDisableFeature(features::kConversionMeasurement);
+    feature_list_.InitAndDisableFeature(
+        blink::features::kConversionMeasurement);
   }
 
  private:
@@ -150,6 +150,7 @@ IN_PROC_BROWSER_TEST_F(ConversionsOriginTrialNoBrowserFeatureBrowserTest,
   EXPECT_EQ(false, EvalJs(shell(),
                           "document.featurePolicy.features().includes('"
                           "attribution-reporting')"));
+  EXPECT_EQ(true, EvalJs(shell(), "window.attributionReporting === undefined"));
 }
 
 }  // namespace content

@@ -18,6 +18,7 @@
 #include "content/public/test/browser_test.h"
 #include "media/audio/audio_system.h"
 #include "media/base/audio_parameters.h"
+#include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,8 +42,7 @@ class MockSpeechRecognizerDelegate : public SpeechRecognizerDelegate {
       OnSpeechResult,
       void(const std::u16string& text,
            bool is_final,
-           const absl::optional<SpeechRecognizerDelegate::TranscriptTiming>&
-               timing));
+           const absl::optional<media::SpeechRecognitionResult>& timing));
   MOCK_METHOD1(OnSpeechSoundLevelChanged, void(int16_t));
   MOCK_METHOD1(OnSpeechRecognitionStateChanged, void(SpeechRecognizerStatus));
 
@@ -100,17 +100,18 @@ class OnDeviceSpeechRecognizerTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     // Replaces normal CrosSpeechRecognitionService with a fake one.
-    CrosSpeechRecognitionServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-        browser()->profile(),
-        base::BindRepeating(
-            &OnDeviceSpeechRecognizerTest::CreateTestSpeechRecognitionService,
-            base::Unretained(this)));
+    CrosSpeechRecognitionServiceFactory::GetInstanceForTest()
+        ->SetTestingFactoryAndUse(
+            browser()->profile(),
+            base::BindRepeating(&OnDeviceSpeechRecognizerTest::
+                                    CreateTestSpeechRecognitionService,
+                                base::Unretained(this)));
     mock_speech_delegate_ =
         std::make_unique<testing::StrictMock<MockSpeechRecognizerDelegate>>();
     // Fake that SODA is installed.
     static_cast<speech::SodaInstallerImplChromeOS*>(
         speech::SodaInstaller::GetInstance())
-        ->soda_installed_for_test_ = true;
+        ->set_soda_installed_for_test(true);
   }
 
   void TearDownOnMainThread() override {
@@ -133,7 +134,7 @@ class OnDeviceSpeechRecognizerTest : public InProcessBrowserTest {
         .RetiresOnSaturation();
     recognizer_ = std::make_unique<OnDeviceSpeechRecognizer>(
         mock_speech_delegate_->GetWeakPtr(), browser()->profile(), "en-US",
-        true /* is IME */);
+        /*recognition_mode_ime=*/true, /*enable_formatting=*/false);
     loop.Run();
   }
 
@@ -206,8 +207,7 @@ IN_PROC_BROWSER_TEST_F(OnDeviceSpeechRecognizerTest,
       .Times(1)
       .RetiresOnSaturation();
   fake_service_->SendSpeechRecognitionResult(
-      media::mojom::SpeechRecognitionResult::New("All mammals have hair",
-                                                 false));
+      media::SpeechRecognitionResult("All mammals have hair", false));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*mock_speech_delegate_,
@@ -216,9 +216,8 @@ IN_PROC_BROWSER_TEST_F(OnDeviceSpeechRecognizerTest,
                   true, testing::_))
       .Times(1)
       .RetiresOnSaturation();
-  fake_service_->SendSpeechRecognitionResult(
-      media::mojom::SpeechRecognitionResult::New(
-          "All mammals drink milk from their mothers", true));
+  fake_service_->SendSpeechRecognitionResult(media::SpeechRecognitionResult(
+      "All mammals drink milk from their mothers", true));
   base::RunLoop().RunUntilIdle();
 }
 

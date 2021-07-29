@@ -27,148 +27,49 @@
 #pragma once
 #include "chassis.h"
 #include "core_validation_error_enums.h"
-#include "core_validation_types.h"
-#include "descriptor_sets.h"
+#include "device_state.h"
+#include "queue_state.h"
+#include "query_state.h"
+#include "ray_tracing_state.h"
+#include "command_validation.h"
+#include "layer_chassis_dispatch.h"
 #include "vk_layer_logging.h"
 #include "vulkan/vk_layer.h"
 #include "vk_typemap_helper.h"
 #include "vk_layer_data.h"
+#include "android_ndk_types.h"
 #include <atomic>
 #include <functional>
 #include <memory>
 #include <vector>
-#include <list>
-#include <deque>
 
-uint32_t ResolveRemainingLevels(const VkImageSubresourceRange* range, uint32_t mip_levels);
-uint32_t ResolveRemainingLayers(const VkImageSubresourceRange* range, uint32_t layers);
-VkImageSubresourceRange NormalizeSubresourceRange(const VkImageCreateInfo& image_create_info, const VkImageSubresourceRange& range);
-std::pair<uint32_t, const VkImageView*> GetFramebufferAttachments(const VkRenderPassBeginInfo& rp_begin,
-                                                                  const FRAMEBUFFER_STATE& fb_state);
-VkImageSubresourceRange NormalizeSubresourceRange(const IMAGE_STATE& image_state, const VkImageSubresourceRange& range);
-PIPELINE_STATE* GetCurrentPipelineFromCommandBuffer(const CMD_BUFFER_STATE& cmd, VkPipelineBindPoint pipelineBindPoint);
-void GetCurrentPipelineAndDesriptorSetsFromCommandBuffer(const CMD_BUFFER_STATE& cmd, VkPipelineBindPoint pipelineBindPoint,
-                                                         const PIPELINE_STATE** rtn_pipe,
-                                                         const std::vector<LAST_BOUND_STATE::PER_SET>** rtn_sets);
+namespace cvdescriptorset {
+class DescriptorSet;
+class DescriptorSetLayout;
+struct AllocateDescriptorSetsData;
+}  // namespace cvdescriptorset
 
-enum SyncScope {
-    kSyncScopeInternal,
-    kSyncScopeExternalTemporary,
-    kSyncScopeExternalPermanent,
-};
+class CMD_BUFFER_STATE;
+class DESCRIPTOR_POOL_STATE;
+class FRAMEBUFFER_STATE;
+class PIPELINE_STATE;
+struct PipelineStageState;
+class PIPELINE_LAYOUT_STATE;
+class QUEUE_STATE;
+class BUFFER_STATE;
+class BUFFER_VIEW_STATE;
+class IMAGE_STATE;
+class IMAGE_VIEW_STATE;
+class COMMAND_POOL_STATE;
+class DISPLAY_MODE_STATE;
+class RENDER_PASS_STATE;
+class SAMPLER_STATE;
+class SAMPLER_YCBCR_CONVERSION_STATE;
+class EVENT_STATE;
 
-enum FENCE_STATUS { FENCE_UNSIGNALED, FENCE_INFLIGHT, FENCE_RETIRED };
-
-class FENCE_STATE : public REFCOUNTED_NODE {
-  public:
-    VkFenceCreateInfo createInfo;
-    std::pair<VkQueue, uint64_t> signaler;
-    FENCE_STATUS state;
-    SyncScope scope;
-
-    // Default constructor
-    FENCE_STATE(VkFence f, const VkFenceCreateInfo *pCreateInfo)
-        : REFCOUNTED_NODE(f, kVulkanObjectTypeFence),
-          createInfo(*pCreateInfo),
-          state((pCreateInfo->flags & VK_FENCE_CREATE_SIGNALED_BIT) ? FENCE_RETIRED : FENCE_UNSIGNALED),
-          scope(kSyncScopeInternal) {}
-
-    VkFence fence() const { return handle_.Cast<VkFence>(); }
-};
-
-class SEMAPHORE_STATE : public REFCOUNTED_NODE {
-  public:
-    std::pair<VkQueue, uint64_t> signaler;
-    bool signaled;
-    SyncScope scope;
-    VkSemaphoreType type;
-    uint64_t payload;
-
-    SEMAPHORE_STATE(VkSemaphore sem, const VkSemaphoreTypeCreateInfo *type_create_info)
-        : REFCOUNTED_NODE(sem, kVulkanObjectTypeSemaphore),
-          signaler(VK_NULL_HANDLE, 0),
-          signaled(false),
-          scope(kSyncScopeInternal),
-          type(type_create_info ? type_create_info->semaphoreType : VK_SEMAPHORE_TYPE_BINARY),
-          payload(type_create_info ? type_create_info->initialValue : 0) {}
-
-    VkSemaphore semaphore() const { return handle_.Cast<VkSemaphore>(); }
-};
-
-class EVENT_STATE : public BASE_NODE {
-  public:
-    int write_in_use = 0;
-    VkPipelineStageFlags2KHR stageMask = VkPipelineStageFlags2KHR(0);
-    VkEventCreateFlags flags;
-    EVENT_STATE(VkEvent event_, VkEventCreateFlags flags_)
-        : BASE_NODE(event_, kVulkanObjectTypeEvent), flags(flags_) {}
-
-    VkEvent event() const { return handle_.Cast<VkEvent>(); }
-};
-
-class QUEUE_STATE {
-  public:
-    VkQueue queue;
-    uint32_t queueFamilyIndex;
-
-    uint64_t seq;
-    std::deque<CB_SUBMISSION> submissions;
-};
-
-class QUERY_POOL_STATE : public BASE_NODE {
-  public:
-    VkQueryPoolCreateInfo createInfo;
-
-    bool has_perf_scope_command_buffer = false;
-    bool has_perf_scope_render_pass = false;
-    uint32_t n_performance_passes = 0;
-    uint32_t perf_counter_index_count = 0;
-
-    QUERY_POOL_STATE(VkQueryPool qp, const VkQueryPoolCreateInfo *pCreateInfo)
-        : BASE_NODE(qp, kVulkanObjectTypeQueryPool),
-          createInfo(*pCreateInfo),
-          has_perf_scope_command_buffer(false),
-          has_perf_scope_render_pass(false),
-          n_performance_passes(0),
-          perf_counter_index_count(0) {}
-
-    VkQueryPool pool() const { return handle_.Cast<VkQueryPool>(); }
-};
-
-class SAMPLER_YCBCR_CONVERSION_STATE : public BASE_NODE {
-  public:
-    VkFormatFeatureFlags format_features;
-    VkFormat format;
-    VkFilter chromaFilter;
-
-    SAMPLER_YCBCR_CONVERSION_STATE(VkSamplerYcbcrConversion ycbcr)
-        : BASE_NODE(ycbcr, kVulkanObjectTypeSamplerYcbcrConversion) {}
-
-    VkSamplerYcbcrConversion ycbcr_conversion() const { return handle_.Cast<VkSamplerYcbcrConversion>(); }
-};
-
-class QUEUE_FAMILY_PERF_COUNTERS {
-  public:
-    std::vector<VkPerformanceCounterKHR> counters;
-};
-
-struct PHYSICAL_DEVICE_STATE {
-    safe_VkPhysicalDeviceFeatures2 features2 = {};
-    VkPhysicalDevice phys_device = VK_NULL_HANDLE;
-    uint32_t queue_family_known_count = 1;  // spec implies one QF must always be supported
-    std::vector<VkQueueFamilyProperties> queue_family_properties;
-    VkSurfaceCapabilitiesKHR surfaceCapabilities = {};
-    std::vector<VkPresentModeKHR> present_modes;
-    std::vector<VkSurfaceFormatKHR> surface_formats;
-    uint32_t display_plane_property_count = 0;
-
-    // Map of queue family index to QUEUE_FAMILY_PERF_COUNTERS
-    layer_data::unordered_map<uint32_t, std::unique_ptr<QUEUE_FAMILY_PERF_COUNTERS>> perf_counters;
-
-    // TODO These are currently used by CoreChecks, but should probably be refactored
-    bool vkGetPhysicalDeviceSurfaceCapabilitiesKHR_called = false;
-    bool vkGetPhysicalDeviceDisplayPlanePropertiesKHR_called = false;
-};
+enum RenderPassCreateVersion { RENDER_PASS_VERSION_1 = 0, RENDER_PASS_VERSION_2 = 1 };
+enum CopyCommandVersion { COPY_COMMAND_VERSION_1 = 0, COPY_COMMAND_VERSION_2 = 1 };
+enum CommandVersion { CMD_VERSION_1 = 0, CMD_VERSION_2 = 1 };
 
 // This structure is used to save data across the CreateGraphicsPipelines down-chain API call
 struct create_graphics_pipeline_api_state {
@@ -220,50 +121,6 @@ struct create_shader_module_api_state {
     std::vector<unsigned int> instrumented_pgm;
 };
 
-struct GpuQueue {
-    VkPhysicalDevice gpu;
-    uint32_t queue_family_index;
-};
-
-struct SubresourceRangeErrorCodes {
-    const char *base_mip_err, *mip_count_err, *base_layer_err, *layer_count_err;
-};
-
-inline bool operator==(GpuQueue const& lhs, GpuQueue const& rhs) {
-    return (lhs.gpu == rhs.gpu && lhs.queue_family_index == rhs.queue_family_index);
-}
-
-namespace std {
-template <>
-struct hash<GpuQueue> {
-    size_t operator()(GpuQueue gq) const throw() {
-        return hash<uint64_t>()((uint64_t)(gq.gpu)) ^ hash<uint32_t>()(gq.queue_family_index);
-    }
-};
-}  // namespace std
-
-struct SURFACE_STATE : public BASE_NODE {
-    SWAPCHAIN_NODE* swapchain = nullptr;
-    layer_data::unordered_map<GpuQueue, bool> gpu_queue_support;
-
-    SURFACE_STATE(VkSurfaceKHR s) : BASE_NODE(s, kVulkanObjectTypeSurfaceKHR) {}
-
-    VkSurfaceKHR surface() const { return handle_.Cast<VkSurfaceKHR>(); }
-};
-
-struct DISPLAY_MODE_STATE : public BASE_NODE {
-    VkPhysicalDevice physical_device;
-
-    DISPLAY_MODE_STATE(VkDisplayModeKHR dm) : BASE_NODE(dm, kVulkanObjectTypeDisplayModeKHR) {}
-
-    VkDisplayModeKHR display_mode() const { return handle_.Cast<VkDisplayModeKHR>(); }
-};
-
-struct SubpassLayout {
-    uint32_t index;
-    VkImageLayout layout;
-};
-
 #define VALSTATETRACK_MAP_AND_TRAITS_IMPL(handle_type, state_type, map_member, instance_scope)        \
     template <typename Dummy>                                                                         \
     struct AccessorStateHandle<state_type, Dummy> {                                                   \
@@ -281,46 +138,6 @@ struct SubpassLayout {
     VALSTATETRACK_MAP_AND_TRAITS_IMPL(handle_type, state_type, map_member, false)
 #define VALSTATETRACK_MAP_AND_TRAITS_INSTANCE_SCOPE(handle_type, state_type, map_member) \
     VALSTATETRACK_MAP_AND_TRAITS_IMPL(handle_type, state_type, map_member, true)
-
-extern std::shared_ptr<cvdescriptorset::DescriptorSetLayout const> GetDslFromPipelineLayout(
-    PIPELINE_LAYOUT_STATE const* layout_data, uint32_t set);
-
-// Returns the effective extent of an image subresource, adjusted for mip level and array depth.
-static inline VkExtent3D GetImageSubresourceExtent(const IMAGE_STATE* img, const VkImageSubresourceLayers* subresource) {
-    const uint32_t mip = subresource->mipLevel;
-
-    // Return zero extent if mip level doesn't exist
-    if (mip >= img->createInfo.mipLevels) {
-        return VkExtent3D{0, 0, 0};
-    }
-
-    // Don't allow mip adjustment to create 0 dim, but pass along a 0 if that's what subresource specified
-    VkExtent3D extent = img->createInfo.extent;
-
-    // If multi-plane, adjust per-plane extent
-    if (FormatIsMultiplane(img->createInfo.format)) {
-        VkExtent2D divisors = FindMultiplaneExtentDivisors(img->createInfo.format, subresource->aspectMask);
-        extent.width /= divisors.width;
-        extent.height /= divisors.height;
-    }
-
-    if (img->createInfo.flags & VK_IMAGE_CREATE_CORNER_SAMPLED_BIT_NV) {
-        extent.width = (0 == extent.width ? 0 : std::max(2U, 1 + ((extent.width - 1) >> mip)));
-        extent.height = (0 == extent.height ? 0 : std::max(2U, 1 + ((extent.height - 1) >> mip)));
-        extent.depth = (0 == extent.depth ? 0 : std::max(2U, 1 + ((extent.depth - 1) >> mip)));
-    } else {
-        extent.width = (0 == extent.width ? 0 : std::max(1U, extent.width >> mip));
-        extent.height = (0 == extent.height ? 0 : std::max(1U, extent.height >> mip));
-        extent.depth = (0 == extent.depth ? 0 : std::max(1U, extent.depth >> mip));
-    }
-
-    // Image arrays have an effective z extent that isn't diminished by mip level
-    if (VK_IMAGE_TYPE_3D != img->createInfo.imageType) {
-        extent.depth = img->createInfo.arrayLayers;
-    }
-
-    return extent;
-}
 
 // For image copies between compressed/uncompressed formats, the extent is provided in source image texels
 // Destination image texel extents must be adjusted by block size for the dest validation checks
@@ -395,7 +212,6 @@ class ValidationStateTracker : public ValidationObject {
     //  TODO -- make consistent with traits approach below.
     layer_data::unordered_map<VkQueue, QUEUE_STATE> queueMap;
 
-    layer_data::unordered_set<VkQueue> queues;  // All queues under given device
     QueryMap queryToStateMap;
     layer_data::unordered_map<VkSamplerYcbcrConversion, uint64_t> ycbcr_conversion_ahb_fmt_map;
     layer_data::unordered_map<uint64_t, VkFormatFeatureFlags> ahb_ext_formats_map;
@@ -667,19 +483,6 @@ class ValidationStateTracker : public ValidationObject {
     PHYSICAL_DEVICE_STATE* GetPhysicalDeviceState(VkPhysicalDevice phys);
     PHYSICAL_DEVICE_STATE* GetPhysicalDeviceState();
     const PHYSICAL_DEVICE_STATE* GetPhysicalDeviceState() const;
-
-    VkQueueFlags GetQueueFlags(const COMMAND_POOL_STATE& cp_state) const {
-        return GetPhysicalDeviceState()->queue_family_properties[cp_state.queueFamilyIndex].queueFlags;
-    }
-
-    VkQueueFlags GetQueueFlags(const CMD_BUFFER_STATE& cb_state) const {
-        VkQueueFlags queue_flags = 0;
-        auto pool = cb_state.command_pool.get();
-        if (pool) {
-            queue_flags = GetQueueFlags(*pool);
-        }
-        return queue_flags;
-    }
 
     using CommandBufferResetCallback = std::function<void(VkCommandBuffer)>;
     std::unique_ptr<CommandBufferResetCallback> command_buffer_reset_callback;
@@ -968,8 +771,6 @@ class ValidationStateTracker : public ValidationObject {
     void PostCallRecordCreateRenderPass(VkDevice device, const VkRenderPassCreateInfo* pCreateInfo,
                                         const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass,
                                         VkResult result) override;
-    void RecordCreateRenderPass2(VkDevice device, const VkRenderPassCreateInfo2* pCreateInfo,
-                                 const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass, VkResult result);
     void PostCallRecordCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2* pCreateInfo,
                                             const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass,
                                             VkResult result) override;
@@ -1140,8 +941,13 @@ class ValidationStateTracker : public ValidationObject {
     void PostCallRecordCmdDispatchIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset) override;
     void PostCallRecordCmdDraw(VkCommandBuffer commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex,
                                uint32_t firstInstance) override;
+    void PostCallRecordCmdDrawMultiEXT(VkCommandBuffer commandBuffer, uint32_t drawCount, const VkMultiDrawInfoEXT* pVertexInfo,
+                                       uint32_t instanceCount, uint32_t firstInstance, uint32_t stride) override;
     void PostCallRecordCmdDrawIndexed(VkCommandBuffer commandBuffer, uint32_t indexCount, uint32_t instanceCount,
                                       uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) override;
+    void PostCallRecordCmdDrawMultiIndexedEXT(VkCommandBuffer commandBuffer, uint32_t drawCount,
+                                              const VkMultiDrawIndexedInfoEXT* pIndexInfo, uint32_t instanceCount,
+                                              uint32_t firstInstance, uint32_t stride, const int32_t* pVertexOffset) override;
     void PostCallRecordCmdDrawIndexedIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t count,
                                               uint32_t stride) override;
     void PostCallRecordCmdDrawIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t count,
@@ -1244,6 +1050,8 @@ class ValidationStateTracker : public ValidationObject {
                                            const VkVertexInputBindingDescription2EXT* pVertexBindingDescriptions,
                                            uint32_t vertexAttributeDescriptionCount,
                                            const VkVertexInputAttributeDescription2EXT* pVertexAttributeDescriptions) override;
+    template <typename CreateInfo>
+    VkFormatFeatureFlags GetExternalFormatFeaturesANDROID(const CreateInfo* create_info) const;
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
     void PostCallRecordGetAndroidHardwareBufferPropertiesANDROID(VkDevice device, const struct AHardwareBuffer* buffer,
                                                                  VkAndroidHardwareBufferPropertiesANDROID* pProperties,
@@ -1300,21 +1108,16 @@ class ValidationStateTracker : public ValidationObject {
                                                 VkResult result) override;
 
     // State Utilty functions
-    void AddMemObjInfo(void* object, const VkDeviceMemory mem, const VkMemoryAllocateInfo* pAllocateInfo);
     void DeleteDescriptorSetPools();
     void FreeCommandBufferStates(COMMAND_POOL_STATE* pool_state, const uint32_t command_buffer_count,
                                  const VkCommandBuffer* command_buffers);
     void FreeDescriptorSet(cvdescriptorset::DescriptorSet* descriptor_set);
-    std::vector<const IMAGE_VIEW_STATE*> GetAttachmentViews(const VkRenderPassBeginInfo& rp_begin,
-                                                            const FRAMEBUFFER_STATE& fb_state) const;
     std::vector<std::shared_ptr<const IMAGE_VIEW_STATE>> GetSharedAttachmentViews(const VkRenderPassBeginInfo& rp_begin,
                                                                                   const FRAMEBUFFER_STATE& fb_state) const;
 
-    std::vector<const IMAGE_VIEW_STATE*> GetCurrentAttachmentViews(const CMD_BUFFER_STATE& cb_state) const;
     BASE_NODE* GetStateStructPtrFromObject(const VulkanTypedHandle& object_struct);
     VkFormatFeatureFlags GetPotentialFormatFeatures(VkFormat format) const;
     void IncrementResources(CMD_BUFFER_STATE* cb_node);
-    void InsertImageMemoryRange(IMAGE_STATE* image_state, DEVICE_MEMORY_STATE* mem_info, VkDeviceSize mem_offset);
     void PerformAllocateDescriptorSets(const VkDescriptorSetAllocateInfo*, const VkDescriptorSet*,
                                        const cvdescriptorset::AllocateDescriptorSetsData*);
     void PerformUpdateDescriptorSetsWithTemplateKHR(VkDescriptorSet descriptorSet, const TEMPLATE_STATE* template_state,
@@ -1330,19 +1133,13 @@ class ValidationStateTracker : public ValidationObject {
     void RecordCmdPushDescriptorSetState(CMD_BUFFER_STATE* cb_state, VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout layout,
                                          uint32_t set, uint32_t descriptorWriteCount,
                                          const VkWriteDescriptorSet* pDescriptorWrites);
-    void RecordCreateImageANDROID(const VkImageCreateInfo* create_info, IMAGE_STATE* is_node);
-    void RecordCreateBufferANDROID(const VkBufferCreateInfo* create_info, BUFFER_STATE* bs_node);
-    void RecordCreateRenderPassState(RenderPassCreateVersion rp_version, std::shared_ptr<RENDER_PASS_STATE>& render_pass,
-                                     VkRenderPass* pRenderPass);
     void RecordCreateSamplerYcbcrConversionState(const VkSamplerYcbcrConversionCreateInfo* create_info,
                                                  VkSamplerYcbcrConversion ycbcr_conversion);
-    void RecordCreateSamplerYcbcrConversionANDROID(const VkSamplerYcbcrConversionCreateInfo* create_info,
-                                                   VkSamplerYcbcrConversion ycbcr_conversion,
-                                                   SAMPLER_YCBCR_CONVERSION_STATE* ycbcr_state);
+    virtual std::shared_ptr<SWAPCHAIN_NODE> CreateSwapchainState(const VkSwapchainCreateInfoKHR* create_info,
+                                                                 VkSwapchainKHR swapchain);
     void RecordCreateSwapchainState(VkResult result, const VkSwapchainCreateInfoKHR* pCreateInfo, VkSwapchainKHR* pSwapchain,
                                     SURFACE_STATE* surface_state, SWAPCHAIN_NODE* old_swapchain_state);
     void RecordDestroySamplerYcbcrConversionState(VkSamplerYcbcrConversion ycbcr_conversion);
-    void RecordDestroySamplerYcbcrConversionANDROID(VkSamplerYcbcrConversion ycbcr_conversion);
     void RecordEnumeratePhysicalDeviceGroupsState(uint32_t* pPhysicalDeviceGroupCount,
                                                   VkPhysicalDeviceGroupProperties* pPhysicalDeviceGroupProperties);
     void RecordEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCounters(VkPhysicalDevice physicalDevice,
@@ -1364,9 +1161,7 @@ class ValidationStateTracker : public ValidationObject {
                                                    VkDescriptorUpdateTemplate* pDescriptorUpdateTemplate);
     void RecordMappedMemory(VkDeviceMemory mem, VkDeviceSize offset, VkDeviceSize size, void** ppData);
     void RecordPipelineShaderStage(const VkPipelineShaderStageCreateInfo* pStage, PIPELINE_STATE* pipeline,
-                                   PIPELINE_STATE::StageState* stage_state) const;
-    void RecordRenderPassDAG(RenderPassCreateVersion rp_version, const VkRenderPassCreateInfo2* pCreateInfo,
-                             RENDER_PASS_STATE* render_pass);
+                                   PipelineStageState* stage_state) const;
     void RecordVulkanSurface(VkSurfaceKHR* pSurface);
     void ResetCommandBufferState(const VkCommandBuffer cb);
     void RetireFence(VkFence fence);
@@ -1374,7 +1169,6 @@ class ValidationStateTracker : public ValidationObject {
     void RecordWaitSemaphores(VkDevice device, const VkSemaphoreWaitInfo* pWaitInfo, uint64_t timeout, VkResult result);
     void RecordGetSemaphoreCounterValue(VkDevice device, VkSemaphore semaphore, uint64_t* pValue, VkResult result);
     void RetireWorkOnQueue(QUEUE_STATE* pQueue, uint64_t seq);
-    static bool SetEventStageMask(VkEvent event, VkPipelineStageFlags2KHR stageMask, EventToStageMap* localEventToStageMap);
     void ResetCommandBufferPushConstantDataIfIncompatible(CMD_BUFFER_STATE* cb_state, VkPipelineLayout layout);
     static bool SetQueryState(QueryObject object, QueryState value, QueryMap* localQueryToStateMap);
     static bool SetQueryStateMulti(VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, uint32_t perfPass,
@@ -1432,6 +1226,20 @@ class ValidationStateTracker : public ValidationObject {
     void RecordCmdWaitEvents(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent* pEvents);
     void RecordCmdResetEvent(VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags2KHR stageMask);
 
+    void PostCallRecordCmdPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStageMask,
+                                          VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags,
+                                          uint32_t memoryBarrierCount, const VkMemoryBarrier* pMemoryBarriers,
+                                          uint32_t bufferMemoryBarrierCount, const VkBufferMemoryBarrier* pBufferMemoryBarriers,
+                                          uint32_t imageMemoryBarrierCount,
+                                          const VkImageMemoryBarrier* pImageMemoryBarriers) override;
+
+    void RecordBarriers(VkCommandBuffer commandBuffer, const VkDependencyInfoKHR* pDependencyInfo);
+    void RecordBarriers(VkCommandBuffer commandBuffer, uint32_t memoryBarrierCount, const VkMemoryBarrier* pMemoryBarriers,
+                        uint32_t bufferMemoryBarrierCount, const VkBufferMemoryBarrier* pBufferMemoryBarriers,
+                        uint32_t imageMemoryBarrierCount, const VkImageMemoryBarrier* pImageMemoryBarriers);
+
+    void PreCallRecordCmdPipelineBarrier2KHR(VkCommandBuffer commandBuffer, const VkDependencyInfoKHR* pDependencyInfo) override;
+
     void PreCallRecordCmdSetEvent2KHR(VkCommandBuffer commandBuffer, VkEvent event,
                                       const VkDependencyInfoKHR* pDependencyInfo) override;
     void PreCallRecordCmdResetEvent2KHR(VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags2KHR stageMask) override;
@@ -1441,6 +1249,14 @@ class ValidationStateTracker : public ValidationObject {
                                              uint32_t query) override;
     void PostCallRecordQueueSubmit2KHR(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2KHR* pSubmits, VkFence fence,
                                        VkResult result) override;
+
+    void RecordGetBufferDeviceAddress(const VkBufferDeviceAddressInfo* pInfo, VkDeviceAddress address);
+    void PostCallRecordGetBufferDeviceAddress(VkDevice device, const VkBufferDeviceAddressInfo* pInfo,
+                                              VkDeviceAddress address) override;
+    void PostCallRecordGetBufferDeviceAddressKHR(VkDevice device, const VkBufferDeviceAddressInfo* pInfo,
+                                                 VkDeviceAddress address) override;
+    void PostCallRecordGetBufferDeviceAddressEXT(VkDevice device, const VkBufferDeviceAddressInfo* pInfo,
+                                                 VkDeviceAddress address) override;
 
     DeviceFeatures enabled_features = {};
     // Device specific data
@@ -1474,6 +1290,7 @@ class ValidationStateTracker : public ValidationObject {
         VkPhysicalDevicePortabilitySubsetPropertiesKHR portability_props;
         VkPhysicalDeviceFragmentShadingRatePropertiesKHR fragment_shading_rate_props;
         VkPhysicalDeviceProvokingVertexPropertiesEXT provoking_vertex_props;
+        VkPhysicalDeviceMultiDrawPropertiesEXT multi_draw_props;
     };
     DeviceExtensionProperties phys_dev_ext_props = {};
     std::vector<VkCooperativeMatrixPropertiesNV> cooperative_matrix_properties;
@@ -1504,6 +1321,11 @@ class ValidationStateTracker : public ValidationObject {
             }
         }
     }
+
+  protected:
+    // If vkGetBufferDeviceAddress is called, keep track of buffer <-> address mapping.
+    // TODO is it sufficient to track a pointer, or do we need a std::shared_ptr<BUFFER_STATE>?
+    layer_data::unordered_map<VkDeviceAddress, BUFFER_STATE*> buffer_address_map_;
 
   private:
     // Simple base address allocator allow allow VkDeviceMemory allocations to appear to exist in a common address space.

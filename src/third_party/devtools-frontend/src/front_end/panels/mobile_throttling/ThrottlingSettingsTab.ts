@@ -88,7 +88,7 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox implements
   _editor?: UI.ListWidget.Editor<SDK.NetworkManager.Conditions>;
   constructor() {
     super(true);
-    this.registerRequiredCSS('panels/mobile_throttling/throttlingSettingsTab.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('panels/mobile_throttling/throttlingSettingsTab.css');
 
     const header = this.contentElement.createChild('div', 'header');
     header.textContent = i18nString(UIStrings.networkThrottlingProfiles);
@@ -100,7 +100,7 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox implements
 
     this._list = new UI.ListWidget.ListWidget(this);
     this._list.element.classList.add('conditions-list');
-    this._list.registerRequiredCSS('panels/mobile_throttling/throttlingSettingsTab.css', {enableLegacyPatching: true});
+    this._list.registerRequiredCSS('panels/mobile_throttling/throttlingSettingsTab.css');
     this._list.show(this.contentElement);
 
     this._customSetting = Common.Settings.Settings.instance().moduleSetting('customNetworkConditions');
@@ -257,9 +257,8 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox implements
 
     return editor;
 
-    function titleValidator(
-        _item: SDK.NetworkManager.Conditions, _index: number,
-        input: HTMLSelectElement|HTMLInputElement): UI.ListWidget.ValidatorResult {
+    function titleValidator(_item: SDK.NetworkManager.Conditions, _index: number, input: UI.ListWidget.EditorControl):
+        UI.ListWidget.ValidatorResult {
       const maxLength = 49;
       const value = input.value.trim();
       const valid = value.length > 0 && value.length <= maxLength;
@@ -272,7 +271,7 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox implements
 
     function throughputValidator(
         _item: SDK.NetworkManager.Conditions, _index: number,
-        input: HTMLSelectElement|HTMLInputElement): UI.ListWidget.ValidatorResult {
+        input: UI.ListWidget.EditorControl): UI.ListWidget.ValidatorResult {
       const minThroughput = 0;
       const maxThroughput = 10000000;
       const value = input.value.trim();
@@ -281,15 +280,15 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox implements
       const valid = !Number.isNaN(parsedValue) && parsedValue >= minThroughput && parsedValue <= maxThroughput;
       if (!valid) {
         const errorMessage = i18nString(
-            UIStrings.sMustBeANumberBetweenSkbsToSkbs, {PH1: throughput, PH2: minThroughput, PH3: maxThroughput});
+            UIStrings.sMustBeANumberBetweenSkbsToSkbs,
+            {PH1: String(throughput), PH2: minThroughput, PH3: maxThroughput});
         return {valid, errorMessage};
       }
       return {valid, errorMessage: undefined};
     }
 
-    function latencyValidator(
-        _item: SDK.NetworkManager.Conditions, _index: number,
-        input: HTMLSelectElement|HTMLInputElement): UI.ListWidget.ValidatorResult {
+    function latencyValidator(_item: SDK.NetworkManager.Conditions, _index: number, input: UI.ListWidget.EditorControl):
+        UI.ListWidget.ValidatorResult {
       const minLatency = 0;
       const maxLatency = 1000000;
       const value = input.value.trim();

@@ -76,7 +76,7 @@ TEST_P(ObjectCachingTest, BindGroupLayoutViewDimension) {
 
 // Test that an error object doesn't try to uncache itself
 TEST_P(ObjectCachingTest, ErrorObjectDoesntUncache) {
-    DAWN_SKIP_TEST_IF(HasToggleEnabled("skip_validation"));
+    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("skip_validation"));
 
     ASSERT_DEVICE_ERROR(
         wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
@@ -124,16 +124,16 @@ TEST_P(ObjectCachingTest, ShaderModuleDeduplication) {
 TEST_P(ObjectCachingTest, ComputePipelineDeduplicationOnShaderModule) {
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
         var<workgroup> i : u32;
-        [[stage(compute)]] fn main() {
+        [[stage(compute), workgroup_size(1)]] fn main() {
             i = 0u;
         })");
     wgpu::ShaderModule sameModule = utils::CreateShaderModule(device, R"(
         var<workgroup> i : u32;
-        [[stage(compute)]] fn main() {
+        [[stage(compute), workgroup_size(1)]] fn main() {
             i = 0u;
         })");
     wgpu::ShaderModule otherModule = utils::CreateShaderModule(device, R"(
-        [[stage(compute)]] fn main() {
+        [[stage(compute), workgroup_size(1)]] fn main() {
         })");
 
     EXPECT_NE(module.Get(), otherModule.Get());
@@ -142,16 +142,16 @@ TEST_P(ObjectCachingTest, ComputePipelineDeduplicationOnShaderModule) {
     wgpu::PipelineLayout layout = utils::MakeBasicPipelineLayout(device, nullptr);
 
     wgpu::ComputePipelineDescriptor desc;
-    desc.computeStage.entryPoint = "main";
+    desc.compute.entryPoint = "main";
     desc.layout = layout;
 
-    desc.computeStage.module = module;
+    desc.compute.module = module;
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&desc);
 
-    desc.computeStage.module = sameModule;
+    desc.compute.module = sameModule;
     wgpu::ComputePipeline samePipeline = device.CreateComputePipeline(&desc);
 
-    desc.computeStage.module = otherModule;
+    desc.compute.module = otherModule;
     wgpu::ComputePipeline otherPipeline = device.CreateComputePipeline(&desc);
 
     EXPECT_NE(pipeline.Get(), otherPipeline.Get());
@@ -173,10 +173,10 @@ TEST_P(ObjectCachingTest, ComputePipelineDeduplicationOnLayout) {
     EXPECT_EQ(pl.Get() == samePl.Get(), !UsesWire());
 
     wgpu::ComputePipelineDescriptor desc;
-    desc.computeStage.entryPoint = "main";
-    desc.computeStage.module = utils::CreateShaderModule(device, R"(
+    desc.compute.entryPoint = "main";
+    desc.compute.module = utils::CreateShaderModule(device, R"(
             var<workgroup> i : u32;
-            [[stage(compute)]] fn main() {
+            [[stage(compute), workgroup_size(1)]] fn main() {
                 i = 0u;
             })");
 
@@ -207,7 +207,7 @@ TEST_P(ObjectCachingTest, RenderPipelineDeduplicationOnLayout) {
     EXPECT_NE(pl.Get(), otherPl.Get());
     EXPECT_EQ(pl.Get() == samePl.Get(), !UsesWire());
 
-    utils::ComboRenderPipelineDescriptor2 desc;
+    utils::ComboRenderPipelineDescriptor desc;
     desc.vertex.module = utils::CreateShaderModule(device, R"(
         [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
             return vec4<f32>(0.0, 0.0, 0.0, 0.0);
@@ -217,13 +217,13 @@ TEST_P(ObjectCachingTest, RenderPipelineDeduplicationOnLayout) {
         })");
 
     desc.layout = pl;
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&desc);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&desc);
 
     desc.layout = samePl;
-    wgpu::RenderPipeline samePipeline = device.CreateRenderPipeline2(&desc);
+    wgpu::RenderPipeline samePipeline = device.CreateRenderPipeline(&desc);
 
     desc.layout = otherPl;
-    wgpu::RenderPipeline otherPipeline = device.CreateRenderPipeline2(&desc);
+    wgpu::RenderPipeline otherPipeline = device.CreateRenderPipeline(&desc);
 
     EXPECT_NE(pipeline.Get(), otherPipeline.Get());
     EXPECT_EQ(pipeline.Get() == samePipeline.Get(), !UsesWire());
@@ -247,19 +247,19 @@ TEST_P(ObjectCachingTest, RenderPipelineDeduplicationOnVertexModule) {
     EXPECT_NE(module.Get(), otherModule.Get());
     EXPECT_EQ(module.Get() == sameModule.Get(), !UsesWire());
 
-    utils::ComboRenderPipelineDescriptor2 desc;
+    utils::ComboRenderPipelineDescriptor desc;
     desc.cFragment.module = utils::CreateShaderModule(device, R"(
             [[stage(fragment)]] fn main() {
             })");
 
     desc.vertex.module = module;
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&desc);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&desc);
 
     desc.vertex.module = sameModule;
-    wgpu::RenderPipeline samePipeline = device.CreateRenderPipeline2(&desc);
+    wgpu::RenderPipeline samePipeline = device.CreateRenderPipeline(&desc);
 
     desc.vertex.module = otherModule;
-    wgpu::RenderPipeline otherPipeline = device.CreateRenderPipeline2(&desc);
+    wgpu::RenderPipeline otherPipeline = device.CreateRenderPipeline(&desc);
 
     EXPECT_NE(pipeline.Get(), otherPipeline.Get());
     EXPECT_EQ(pipeline.Get() == samePipeline.Get(), !UsesWire());
@@ -281,20 +281,20 @@ TEST_P(ObjectCachingTest, RenderPipelineDeduplicationOnFragmentModule) {
     EXPECT_NE(module.Get(), otherModule.Get());
     EXPECT_EQ(module.Get() == sameModule.Get(), !UsesWire());
 
-    utils::ComboRenderPipelineDescriptor2 desc;
+    utils::ComboRenderPipelineDescriptor desc;
     desc.vertex.module = utils::CreateShaderModule(device, R"(
         [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
             return vec4<f32>(0.0, 0.0, 0.0, 0.0);
         })");
 
     desc.cFragment.module = module;
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&desc);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&desc);
 
     desc.cFragment.module = sameModule;
-    wgpu::RenderPipeline samePipeline = device.CreateRenderPipeline2(&desc);
+    wgpu::RenderPipeline samePipeline = device.CreateRenderPipeline(&desc);
 
     desc.cFragment.module = otherModule;
-    wgpu::RenderPipeline otherPipeline = device.CreateRenderPipeline2(&desc);
+    wgpu::RenderPipeline otherPipeline = device.CreateRenderPipeline(&desc);
 
     EXPECT_NE(pipeline.Get(), otherPipeline.Get());
     EXPECT_EQ(pipeline.Get() == samePipeline.Get(), !UsesWire());

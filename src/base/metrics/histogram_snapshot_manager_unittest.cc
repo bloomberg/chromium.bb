@@ -7,12 +7,12 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_delta_serialization.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sample_vector.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

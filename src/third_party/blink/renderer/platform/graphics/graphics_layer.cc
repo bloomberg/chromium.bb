@@ -32,6 +32,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
@@ -439,7 +440,6 @@ void GraphicsLayer::Paint(Vector<PreCompositedLayerInfo>& pre_composited_layers,
 
 void GraphicsLayer::SetShouldCreateLayersAfterPaint(
     bool should_create_layers_after_paint) {
-  DCHECK(RuntimeEnabledFeatures::CompositeSVGEnabled());
   if (should_create_layers_after_paint != should_create_layers_after_paint_) {
     should_create_layers_after_paint_ = should_create_layers_after_paint;
     // Depending on |should_create_layers_after_paint_|, raster invalidation

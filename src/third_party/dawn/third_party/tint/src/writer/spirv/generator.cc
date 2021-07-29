@@ -14,25 +14,47 @@
 
 #include "src/writer/spirv/generator.h"
 
+#include "src/transform/spirv.h"
+#include "src/writer/spirv/binary_writer.h"
+
 namespace tint {
 namespace writer {
 namespace spirv {
 
-Generator::Generator(const Program* program)
-    : builder_(std::make_unique<Builder>(program)),
-      writer_(std::make_unique<BinaryWriter>()) {}
+Result::Result() = default;
+Result::~Result() = default;
+Result::Result(const Result&) = default;
 
-Generator::~Generator() = default;
+Result Generate(const Program* program, const Options& options) {
+  Result result;
 
-bool Generator::Generate() {
-  if (!builder_->Build()) {
-    set_error(builder_->error());
-    return false;
+  // Run the SPIR-V sanitizer.
+  transform::Spirv sanitizer;
+  transform::DataMap transform_input;
+  transform_input.Add<transform::Spirv::Config>(options.emit_vertex_point_size);
+  auto output = sanitizer.Run(program, transform_input);
+  if (!output.program.IsValid()) {
+    result.success = false;
+    result.error = output.program.Diagnostics().str();
+    return result;
   }
 
-  writer_->WriteHeader(builder_->id_bound());
-  writer_->WriteBuilder(builder_.get());
-  return true;
+  // Generate the SPIR-V code.
+  auto builder = std::make_unique<Builder>(&output.program);
+  auto writer = std::make_unique<BinaryWriter>();
+  if (!builder->Build()) {
+    result.success = false;
+    result.error = builder->error();
+    return result;
+  }
+
+  writer->WriteHeader(builder->id_bound());
+  writer->WriteBuilder(builder.get());
+
+  result.success = true;
+  result.spirv = writer->result();
+
+  return result;
 }
 
 }  // namespace spirv

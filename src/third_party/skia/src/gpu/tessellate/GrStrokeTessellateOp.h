@@ -9,20 +9,20 @@
 #define GrStrokeTessellateOp_DEFINED
 
 #include "include/core/SkStrokeRec.h"
-#include "src/gpu/ops/GrMeshDrawOp.h"
-#include "src/gpu/tessellate/GrPathShader.h"
+#include "src/gpu/ops/GrDrawOp.h"
 #include "src/gpu/tessellate/GrStrokeTessellator.h"
+#include "src/gpu/tessellate/shaders/GrTessellationShader.h"
 
 class GrRecordingContext;
 
 // Renders strokes by linearizing them into sorted "parametric" and "radial" edges. See
-// GrStrokeShader.
+// GrStrokeTessellationShader.
 class GrStrokeTessellateOp : public GrDrawOp {
 public:
     GrStrokeTessellateOp(GrAAType, const SkMatrix&, const SkPath&, const SkStrokeRec&, GrPaint&&);
 
 private:
-    using ShaderFlags = GrStrokeShader::ShaderFlags;
+    using ShaderFlags = GrStrokeTessellationShader::ShaderFlags;
     using PathStrokeList = GrStrokeTessellator::PathStrokeList;
     DEFINE_OP_CLASS_ID
 
@@ -41,20 +41,22 @@ private:
         return allStatesEnabled || (fTotalCombinedVerbCnt <= kMaxVerbsToEnableDynamicState);
     }
 
-    bool canUseHardwareTessellation(int numVerbs, const GrCaps& caps);
-
     const char* name() const override { return "GrStrokeTessellateOp"; }
-    void visitProxies(const VisitProxyFunc& fn) const override;
-    FixedFunctionFlags fixedFunctionFlags() const override;
+    void visitProxies(const GrVisitProxyFunc&) const override;
+    bool usesMSAA() const override { return fAAType == GrAAType::kMSAA; }
     GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override;
+    bool usesStencil() const override {
+        // This must be called after finalize(). fNeedsStencil can change in finalize().
+        SkASSERT(fProcessors.isFinalized());
+        return fNeedsStencil;
+    }
     CombineResult onCombineIfPossible(GrOp*, SkArenaAlloc*, const GrCaps&) override;
 
     // Creates the tessellator and the stencil/fill program(s) we will use with it.
-    void prePrepareTessellator(GrPathShader::ProgramArgs&&, GrAppliedClip&&);
+    void prePrepareTessellator(GrTessellationShader::ProgramArgs&&, GrAppliedClip&&);
 
     void onPrePrepare(GrRecordingContext*, const GrSurfaceProxyView&, GrAppliedClip*,
-                      const GrXferProcessor::DstProxyView&, GrXferBarrierFlags,
-                      GrLoadOp colorLoadOp) override;
+                      const GrDstProxyView&, GrXferBarrierFlags, GrLoadOp colorLoadOp) override;
 
     void onPrepare(GrOpFlushState*) override;
 
@@ -68,7 +70,7 @@ private:
     float fInflationRadius = 0;
     int fTotalCombinedVerbCnt = 0;
     GrProcessorSet fProcessors;
-    bool fNeedsStencil = false;
+    bool fNeedsStencil;
 
     GrStrokeTessellator* fTessellator = nullptr;
     const GrProgramInfo* fStencilProgram = nullptr;  // Only used if the stroke has transparency.

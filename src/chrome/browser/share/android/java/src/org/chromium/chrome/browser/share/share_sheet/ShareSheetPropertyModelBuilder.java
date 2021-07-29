@@ -18,13 +18,13 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.link_to_text.LinkToTextCoordinator.LinkGeneration;
 import org.chromium.chrome.browser.share.link_to_text.LinkToTextMetricsHelper;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareParams;
-import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
@@ -49,7 +49,7 @@ import java.util.Set;
 public class ShareSheetPropertyModelBuilder {
     @IntDef({ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE, ContentType.TEXT,
             ContentType.HIGHLIGHTED_TEXT, ContentType.LINK_AND_TEXT, ContentType.IMAGE,
-            ContentType.OTHER_FILE_TYPE})
+            ContentType.OTHER_FILE_TYPE, ContentType.IMAGE_AND_LINK})
     @Retention(RetentionPolicy.SOURCE)
     @interface ContentType {
         int LINK_PAGE_VISIBLE = 0;
@@ -59,6 +59,7 @@ public class ShareSheetPropertyModelBuilder {
         int LINK_AND_TEXT = 4;
         int IMAGE = 5;
         int OTHER_FILE_TYPE = 6;
+        int IMAGE_AND_LINK = 7;
     }
 
     private static final int MAX_NUM_APPS = 7;
@@ -69,7 +70,7 @@ public class ShareSheetPropertyModelBuilder {
     static final HashSet<Integer> ALL_CONTENT_TYPES_FOR_TEST = new HashSet<>(
             Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE,
                     ContentType.TEXT, ContentType.HIGHLIGHTED_TEXT, ContentType.LINK_AND_TEXT,
-                    ContentType.IMAGE, ContentType.OTHER_FILE_TYPE));
+                    ContentType.IMAGE, ContentType.OTHER_FILE_TYPE, ContentType.IMAGE_AND_LINK));
     private static final ArrayList<String> FALLBACK_ACTIVITIES =
             new ArrayList<>(Arrays.asList("com.whatsapp.ContactPicker",
                     "com.facebook.composer.shareintent.ImplicitShareIntentHandlerDefaultAlias",
@@ -89,12 +90,14 @@ public class ShareSheetPropertyModelBuilder {
 
     private final BottomSheetController mBottomSheetController;
     private final PackageManager mPackageManager;
+    private final Profile mProfile;
 
     // TODO(crbug/1022172): Should be package-protected once modularization is complete.
-    public ShareSheetPropertyModelBuilder(
-            BottomSheetController bottomSheetController, PackageManager packageManager) {
+    public ShareSheetPropertyModelBuilder(BottomSheetController bottomSheetController,
+            PackageManager packageManager, Profile profile) {
         mBottomSheetController = bottomSheetController;
         mPackageManager = packageManager;
+        mProfile = profile;
     }
 
     /**
@@ -113,7 +116,8 @@ public class ShareSheetPropertyModelBuilder {
      */
     static Set<Integer> getContentTypes(ShareParams params, ChromeShareExtras chromeShareExtras) {
         Set<Integer> contentTypes = new HashSet<>();
-        if (!TextUtils.isEmpty(params.getUrl())) {
+        boolean hasUrl = !TextUtils.isEmpty(params.getUrl());
+        if (hasUrl && !chromeShareExtras.skipPageSharingActions()) {
             if (chromeShareExtras.isUrlOfVisiblePage()) {
                 contentTypes.add(ContentType.LINK_PAGE_VISIBLE);
             } else {
@@ -127,13 +131,17 @@ public class ShareSheetPropertyModelBuilder {
                 contentTypes.add(ContentType.TEXT);
             }
         }
-        if (!TextUtils.isEmpty(params.getUrl()) && !TextUtils.isEmpty(params.getText())) {
+        if (hasUrl && !TextUtils.isEmpty(params.getText())) {
             contentTypes.add(ContentType.LINK_AND_TEXT);
         }
         if (params.getFileUris() != null) {
             if (!TextUtils.isEmpty(params.getFileContentType())
                     && params.getFileContentType().startsWith(IMAGE_TYPE)) {
-                contentTypes.add(ContentType.IMAGE);
+                if (hasUrl) {
+                    contentTypes.add(ContentType.IMAGE_AND_LINK);
+                } else {
+                    contentTypes.add(ContentType.IMAGE);
+                }
             } else {
                 contentTypes.add(ContentType.OTHER_FILE_TYPE);
             }
@@ -141,12 +149,22 @@ public class ShareSheetPropertyModelBuilder {
         return contentTypes;
     }
 
+    public PropertyModel buildThirdPartyAppModel(ShareSheetBottomSheetContent bottomSheet,
+            ShareParams params, ResolveInfo info, boolean saveLastUsed, long shareStartTime,
+            int logIndex, @LinkGeneration int linkGenerationStatusForMetrics) {
+        OnClickListener onClickListener = v -> {
+            onThirdPartyAppSelected(bottomSheet, params, saveLastUsed, info.activityInfo, logIndex,
+                    shareStartTime, linkGenerationStatusForMetrics);
+        };
+        return createPropertyModel(ShareHelper.loadIconForResolveInfo(info, mPackageManager),
+                (String) info.loadLabel(mPackageManager), onClickListener,
+                /*displayNew*/ false);
+    }
+
     protected List<PropertyModel> selectThirdPartyApps(ShareSheetBottomSheetContent bottomSheet,
             Set<Integer> contentTypes, ShareParams params, boolean saveLastUsed,
-            WindowAndroid window, long shareStartTime,
-            @LinkGeneration int linkGenerationStatusForMetrics) {
+            long shareStartTime, @LinkGeneration int linkGenerationStatusForMetrics) {
         List<String> thirdPartyActivityNames = getThirdPartyActivityNames();
-        final ShareParams.TargetChosenCallback callback = params.getCallback();
         List<ResolveInfo> resolveInfoList =
                 getCompatibleApps(contentTypes, params.getFileContentType());
         List<ResolveInfo> thirdPartyActivities = new ArrayList<>();
@@ -179,42 +197,37 @@ public class ShareSheetPropertyModelBuilder {
 
         ArrayList<PropertyModel> models = new ArrayList<>();
         for (int i = 0; i < MAX_NUM_APPS && i < thirdPartyActivities.size(); ++i) {
-            ResolveInfo info = thirdPartyActivities.get(i);
-            final int logIndex = i;
-            OnClickListener onClickListener = v -> {
-                onThirdPartyAppSelected(bottomSheet, params, window, callback, saveLastUsed,
-                        info.activityInfo, logIndex, shareStartTime,
-                        linkGenerationStatusForMetrics);
-            };
-            PropertyModel propertyModel =
-                    createPropertyModel(ShareHelper.loadIconForResolveInfo(info, mPackageManager),
-                            (String) info.loadLabel(mPackageManager), onClickListener,
-                            /*displayNew*/ false);
-            models.add(propertyModel);
+            models.add(buildThirdPartyAppModel(bottomSheet, params, thirdPartyActivities.get(i),
+                    saveLastUsed, shareStartTime, i, linkGenerationStatusForMetrics));
         }
 
         return models;
     }
 
     private void onThirdPartyAppSelected(ShareSheetBottomSheetContent bottomSheet,
-            ShareParams params, WindowAndroid window, ShareParams.TargetChosenCallback callback,
-            boolean saveLastUsed, ActivityInfo ai, int logIndex, long shareStartTime,
-            @LinkGeneration int linkGenerationStatusForMetrics) {
+            ShareParams params, boolean saveLastUsed, ActivityInfo ai, int logIndex,
+            long shareStartTime, @LinkGeneration int linkGenerationStatusForMetrics) {
         // Record all metrics.
         RecordUserAction.record("SharingHubAndroid.ThirdPartyAppSelected");
-        RecordHistogram.recordEnumeratedHistogram(
-                "Sharing.SharingHubAndroid.ThirdPartyAppUsage", logIndex, MAX_NUM_APPS + 1);
+        if (logIndex >= 0) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Sharing.SharingHubAndroid.ThirdPartyAppUsage", logIndex, MAX_NUM_APPS + 1);
+        }
         ChromeProvidedSharingOptionsProvider.recordTimeToShare(shareStartTime);
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION)) {
             LinkToTextMetricsHelper.recordSharedHighlightStateMetrics(
                     linkGenerationStatusForMetrics);
         }
         ComponentName component = new ComponentName(ai.applicationInfo.packageName, ai.name);
+        ShareParams.TargetChosenCallback callback = params.getCallback();
         if (callback != null) {
             callback.onTargetChosen(component);
+            // Reset callback after onTargetChosen() is called to prevent cancel() being called when
+            // the sheet is closed.
+            params.setCallback(null);
         }
         if (saveLastUsed) {
-            ShareHelper.setLastShareComponentName(component);
+            ShareHelper.setLastShareComponentName(mProfile, component);
         }
         mBottomSheetController.hideContent(bottomSheet, true);
         // Fire intent through ShareHelper.
@@ -240,8 +253,9 @@ public class ShareSheetPropertyModelBuilder {
             resolveInfoList.addAll(mPackageManager.queryIntentActivities(
                     ShareHelper.getShareLinkAppCompatibilityIntent(), 0));
         }
-        if (!Collections.disjoint(
-                    contentTypes, Arrays.asList(ContentType.IMAGE, ContentType.OTHER_FILE_TYPE))) {
+        if (!Collections.disjoint(contentTypes,
+                    Arrays.asList(ContentType.IMAGE, ContentType.IMAGE_AND_LINK,
+                            ContentType.OTHER_FILE_TYPE))) {
             resolveInfoList.addAll(mPackageManager.queryIntentActivities(
                     ShareHelper.createShareFileAppCompatibilityIntent(fileContentType), 0));
         }

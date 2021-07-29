@@ -4,6 +4,8 @@
 
 #include "chrome/updater/policy/dm_policy_manager.h"
 
+#include <memory>
+
 #include "base/enterprise_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -55,7 +57,7 @@ DMPolicyManager::DMPolicyManager(
 DMPolicyManager::~DMPolicyManager() = default;
 
 bool DMPolicyManager::IsManaged() const {
-  return true;
+  return base::IsMachineExternallyManaged();
 }
 
 std::string DMPolicyManager::source() const {
@@ -66,7 +68,8 @@ bool DMPolicyManager::GetLastCheckPeriodMinutes(int* minutes) const {
   if (!omaha_settings_.has_auto_update_check_period_minutes())
     return false;
 
-  *minutes = int{omaha_settings_.auto_update_check_period_minutes()};
+  *minutes =
+      static_cast<int>(omaha_settings_.auto_update_check_period_minutes());
   return true;
 }
 
@@ -222,6 +225,16 @@ bool DMPolicyManager::IsRollbackToTargetVersionAllowed(
                        ::wireless_android_enterprise_devicemanagement::
                            ROLLBACK_TO_TARGET_VERSION_ENABLED);
   return true;
+}
+
+std::unique_ptr<PolicyManagerInterface> CreateDMPolicyManager() {
+  std::unique_ptr<
+      ::wireless_android_enterprise_devicemanagement::OmahaSettingsClientProto>
+      omaha_settings = GetDefaultDMStorage()->GetOmahaPolicySettings();
+  if (!omaha_settings)
+    return nullptr;
+
+  return std::make_unique<DMPolicyManager>(*omaha_settings);
 }
 
 }  // namespace updater

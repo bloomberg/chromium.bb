@@ -98,7 +98,7 @@ void ManagementTransitionScreenHandler::Show() {
 
   registrar_.Init(profile->GetPrefs());
   registrar_.Add(
-      arc::prefs::kArcSupervisionTransition,
+      arc::prefs::kArcManagementTransition,
       base::BindRepeating(
           &ManagementTransitionScreenHandler::OnManagementTransitionFinished,
           weak_factory_.GetWeakPtr()));
@@ -112,7 +112,7 @@ void ManagementTransitionScreenHandler::Show() {
 
   base::DictionaryValue data;
   data.SetInteger("arcTransition",
-                  static_cast<int>(arc::GetSupervisionTransition(profile)));
+                  static_cast<int>(arc::GetManagementTransition(profile)));
   data.SetString(
       "managementEntity",
       chrome::GetAccountManagerIdentity(profile).value_or(std::string()));

@@ -382,8 +382,8 @@ void ValidOwnershipTransferOp(ErrorMonitor *monitor, VkCommandBufferObj *cb, VkP
 void ValidOwnershipTransfer(ErrorMonitor *monitor, VkCommandBufferObj *cb_from, VkCommandBufferObj *cb_to,
                             VkPipelineStageFlags src_stages, VkPipelineStageFlags dst_stages,
                             const VkBufferMemoryBarrier *buf_barrier, const VkImageMemoryBarrier *img_barrier) {
-    ValidOwnershipTransferOp(monitor, cb_from, src_stages, dst_stages, buf_barrier, img_barrier);
-    ValidOwnershipTransferOp(monitor, cb_to, src_stages, dst_stages, buf_barrier, img_barrier);
+    ValidOwnershipTransferOp(monitor, cb_from, src_stages, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, buf_barrier, img_barrier);
+    ValidOwnershipTransferOp(monitor, cb_to, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, dst_stages, buf_barrier, img_barrier);
 }
 
 void ValidOwnershipTransferOp(ErrorMonitor *monitor, VkCommandBufferObj *cb, const VkBufferMemoryBarrier2KHR *buf_barrier,
@@ -403,8 +403,34 @@ void ValidOwnershipTransferOp(ErrorMonitor *monitor, VkCommandBufferObj *cb, con
 
 void ValidOwnershipTransfer(ErrorMonitor *monitor, VkCommandBufferObj *cb_from, VkCommandBufferObj *cb_to,
                             const VkBufferMemoryBarrier2KHR *buf_barrier, const VkImageMemoryBarrier2KHR *img_barrier) {
-    ValidOwnershipTransferOp(monitor, cb_from, buf_barrier, img_barrier);
-    ValidOwnershipTransferOp(monitor, cb_to, buf_barrier, img_barrier);
+    VkBufferMemoryBarrier2KHR fixup_buf_barrier;
+    VkImageMemoryBarrier2KHR fixup_img_barrier;
+    if (buf_barrier) {
+        fixup_buf_barrier = *buf_barrier;
+        fixup_buf_barrier.dstStageMask = VK_PIPELINE_STAGE_2_NONE_KHR;
+        fixup_buf_barrier.dstAccessMask = 0;
+    }
+    if (img_barrier) {
+        fixup_img_barrier = *img_barrier;
+        fixup_img_barrier.dstStageMask = VK_PIPELINE_STAGE_2_NONE_KHR;
+        fixup_img_barrier.dstAccessMask = 0;
+    }
+
+    ValidOwnershipTransferOp(monitor, cb_from, buf_barrier ? &fixup_buf_barrier : nullptr,
+                             img_barrier ? &fixup_img_barrier : nullptr);
+
+    if (buf_barrier) {
+        fixup_buf_barrier = *buf_barrier;
+        fixup_buf_barrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE_KHR;
+        fixup_buf_barrier.srcAccessMask = 0;
+    }
+    if (img_barrier) {
+        fixup_img_barrier = *img_barrier;
+        fixup_img_barrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE_KHR;
+        fixup_img_barrier.srcAccessMask = 0;
+    }
+    ValidOwnershipTransferOp(monitor, cb_to, buf_barrier ? &fixup_buf_barrier : nullptr,
+                             img_barrier ? &fixup_img_barrier : nullptr);
 }
 
 VkResult GPDIFPHelper(VkPhysicalDevice dev, const VkImageCreateInfo *ci, VkImageFormatProperties *limits) {
@@ -1271,6 +1297,88 @@ VkBufferTest::~VkBufferTest() {
     }
 }
 
+std::unique_ptr<VkImageObj> VkArmBestPracticesLayerTest::CreateImage(VkFormat format, const uint32_t width,
+                                                                     const uint32_t height,
+                                                                     VkImageUsageFlags attachment_usage) {
+    auto img = std::unique_ptr<VkImageObj>(new VkImageObj(m_device));
+    img->Init(width, height, 1, format,
+              VK_IMAGE_USAGE_SAMPLED_BIT | attachment_usage |
+              VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+              VK_IMAGE_TILING_OPTIMAL);
+    return img;
+}
+
+VkRenderPass VkArmBestPracticesLayerTest::CreateRenderPass(VkFormat format, VkAttachmentLoadOp load_op,
+                                                           VkAttachmentStoreOp store_op) {
+    VkRenderPass renderpass{VK_NULL_HANDLE};
+
+    // Create renderpass
+    VkAttachmentDescription attachment = {};
+    attachment.format = format;
+    attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    attachment.loadOp = load_op;
+    attachment.storeOp = store_op;
+    attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkAttachmentReference attachment_reference = {};
+    attachment_reference.attachment = 0;
+    attachment_reference.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkSubpassDescription subpass = {};
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &attachment_reference;
+
+    VkRenderPassCreateInfo rpinf = {
+        VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+    };
+    rpinf.attachmentCount = 1;
+    rpinf.pAttachments = &attachment;
+    rpinf.subpassCount = 1;
+    rpinf.pSubpasses = &subpass;
+    rpinf.dependencyCount = 0;
+    rpinf.pDependencies = nullptr;
+
+    vk::CreateRenderPass(m_device->handle(), &rpinf, nullptr, &renderpass);
+
+    return renderpass;
+}
+
+VkFramebuffer VkArmBestPracticesLayerTest::CreateFramebuffer(const uint32_t width, const uint32_t height, VkImageView image_view,
+                                                             VkRenderPass renderpass) {
+    VkFramebuffer framebuffer{VK_NULL_HANDLE};
+
+    VkFramebufferCreateInfo framebuffer_create_info = {VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
+    framebuffer_create_info.renderPass = renderpass;
+    framebuffer_create_info.attachmentCount = 1;
+    framebuffer_create_info.pAttachments = &image_view;
+    framebuffer_create_info.width = width;
+    framebuffer_create_info.height = height;
+    framebuffer_create_info.layers = 1;
+
+    vk::CreateFramebuffer(m_device->handle(), &framebuffer_create_info, nullptr, &framebuffer);
+
+    return framebuffer;
+}
+
+VkSampler VkArmBestPracticesLayerTest::CreateDefaultSampler() {
+    VkSampler sampler{VK_NULL_HANDLE};
+
+    VkSamplerCreateInfo sampler_create_info = {VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+    sampler_create_info.magFilter = VK_FILTER_NEAREST;
+    sampler_create_info.minFilter = VK_FILTER_NEAREST;
+    sampler_create_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+    sampler_create_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler_create_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler_create_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler_create_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    sampler_create_info.maxLod = VK_LOD_CLAMP_NONE;
+
+    vk::CreateSampler(m_device->handle(), &sampler_create_info, nullptr, &sampler);
+
+    return sampler;
+}
+
 bool VkBufferTest::GetBufferCurrent() { return AllocateCurrent && BoundCurrent && CreateCurrent; }
 
 const VkBuffer &VkBufferTest::GetBuffer() { return VulkanBuffer; }
@@ -1865,48 +1973,49 @@ void CreateNVRayTracingPipelineHelper::InitPipelineLayoutInfo() {
 }
 
 void CreateNVRayTracingPipelineHelper::InitShaderInfo() {  // DONE
-    static const char rayGenShaderText[] =
-        "#version 460 core                                                \n"
-        "#extension GL_NV_ray_tracing : require                           \n"
-        "layout(set = 0, binding = 0, rgba8) uniform image2D image;       \n"
-        "layout(set = 0, binding = 1) uniform accelerationStructureNV as; \n"
-        "                                                                 \n"
-        "layout(location = 0) rayPayloadNV float payload;                 \n"
-        "                                                                 \n"
-        "void main()                                                      \n"
-        "{                                                                \n"
-        "   vec4 col = vec4(0, 0, 0, 1);                                  \n"
-        "                                                                 \n"
-        "   vec3 origin = vec3(float(gl_LaunchIDNV.x)/float(gl_LaunchSizeNV.x), "
-        "float(gl_LaunchIDNV.y)/float(gl_LaunchSizeNV.y), "
-        "1.0); \n"
-        "   vec3 dir = vec3(0.0, 0.0, -1.0);                              \n"
-        "                                                                 \n"
-        "   payload = 0.5;                                                \n"
-        "   traceNV(as, gl_RayFlagsCullBackFacingTrianglesNV, 0xff, 0, 1, 0, origin, 0.0, dir, 1000.0, 0); \n"
-        "                                                                 \n"
-        "   col.y = payload;                                              \n"
-        "                                                                 \n"
-        "   imageStore(image, ivec2(gl_LaunchIDNV.xy), col);              \n"
-        "}\n";
+    static const char rayGenShaderText[] = R"glsl(
+        #version 460 core
+        #extension GL_NV_ray_tracing : require
+        layout(set = 0, binding = 0, rgba8) uniform image2D image;
+        layout(set = 0, binding = 1) uniform accelerationStructureNV as;
 
-    static char const closestHitShaderText[] =
-        "#version 460 core                              \n"
-        "#extension GL_NV_ray_tracing : require         \n"
-        "layout(location = 0) rayPayloadInNV float hitValue;             \n"
-        "                                               \n"
-        "void main() {                                  \n"
-        "    hitValue = 1.0;                            \n"
-        "}                                              \n";
+        layout(location = 0) rayPayloadNV float payload;
 
-    static char const missShaderText[] =
-        "#version 460 core                              \n"
-        "#extension GL_NV_ray_tracing : require         \n"
-        "layout(location = 0) rayPayloadInNV float hitValue; \n"
-        "                                               \n"
-        "void main() {                                  \n"
-        "    hitValue = 0.0;                            \n"
-        "}                                              \n";
+        void main()
+        {
+           vec4 col = vec4(0, 0, 0, 1);
+
+           vec3 origin = vec3(float(gl_LaunchIDNV.x)/float(gl_LaunchSizeNV.x), float(gl_LaunchIDNV.y)/float(gl_LaunchSizeNV.y), 1.0);
+           vec3 dir = vec3(0.0, 0.0, -1.0);
+
+           payload = 0.5;
+           traceNV(as, gl_RayFlagsCullBackFacingTrianglesNV, 0xff, 0, 1, 0, origin, 0.0, dir, 1000.0, 0);
+
+           col.y = payload;
+
+           imageStore(image, ivec2(gl_LaunchIDNV.xy), col);
+        }
+    )glsl";
+
+    static char const closestHitShaderText[] = R"glsl(
+        #version 460 core
+        #extension GL_NV_ray_tracing : require
+        layout(location = 0) rayPayloadInNV float hitValue;
+
+        void main() {
+            hitValue = 1.0;
+        }
+    )glsl";
+
+    static char const missShaderText[] = R"glsl(
+        #version 460 core
+        #extension GL_NV_ray_tracing : require
+        layout(location = 0) rayPayloadInNV float hitValue;
+
+        void main() {
+            hitValue = 0.0;
+        }
+    )glsl";
 
     rgs_.reset(new VkShaderObj(layer_test_.DeviceObj(), rayGenShaderText, VK_SHADER_STAGE_RAYGEN_BIT_NV, &layer_test_));
     chs_.reset(new VkShaderObj(layer_test_.DeviceObj(), closestHitShaderText, VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV, &layer_test_));
@@ -2250,9 +2359,9 @@ bool InitFrameworkForRayTracingTest(VkRenderFramework *renderFramework, bool isK
 void GetSimpleGeometryForAccelerationStructureTests(const VkDeviceObj &device, VkBufferObj *vbo, VkBufferObj *ibo,
                                                     VkGeometryNV *geometry) {
     vbo->init(device, 1024, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-              VK_BUFFER_USAGE_RAY_TRACING_BIT_NV);
+              VK_BUFFER_USAGE_RAY_TRACING_BIT_NV | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR);
     ibo->init(device, 1024, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-              VK_BUFFER_USAGE_RAY_TRACING_BIT_NV);
+              VK_BUFFER_USAGE_RAY_TRACING_BIT_NV | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR);
 
     const std::vector<float> vertices = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f};
     const std::vector<uint32_t> indicies = {0, 1, 2};

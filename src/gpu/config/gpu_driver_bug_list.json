@@ -2319,14 +2319,17 @@
     },
     {
       "id": 256,
-      "description": "Don't expose disjoint_timer_query extensions to WebGL unless site isolation is enabled",
-      "cr_bugs": [808744],
-      "os": {
-        "type": "android"
-      },
-      "disabled_webgl_extensions": [
-        "EXT_disjoint_timer_query",
-        "EXT_disjoint_timer_query_webgl2"
+      "description": "Expose WebGL's disjoint_timer_query extensions on platforms with site isolation",
+      "cr_bugs": [808744, 870491],
+      "features": [
+        "enable_webgl_timer_query_extensions"
+      ],
+      "exceptions": [
+        {
+          "os": {
+            "type": "android"
+          }
+        }
       ]
     },
     {
@@ -2944,7 +2947,7 @@
       "os": {
         "type": "android"
       },
-      "gl_renderer": "Adreno.*",
+      "gl_renderer": ".*Adreno.*",
       "disabled_extensions": [
         "GL_EXT_shader_framebuffer_fetch"
       ]
@@ -3237,7 +3240,7 @@
         "value": "24.21.13.9827"
       },
       "features": [
-        "disable_mediafoundation_async_h264_encoding"
+        "disable_media_foundation_async_h264_encoding"
       ]
     },
     {
@@ -3403,22 +3406,6 @@
       "vendor_id": "0x8086",
       "features": [
         "enable_bgra8_overlays_with_yuv_overlay_support"
-      ]
-    },
-    {
-      "id": 348,
-      "cr_bugs": [1120411],
-      "description": "VP8 video encoding hangs on Intel Gen 9.5 GPUs",
-      "os": {
-        "type": "chromeos"
-      },
-      "vendor_id": "0x8086",
-      "intel_gpu_series": [
-        "geminilake",
-        "kabylake"
-      ],
-      "features": [
-        "disable_accelerated_vp8_encode"
       ]
     },
     {
@@ -3692,6 +3679,84 @@
       "vendor_id": "0x1002",
       "features": [
         "disallow_vp9_resilient_dxva_decoding"
+      ]
+    },
+    {
+      "id": 375,
+      "cr_bugs": [1212825],
+      "description": "Always force direct composition full damage on older Windows 10 releases",
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "<",
+          "value": "10.0.19041.508"
+        }
+      },
+      "features": [
+        "force_direct_composition_full_damage_always"
+      ]
+    },
+    {
+      "id": 376,
+      "cr_bugs": [1219028],
+      "description": "Don't use Media Foundation hardware security on Turing-architecture NVIDIA GPUs.",
+      "os": {
+        "type" : "win"
+      },
+      "vendor_id": "0x10de",
+      "device_id": [
+        "0x1f82", "0x1f92",
+        "0x2182", "0x2184", "0x21d1", "0x2191",
+        "0x1f08", "0x1f06", "0x1f47", "0x1f42", "0x1f51", "0x1f11",
+        "0x1f02", "0x1f07", "0x1ec2", "0x1ec7", "0x1e84", "0x1f50", "0x1f10",
+        "0x1e82", "0x1e87", "0x1e81", "0x1ed0", "0x1e90", "0x1e07", "0x1e04",
+        "0x1eb1", "0x1eb6",
+        "0x1eb0", "0x1eb5",
+        "0x1e02", "0x1e30", "0x1eb8"
+      ],
+      "driver_version": {
+        "op": "<",
+        "value": "26.21.14.4140"
+      },
+      "features": [
+        "disable_media_foundation_hardware_security"
+      ]
+    },
+    {
+      "id": 377,
+      "cr_bugs": [1219028],
+      "description": "Don't use Media Foundation hardware security on Pascal-architecture NVIDIA GPUs.",
+      "os": {
+        "type" : "win"
+      },
+      "vendor_id": "0x10de",
+      "device_id": [
+        "0x1d01", "0x1d10", "0x1d12",
+        "0x1c81", "0x1c82", "0x1c83", "0x1c8c", "0x1c8d", "0x1c8f", "0x1c92",
+        "0x1c02", "0x1c03", "0x1c20", "0x1c23", "0x1c60", "0x1c61", "0x1c62",
+        "0x1b81", "0x1b82", "0x1b83", "0x1b84", "0x1ba0", "0x1ba1", "0x1ba2",
+        "0x1be0", "0x1be1", "0x1b06",
+        "0x1b00", "0x1b02",
+        "0x17e4", "0x174d"
+      ],
+      "driver_version": {
+        "op": "<",
+        "value": "26.21.14.4140"
+      },
+      "features": [
+        "disable_media_foundation_hardware_security"
+      ]
+    },
+    {
+      "id": 378,
+      "cr_bugs": [1227033],
+      "description": "Don't use the OOPR Canvas feature on Macs with NVIDIA GPUs",
+      "os": {
+        "type" : "macosx"
+      },
+      "vendor_id": "0x10de",
+      "features": [
+        "disable_canvas_oop_rasterization"
       ]
     }
   ]

@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -18,7 +19,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/string_split.h"
@@ -351,7 +351,8 @@ scoped_refptr<X11Cursor> XCursorLoader::CreateCursor(
     auto cursor = CreateCursor(image.bitmap, image.hotspot);
     cursors.push_back(cursor);
     elements.push_back(x11::Render::AnimationCursorElement{
-        cursor->xcursor_, image.frame_delay.InMilliseconds()});
+        cursor->xcursor_,
+        static_cast<uint32_t>(image.frame_delay.InMilliseconds())});
   }
 
   if (elements.empty())
@@ -370,8 +371,8 @@ scoped_refptr<X11Cursor> XCursorLoader::CreateCursor(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto pixmap = connection_->GenerateId<x11::Pixmap>();
   auto gc = connection_->GenerateId<x11::GraphicsContext>();
-  int width = bitmap.width();
-  int height = bitmap.height();
+  uint16_t width = bitmap.width();
+  uint16_t height = bitmap.height();
   connection_->CreatePixmap(
       {32, pixmap, connection_->default_root(), width, height});
   connection_->CreateGC({gc, pixmap});
@@ -395,7 +396,9 @@ scoped_refptr<X11Cursor> XCursorLoader::CreateCursor(
   connection_->render().CreatePicture({pic, pixmap, pict_format_});
 
   auto cursor = connection_->GenerateId<x11::Cursor>();
-  connection_->render().CreateCursor({cursor, pic, hotspot.x(), hotspot.y()});
+  connection_->render().CreateCursor({cursor, pic,
+                                      static_cast<uint16_t>(hotspot.x()),
+                                      static_cast<uint16_t>(hotspot.y())});
 
   connection_->render().FreePicture({pic});
   connection_->FreePixmap({pixmap});
@@ -417,10 +420,12 @@ void XCursorLoader::LoadCursorImpl(
     auto core_char = CursorNamesToChar(names);
     constexpr uint16_t kFontCursorFgColor = 0;
     constexpr uint16_t kFontCursorBgColor = 65535;
-    connection_->CreateGlyphCursor(
-        {xcursor, cursor_font_, cursor_font_, 2 * core_char, 2 * core_char + 1,
-         kFontCursorFgColor, kFontCursorFgColor, kFontCursorFgColor,
-         kFontCursorBgColor, kFontCursorBgColor, kFontCursorBgColor});
+    connection_->CreateGlyphCursor({xcursor, cursor_font_, cursor_font_,
+                                    static_cast<uint16_t>(2 * core_char),
+                                    static_cast<uint16_t>(2 * core_char + 1),
+                                    kFontCursorFgColor, kFontCursorFgColor,
+                                    kFontCursorFgColor, kFontCursorBgColor,
+                                    kFontCursorBgColor, kFontCursorBgColor});
   }
   cursor->SetCursor(xcursor);
 }

@@ -452,6 +452,14 @@ enum {
   UV_MODE_INVALID,  // For uv_mode in inter blocks
 } UENUM1BYTE(UV_PREDICTION_MODE);
 
+// Number of top model rd to store for pruning y modes in intra mode decision
+#define TOP_INTRA_MODEL_COUNT 4
+// Total number of luma intra prediction modes (include both directional and
+// non-directional modes)
+// 61 = PAETH_PRED - DC_PRED + 1 + 6 * 8
+// Because there are 8 directional modes, each has additional 6 delta angles.
+#define LUMA_MODE_COUNT 61
+
 enum {
   SIMPLE_TRANSLATION,
   OBMC_CAUSAL,    // 2-sided OBMC
@@ -612,6 +620,9 @@ enum {
 
 #define FWD_RF_OFFSET(ref) (ref - LAST_FRAME)
 #define BWD_RF_OFFSET(ref) (ref - BWDREF_FRAME)
+
+// Select all the decoded frame buffer slots
+#define SELECT_ALL_BUF_SLOTS 0xFF
 
 enum {
   LAST_LAST2_FRAMES,      // { LAST_FRAME, LAST2_FRAME }

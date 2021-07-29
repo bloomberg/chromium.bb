@@ -113,7 +113,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Sharing.ClickToCallSelectedDeviceIndex" units="index"
-    expires_after="2021-10-25">
+    expires_after="2021-12-26">
 <!-- Name completed by histogram_suffixes name="SharingClickToCallUi" -->
 
   <owner>mvanouwerkerk@chromium.org</owner>
@@ -441,6 +441,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Sharing.SendTabToSelf.NotificationStatus"
+    enum="SendTabToSelfNotificationStatus" expires_after="M97">
+  <owner>kmilka@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <summary>
+    Status of STTS notifications. Recorded whenever a target device is chosen, a
+    recieved notification is shown, or an action is taken on the notification.
+  </summary>
+</histogram>
+
 <histogram name="Sharing.SharedClipboardDevicesToShow" units="devices"
     expires_after="M88">
   <owner>mvanouwerkerk@chromium.org</owner>
@@ -559,6 +569,28 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records whether the user selects a share target after opening the Chrome OS
     sharesheet.
+  </summary>
+</histogram>
+
+<histogram name="Sharing.SmsFetcherAvailableDeviceCount" units="devices"
+    expires_after="M96">
+  <owner>yigu@chromium.org</owner>
+  <owner>web-identity@google.com</owner>
+  <summary>
+    The number of available devices when making a request on desktop which is
+    triggered by calling the WebOTP API. This is logged once per API call.
+    Desktop only.
+  </summary>
+</histogram>
+
+<histogram name="Sharing.SmsFetcherClientNameIsEmpty" enum="BooleanEmpty"
+    expires_after="M96">
+  <owner>yigu@chromium.org</owner>
+  <owner>web-identity@google.com</owner>
+  <summary>
+    Records whether the remote client name is empty. This could happen on early
+    version of Chrome. This is logged once per notification when asking for user
+    permission to submit the one-time-passwords on the remote device.
   </summary>
 </histogram>
 

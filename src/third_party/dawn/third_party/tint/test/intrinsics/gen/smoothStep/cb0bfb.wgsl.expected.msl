@@ -1,0 +1,27 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void smoothStep_cb0bfb() {
+  float res = smoothstep(1.0f, 1.0f, 1.0f);
+}
+
+vertex tint_symbol vertex_main() {
+  smoothStep_cb0bfb();
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  smoothStep_cb0bfb();
+  return;
+}
+
+kernel void compute_main() {
+  smoothStep_cb0bfb();
+  return;
+}
+

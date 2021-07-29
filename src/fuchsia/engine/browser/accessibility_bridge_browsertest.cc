@@ -16,6 +16,7 @@
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/fake_semantics_manager.h"
 #include "fuchsia/engine/browser/frame_impl.h"
+#include "fuchsia/engine/test/frame_for_test.h"
 #include "fuchsia/engine/test/test_data.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -125,17 +126,17 @@ class AccessibilityBridgeTest : public cr_fuchsia::WebEngineBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    frame_ptr_ =
-        cr_fuchsia::WebEngineBrowserTest::CreateFrame(&navigation_listener_);
-    frame_impl_ = context_impl()->GetFrameImplForTest(&frame_ptr_);
+    frame_ = cr_fuchsia::FrameForTest::Create(context(), {});
+    base::RunLoop().RunUntilIdle();
+
+    frame_impl_ = context_impl()->GetFrameImplForTest(&frame_.ptr());
     frame_impl_->set_semantics_manager_for_test(&semantics_manager_);
-    frame_ptr_->EnableHeadlessRendering();
+    frame_->EnableHeadlessRendering();
 
     semantics_manager_.WaitUntilViewRegistered();
     ASSERT_TRUE(semantics_manager_.is_view_registered());
     ASSERT_TRUE(semantics_manager_.is_listener_valid());
 
-    frame_ptr_->GetNavigationController(navigation_controller_.NewRequest());
     ASSERT_TRUE(embedded_test_server()->Start());
 
     // Change the accessibility mode on the Fuchsia side and check that it is
@@ -153,17 +154,16 @@ class AccessibilityBridgeTest : public cr_fuchsia::WebEngineBrowserTest {
   void LoadPage(base::StringPiece url, base::StringPiece page_title) {
     GURL page_url(embedded_test_server()->GetURL(std::string(url)));
     ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+        frame_.GetNavigationController(), fuchsia::web::LoadUrlParams(),
         page_url.spec()));
-    navigation_listener_.RunUntilUrlAndTitleEquals(page_url, page_title);
+    frame_.navigation_listener().RunUntilUrlAndTitleEquals(page_url,
+                                                           page_title);
   }
 
  protected:
-  fuchsia::web::FramePtr frame_ptr_;
+  cr_fuchsia::FrameForTest frame_;
   FrameImpl* frame_impl_;
   FakeSemanticsManager semantics_manager_;
-  cr_fuchsia::TestNavigationListener navigation_listener_;
-  fuchsia::web::NavigationControllerPtr navigation_controller_;
 };
 
 IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, CorrectDataSent) {
@@ -323,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, PerformUnsupportedAction) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, Disconnect) {
   base::RunLoop run_loop;
-  frame_ptr_.set_error_handler([&run_loop](zx_status_t status) {
+  frame_.ptr().set_error_handler([&run_loop](zx_status_t status) {
     EXPECT_EQ(ZX_ERR_INTERNAL, status);
     run_loop.Quit();
   });
@@ -332,10 +332,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, Disconnect) {
   run_loop.Run();
 }
 
-// TODO(crbug.com/1122806): Migrate this test to use kSignalEndOfTest and
-// re-enable it.
-IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest,
-                       DISABLED_PerformScrollToMakeVisible) {
+IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, PerformScrollToMakeVisible) {
   // Set the screen height to be small so that we can detect if we've
   // scrolled past our target, even if the max scroll is bounded.
   constexpr int kScreenWidth = 720;
@@ -344,7 +341,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest,
 
   LoadPage(kPage1Path, kPage1Title);
 
-  semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
+  auto* semantic_tree = semantics_manager_.semantic_tree();
+  ASSERT_TRUE(semantic_tree);
+
+  semantic_tree->RunUntilNodeCountAtLeast(kPage1NodeCount);
 
   auto* content_view =
       frame_impl_->web_contents_for_test()->GetContentNativeView();
@@ -354,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest,
 
   // Get a node that is off the screen, and verify that it is off the screen.
   fuchsia::accessibility::semantics::Node* fuchsia_node =
-      semantics_manager_.semantic_tree()->GetNodeFromLabel(kOffscreenNodeName);
+      semantic_tree->GetNodeFromLabel(kOffscreenNodeName);
   ASSERT_TRUE(fuchsia_node);
 
   // Get the corresponding AXNode.
@@ -368,18 +368,22 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest,
   EXPECT_TRUE(is_offscreen);
 
   // Perform SHOW_ON_SCREEN on that node.
-  // The fuchsia root node should receive an update since the root node is
-  // scrolled. Wait for that update.
-  base::RunLoop run_loop;
-  semantics_manager_.semantic_tree()->SetNodeUpdatedCallback(
-      0u, run_loop.QuitClosure());
-
   semantics_manager_.RequestAccessibilityAction(
       fuchsia_node->node_id(),
       fuchsia::accessibility::semantics::Action::SHOW_ON_SCREEN);
   semantics_manager_.RunUntilNumActionsHandledEquals(1);
 
-  run_loop.Run();
+  semantic_tree->RunUntilConditionIsTrue(
+      base::BindLambdaForTesting([semantic_tree]() {
+        auto* root = semantic_tree->GetNodeWithId(0u);
+        if (!root)
+          return false;
+
+        // Once the scroll action has been handled, the root should have a
+        // non-zero y-scroll offset.
+        return root->has_states() && root->states().has_viewport_offset() &&
+               root->states().viewport_offset().y > 0;
+      }));
 
   // Verify that the AXNode we tried to make visible is now onscreen.
   // Initialize |is_offscreen| to false before calling GetTreeBounds as
@@ -953,6 +957,93 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest,
   EXPECT_EQ(fuchsia_node->transform().matrix[13], 3);
 }
 
+// This test ensures that fuchsia only receives one update per node.
+IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, OneUpdatePerNode) {
+  // Loads a page, so a real frame is created for this test. Then, several tree
+  // operations are applied on top of it, using the AXTreeID that corresponds to
+  // that frame.
+  LoadPage(kPage1Path, kPage1Title);
+  semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
+
+  // Fetch the AXTreeID of the main frame (the page just loaded). This ID will
+  // be used in the operations that follow to simulate new data coming in.
+  auto tree_id =
+      frame_impl_->web_contents_for_test()->GetMainFrame()->GetAXTreeID();
+
+  AccessibilityBridge* bridge = frame_impl_->accessibility_bridge_for_test();
+  size_t tree_size = 5;
+
+  // The tree has the following form: (1 (2 (3 (4 (5)))))
+  auto tree_accessibility_event = CreateTreeAccessibilityEvent(tree_size);
+  tree_accessibility_event.ax_tree_id = tree_id;
+
+  // The root of this tree needs to be cleared (because it holds the page just
+  // loaded, and we are loading something completely new).
+  tree_accessibility_event.updates[0].node_id_to_clear =
+      bridge->ax_tree_for_test()->root()->id();
+
+  // Set a name in a node so we can wait for this node to appear. This pattern
+  // is used throughout this test to ensure that the new data we are waiting for
+  // arrived.
+  tree_accessibility_event.updates[0].nodes[0].SetName(kUpdate1Name);
+
+  bridge->AccessibilityEventReceived(tree_accessibility_event);
+
+  semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+      kUpdate1Name);
+
+  // Mark node 2 as node 3's offset container. Below, we will send an update to
+  // change node 3's offset container to node 1, so that we can verify that the
+  // fuchsia node produced reflects that update.
+  bridge->offset_container_children_[std::make_pair(tree_id, 2)].insert(
+      std::make_pair(tree_id, 3));
+
+  // Send three updates:
+  // 1. Change bounds for node 1.
+  // 2. Change bounds for node 2. Since node 3 is marked as node 2's offset
+  // child (above), OnNodeDataChanged() should produce an update for node 3 that
+  // includes a transform accounting for node 2's new bounds.
+  // 3. Change offset container for node 3 from node 2 to node 1.
+  // OnAtomicUpdateFinished() should replace the now-incorrect update from step
+  // (2) with a new update that includes a transform accounting for node 1's
+  // bounds.
+  const char kNodeName[] = "transform should update";
+  // Changes the bounds of node 1.
+  // (1 (2 (3 (4 (5)))))
+  ui::AXTreeUpdate update;
+  update.root_id = 1;
+  update.nodes.resize(3);
+  update.nodes[0].id = 1;
+  // Update the relative bounds of node 1, which is node 2's offset container.
+  auto new_root_bounds = gfx::RectF(2, 3, 4, 5);
+  update.nodes[0].relative_bounds.bounds = new_root_bounds;
+  update.nodes[0].child_ids = {2};
+  update.nodes[0].SetName(kUpdate2Name);
+  update.nodes[1].id = 2;
+  update.nodes[1].relative_bounds.bounds = gfx::RectF(20, 30, 40, 50);
+  update.nodes[1].child_ids = {3};
+  update.nodes[2].id = 3;
+  update.nodes[2].relative_bounds.offset_container_id = 1u;
+  update.nodes[2].SetName(kNodeName);
+
+  bridge->AccessibilityEventReceived(
+      CreateAccessibilityEventWithUpdate(std::move(update), tree_id));
+  semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(kNodeName);
+
+  // Verify that the transform for the Fuchsia semantic node corresponding to
+  // node 3 reflects the new bounds of node 1.
+  fuchsia::accessibility::semantics::Node* fuchsia_node =
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kNodeName);
+
+  // A Fuchsia node's semantic transform should include an offset for its parent
+  // node as a post-translation on top of its existing transform. Therefore, the
+  // x, y, and z scale (indices 0, 5, and 10, respectively) should remain
+  // unchanged, and the x and y bounds of the offset container should be added
+  // to the node's existing translation entries (indices 12 and 13).
+  EXPECT_EQ(fuchsia_node->transform().matrix[12], new_root_bounds.x());
+  EXPECT_EQ(fuchsia_node->transform().matrix[13], new_root_bounds.y());
+}
+
 IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, OutOfProcessIframe) {
   constexpr int64_t kBindingsId = 1234;
 
@@ -967,7 +1058,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, OutOfProcessIframe) {
 
   // Before loading a page on the default embedded test server, set the iframe
   // src to be |out_of_process_url|.
-  frame_ptr_->AddBeforeLoadJavaScript(
+  frame_->AddBeforeLoadJavaScript(
       kBindingsId, {"*"},
       cr_fuchsia::MemBufferFromString(
           base::StringPrintf("iframeSrc = '%s'",
@@ -1002,7 +1093,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, OutOfProcessIframe) {
       base::StringPrintf("document.getElementById(\"iframeId\").src = '%s'",
                          out_of_process_url_2.spec().c_str());
 
-  frame_ptr_->ExecuteJavaScript(
+  frame_->ExecuteJavaScript(
       {"*"}, cr_fuchsia::MemBufferFromString(script, "test2"),
       [](fuchsia::web::Frame_ExecuteJavaScript_Result result) {
         CHECK(result.is_response());
@@ -1056,9 +1147,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, UpdatesFocusInformation) {
       ->GetMainFrame()
       ->AccessibilityPerformAction(action_data);
 
-  auto* semantic_tree = semantics_manager_.semantic_tree();
+  FakeSemanticTree* semantic_tree = semantics_manager_.semantic_tree();
 
-  semantic_tree->RunUntilCondititionIsTrue(
+  semantic_tree->RunUntilConditionIsTrue(
       base::BindLambdaForTesting([semantic_tree]() {
         auto* node = semantic_tree->GetNodeWithId(0u);
         if (!node)
@@ -1085,7 +1176,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, UpdatesFocusInformation) {
       ->GetMainFrame()
       ->AccessibilityPerformAction(action_data);
 
-  semantic_tree->RunUntilCondititionIsTrue(
+  semantic_tree->RunUntilConditionIsTrue(
       base::BindLambdaForTesting([semantic_tree, new_focus_id]() {
         auto* root = semantic_tree->GetNodeWithId(0u);
         auto* node = semantic_tree->GetNodeWithId(new_focus_id);

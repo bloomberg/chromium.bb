@@ -10,6 +10,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/chromeos_buildflags.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
@@ -80,7 +81,6 @@ class ScopedLocalSurfaceIdValidator {
 
 WindowTreeHost::~WindowTreeHost() {
   if (display::Screen::GetScreen())
-    display::Screen::GetScreen()->RemoveObserver(this);
   DCHECK(!compositor_) << "compositor must be destroyed before root window";
   if (owned_input_method_) {
     delete input_method_;
@@ -343,6 +343,35 @@ WindowTreeHost::RequestUnadjustedMovement() {
   return nullptr;
 }
 
+bool WindowTreeHost::SupportsMouseLock() {
+  return false;
+}
+
+void WindowTreeHost::LockMouse(Window* window) {
+  Window* root_window = window->GetRootWindow();
+  DCHECK(root_window);
+
+  auto* cursor_client = client::GetCursorClient(root_window);
+  if (cursor_client) {
+    cursor_client->HideCursor();
+    cursor_client->LockCursor();
+  }
+}
+
+void WindowTreeHost::UnlockMouse(Window* window) {
+  Window* root_window = window->GetRootWindow();
+  DCHECK(root_window);
+
+  if (window->HasCapture())
+    window->ReleaseCapture();
+
+  auto* cursor_client = client::GetCursorClient(root_window);
+  if (cursor_client) {
+    cursor_client->UnlockCursor();
+    cursor_client->ShowCursor();
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, protected:
 
@@ -354,7 +383,6 @@ WindowTreeHost::WindowTreeHost(std::unique_ptr<Window> window)
       owned_input_method_(false) {
   if (!window_)
     window_ = new Window(nullptr);
-  display::Screen::GetScreen()->AddObserver(this);
   auto display = display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
   device_scale_factor_ = display.device_scale_factor();
 #if defined(OS_WIN)
@@ -395,7 +423,6 @@ void WindowTreeHost::DestroyDispatcher() {
 }
 
 void WindowTreeHost::CreateCompositor(
-    const viz::FrameSinkId& frame_sink_id,
     bool force_software_compositor,
     bool use_external_begin_frame_control,
     bool enable_compositing_based_throttling) {
@@ -403,11 +430,10 @@ void WindowTreeHost::CreateCompositor(
   ui::ContextFactory* context_factory = env->context_factory();
   DCHECK(context_factory);
   compositor_ = std::make_unique<ui::Compositor>(
-      (frame_sink_id.is_valid()) ? frame_sink_id
-                                 : context_factory->AllocateFrameSinkId(),
-      context_factory, base::ThreadTaskRunnerHandle::Get(),
-      ui::IsPixelCanvasRecordingEnabled(), use_external_begin_frame_control,
-      force_software_compositor, enable_compositing_based_throttling);
+      context_factory->AllocateFrameSinkId(), context_factory,
+      base::ThreadTaskRunnerHandle::Get(), ui::IsPixelCanvasRecordingEnabled(),
+      use_external_begin_frame_control, force_software_compositor,
+      enable_compositing_based_throttling);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   compositor_->AddObserver(this);
 #endif

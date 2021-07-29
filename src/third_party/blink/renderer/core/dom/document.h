@@ -40,6 +40,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/federated_learning/floc.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink-forward.h"
@@ -152,8 +153,9 @@ class HTMLElement;
 class HTMLFrameOwnerElement;
 class HTMLHeadElement;
 class HTMLLinkElement;
+class HTMLMetaElement;
 class HTMLPopupElement;
-class HTMLScriptElementOrSVGScriptElement;
+class HasMatchedCacheScope;
 class HitTestRequest;
 class HttpRefreshScheduler;
 class IdleRequestOptions;
@@ -196,7 +198,6 @@ class SerializedScriptValue;
 class Settings;
 class SlotAssignmentEngine;
 class SnapCoordinator;
-class StringOrElementCreationOptions;
 class StyleEngine;
 class StylePropertyMapReadOnly;
 class StyleResolver;
@@ -368,31 +369,18 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Element* CreateElementForBinding(const AtomicString& local_name,
                                    ExceptionState& = ASSERT_NO_EXCEPTION);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   Element* CreateElementForBinding(
       const AtomicString& local_name,
       const V8UnionElementCreationOptionsOrString* string_or_options,
       ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  Element* CreateElementForBinding(const AtomicString& local_name,
-                                   const StringOrElementCreationOptions&,
-                                   ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   Element* createElementNS(const AtomicString& namespace_uri,
                            const AtomicString& qualified_name,
                            ExceptionState&);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   Element* createElementNS(
       const AtomicString& namespace_uri,
       const AtomicString& qualified_name,
       const V8UnionElementCreationOptionsOrString* string_or_options,
       ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  Element* createElementNS(const AtomicString& namespace_uri,
-                           const AtomicString& qualified_name,
-                           const StringOrElementCreationOptions&,
-                           ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   DocumentFragment* createDocumentFragment();
   Text* createTextNode(const String& data);
   Comment* createComment(const String& data);
@@ -421,6 +409,14 @@ class CORE_EXPORT Document : public ContainerNode,
   Element* scrollingElement();
   // When calling from C++ code, use this method. scrollingElement() is
   // just for the web IDL implementation.
+  //
+  // Style/layout-tree needs to be updated before calling this function,
+  // otherwise the returned element might be outdated. However, accessing
+  // information based on the layout of the previous frame is occasionally
+  // the correct behavior [1], hence it's not invalid to call this function
+  // while style/layout dirty.
+  //
+  // [1] https://drafts.csswg.org/scroll-animations-1/#avoiding-cycles
   Element* ScrollingElementNoLayout();
 
   String readyState() const;
@@ -1175,11 +1171,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   ScriptRunner* GetScriptRunner() { return script_runner_.Get(); }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8HTMLOrSVGScriptElement* currentScriptForBinding() const;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void currentScriptForBinding(HTMLScriptElementOrSVGScriptElement&) const;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void PushCurrentScript(ScriptElementBase*);
   void PopCurrentScript(ScriptElementBase*);
 
@@ -1204,7 +1196,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Vector<IconURL> IconURLs(int icon_types_mask);
 
-  absl::optional<Color> ThemeColor() const;
+  void UpdateThemeColorCache();
+  absl::optional<Color> ThemeColor();
 
   // Returns the HTMLLinkElement currently in use for the Web Manifest.
   // Returns null if there is no such element.
@@ -1329,8 +1322,17 @@ class CORE_EXPORT Document : public ContainerNode,
   void CheckLoadEventSoon();
   bool IsDelayingLoadEvent();
   void LoadPluginsSoon();
-  // This calls checkCompleted() sync and thus can cause JavaScript execution.
+  // This calls CheckCompleted() sync and thus can cause JavaScript execution.
   void DecrementLoadEventDelayCountAndCheckLoadEvent();
+  // Objects and embeds depend on "being rendered" for delaying the load event.
+  // This method makes sure we run a layout tree update before unblocking the
+  // load event after such elements have been inserted.
+  //
+  // Spec:
+  //
+  // https://html.spec.whatwg.org/multipage/iframe-embed-object.html#the-object-element
+  // https://html.spec.whatwg.org/multipage/iframe-embed-object.html#the-embed-element
+  void DelayLoadEventUntilLayoutTreeUpdate();
 
   const DocumentTiming& GetTiming() const { return document_timing_; }
 
@@ -1447,6 +1449,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   NthIndexCache* GetNthIndexCache() const { return nth_index_cache_; }
 
+  HasMatchedCacheScope* GetHasMatchedCacheScope() const {
+    return has_matched_cache_scope_;
+  }
+
   CanvasFontCache* GetCanvasFontCache();
 
   // Used by unit tests so that all parsing will be main thread for
@@ -1484,10 +1490,6 @@ class CORE_EXPORT Document : public ContainerNode,
     return property_registry_;
   }
   PropertyRegistry& EnsurePropertyRegistry();
-
-  // Used to notify the embedder when the user edits the value of a
-  // text field in a non-secure context.
-  void MaybeQueueSendDidEditFieldInInsecureContext();
 
   // May return nullptr when PerformanceManager instrumentation is disabled.
   DocumentResourceCoordinator* GetResourceCoordinator();
@@ -1565,7 +1567,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Deferred compositor commits are disallowed by default, and are only allowed
   // for same-origin navigations to an html document fetched with http.
-  bool DeferredCompositorCommitIsAllowed() {
+  bool DeferredCompositorCommitIsAllowed() const {
     return deferred_compositor_commit_is_allowed_;
   }
   void SetDeferredCompositorCommitIsAllowed(bool new_value) {
@@ -1578,6 +1580,9 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsInWebAppScope() const;
 
   ComputedAccessibleNode* GetOrCreateComputedAccessibleNode(AXID ax_id);
+
+  // Return true if any accessibility contexts have been enabled.
+  bool IsAccessibilityEnabled() const { return !ax_contexts_.IsEmpty(); }
 
   bool HaveRenderBlockingResourcesLoaded() const;
 
@@ -1682,7 +1687,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetFindInPageActiveMatchNode(Node*);
   const Node* GetFindInPageActiveMatchNode() const;
 
-  void ActivateForPrerendering();
+  void ActivateForPrerendering(base::TimeTicks activation_start);
 
   void AddWillDispatchPrerenderingchangeCallback(base::OnceClosure);
 
@@ -1721,6 +1726,7 @@ class CORE_EXPORT Document : public ContainerNode,
   friend class ThrowOnDynamicMarkupInsertionCountIncrementer;
   friend class IgnoreOpensDuringUnloadCountIncrementer;
   friend class NthIndexCache;
+  friend class HasMatchedCacheScope;
   friend class CanvasRenderingAPIUkmMetricsTest;
   friend class OffscreenCanvasRenderingAPIUkmMetricsTest;
   FRIEND_TEST_ALL_PREFIXES(FrameFetchContextSubresourceFilterTest,
@@ -1754,14 +1760,30 @@ class CORE_EXPORT Document : public ContainerNode,
   void ScheduleLayoutTreeUpdate();
 
   bool NeedsFullLayoutTreeUpdate() const;
+  bool ParentFrameNeedsLayoutTreeUpdate() const;
+
+  // See UpdateStyleAndLayoutTreeForThisDocument for an explanation of
+  // the "ForThisDocument" suffix.
+  //
+  // These functions do not take into account dirtiness of parent frames:
+  // they are assumed to be clean. If it isn't possible to guarantee
+  // clean parent frames, use Needs[Full]LayoutTreeUpdate() instead.
+  bool NeedsLayoutTreeUpdateForThisDocument() const;
+  bool NeedsFullLayoutTreeUpdateForThisDocument() const;
 
   void UpdateUseShadowTreesIfNeeded();
   void EvaluateMediaQueryListIfNeeded();
 
   void UpdateStyleInvalidationIfNeeded();
   void UpdateStyle();
+  void UpdateStyleInternal();
   void NotifyLayoutTreeOfSubtreeChanges();
   bool ChildrenCanHaveStyle() const final;
+
+  // Objects and embeds depend on "being rendered" for delaying the load event.
+  // This method unblocks the load event after the first layout tree update
+  // after parsing finished.
+  void UnblockLoadEventAfterLayoutTreeUpdate();
 
   // ImplicitClose() actually does the work of closing the input stream.
   void ImplicitClose();
@@ -1819,9 +1841,12 @@ class CORE_EXPORT Document : public ContainerNode,
     nth_index_cache_ = nth_index_cache;
   }
 
-  const OriginAccessEntry& AccessEntryFromURL();
+  void SetHasMatchedCacheScope(HasMatchedCacheScope* has_matched_cache_scope) {
+    DCHECK(!has_matched_cache_scope_ || !has_matched_cache_scope);
+    has_matched_cache_scope_ = has_matched_cache_scope;
+  }
 
-  void SendDidEditFieldInInsecureContext();
+  const OriginAccessEntry& AccessEntryFromURL();
 
   void UpdateActiveState(bool is_active, bool update_active_chain, Element*);
   void UpdateHoverState(Element*);
@@ -2059,6 +2084,13 @@ class CORE_EXPORT Document : public ContainerNode,
   GC_PLUGIN_IGNORE("461878")
   NthIndexCache* nth_index_cache_ = nullptr;
 
+  // This is an untraced pointer to the cache-scoped object that is first
+  // allocated on the stack. It is set upon the first object being allocated
+  // on the stack, and cleared upon leaving its allocated scope. The object's
+  // references will be traced by a stack walk.
+  GC_PLUGIN_IGNORE("669058")
+  HasMatchedCacheScope* has_matched_cache_scope_ = nullptr;
+
   DocumentClassFlags document_classes_;
 
   bool is_view_source_;
@@ -2078,6 +2110,16 @@ class CORE_EXPORT Document : public ContainerNode,
   HeapVector<Member<HTMLPopupElement>> popup_element_stack_;
 
   int load_event_delay_count_;
+
+  // Objects and embeds depend on "being rendered" for delaying the load event.
+  // This is a document-wide flag saying that we have incremented the
+  // load_event_delay_count_ to wait for the next layout tree update. On the
+  // next layout tree update, the counter will be decremented and this flag will
+  // be set to false. If any of the objects/embeds started to fetch a blocking
+  // resource, they would have incremented the delay count during the layout
+  // tree update and further blocked the load event.
+  bool delay_load_event_until_layout_tree_update_ = false;
+
   HeapTaskRunnerTimer<Document> load_event_delay_timer_;
   HeapTaskRunnerTimer<Document> plugin_loading_timer_;
 
@@ -2124,10 +2166,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<SnapCoordinator> snap_coordinator_;
 
   Member<PropertyRegistry> property_registry_;
-
-  bool logged_field_edit_;
-
-  TaskHandle sensitive_input_edited_task_;
 
   Member<NetworkStateObserver> network_state_observer_;
 
@@ -2257,6 +2295,10 @@ class CORE_EXPORT Document : public ContainerNode,
   WeakMember<Node> find_in_page_active_match_node_;
 
   Member<DocumentData> data_;
+
+  // List of meta[name=theme-color] elements cached used when getting theme
+  // color.
+  HeapVector<Member<HTMLMetaElement>> meta_theme_color_elements_;
 
   // If you want to add new data members to blink::Document, please reconsider
   // if the members really should be in blink::Document.  document.h is a very

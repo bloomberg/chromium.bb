@@ -180,6 +180,7 @@ TEST_F(SpvParserMemoryTest, EmitStatement_LoadBool) {
   VariableConst{
     x_2
     none
+    undefined
     __bool
     {
       Identifier[not set]{x_1}
@@ -210,6 +211,7 @@ TEST_F(SpvParserMemoryTest, EmitStatement_LoadScalar) {
   VariableConst{
     x_2
     none
+    undefined
     __u32
     {
       Identifier[not set]{x_1}
@@ -220,6 +222,7 @@ VariableDeclStatement{
   VariableConst{
     x_3
     none
+    undefined
     __u32
     {
       Identifier[not set]{x_1}
@@ -252,6 +255,7 @@ TEST_F(SpvParserMemoryTest, EmitStatement_UseLoadedScalarTwice) {
   VariableConst{
     x_2
     none
+    undefined
     __u32
     {
       Identifier[not set]{x_1}
@@ -302,7 +306,7 @@ TEST_F(SpvParserMemoryTest,
      %ptr_wg_ty = OpTypePointer Workgroup %ty
      %ptr_priv_ty = OpTypePointer Private %ty
      %1 = OpVariable %ptr_wg_ty Workgroup
-     %2 = OpVariable %ptr_priv_ty Workgroup
+     %2 = OpVariable %ptr_priv_ty Private
      %100 = OpFunction %void None %voidfn
      %entry = OpLabel
      OpCopyMemory %2 %1
@@ -816,6 +820,159 @@ TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_InvalidPointeeType) {
                         "%60: %60 = OpTypePointer Workgroup %55"));
 }
 
+TEST_F(SpvParserMemoryTest, EmitStatement_AccessChain_DereferenceBase) {
+  // The base operand to OpAccessChain may have to be dereferenced first.
+  // crbug.com/tint/737
+  const std::string assembly = Preamble() + R"(
+     %void = OpTypeVoid
+     %voidfn = OpTypeFunction %void
+
+     %uint = OpTypeInt 32 0
+     %v2uint = OpTypeVector %uint 2
+     %elem_ty = OpTypePointer Private %uint
+     %vec_ty = OpTypePointer Private %v2uint
+
+     %ptrfn = OpTypeFunction %void %vec_ty
+
+     %uint_0 = OpConstant %uint 0
+
+     ; The shortest way to make a pointer example is as a function parameter.
+     %200 = OpFunction %void None %ptrfn
+     %1 = OpFunctionParameter %vec_ty
+     %entry = OpLabel
+     %2 = OpAccessChain %elem_ty %1 %uint_0
+     %3 = OpLoad %uint %2
+     OpReturn
+     OpFunctionEnd
+
+     %100 = OpFunction %void None %voidfn
+     %main_entry = OpLabel
+     OpReturn
+     OpFunctionEnd
+  )";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModule());
+  const auto got = p->program().to_str();
+  const std::string expected = R"(Module{
+  Function x_200 -> __void
+  (
+    VariableConst{
+      x_1
+      none
+      undefined
+      __ptr_private__vec_2__u32
+    }
+  )
+  {
+    VariableDeclStatement{
+      VariableConst{
+        x_3
+        none
+        undefined
+        __u32
+        {
+          MemberAccessor[not set]{
+            UnaryOp[not set]{
+              indirection
+              Identifier[not set]{x_1}
+            }
+            Identifier[not set]{x}
+          }
+        }
+      }
+    }
+    Return{}
+  }
+  Function main_1 -> __void
+  ()
+  {
+    Return{}
+  }
+  Function main -> __void
+  StageDecoration{vertex}
+  ()
+  {
+    Call[not set]{
+      Identifier[not set]{main_1}
+      (
+      )
+    }
+  }
+}
+)";
+  EXPECT_EQ(got, expected) << got;
+}
+
+TEST_F(SpvParserMemoryTest,
+       EmitStatement_AccessChain_InferFunctionStorageClass) {
+  // An access chain can have no indices. When the base is a Function variable,
+  // the reference type has no explicit storage class in the AST representation.
+  // But the pointer type for the let declaration must have an explicit
+  // 'function' storage class. From crbug.com/tint/807
+  const std::string assembly = R"(
+OpCapability Shader
+OpMemoryModel Logical Simple
+OpEntryPoint Fragment %main "main"
+OpExecutionMode %main OriginUpperLeft
+
+%uint = OpTypeInt 32 0
+%ptr_ty = OpTypePointer Function %uint
+
+  %void = OpTypeVoid
+%voidfn = OpTypeFunction %void
+  %main = OpFunction %void None %voidfn
+ %entry = OpLabel
+     %1 = OpVariable %ptr_ty Function
+     %2 = OpAccessChain %ptr_ty %1
+          OpReturn
+          OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModule()) << assembly;
+  const auto got = p->program().to_str();
+  const std::string expected = R"(Module{
+  Function main_1 -> __void
+  ()
+  {
+    VariableDeclStatement{
+      Variable{
+        x_1
+        none
+        undefined
+        __u32
+      }
+    }
+    VariableDeclStatement{
+      VariableConst{
+        x_2
+        none
+        undefined
+        __ptr_function__u32
+        {
+          UnaryOp[not set]{
+            address-of
+            Identifier[not set]{x_1}
+          }
+        }
+      }
+    }
+    Return{}
+  }
+  Function main -> __void
+  StageDecoration{fragment}
+  ()
+  {
+    Call[not set]{
+      Identifier[not set]{main_1}
+      (
+      )
+    }
+  }
+}
+)";
+  EXPECT_EQ(got, expected) << got;
+}
+
 std::string OldStorageBufferPreamble() {
   return Preamble() + R"(
      OpName %myvar "myvar"
@@ -873,7 +1030,8 @@ TEST_F(SpvParserMemoryTest, RemapStorageBuffer_TypesAndVarDeclarations) {
     }
     myvar
     storage
-    __access_control_read_write__type_name_S
+    read_write
+    __type_name_S
   })"));
 }
 
@@ -1017,6 +1175,7 @@ TEST_F(SpvParserMemoryTest,
   VariableConst{
     x_2
     none
+    undefined
     __ptr_storage__u32
     {
       UnaryOp[not set]{
@@ -1042,6 +1201,10 @@ Assignment{
 }
 
 TEST_F(SpvParserMemoryTest, RemapStorageBuffer_ThroughCopyObject_WithHoisting) {
+  // TODO(dneto): Hoisting non-storable values (pointers) is not yet supported.
+  // It's debatable whether this test should run at all.
+  // crbug.com/tint/98
+
   // Like the previous test, but the declaration for the copy-object
   // has its declaration hoisted.
   const auto assembly = OldStorageBufferPreamble() + R"(
@@ -1078,6 +1241,7 @@ TEST_F(SpvParserMemoryTest, RemapStorageBuffer_ThroughCopyObject_WithHoisting) {
   Variable{
     x_2
     none
+    undefined
     __ptr_storage__u32
   }
 }
@@ -1112,6 +1276,7 @@ Assignment{
 }
 Return{}
 )") << p->error();
+  p->SkipDumpingPending("crbug.com/tint/98");
 }
 
 TEST_F(SpvParserMemoryTest, DISABLED_RemapStorageBuffer_ThroughFunctionCall) {
@@ -1176,6 +1341,7 @@ TEST_F(SpvParserMemoryTest, ArrayLength) {
   VariableConst{
     x_1
     none
+    undefined
     __u32
     {
       Call[not set]{

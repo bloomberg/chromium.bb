@@ -47,8 +47,9 @@ import {RemoteObject} from './RemoteObject.js';
 import {Events as ResourceTreeModelEvents, ResourceTreeModel} from './ResourceTreeModel.js';
 import type {ExecutionContext} from './RuntimeModel.js';
 import {Events as RuntimeModelEvents, RuntimeModel} from './RuntimeModel.js';  // eslint-disable-line no-unused-vars
-import type {Observer, Target} from './SDKModel.js';
-import {TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';
+import {TargetManager} from './TargetManager.js';
+import type {Observer} from './TargetManager.js';
 
 const UIStrings = {
   /**
@@ -82,7 +83,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper implements 
   _warnings: number;
   _errors: number;
   _violations: number;
-  _pageLoadSequenceNumber: number;
+  private pageLoadSequenceNumber: number;
   _targetListeners: WeakMap<Target, Common.EventTarget.EventDescriptor[]>;
 
   private constructor() {
@@ -93,7 +94,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper implements 
     this._warnings = 0;
     this._errors = 0;
     this._violations = 0;
-    this._pageLoadSequenceNumber = 0;
+    this.pageLoadSequenceNumber = 0;
     this._targetListeners = new WeakMap();
 
     TargetManager.instance().observeTargets(this);
@@ -118,7 +119,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper implements 
     }
 
     const eventListener = resourceTreeModel.addEventListener(ResourceTreeModelEvents.CachedResourcesLoaded, () => {
-      Common.EventTarget.EventTarget.removeEventListeners([eventListener]);
+      Common.EventTarget.removeEventListeners([eventListener]);
       this._initTarget(target);
     });
   }
@@ -164,7 +165,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper implements 
     if (runtimeModel) {
       this._messageByExceptionId.delete(runtimeModel);
     }
-    Common.EventTarget.EventTarget.removeEventListeners(this._targetListeners.get(target) || []);
+    Common.EventTarget.removeEventListeners(this._targetListeners.get(target) || []);
   }
 
   async evaluateCommandInConsole(
@@ -197,14 +198,15 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper implements 
 
   addCommandMessage(executionContext: ExecutionContext, text: string): ConsoleMessage {
     const commandMessage = new ConsoleMessage(
-        executionContext.runtimeModel, Protocol.Log.LogEntrySource.Javascript, null, text, FrontendMessageType.Command);
+        executionContext.runtimeModel, Protocol.Log.LogEntrySource.Javascript, null, text,
+        {type: FrontendMessageType.Command});
     commandMessage.setExecutionContextId(executionContext.id);
     this.addMessage(commandMessage);
     return commandMessage;
   }
 
   addMessage(msg: ConsoleMessage): void {
-    msg._pageLoadSequenceNumber = this._pageLoadSequenceNumber;
+    msg.setPageLoadSequenceNumber(this.pageLoadSequenceNumber);
     if (msg.source === FrontendMessageSource.ConsoleAPI &&
         msg.type === Protocol.Runtime.ConsoleAPICalledEventType.Clear) {
       this._clearIfNecessary();
@@ -212,13 +214,14 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper implements 
 
     this._messages.push(msg);
     const runtimeModel = msg.runtimeModel();
-    if (msg._exceptionId && runtimeModel) {
+    const exceptionId = msg.getExceptionId();
+    if (exceptionId && runtimeModel) {
       let modelMap = this._messageByExceptionId.get(runtimeModel);
       if (!modelMap) {
         modelMap = new Map();
         this._messageByExceptionId.set(runtimeModel, modelMap);
       }
-      modelMap.set(msg._exceptionId, msg);
+      modelMap.set(exceptionId, msg);
     }
     this._incrementErrorWarningCount(msg);
     this.dispatchEventToListeners(Events.MessageAdded, msg);
@@ -226,8 +229,10 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper implements 
 
   _exceptionThrown(runtimeModel: RuntimeModel, event: Common.EventTarget.EventTargetEvent): void {
     const exceptionWithTimestamp = (event.data as ExceptionWithTimestamp);
+    const affectedResources = extractExceptionMetaData(exceptionWithTimestamp.details.exceptionMetaData);
     const consoleMessage = ConsoleMessage.fromException(
-        runtimeModel, exceptionWithTimestamp.details, undefined, exceptionWithTimestamp.timestamp, undefined);
+        runtimeModel, exceptionWithTimestamp.details, undefined, exceptionWithTimestamp.timestamp, undefined,
+        affectedResources);
     consoleMessage.setExceptionId(exceptionWithTimestamp.details.exceptionId);
     this.addMessage(consoleMessage);
   }
@@ -269,11 +274,19 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper implements 
       message = call.args[0].description;
     }
     const callFrame = call.stackTrace && call.stackTrace.callFrames.length ? call.stackTrace.callFrames[0] : null;
-    const consoleMessage = new ConsoleMessage(
-        runtimeModel, FrontendMessageSource.ConsoleAPI, level, (message as string), call.type,
-        callFrame ? callFrame.url : undefined, callFrame ? callFrame.lineNumber : undefined,
-        callFrame ? callFrame.columnNumber : undefined, call.args, call.stackTrace, call.timestamp,
-        call.executionContextId, undefined, undefined, call.context);
+    const details = {
+      type: call.type,
+      url: callFrame?.url,
+      line: callFrame?.lineNumber,
+      column: callFrame?.columnNumber,
+      parameters: call.args,
+      stackTrace: call.stackTrace,
+      timestamp: call.timestamp,
+      executionContextId: call.executionContextId,
+      context: call.context,
+    };
+    const consoleMessage =
+        new ConsoleMessage(runtimeModel, FrontendMessageSource.ConsoleAPI, level, (message as string), details);
     this.addMessage(consoleMessage);
   }
 
@@ -283,7 +296,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper implements 
     });
     const consoleMessage = new ConsoleMessage(
         runtimeModel, FrontendMessageSource.ConsoleAPI, Protocol.Log.LogEntryLevel.Info, '',
-        FrontendMessageType.QueryObjectResult, undefined, undefined, undefined, [data.objects]);
+        {type: FrontendMessageType.QueryObjectResult, parameters: [data.objects]});
     this.addMessage(consoleMessage);
   }
 
@@ -291,7 +304,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper implements 
     if (!Common.Settings.Settings.instance().moduleSetting('preserveConsoleLog').get()) {
       this._clear();
     }
-    ++this._pageLoadSequenceNumber;
+    ++this.pageLoadSequenceNumber;
   }
 
   _mainFrameNavigated(event: Common.EventTarget.EventTargetEvent): void {
@@ -326,7 +339,7 @@ export class ConsoleModel extends Common.ObjectWrapper.ObjectWrapper implements 
     }];
     this.addMessage(new ConsoleMessage(
         cpuProfilerModel.runtimeModel(), FrontendMessageSource.ConsoleAPI, Protocol.Log.LogEntryLevel.Info, messageText,
-        type, undefined, undefined, undefined, undefined, {callFrames}));
+        {type, stackTrace: {callFrames}}));
   }
 
   _incrementErrorWarningCount(msg: ConsoleMessage): void {
@@ -441,47 +454,79 @@ export enum Events {
   CommandEvaluated = 'CommandEvaluated',
 }
 
+export interface AffectedResources {
+  requestId?: Protocol.Network.RequestId;
+  issueId?: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractExceptionMetaData(metaData: any|undefined): AffectedResources|undefined {
+  if (!metaData) {
+    return undefined;
+  }
+  return {requestId: metaData.requestId || undefined, issueId: metaData.issueId || undefined};
+}
+
+
+function areAffectedResourcesEquivalent(a?: AffectedResources, b?: AffectedResources): boolean {
+  // Not considering issueId, as that would prevent de-duplication of console messages.
+  return a?.requestId === b?.requestId;
+}
+
+export interface ConsoleMessageDetails {
+  type?: MessageType;
+  url?: string;
+  line?: number;
+  column?: number;
+  parameters?: (string|RemoteObject|Protocol.Runtime.RemoteObject)[];
+  stackTrace?: Protocol.Runtime.StackTrace;
+  timestamp?: number;
+  executionContextId?: number;
+  scriptId?: string;
+  workerId?: string;
+  context?: string;
+  affectedResources?: AffectedResources;
+}
 
 export class ConsoleMessage {
   _runtimeModel: RuntimeModel|null;
   source: MessageSource;
   level: Protocol.Log.LogEntryLevel|null;
   messageText: string;
-  _type: MessageType;
+  readonly type: MessageType;
   url: string|undefined;
   line: number;
   column: number;
   parameters: (string|RemoteObject|Protocol.Runtime.RemoteObject)[]|undefined;
   stackTrace: Protocol.Runtime.StackTrace|undefined;
   timestamp: number;
-  executionContextId: number;
-  scriptId: string|null;
-  workerId: string|null;
-  context: string|null|undefined;
-  _originatingConsoleMessage: ConsoleMessage|null;
-  _pageLoadSequenceNumber: number|undefined;
-  _exceptionId: number|undefined;
+  private executionContextId: number;
+  scriptId?: string;
+  workerId?: string;
+  context?: string;
+  private originatingConsoleMessage: ConsoleMessage|null = null;
+  private pageLoadSequenceNumber?: number = undefined;
+  private exceptionId?: number = undefined;
+  private affectedResources?: AffectedResources;
 
   constructor(
       runtimeModel: RuntimeModel|null, source: MessageSource, level: Protocol.Log.LogEntryLevel|null,
-      messageText: string, type?: MessageType, url?: string|null, line?: number, column?: number,
-      parameters?: (string|RemoteObject|Protocol.Runtime.RemoteObject)[], stackTrace?: Protocol.Runtime.StackTrace,
-      timestamp?: number, executionContextId?: number, scriptId?: string|null, workerId?: string|null,
-      context?: string) {
+      messageText: string, details?: ConsoleMessageDetails) {
     this._runtimeModel = runtimeModel;
     this.source = source;
     this.level = (level as Protocol.Log.LogEntryLevel | null);
     this.messageText = messageText;
-    this._type = type || Protocol.Runtime.ConsoleAPICalledEventType.Log;
-    this.url = url || undefined;
-    this.line = line || 0;
-    this.column = column || 0;
-    this.parameters = parameters;
-    this.stackTrace = stackTrace;
-    this.timestamp = timestamp || Date.now();
-    this.executionContextId = executionContextId || 0;
-    this.scriptId = scriptId || null;
-    this.workerId = workerId || null;
+    this.type = details?.type || Protocol.Runtime.ConsoleAPICalledEventType.Log;
+    this.url = details?.url;
+    this.line = details?.line || 0;
+    this.column = details?.column || 0;
+    this.parameters = details?.parameters;
+    this.stackTrace = details?.stackTrace;
+    this.timestamp = details?.timestamp || Date.now();
+    this.executionContextId = details?.executionContextId || 0;
+    this.scriptId = details?.scriptId;
+    this.workerId = details?.workerId;
+    this.affectedResources = details?.affectedResources;
 
     if (!this.executionContextId && this._runtimeModel) {
       if (this.scriptId) {
@@ -491,30 +536,41 @@ export class ConsoleMessage {
       }
     }
 
-    if (context) {
-      const match = context.match(/[^#]*/);
-      this.context = match && match[0];
+    if (details?.context) {
+      const match = details?.context.match(/[^#]*/);
+      this.context = match?.[0];
     }
-    this._originatingConsoleMessage = null;
-    this._pageLoadSequenceNumber = undefined;
-    this._exceptionId = undefined;
   }
 
-  get type(): MessageType {
-    return this._type;
+  getAffectedResources(): AffectedResources|undefined {
+    return this.affectedResources;
+  }
+
+  setPageLoadSequenceNumber(pageLoadSequenceNumber: number): void {
+    this.pageLoadSequenceNumber = pageLoadSequenceNumber;
   }
 
   static fromException(
       runtimeModel: RuntimeModel, exceptionDetails: Protocol.Runtime.ExceptionDetails,
       messageType?: Protocol.Runtime.ConsoleAPICalledEventType|FrontendMessageType, timestamp?: number,
-      forceUrl?: string): ConsoleMessage {
+      forceUrl?: string, affectedResources?: AffectedResources): ConsoleMessage {
+    const details = {
+      type: messageType,
+      url: forceUrl || exceptionDetails.url,
+      line: exceptionDetails.lineNumber,
+      column: exceptionDetails.columnNumber,
+      parameters: exceptionDetails.exception ?
+          [RemoteObject.fromLocalObject(exceptionDetails.text), exceptionDetails.exception] :
+          undefined,
+      stackTrace: exceptionDetails.stackTrace,
+      timestamp,
+      executionContextId: exceptionDetails.executionContextId,
+      scriptId: exceptionDetails.scriptId,
+      affectedResources,
+    };
     return new ConsoleMessage(
         runtimeModel, Protocol.Log.LogEntrySource.Javascript, Protocol.Log.LogEntryLevel.Error,
-        RuntimeModel.simpleTextFromException(exceptionDetails), messageType, forceUrl || exceptionDetails.url,
-        exceptionDetails.lineNumber, exceptionDetails.columnNumber,
-        exceptionDetails.exception ? [RemoteObject.fromLocalObject(exceptionDetails.text), exceptionDetails.exception] :
-                                     undefined,
-        exceptionDetails.stackTrace, timestamp, exceptionDetails.executionContextId, exceptionDetails.scriptId);
+        RuntimeModel.simpleTextFromException(exceptionDetails), details);
   }
 
   runtimeModel(): RuntimeModel|null {
@@ -526,20 +582,28 @@ export class ConsoleMessage {
   }
 
   setOriginatingMessage(originatingMessage: ConsoleMessage): void {
-    this._originatingConsoleMessage = originatingMessage;
+    this.originatingConsoleMessage = originatingMessage;
     this.executionContextId = originatingMessage.executionContextId;
+  }
+
+  originatingMessage(): ConsoleMessage|null {
+    return this.originatingConsoleMessage;
   }
 
   setExecutionContextId(executionContextId: number): void {
     this.executionContextId = executionContextId;
   }
 
-  setExceptionId(exceptionId: number): void {
-    this._exceptionId = exceptionId;
+  getExecutionContextId(): number {
+    return this.executionContextId;
   }
 
-  originatingMessage(): ConsoleMessage|null {
-    return this._originatingConsoleMessage;
+  getExceptionId(): number|undefined {
+    return this.exceptionId;
+  }
+
+  setExceptionId(exceptionId: number): void {
+    this.exceptionId = exceptionId;
   }
 
   isGroupMessage(): boolean {
@@ -566,7 +630,7 @@ export class ConsoleMessage {
   }
 
   groupCategoryKey(): string {
-    return [this.source, this.level, this.type, this._pageLoadSequenceNumber].join(':');
+    return [this.source, this.level, this.type, this.pageLoadSequenceNumber].join(':');
   }
 
   isEqual(msg: ConsoleMessage|null): boolean {
@@ -574,7 +638,7 @@ export class ConsoleMessage {
       return false;
     }
 
-    if (!this._isEqualStackTraces(this.stackTrace, msg.stackTrace)) {
+    if (!this.isEqualStackTraces(this.stackTrace, msg.stackTrace)) {
       return false;
     }
 
@@ -609,10 +673,11 @@ export class ConsoleMessage {
     return (this.runtimeModel() === msg.runtimeModel()) && (this.source === msg.source) && (this.type === msg.type) &&
         (this.level === msg.level) && (this.line === msg.line) && (this.url === msg.url) &&
         (bothAreWatchExpressions || this.scriptId === msg.scriptId) && (this.messageText === msg.messageText) &&
-        (this.executionContextId === msg.executionContextId);
+        (this.executionContextId === msg.executionContextId) &&
+        areAffectedResourcesEquivalent(this.affectedResources, msg.affectedResources);
   }
 
-  _isEqualStackTraces(
+  private isEqualStackTraces(
       stackTrace1: Protocol.Runtime.StackTrace|undefined, stackTrace2: Protocol.Runtime.StackTrace|undefined): boolean {
     if (!stackTrace1 !== !stackTrace2) {
       return false;
@@ -632,7 +697,7 @@ export class ConsoleMessage {
         return false;
       }
     }
-    return this._isEqualStackTraces(stackTrace1.parent, stackTrace2.parent);
+    return this.isEqualStackTraces(stackTrace1.parent, stackTrace2.parent);
   }
 }
 

@@ -13,13 +13,13 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 
 class AppDistributionProvider;
 class BrandedImageProvider;
 class BrowserURLRewriterProvider;
-class ModalsProvider;
 class DiscoverFeedProvider;
 class FullscreenProvider;
 class MailtoHandlerProvider;
@@ -51,10 +51,12 @@ class ChromeTrustedVaultService;
 class SigninErrorProvider;
 class SigninResourcesProvider;
 
-// Setter and getter for the provider. The provider should be set early, before
-// any browser code is called.
-void SetChromeBrowserProvider(ChromeBrowserProvider* provider);
-ChromeBrowserProvider* GetChromeBrowserProvider();
+// Getter and setter for the provider. The provider should be set early, before
+// any browser code is called (as the getter will fail if the provider has not
+// been set).
+ChromeBrowserProvider& GetChromeBrowserProvider();
+ChromeBrowserProvider* SetChromeBrowserProvider(ChromeBrowserProvider* provider)
+    WARN_UNUSED_RESULT;
 
 // Factory function for the embedder specific provider. This function must be
 // implemented by the embedder and will be selected via linking (i.e. by the
@@ -160,8 +162,6 @@ class ChromeBrowserProvider {
 
   virtual TextZoomProvider* GetTextZoomProvider() const;
 
-  virtual ModalsProvider* GetModalsProvider() const;
-
   // Adds and removes observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -173,7 +173,6 @@ class ChromeBrowserProvider {
  private:
   base::ObserverList<Observer, true>::Unchecked observer_list_;
   std::unique_ptr<MailtoHandlerProvider> mailto_handler_provider_;
-  std::unique_ptr<ModalsProvider> modals_provider_;
   std::unique_ptr<TextZoomProvider> text_zoom_provider_;
 };
 

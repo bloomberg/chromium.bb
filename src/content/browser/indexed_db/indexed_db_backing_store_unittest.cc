@@ -15,12 +15,12 @@
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/containers/span.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -42,7 +42,7 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
-#include "content/browser/indexed_db/indexed_db_origin_state.h"
+#include "content/browser/indexed_db/indexed_db_storage_key_state.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -51,6 +51,7 @@
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 using blink::IndexedDBDatabaseMetadata;
@@ -59,6 +60,7 @@ using blink::IndexedDBKey;
 using blink::IndexedDBKeyPath;
 using blink::IndexedDBKeyRange;
 using blink::IndexedDBObjectStoreMetadata;
+using blink::StorageKey;
 using url::Origin;
 
 namespace content {
@@ -69,7 +71,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
   TestableIndexedDBBackingStore(
       IndexedDBBackingStore::Mode backing_store_mode,
       TransactionalLevelDBFactory* leveldb_factory,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
       storage::mojom::BlobStorageContext* blob_storage_context,
@@ -80,7 +82,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
       scoped_refptr<base::SequencedTaskRunner> idb_task_runner)
       : IndexedDBBackingStore(backing_store_mode,
                               leveldb_factory,
-                              origin,
+                              storage_key,
                               blob_path,
                               std::move(db),
                               blob_storage_context,
@@ -138,7 +140,7 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
   std::unique_ptr<IndexedDBBackingStore> CreateBackingStore(
       IndexedDBBackingStore::Mode backing_store_mode,
       TransactionalLevelDBFactory* leveldb_factory,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
       storage::mojom::BlobStorageContext*,
@@ -152,8 +154,8 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
     // than the versions that were passed in to this method. This way tests can
     // use a different context from what is stored in the IndexedDBContext.
     return std::make_unique<TestableIndexedDBBackingStore>(
-        backing_store_mode, leveldb_factory, origin, blob_path, std::move(db),
-        blob_storage_context_, file_system_access_context_,
+        backing_store_mode, leveldb_factory, storage_key, blob_path,
+        std::move(db), blob_storage_context_, file_system_access_context_,
         std::move(filesystem_proxy), std::move(blob_files_cleaned),
         std::move(report_outstanding_blobs), std::move(idb_task_runner));
   }
@@ -260,8 +262,10 @@ class MockFileSystemAccessContext
       SerializeHandleCallback callback) override {
     writes_.emplace_back(std::move(pending_token));
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  std::vector<uint8_t>{writes_.size() - 1}));
+        FROM_HERE,
+        base::BindOnce(
+            std::move(callback),
+            std::vector<uint8_t>{static_cast<uint8_t>(writes_.size() - 1)}));
   }
 
   void DeserializeHandle(
@@ -326,23 +330,26 @@ class IndexedDBBackingStoreTest : public testing::Test {
   }
 
   void CreateFactoryAndBackingStore() {
-    const Origin origin = Origin::Create(GURL("http://localhost:81"));
+    const blink::StorageKey storage_key =
+        blink::StorageKey::CreateFromStringForTesting("http://localhost:81");
     idb_factory_ = std::make_unique<TestIDBFactory>(
         idb_context_.get(), blob_context_.get(),
         file_system_access_context_.get());
 
     leveldb::Status s;
-    std::tie(origin_state_handle_, s, std::ignore, data_loss_info_,
+    std::tie(storage_key_state_handle_, s, std::ignore, data_loss_info_,
              std::ignore) =
-        idb_factory_->GetOrOpenOriginFactory(origin, idb_context_->data_path(),
-                                             /*create_if_missing=*/true);
-    if (!origin_state_handle_.IsHeld()) {
+        idb_factory_->GetOrOpenStorageKeyFactory(storage_key,
+                                                 idb_context_->data_path(),
+                                                 /*create_if_missing=*/true);
+    if (!storage_key_state_handle_.IsHeld()) {
       backing_store_ = nullptr;
       return;
     }
     backing_store_ = static_cast<TestableIndexedDBBackingStore*>(
-        origin_state_handle_.origin_state()->backing_store());
-    lock_manager_ = origin_state_handle_.origin_state()->lock_manager();
+        storage_key_state_handle_.storage_key_state()->backing_store());
+    lock_manager_ =
+        storage_key_state_handle_.storage_key_state()->lock_manager();
   }
 
   std::vector<ScopeLock> CreateDummyLock() {
@@ -359,30 +366,28 @@ class IndexedDBBackingStoreTest : public testing::Test {
   }
 
   void DestroyFactoryAndBackingStore() {
-    origin_state_handle_.Release();
+    storage_key_state_handle_.Release();
     idb_factory_.reset();
     backing_store_ = nullptr;
   }
 
   void TearDown() override {
     DestroyFactoryAndBackingStore();
-    quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-
     if (idb_context_ && !idb_context_->IsInMemoryContext()) {
       IndexedDBFactoryImpl* factory = idb_context_->GetIDBFactory();
 
       // Loop through all open origins, and force close them, and request the
       // deletion of the leveldb state. Once the states are no longer around,
       // delete all of the databases on disk.
-      auto open_factory_origins = factory->GetOpenOrigins();
+      auto open_factory_storage_keys = factory->GetOpenStorageKeys();
 
-      for (auto origin : open_factory_origins) {
+      for (const auto& storage_key : open_factory_storage_keys) {
         base::RunLoop loop;
-        IndexedDBOriginState* per_origin_factory =
-            factory->GetOriginFactory(origin);
+        IndexedDBStorageKeyState* per_storage_key_factory =
+            factory->GetStorageKeyFactory(storage_key);
 
         auto* leveldb_state =
-            per_origin_factory->backing_store()->db()->leveldb_state();
+            per_storage_key_factory->backing_store()->db()->leveldb_state();
 
         base::WaitableEvent leveldb_close_event;
         base::WaitableEventWatcher event_watcher;
@@ -394,7 +399,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
             base::SequencedTaskRunnerHandle::Get());
 
         idb_context_->ForceCloseSync(
-            origin,
+            storage_key,
             storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN);
         loop.Run();
         // There is a possible race in |leveldb_close_event| where the signaling
@@ -405,10 +410,10 @@ class IndexedDBBackingStoreTest : public testing::Test {
         EXPECT_TRUE(leveldb_close_event.IsSignaled());
       }
       // All leveldb databases are closed, and they can be deleted.
-      for (auto origin : idb_context_->GetAllOrigins()) {
+      for (auto storage_key : idb_context_->GetAllStorageKeys()) {
         bool success = false;
         storage::mojom::IndexedDBControlAsyncWaiter waiter(idb_context_.get());
-        waiter.DeleteForOrigin(origin, &success);
+        waiter.DeleteForStorageKey(storage_key, &success);
         EXPECT_TRUE(success);
       }
     }
@@ -450,7 +455,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
   std::unique_ptr<TestIDBFactory> idb_factory_;
   DisjointRangeLockManager* lock_manager_;
 
-  IndexedDBOriginStateHandle origin_state_handle_;
+  IndexedDBStorageKeyStateHandle storage_key_state_handle_;
   TestableIndexedDBBackingStore* backing_store_ = nullptr;
   IndexedDBDataLossInfo data_loss_info_;
 
@@ -1627,18 +1632,20 @@ TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
 
   // No |path_base|.
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(),
-                                             base::FilePath(), Origin())
+                                             base::FilePath(),
+                                             StorageKey(Origin()))
                   .empty());
 
   const base::FilePath path_base = temp_dir_.GetPath();
-  const Origin origin = Origin::Create(GURL("http://www.google.com/"));
+  const StorageKey storage_key =
+      StorageKey::CreateFromStringForTesting("http://www.google.com/");
   ASSERT_FALSE(path_base.empty());
   ASSERT_TRUE(PathIsWritable(path_base));
 
   // File not found.
-  EXPECT_TRUE(
-      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin)
-          .empty());
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                             storage_key)
+                  .empty());
 
   const base::FilePath info_path =
       path_base.AppendASCII("http_www.google.com_0.indexeddb.leveldb")
@@ -1648,59 +1655,59 @@ TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
   // Empty file.
   std::string dummy_data;
   ASSERT_TRUE(base::WriteFile(info_path, dummy_data));
-  EXPECT_TRUE(
-      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin)
-          .empty());
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                             storage_key)
+                  .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // File size > 4 KB.
   dummy_data.resize(5000, 'c');
   ASSERT_TRUE(base::WriteFile(info_path, dummy_data));
-  EXPECT_TRUE(
-      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin)
-          .empty());
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                             storage_key)
+                  .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Random string.
   ASSERT_TRUE(base::WriteFile(info_path, "foo bar"));
-  EXPECT_TRUE(
-      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin)
-          .empty());
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                             storage_key)
+                  .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Not a dictionary.
   ASSERT_TRUE(base::WriteFile(info_path, "[]"));
-  EXPECT_TRUE(
-      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin)
-          .empty());
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                             storage_key)
+                  .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Empty dictionary.
   ASSERT_TRUE(base::WriteFile(info_path, "{}"));
-  EXPECT_TRUE(
-      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin)
-          .empty());
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                             storage_key)
+                  .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Dictionary, no message key.
   ASSERT_TRUE(base::WriteFile(info_path, "{\"foo\":\"bar\"}"));
-  EXPECT_TRUE(
-      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin)
-          .empty());
+  EXPECT_TRUE(indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                             storage_key)
+                  .empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Dictionary, message key.
   ASSERT_TRUE(base::WriteFile(info_path, "{\"message\":\"bar\"}"));
-  std::string message =
-      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin);
+  std::string message = indexed_db::ReadCorruptionInfo(filesystem_proxy.get(),
+                                                       path_base, storage_key);
   EXPECT_FALSE(message.empty());
   EXPECT_FALSE(PathExists(info_path));
   EXPECT_EQ("bar", message);
 
   // Dictionary, message key and more.
   ASSERT_TRUE(base::WriteFile(info_path, "{\"message\":\"foo\",\"bar\":5}"));
-  message =
-      indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base, origin);
+  message = indexed_db::ReadCorruptionInfo(filesystem_proxy.get(), path_base,
+                                           storage_key);
   EXPECT_FALSE(message.empty());
   EXPECT_FALSE(PathExists(info_path));
   EXPECT_EQ("foo", message);

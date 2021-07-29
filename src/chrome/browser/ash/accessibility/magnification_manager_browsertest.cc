@@ -4,9 +4,9 @@
 
 #include <string>
 
-#include "ash/accessibility/magnifier/magnification_controller.h"
+#include "ash/accessibility/magnifier/fullscreen_magnifier_controller.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -41,11 +41,11 @@ void SetMagnifierEnabled(bool enabled) {
 }
 
 void SetFullScreenMagnifierScale(double scale) {
-  Shell::Get()->magnification_controller()->SetScale(scale, false);
+  Shell::Get()->fullscreen_magnifier_controller()->SetScale(scale, false);
 }
 
 double GetFullScreenMagnifierScale() {
-  return Shell::Get()->magnification_controller()->GetScale();
+  return Shell::Get()->fullscreen_magnifier_controller()->GetScale();
 }
 
 void SetSavedFullScreenMagnifierScale(double scale) {

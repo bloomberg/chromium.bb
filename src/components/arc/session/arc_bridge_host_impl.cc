@@ -41,8 +41,10 @@
 #include "components/arc/mojom/kiosk.mojom.h"
 #include "components/arc/mojom/lock_screen.mojom.h"
 #include "components/arc/mojom/media_session.mojom.h"
+#include "components/arc/mojom/memory.mojom.h"
 #include "components/arc/mojom/metrics.mojom.h"
 #include "components/arc/mojom/midis.mojom.h"
+#include "components/arc/mojom/nearby_share.mojom.h"
 #include "components/arc/mojom/net.mojom.h"
 #include "components/arc/mojom/notifications.mojom.h"
 #include "components/arc/mojom/obb_mounter.mojom.h"
@@ -261,6 +263,11 @@ void ArcBridgeHostImpl::OnMediaSessionInstanceReady(
                   std::move(media_session_remote));
 }
 
+void ArcBridgeHostImpl::OnMemoryInstanceReady(
+    mojo::PendingRemote<mojom::MemoryInstance> memory_remote) {
+  OnInstanceReady(arc_bridge_service_->memory(), std::move(memory_remote));
+}
+
 void ArcBridgeHostImpl::OnMetricsInstanceReady(
     mojo::PendingRemote<mojom::MetricsInstance> metrics_remote) {
   OnInstanceReady(arc_bridge_service_->metrics(), std::move(metrics_remote));
@@ -269,6 +276,12 @@ void ArcBridgeHostImpl::OnMetricsInstanceReady(
 void ArcBridgeHostImpl::OnMidisInstanceReady(
     mojo::PendingRemote<mojom::MidisInstance> midis_remote) {
   OnInstanceReady(arc_bridge_service_->midis(), std::move(midis_remote));
+}
+
+void ArcBridgeHostImpl::OnNearbyShareInstanceReady(
+    mojo::PendingRemote<mojom::NearbyShareInstance> nearby_share_remote) {
+  OnInstanceReady(arc_bridge_service_->nearby_share(),
+                  std::move(nearby_share_remote));
 }
 
 void ArcBridgeHostImpl::OnNetInstanceReady(

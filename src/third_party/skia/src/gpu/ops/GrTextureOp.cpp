@@ -30,10 +30,11 @@
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrBlendFragmentProcessor.h"
-#include "src/gpu/effects/generated/GrClampFragmentProcessor.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/geometry/GrQuad.h"
 #include "src/gpu/geometry/GrQuadBuffer.h"
 #include "src/gpu/geometry/GrQuadUtils.h"
+#include "src/gpu/geometry/GrRect.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/ops/GrFillRectOp.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
@@ -263,7 +264,7 @@ public:
 
     const char* name() const override { return "TextureOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
         bool mipped = (fMetadata.mipmapMode() != GrSamplerState::MipmapMode::kNone);
         for (unsigned p = 0; p <  fMetadata.fProxyCount; ++p) {
             func(fViewCountPairs[p].fProxy.get(), GrMipmapped(mipped));
@@ -470,9 +471,9 @@ private:
 
         // Set bounds before clipping so we don't have to worry about unioning the bounds of
         // the two potential quads (GrQuad::bounds() is perspective-safe).
+        bool hairline = GrQuadUtils::WillUseHairline(quad->fDevice, aaType, quad->fEdgeFlags);
         this->setBounds(quad->fDevice.bounds(), HasAABloat(aaType == GrAAType::kCoverage),
-                        IsHairline::kNo);
-
+                        hairline ? IsHairline::kYes : IsHairline::kNo);
         int quadCount = this->appendQuad(quad, color, subset);
         fViewCountPairs[0] = {proxyView.detachProxy(), quadCount};
     }
@@ -506,6 +507,7 @@ private:
         Subset netSubset = Subset::kNo;
         GrSamplerState::Filter netFilter = GrSamplerState::Filter::kNearest;
         GrSamplerState::MipmapMode netMM = GrSamplerState::MipmapMode::kNone;
+        bool hasSubpixel = false;
 
         const GrSurfaceProxy* curProxy = nullptr;
 
@@ -569,13 +571,13 @@ private:
                 }
             }
 
-            // Update overall bounds of the op as the union of all quads
-            bounds.joinPossiblyEmptyRect(quad.fDevice.bounds());
-
             // Determine the AA type for the quad, then merge with net AA type
             GrAAType aaForQuad;
             GrQuadUtils::ResolveAAType(aaType, set[q].fAAFlags, quad.fDevice,
                                        &aaForQuad, &quad.fEdgeFlags);
+            // Update overall bounds of the op as the union of all quads
+            bounds.joinPossiblyEmptyRect(quad.fDevice.bounds());
+            hasSubpixel |= GrQuadUtils::WillUseHairline(quad.fDevice, aaForQuad, quad.fEdgeFlags);
 
             // Resolve sets aaForQuad to aaType or None, there is never a change between aa methods
             SkASSERT(aaForQuad == GrAAType::kNone || aaForQuad == aaType);
@@ -619,7 +621,8 @@ private:
         fMetadata.fFilter = static_cast<uint16_t>(netFilter);
         fMetadata.fSubset = static_cast<uint16_t>(netSubset);
 
-        this->setBounds(bounds, HasAABloat(netAAType == GrAAType::kCoverage), IsHairline::kNo);
+        this->setBounds(bounds, HasAABloat(netAAType == GrAAType::kCoverage),
+                        hasSubpixel ? IsHairline::kYes : IsHairline::kNo);
     }
 
     int appendQuad(DrawQuad* quad, const SkPMColor4f& color, const SkRect& subset) {
@@ -649,8 +652,9 @@ private:
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&& appliedClip,
-                             const GrXferProcessor::DstProxyView& dstProxyView,
+                             const GrDstProxyView& dstProxyView,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override {
         SkASSERT(fDesc);
@@ -683,7 +687,7 @@ private:
     void onPrePrepareDraws(GrRecordingContext* context,
                            const GrSurfaceProxyView& writeView,
                            GrAppliedClip* clip,
-                           const GrXferProcessor::DstProxyView& dstProxyView,
+                           const GrDstProxyView& dstProxyView,
                            GrXferBarrierFlags renderPassXferBarriers,
                            GrLoadOp colorLoadOp) override {
         TRACE_EVENT0("skia.gpu", TRACE_FUNC);
@@ -866,7 +870,7 @@ private:
     }
 
     // onPrePrepareDraws may or may not have been called at this point
-    void onPrepareDraws(Target* target) override {
+    void onPrepareDraws(GrMeshDrawTarget* target) override {
         TRACE_EVENT0("skia.gpu", TRACE_FUNC);
 
         SkDEBUGCODE(this->validate();)
@@ -1168,7 +1172,7 @@ GrOp::Owner GrTextureOp::Make(GrRecordingContext* context,
         fp = GrColorSpaceXformEffect::Make(std::move(fp), std::move(textureXform));
         fp = GrBlendFragmentProcessor::Make(std::move(fp), nullptr, SkBlendMode::kModulate);
         if (saturate == GrTextureOp::Saturate::kYes) {
-            fp = GrClampFragmentProcessor::Make(std::move(fp), /*clampToPremul=*/false);
+            fp = GrFragmentProcessor::ClampOutput(std::move(fp));
         }
         paint.setColorFragmentProcessor(std::move(fp));
         return GrFillRectOp::Make(context, std::move(paint), aaType, quad);
@@ -1178,7 +1182,7 @@ GrOp::Owner GrTextureOp::Make(GrRecordingContext* context,
 // A helper class that assists in breaking up bulk API quad draws into manageable chunks.
 class GrTextureOp::BatchSizeLimiter {
 public:
-    BatchSizeLimiter(GrSurfaceDrawContext* rtc,
+    BatchSizeLimiter(GrSurfaceDrawContext* sdc,
                      const GrClip* clip,
                      GrRecordingContext* context,
                      int numEntries,
@@ -1188,7 +1192,7 @@ public:
                      SkCanvas::SrcRectConstraint constraint,
                      const SkMatrix& viewMatrix,
                      sk_sp<GrColorSpaceXform> textureColorSpaceXform)
-            : fRTC(rtc)
+            : fSDC(sdc)
             , fClip(clip)
             , fContext(context)
             , fFilter(filter)
@@ -1214,7 +1218,7 @@ public:
                                          fConstraint,
                                          fViewMatrix,
                                          fTextureColorSpaceXform);
-        fRTC->addDrawOp(fClip, std::move(op));
+        fSDC->addDrawOp(fClip, std::move(op));
 
         fNumLeft -= clumpSize;
         fNumClumped += clumpSize;
@@ -1224,7 +1228,7 @@ public:
     int baseIndex() const { return fNumClumped; }
 
 private:
-    GrSurfaceDrawContext*       fRTC;
+    GrSurfaceDrawContext*       fSDC;
     const GrClip*               fClip;
     GrRecordingContext*         fContext;
     GrSamplerState::Filter      fFilter;

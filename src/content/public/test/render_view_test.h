@@ -50,6 +50,7 @@ class FakeRenderWidgetHost;
 class RendererMainPlatformDelegate;
 class RendererBlinkPlatformImpl;
 class RendererBlinkPlatformImplTestOverrideImpl;
+class RenderFrame;
 class RenderProcess;
 class RenderView;
 
@@ -85,6 +86,7 @@ class RenderViewTest : public testing::Test {
  protected:
   // Returns a pointer to the main frame.
   blink::WebLocalFrame* GetMainFrame();
+  RenderFrame* GetMainRenderFrame();
 
   // Executes the given JavaScript in the context of the main frame. The input
   // is a NULL-terminated UTF-8 string.
@@ -214,6 +216,10 @@ class RenderViewTest : public testing::Test {
   // We use a naked pointer because we don't want to expose RenderViewImpl in
   // the embedder's namespace.
   RenderView* view_ = nullptr;
+  // The WebView is owned by `view_` but provided as a raw pointer here. This
+  // will provide a transition of eventually removing RenderView and owning
+  // it directly here. See https://crbug.com/1155202.
+  blink::WebView* web_view_ = nullptr;
   RendererBlinkPlatformImplTestOverride blink_platform_impl_;
   std::unique_ptr<ContentClient> content_client_;
   std::unique_ptr<ContentBrowserClient> content_browser_client_;

@@ -549,7 +549,7 @@ class InternalLegacyStatsObserver : public webrtc::StatsObserver {
         list->Append(std::move(report).value());
     }
 
-    if (!list->empty()) {
+    if (!list->GetList().empty()) {
       PostCrossThreadTask(
           *main_thread_.get(), FROM_HERE,
           CrossThreadBindOnce(&InternalLegacyStatsObserver::OnCompleteImpl,
@@ -573,7 +573,7 @@ class InternalLegacyStatsObserver : public webrtc::StatsObserver {
       std::unique_ptr<base::ListValue> list,
       int lid,
       CrossThreadOnceFunction<void(int, base::Value)> completion_callback) {
-    DCHECK(!list->empty());
+    DCHECK(!list->GetList().empty());
     std::move(completion_callback).Run(lid, std::move(*list.get()));
   }
 
@@ -676,6 +676,8 @@ class InternalStandardStatsObserver : public webrtc::RTCStatsCollectorCallback {
       case webrtc::RTCStatsMemberInterface::Type::kSequenceUint64:
       case webrtc::RTCStatsMemberInterface::Type::kSequenceDouble:
       case webrtc::RTCStatsMemberInterface::Type::kSequenceString:
+      case webrtc::RTCStatsMemberInterface::Type::kMapStringUint64:
+      case webrtc::RTCStatsMemberInterface::Type::kMapStringDouble:
       default:
         return base::Value(member.ValueToString());
     }

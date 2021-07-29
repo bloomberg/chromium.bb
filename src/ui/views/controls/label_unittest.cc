@@ -36,6 +36,7 @@
 #include "ui/views/controls/base_control_test_widget.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/test/ax_event_counter.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/view_metadata_test_utils.h"
 #include "ui/views/test/views_test_base.h"
@@ -187,7 +188,7 @@ class LabelSelectionTest : public LabelTest {
     label()->OnPaint(&canvas);
   }
 
-  gfx::Point GetCursorPoint(int index) {
+  gfx::Point GetCursorPoint(uint32_t index) {
     SimulatePaint();
     gfx::RenderText* render_text =
         label()->GetRenderTextForSelectionController();
@@ -640,6 +641,24 @@ TEST_F(LabelTest, Accessibility) {
   label()->GetAccessibleNodeData(&node_data);
   EXPECT_EQ(label()->GetText(),
             node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+}
+
+TEST_F(LabelTest, SetTextNotifiesAccessibilityEvent) {
+  test::AXEventCounter counter(views::AXEventManager::Get());
+
+  // Changing the text affects the accessible name, so it should notify.
+  EXPECT_EQ(0, counter.GetCount(ax::mojom::Event::kTextChanged));
+  label()->SetText(u"Example");
+  EXPECT_EQ(u"Example", label()->GetAccessibleName());
+  EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged));
+
+  // Changing the text when it doesn't affect the accessible name should not
+  // notify.
+  label()->SetAccessibleName(u"Name");
+  EXPECT_EQ(2, counter.GetCount(ax::mojom::Event::kTextChanged));
+  label()->SetText(u"Example2");
+  EXPECT_EQ(u"Name", label()->GetAccessibleName());
+  EXPECT_EQ(2, counter.GetCount(ax::mojom::Event::kTextChanged));
 }
 
 TEST_F(LabelTest, TextChangeWithoutLayout) {
@@ -1106,9 +1125,15 @@ TEST_F(LabelTest, GetSubstringBounds) {
 }
 
 // TODO(crbug.com/1139395): Enable on ChromeOS along with the DCHECK in Label.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_ChecksSubpixelRenderingOntoOpaqueSurface \
+  DISABLED_ChecksSubpixelRenderingOntoOpaqueSurface
+#else
+#define MAYBE_ChecksSubpixelRenderingOntoOpaqueSurface \
+  ChecksSubpixelRenderingOntoOpaqueSurface
+#endif
 // Ensures DCHECK for subpixel rendering on transparent layer is working.
-TEST_F(LabelTest, ChecksSubpixelRenderingOntoOpaqueSurface) {
+TEST_F(LabelTest, MAYBE_ChecksSubpixelRenderingOntoOpaqueSurface) {
   View view;
   Label* label = view.AddChildView(std::make_unique<TestLabel>());
   EXPECT_TRUE(label->GetSubpixelRenderingEnabled());
@@ -1138,7 +1163,6 @@ TEST_F(LabelTest, ChecksSubpixelRenderingOntoOpaqueSurface) {
   view.SetBackground(CreateSolidBackground(SK_ColorWHITE));
   label->OnPaint(&canvas);
 }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST_F(LabelSelectionTest, Selectable) {
   // By default, labels don't support text selection.

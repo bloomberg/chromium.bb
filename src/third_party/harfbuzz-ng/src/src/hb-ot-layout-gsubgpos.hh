@@ -122,7 +122,7 @@ struct hb_closure_context_t :
     hb_set_t *covered_glyph_set = done_lookups_glyph_set->get (lookup_index);
     if (unlikely (covered_glyph_set->in_error ()))
       return true;
-    if (parent_active_glyphs ()->is_subset (covered_glyph_set))
+    if (parent_active_glyphs ()->is_subset (*covered_glyph_set))
       return true;
 
     hb_set_union (covered_glyph_set, parent_active_glyphs ());
@@ -1898,8 +1898,7 @@ struct ContextFormat1
     | hb_sink (new_coverage)
     ;
 
-    out->coverage.serialize (c->serializer, out)
-		 .serialize (c->serializer, new_coverage.iter ());
+    out->coverage.serialize_serialize (c->serializer, new_coverage.iter ());
     return_trace (bool (new_coverage));
   }
 
@@ -2866,8 +2865,7 @@ struct ChainContextFormat1
     | hb_sink (new_coverage)
     ;
 
-    out->coverage.serialize (c->serializer, out)
-		 .serialize (c->serializer, new_coverage.iter ());
+    out->coverage.serialize_serialize (c->serializer, new_coverage.iter ());
     return_trace (bool (new_coverage));
   }
 

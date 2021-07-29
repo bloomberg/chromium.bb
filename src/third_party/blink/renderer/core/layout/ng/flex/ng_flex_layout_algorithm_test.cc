@@ -150,5 +150,67 @@ TEST_F(NGFlexLayoutAlgorithmTest, DevtoolsOneImageItemCrash) {
   EXPECT_EQ(devtools.lines.size(), 1u);
 }
 
+TEST_F(NGFlexLayoutAlgorithmTest, DevtoolsColumnWrap) {
+  DevtoolsFlexInfo devtools = LayoutForDevtools(R"HTML(
+    <div style="display: flex; flex-flow: column wrap; width: 300px; height: 100px;" id=flexbox>
+      <div style="height: 200px">
+        <div style="height: 90%"></div>
+      </div>
+    </div>
+  )HTML");
+  EXPECT_EQ(devtools.lines.size(), 1u);
+}
+
+TEST_F(NGFlexLayoutAlgorithmTest, DevtoolsColumnWrapOrtho) {
+  DevtoolsFlexInfo devtools = LayoutForDevtools(R"HTML(
+    <div style="display: flex; flex-flow: column wrap; width: 300px; height: 100px;" id=flexbox>
+      <div style="height: 200px; writing-mode: vertical-lr;">
+        <div style="width: 90%"></div>
+      </div>
+    </div>
+  )HTML");
+  EXPECT_EQ(devtools.lines.size(), 1u);
+}
+
+TEST_F(NGFlexLayoutAlgorithmTest, DevtoolsRowWrapOrtho) {
+  DevtoolsFlexInfo devtools = LayoutForDevtools(R"HTML(
+    <div style="display: flex; flex-flow: wrap; width: 300px; height: 100px;" id=flexbox>
+      <div style="height: 200px; writing-mode: vertical-lr;">
+        <div style="width: 90%"></div>
+        <div style="height: 90%"></div>
+      </div>
+    </div>
+  )HTML");
+  EXPECT_EQ(devtools.lines.size(), 1u);
+}
+
+TEST_F(NGFlexLayoutAlgorithmTest, DevtoolsLegacyItem) {
+  DevtoolsFlexInfo devtools = LayoutForDevtools(R"HTML(
+    <div style="display: flex;" id=flexbox>
+      <div style="columns: 1"></div>
+    </div>
+  )HTML");
+  EXPECT_EQ(devtools.lines.size(), 1u);
+}
+
+TEST_F(NGFlexLayoutAlgorithmTest, DevtoolsFragmentedItemDoesntCrash) {
+  const String& body_content = R"HTML(
+    <div style="columns: 2; height: 300px; width: 300px; background: orange;">
+      <div style="display: flex; background: blue;" id=flexbox>
+        <div style="width: 100px; height: 300px; background: grey;"></div>
+      </div>
+    </div>
+  )HTML";
+  // TODO(crbug.com/660611): Remove next 6 lines when flex fragmentation ships.
+  SetBodyInnerHTML(body_content);
+  UpdateAllLifecyclePhasesForTest();
+  LayoutObject* flexbox = GetLayoutObjectByElementId("flexbox");
+  EXPECT_NE(flexbox, nullptr);
+  if (!flexbox->IsLayoutNGFlexibleBox())
+    return;
+  DevtoolsFlexInfo devtools = LayoutForDevtools(body_content);
+  EXPECT_EQ(devtools.lines.size(), 1u);
+}
+
 }  // namespace
 }  // namespace blink

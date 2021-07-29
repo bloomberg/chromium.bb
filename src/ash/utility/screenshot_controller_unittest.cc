@@ -4,6 +4,7 @@
 
 #include "ash/utility/screenshot_controller.h"
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/mirror_window_test_api.h"
 #include "ash/display/mouse_cursor_event_filter.h"
@@ -14,12 +15,12 @@
 #include "ash/test/test_window_builder.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/wm/window_util.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/cursor/cursor_size.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/test/event_generator.h"
@@ -303,11 +304,7 @@ TEST_F(PartialScreenshotControllerTest, CursorVisibilityTest) {
 // Make sure ScreenshotController doesn't prevent handling of large
 // cursor. See http://crbug.com/459214
 TEST_F(PartialScreenshotControllerTest, LargeCursor) {
-  Shell::Get()->cursor_manager()->SetCursorSize(ui::CursorSize::kLarge);
-  Shell::Get()
-      ->window_tree_host_manager()
-      ->cursor_window_controller()
-      ->SetCursorCompositingEnabled(true);
+  Shell::Get()->accessibility_controller()->large_cursor().SetEnabled(true);
 
   // Large cursor is represented as cursor window.
   MirrorWindowTestApi test_api;

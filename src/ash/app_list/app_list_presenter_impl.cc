@@ -127,11 +127,9 @@ constexpr std::array<int, 7>
 AppListPresenterImpl::AppListPresenterImpl(AppListControllerImpl* controller)
     : controller_(controller) {
   DCHECK(controller_);
-  display_observation_.Observe(display::Screen::GetScreen());
 }
 
 AppListPresenterImpl::~AppListPresenterImpl() {
-  Dismiss(base::TimeTicks());
   // Ensures app list view goes before the controller since pagination model
   // lives in the controller and app list view would access it on destruction.
   if (view_) {
@@ -150,7 +148,8 @@ aura::Window* AppListPresenterImpl::GetWindow() const {
 
 void AppListPresenterImpl::Show(AppListViewState preferred_state,
                                 int64_t display_id,
-                                base::TimeTicks event_time_stamp) {
+                                base::TimeTicks event_time_stamp,
+                                absl::optional<AppListShowSource> show_source) {
   if (is_target_visibility_show_) {
     // Launcher is always visible on the internal display when home launcher is
     // enabled in tablet mode.
@@ -196,6 +195,23 @@ void AppListPresenterImpl::Show(AppListViewState preferred_state,
       shelf->shelf_widget()->GetDragAndDropHostForAppList());
   view_->SetShelfHasRoundedCorners(
       IsShelfBackgroundTypeWithRoundedCorners(shelf->GetBackgroundType()));
+  std::unique_ptr<AppListView::ScopedAccessibilityAnnouncementLock>
+      scoped_accessibility_lock;
+
+  // App list view state accessibility alerts should be suppressed when the app
+  // list view is shown by the assistant. The assistant UI should handle its
+  // own accessibility notifications.
+  if (show_source && *show_source == kAssistantEntryPoint) {
+    scoped_accessibility_lock =
+        std::make_unique<AppListView::ScopedAccessibilityAnnouncementLock>(
+            view_);
+  }
+
+  // Save data about how and when we opened the app list for metrics when we
+  // close it.
+  last_open_source_ = show_source;
+  last_open_time_ = base::Time::Now();
+
   view_->Show(preferred_state, IsSideShelf(shelf));
 
   SnapAppListBoundsToDisplayEdge();
@@ -250,6 +266,12 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   controller_->ViewClosing();
 
   OnVisibilityWillChange(GetTargetVisibility(), GetDisplayId());
+  if (!Shell::Get()->IsInTabletMode() && last_open_source_.has_value() &&
+      last_open_time_.has_value())
+    RecordAppListUserJourneyTime(last_open_source_.value(),
+                                 base::Time::Now() - last_open_time_.value());
+  last_open_source_.reset();
+  last_open_time_.reset();
   view_->SetState(AppListViewState::kClosed);
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));
 }
@@ -288,7 +310,7 @@ ShelfAction AppListPresenterImpl::ToggleAppList(
   }
   Show(request_fullscreen ? AppListViewState::kFullscreenAllApps
                           : AppListViewState::kPeeking,
-       display_id, event_time_stamp);
+       display_id, event_time_stamp, show_source);
   return SHELF_ACTION_APP_LIST_SHOWN;
 }
 
@@ -471,7 +493,6 @@ void AppListPresenterImpl::OnVisibilityWillChange(bool visible,
 void AppListPresenterImpl::OnClosed() {
   if (!is_target_visibility_show_)
     shelf_observation_.RemoveAllObservations();
-  controller_->ViewClosed();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

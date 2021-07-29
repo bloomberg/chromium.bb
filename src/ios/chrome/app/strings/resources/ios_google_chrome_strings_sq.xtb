@@ -4,6 +4,7 @@
 <translation id="1096883626080133124">Bëj më shumë me një Google Chrome të thjeshtë, të sigurt dhe më të shpejtë se kurrë</translation>
 <translation id="1282031177488366470">Ndihmo në përmirësimin e veçorive dhe cilësisë së funksionimit të Chrome</translation>
 <translation id="1314663809820920746">Mund të shikosh ende të gjithë faqeshënuesit, historikun, fjalëkalimet dhe cilësime të tjera në këtë pajisjet. Nëse bën ndryshime, ato nuk do të sinkronizohen me "Llogarinë tënde të Google".</translation>
+<translation id="139135165841384604">Realizo më shumë me Chrome</translation>
 <translation id="1479202195792305274">Chrome mund t'i kontrollojë fjalëkalimet e tua kur të identifikohesh me "Llogarinë tënde të Google".</translation>
 <translation id="1493827051843127077">Caktoje Chrome si parazgjedhje për të sinkronizuar skedat, fjalëkalimet dhe informacionet e pagesës në të gjitha pajisjet e tua</translation>
 <translation id="1504372625950710826">Chrome nuk mund të kontrollonte për përditësime. Provo të kontrollosh lidhjen e internetit.</translation>
@@ -14,6 +15,7 @@
 <translation id="2009224836393115614">Chrome nuk mund t'i kontrollonte fjalëkalimet e tua. Provo të kontrollosh lidhjen e internetit.</translation>
 <translation id="2147651015520127414">Chrome verifikoi që <ph name="ISSUER" /> ka lëshuar certifikatën e këtij sajti të uebit.</translation>
 <translation id="2199719347983604670">Të dhënat nga "Sinkronizimi i Chrome"</translation>
+<translation id="2313070403598893276">Google Chrome është i thjeshtë, i sigurt dhe më i shpejtë se kurrë</translation>
 <translation id="2342919707875585281">Chrome e ndan vendndodhjen tënde me sajtet që lejon ti.</translation>
 <translation id="2347208864470321755">Kur ky funksion është i aktivizuar, Chrome do të ofrojë që të përkthejë faqet e shkruara në gjuhë të tjera duke përdorur "Përkthe me Google". <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="2415682770504543561">Bëje Chrome shfletuesin tënd të parazgjedhur</translation>
@@ -32,9 +34,9 @@
 <translation id="3196546062792660320">Chrome të kursen kohë duke i sjellë llogaritë e  tua në ueb. Mund të shtosh ose të heqësh llogari te "Cilësimet".</translation>
 <translation id="3282568296779691940">Identifikohu në Chrome</translation>
 <translation id="3345341804167540816">Përdor Chrome kudo</translation>
-<translation id="3455456143708465450">Për të marrë maksimumin nga Chrome, identifikohu me "Llogarinë tënde të Google"</translation>
 <translation id="3522659714780527202">Për të parë skedat e tua nga çdo vend ku përdor Chrome, aktivizo sinkronizimin</translation>
 <translation id="3533694711092285624">Nuk ka asnjë fjalëkalim të ruajtur. Chrome mund t'i kontrollojë fjalëkalimet e tua kur ti i ruan ato.</translation>
+<translation id="3634910711516114487">Për të marrë maksimumin nga Chrome, identifikohu me në Chrome me "Llogarinë tënde të Google"</translation>
 <translation id="3706101708757577809">Tani mund të përdorësh Chrome sa herë që troket te lidhjet në mesazhe, dokumente dhe aplikacione të tjera.</translation>
 <translation id="3720541637541300822">Kyçi skedat "e fshehta" kur të mbyllësh Chrome</translation>
 <translation id="384394811301901750">Google Chrome nuk mund të përdorë kamerën tënde për momentin</translation>
@@ -63,7 +65,7 @@
 <translation id="6063091872902370735">Lejo identifikimin në Chrome</translation>
 <translation id="6181930887571472871">Kalo te Chrome</translation>
 <translation id="6238746320622508509">Lejo që Chrome t'i kyçë skedat "e fshehta".</translation>
-<translation id="6573431926118603307">Skedat që ke hapur në Chrome në pajisjet e tjera do të shfaqen këtu.</translation>
+<translation id="6427126399757991875">Organizata jote po konfiguron Chrome...</translation>
 <translation id="6600954340915313787">Kopjuar në Chrome</translation>
 <translation id="6634107063912726160">Kur të dalësh, Chrome nuk do të sinkronizojë asnjë nga të dhënat e tua të reja me "Llogarinë tënde të Google". Të dhënat e sinkronizuara më herët qëndrojnë në llogari.</translation>
 <translation id="6648150602980899529">Po identifikohesh me një llogari të menaxhuar nga <ph name="DOMAIN" /> dhe po i jep administratorit të saj kontroll mbi të dhënat e tua të Chrome. Duke dalë nga Chrome do të fshihen të dhënat e tua nga kjo pajisje, por do të mbeten të ruajtura në llogarinë tënde të Google.</translation>
@@ -77,7 +79,6 @@
 <translation id="7172660552945675509">Këshillë: <ph name="BEGIN_LINK" />Zhvendose Chrome te stacioni yt<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome përdor Face ID për të siguruar qasjen e autorizuar te fjalëkalimet e tua.</translation>
 <translation id="7261678641327190792">Chrome nuk mund t'i kontrollojë fjalëkalimet e tua</translation>
-<translation id="7265369419224458312">Hyr te skedat që ke hapur në kompjuter, pikërisht këtu. Thjesht hape Chrome në kompjuter, shko te menyja dhe zgjidh “Identifikohu në Chrome…”</translation>
 <translation id="7272930098487145294">Për të ruajtur imazhet, trokit te "Cilësimet" për të lejuar që Chrome të shtojë te fotografitë e tua</translation>
 <translation id="7275945473750112644">Llogaria jote menaxhohet nga <ph name="HOSTED_DOMAIN" />, prandaj të dhënat e tua të Chrome do të fshihen nga kjo pajisje</translation>
 <translation id="7400722733683201933">Informacion për Google Chrome</translation>

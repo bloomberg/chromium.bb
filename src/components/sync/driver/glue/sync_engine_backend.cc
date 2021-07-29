@@ -115,11 +115,6 @@ void SyncEngineBackend::OnConnectionStatusChange(ConnectionStatus status) {
              status);
 }
 
-void SyncEngineBackend::OnSyncStatusChanged(const SyncStatus& status) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  host_.Call(FROM_HERE, &SyncEngineImpl::HandleSyncStatusChanged, status);
-}
-
 void SyncEngineBackend::OnActionableError(const SyncProtocolError& sync_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   host_.Call(FROM_HERE,
@@ -140,6 +135,11 @@ void SyncEngineBackend::OnProtocolEvent(const ProtocolEvent& event) {
     host_.Call(FROM_HERE, &SyncEngineImpl::HandleProtocolEventOnFrontendLoop,
                std::move(event_clone));
   }
+}
+
+void SyncEngineBackend::OnSyncStatusChanged(const SyncStatus& status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  host_.Call(FROM_HERE, &SyncEngineImpl::HandleSyncStatusChanged, status);
 }
 
 void SyncEngineBackend::DoOnInvalidatorStateChange(
@@ -214,8 +214,8 @@ void SyncEngineBackend::DoInitialize(
   sync_encryption_handler_ = std::make_unique<NigoriSyncBridgeImpl>(
       std::move(nigori_processor),
       std::make_unique<NigoriStorageImpl>(
-          sync_data_folder_.Append(kNigoriStorageFilename), &encryptor_),
-      &encryptor_, base::BindRepeating(&Nigori::GenerateScryptSalt),
+          sync_data_folder_.Append(kNigoriStorageFilename)),
+      base::BindRepeating(&Nigori::GenerateScryptSalt),
       params.encryption_bootstrap_token,
       restored_local_transport_data.keystore_encryption_bootstrap_token);
 
@@ -223,7 +223,6 @@ void SyncEngineBackend::DoInitialize(
   sync_manager_->AddObserver(this);
 
   SyncManager::InitArgs args;
-  args.event_handler = params.event_handler;
   args.service_url = params.service_url;
   args.enable_local_sync_backend = params.enable_local_sync_backend;
   args.local_sync_backend_folder = params.local_sync_backend_folder;
@@ -238,7 +237,6 @@ void SyncEngineBackend::DoInitialize(
   args.cache_guid = restored_local_transport_data.cache_guid;
   args.birthday = restored_local_transport_data.birthday;
   args.bag_of_chips = restored_local_transport_data.bag_of_chips;
-  args.sync_status_observers.push_back(this);
   sync_manager_->Init(&args);
 
   LoadAndConnectNigoriController();
@@ -316,7 +314,6 @@ void SyncEngineBackend::DoInitialProcessControlTypes() {
 
   host_.Call(FROM_HERE,
              &SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop,
-             sync_manager_->GetEnabledTypes(), sync_manager_->GetJsBackend(),
              sync_manager_->GetDebugInfoListener(),
              sync_manager_->GetModelTypeConnectorProxy(),
              sync_manager_->birthday(), sync_manager_->bag_of_chips());
@@ -408,7 +405,6 @@ void SyncEngineBackend::DoFinishConfigureDataTypes(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Update the enabled types for the bridge and sync manager.
-  // TODO(crbug.com/1140938): track |enabled_types| directly in SyncEngineImpl.
   ModelTypeSet enabled_types = sync_manager_->GetEnabledTypes();
   enabled_types.RemoveAll(ProxyTypes());
 
@@ -491,15 +487,9 @@ void SyncEngineBackend::DoOnInvalidationReceived(const std::string& payload) {
 }
 
 void SyncEngineBackend::DoOnActiveDevicesChanged(
-    size_t active_devices,
-    std::vector<std::string> fcm_registration_tokens) {
-  // If |active_devices| is 0, then current client doesn't know if there are any
-  // other devices. It's safer to consider that there are some other active
-  // devices.
-  const bool single_client = active_devices == 1;
-  sync_manager_->UpdateSingleClientStatus(single_client);
-  sync_manager_->UpdateActiveDeviceFCMRegistrationTokens(
-      std::move(fcm_registration_tokens));
+    ActiveDevicesInvalidationInfo active_devices_invalidation_info) {
+  sync_manager_->UpdateActiveDevicesInvalidationInfo(
+      std::move(active_devices_invalidation_info));
 }
 
 void SyncEngineBackend::GetNigoriNodeForDebugging(AllNodesCallback callback) {

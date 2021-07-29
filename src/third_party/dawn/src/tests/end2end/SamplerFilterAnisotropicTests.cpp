@@ -76,7 +76,7 @@ class SamplerFilterAnisotropicTest : public DawnTest {
                 return textureSample(texture0, sampler0, input.uv);
             })");
 
-        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        utils::ComboRenderPipelineDescriptor pipelineDescriptor;
         pipelineDescriptor.vertex.module = vsModule;
         pipelineDescriptor.cFragment.module = fsModule;
         pipelineDescriptor.cBuffers[0].attributeCount = 2;
@@ -88,7 +88,7 @@ class SamplerFilterAnisotropicTest : public DawnTest {
         pipelineDescriptor.cBuffers[0].arrayStride = 6 * sizeof(float);
         pipelineDescriptor.cTargets[0].format = mRenderPass.colorFormat;
 
-        mPipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
+        mPipeline = device.CreateRenderPipeline(&pipelineDescriptor);
         mBindGroupLayout = mPipeline.GetBindGroupLayout(0);
 
         InitTexture();
@@ -276,9 +276,9 @@ class SamplerFilterAnisotropicTest : public DawnTest {
 
 TEST_P(SamplerFilterAnisotropicTest, SlantedPlaneMipmap) {
     // TODO(crbug.com/dawn/740): Test output is wrong with D3D12 + WARP.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsWARP());
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsWARP());
 
-    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
+    DAWN_SUPPRESS_TEST_IF(IsOpenGL() || IsOpenGLES());
     const uint16_t maxAnisotropyLists[] = {1, 2, 16, 128};
     for (uint16_t t : maxAnisotropyLists) {
         TestFilterAnisotropic(t);

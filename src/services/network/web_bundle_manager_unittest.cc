@@ -99,7 +99,6 @@ CreateWebBundleLoaderFactory(WebBundleManager& manager, int32_t process_id) {
   base::WeakPtr<WebBundleURLLoaderFactory> factory =
       manager.CreateWebBundleURLLoaderFactory(
           GURL(kBundleUrl), create_params, process_id,
-          /*request_initiator_origin_lock=*/absl::nullopt,
           /*devtools_observer=*/mojo::PendingRemote<mojom::DevToolsObserver>(),
           /*devtools_request_id=*/absl::nullopt);
 
@@ -128,7 +127,8 @@ StartSubresourceLoad(WebBundleURLLoaderFactory& factory) {
   request.web_bundle_token_params->bundle_url = GURL(kBundleUrl);
   factory.StartSubresourceRequest(loader.BindNewPipeAndPassReceiver(), request,
                                   client->CreateRemote(),
-                                  mojo::Remote<mojom::TrustedHeaderClient>());
+                                  mojo::Remote<mojom::TrustedHeaderClient>(),
+                                  base::Time::Now(), base::TimeTicks::Now());
   return std::forward_as_tuple(std::move(loader), std::move(client));
 }
 
@@ -167,7 +167,6 @@ TEST_F(WebBundleManagerTest, NoFactoryExistsForDifferentProcessId) {
 
   auto factory = manager.CreateWebBundleURLLoaderFactory(
       GURL(kBundleUrl), create_params, process_id1,
-      /*request_initiator_origin_lock=*/absl::nullopt,
       /*devtools_observer=*/mojo::PendingRemote<mojom::DevToolsObserver>(),
       /*devtools_request_id=*/absl::nullopt);
   ASSERT_TRUE(factory);
@@ -189,7 +188,6 @@ TEST_F(WebBundleManagerTest, UseProcesIdInTokenParamsForRequestsFromBrowser) {
 
   auto factory = manager.CreateWebBundleURLLoaderFactory(
       GURL(kBundleUrl), create_params, process_id1,
-      /*request_initiator_origin_lock=*/absl::nullopt,
       /*devtools_observer=*/mojo::PendingRemote<mojom::DevToolsObserver>(),
       /*devtools_request_id=*/absl::nullopt);
   ASSERT_TRUE(factory);
@@ -220,7 +218,6 @@ TEST_F(WebBundleManagerTest, RemoveFactoryWhenDisconnected) {
 
     auto factory = manager.CreateWebBundleURLLoaderFactory(
         GURL(kBundleUrl), create_params, process_id1,
-        /*request_initiator_origin_lock=*/absl::nullopt,
         /*devtools_observer=*/mojo::PendingRemote<mojom::DevToolsObserver>(),
         /*devtools_request_id=*/absl::nullopt);
     ASSERT_TRUE(factory);
@@ -291,7 +288,6 @@ TEST_F(WebBundleManagerTest,
 
   auto factory = manager.CreateWebBundleURLLoaderFactory(
       GURL(kBundleUrl), token_params, process_id1,
-      /*request_initiator_origin_lock=*/absl::nullopt,
       /*devtools_observer=*/mojo::PendingRemote<mojom::DevToolsObserver>(),
       /*devtools_request_id=*/absl::nullopt);
 

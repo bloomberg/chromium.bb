@@ -10,6 +10,7 @@ import("../../../scripts/build/ninja/devtools_pre_built.gni")
 devtools_module("i18n") {
   sources = [
     "DevToolsLocale.ts",
+    "LocalizedStringSet.ts",
     "i18nImpl.ts",
     "i18nTypes.ts",
   ]
@@ -18,6 +19,11 @@ devtools_module("i18n") {
     "../../core/platform:bundle",
     "../../core/root:bundle",
     "../../third_party/i18n:bundle",
+  ]
+
+  public_deps = [
+    ":i18n_bundled_locales",
+    ":i18n_remote_locales",
   ]
 }
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/constants/ash_switches.h"
-#include "base/system/sys_info.h"
+#include "base/test/scoped_chromeos_version_info.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_test_utils.h"
@@ -17,10 +17,10 @@
 #include "chrome/browser/ash/login/test/oobe_configuration_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
@@ -145,19 +145,17 @@ class OobeConfigurationTest : public OobeBaseTest {
 // EnterpriseEnrollmentConfigurationTest with no input devices.
 class OobeConfigurationTestNoHID : public OobeConfigurationTest {
  public:
-  OobeConfigurationTestNoHID() {
-    // HID detection screen only appears for Chromebases, Chromebits, and
-    // Chromeboxes.
-    base::SysInfo::SetChromeOSVersionInfoForTest("DEVICETYPE=CHROMEBOX",
-                                                 base::Time::Now());
-  }
-
+  OobeConfigurationTestNoHID() = default;
   ~OobeConfigurationTestNoHID() override = default;
 
  protected:
   test::HIDControllerMixin hid_controller_{&mixin_host_};
 
  private:
+  // HID detection screen only appears for Chromebases, Chromebits, and
+  // Chromeboxes.
+  base::test::ScopedChromeOSVersionInfo version_{"DEVICETYPE=CHROMEBOX",
+                                                 base::Time::Now()};
   DISALLOW_COPY_AND_ASSIGN(OobeConfigurationTestNoHID);
 };
 
@@ -174,22 +172,6 @@ class OobeConfigurationEnrollmentTest : public OobeConfigurationTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OobeConfigurationEnrollmentTest);
-};
-
-class OobeConfigurationRollbackTest : public OobeConfigurationTest {
- public:
-  OobeConfigurationRollbackTest() = default;
-  ~OobeConfigurationRollbackTest() override = default;
-
- protected:
-  ScopedStubInstallAttributes test_install_attributes_{
-      StubInstallAttributes::CreateCloudManaged("example.com", "fake-id")};
-  content::MockNotificationObserver observer_;
-  content::NotificationRegistrar registrar_;
-  test::EnrollmentHelperMixin enrollment_helper_{&mixin_host_};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OobeConfigurationRollbackTest);
 };
 
 // Check that configuration lets correctly pass Welcome screen.
@@ -345,25 +327,6 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTestNoHID, TestShowHID) {
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTestNoHID, TestSkipHIDDetection) {
   LoadConfiguration();
   OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
-}
-
-// Check that enrollment recovery is initiated and Chrome is restarted
-// afterwards.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationRollbackTest,
-                       TestEnterpriseRollbackRecover) {
-  enrollment_helper_.ExpectEnrollmentMode(
-      policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK);
-  enrollment_helper_.ExpectRestoreAfterRollback();
-  enrollment_helper_.SetupClearAuth();
-
-  registrar_.Add(&observer_, chrome::NOTIFICATION_APP_TERMINATING,
-                 content::NotificationService::AllSources());
-  base::RunLoop run_loop;
-  EXPECT_CALL(observer_, Observe(chrome::NOTIFICATION_APP_TERMINATING, _, _))
-      .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
-
-  LoadConfiguration();
-  run_loop.Run();
 }
 
 }  // namespace chromeos

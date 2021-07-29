@@ -8,9 +8,6 @@
 #include "base/callback_helpers.h"
 #include "build/branding_buildflags.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/media/router/media_router_feature.h"       // nogncheck
-#include "chrome/browser/media/router/mojo/media_router_desktop.h"  // nogncheck
-#include "components/media_router/common/mojom/media_router.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -19,6 +16,8 @@
 #include "extensions/common/permissions/permissions_data.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/enhanced_network_tts/mojom/enhanced_network_tts.mojom.h"
+#include "chrome/browser/ash/enhanced_network_tts/enhanced_network_tts_impl.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_impl.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_manager.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
@@ -34,6 +33,7 @@
 #include "extensions/browser/api/media_perception_private/media_perception_api_delegate.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "ui/accessibility/accessibility_features.h"
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
@@ -88,11 +88,22 @@ void BindRemoteAppsFactory(
         pending_receiver) {
   // |remote_apps_manager| will be null in non-managed guest sessions, but this
   // is already checked in |RemoteAppsImpl::IsAllowed()|.
-  chromeos::RemoteAppsManager* remote_apps_manager =
-      chromeos::RemoteAppsManagerFactory::GetForProfile(
+  ash::RemoteAppsManager* remote_apps_manager =
+      ash::RemoteAppsManagerFactory::GetForProfile(
           Profile::FromBrowserContext(render_frame_host->GetBrowserContext()));
   DCHECK(remote_apps_manager);
   remote_apps_manager->BindInterface(std::move(pending_receiver));
+}
+
+void BindEnhancedNetworkTts(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<ash::enhanced_network_tts::mojom::EnhancedNetworkTts>
+        receiver) {
+  ash::enhanced_network_tts::EnhancedNetworkTtsImpl::GetInstance()
+      .BindReceiverAndURLFactory(
+          std::move(receiver),
+          Profile::FromBrowserContext(render_frame_host->GetBrowserContext())
+              ->GetURLLoaderFactory());
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -103,14 +114,6 @@ void PopulateChromeFrameBindersForExtension(
     content::RenderFrameHost* render_frame_host,
     const Extension* extension) {
   DCHECK(extension);
-  auto* context = render_frame_host->GetProcess()->GetBrowserContext();
-  if (media_router::MediaRouterEnabled(context) &&
-      extension->permissions_data()->HasAPIPermission(
-          mojom::APIPermissionID::kMediaRouterPrivate)) {
-    binder_map->Add<media_router::mojom::MediaRouter>(
-        base::BindRepeating(&media_router::MediaRouterDesktop::BindToReceiver,
-                            base::RetainedRef(extension), context));
-  }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -157,22 +160,20 @@ void PopulateChromeFrameBindersForExtension(
     }
   }
 
-  if (extension->id().compare(extension_misc::kCameraAppId) == 0 ||
-      extension->id().compare(extension_misc::kCameraAppDevId) == 0) {
-    binder_map->Add<cros::mojom::CameraAppDeviceProvider>(base::BindRepeating(
-        &chromeos::CameraAppUI::ConnectToCameraAppDeviceProvider));
-    binder_map->Add<chromeos_camera::mojom::CameraAppHelper>(
-        base::BindRepeating(&chromeos::CameraAppUI::ConnectToCameraAppHelper));
-  }
-
   if (extension->id() == extension_misc::kGoogleSpeechSynthesisExtensionId) {
     binder_map->Add<chromeos::tts::mojom::GoogleTtsStream>(
         base::BindRepeating(&BindGoogleTtsStream));
   }
 
-  if (chromeos::RemoteAppsImpl::IsAllowed(render_frame_host, extension)) {
+  if (ash::RemoteAppsImpl::IsAllowed(render_frame_host, extension)) {
     binder_map->Add<chromeos::remote_apps::mojom::RemoteAppsFactory>(
         base::BindRepeating(&BindRemoteAppsFactory));
+  }
+
+  if (features::IsEnhancedNetworkVoicesEnabled()) {
+    // TODO(crbug.com/1217301): Add a permission check for the binding.
+    binder_map->Add<ash::enhanced_network_tts::mojom::EnhancedNetworkTts>(
+        base::BindRepeating(&BindEnhancedNetworkTts));
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }

@@ -2,17 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview
- * @suppress {uselessCode, externsValidation} Temporary suppress because of the
- * line exporting.
- */
-
-// #import {importer} from '../../common/js/importer_common.m.js';
+import {importer} from '../../common/js/importer_common.js';
 
 // Namespace
-// eslint-disable-next-line no-var
-var importerHistoryInterfaces = {};
+const importerHistoryInterfaces = {};
 
 /**
  * A persistent data store for Cloud Import history information.
@@ -139,5 +132,4 @@ importerHistoryInterfaces.HistoryLoader = class {
   addHistoryLoadedListener(listener) {}
 };
 
-// eslint-disable-next-line semi,no-extra-semi
-/* #export */ {importerHistoryInterfaces};
+export {importerHistoryInterfaces};

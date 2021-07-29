@@ -9,13 +9,13 @@ import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '../settings_shared_css.js';
 
-import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
 import {routes} from '../route.js';
-import {Route, RouteObserverBehavior, Router} from '../router.js';
+import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
 import {CookieDataForDisplay, CookieDetails, getCookieData} from './cookie_info.js';
 import {LocalDataBrowserProxy, LocalDataBrowserProxyImpl} from './local_data_browser_proxy.js';
@@ -37,49 +37,67 @@ const categoryLabels = {
 /**
  * 'site-data-details-subpage' Display cookie contents.
  */
-Polymer({
-  is: 'site-data-details-subpage',
 
-  _template: html`{__html_template__}`,
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {RouteObserverMixinInterface}
+ * @implements {WebUIListenerBehaviorInterface}
+ */
+const SiteDataDetailsSubpageElementBase =
+    mixinBehaviors([WebUIListenerBehavior], RouteObserverMixin(PolymerElement));
 
-  behaviors: [RouteObserverBehavior, WebUIListenerBehavior],
+/** @polymer */
+class SiteDataDetailsSubpageElement extends SiteDataDetailsSubpageElementBase {
+  static get is() {
+    return 'site-data-details-subpage';
+  }
 
-  properties: {
+  static get template() {
+    return html`{__html_template__}`;
+  }
+
+  static get properties() {
+    return {
+      /**
+       * The cookie entries for the given site.
+       * @type {!Array<!CookieDetails>}
+       * @private
+       */
+      entries_: Array,
+
+      /** Set the page title on the settings-subpage parent. */
+      pageTitle: {
+        type: String,
+        notify: true,
+      },
+
+      /** @private */
+      site_: String,
+    };
+  }
+
+  constructor() {
+    super();
+
     /**
-     * The cookie entries for the given site.
-     * @type {!Array<!CookieDetails>}
-     * @private
+     * The browser proxy used to retrieve and change cookies.
+     * @private {!LocalDataBrowserProxy}
      */
-    entries_: Array,
-
-    /** Set the page title on the settings-subpage parent. */
-    pageTitle: {
-      type: String,
-      notify: true,
-    },
-
-    /** @private */
-    site_: String,
-  },
-
-  /**
-   * The browser proxy used to retrieve and change cookies.
-   * @private {?LocalDataBrowserProxy}
-   */
-  browserProxy_: null,
+    this.browserProxy_ = LocalDataBrowserProxyImpl.getInstance();
+  }
 
   /** @override */
   ready() {
-    this.browserProxy_ = LocalDataBrowserProxyImpl.getInstance();
+    super.ready();
 
     this.addWebUIListener(
         'on-tree-item-removed', this.getCookieDetails_.bind(this));
-  },
+  }
 
   /**
-   * RouteObserverBehavior
-   * @param {!Route} route
-   * @protected
+   * RouteObserverMixin
+   * @override
    */
   currentRouteChanged(route) {
     if (Router.getInstance().getCurrentRoute() !==
@@ -93,7 +111,7 @@ Polymer({
     this.site_ = site;
     this.pageTitle = loadTimeData.getStringF('siteSettingsCookieSubpage', site);
     this.getCookieDetails_();
-  },
+  }
 
   /** @private */
   getCookieDetails_() {
@@ -104,7 +122,7 @@ Polymer({
         .then(
             this.onCookiesLoaded_.bind(this),
             this.onCookiesLoadFailed_.bind(this));
-  },
+  }
 
   /**
    * @return {!Array<!CookieDataForDisplay>}
@@ -112,7 +130,7 @@ Polymer({
    */
   getCookieNodes_(node) {
     return getCookieData(node);
-  },
+  }
 
   /**
    * @param {!Array<!CookieDetails>} cookies
@@ -124,7 +142,7 @@ Polymer({
     this.entries_.forEach(function(e) {
       e.expanded_ = false;
     });
-  },
+  }
 
   /**
    * The site was not found. E.g. The site data may have been deleted or the
@@ -133,7 +151,7 @@ Polymer({
    */
   onCookiesLoadFailed_() {
     this.entries_ = [];
-  },
+  }
 
   /**
    * Retrieves a string description for the provided |item|.
@@ -152,7 +170,7 @@ Polymer({
       return item.totalUsage;
     }
     return categoryLabels[item.type];
-  },
+  }
 
   /**
    * A handler for when the user opts to remove a single cookie.
@@ -164,7 +182,7 @@ Polymer({
         PrivacyElementInteractions.COOKIE_DETAILS_REMOVE_ITEM);
     this.browserProxy_.removeItem(
         /** @type {!CookieDetails} */ (event.currentTarget.dataset).idPath);
-  },
+  }
 
   /**
    * A handler for when the user opts to remove all cookies.
@@ -173,5 +191,8 @@ Polymer({
     MetricsBrowserProxyImpl.getInstance().recordSettingsPageHistogram(
         PrivacyElementInteractions.COOKIE_DETAILS_REMOVE_ALL);
     this.browserProxy_.removeSite(this.site_);
-  },
-});
+  }
+}
+
+customElements.define(
+    SiteDataDetailsSubpageElement.is, SiteDataDetailsSubpageElement);

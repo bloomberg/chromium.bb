@@ -32,7 +32,6 @@
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
@@ -44,7 +43,7 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/sync/base/unique_position.h"
-#include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1141,7 +1140,7 @@ bool BookmarkFaviconLoadedChecker::IsExitConditionSatisfied(std::ostream* os) {
 }
 
 ServerBookmarksEqualityChecker::ServerBookmarksEqualityChecker(
-    syncer::ProfileSyncService* service,
+    syncer::SyncServiceImpl* service,
     fake_server::FakeServer* fake_server,
     std::vector<ExpectedBookmark> expected_bookmarks,
     syncer::Cryptographer* cryptographer)
@@ -1233,7 +1232,7 @@ BookmarksGUIDChecker::~BookmarksGUIDChecker() {}
 
 BookmarkModelMatchesFakeServerChecker::BookmarkModelMatchesFakeServerChecker(
     int profile,
-    syncer::ProfileSyncService* service,
+    syncer::SyncServiceImpl* service,
     fake_server::FakeServer* fake_server)
     : SingleClientStatusChangeChecker(service),
       fake_server_(fake_server),

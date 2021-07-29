@@ -3,7 +3,46 @@
 // found in the LICENSE file.
 
 // fileManagerPrivate API.
-// This is a private API used by the file browser of ChromeOS.
+// This is a private API used by the file manager on ChromeOS. The API can
+// roughly be divided into two parts: functions and events.
+//
+// Functions: The Functions interface defines a number of privileged operations
+// that allow File Manager to execute tasks not available via public APIs. Most
+// of the time this is due to the fact that enabling those tasks via public APIs
+// would allow malicious applications to either take control of the hardware
+// or leak private information about the user. None of these API must be exposed
+// in any public services.
+//
+// Events: The Event interface defines a number of events that are supported
+// by the API. These events allow one to register, in JavaScript, a listener
+// that is invoked with event's parameters, every time the event is observed
+// by the file_manager::EventRouter.
+//
+// Both the functions and events interface are only available to clients that
+// are explicitly granted permission to use the fileManagerPrivate API. This
+// API is not available to any client without code reviewed changes
+// (eg. via _api_features.json)
+//
+// CAVEAT: An application A registering as a listener to any events must assume
+// that an application B can listen to any events that are destined for A, where
+// A and B are any applications that are granted access to fileManagerPrivate.
+// For example, if applications A and B listen to onDirectoryChanged events on
+// two unique paths, they both receive events about changes in either path. This
+// is due to the fact that events are broadcasted to ALL listeners. It is the
+// responsibility of the listener to discard events not destined for it. It is
+// also the responsibility of all listeners not to log information transmitted
+// in those events, as it may record in logs information that is private to a
+// given user (e.g., the full paths and name of a given file).  This API is
+// designed with the assumption that all users are equal in terms of their
+// permission to observe events, call the function interface and access the file
+// system of the device. As the API is only used by Chrome OS' File Manager, and
+// the File Manager is being used by the user to access their own files, this
+// assumption holds true.
+//
+// The API defined in this file may use W3C Entry object (FileEntry and
+// DirectoryEntry). Since these cannot be directly sent or received by the C++
+// code, there exists an additional layer, in file_manager_private_internal.idl,
+// that provides translation from or to W3C Entry objects.
 [platforms=("chromeos"),
  implemented_in="chrome/browser/chromeos/extensions/file_manager/file_manager_private_api_functions.h"]
 namespace fileManagerPrivate {
@@ -304,13 +343,20 @@ enum SharesheetLaunchSource {
   unknown
 };
 
+// These three fields together uniquely identify a task.
+dictionary FileTaskDescriptor {
+  DOMString appId;
+  DOMString taskType;
+  DOMString actionId;
+};
+
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
 // about how file tasks are handled.
 dictionary FileTask {
-  // The unique identifier of the task.
-  DOMString taskId;
+  // Unique identifier for the task.
+  FileTaskDescriptor descriptor;
 
   // Task title (ex. App name).
   DOMString title;
@@ -1000,23 +1046,23 @@ interface Functions {
   static void cancelDialog();
 
   // Executes file browser task over selected files.
-  // |taskId| The unique identifier of task to execute.
+  // |descriptor| The unique identifier of task to execute.
   // |entries| Array of entries
   // |callback|
   [nocompile]
-  static void executeTask(DOMString taskId,
+  static void executeTask(FileTaskDescriptor descriptor,
                           [instanceof=Entry] object[] entries,
                           ExecuteTaskCallback callback);
 
   // Sets the default task for the supplied MIME types and path extensions.
   // Lists of MIME types and URLs may contain duplicates. Additionally, the
   // list of MIME types can be empty.
-  // |taskId| The unique identifier of task to mark as default.
+  // |descriptor| The unique identifier of task to mark as default.
   // |entries| Array of selected entries to extract path extensions from.
   // |mimeTypes| Array of selected file MIME types.
   // |callback|
   [nocompile]
-  static void setDefaultTask(DOMString taskId,
+  static void setDefaultTask(FileTaskDescriptor descriptor,
                              [instanceof=Entry] object[] entries,
                              DOMString[] mimeTypes,
                              SimpleCallback callback);
@@ -1150,12 +1196,6 @@ interface Functions {
   // |callback|
   static void getVolumeMetadataList(GetVolumeMetadataListCallback callback);
 
-  // Copies an image to the system clipboard.
-  // |entry| Entry of the image to copy to the system clipboard.
-  [nocompile]
-  static void copyImageToClipboard([instanceof=Entry] object entry,
-                                   BooleanCallback callback);
-
   // Starts to copy an entry. If the source is a directory, the copy is done
   // recursively.
   // |entry| Entry of the source entry to be copied.
@@ -1229,18 +1269,29 @@ interface Functions {
   static void searchFiles(SearchMetadataParams searchParams,
                           SearchFilesCallback callback);
 
-  // Create a zip file for the selected files.
-  // |parentEntry| Entry of the directory containing the selected files.
-  // |entries| Entries of the selected files. The files must be under the
-  //     directory specified by |parentEntry|.
-  // |destName| Name of the destination zip file. The zip file will be created
-  //     under the directory specified by |parentEntry|.
-  // |callback|
+  // Creates a ZIP file for the selected files and folders. Folders are
+  // recursively explored and zipped. Hidden files and folders (with names
+  // starting with a dot) found during recursive exploration are included too.
+  // |entries| Entries of the selected files and folders to zip. They must be
+  //     under the |parentEntry| directory.
+  // |parentEntry| Entry of the directory containing the selected files and
+  //     folders. This is where the ZIP file will be created, too.
+  // |destName| Name of the destination ZIP file. The ZIP file will be created
+  //     in the directory specified by |parentEntry|.
+  // |callback| Callback called on completion.
   [nocompile]
   static void zipSelection([instanceof=Entry] object[] entries,
                            [instanceof=DirectoryEntry] object parentEntry,
                            DOMString destName,
                            ZipSelectionCallback callback);
+
+  // Cancels an ongoing ZIP operation.
+  // Does nothing if there is no matching ongoing ZIP operation.
+  // |parentEntry| Entry of the directory where the ZIP file is being created.
+  // |destName| Name of the ZIP file to cancel.
+  [nocompile]
+  static void cancelZip([instanceof=DirectoryEntry] object parentEntry,
+                        DOMString destName);
 
   // Retrieves the state of the current drive connection.
   // |callback|
@@ -1469,6 +1520,9 @@ interface Functions {
   static void notifyDriveDialogResult(DriveDialogResult result);
 };
 
+// Events supported by fileManagerPrivate API. These events are broadcasted.
+// See the note at the top of the file with regards implications of event
+// broadcasting to applications that can use fileManagerPrivate Event API.
 interface Events {
   static void onMountCompleted(MountCompletedEvent event);
 

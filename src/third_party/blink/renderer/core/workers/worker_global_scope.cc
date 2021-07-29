@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/core/workers/worker_navigator.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/fonts/font_matching_metrics.h"
@@ -371,7 +372,6 @@ bool WorkerGlobalScope::FetchClassicImportedScript(
   ExecutionContext* execution_context = GetExecutionContext();
   WorkerClassicScriptLoader* classic_script_loader =
       MakeGarbageCollected<WorkerClassicScriptLoader>();
-  EnsureFetcher();
   classic_script_loader->LoadSynchronously(
       *execution_context, Fetcher(), script_url,
       mojom::blink::RequestContextType::SCRIPT,
@@ -692,6 +692,14 @@ FontMatchingMetrics* WorkerGlobalScope::GetFontMatchingMetrics() {
         GetTaskRunner(TaskType::kInternalDefault));
   }
   return font_matching_metrics_.get();
+}
+
+blink::mojom::CodeCacheHost* WorkerGlobalScope::GetCodeCacheHost() {
+  if (!code_cache_host_) {
+    GetBrowserInterfaceBroker().GetInterface(
+        code_cache_host_.BindNewPipeAndPassReceiver());
+  }
+  return code_cache_host_.get();
 }
 
 }  // namespace blink

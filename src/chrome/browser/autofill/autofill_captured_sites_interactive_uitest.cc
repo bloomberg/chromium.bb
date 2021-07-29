@@ -5,7 +5,6 @@
 #include <map>
 #include <string>
 
-#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -26,10 +25,8 @@
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -42,7 +39,6 @@
 #include "components/autofill/core/browser/geo/state_names.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/variations/variations_switches.h"
 #include "content/public/test/browser_test.h"
@@ -50,7 +46,6 @@
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/network/public/cpp/data_element.h"
-#include "services/network/public/cpp/network_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using captured_sites_test_utils::CapturedSiteParams;
@@ -94,7 +89,7 @@ class AutofillCapturedSitesInteractiveTest
         content::WebContents::FromRenderFrameHost(frame);
     BrowserAutofillManager* autofill_manager =
         ContentAutofillDriverFactory::FromWebContents(web_contents)
-            ->DriverForFrame(frame)
+            ->DriverForFrame(frame->GetMainFrame())
             ->browser_autofill_manager();
     autofill_manager->SetTestDelegate(test_delegate());
 
@@ -196,6 +191,12 @@ class AutofillCapturedSitesInteractiveTest
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
     AutofillUiTest::SetUpOnMainThread();
+    if (base::FeatureList::IsEnabled(features::kAutofillAcrossIframes)) {
+      test_delegate()->SetIgnoreBackToBackMessages(
+          ObservedUiEvents::kPreviewFormData, true);
+      test_delegate()->SetIgnoreBackToBackMessages(
+          ObservedUiEvents::kFormDataFilled, true);
+    }
     recipe_replayer_ =
         std::make_unique<captured_sites_test_utils::TestRecipeReplayer>(
             browser(), this);
@@ -233,13 +234,12 @@ class AutofillCapturedSitesInteractiveTest
     // prediction. Test will check this attribute on all the relevant input
     // elements in a form to determine if the form is ready for interaction.
     feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kAutofillShowTypePredictions},
+        /*enabled_features=*/{features::kAutofillAcrossIframes,
+                              features::kAutofillShowTypePredictions},
         /*disabled_features=*/{});
-    command_line->AppendSwitch(switches::kShowAutofillTypePredictions);
     command_line->AppendSwitchASCII(
         variations::switches::kVariationsOverrideCountry, "us");
-    command_line->AppendSwitchASCII(::switches::kForceFieldTrials, "Foo/Bar");
-
+    AutofillUiTest::SetUpCommandLine(command_line);
     captured_sites_test_utils::TestRecipeReplayer::SetUpCommandLine(
         command_line);
   }

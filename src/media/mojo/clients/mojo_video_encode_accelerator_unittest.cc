@@ -52,8 +52,8 @@ class MockMojoVideoEncodeAccelerator : public mojom::VideoEncodeAccelerator {
                                        allocation_size);
 
       DoInitialize(config.input_format, config.input_visible_size,
-                   config.output_profile, config.initial_bitrate,
-                   config.content_type, &client_);
+                   config.output_profile, config.bitrate, config.content_type,
+                   &client_);
     }
     std::move(success_callback).Run(initialization_success_);
   }
@@ -61,7 +61,7 @@ class MockMojoVideoEncodeAccelerator : public mojom::VideoEncodeAccelerator {
                void(media::VideoPixelFormat,
                     const gfx::Size&,
                     media::VideoCodecProfile,
-                    uint32_t,
+                    media::Bitrate,
                     media::VideoEncodeAccelerator::Config::ContentType,
                     mojo::Remote<mojom::VideoEncodeAcceleratorClient>*));
 
@@ -91,8 +91,10 @@ class MockMojoVideoEncodeAccelerator : public mojom::VideoEncodeAccelerator {
   MOCK_METHOD2(DoUseOutputBitstreamBuffer,
                void(int32_t, mojo::ScopedSharedBufferHandle*));
 
-  MOCK_METHOD2(RequestEncodingParametersChange,
+  MOCK_METHOD2(RequestEncodingParametersChangeWithLayers,
                void(const media::VideoBitrateAllocation&, uint32_t));
+  MOCK_METHOD2(RequestEncodingParametersChangeWithBitrate,
+               void(const media::Bitrate&, uint32_t));
 
   void IsFlushSupported(IsFlushSupportedCallback callback) override {
     DoIsFlushSupported();
@@ -172,9 +174,9 @@ class MojoVideoEncodeAcceleratorTest : public ::testing::Test {
   // verifies that the appropriate message goes through the mojo pipe and is
   // responded by a RequireBitstreamBuffers() on |mock_vea_client|.
   void Initialize(MockVideoEncodeAcceleratorClient* mock_vea_client) {
-    const VideoCodecProfile kOutputProfile = VIDEO_CODEC_PROFILE_UNKNOWN;
-    const uint32_t kInitialBitrate = 100000u;
-    const VideoEncodeAccelerator::Config::ContentType kContentType =
+    constexpr VideoCodecProfile kOutputProfile = VIDEO_CODEC_PROFILE_UNKNOWN;
+    constexpr Bitrate kInitialBitrate = Bitrate::ConstantBitrate(100000u);
+    constexpr VideoEncodeAccelerator::Config::ContentType kContentType =
         VideoEncodeAccelerator::Config::ContentType::kDisplay;
 
     EXPECT_CALL(*mock_mojo_vea(),
@@ -269,15 +271,14 @@ TEST_F(MojoVideoEncodeAcceleratorTest, EncodeOneFrame) {
 TEST_F(MojoVideoEncodeAcceleratorTest, EncodingParametersChange) {
   const uint32_t kNewFramerate = 321321u;
   const uint32_t kNewBitrate = 123123u;
-  VideoBitrateAllocation bitrate_allocation;
-  bitrate_allocation.SetBitrate(0, 0, kNewBitrate);
+  Bitrate bitrate = Bitrate::ConstantBitrate(kNewBitrate);
 
   // In a real world scenario, we should go through an Initialize() prologue,
   // but we can skip that in unit testing.
 
-  EXPECT_CALL(*mock_mojo_vea(), RequestEncodingParametersChange(
-                                    bitrate_allocation, kNewFramerate));
-  mojo_vea()->RequestEncodingParametersChange(kNewBitrate, kNewFramerate);
+  EXPECT_CALL(*mock_mojo_vea(), RequestEncodingParametersChangeWithBitrate(
+                                    bitrate, kNewFramerate));
+  mojo_vea()->RequestEncodingParametersChange(bitrate, kNewFramerate);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -300,7 +301,7 @@ TEST_F(MojoVideoEncodeAcceleratorTest,
       bitrate_allocation.SetBitrate(si, ti, layer_bitrate);
     }
 
-    EXPECT_CALL(*mock_mojo_vea(), RequestEncodingParametersChange(
+    EXPECT_CALL(*mock_mojo_vea(), RequestEncodingParametersChangeWithLayers(
                                       bitrate_allocation, kNewFramerate));
     mojo_vea()->RequestEncodingParametersChange(bitrate_allocation,
                                                 kNewFramerate);
@@ -314,7 +315,7 @@ TEST_F(MojoVideoEncodeAcceleratorTest, InitializeFailure) {
   std::unique_ptr<MockVideoEncodeAcceleratorClient> mock_vea_client =
       std::make_unique<MockVideoEncodeAcceleratorClient>();
 
-  const uint32_t kInitialBitrate = 100000u;
+  constexpr Bitrate kInitialBitrate = Bitrate::ConstantBitrate(100000u);
 
   mock_mojo_vea()->set_initialization_success(false);
 

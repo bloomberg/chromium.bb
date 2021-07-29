@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
@@ -44,6 +45,7 @@
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/inline_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
@@ -521,6 +523,20 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
 
   if (!new_child->IsInline() && !new_child->IsFloatingOrOutOfFlowPositioned() &&
       !new_child->IsTablePart()) {
+    if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled())) {
+      // TODO(crbug.com/716930): This logic is still at the prototype level and
+      // to be re-written, but landed under the runtime flag to allow us working
+      // on dependent code in parallel.
+      DCHECK(!new_child->IsInline());
+      auto* anonymous_box = DynamicTo<LayoutBlockFlow>(
+          before_child ? before_child->PreviousSibling() : LastChild());
+      if (!anonymous_box || !anonymous_box->IsAnonymous()) {
+        anonymous_box = CreateAnonymousContainerForBlockChildren();
+        LayoutBoxModelObject::AddChild(anonymous_box, before_child);
+      }
+      anonymous_box->AddChild(new_child);
+      return;
+    }
     LayoutBlockFlow* new_box = CreateAnonymousContainerForBlockChildren();
     LayoutBoxModelObject* old_continuation = Continuation();
     SetContinuation(new_box);
@@ -1583,6 +1599,13 @@ PaintLayerType LayoutInline::LayerTypeRequired() const {
 
 void LayoutInline::ChildBecameNonInline(LayoutObject* child) {
   NOT_DESTROYED();
+  if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled())) {
+    DCHECK(!child->IsInline());
+    // TODO(crbug.com/716930): Add anonymous blocks as
+    // |AddChildIgnoringContinuation| does.
+    NOTIMPLEMENTED();
+    return;
+  }
   // We have to split the parent flow.
   LayoutBlockFlow* new_box = CreateAnonymousContainerForBlockChildren();
   LayoutBoxModelObject* old_continuation = Continuation();

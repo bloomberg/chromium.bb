@@ -13,12 +13,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics_factory.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/daily_metrics_helper.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "components/site_engagement/content/engagement_type.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
@@ -129,10 +130,9 @@ void WebAppMetrics::OnEngagementEvent(
                               engagement_type);
   }
 
-  // A presence of WebAppTabHelperBase with valid app_id indicates an installed
+  // A presence of WebAppTabHelper with valid app_id indicates an installed
   // web app.
-  WebAppTabHelperBase* tab_helper =
-      WebAppTabHelperBase::FromWebContents(web_contents);
+  WebAppTabHelper* tab_helper = WebAppTabHelper::FromWebContents(web_contents);
   if (!tab_helper)
     return;
   AppId app_id = tab_helper->GetAppId();
@@ -203,11 +203,11 @@ void WebAppMetrics::OnTabStripModelChanged(
   }
 
   if (change.type() == TabStripModelChange::kRemoved) {
-    for (const TabStripModelChange::ContentsWithIndexAndWillBeDeleted&
-             contents : change.GetRemove()->contents) {
-      if (contents.will_be_deleted) {
-        auto* tab_helper =
-            WebAppTabHelperBase::FromWebContents(contents.contents);
+    for (const TabStripModelChange::RemovedTab& contents :
+         change.GetRemove()->contents) {
+      if (contents.remove_reason ==
+          TabStripModelChange::RemoveReason::kDeleted) {
+        auto* tab_helper = WebAppTabHelper::FromWebContents(contents.contents);
         if (tab_helper && !tab_helper->GetAppId().empty())
           app_last_interacted_time_.erase(tab_helper->GetAppId());
         // Newly-selected foreground contents should not be going away.
@@ -226,7 +226,7 @@ void WebAppMetrics::OnSuspend() {
   // Update current tab as foreground time.
   if (foreground_web_contents_) {
     auto* tab_helper =
-        WebAppTabHelperBase::FromWebContents(foreground_web_contents_);
+        WebAppTabHelper::FromWebContents(foreground_web_contents_);
     if (tab_helper && !tab_helper->GetAppId().empty() &&
         app_last_interacted_time_.contains(tab_helper->GetAppId())) {
       UpdateUkmData(foreground_web_contents_, TabSwitching::kFrom);
@@ -240,7 +240,7 @@ void WebAppMetrics::OnSuspend() {
     for (int i = 0; i < tab_count; i++) {
       WebContents* contents = browser->tab_strip_model()->GetWebContentsAt(i);
       DCHECK(contents);
-      auto* tab_helper = WebAppTabHelperBase::FromWebContents(contents);
+      auto* tab_helper = WebAppTabHelper::FromWebContents(contents);
       if (tab_helper && !tab_helper->GetAppId().empty() &&
           app_last_interacted_time_.contains(tab_helper->GetAppId())) {
         UpdateUkmData(contents, TabSwitching::kBackgroundClosing);
@@ -325,7 +325,7 @@ void WebAppMetrics::UpdateUkmData(WebContents* web_contents,
     return;
   DailyInteraction features;
 
-  auto* tab_helper = WebAppTabHelperBase::FromWebContents(web_contents);
+  auto* tab_helper = WebAppTabHelper::FromWebContents(web_contents);
   if (tab_helper &&
       provider->registrar().IsLocallyInstalled(tab_helper->GetAppId())) {
     // App is installed

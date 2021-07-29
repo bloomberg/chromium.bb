@@ -14,12 +14,14 @@
 #include <vector>
 
 #include "core/fpdfapi/page/cpdf_contentmarks.h"
+#include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_number.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
+#include "third_party/base/span.h"
 
 class CPDF_AllStates;
 class CPDF_ColorSpace;
@@ -32,6 +34,7 @@ class CPDF_Object;
 class CPDF_PageObject;
 class CPDF_PageObjectHolder;
 class CPDF_Pattern;
+class CPDF_ShadingPattern;
 class CPDF_Stream;
 class CPDF_StreamParser;
 class CPDF_TextObject;
@@ -49,8 +52,7 @@ class CPDF_StreamContentParser {
                            std::set<const uint8_t*>* pParsedSet);
   ~CPDF_StreamContentParser();
 
-  uint32_t Parse(const uint8_t* pData,
-                 uint32_t dwSize,
+  uint32_t Parse(pdfium::span<const uint8_t> pData,
                  uint32_t start_offset,
                  uint32_t max_cost,
                  const std::vector<uint32_t>& stream_start_offsets);
@@ -66,8 +68,10 @@ class CPDF_StreamContentParser {
   static ByteStringView FindValueAbbreviationForTesting(ByteStringView abbr);
 
  private:
+  enum class RenderType : bool { kFill = false, kStroke = true };
+
   struct ContentParam {
-    enum Type { OBJECT = 0, NUMBER, NAME };
+    enum class Type : uint8_t { kObject = 0, kNumber, kName };
 
     ContentParam();
     ~ContentParam();
@@ -97,6 +101,10 @@ class CPDF_StreamContentParser {
   int GetInteger(uint32_t index) const {
     return static_cast<int>(GetNumber(index));
   }
+  // Makes a point from {GetNumber(index + 1), GetNumber(index)}.
+  CFX_PointF GetPoint(uint32_t index) const;
+  // Makes a matrix from {GetNumber(5), ..., GetNumber(0)}.
+  CFX_Matrix GetMatrix() const;
   void OnOperator(ByteStringView op);
   void AddTextObject(const ByteString* pStrs,
                      float fInitKerning,
@@ -107,9 +115,12 @@ class CPDF_StreamContentParser {
 
   void OnChangeTextMatrix();
   void ParsePathObject();
-  void AddPathPoint(float x, float y, FXPT_TYPE type, bool close);
+  void AddPathPoint(const CFX_PointF& point, CFX_Path::Point::Type type);
+  void AddPathPointAndClose(const CFX_PointF& point,
+                            CFX_Path::Point::Type type);
   void AddPathRect(float x, float y, float w, float h);
-  void AddPathObject(CFX_FillRenderOptions::FillType fill_type, bool bStroke);
+  void AddPathObject(CFX_FillRenderOptions::FillType fill_type,
+                     RenderType render_type);
   CPDF_ImageObject* AddImage(RetainPtr<CPDF_Stream> pStream);
   CPDF_ImageObject* AddImage(uint32_t streamObjNum);
   CPDF_ImageObject* AddImage(const RetainPtr<CPDF_Image>& pImage);
@@ -120,7 +131,8 @@ class CPDF_StreamContentParser {
                         bool bText,
                         bool bGraph);
   RetainPtr<CPDF_ColorSpace> FindColorSpace(const ByteString& name);
-  RetainPtr<CPDF_Pattern> FindPattern(const ByteString& name, bool bShading);
+  RetainPtr<CPDF_Pattern> FindPattern(const ByteString& name);
+  RetainPtr<CPDF_ShadingPattern> FindShading(const ByteString& name);
   CPDF_Dictionary* FindResourceHolder(const ByteString& type);
   CPDF_Object* FindResourceObj(const ByteString& type, const ByteString& name);
 
@@ -219,11 +231,9 @@ class CPDF_StreamContentParser {
   std::stack<std::unique_ptr<CPDF_ContentMarks>> m_ContentMarksStack;
   std::vector<std::unique_ptr<CPDF_TextObject>> m_ClipTextList;
   UnownedPtr<const CPDF_TextObject> m_pLastTextObject;
-  std::vector<FX_PATHPOINT> m_PathPoints;
-  float m_PathStartX = 0.0f;
-  float m_PathStartY = 0.0f;
-  float m_PathCurrentX = 0.0f;
-  float m_PathCurrentY = 0.0f;
+  std::vector<CFX_Path::Point> m_PathPoints;
+  CFX_PointF m_PathStart;
+  CFX_PointF m_PathCurrent;
   CFX_FillRenderOptions::FillType m_PathClipType =
       CFX_FillRenderOptions::FillType::kNoFill;
   ByteString m_LastImageName;

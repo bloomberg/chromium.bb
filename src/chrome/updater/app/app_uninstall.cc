@@ -4,7 +4,6 @@
 
 #include "chrome/updater/app/app_uninstall.h"
 
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,10 +11,12 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/updater/app/app.h"
+#include "chrome/updater/app/app_utils.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
@@ -43,14 +44,14 @@ class AppUninstall : public App {
   // Conditionally set, if prefs must be acquired for some uninstall scenarios.
   // Creating the prefs instance may result in deadlocks. Therefore, the prefs
   // lock can't be taken in all cases.
-  std::unique_ptr<GlobalPrefs> global_prefs_;
+  scoped_refptr<GlobalPrefs> global_prefs_;
 };
 
 void AppUninstall::Initialize() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(kUninstallIfUnusedSwitch))
-    global_prefs_ = CreateGlobalPrefs();
+    global_prefs_ = CreateGlobalPrefs(updater_scope());
 }
 
 void AppUninstall::FirstTaskRun() {
@@ -80,11 +81,10 @@ void AppUninstall::FirstTaskRun() {
 
   if (command_line->HasSwitch(kUninstallIfUnusedSwitch)) {
     CHECK(global_prefs_);
-    const std::vector<std::string> registered_apps =
-        base::MakeRefCounted<PersistedData>(global_prefs_->GetPrefService())
-            ->GetAppIds();
-    if (registered_apps.size() == 1 &&
-        base::Contains(registered_apps, kUpdaterAppId)) {
+    if (ShouldUninstall(
+            base::MakeRefCounted<PersistedData>(global_prefs_->GetPrefService())
+                ->GetAppIds(),
+            global_prefs_->CountServerStarts())) {
       base::ThreadPool::PostTaskAndReplyWithResult(
           FROM_HERE, {base::MayBlock()},
           base::BindOnce(&Uninstall, updater_scope()),

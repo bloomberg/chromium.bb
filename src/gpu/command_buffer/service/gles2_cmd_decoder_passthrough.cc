@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -951,8 +951,14 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
 
     static constexpr const char* kRequiredFunctionalityExtensions[] = {
       "GL_ANGLE_framebuffer_blit",
+#if defined(OS_FUCHSIA)
+      "GL_ANGLE_memory_object_fuchsia",
+#endif
       "GL_ANGLE_memory_size",
       "GL_ANGLE_native_id",
+#if defined(OS_FUCHSIA)
+      "GL_ANGLE_semaphore_fuchsia",
+#endif
       "GL_ANGLE_texture_storage_external",
       "GL_ANGLE_texture_usage",
       "GL_CHROMIUM_bind_uniform_location",
@@ -1116,6 +1122,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
     bound_buffers_[GL_DRAW_INDIRECT_BUFFER] = 0;
     bound_buffers_[GL_DISPATCH_INDIRECT_BUFFER] = 0;
   }
+  bound_element_array_buffer_dirty_ = false;
 
   if (feature_info_->feature_flags().chromium_texture_filtering_hint) {
     api()->glHintFn(GL_TEXTURE_FILTERING_HINT_CHROMIUM, GL_NICEST);
@@ -1679,6 +1686,9 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
       feature_info_->feature_flags().gpu_memory_buffer_formats;
   caps.texture_target_exception_list =
       group_->gpu_preferences().texture_target_exception_list;
+  caps.disable_legacy_mailbox =
+      group_->shared_image_manager() &&
+      group_->shared_image_manager()->display_context_on_another_thread();
 
   return caps;
 }
@@ -2239,6 +2249,9 @@ error::Error GLES2DecoderPassthroughImpl::PatchGetBufferResults(GLenum target,
 
   // If there was no error, the buffer target should exist
   DCHECK(bound_buffers_.find(target) != bound_buffers_.end());
+  if (target == GL_ELEMENT_ARRAY_BUFFER) {
+    LazilyUpdateCurrentlyBoundElementArrayBuffer();
+  }
   GLuint current_client_buffer = bound_buffers_[target];
 
   auto mapped_buffer_info_iter =
@@ -2885,7 +2898,11 @@ void GLES2DecoderPassthroughImpl::UpdateTextureSizeFromClientID(
   }
 }
 
-void GLES2DecoderPassthroughImpl::UpdateCurrentlyBoundElementArrayBuffer() {
+void GLES2DecoderPassthroughImpl::
+    LazilyUpdateCurrentlyBoundElementArrayBuffer() {
+  if (!bound_element_array_buffer_dirty_)
+    return;
+
   GLint service_element_array_buffer = 0;
   api_->glGetIntegervFn(GL_ELEMENT_ARRAY_BUFFER_BINDING,
                         &service_element_array_buffer);
@@ -2898,6 +2915,7 @@ void GLES2DecoderPassthroughImpl::UpdateCurrentlyBoundElementArrayBuffer() {
   }
 
   bound_buffers_[GL_ELEMENT_ARRAY_BUFFER] = client_element_array_buffer;
+  bound_element_array_buffer_dirty_ = false;
 }
 
 error::Error GLES2DecoderPassthroughImpl::HandleSetActiveURLCHROMIUM(
@@ -2998,10 +3016,6 @@ void GLES2DecoderPassthroughImpl::CheckSwapBuffersAsyncResult(
     uint64_t swap_id,
     gfx::SwapCompletionResult result) {
   TRACE_EVENT_ASYNC_END0("gpu", "AsyncSwapBuffers", swap_id);
-  // Handling of the out-fence should have already happened before reaching
-  // this function, so we don't expect to get a valid fence here.
-  DCHECK(result.release_fence.is_null());
-
   CheckSwapBuffersResult(result.swap_result, function_name);
 }
 

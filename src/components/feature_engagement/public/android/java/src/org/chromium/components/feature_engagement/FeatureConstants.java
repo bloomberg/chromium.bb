@@ -37,6 +37,7 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE,
         FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE,
         FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_OFFER_FEATURE,
+        FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_VIRTUAL_CARD_FEATURE,
         FeatureConstants.DOWNLOAD_SETTINGS_FEATURE,
         FeatureConstants.DOWNLOAD_INFOBAR_DOWNLOAD_CONTINUING_FEATURE,
         FeatureConstants.DOWNLOAD_INFOBAR_DOWNLOADS_ARE_FASTER_FEATURE,
@@ -47,14 +48,16 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.TAB_SWITCHER_BUTTON_FEATURE, FeatureConstants.FEED_CARD_MENU_FEATURE,
         FeatureConstants.IDENTITY_DISC_FEATURE, FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE,
         FeatureConstants.QUIET_NOTIFICATION_PROMPTS_FEATURE,
-        FeatureConstants.FEED_HEADER_MENU_FEATURE,
+        FeatureConstants.FEED_HEADER_MENU_FEATURE, FeatureConstants.FEED_SWIPE_REFRESH_FEATURE,
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_1_FEATURE,
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_2_FEATURE,
         FeatureConstants.CHROME_REENGAGEMENT_NOTIFICATION_3_FEATURE,
         FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE, FeatureConstants.PAGE_INFO_FEATURE,
         FeatureConstants.IPH_SHARE_SCREENSHOT_FEATURE, FeatureConstants.IPH_WEB_FEED_FOLLOW_FEATURE,
         FeatureConstants.IPH_WEB_FEED_POST_FOLLOW_DIALOG_FEATURE,
-        FeatureConstants.SHARED_HIGHLIGHTING_BUILDER_FEATURE})
+        FeatureConstants.SHARED_HIGHLIGHTING_BUILDER_FEATURE,
+        FeatureConstants.START_SURFACE_TAB_SWITCHER_HOME_BUTTON_FEATURE,
+        FeatureConstants.IPH_UPDATED_CONNECTION_SECURITY_INDICATORS_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_NEW_TAB_FEATURE =
@@ -79,6 +82,8 @@ public @interface FeatureConstants {
     String KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE = "IPH_KeyboardAccessoryPasswordFilling";
     String KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE = "IPH_KeyboardAccessoryPaymentFilling";
     String KEYBOARD_ACCESSORY_PAYMENT_OFFER_FEATURE = "IPH_KeyboardAccessoryPaymentOffer";
+    String KEYBOARD_ACCESSORY_PAYMENT_VIRTUAL_CARD_FEATURE =
+            "IPH_KeyboardAccessoryPaymentVirtualCard";
     String KEYBOARD_ACCESSORY_BAR_SWIPING_FEATURE = "IPH_KeyboardAccessoryBarSwiping";
     String PREVIEWS_OMNIBOX_UI_FEATURE = "IPH_PreviewsOmniboxUI";
     String TRANSLATE_MENU_BUTTON_FEATURE = "IPH_TranslateMenuButton";
@@ -210,6 +215,11 @@ public @interface FeatureConstants {
     String FEED_CARD_MENU_FEATURE = "IPH_FeedCardMenu";
 
     /**
+     * An IPH feature to prompt users to pull-to-refresh feed.
+     */
+    String FEED_SWIPE_REFRESH_FEATURE = "IPH_FeedSwipeRefresh";
+
+    /**
      * An IPH feature prompting user to tap on identity disc to navigate to "Sync and Google
      * services" preferences.
      */
@@ -270,4 +280,17 @@ public @interface FeatureConstants {
      * An IPH feature to inform users about the link-to-text on selection share.
      */
     String SHARED_HIGHLIGHTING_BUILDER_FEATURE = "IPH_SharedHighlightingBuilder";
+
+    /**
+     * An IPH feature to prompt users to click home button on the tab switcher surface when start
+     * surface is enabled.
+     */
+    String START_SURFACE_TAB_SWITCHER_HOME_BUTTON_FEATURE = "IPH_StartSurfaceTabSwitcherHomeButton";
+
+    /**
+     * An IPH feature to inform users about updated connection security indicators in the omnibox.
+     * Only shown on the first visit to an https page.
+     */
+    String IPH_UPDATED_CONNECTION_SECURITY_INDICATORS_FEATURE =
+            "IPH_UpdatedConnectionSecurityIndicators";
 }

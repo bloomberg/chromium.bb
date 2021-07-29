@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">打印</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" />已拔出。</translation>
 <translation id="1473110567575736769">3 秒计时器</translation>
+<translation id="1478594628797167447">扫描器</translation>
+<translation id="1545749641540134597">扫描二维码</translation>
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">未记录任何数据</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">纵向</translation>
 <translation id="2064538373111010176">已切换到<ph name="CAMERA" /></translation>
 <translation id="2144806332417375165">自定义视频参数</translation>
+<translation id="2175927920773552910">二维码</translation>
+<translation id="2268107369530950373">切换到扫描仪模式</translation>
 <translation id="229579744168541441">导出到磁盘</translation>
 <translation id="2320741269052147773">向左平移</translation>
 <translation id="2501278716633472235">返回</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">麦克风</translation>
 <translation id="3240426699337459095">已复制链接</translation>
 <translation id="3259149966178251584">摄像头分辨率</translation>
+<translation id="3448774564454087943">未能保存此视频，因为它太短了</translation>
 <translation id="3517926952904427380">无法拍摄纵向照片</translation>
 <translation id="3569311554794739032">确定要移除“<ph name="FILE" />”吗？</translation>
 <translation id="3733597664308256288">已推出新的相机控件。使用搜索键 + 向右键即可访问这些控件。</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">照片</translation>
 <translation id="4649291346448517080">无法保存文件</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">录制多个视频流</translation>
 <translation id="5057360777601936059">您的摄像头目前不可用。
         请检查此摄像头是否连接正确。</translation>
 <translation id="5152121255775685072">打开图库</translation>
+<translation id="5268823927180092501">为所有摄像头启用文档模式</translation>
 <translation id="5422455049771430511">您的照片和视频有新家了</translation>
 <translation id="5671277269877808209">方形</translation>
+<translation id="5753488212459587150">启用专家模式</translation>
 <translation id="5775960006311140197">专家模式</translation>
 <translation id="5869546221129391014">网格</translation>
 <translation id="5975083100439434680">缩小</translation>

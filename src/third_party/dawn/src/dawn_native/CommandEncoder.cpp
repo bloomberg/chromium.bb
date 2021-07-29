@@ -41,6 +41,14 @@ namespace dawn_native {
 
     namespace {
 
+        MaybeError ValidateDeprecatedStoreOp(DeviceBase* device, wgpu::StoreOp value) {
+            if (value == wgpu::StoreOp::Clear) {
+                device->EmitDeprecationWarning(
+                    "The 'clear' storeOp is deprecated. Use 'discard' instead.");
+            }
+            return ValidateStoreOp(value);
+        }
+
         MaybeError ValidateB2BCopyAlignment(uint64_t dataSize,
                                             uint64_t srcOffset,
                                             uint64_t dstOffset) {
@@ -69,10 +77,19 @@ namespace dawn_native {
         }
 
         MaybeError ValidateLinearTextureCopyOffset(const TextureDataLayout& layout,
-                                                   const TexelBlockInfo& blockInfo) {
-            if (layout.offset % blockInfo.byteSize != 0) {
-                return DAWN_VALIDATION_ERROR(
-                    "offset must be a multiple of the texel block byte size.");
+                                                   const TexelBlockInfo& blockInfo,
+                                                   const bool hasDepthOrStencil) {
+            if (hasDepthOrStencil) {
+                // For depth-stencil texture, buffer offset must be a multiple of 4.
+                if (layout.offset % 4 != 0) {
+                    return DAWN_VALIDATION_ERROR(
+                        "offset must be a multiple of 4 for depth/stencil texture.");
+                }
+            } else {
+                if (layout.offset % blockInfo.byteSize != 0) {
+                    return DAWN_VALIDATION_ERROR(
+                        "offset must be a multiple of the texel block byte size.");
+                }
             }
             return {};
         }
@@ -88,7 +105,6 @@ namespace dawn_native {
                         return DAWN_VALIDATION_ERROR(
                             "The depth aspect of depth24plus texture cannot be selected in a "
                             "texture to buffer copy");
-                        break;
                     case wgpu::TextureFormat::Depth32Float:
                         break;
 
@@ -235,7 +251,7 @@ namespace dawn_native {
             }
 
             DAWN_TRY(ValidateLoadOp(colorAttachment.loadOp));
-            DAWN_TRY(ValidateStoreOp(colorAttachment.storeOp));
+            DAWN_TRY(ValidateDeprecatedStoreOp(device, colorAttachment.storeOp));
 
             if (colorAttachment.loadOp == wgpu::LoadOp::Clear) {
                 if (std::isnan(colorAttachment.clearColor.r) ||
@@ -286,17 +302,28 @@ namespace dawn_native {
             DAWN_TRY(
                 ValidateCanUseAs(attachment->GetTexture(), wgpu::TextureUsage::RenderAttachment));
 
-            if ((attachment->GetAspects() & (Aspect::Depth | Aspect::Stencil)) == Aspect::None ||
-                !attachment->GetFormat().isRenderable) {
+            const Format& format = attachment->GetFormat();
+            if (!format.HasDepthOrStencil()) {
                 return DAWN_VALIDATION_ERROR(
                     "The format of the texture view used as depth stencil attachment is not a "
                     "depth stencil format");
             }
+            if (!format.isRenderable) {
+                return DAWN_VALIDATION_ERROR(
+                    "The format of the texture view used as depth stencil attachment is not "
+                    "renderable");
+            }
+            if (attachment->GetAspects() != format.aspects) {
+                // TODO(https://crbug.com/dawn/812): Investigate if this limitation should be added
+                // to the WebGPU spec of lifted from Dawn.
+                return DAWN_VALIDATION_ERROR(
+                    "The texture view used as depth stencil view must encompass all aspects");
+            }
 
             DAWN_TRY(ValidateLoadOp(depthStencilAttachment->depthLoadOp));
             DAWN_TRY(ValidateLoadOp(depthStencilAttachment->stencilLoadOp));
-            DAWN_TRY(ValidateStoreOp(depthStencilAttachment->depthStoreOp));
-            DAWN_TRY(ValidateStoreOp(depthStencilAttachment->stencilStoreOp));
+            DAWN_TRY(ValidateDeprecatedStoreOp(device, depthStencilAttachment->depthStoreOp));
+            DAWN_TRY(ValidateDeprecatedStoreOp(device, depthStencilAttachment->stencilStoreOp));
 
             if (attachment->GetAspects() == (Aspect::Depth | Aspect::Stencil) &&
                 depthStencilAttachment->depthReadOnly != depthStencilAttachment->stencilReadOnly) {
@@ -398,9 +425,6 @@ namespace dawn_native {
                     "The sum of firstQuery and queryCount exceeds the number of queries in query "
                     "set");
             }
-
-            // TODO(hao.x.li@intel.com): Validate that the queries between [firstQuery, firstQuery +
-            // queryCount - 1] must be available(written by query operations).
 
             // The destinationOffset must be a multiple of 8 bytes on D3D12 and Vulkan
             if (destinationOffset % 8 != 0) {
@@ -636,16 +660,13 @@ namespace dawn_native {
                 mTopLevelBuffers.insert(destination);
             }
 
-            // Skip noop copies. Some backends validation rules disallow them.
-            if (size != 0) {
-                CopyBufferToBufferCmd* copy =
-                    allocator->Allocate<CopyBufferToBufferCmd>(Command::CopyBufferToBuffer);
-                copy->source = source;
-                copy->sourceOffset = sourceOffset;
-                copy->destination = destination;
-                copy->destinationOffset = destinationOffset;
-                copy->size = size;
-            }
+            CopyBufferToBufferCmd* copy =
+                allocator->Allocate<CopyBufferToBufferCmd>(Command::CopyBufferToBuffer);
+            copy->source = source;
+            copy->sourceOffset = sourceOffset;
+            copy->destination = destination;
+            copy->destinationOffset = destinationOffset;
+            copy->size = size;
 
             return {};
         });
@@ -672,36 +693,32 @@ namespace dawn_native {
             }
             const TexelBlockInfo& blockInfo =
                 destination->texture->GetFormat().GetAspectInfo(destination->aspect).block;
-            TextureDataLayout srcLayout = FixUpDeprecatedTextureDataLayoutOptions(
-                GetDevice(), source->layout, blockInfo, *copySize);
             if (GetDevice()->IsValidationEnabled()) {
-                DAWN_TRY(ValidateLinearTextureCopyOffset(srcLayout, blockInfo));
-                DAWN_TRY(ValidateLinearTextureData(srcLayout, source->buffer->GetSize(), blockInfo,
-                                                   *copySize));
+                DAWN_TRY(ValidateLinearTextureCopyOffset(
+                    source->layout, blockInfo,
+                    destination->texture->GetFormat().HasDepthOrStencil()));
+                DAWN_TRY(ValidateLinearTextureData(source->layout, source->buffer->GetSize(),
+                                                   blockInfo, *copySize));
 
                 mTopLevelBuffers.insert(source->buffer);
                 mTopLevelTextures.insert(destination->texture);
             }
 
+            TextureDataLayout srcLayout = source->layout;
             ApplyDefaultTextureDataLayoutOptions(&srcLayout, blockInfo, *copySize);
 
-            // Skip noop copies.
-            if (copySize->width != 0 && copySize->height != 0 &&
-                copySize->depthOrArrayLayers != 0) {
-                // Record the copy command.
-                CopyBufferToTextureCmd* copy =
-                    allocator->Allocate<CopyBufferToTextureCmd>(Command::CopyBufferToTexture);
-                copy->source.buffer = source->buffer;
-                copy->source.offset = srcLayout.offset;
-                copy->source.bytesPerRow = srcLayout.bytesPerRow;
-                copy->source.rowsPerImage = srcLayout.rowsPerImage;
-                copy->destination.texture = destination->texture;
-                copy->destination.origin = destination->origin;
-                copy->destination.mipLevel = destination->mipLevel;
-                copy->destination.aspect =
-                    ConvertAspect(destination->texture->GetFormat(), destination->aspect);
-                copy->copySize = *copySize;
-            }
+            CopyBufferToTextureCmd* copy =
+                allocator->Allocate<CopyBufferToTextureCmd>(Command::CopyBufferToTexture);
+            copy->source.buffer = source->buffer;
+            copy->source.offset = srcLayout.offset;
+            copy->source.bytesPerRow = srcLayout.bytesPerRow;
+            copy->source.rowsPerImage = srcLayout.rowsPerImage;
+            copy->destination.texture = destination->texture;
+            copy->destination.origin = destination->origin;
+            copy->destination.mipLevel = destination->mipLevel;
+            copy->destination.aspect =
+                ConvertAspect(destination->texture->GetFormat(), destination->aspect);
+            copy->copySize = *copySize;
 
             return {};
         });
@@ -728,35 +745,31 @@ namespace dawn_native {
             }
             const TexelBlockInfo& blockInfo =
                 source->texture->GetFormat().GetAspectInfo(source->aspect).block;
-            TextureDataLayout dstLayout = FixUpDeprecatedTextureDataLayoutOptions(
-                GetDevice(), destination->layout, blockInfo, *copySize);
             if (GetDevice()->IsValidationEnabled()) {
-                DAWN_TRY(ValidateLinearTextureCopyOffset(dstLayout, blockInfo));
-                DAWN_TRY(ValidateLinearTextureData(dstLayout, destination->buffer->GetSize(),
-                                                   blockInfo, *copySize));
+                DAWN_TRY(ValidateLinearTextureCopyOffset(
+                    destination->layout, blockInfo,
+                    source->texture->GetFormat().HasDepthOrStencil()));
+                DAWN_TRY(ValidateLinearTextureData(
+                    destination->layout, destination->buffer->GetSize(), blockInfo, *copySize));
 
                 mTopLevelTextures.insert(source->texture);
                 mTopLevelBuffers.insert(destination->buffer);
             }
 
+            TextureDataLayout dstLayout = destination->layout;
             ApplyDefaultTextureDataLayoutOptions(&dstLayout, blockInfo, *copySize);
 
-            // Skip noop copies.
-            if (copySize->width != 0 && copySize->height != 0 &&
-                copySize->depthOrArrayLayers != 0) {
-                // Record the copy command.
-                CopyTextureToBufferCmd* copy =
-                    allocator->Allocate<CopyTextureToBufferCmd>(Command::CopyTextureToBuffer);
-                copy->source.texture = source->texture;
-                copy->source.origin = source->origin;
-                copy->source.mipLevel = source->mipLevel;
-                copy->source.aspect = ConvertAspect(source->texture->GetFormat(), source->aspect);
-                copy->destination.buffer = destination->buffer;
-                copy->destination.offset = dstLayout.offset;
-                copy->destination.bytesPerRow = dstLayout.bytesPerRow;
-                copy->destination.rowsPerImage = dstLayout.rowsPerImage;
-                copy->copySize = *copySize;
-            }
+            CopyTextureToBufferCmd* copy =
+                allocator->Allocate<CopyTextureToBufferCmd>(Command::CopyTextureToBuffer);
+            copy->source.texture = source->texture;
+            copy->source.origin = source->origin;
+            copy->source.mipLevel = source->mipLevel;
+            copy->source.aspect = ConvertAspect(source->texture->GetFormat(), source->aspect);
+            copy->destination.buffer = destination->buffer;
+            copy->destination.offset = dstLayout.offset;
+            copy->destination.bytesPerRow = dstLayout.bytesPerRow;
+            copy->destination.rowsPerImage = dstLayout.rowsPerImage;
+            copy->copySize = *copySize;
 
             return {};
         });
@@ -786,22 +799,18 @@ namespace dawn_native {
                 mTopLevelTextures.insert(destination->texture);
             }
 
-            // Skip noop copies.
-            if (copySize->width != 0 && copySize->height != 0 &&
-                copySize->depthOrArrayLayers != 0) {
-                CopyTextureToTextureCmd* copy =
-                    allocator->Allocate<CopyTextureToTextureCmd>(Command::CopyTextureToTexture);
-                copy->source.texture = source->texture;
-                copy->source.origin = source->origin;
-                copy->source.mipLevel = source->mipLevel;
-                copy->source.aspect = ConvertAspect(source->texture->GetFormat(), source->aspect);
-                copy->destination.texture = destination->texture;
-                copy->destination.origin = destination->origin;
-                copy->destination.mipLevel = destination->mipLevel;
-                copy->destination.aspect =
-                    ConvertAspect(destination->texture->GetFormat(), destination->aspect);
-                copy->copySize = *copySize;
-            }
+            CopyTextureToTextureCmd* copy =
+                allocator->Allocate<CopyTextureToTextureCmd>(Command::CopyTextureToTexture);
+            copy->source.texture = source->texture;
+            copy->source.origin = source->origin;
+            copy->source.mipLevel = source->mipLevel;
+            copy->source.aspect = ConvertAspect(source->texture->GetFormat(), source->aspect);
+            copy->destination.texture = destination->texture;
+            copy->destination.origin = destination->origin;
+            copy->destination.mipLevel = destination->mipLevel;
+            copy->destination.aspect =
+                ConvertAspect(destination->texture->GetFormat(), destination->aspect);
+            copy->copySize = *copySize;
 
             return {};
         });

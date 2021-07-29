@@ -36,7 +36,7 @@ import org.chromium.chrome.browser.signin.ui.SignOutDialogFragment;
 import org.chromium.chrome.browser.signin.ui.SignOutDialogFragment.SignOutDialogListener;
 import org.chromium.chrome.browser.signin.ui.SigninUtils;
 import org.chromium.chrome.browser.superviseduser.FilteringBehavior;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.prefs.PrefService;
@@ -86,11 +86,11 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     private Profile mProfile;
     private String mSignedInAccountName;
     private ProfileDataCache mProfileDataCache;
-    private @Nullable ProfileSyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
+    private @Nullable SyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
 
     @Override
     public void onCreatePreferences(Bundle savedState, String rootKey) {
-        ProfileSyncService syncService = ProfileSyncService.get();
+        SyncService syncService = SyncService.get();
         if (syncService != null) {
             // Prevent sync settings changes from taking effect until the user leaves this screen.
             mSyncSetupInProgressHandle = syncService.getSetupInProgressHandle();
@@ -175,7 +175,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         configureSignOutSwitch();
         configureChildAccountPreferences();
 
-        updateAccountsList();
+        AccountManagerFacadeProvider.getInstance().getAccounts().then(this::updateAccountsList);
     }
 
     private boolean canAddAccounts() {
@@ -271,11 +271,13 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         }
     }
 
-    private void updateAccountsList() {
-        PreferenceCategory accountsCategory =
-                (PreferenceCategory) findPreference(PREF_ACCOUNTS_CATEGORY);
-        if (accountsCategory == null) return;
-
+    private void updateAccountsList(List<Account> accounts) {
+        PreferenceCategory accountsCategory = findPreference(PREF_ACCOUNTS_CATEGORY);
+        if (accountsCategory == null) {
+            // This pref is dynamically added/removed many times, so it might not be present by now.
+            // More details can be found in crbug/1221491.
+            return;
+        }
         accountsCategory.removeAll();
 
         accountsCategory.addPreference(
@@ -285,7 +287,6 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         accountsCategory.addPreference(createManageYourGoogleAccountPreference());
         accountsCategory.addPreference(createDividerPreference(R.layout.divider_preference));
 
-        List<Account> accounts = AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts();
         for (Account account : accounts) {
             if (!mSignedInAccountName.equals(account.name)) {
                 accountsCategory.addPreference(createAccountPreference(account));
@@ -372,7 +373,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     // ProfileDataCache.Observer implementation:
     @Override
     public void onProfileDataUpdated(String accountEmail) {
-        updateAccountsList();
+        AccountManagerFacadeProvider.getInstance().getAccounts().then(this::updateAccountsList);
     }
 
     // SignOutDialogListener implementation:

@@ -11,9 +11,9 @@
 #include <utility>
 
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -571,7 +571,7 @@ void ExtensionPrefs::UpdateExtensionPref(
   if (data_value)
     update->Set(key, std::move(data_value));
   else
-    update->Remove(key, NULL);
+    update->Remove(key);
 }
 
 void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
@@ -579,7 +579,7 @@ void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
   for (auto& observer : observer_list_)
     observer.OnExtensionPrefsDeleted(extension_id);
   prefs::ScopedDictionaryPrefUpdate update(prefs_, pref_names::kExtensions);
-  update->Remove(extension_id, NULL);
+  update->Remove(extension_id);
 }
 
 bool ExtensionPrefs::ReadPrefAsBoolean(const std::string& extension_id,
@@ -818,7 +818,8 @@ static std::unique_ptr<base::ListValue> CreatePermissionList(
     std::unique_ptr<base::Value> detail(i->ToValue());
     if (detail) {
       auto tmp(std::make_unique<base::DictionaryValue>());
-      tmp->Set(i->name(), std::move(detail));
+      tmp->SetKey(i->name(),
+                  base::Value::FromUniquePtrValue(std::move(detail)));
       values->Append(std::move(tmp));
     } else {
       values->AppendString(i->name());
@@ -1642,7 +1643,7 @@ bool ExtensionPrefs::RemoveDelayedInstallInfo(
   if (!GetExtensionPref(extension_id))
     return false;
   ScopedExtensionPrefUpdate update(prefs_, extension_id);
-  bool result = update->Remove(kDelayedInstallInfo, NULL);
+  bool result = update->Remove(kDelayedInstallInfo);
   return result;
 }
 
@@ -1666,9 +1667,9 @@ bool ExtensionPrefs::FinishDelayedInstallInfo(
                                       &serialized_ordinal)) {
     suggested_page_ordinal = syncer::StringOrdinal(serialized_ordinal);
     needs_sort_ordinal = true;
-    pending_install_dict->Remove(kPrefSuggestedPageOrdinal, NULL);
+    pending_install_dict->Remove(kPrefSuggestedPageOrdinal);
   }
-  pending_install_dict->Remove(kDelayedInstallReason, NULL);
+  pending_install_dict->Remove(kDelayedInstallReason);
 
   const base::Time install_time = clock_->Now();
   pending_install_dict->SetString(
@@ -1868,7 +1869,7 @@ void ExtensionPrefs::ClearLastLaunchTimes() {
       continue;
 
     if (extension_dict->HasKey(kPrefLastLaunchTime))
-      extension_dict->Remove(kPrefLastLaunchTime, NULL);
+      extension_dict->Remove(kPrefLastLaunchTime);
   }
 }
 
@@ -2259,16 +2260,6 @@ void ExtensionPrefs::ClearExternalUninstallForTesting(const ExtensionId& id) {
   ClearExternalUninstallBit(id);
 }
 
-bool ExtensionPrefs::HasUserSeenExtensionsCheckupOnStartup() {
-  return prefs_->GetBoolean(pref_names::kExtensionCheckupOnStartup);
-}
-
-void ExtensionPrefs::SetUserHasSeenExtensionsCheckupOnStartup(
-    bool has_seen_extensions_checkup_on_startup) {
-  prefs_->SetBoolean(pref_names::kExtensionCheckupOnStartup,
-                     has_seen_extensions_checkup_on_startup);
-}
-
 const char ExtensionPrefs::kFakeObsoletePrefForTesting[] =
     "__fake_obsolete_pref_for_testing";
 
@@ -2350,8 +2341,6 @@ void ExtensionPrefs::RegisterProfilePrefs(
 #endif
 
   registry->RegisterBooleanPref(pref_names::kBlockExternalExtensions, false);
-
-  registry->RegisterBooleanPref(pref_names::kExtensionCheckupOnStartup, false);
 }
 
 template <class ExtensionIdContainer>
@@ -2384,7 +2373,7 @@ void ExtensionPrefs::SetExtensionPrefFromContainer(
     const ExtensionIdContainer& strings) {
   ListPrefUpdate update(prefs_, pref);
   base::ListValue* list_of_values = update.Get();
-  list_of_values->Clear();
+  list_of_values->ClearList();
   for (auto iter = strings.cbegin(); iter != strings.cend(); ++iter) {
     list_of_values->AppendString(*iter);
   }
@@ -2418,7 +2407,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   // the previous install are cleared up in case of an update. Else just set the
   // entry (which will overwrite any existing value).
   if (ruleset_install_prefs.empty()) {
-    extension_dict->Remove(kDNRStaticRulesetPref, nullptr /* out_value */);
+    extension_dict->Remove(kDNRStaticRulesetPref);
   } else {
     auto ruleset_prefs = std::make_unique<base::DictionaryValue>();
     for (const declarative_net_request::RulesetInstallPref& install_pref :
@@ -2440,7 +2429,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
 
   // Clear the list of enabled static rulesets for the extension since it
   // shouldn't persist across extension updates.
-  extension_dict->Remove(kDNREnabledStaticRulesetIDs, nullptr /* out_value */);
+  extension_dict->Remove(kDNREnabledStaticRulesetIDs);
 
   if (util::CanWithholdPermissionsFromExtension(*extension)) {
     // If the withhold permission creation flag is present it takes precedence
@@ -2471,7 +2460,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   if (install_flags & kInstallFlagDoNotSync)
     extension_dict->SetBoolean(kPrefDoNotSync, true);
   else
-    extension_dict->Remove(kPrefDoNotSync, NULL);
+    extension_dict->Remove(kPrefDoNotSync);
 }
 
 void ExtensionPrefs::InitExtensionControlledPrefs(
@@ -2518,7 +2507,7 @@ void ExtensionPrefs::LoadExtensionControlledPrefs(
   if (!source_dict->GetDictionary(key, &preferences))
     return;
 
-  for (const auto& pair : preferences->DictItems()) {
+  for (auto pair : preferences->DictItems()) {
     extension_pref_value_map_->SetExtensionPref(extension_id, pair.first, scope,
                                                 pair.second.Clone());
   }
@@ -2557,11 +2546,11 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
 
   // If this point has been reached, any pending installs should be considered
   // out of date.
-  extension_dict->Remove(kDelayedInstallInfo, NULL);
+  extension_dict->Remove(kDelayedInstallInfo);
 
   // Clear state that may be registered from a previous install.
-  extension_dict->Remove(EventRouter::kRegisteredLazyEvents, nullptr);
-  extension_dict->Remove(EventRouter::kRegisteredServiceWorkerEvents, nullptr);
+  extension_dict->Remove(EventRouter::kRegisteredLazyEvents);
+  extension_dict->Remove(EventRouter::kRegisteredServiceWorkerEvents);
 
   // FYI, all code below here races on sudden shutdown because |extension_dict|,
   // |app_sorting|, |extension_pref_value_map_|, and (potentially) observers
@@ -2639,7 +2628,7 @@ void ExtensionPrefs::MigrateObsoleteExtensionPrefs() {
       // Added 2021-05, also used in unit test.
       "settings.privacy.drm_enabled"};
 
-  for (const auto& key_value : extensions_dictionary->DictItems()) {
+  for (auto key_value : extensions_dictionary->DictItems()) {
     if (!crx_file::id_util::IdIsValid(key_value.first))
       continue;
     ScopedExtensionPrefUpdate update(prefs_, key_value.first);
@@ -2656,7 +2645,7 @@ void ExtensionPrefs::MigrateObsoleteExtensionPrefs() {
     }
 
     for (const char* key : kObsoleteKeys)
-      inner_update->Remove(key, nullptr);
+      inner_update->Remove(key);
   }
 }
 
@@ -2710,7 +2699,7 @@ void ExtensionPrefs::MigrateToNewExternalUninstallPref() {
     return;
 
   std::vector<std::string> uninstalled_ids;
-  for (const auto& item : extensions->DictItems()) {
+  for (auto item : extensions->DictItems()) {
     if (!crx_file::id_util::IdIsValid(item.first) || !item.second.is_dict()) {
       continue;
     }

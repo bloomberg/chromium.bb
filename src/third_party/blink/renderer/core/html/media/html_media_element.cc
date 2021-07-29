@@ -39,11 +39,11 @@
 #include "media/base/logging_override_if_enabled.h"
 #include "media/base/media_content_type.h"
 #include "media/base/media_switches.h"
+#include "services/media_session/public/mojom/media_session.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
-#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/core_probes_inl.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -127,6 +128,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "ui/display/screen_info.h"
 
 #ifndef LOG_MEDIA_EVENTS
 // Default to not logging events because so many are generated they can
@@ -4525,17 +4527,25 @@ void HTMLMediaElement::DidMediaMetadataChange(
 void HTMLMediaElement::DidPlayerMediaPositionStateChange(
     double playback_rate,
     base::TimeDelta duration,
-    base::TimeDelta position) {
+    base::TimeDelta position,
+    bool end_of_media) {
   for (auto& observer : media_player_observer_remote_set_->Value()) {
     observer->OnMediaPositionStateChanged(
         media_session::mojom::blink::MediaPosition::New(
-            playback_rate, duration, position, base::TimeTicks::Now()));
+            playback_rate, duration, position, base::TimeTicks::Now(),
+            end_of_media));
   }
 }
 
 void HTMLMediaElement::DidDisableAudioOutputSinkChanges() {
   for (auto& observer : media_player_observer_remote_set_->Value())
     observer->OnAudioOutputSinkChangingDisabled();
+}
+
+void HTMLMediaElement::DidUseAudioServiceChange(bool uses_audio_service) {
+  for (auto& observer : media_player_observer_remote_set_->Value()) {
+    observer->OnUseAudioServiceChanged(uses_audio_service);
+  }
 }
 
 void HTMLMediaElement::DidPlayerSizeChange(const gfx::Size& size) {

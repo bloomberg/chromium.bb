@@ -12,7 +12,9 @@
 #include "base/containers/flat_set.h"
 #include "base/observer_list.h"
 #include "components/feed/core/proto/v2/ui.pb.h"
+#include "components/feed/core/proto/v2/wire/reliability_logging_enums.pb.h"
 #include "components/feed/core/v2/enums.h"
+#include "components/feed/core/v2/launch_reliability_logger.h"
 #include "components/feed/core/v2/stream_model.h"
 
 namespace feedui {
@@ -43,11 +45,14 @@ class SurfaceUpdater : public StreamModel::Observer {
   void OnUiUpdate(const StreamModel::UiUpdate& update) override;
 
   // Signals from |FeedStream|.
-  void SurfaceAdded(FeedStreamSurface* surface);
+  void SurfaceAdded(FeedStreamSurface* surface,
+                    feedwire::DiscoverLaunchResult loading_not_allowed_reason);
   void SurfaceRemoved(FeedStreamSurface* surface);
   // Called to indicate the initial model load is in progress.
-  void LoadStreamStarted();
-  void LoadStreamComplete(bool success, LoadStreamStatus load_stream_status);
+  void LoadStreamStarted(bool manual_refreshing);
+  void LoadStreamComplete(bool success,
+                          LoadStreamStatus load_stream_status,
+                          feedwire::DiscoverLaunchResult launch_result);
   // Called to indicate whether or not we are currently trying to load more
   // content at the bottom of the stream.
   void SetLoadingMore(bool is_loading);
@@ -61,6 +66,10 @@ class SurfaceUpdater : public StreamModel::Observer {
 
   void SetOfflinePageAvailability(const std::string& badge_id,
                                   bool available_offline);
+
+  LaunchReliabilityLogger& launch_reliability_logger() {
+    return launch_reliability_logger_;
+  }
 
   // State that together with |model_| determines what should be sent to a
   // surface. |DrawState| is usually the same for all surfaces, except for the
@@ -76,6 +85,7 @@ class SurfaceUpdater : public StreamModel::Observer {
 
  private:
   DrawState GetState() const;
+  bool ShouldSendStreamUpdate() const;
   void SendStreamUpdateIfNeeded();
   void SendStreamUpdate(
       const std::vector<std::string>& updated_shared_state_ids);
@@ -105,6 +115,9 @@ class SurfaceUpdater : public StreamModel::Observer {
   StreamModel* model_ = nullptr;
   // Owned by |FeedStream|.
   MetricsReporter* metrics_reporter_;
+
+  LaunchReliabilityLogger launch_reliability_logger_;
+  bool load_stream_started_ = false;
 
   // Attached surfaces.
   base::ObserverList<FeedStreamSurface> surfaces_;

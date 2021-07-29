@@ -18,8 +18,6 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_downloader.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_info_cache_unittest.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
@@ -33,7 +31,9 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
@@ -155,7 +155,8 @@ TEST_F(GAIAInfoUpdateServiceTest, SyncOnSyncOff) {
   AccountInfo info =
       identity_test_env()->MakeAccountAvailable("pat@example.com");
   base::RunLoop().RunUntilIdle();
-  identity_test_env()->SetPrimaryAccount(info.email);
+  identity_test_env()->SetPrimaryAccount(info.email,
+                                         signin::ConsentLevel::kSync);
   info = GetValidAccountInfo(info.email, info.account_id, "Pat", "Pat Foo",
                              kNoHostedDomainFound);
   signin::UpdateAccountInfoForAccount(identity_test_env()->identity_manager(),
@@ -201,7 +202,8 @@ TEST_F(GAIAInfoUpdateServiceDiceTest, RevokeSyncConsent) {
   AccountInfo info =
       identity_test_env()->MakeAccountAvailable("pat@example.com");
   base::RunLoop().RunUntilIdle();
-  identity_test_env()->SetPrimaryAccount(info.email);
+  identity_test_env()->SetPrimaryAccount(info.email,
+                                         signin::ConsentLevel::kSync);
   info = GetValidAccountInfo(info.email, info.account_id, "Pat", "Pat Foo",
                              kNoHostedDomainFound);
   signin::UpdateAccountInfoForAccount(identity_test_env()->identity_manager(),
@@ -228,8 +230,8 @@ TEST_F(GAIAInfoUpdateServiceDiceTest, RevokeSyncConsent) {
 
 TEST_F(GAIAInfoUpdateServiceTest, LogInLogOut) {
   std::string email = "pat@example.com";
-  AccountInfo info =
-      identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(email);
+  AccountInfo info = identity_test_env()->MakePrimaryAccountAvailable(
+      email, signin::ConsentLevel::kSignin);
   EXPECT_TRUE(identity_test_env()->identity_manager()->HasPrimaryAccount(
       signin::ConsentLevel::kSignin));
   EXPECT_FALSE(identity_test_env()->identity_manager()->HasPrimaryAccount(

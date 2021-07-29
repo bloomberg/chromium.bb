@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/animation/animation_test_helpers.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_csskeywordvalue_cssnumericvalue_scrolltimelineelementbasedoffset_string.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
@@ -78,7 +79,8 @@ void EnsureInterpolatedValueCached(ActiveInterpolations* interpolations,
   // require our callers to properly register every animation they pass in
   // here, which the current tests do not do.
   auto style = document.GetStyleResolver().CreateComputedStyle();
-  StyleResolverState state(document, *element, StyleRequest(style.get()));
+  StyleResolverState state(document, *element, StyleRecalcContext(),
+                           StyleRequest(style.get()));
   state.SetStyle(style);
 
   ActiveInterpolationsMap map;
@@ -89,21 +91,19 @@ void EnsureInterpolatedValueCached(ActiveInterpolations* interpolations,
   cascade.Apply();
 }
 
-ScrollTimelineOffsetValue OffsetFromString(Document& document,
-                                           const String& string) {
-  ScrollTimelineOffsetValue result;
-
+V8ScrollTimelineOffset* OffsetFromString(Document& document,
+                                         const String& string) {
   const CSSValue* value = css_test_helpers::ParseValue(
       document, "<length-percentage> | auto", string);
 
-  if (const auto* primitive = DynamicTo<CSSPrimitiveValue>(value))
-    result.SetCSSNumericValue(CSSNumericValue::FromCSSValue(*primitive));
-  else if (DynamicTo<CSSIdentifierValue>(value))
-    result.SetCSSKeywordValue(CSSKeywordValue::Create("auto"));
-  else
-    result.SetString(string);
-
-  return result;
+  if (const auto* primitive = DynamicTo<CSSPrimitiveValue>(value)) {
+    return MakeGarbageCollected<V8ScrollTimelineOffset>(
+        CSSNumericValue::FromCSSValue(*primitive));
+  } else if (DynamicTo<CSSIdentifierValue>(value)) {
+    return MakeGarbageCollected<V8ScrollTimelineOffset>(
+        CSSKeywordValue::Create("auto"));
+  }
+  return MakeGarbageCollected<V8ScrollTimelineOffset>(string);
 }
 
 }  // namespace animation_test_helpers

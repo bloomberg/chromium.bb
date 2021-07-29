@@ -99,7 +99,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::EncryptionScheme,
                           media::EncryptionScheme::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::HdcpVersion,
-                          media::HdcpVersion::kHdcpVersionMax)
+                          media::HdcpVersion::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaContentType, media::MediaContentType::Max)
 
@@ -127,9 +127,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::WatchTimeKey,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
                               media::VIDEO_CODEC_PROFILE_MIN,
                               media::VIDEO_CODEC_PROFILE_MAX)
-
-IPC_ENUM_TRAITS_MAX_VALUE(media::VideoDecoderImplementation,
-                          media::VideoDecoderImplementation::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoDecoderType,
                           media::VideoDecoderType::kMaxValue)
@@ -197,7 +194,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::VideoColorSpace)
   IPC_STRUCT_TRAITS_MEMBER(range)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(gfx::MasteringMetadata)
+IPC_STRUCT_TRAITS_BEGIN(gfx::ColorVolumeMetadata)
   IPC_STRUCT_TRAITS_MEMBER(primary_r)
   IPC_STRUCT_TRAITS_MEMBER(primary_g)
   IPC_STRUCT_TRAITS_MEMBER(primary_b)
@@ -207,7 +204,7 @@ IPC_STRUCT_TRAITS_BEGIN(gfx::MasteringMetadata)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gfx::HDRMetadata)
-  IPC_STRUCT_TRAITS_MEMBER(mastering_metadata)
+  IPC_STRUCT_TRAITS_MEMBER(color_volume_metadata)
   IPC_STRUCT_TRAITS_MEMBER(max_content_light_level)
   IPC_STRUCT_TRAITS_MEMBER(max_frame_average_light_level)
 IPC_STRUCT_TRAITS_END()

@@ -30,7 +30,7 @@
 // the last commit date in the repository used to build this library. Within
 // each major.minor branch, the commit count should increase monotonically.
 //
-// !! Some code generation programs can override WUFFS_VERSION.
+// ¡ Some code generation programs can override WUFFS_VERSION.
 #define WUFFS_VERSION 0
 #define WUFFS_VERSION_MAJOR 0
 #define WUFFS_VERSION_MINOR 0
@@ -60,8 +60,8 @@
 
 // To simplify Wuffs code, "cpu_arch >= arm_xxx" requires xxx but also
 // unaligned little-endian load/stores.
-#if defined(__ARM_FEATURE_UNALIGNED) && defined(__BYTE_ORDER__) && \
-    (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+#if defined(__ARM_FEATURE_UNALIGNED) && !defined(__native_client__) && \
+    defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
 // Not all gcc versions define __ARM_ACLE, even if they support crc32
 // intrinsics. Look for __ARM_FEATURE_CRC32 instead.
 #if defined(__ARM_FEATURE_CRC32)
@@ -76,11 +76,13 @@
 
 // Similarly, "cpu_arch >= x86_sse42" requires SSE4.2 but also PCLMUL and
 // POPCNT. This is checked at runtime via cpuid, not at compile time.
-#if defined(__x86_64__)
+//
+// Likewise, "cpu_arch >= x86_avx2" also requires PCLMUL, POPCNT and SSE4.2.
+#if defined(__x86_64__) && !defined(__native_client__)
 #include <cpuid.h>
 #include <x86intrin.h>
 #define WUFFS_BASE__CPU_ARCH__X86_64
-#endif  // defined(__x86_64__)
+#endif  // defined(__x86_64__) && !defined(__native_client__)
 
 #elif defined(_MSC_VER)  // (#if-chain ref AVOID_CPU_ARCH_1)
 
@@ -149,6 +151,82 @@ wuffs_base__cpu_arch__have_arm_neon() {
 }
 
 static inline bool  //
+wuffs_base__cpu_arch__have_x86_avx2() {
+#if defined(WUFFS_BASE__CPU_ARCH__X86_64)
+  // GCC defines these macros but MSVC does not.
+  //  - bit_AVX2 = (1 <<  5)
+  const unsigned int avx2_ebx7 = 0x00000020;
+  // GCC defines these macros but MSVC does not.
+  //  - bit_PCLMUL = (1 <<  1)
+  //  - bit_POPCNT = (1 << 23)
+  //  - bit_SSE4_2 = (1 << 20)
+  const unsigned int avx2_ecx1 = 0x00900002;
+
+  // clang defines __GNUC__ and clang-cl defines _MSC_VER (but not __GNUC__).
+#if defined(__GNUC__)
+  unsigned int eax7 = 0;
+  unsigned int ebx7 = 0;
+  unsigned int ecx7 = 0;
+  unsigned int edx7 = 0;
+  if (__get_cpuid_count(7, 0, &eax7, &ebx7, &ecx7, &edx7) &&
+      ((ebx7 & avx2_ebx7) == avx2_ebx7)) {
+    unsigned int eax1 = 0;
+    unsigned int ebx1 = 0;
+    unsigned int ecx1 = 0;
+    unsigned int edx1 = 0;
+    if (__get_cpuid(1, &eax1, &ebx1, &ecx1, &edx1) &&
+        ((ecx1 & avx2_ecx1) == avx2_ecx1)) {
+      return true;
+    }
+  }
+#elif defined(_MSC_VER)  // defined(__GNUC__)
+  int x7[4];
+  __cpuidex(x7, 7, 0);
+  if ((((unsigned int)(x7[1])) & avx2_ebx7) == avx2_ebx7) {
+    int x1[4];
+    __cpuid(x1, 1);
+    if ((((unsigned int)(x1[2])) & avx2_ecx1) == avx2_ecx1) {
+      return true;
+    }
+  }
+#else
+#error "WUFFS_BASE__CPU_ARCH__ETC combined with an unsupported compiler"
+#endif  // defined(__GNUC__); defined(_MSC_VER)
+#endif  // defined(WUFFS_BASE__CPU_ARCH__X86_64)
+  return false;
+}
+
+static inline bool  //
+wuffs_base__cpu_arch__have_x86_bmi2() {
+#if defined(WUFFS_BASE__CPU_ARCH__X86_64)
+  // GCC defines these macros but MSVC does not.
+  //  - bit_BMI2 = (1 <<  8)
+  const unsigned int bmi2_ebx7 = 0x00000100;
+
+  // clang defines __GNUC__ and clang-cl defines _MSC_VER (but not __GNUC__).
+#if defined(__GNUC__)
+  unsigned int eax7 = 0;
+  unsigned int ebx7 = 0;
+  unsigned int ecx7 = 0;
+  unsigned int edx7 = 0;
+  if (__get_cpuid_count(7, 0, &eax7, &ebx7, &ecx7, &edx7) &&
+      ((ebx7 & bmi2_ebx7) == bmi2_ebx7)) {
+    return true;
+  }
+#elif defined(_MSC_VER)  // defined(__GNUC__)
+  int x7[4];
+  __cpuidex(x7, 7, 0);
+  if ((((unsigned int)(x7[1])) & bmi2_ebx7) == bmi2_ebx7) {
+    return true;
+  }
+#else
+#error "WUFFS_BASE__CPU_ARCH__ETC combined with an unsupported compiler"
+#endif  // defined(__GNUC__); defined(_MSC_VER)
+#endif  // defined(WUFFS_BASE__CPU_ARCH__X86_64)
+  return false;
+}
+
+static inline bool  //
 wuffs_base__cpu_arch__have_x86_sse42() {
 #if defined(WUFFS_BASE__CPU_ARCH__X86_64)
   // GCC defines these macros but MSVC does not.
@@ -163,13 +241,16 @@ wuffs_base__cpu_arch__have_x86_sse42() {
   unsigned int ebx1 = 0;
   unsigned int ecx1 = 0;
   unsigned int edx1 = 0;
-  if (__get_cpuid(1, &eax1, &ebx1, &ecx1, &edx1)) {
-    return (ecx1 & sse42_ecx1) == sse42_ecx1;
+  if (__get_cpuid(1, &eax1, &ebx1, &ecx1, &edx1) &&
+      ((ecx1 & sse42_ecx1) == sse42_ecx1)) {
+    return true;
   }
 #elif defined(_MSC_VER)  // defined(__GNUC__)
-  int x[4];
-  __cpuid(x, 1);
-  return (((unsigned int)(x[2])) & sse42_ecx1) == sse42_ecx1;
+  int x1[4];
+  __cpuid(x1, 1);
+  if ((((unsigned int)(x1[2])) & sse42_ecx1) == sse42_ecx1) {
+    return true;
+  }
 #else
 #error "WUFFS_BASE__CPU_ARCH__ETC combined with an unsupported compiler"
 #endif  // defined(__GNUC__); defined(_MSC_VER)
@@ -182,16 +263,10 @@ wuffs_base__cpu_arch__have_x86_sse42() {
 // Wuffs assumes that:
 //  - converting a uint32_t to a size_t will never overflow.
 //  - converting a size_t to a uint64_t will never overflow.
-#ifdef __WORDSIZE
+#if defined(__WORDSIZE)
 #if (__WORDSIZE != 32) && (__WORDSIZE != 64)
 #error "Wuffs requires a word size of either 32 or 64 bits"
 #endif
-#endif
-
-#if defined(__clang__)
-#define WUFFS_BASE__POTENTIALLY_UNUSED_FIELD __attribute__((unused))
-#else
-#define WUFFS_BASE__POTENTIALLY_UNUSED_FIELD
 #endif
 
 // Clang also defines "__GNUC__".
@@ -287,7 +362,7 @@ typedef struct wuffs_base__status__struct {
 
 } wuffs_base__status;
 
-// !! INSERT wuffs_base__status names.
+// ¡ INSERT wuffs_base__status names.
 
 static inline wuffs_base__status  //
 wuffs_base__make_status(const char* repr) {
@@ -395,13 +470,13 @@ typedef struct wuffs_base__transform__output__struct {
 
 // FourCC constants.
 
-// !! INSERT FourCCs.
+// ¡ INSERT FourCCs.
 
 // --------
 
 // Quirks.
 
-// !! INSERT Quirks.
+// ¡ INSERT Quirks.
 
 // --------
 
@@ -502,6 +577,56 @@ wuffs_base__u64__min(uint64_t x, uint64_t y) {
 static inline uint64_t  //
 wuffs_base__u64__max(uint64_t x, uint64_t y) {
   return x > y ? x : y;
+}
+
+// --------
+
+static inline uint8_t  //
+wuffs_base__u8__rotate_left(uint8_t x, uint32_t n) {
+  n &= 7;
+  return ((uint8_t)(x << n)) | ((uint8_t)(x >> (8 - n)));
+}
+
+static inline uint8_t  //
+wuffs_base__u8__rotate_right(uint8_t x, uint32_t n) {
+  n &= 7;
+  return ((uint8_t)(x >> n)) | ((uint8_t)(x << (8 - n)));
+}
+
+static inline uint16_t  //
+wuffs_base__u16__rotate_left(uint16_t x, uint32_t n) {
+  n &= 15;
+  return ((uint16_t)(x << n)) | ((uint16_t)(x >> (16 - n)));
+}
+
+static inline uint16_t  //
+wuffs_base__u16__rotate_right(uint16_t x, uint32_t n) {
+  n &= 15;
+  return ((uint16_t)(x >> n)) | ((uint16_t)(x << (16 - n)));
+}
+
+static inline uint32_t  //
+wuffs_base__u32__rotate_left(uint32_t x, uint32_t n) {
+  n &= 31;
+  return ((uint32_t)(x << n)) | ((uint32_t)(x >> (32 - n)));
+}
+
+static inline uint32_t  //
+wuffs_base__u32__rotate_right(uint32_t x, uint32_t n) {
+  n &= 31;
+  return ((uint32_t)(x >> n)) | ((uint32_t)(x << (32 - n)));
+}
+
+static inline uint64_t  //
+wuffs_base__u64__rotate_left(uint64_t x, uint32_t n) {
+  n &= 63;
+  return ((uint64_t)(x << n)) | ((uint64_t)(x >> (64 - n)));
+}
+
+static inline uint64_t  //
+wuffs_base__u64__rotate_right(uint64_t x, uint32_t n) {
+  n &= 63;
+  return ((uint64_t)(x >> n)) | ((uint64_t)(x << (64 - n)));
 }
 
 // --------
@@ -995,7 +1120,7 @@ wuffs_base__poke_u64le__no_bounds_check(uint8_t* p, uint64_t x) {
 
 // WUFFS_BASE__TABLE is a 2-dimensional buffer.
 //
-// width height, and stride measure a number of elements, not necessarily a
+// width, height and stride measure a number of elements, not necessarily a
 // size in bytes.
 //
 // A value with all fields NULL or zero is a valid, empty table.
@@ -1082,6 +1207,58 @@ wuffs_base__empty_slice_u64() {
 }
 
 static inline wuffs_base__table_u8  //
+wuffs_base__make_table_u8(uint8_t* ptr,
+                          size_t width,
+                          size_t height,
+                          size_t stride) {
+  wuffs_base__table_u8 ret;
+  ret.ptr = ptr;
+  ret.width = width;
+  ret.height = height;
+  ret.stride = stride;
+  return ret;
+}
+
+static inline wuffs_base__table_u16  //
+wuffs_base__make_table_u16(uint16_t* ptr,
+                           size_t width,
+                           size_t height,
+                           size_t stride) {
+  wuffs_base__table_u16 ret;
+  ret.ptr = ptr;
+  ret.width = width;
+  ret.height = height;
+  ret.stride = stride;
+  return ret;
+}
+
+static inline wuffs_base__table_u32  //
+wuffs_base__make_table_u32(uint32_t* ptr,
+                           size_t width,
+                           size_t height,
+                           size_t stride) {
+  wuffs_base__table_u32 ret;
+  ret.ptr = ptr;
+  ret.width = width;
+  ret.height = height;
+  ret.stride = stride;
+  return ret;
+}
+
+static inline wuffs_base__table_u64  //
+wuffs_base__make_table_u64(uint64_t* ptr,
+                           size_t width,
+                           size_t height,
+                           size_t stride) {
+  wuffs_base__table_u64 ret;
+  ret.ptr = ptr;
+  ret.width = width;
+  ret.height = height;
+  ret.stride = stride;
+  return ret;
+}
+
+static inline wuffs_base__table_u8  //
 wuffs_base__empty_table_u8() {
   wuffs_base__table_u8 ret;
   ret.ptr = NULL;
@@ -1160,6 +1337,45 @@ wuffs_base__slice_u8__subslice_ij(wuffs_base__slice_u8 s,
     return wuffs_base__make_slice_u8(s.ptr + i, ((size_t)(j - i)));
   }
   return wuffs_base__make_slice_u8(NULL, 0);
+}
+
+// wuffs_base__table__flattened_length returns the number of elements covered
+// by the 1-dimensional span that backs a 2-dimensional table. This counts the
+// elements inside the table and, when width != stride, the elements outside
+// the table but between its rows.
+//
+// For example, consider a width 10, height 4, stride 10 table. Mark its first
+// and last (inclusive) elements with 'a' and 'z'. This function returns 40.
+//
+//    a123456789
+//    0123456789
+//    0123456789
+//    012345678z
+//
+// Now consider the sub-table of that from (2, 1) inclusive to (8, 4) exclusive.
+//
+//    a123456789
+//    01iiiiiioo
+//    ooiiiiiioo
+//    ooiiiiii8z
+//
+// This function (called with width 6, height 3, stride 10) returns 26: 18 'i'
+// inside elements plus 8 'o' outside elements. Note that 26 is less than a
+// naive (height * stride = 30) computation. Indeed, advancing 29 elements from
+// the first 'i' would venture past 'z', out of bounds of the original table.
+//
+// It does not check for overflow, but if the arguments come from a table that
+// exists in memory and each element occupies a positive number of bytes then
+// the result should be bounded by the amount of allocatable memory (which
+// shouldn't overflow SIZE_MAX).
+static inline size_t  //
+wuffs_base__table__flattened_length(size_t width,
+                                    size_t height,
+                                    size_t stride) {
+  if (height == 0) {
+    return 0;
+  }
+  return ((height - 1) * stride) + width;
 }
 
 // ---------------- Magic Numbers

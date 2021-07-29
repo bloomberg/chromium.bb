@@ -28,6 +28,11 @@ using ContextType = ExtensionApiTest::ContextType;
 
 class BookmarksApiTest : public ExtensionApiTest,
                          public testing::WithParamInterface<ContextType> {
+ public:
+  BookmarksApiTest() = default;
+  ~BookmarksApiTest() override = default;
+  BookmarksApiTest(const BookmarksApiTest&) = delete;
+  BookmarksApiTest& operator=(const BookmarksApiTest&) = delete;
 };
 
 INSTANTIATE_TEST_SUITE_P(EventPage,
@@ -60,7 +65,7 @@ IN_PROC_BROWSER_TEST_P(BookmarksApiTest, Bookmarks) {
   ASSERT_EQ(2u, managed->managed_node()->children().size());
 
   ASSERT_TRUE(RunExtensionTest(
-      {.name = "bookmarks"},
+      "bookmarks", {},
       {.load_as_service_worker = GetParam() == ContextType::kServiceWorker}))
       << message_;
 }

@@ -19,6 +19,7 @@
 #include "libANGLE/BlobCache.h"
 #include "libANGLE/Caps.h"
 #include "libANGLE/Config.h"
+#include "libANGLE/Context.h"
 #include "libANGLE/Debug.h"
 #include "libANGLE/Error.h"
 #include "libANGLE/LoggingAnnotator.h"
@@ -71,6 +72,8 @@ struct DisplayState final : private angle::NonCopyable
     EGLNativeDisplayType displayId;
 };
 
+using ContextSet = std::set<gl::Context *>;
+
 class ShareGroup final : angle::NonCopyable
 {
   public:
@@ -86,6 +89,8 @@ class ShareGroup final : angle::NonCopyable
 
     angle::FrameCaptureShared *getFrameCaptureShared() { return mFrameCaptureShared.get(); }
 
+    ContextSet *getContexts() { return &mContexts; }
+
   protected:
     ~ShareGroup();
 
@@ -96,6 +101,9 @@ class ShareGroup final : angle::NonCopyable
 
     // Note: we use a raw pointer here so we can exclude frame capture sources from the build.
     std::unique_ptr<angle::FrameCaptureShared> mFrameCaptureShared;
+
+    // The list of contexts within the share group
+    ContextSet mContexts;
 };
 
 // Constant coded here as a reasonable limit.
@@ -115,7 +123,7 @@ class Display final : public LabeledObject,
     void onSubjectStateChange(angle::SubjectIndex index, angle::SubjectMessage message) override;
 
     Error initialize();
-    Error terminate(const Thread *thread);
+    Error terminate(Thread *thread);
     // Called before all display state dependent EGL functions. Backends can set up, for example,
     // thread-specific backend state through this function. Not called for functions that do not
     // need the state.
@@ -171,7 +179,8 @@ class Display final : public LabeledObject,
                      const AttributeMap &attribs,
                      Sync **outSync);
 
-    Error makeCurrent(gl::Context *previousContext,
+    Error makeCurrent(Thread *thread,
+                      gl::Context *previousContext,
                       Surface *drawSurface,
                       Surface *readSurface,
                       gl::Context *context);
@@ -179,12 +188,8 @@ class Display final : public LabeledObject,
     Error destroySurface(Surface *surface);
     void destroyImage(Image *image);
     void destroyStream(Stream *stream);
-    Error destroyContext(const Thread *thread, gl::Context *context);
-    Error destroyContextWithSurfaces(const Thread *thread,
-                                     gl::Context *context,
-                                     gl::Context *currentContext,
-                                     Surface *currentDrawSurface,
-                                     Surface *currentReadSurface);
+    Error destroyContext(Thread *thread, gl::Context *context);
+
     void destroySync(Sync *sync);
 
     bool isInitialized() const;
@@ -262,7 +267,6 @@ class Display final : public LabeledObject,
 
     const DisplayState &getState() const { return mState; }
 
-    typedef std::set<gl::Context *> ContextSet;
     const ContextSet &getContextSet() { return mContextSet; }
 
     const angle::FrontendFeatures &getFrontendFeatures() { return mFrontendFeatures; }
@@ -318,6 +322,7 @@ class Display final : public LabeledObject,
 
     ConfigSet mConfigSet;
 
+    typedef std::set<gl::Context *> ContextSet;
     ContextSet mContextSet;
 
     typedef std::set<Image *> ImageSet;

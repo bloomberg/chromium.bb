@@ -45,7 +45,6 @@ bool GLSurfaceEglReadbackWayland::Resize(const gfx::Size& size,
                                          const gfx::ColorSpace& color_space,
                                          bool has_alpha) {
   DestroyBuffers();
-
   pending_frames_ = 0;
 
   if (!PbufferGLSurfaceEGL::Resize(size, scale_factor, color_space, has_alpha))

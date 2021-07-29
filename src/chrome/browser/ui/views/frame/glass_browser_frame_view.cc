@@ -44,6 +44,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/image_model_utils.h"
 #include "ui/views/win/hwnd_util.h"
 #include "ui/views/window/client_view.h"
 
@@ -128,13 +129,6 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
 
   caption_button_container_ =
       AddChildView(std::make_unique<GlassBrowserCaptionButtonContainer>(this));
-
-  // Because currently focus mode uses a vertically-expanded titlebar, there is
-  // no need to add extra space for a grab handle. However, traditional PWA and
-  // full browser mode require the extra space when the window is not maximized.
-  constexpr int kTopResizeFrameArea = 5;
-  drag_handle_padding_ =
-      browser_view->browser()->is_focus_mode() ? 0 : kTopResizeFrameArea;
 }
 
 GlassBrowserFrameView::~GlassBrowserFrameView() = default;
@@ -230,6 +224,27 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
   min_size.Enlarge(0, GetTopInset(false));
 
   return min_size;
+}
+
+void GlassBrowserFrameView::WindowControlsOverlayEnabledChanged() {
+  caption_button_container_->OnWindowControlsOverlayEnabledChanged();
+  web_app_frame_toolbar()->OnWindowControlsOverlayEnabledChanged();
+  InvalidateLayout();
+}
+
+TabSearchBubbleHost* GlassBrowserFrameView::GetTabSearchBubbleHost() {
+  return caption_button_container_->GetTabSearchBubbleHost();
+}
+
+void GlassBrowserFrameView::PaintAsActiveChanged() {
+  BrowserNonClientFrameView::PaintAsActiveChanged();
+
+  // When window controls overlay is enabled, the caption button container is
+  // painted to a layer and is not repainted by
+  // BrowserNonClientFrameView::PaintAsActiveChanged. Schedule a re-paint here
+  // to update the caption button colors.
+  if (caption_button_container_ && caption_button_container_->layer())
+    caption_button_container_->SchedulePaint();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -345,7 +360,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // pixels at the end of the top and bottom edges trigger diagonal resizing.
   constexpr int kResizeCornerWidth = 16;
   int window_component = GetHTComponentForFrame(
-      point, top_border_thickness, 0, top_border_thickness,
+      point, gfx::Insets(top_border_thickness, 0, 0, 0), top_border_thickness,
       kResizeCornerWidth - FrameBorderThickness(),
       frame()->widget_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
@@ -376,7 +391,7 @@ bool GlassBrowserFrameView::ShouldTabIconViewAnimate() const {
   return current_tab && current_tab->IsLoading();
 }
 
-gfx::ImageSkia GlassBrowserFrameView::GetFaviconForTabIconView() {
+ui::ImageModel GlassBrowserFrameView::GetFaviconForTabIconView() {
   DCHECK(ShouldShowWindowIcon(TitlebarType::kCustom));
   return frame()->widget_delegate()->GetWindowIcon();
 }
@@ -408,7 +423,7 @@ void GlassBrowserFrameView::Layout() {
   else
     LayoutTitleBar();
   LayoutClientView();
-  NonClientFrameView::Layout();
+  BrowserNonClientFrameView::Layout();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -428,8 +443,9 @@ int GlassBrowserFrameView::FrameTopBorderThickness(bool restored) const {
     // default. When maximized, the OS sizes the window such that the border
     // extends beyond the screen edges. In that case, we must return the default
     // value.
+    constexpr int kTopResizeFrameArea = 5;
     if (browser_view()->GetTabStripVisible())
-      return drag_handle_padding_;
+      return kTopResizeFrameArea;
 
     // There is no top border in tablet mode when the window is "restored"
     // because it is still tiled into either the left or right pane of the
@@ -791,7 +807,9 @@ void GlassBrowserFrameView::StopThrobber() {
     HICON small_icon = nullptr;
     HICON big_icon = nullptr;
 
-    gfx::ImageSkia icon = browser_view()->GetWindowIcon();
+    gfx::ImageSkia icon = views::GetImageSkiaFromImageModel(
+        browser_view()->GetWindowIcon(), GetNativeTheme());
+
     if (!icon.isNull()) {
       // Keep previous icons alive as long as they are referenced by the HWND.
       previous_small_icon = std::move(small_window_icon_);

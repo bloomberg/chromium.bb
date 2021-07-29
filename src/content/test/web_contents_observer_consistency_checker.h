@@ -51,6 +51,7 @@ class WebContentsObserverConsistencyChecker
   void DidRedirectNavigation(NavigationHandle* navigation_handle) override;
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+  void PrimaryPageChanged(Page& page) override;
   void DocumentAvailableInMainFrame(
       RenderFrameHost* render_frame_host) override;
   void DocumentOnLoadCompletedInMainFrame(
@@ -82,6 +83,8 @@ class WebContentsObserverConsistencyChecker
   void DidStopLoading() override;
 
  private:
+  class TestInputEventObserver;
+
   explicit WebContentsObserverConsistencyChecker(WebContents* web_contents);
 
   std::string Format(RenderFrameHost* render_frame_host);
@@ -93,6 +96,9 @@ class WebContentsObserverConsistencyChecker
   void EnsureStableParentValue(RenderFrameHost* render_frame_host);
   bool HasAnyChildren(RenderFrameHost* render_frame_host);
 
+  void AddInputEventObserver(RenderFrameHost* render_frame_host);
+  void RemoveInputEventObserver(RenderFrameHost* render_frame_host);
+
   std::map<int64_t, RenderFrameHost*> ready_to_commit_hosts_;
   std::set<GlobalRoutingID> current_hosts_;
   std::set<GlobalRoutingID> live_routes_;
@@ -100,6 +106,29 @@ class WebContentsObserverConsistencyChecker
 
   std::set<NavigationHandle*> ongoing_navigations_;
   std::vector<MediaPlayerId> active_media_players_;
+
+  std::map<RenderFrameHost*, std::unique_ptr<TestInputEventObserver>>
+      input_observer_map_;
+
+  // Used for checking if observer calls for navigation run in the same task.
+  class TaskChecker {
+   public:
+    TaskChecker();
+
+    void BindCurrentTask();
+
+    // Returns true if the current task is the same as the task bound by
+    // BindCurrentTask().
+    bool IsRunningInSameTask();
+
+   private:
+    absl::optional<int> GetSequenceNumberOfCurrentTask();
+
+    // In some tests, the current task is not set. In that case, `sequence_num`
+    // is absl::nullopt.
+    absl::optional<int> sequence_num_;
+  };
+  TaskChecker task_checker_for_prerendered_page_activation_;
 
   // Remembers parents to make sure RenderFrameHost::GetParent() never changes.
   std::map<GlobalRoutingID, GlobalRoutingID> parent_ids_;

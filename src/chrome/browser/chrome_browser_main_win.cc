@@ -4,10 +4,12 @@
 
 #include "chrome/browser/chrome_browser_main_win.h"
 
+// windows.h must be included before shellapi.h
+#include <windows.h>
+
 #include <shellapi.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <windows.h>
 
 #include <algorithm>
 #include <utility>
@@ -29,7 +31,6 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -45,6 +46,7 @@
 #include "build/branding_buildflags.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/util/critical_policy_section_metrics_win.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -210,11 +212,12 @@ void DetectFaultTolerantHeap() {
 }
 
 void DelayedRecordProcessorMetrics() {
-  mojo::Remote<chrome::mojom::UtilWin> remote_util_win =
-      LaunchUtilWinServiceInstance();
+  mojo::Remote<chrome::mojom::ProcessorMetrics> remote_util_win =
+      LaunchProcessorMetricsService();
   auto* remote_util_win_ptr = remote_util_win.get();
-  remote_util_win_ptr->RecordProcessorMetrics(base::BindOnce(
-      [](mojo::Remote<chrome::mojom::UtilWin>) {}, std::move(remote_util_win)));
+  remote_util_win_ptr->RecordProcessorMetrics(
+      base::BindOnce([](mojo::Remote<chrome::mojom::ProcessorMetrics>) {},
+                     std::move(remote_util_win)));
 }
 
 // Initializes the ModuleDatabase on its owning sequence. Also starts the
@@ -470,7 +473,7 @@ void UpdatePwaLaunchersForProfile(const base::FilePath& profile_dir) {
   auto* provider = web_app::WebAppProvider::Get(profile);
   if (!provider)
     return;
-  web_app::AppRegistrar& registrar = provider->registrar();
+  web_app::WebAppRegistrar& registrar = provider->registrar();
 
   // Create a vector of all PWA-launcher paths in |profile_dir|.
   std::vector<base::FilePath> pwa_launcher_paths;
@@ -734,6 +737,8 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
     AnnounceInActiveBrowser(l10n_util::GetStringUTF16(IDS_WELCOME_TO_CHROME));
 
   base::ImportantFileWriterCleaner::GetInstance().Start();
+
+  chrome::enterprise_util::MeasureAndReportCriticalPolicySectionAcquisition();
 }
 
 // static

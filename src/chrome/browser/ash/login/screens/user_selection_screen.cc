@@ -35,11 +35,11 @@
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/system/system_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/ash/login_screen_client_impl.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/common/pref_names.h"
@@ -156,10 +156,9 @@ FingerprintState GetInitialFingerprintState(const user_manager::User* user) {
 }
 
 // Returns true if dircrypto migration check should be performed.
+// TODO(achuith): Get rid of this function altogether.
 bool ShouldCheckNeedDircryptoMigration() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kDisableEncryptionMigration) &&
-         arc::IsArcAvailable();
+  return arc::IsArcAvailable();
 }
 
 // Returns true if the user can run ARC based on the user type.
@@ -178,10 +177,10 @@ AccountId GetOwnerAccountId() {
   return owner;
 }
 
-bool IsEnterpriseManaged() {
+bool IsDeviceEnterpriseManaged() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->IsEnterpriseManaged();
+  return connector->IsDeviceEnterpriseManaged();
 }
 
 bool IsSigninToAdd() {
@@ -196,7 +195,7 @@ bool CanRemoveUser(const user_manager::User* user) {
   // Single user check here is necessary because owner info might not be
   // available when running into login screen on first boot.
   // See http://crosbug.com/12723
-  if (is_single_user && !IsEnterpriseManaged())
+  if (is_single_user && !IsDeviceEnterpriseManaged())
     return false;
   if (!user->GetAccountId().is_valid())
     return false;
@@ -768,9 +767,8 @@ void UserSelectionScreen::ShowBannerMessage(const std::u16string& message,
 
 void UserSelectionScreen::ShowUserPodCustomIcon(
     const AccountId& account_id,
-    const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
-        icon_options) {
-  view_->ShowUserPodCustomIcon(account_id, icon_options);
+    const proximity_auth::ScreenlockBridge::UserPodCustomIconInfo& icon_info) {
+  view_->ShowUserPodCustomIcon(account_id, icon_info);
 }
 
 void UserSelectionScreen::HideUserPodCustomIcon(const AccountId& account_id) {

@@ -184,7 +184,7 @@ namespace {
                 return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
         device.CreateRenderPipelineAsync(&descriptor, callback, &callbackData);
@@ -210,10 +210,10 @@ namespace {
         };
 
         wgpu::ComputePipelineDescriptor descriptor;
-        descriptor.computeStage.module = utils::CreateShaderModule(device, R"(
-            [[stage(compute)]] fn main() {
+        descriptor.compute.module = utils::CreateShaderModule(device, R"(
+            [[stage(compute), workgroup_size(1)]] fn main() {
             })");
-        descriptor.computeStage.entryPoint = "main";
+        descriptor.compute.entryPoint = "main";
         device.CreateComputePipelineAsync(&descriptor, callback, &callbackData);
 
         WaitForAllOperations(device);
@@ -234,9 +234,9 @@ namespace {
         // BindGroup 2. This is to provide coverage of for loops in validation code.
         wgpu::ComputePipelineDescriptor cpDesc;
         cpDesc.layout = utils::MakePipelineLayout(device, {emptyBGL, testBGL});
-        cpDesc.computeStage.entryPoint = "main";
-        cpDesc.computeStage.module =
-            utils::CreateShaderModule(device, "[[stage(compute)]] fn main() {}");
+        cpDesc.compute.entryPoint = "main";
+        cpDesc.compute.module =
+            utils::CreateShaderModule(device, "[[stage(compute), workgroup_size(1)]] fn main() {}");
         wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&cpDesc);
 
         wgpu::BufferDescriptor bufDesc;
@@ -302,9 +302,9 @@ namespace {
 
         wgpu::ComputePipelineDescriptor cpDesc;
         cpDesc.layout = utils::MakePipelineLayout(device, {emptyBGL, emptyBGL, testBGL});
-        cpDesc.computeStage.entryPoint = "main";
-        cpDesc.computeStage.module =
-            utils::CreateShaderModule(device, "[[stage(compute)]] fn main() {}");
+        cpDesc.compute.entryPoint = "main";
+        cpDesc.compute.module =
+            utils::CreateShaderModule(device, "[[stage(compute), workgroup_size(1)]] fn main() {}");
         wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&cpDesc);
 
         wgpu::TextureDescriptor texDesc;

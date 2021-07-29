@@ -34,6 +34,7 @@ static void od_bin_fdct8x8(tran_low_t *y, int ystride, const int16_t *x,
       *(y + ystride * i + j) = (*(y + ystride * i + j) + 4) >> 3;
 }
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static void hbd_od_bin_fdct8x8(tran_low_t *y, int ystride, const int16_t *x,
                                int xstride) {
   int i, j;
@@ -43,6 +44,7 @@ static void hbd_od_bin_fdct8x8(tran_low_t *y, int ystride, const int16_t *x,
     for (j = 0; j < 8; j++)
       *(y + ystride * i + j) = (*(y + ystride * i + j) + 4) >> 3;
 }
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
 /* Normalized inverse quantization matrix for 8x8 DCT at the point of
  * transparency. This is not the JPEG based matrix from the paper,
@@ -210,6 +212,7 @@ static double calc_psnrhvs(const unsigned char *src, int _systride,
         }
       }
       s_gvar = 1.f / (36 - n + 1) * s_gmean / 36.f;
+#if CONFIG_AV1_HIGHBITDEPTH
       if (!buf_is_hbd) {
         od_bin_fdct8x8(dct_s_coef, 8, dct_s, 8);
         od_bin_fdct8x8(dct_d_coef, 8, dct_d, 8);
@@ -217,6 +220,10 @@ static double calc_psnrhvs(const unsigned char *src, int _systride,
         hbd_od_bin_fdct8x8(dct_s_coef, 8, dct_s, 8);
         hbd_od_bin_fdct8x8(dct_d_coef, 8, dct_d, 8);
       }
+#else
+      od_bin_fdct8x8(dct_s_coef, 8, dct_s, 8);
+      od_bin_fdct8x8(dct_d_coef, 8, dct_d, 8);
+#endif  // CONFIG_AV1_HIGHBITDEPTH
       for (i = 0; i < 8; i++)
         for (j = (i == 0); j < 8; j++)
           s_mask += dct_s_coef[i * 8 + j] * dct_s_coef[i * 8 + j] * mask[i][j];

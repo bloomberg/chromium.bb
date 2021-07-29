@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,28 +43,6 @@ class DeepScanningMessageView;
 class ContentAnalysisDialog : public views::DialogDelegate,
                               public content::WebContentsObserver {
  public:
-  // Enum used to represent what the dialog is currently showing.
-  enum class DeepScanningDialogStatus {
-    // The dialog is shown with an explanation that the scan is being performed
-    // and that the result is pending.
-    PENDING,
-
-    // The dialog is shown with a short message indicating that the scan was a
-    // success and that the user may proceed with their upload, drag-and-drop or
-    // paste.
-    SUCCESS,
-
-    // The dialog is shown with a message indicating that the scan was a failure
-    // and that the user may not proceed with their upload, drag-and-drop or
-    // paste.
-    FAILURE,
-
-    // The dialog is shown with a message indicating that the scan was a
-    // failure, but that the user may proceed with their upload, drag-and-drop
-    // or paste if they want to.
-    WARNING,
-  };
-
   // TestObserver should be implemented by tests that need to track when certain
   // ContentAnalysisDialog functions are called. The test can add itself as an
   // observer by using SetObserverForTesting.
@@ -110,7 +88,9 @@ class ContentAnalysisDialog : public views::DialogDelegate,
   ContentAnalysisDialog(std::unique_ptr<ContentAnalysisDelegateBase> delegate,
                         content::WebContents* web_contents,
                         safe_browsing::DeepScanAccessPoint access_point,
-                        int files_count);
+                        int files_count,
+                        ContentAnalysisDelegateBase::FinalResult final_result =
+                            ContentAnalysisDelegateBase::FinalResult::SUCCESS);
 
   // views::DialogDelegate:
   std::u16string GetWindowTitle() const override;
@@ -125,44 +105,35 @@ class ContentAnalysisDialog : public views::DialogDelegate,
 
   // Updates the dialog with the result, and simply delete it from memory if
   // nothing should be shown.
-  void ShowResult(ContentAnalysisDelegateBase::FinalResult result,
-                  const std::u16string& custom_message,
-                  const GURL& learn_more_url);
+  void ShowResult(ContentAnalysisDelegateBase::FinalResult result);
 
-  // Accessors to simplify |dialog_status_| checking.
-  inline bool is_success() const {
-    return dialog_status_ == DeepScanningDialogStatus::SUCCESS;
-  }
+  // Accessors to simplify |dialog_state_| checking.
+  inline bool is_success() const { return dialog_state_ == State::SUCCESS; }
 
-  inline bool is_failure() const {
-    return dialog_status_ == DeepScanningDialogStatus::FAILURE;
-  }
+  inline bool is_failure() const { return dialog_state_ == State::FAILURE; }
 
-  inline bool is_warning() const {
-    return dialog_status_ == DeepScanningDialogStatus::WARNING;
-  }
+  inline bool is_warning() const { return dialog_state_ == State::WARNING; }
 
   inline bool is_result() const { return !is_pending(); }
 
-  inline bool is_pending() const {
-    return dialog_status_ == DeepScanningDialogStatus::PENDING;
-  }
+  inline bool is_pending() const { return dialog_state_ == State::PENDING; }
 
-  bool has_custom_message() const { return !final_custom_message_.empty(); }
+  bool has_custom_message() const {
+    return delegate_->GetCustomMessage().has_value();
+  }
 
   bool has_learn_more_url() const {
-    return !final_learn_more_url_.is_empty() &&
-           final_learn_more_url_.is_valid();
+    return delegate_->GetCustomLearnMoreUrl().has_value();
   }
 
-  // Returns the side image's logo color depending on |dialog_status_|.
+  // Returns the side image's logo color depending on |dialog_state_|.
   SkColor GetSideImageLogoColor() const;
 
   // Returns the side image's background circle color depending on
-  // |dialog_status_|.
+  // |dialog_state_|.
   SkColor GetSideImageBackgroundColor() const;
 
-  // Returns the appropriate top image depending on |dialog_status_|.
+  // Returns the appropriate top image depending on |dialog_state_|.
   const gfx::ImageSkia* GetTopImage() const;
 
   // Accessors used to validate the views in tests.
@@ -174,33 +145,66 @@ class ContentAnalysisDialog : public views::DialogDelegate,
   // Friend the unit test class for this so it can call the private dtor.
   friend class ContentAnalysisDialogPlainTest;
 
+  // Enum used to represent what the dialog is currently showing.
+  enum class State {
+    // The dialog is shown with an explanation that the scan is being performed
+    // and that the result is pending.
+    PENDING,
+
+    // The dialog is shown with a short message indicating that the scan was a
+    // success and that the user may proceed with their upload, drag-and-drop or
+    // paste.
+    SUCCESS,
+
+    // The dialog is shown with a message indicating that the scan was a failure
+    // and that the user may not proceed with their upload, drag-and-drop or
+    // paste.
+    FAILURE,
+
+    // The dialog is shown with a message indicating that the scan was a
+    // failure, but that the user may proceed with their upload, drag-and-drop
+    // or paste if they want to.
+    WARNING,
+  };
+
   ~ContentAnalysisDialog() override;
 
-  // Update the UI depending on |dialog_status_|.
+  void UpdateStateFromFinalResult(
+      ContentAnalysisDelegateBase::FinalResult final_result);
+
+  // Updates the views in the dialog to put them in the correct state for
+  // |dialog_state_|. This doesn't trigger the same events/resizes as
+  // UpdateDialog(), and doesn't require the presence of a widget. This is safe
+  // to use in the first GetContentsView() call, before the dialog is shown.
+  void UpdateViews();
+
+  // Update the UI depending on |dialog_state_|. This also triggers resizes and
+  // fires some events. It's meant to be called to update the entire dialog when
+  // it's already showing.
   void UpdateDialog();
 
   // Resizes the already shown dialog to accommodate changes in its content.
   void Resize(int height_to_add);
 
-  // Setup the appropriate buttons depending on |dialog_status_|.
+  // Setup the appropriate buttons depending on |dialog_state_|.
   void SetupButtons();
 
   // Returns a newly created side icon.
   std::unique_ptr<views::View> CreateSideIcon();
 
-  // Returns the appropriate dialog message depending on |dialog_status_|.
+  // Returns the appropriate dialog message depending on |dialog_state_|.
   std::u16string GetDialogMessage() const;
 
-  // Returns the text for the Cancel button depending on |dialog_status_|.
+  // Returns the text for the Cancel button depending on |dialog_state_|.
   std::u16string GetCancelButtonText() const;
 
   // Returns the text for the Ok button for the warning case.
   std::u16string GetBypassWarningButtonText() const;
 
-  // Returns the appropriate paste top image ID depending on |dialog_status_|.
+  // Returns the appropriate paste top image ID depending on |dialog_state_|.
   int GetPasteImageId(bool use_dark) const;
 
-  // Returns the appropriate upload top image ID depending on |dialog_status_|.
+  // Returns the appropriate upload top image ID depending on |dialog_state_|.
   int GetUploadImageId(bool use_dark) const;
 
   // Returns the appropriate pending message depending on |files_count_|.
@@ -241,13 +245,10 @@ class ContentAnalysisDialog : public views::DialogDelegate,
   base::TimeTicks first_shown_timestamp_;
 
   // Used to show the appropriate dialog depending on the scan's status.
-  DeepScanningDialogStatus dialog_status_ = DeepScanningDialogStatus::PENDING;
+  State dialog_state_ = State::PENDING;
 
   // Used to show the appropriate message.
-  ContentAnalysisDelegateBase::FinalResult final_result_ =
-      ContentAnalysisDelegateBase::FinalResult::SUCCESS;
-  std::u16string final_custom_message_;
-  GURL final_learn_more_url_;
+  ContentAnalysisDelegateBase::FinalResult final_result_;
 
   // Used to animate dialog height changes.
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;

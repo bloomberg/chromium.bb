@@ -7,12 +7,13 @@
 #include <memory>
 #include <vector>
 
+#include "ash/app_list/app_list_metrics.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/metrics/demo_session_metrics_recorder.h"
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 #include "ash/metrics/pointer_metrics_recorder.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -60,8 +61,8 @@ ActiveWindowStateType GetActiveWindowState() {
       case WindowStateType::kFullscreen:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_FULLSCREEN;
         break;
-      case WindowStateType::kLeftSnapped:
-      case WindowStateType::kRightSnapped:
+      case WindowStateType::kPrimarySnapped:
+      case WindowStateType::kSecondarySnapped:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_SNAPPED;
         break;
       case WindowStateType::kPinned:
@@ -485,6 +486,7 @@ void UserMetricsRecorder::RecordPeriodicMetrics() {
 
   if (IsUserInActiveDesktopEnvironment()) {
     RecordShelfItemCounts();
+    RecordPeriodicAppListMetrics();
     UMA_HISTOGRAM_COUNTS_100("Ash.NumberOfVisibleWindowsInPrimaryDisplay",
                              GetNumVisibleWindowsInPrimaryDisplay());
 

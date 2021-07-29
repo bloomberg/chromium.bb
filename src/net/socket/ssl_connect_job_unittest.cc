@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -54,6 +54,8 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
+#include "url/scheme_host_port.h"
+#include "url/url_constants.h"
 
 namespace net {
 namespace {
@@ -91,11 +93,11 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
         ssl_config_service_(new SSLConfigServiceDefaults),
         http_auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()),
         session_(CreateNetworkSession()),
-        direct_transport_socket_params_(
-            new TransportSocketParams(HostPortPair("host", 443),
-                                      NetworkIsolationKey(),
-                                      SecureDnsPolicy::kAllow,
-                                      OnHostResolutionCallback())),
+        direct_transport_socket_params_(new TransportSocketParams(
+            url::SchemeHostPort(url::kHttpsScheme, "host", 443),
+            NetworkIsolationKey(),
+            SecureDnsPolicy::kAllow,
+            OnHostResolutionCallback())),
         proxy_transport_socket_params_(
             new TransportSocketParams(HostPortPair("proxy", 443),
                                       NetworkIsolationKey(),
@@ -430,7 +432,8 @@ TEST_F(SSLConnectJobTest, SecureDnsPolicy) {
     TestConnectJobDelegate test_delegate;
     direct_transport_socket_params_ =
         base::MakeRefCounted<TransportSocketParams>(
-            HostPortPair("host", 443), NetworkIsolationKey(), secure_dns_policy,
+            url::SchemeHostPort(url::kHttpsScheme, "host", 443),
+            NetworkIsolationKey(), secure_dns_policy,
             OnHostResolutionCallback());
     auto common_connect_job_params = session_->CreateCommonConnectJobParams();
     std::unique_ptr<ConnectJob> ssl_connect_job =
@@ -760,13 +763,14 @@ TEST_F(SSLConnectJobTest, SOCKSHostResolutionFailure) {
 TEST_F(SSLConnectJobTest, SOCKSBasic) {
   for (IoMode io_mode : {SYNCHRONOUS, ASYNC}) {
     SCOPED_TRACE(io_mode);
-    const char kSOCKS5Request[] = {0x05, 0x01, 0x00, 0x03, 0x09, 's',
-                                   'o',  'c',  'k',  's',  'h',  'o',
-                                   's',  't',  0x01, 0xBB};
+    const uint8_t kSOCKS5Request[] = {0x05, 0x01, 0x00, 0x03, 0x09, 's',
+                                      'o',  'c',  'k',  's',  'h',  'o',
+                                      's',  't',  0x01, 0xBB};
 
     MockWrite writes[] = {
         MockWrite(io_mode, kSOCKS5GreetRequest, kSOCKS5GreetRequestLength),
-        MockWrite(io_mode, kSOCKS5Request, base::size(kSOCKS5Request)),
+        MockWrite(io_mode, reinterpret_cast<const char*>(kSOCKS5Request),
+                  base::size(kSOCKS5Request)),
     };
 
     MockRead reads[] = {
@@ -794,12 +798,14 @@ TEST_F(SSLConnectJobTest, SOCKSBasic) {
 }
 
 TEST_F(SSLConnectJobTest, SOCKSHasEstablishedConnection) {
-  const char kSOCKS5Request[] = {0x05, 0x01, 0x00, 0x03, 0x09, 's', 'o',  'c',
-                                 'k',  's',  'h',  'o',  's',  't', 0x01, 0xBB};
+  const uint8_t kSOCKS5Request[] = {0x05, 0x01, 0x00, 0x03, 0x09, 's',
+                                    'o',  'c',  'k',  's',  'h',  'o',
+                                    's',  't',  0x01, 0xBB};
 
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS, kSOCKS5GreetRequest, kSOCKS5GreetRequestLength, 0),
-      MockWrite(SYNCHRONOUS, kSOCKS5Request, base::size(kSOCKS5Request), 3),
+      MockWrite(SYNCHRONOUS, reinterpret_cast<const char*>(kSOCKS5Request),
+                base::size(kSOCKS5Request), 3),
   };
 
   MockRead reads[] = {

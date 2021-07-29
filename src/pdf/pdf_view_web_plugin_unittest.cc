@@ -12,10 +12,12 @@
 #include "cc/test/pixel_test_utils.h"
 #include "pdf/ppapi_migration/bitmap.h"
 #include "pdf/test/test_helpers.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_associated_url_loader.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -24,6 +26,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
+
+using testing::Pointwise;
 
 namespace chrome_pdf {
 
@@ -50,6 +54,12 @@ struct PaintParams {
   // The target painting area on the canvas.
   gfx::Rect paint_rect;
 };
+
+MATCHER(SearchStringResultEq, "") {
+  PDFEngine::Client::SearchStringResult l = std::get<0>(arg);
+  PDFEngine::Client::SearchStringResult r = std::get<1>(arg);
+  return l.start_index == r.start_index && l.length == r.length;
+}
 
 // Generates the expected `SkBitmap` with `paint_color` filled in the expected
 // clipped area and `kDefaultColor` as the background color.
@@ -82,11 +92,24 @@ class FakeContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
   // PdfViewWebPlugin::ContainerWrapper:
   void Invalidate() override {}
 
+  MOCK_METHOD(void, ReportFindInPageMatchCount, (int, int, bool), (override));
+
+  MOCK_METHOD(void, ReportFindInPageSelection, (int, int), (override));
+
   float DeviceScaleFactor() const override { return device_scale_; }
 
   MOCK_METHOD(void,
               SetReferrerForRequest,
               (blink::WebURLRequest&, const blink::WebURL&),
+              (override));
+
+  MOCK_METHOD(void, Alert, (const blink::WebString&), (override));
+
+  MOCK_METHOD(bool, Confirm, (const blink::WebString&), (override));
+
+  MOCK_METHOD(blink::WebString,
+              Prompt,
+              (const blink::WebString&, const blink::WebString&),
               (override));
 
   MOCK_METHOD(void,
@@ -104,6 +127,10 @@ class FakeContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
   }
 
   blink::WebLocalFrame* GetFrame() override { return nullptr; }
+
+  blink::WebLocalFrameClient* GetWebLocalFrameClient() override {
+    return nullptr;
+  }
 
   // TODO(https://crbug.com/1207575): Container() should not be used for testing
   // since it doesn't have a valid blink::WebPluginContainer. Make this method
@@ -142,8 +169,15 @@ class PdfViewWebPluginTest : public testing::Test {
   ~PdfViewWebPluginTest() override = default;
 
   void SetUp() override {
-    plugin_ = std::unique_ptr<PdfViewWebPlugin, PluginDeleter>(
-        new PdfViewWebPlugin(blink::WebPluginParams()));
+    // Set a dummy URL for initializing the plugin.
+    blink::WebPluginParams params;
+    params.attribute_names.push_back(blink::WebString("src"));
+    params.attribute_values.push_back(blink::WebString("dummy.pdf"));
+
+    mojo::AssociatedRemote<pdf::mojom::PdfService> unbound_remote;
+    plugin_ =
+        std::unique_ptr<PdfViewWebPlugin, PluginDeleter>(new PdfViewWebPlugin(
+            std::move(unbound_remote), /*print_client=*/nullptr, params));
 
     auto wrapper = std::make_unique<FakeContainerWrapper>(plugin_.get());
     wrapper_ptr_ = wrapper.get();
@@ -319,6 +353,27 @@ TEST_F(PdfViewWebPluginTest, FormTextFieldFocusChangeUpdatesTextInputType) {
   plugin_->FormTextFieldFocusChange(false);
   EXPECT_EQ(blink::WebTextInputType::kWebTextInputTypeNone,
             wrapper_ptr_->widget_text_input_type());
+}
+
+TEST_F(PdfViewWebPluginTest, SearchString) {
+  static constexpr char16_t kPattern[] = u"fox";
+  static constexpr char16_t kTarget[] =
+      u"The quick brown fox jumped over the lazy Fox";
+
+  {
+    static constexpr PDFEngine::Client::SearchStringResult kExpectation[] = {
+        {16, 3}};
+    EXPECT_THAT(
+        plugin_->SearchString(kTarget, kPattern, /*case_sensitive=*/true),
+        Pointwise(SearchStringResultEq(), kExpectation));
+  }
+  {
+    static constexpr PDFEngine::Client::SearchStringResult kExpectation[] = {
+        {16, 3}, {41, 3}};
+    EXPECT_THAT(
+        plugin_->SearchString(kTarget, kPattern, /*case_sensitive=*/false),
+        Pointwise(SearchStringResultEq(), kExpectation));
+  }
 }
 
 }  // namespace chrome_pdf

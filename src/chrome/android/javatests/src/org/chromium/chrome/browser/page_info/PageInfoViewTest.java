@@ -24,9 +24,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.Batch.PER_CLASS;
-import static org.chromium.chrome.test.util.ViewUtils.hasBackgroundColor;
-import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
+import static org.chromium.ui.test.util.ViewUtils.hasBackgroundColor;
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.content.Context;
 import android.os.Build;
@@ -52,6 +52,8 @@ import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.history.HistoryContentManager;
+import org.chromium.chrome.browser.history.StubbedHistoryProvider;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -118,7 +120,7 @@ public class PageInfoViewTest {
 
     @Rule
     public RenderTestRule mRenderTestRule =
-            RenderTestRule.Builder.withPublicCorpus().setRevision(5).build();
+            RenderTestRule.Builder.withPublicCorpus().setRevision(7).build();
 
     private boolean mIsSystemLocationSettingEnabled = true;
 
@@ -253,6 +255,7 @@ public class PageInfoViewTest {
 
         setThirdPartyCookieBlocking(CookieControlsMode.INCOGNITO_ONLY);
         clearPermissions();
+        HistoryContentManager.setProviderForTests(null);
     }
 
     /**
@@ -445,6 +448,31 @@ public class PageInfoViewTest {
         onViewWaiting(allOf(
                 withText(containsString("Cookies and other site data are used")), isDisplayed()));
         mRenderTestRule.render(getPageInfoView(), "PageInfo_CookiesSubpage");
+    }
+
+    /**
+     * Tests the history page of the PageInfo UI.
+     */
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @Features.EnableFeatures(PageInfoFeatures.PAGE_INFO_HISTORY_NAME)
+    public void testShowHistorySubpage() throws IOException {
+        StubbedHistoryProvider historyProvider = new StubbedHistoryProvider();
+        // Need to always have the same dates for render tests.
+        // April 4, 2021 12:00:00 GMT+00:00
+        long timestamp1 = 1617537600000L;
+        historyProvider.addItem(StubbedHistoryProvider.createHistoryItem(1, timestamp1));
+        // June 4, 2021 12:00:00 GMT+00:00
+        long timestamp2 = 1622808000000L;
+        historyProvider.addItem(StubbedHistoryProvider.createHistoryItem(1, timestamp2));
+        HistoryContentManager.setProviderForTests(historyProvider);
+
+        loadUrlAndOpenPageInfo(
+                mTestServerRule.getServer().getURLWithHostName("www.example.com", "/"));
+        onView(withId(R.id.page_info_history_row)).perform(click());
+        onViewWaiting(allOf(withText(containsString("Jun 4, 2021")), isDisplayed()));
+        mRenderTestRule.render(getPageInfoView(), "PageInfo_HistorySubpage");
     }
 
     /**

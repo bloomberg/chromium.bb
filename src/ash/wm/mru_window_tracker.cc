@@ -6,8 +6,7 @@
 
 #include <algorithm>
 
-#include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/session/session_controller_impl.h"
@@ -20,7 +19,8 @@
 #include "ash/wm/window_util.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
-#include "base/stl_util.h"
+#include "base/containers/cxx20_erase.h"
+#include "components/full_restore/features.h"
 #include "components/full_restore/full_restore_utils.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -197,6 +197,11 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 }  // namespace
 
 bool CanIncludeWindowInMruList(aura::Window* window) {
+  // If `window` was launched from Full Restore it won't be activatable
+  // temporarily, but it should still be included in the MRU list.
+  if (window->GetProperty(full_restore::kLaunchedFromFullRestoreKey))
+    return true;
+
   return wm::CanActivateWindow(window) &&
          !window->GetProperty(ash::kExcludeInMruKey);
 }
@@ -205,7 +210,7 @@ bool CanIncludeWindowInMruList(aura::Window* window) {
 // MruWindowTracker, public:
 
 MruWindowTracker::MruWindowTracker() {
-  if (features::IsFullRestoreEnabled())
+  if (full_restore::features::IsFullRestoreEnabled())
     aura::Env::GetInstance()->AddObserver(this);
 
   Shell::Get()->activation_client()->AddObserver(this);
@@ -294,7 +299,7 @@ void MruWindowTracker::OnWindowActivated(ActivationReason reason,
 
   SetActiveWindow(gained_active);
 
-  if (gained_active && features::IsFullRestoreEnabled())
+  if (gained_active && full_restore::features::IsFullRestoreEnabled())
     FullRestoreController::Get()->OnWindowActivated(gained_active);
 }
 
@@ -307,7 +312,7 @@ void MruWindowTracker::OnWindowDestroyed(aura::Window* window) {
 }
 
 void MruWindowTracker::OnWindowInitialized(aura::Window* window) {
-  DCHECK(features::IsFullRestoreEnabled());
+  DCHECK(full_restore::features::IsFullRestoreEnabled());
 
   int32_t* activation_index =
       window->GetProperty(full_restore::kActivationIndexKey);
@@ -318,21 +323,9 @@ void MruWindowTracker::OnWindowInitialized(aura::Window* window) {
   // so we have to manually insert them into the window tracker and restore
   // their MRU order.
   window->AddObserver(this);
-  auto reverse_iter = mru_windows_.rbegin();
-  while (reverse_iter != mru_windows_.rend()) {
-    int32_t* curr_window_activation_index =
-        (*reverse_iter)->GetProperty(full_restore::kActivationIndexKey);
-    if (curr_window_activation_index &&
-        *curr_window_activation_index > *activation_index) {
-      // The lower `full_restore::kActivationIndexKey` is, the more recently it
-      // was used. If the current window has a higher activation index, then we
-      // should insert `window` right after it.
-      break;
-    }
-    reverse_iter = std::next(reverse_iter);
-  }
-
-  mru_windows_.insert(reverse_iter.base(), window);
+  mru_windows_.insert(
+      FullRestoreController::GetWindowToInsertBefore(window, mru_windows_),
+      window);
 }
 
 }  // namespace ash

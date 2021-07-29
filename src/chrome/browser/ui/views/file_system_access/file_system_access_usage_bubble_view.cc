@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/views/file_system_access/file_system_access_usage_bubble_view.h"
 
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/unicodestring.h"
 #include "base/metrics/user_metrics.h"
-#include "base/stl_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
@@ -240,12 +240,9 @@ FileSystemAccessUsageBubbleView::Usage&
 FileSystemAccessUsageBubbleView::Usage::operator=(Usage&&) = default;
 
 FileSystemAccessUsageBubbleView::FilePathListModel::FilePathListModel(
-    const views::View* owner,
     std::vector<base::FilePath> files,
     std::vector<base::FilePath> directories)
-    : owner_(owner),
-      files_(std::move(files)),
-      directories_(std::move(directories)) {}
+    : files_(std::move(files)), directories_(std::move(directories)) {}
 
 FileSystemAccessUsageBubbleView::FilePathListModel::~FilePathListModel() =
     default;
@@ -257,24 +254,23 @@ int FileSystemAccessUsageBubbleView::FilePathListModel::RowCount() {
 std::u16string FileSystemAccessUsageBubbleView::FilePathListModel::GetText(
     int row,
     int column_id) {
-  if (size_t{row} < files_.size())
+  if (static_cast<size_t>(row) < files_.size())
     return files_[row].BaseName().LossyDisplayName();
   return directories_[row - files_.size()].BaseName().LossyDisplayName();
 }
 
-gfx::ImageSkia FileSystemAccessUsageBubbleView::FilePathListModel::GetIcon(
+ui::ImageModel FileSystemAccessUsageBubbleView::FilePathListModel::GetIcon(
     int row) {
-  const SkColor icon_color = owner_->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DefaultIconColor);
-  return gfx::CreateVectorIcon(size_t{row} < files_.size()
-                                   ? vector_icons::kInsertDriveFileOutlineIcon
-                                   : vector_icons::kFolderOpenIcon,
-                               kIconSize, icon_color);
+  return ui::ImageModel::FromVectorIcon(
+      static_cast<size_t>(row) < files_.size()
+          ? vector_icons::kInsertDriveFileOutlineIcon
+          : vector_icons::kFolderOpenIcon,
+      ui::NativeTheme::kColorId_DefaultIconColor, kIconSize);
 }
 
 std::u16string FileSystemAccessUsageBubbleView::FilePathListModel::GetTooltip(
     int row) {
-  if (size_t{row} < files_.size())
+  if (static_cast<size_t>(row) < files_.size())
     return files_[row].LossyDisplayName();
   return directories_[row - files_.size()].LossyDisplayName();
 }
@@ -346,11 +342,9 @@ FileSystemAccessUsageBubbleView::FileSystemAccessUsageBubbleView(
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       origin_(origin),
       usage_(std::move(usage)),
-      readable_paths_model_(this,
-                            std::move(usage_.readable_files),
+      readable_paths_model_(std::move(usage_.readable_files),
                             std::move(usage_.readable_directories)),
-      writable_paths_model_(this,
-                            std::move(usage_.writable_files),
+      writable_paths_model_(std::move(usage_.writable_files),
                             std::move(usage_.writable_directories)) {
   SetButtonLabel(ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_DONE));
   SetButtonLabel(

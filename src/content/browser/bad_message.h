@@ -24,7 +24,7 @@ namespace bad_message {
 // end. Items may be renamed but do not change the values. We rely on the enum
 // values in histograms.
 enum BadMessageReason {
-  NC_IN_PAGE_NAVIGATION = 0,
+  OBSOLETE_NC_IN_PAGE_NAVIGATION = 0,
   RFH_CAN_COMMIT_URL_BLOCKED = 1,
   RFH_CAN_ACCESS_FILES_OF_PAGE_STATE = 2,
   RFH_SANDBOX_FLAGS = 3,
@@ -274,6 +274,7 @@ enum BadMessageReason {
   MDDH_INVALID_ALL_ORIGINS_PERMITTED = 246,
   MDDH_INVALID_PERMITTED_ORIGIN = 247,
   MDDH_NOT_TOP_LEVEL = 248,
+  RFH_DID_CHANGE_IFRAME_ATTRIBUTE = 249,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

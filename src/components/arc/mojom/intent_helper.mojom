@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 45
+// Next MinVersion: 46
 
 module arc.mojom;
 
@@ -11,6 +11,7 @@ import "components/arc/mojom/bitmap.mojom";
 import "components/arc/mojom/camera_intent.mojom";
 import "components/arc/mojom/intent_common.mojom";
 import "components/arc/mojom/scale_factor.mojom";
+import "url/mojom/url.mojom";
 
 [Extensible]
 enum PatternType {
@@ -121,87 +122,52 @@ struct UrlWithMimeType {
 };
 
 // Describes a specific page in chrome://, about:blank, about:downloads and about:history.
+// This enum should have only the chrome pages used by ARC.
+// Numerical values should be used for each constant and should not be reused.
 [Extensible]
 enum ChromePage {
-  MULTIDEVICE,
-  MAIN,
-  POWER,
-  BLUETOOTH,
-  DATETIME,
-  DISPLAY,
-  WIFI,
-  LANGUAGES,
-  PRIVACY,
-  HELP,
-  ACCOUNTS,
-  APPEARANCE,
-  AUTOFILL,
-  BLUETOOTHDEVICES,
-  CHANGEPICTURE,
-  CLEARBROWSERDATA,
-  CLOUDPRINTERS,
-  CUPSPRINTERS,
-  DOWNLOADS,
-  KEYBOARDOVERLAY,
-  LOCKSCREEN,
-  MANAGEACCESSIBILITY,
-  NETWORKSTYPEVPN,
-  ONSTARTUP,
-  PASSWORDS,
-  POINTEROVERLAY,
-  RESET,
-  SEARCH,
-  STORAGE,
-  SYNCSETUP,
-  ABOUTBLANK,
-  ABOUTDOWNLOADS,
-  ABOUTHISTORY,
-  DEPRECATED_CROSTINIDISKRESIZE,
-  ACCESSIBILITY,
-  ACCOUNTMANAGER,
-  ANDROIDAPPSDETAILS,
-  ANDROIDAPPSDETAILSINBROWSERSETTINGS,
-  APPMANAGEMENT,
-  APPMANAGEMENTDETAILS,
-  ASSISTANT,
-  CONNECTEDDEVICES,
-  CROSTINISHAREDPATHS,
-  CROSTINISHAREDUSBDEVICES,
-  CROSTINIEXPORTIMPORT,
-  EXTERNALSTORAGE,
-  INTERNET,
-  KERBEROSACCOUNTS,
-  KNOWNNETWORKS,
-  MANAGEACCESSIBILITYTTS,
-  SMARTLOCKSETTINGS,
-  SWITCHACCESS,
-  STYLUS,
-  TETHERSETTINGS,
-  ETHERNET,
-  CELLULAR,
-  AMBIENTMODE,
-  DEPRECATED_PLUGINVMDETAILS,
-  PLUGINVMSHAREDPATHS,
-  OSACCESSIBILITY,
-  OSLANGUAGES,
-  DEPRECATED_OSLANGUAGESDETAILS,
-  DEPRECATED_OSLANGUAGESINPUTMETHODS,
-  OSPRINTING,
-  PRINTING,
-  OSPEOPLE,
-  OSPRIVACY,
-  OSSEARCH,
-  OSRESET,
-  OSLANGUAGESSMARTINPUTS,
-  DEPRECATED_DOWNLOADEDCONTENT,
-  OSLANGUAGESINPUT,
-  OSLANGUAGESLANGUAGES,
-  OSLANGUAGESEDITDICTIONARY,
-  KERBEROS,
-  KERBEROSACCOUNTSV2,
-  SEARCHSUBPAGE,
+  MULTIDEVICE = 0,
+  MAIN = 1,
+  POWER = 2,
+  BLUETOOTH = 3,
+  DATETIME = 4,
+  DISPLAY = 5,
+  WIFI = 6,
+  LANGUAGES = 7,
+  // TODO(b/181930573): Remove after P retires. This value is used only by P.
+  PRIVACY = 8,
+  HELP = 9,
+  ACCOUNTS = 10,
+  APPEARANCE = 11,
+  AUTOFILL = 12,
+  BLUETOOTHDEVICES = 13,
+  CHANGEPICTURE = 14,
+  CLEARBROWSERDATA = 15,
+  CLOUDPRINTERS = 16,
+  CUPSPRINTERS = 17,
+  DOWNLOADS = 18,
+  KEYBOARDOVERLAY = 19,
+  LOCKSCREEN = 20,
+  MANAGEACCESSIBILITY = 21,
+  NETWORKSTYPEVPN = 22,
+  ONSTARTUP = 23,
+  PASSWORDS = 24,
+  POINTEROVERLAY = 25,
+  RESET = 26,
+  SEARCH = 27,
+  STORAGE = 28,
+  SYNCSETUP = 29,
+  ABOUTBLANK = 30,
+  ABOUTDOWNLOADS = 31,
+  ABOUTHISTORY = 32,
+  // 33-48 are removed intentionally. Do not reuse them.
+  MANAGEACCESSIBILITYTTS = 49,
+  // 50-70 are removed intentionally. Do not reuse them.
+  OSLANGUAGESINPUT = 71,
+  OSLANGUAGESLANGUAGES = 72,
+  // 73-76 are removed intentionally. Do not reuse them.
 
-  LAST = SEARCHSUBPAGE
+  // Next value to be used is 77.
 };
 
 // Describes an unique chrome app.
@@ -235,6 +201,43 @@ struct TextSelectionAction {
   [MinVersion=23] ArcBitmap? bitmap_icon;
 };
 
+// Location and metadata for a single file attached to an app launch.
+struct LaunchFileInfo {
+  // URI location for the file, likely with a content:// scheme.
+  url.mojom.Url content_uri;
+
+  // MIME type for the file. Will be "application/octet-stream" if no more
+  // specific type can be determined.
+  string type;
+
+  // Human readable name for the file.
+  string name;
+
+  // Size of the file in bytes.
+  uint64 size;
+};
+
+// Contains the information needed to launch an app along with any data which
+// was shared to it.
+struct LaunchIntent {
+  string action;
+
+  // URI for the data to be handled by this intent.
+  url.mojom.Url? data;
+
+  // MIME type of the intent data.
+  string? type;
+
+  // The contents of Intent.EXTRA_SUBJECT.
+  string? extra_subject;
+
+  // The contents of Intent.EXTRA_TEXT.
+  string? extra_text;
+
+  // File metadata for files shared through Intent.EXTRA_STREAM.
+  array<LaunchFileInfo>? files;
+};
+
 // Interface to interact with a custom tab.
 // Close the interface pointer to close the custom tab.
 // Next method ID: 1
@@ -245,7 +248,7 @@ interface CustomTabSession {
 
 // Handles intents from ARC in Chrome.
 // Deprecated method ID: 4, 10
-// Next method ID: 19
+// Next method ID: 20
 interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
   [MinVersion=3] OnIconInvalidated@1(string package_name);
@@ -340,6 +343,15 @@ interface IntentHelperHost {
   //                      "com.bar.foo").
   [MinVersion=44] OnDownloadAdded@18(
       string relative_path, string owner_package_name);
+
+  // Opens the web app for a specified URL, if it is installed, and delivers
+  // |intent| to it. If the URL is not installed, will open |intent.data| in a
+  // browser tab, unless |intent.data| is not set, in which case nothing
+  // happens.
+  // Note that the |start_url| is used for resolving the app to open, but the
+  // actual URL which is loaded is based on the contents of |intent|.
+  [MinVersion=45] OnOpenAppWithIntent@19(
+      url.mojom.Url start_url, LaunchIntent intent);
 };
 
 // Sends intents to ARC on behalf of Chrome.

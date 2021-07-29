@@ -24,6 +24,7 @@
 Եթե «<ph name="SERVICE_SCRIPT_NAME" />» պարամետրն արդեն նշված է, ապանշեք ու նորից նշեք այն։</translation>
 <translation id="225614027745146050">Ողջույն</translation>
 <translation id="2320166752086256636">Թաքցնել ստեղնաշարը</translation>
+<translation id="2329392777730037872">Չհաջողվեց բացել <ph name="URL" /> հղումը սպասառու սարքում։</translation>
 <translation id="2333212046079545895">© 2021 Google LLC։ Բոլոր իրավունքները պահպանված են։</translation>
 <translation id="2359808026110333948">Շարունակել</translation>
 <translation id="2366718077645204424">Հնարավոր չէ կապ հաստատել խնամորդի հետ: Հավանաբար, սա ձեր ցանցի կազմաձևումների պատճառով է:</translation>
@@ -67,6 +68,7 @@
 <translation id="4176825807642096119">Մուտքի կոդ</translation>
 <translation id="4227991223508142681">Խնամորդի տրամադրման գործիք</translation>
 <translation id="4240294130679914010">Chromoting-ի խնամորդի ապատեղադրիչ</translation>
+<translation id="4257751272692708833">URL-ների վերահասցեավորման <ph name="PRODUCT_NAME" />ի հավելված</translation>
 <translation id="4277736576214464567">Մուտքի կոդը սխալ է: Նորից փորձեք:</translation>
 <translation id="4281844954008187215">Օգտագործման պայմաններ</translation>
 <translation id="4405930547258349619">Միջուկի գրադարան</translation>
@@ -87,6 +89,7 @@
 <translation id="4867841927763172006">Ուղարկել PrtScn</translation>
 <translation id="4974476491460646149"><ph name="HOSTNAME" /> խնամորդի հետ կապն ընդհատվեց</translation>
 <translation id="4985296110227979402">Հեռակա օգտագործման թույլտվության համար նախ անհրաժեշտ է կարգավորել համակարգիչը</translation>
+<translation id="4987330545941822761">Chrome հեռակա աշխատասեղանը չի կարողանում դիտարկիչ ընտրել՝ սարքում URL-ներ բացելու համար։ Ներքևի ցանկից ընտրեք համապատասխան դիտարկիչը։</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (անցանց)</translation>
 <translation id="507204348399810022">Ապաակտիվացնե՞լ հեռակա կապակցումները <ph name="HOSTNAME" />-ին:</translation>
 <translation id="5170982930780719864">Հանգույցի id-ն անվավեր է:</translation>
@@ -121,6 +124,7 @@
 <translation id="6612717000975622067">Ուղարկել Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Թույլատրել</translation>
 <translation id="677755392401385740">Գործարկվել է խնամորդ հետևյալ օգտատիրոջ համար՝ <ph name="HOST_USERNAME" />:</translation>
+<translation id="6902524959760471898">Օգնական-հավելված՝ <ph name="PRODUCT_NAME" /> սպասառուի մեջ URL-ներ բացելու համար</translation>
 <translation id="6939719207673461467">Ցուցադրել/թաքցնել ստեղնաշարը:</translation>
 <translation id="6963936880795878952">Հեռակա համակարգչի հետ կապակցումները ժամանակավորապես արգելափակված են, քանի որ ինչ-որ մեկը փորձել է կապակցվել սխալ PIN կոդով: Փորձեք ավելի ուշ:</translation>
 <translation id="6965382102122355670">Եղավ</translation>
@@ -133,6 +137,7 @@
 <translation id="7144878232160441200">Նորից փորձել</translation>
 <translation id="7312846573060934304">Խնամորդը կապակցված չէ ցանցին:</translation>
 <translation id="7319983568955948908">Դադարեցնել համօգտագործումը</translation>
+<translation id="7359298090707901886">Ընտրված դիտարկիչը չի կարող օգտագործվել լոկալ համակարգչում URL-ներ բացելու համար։</translation>
 <translation id="7401733114166276557">Chrome Հեռակա աշխատասեղան</translation>
 <translation id="7434397035092923453">Մուտքն արգելված է հետևյալ սպասառուի համար՝ <ph name="CLIENT_USERNAME" />:</translation>
 <translation id="7444276978508498879">Սպասառուն կապակցված է` <ph name="CLIENT_USERNAME" />:</translation>

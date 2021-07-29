@@ -17,7 +17,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -45,9 +44,9 @@
 #endif
 #include "build/chromeos_buildflags.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/content/password_protection/password_protection_service.h"
-#include "components/safe_browsing/core/password_protection/metrics_util.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/content/browser/password_protection/password_protection_service.h"
+#include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/ssl_errors/error_info.h"
@@ -308,6 +307,18 @@ PageInfo::PageInfo(std::unique_ptr<PageInfoDelegate> delegate,
   DCHECK(delegate_);
   security_level_ = delegate_->GetSecurityLevel();
   visible_security_state_for_metrics_ = delegate_->GetVisibleSecurityState();
+
+  // TabSpecificContentSetting needs to be created before page load.
+  DCHECK(GetPageSpecificContentSettings());
+  ComputeUIInputs(site_url_);
+
+  // Every time this is created, page info dialog is opened.
+  // So this counts how often the page Info dialog is opened.
+  RecordPageInfoAction(PAGE_INFO_OPENED);
+
+  // Record the time when the page info dialog is opened so the total time it is
+  // open can be measured.
+  start_time_ = base::TimeTicks::Now();
 }
 
 PageInfo::~PageInfo() {
@@ -394,22 +405,11 @@ bool PageInfo::IsFileOrInternalPage(const GURL& url) {
 void PageInfo::InitializeUiState(PageInfoUI* ui) {
   ui_ = ui;
   DCHECK(ui_);
-  // TabSpecificContentSetting needs to be created before page load.
-  DCHECK(GetPageSpecificContentSettings());
 
-  ComputeUIInputs(site_url_);
   PresentSitePermissions();
   PresentSiteIdentity();
   PresentSiteData();
   PresentPageFeatureInfo();
-
-  // Every time the Page Info UI is opened, this method is called.
-  // So this counts how often the Page Info UI is opened.
-  RecordPageInfoAction(PAGE_INFO_OPENED);
-
-  // Record the time when the Page Info UI is opened so the total time it is
-  // open can be measured.
-  start_time_ = base::TimeTicks::Now();
 }
 
 void PageInfo::UpdateSecurityState() {
@@ -420,6 +420,10 @@ void PageInfo::UpdateSecurityState() {
 void PageInfo::RecordPageInfoAction(PageInfoAction action) {
   if (action != PAGE_INFO_OPENED)
     did_perform_action_ = true;
+
+#if !defined(OS_ANDROID)
+  delegate_->OnPageInfoActionOccurred(action);
+#endif
 
   UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Action", action, PAGE_INFO_COUNT);
 
@@ -552,6 +556,7 @@ void PageInfo::OnSiteChosenObjectDeleted(const ChooserUIInfo& ui_info,
 
   // Refresh the UI to reflect the changed settings.
   PresentSitePermissions();
+  RecordPageInfoAction(PAGE_INFO_CHOOSER_OBJECT_DELETED);
 }
 
 void PageInfo::OnUIClosing(bool* reload_prompt) {
@@ -564,6 +569,7 @@ void PageInfo::OnUIClosing(bool* reload_prompt) {
     if (delegate_->CreateInfoBarDelegate() && reload_prompt)
       *reload_prompt = true;
   }
+  delegate_->OnUIClosing();
 #endif
 }
 
@@ -574,14 +580,15 @@ void PageInfo::OnRevokeSSLErrorBypassButtonPressed() {
   stateful_ssl_host_state_delegate->RevokeUserAllowExceptionsHard(
       site_url().host());
   did_revoke_user_ssl_decisions_ = true;
+  RecordPageInfoAction(PAGE_INFO_RESET_DECISIONS_CLICKED);
 }
 
 void PageInfo::OpenSiteSettingsView() {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
-  delegate_->ShowSiteSettings(site_url());
   RecordPageInfoAction(PAGE_INFO_SITE_SETTINGS_OPENED);
+  delegate_->ShowSiteSettings(site_url());
 #endif
 }
 
@@ -592,8 +599,8 @@ void PageInfo::OpenCookiesDialog() {
   if (!web_contents() || web_contents()->IsBeingDestroyed())
     return;
 
-  delegate_->OpenCookiesDialog();
   RecordPageInfoAction(PAGE_INFO_COOKIES_DIALOG_OPENED);
+  delegate_->OpenCookiesDialog();
 #endif
 }
 
@@ -606,8 +613,8 @@ void PageInfo::OpenCertificateDialog(net::X509Certificate* certificate) {
 
   gfx::NativeWindow top_window = web_contents()->GetTopLevelNativeWindow();
   if (certificate && top_window) {
-    delegate_->OpenCertificateDialog(certificate);
     RecordPageInfoAction(PAGE_INFO_CERTIFICATE_DIALOG_OPENED);
+    delegate_->OpenCertificateDialog(certificate);
   }
 #endif
 }
@@ -616,6 +623,7 @@ void PageInfo::OpenSafetyTipHelpCenterPage() {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
+  RecordPageInfoAction(PAGE_INFO_SAFETY_TIP_HELP_OPENED);
   delegate_->OpenSafetyTipHelpCenterPage();
 #endif
 }
@@ -624,13 +632,24 @@ void PageInfo::OpenConnectionHelpCenterPage(const ui::Event& event) {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
-  delegate_->OpenConnectionHelpCenterPage(event);
   RecordPageInfoAction(PAGE_INFO_CONNECTION_HELP_OPENED);
+  delegate_->OpenConnectionHelpCenterPage(event);
+#endif
+}
+
+void PageInfo::OpenContentSettingsExceptions(
+    ContentSettingsType content_settings_type) {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#else
+  RecordPageInfoAction(PAGE_INFO_CONNECTION_HELP_OPENED);
+  delegate_->OpenContentSettingsExceptions(content_settings_type);
 #endif
 }
 
 void PageInfo::OnChangePasswordButtonPressed() {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
+  RecordPageInfoAction(PAGE_INFO_CHANGE_PASSWORD_PRESSED);
   delegate_->OnUserActionOnPasswordUi(
       safe_browsing::WarningAction::CHANGE_PASSWORD);
 #endif
@@ -638,6 +657,7 @@ void PageInfo::OnChangePasswordButtonPressed() {
 
 void PageInfo::OnAllowlistPasswordReuseButtonPressed() {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
+  RecordPageInfoAction(PAGE_INFO_PASSWORD_REUSE_ALLOWED);
   delegate_->OnUserActionOnPasswordUi(
       safe_browsing::WarningAction::MARK_AS_LEGITIMATE);
 #endif

@@ -218,7 +218,7 @@ class BASE_EXPORT Histogram : public HistogramBase {
   std::unique_ptr<HistogramSamples> SnapshotFinalDelta() const override;
   void AddSamples(const HistogramSamples& samples) override;
   bool AddSamplesFromPickle(base::PickleIterator* iter) override;
-  base::DictionaryValue ToGraphDict() const override;
+  base::Value ToGraphDict() const override;
 
   // Validates the histogram contents and CHECKs on errors.
   // TODO(bcwhite): Remove this after https://crbug/836875.
@@ -286,7 +286,7 @@ class BASE_EXPORT Histogram : public HistogramBase {
 
   // Writes the type, min, max, and bucket count information of the histogram in
   // |params|.
-  void GetParameters(DictionaryValue* params) const override;
+  Value GetParameters() const override;
 
   // Samples that have not yet been logged with SnapshotDelta().
   std::unique_ptr<SampleVectorBase> unlogged_samples_;

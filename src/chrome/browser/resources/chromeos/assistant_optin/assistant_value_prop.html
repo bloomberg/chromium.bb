@@ -7,13 +7,16 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 
-<link rel="import" href="/components/oobe_i18n_behavior.html">
-<link rel="import" href="/components/oobe_adaptive_dialog.html">
-<link rel="import" href="/components/oobe_dialog_host_behavior.html">
+<link rel="import" href="/components/dialogs/oobe_adaptive_dialog.html">
+<link rel="import" href="/components/behaviors/oobe_dialog_host_behavior.html">
+<link rel="import" href="/components/behaviors/oobe_i18n_behavior.html">
+<link rel="import" href="/components/buttons/oobe_next_button.html">
+<link rel="import" href="/components/buttons/oobe_text_button.html">
+<link rel="import" href="/components/common_styles/oobe_dialog_host_styles.html">
 
 <dom-module id="assistant-value-prop">
   <template>
-    <style include="oobe-dialog-host"></style>
+    <style include="oobe-dialog-host-styles"></style>
     <link rel="stylesheet" href="assistant_shared_styles.css">
     <link rel="stylesheet" href="assistant_value_prop.css">
     <oobe-adaptive-dialog id="value-prop-dialog" role="dialog">
@@ -26,8 +29,10 @@
       </div>
       <div slot="content" id="content-container"
           class="landscape-vertical-centered">
-        <div class="content" id="intro-text"></div>
-        <div class="line" hidden$="[[!newLayoutEnabled_]]"></div>
+        <div class="content" id="subtitle-container"></div>
+        <div hidden$="[[!newLayoutEnabled_]]">
+          <div class="line" hidden$="[[isMinorMode_]]"></div>
+        </div>
         <div id="column-container" class="flex layout horizontal">
           <div id="value-prop-container" hidden$="[[newLayoutEnabled_]]">
             <div class="flex layout horizontal center">
@@ -39,17 +44,17 @@
           </div>
           <div id="consents-container"></div>
         </div>
-        <div class="content" id="footer-text"></div>
+        <div class="content" id="footer-text" hidden$="[[isMinorMode_]]"></div>
       </div>
       <div slot="bottom-buttons">
         <oobe-text-button id="skip-button" on-click="onSkipTap_"
             disabled="[[buttonsDisabled]]">
           <div id="skip-button-text" slot="text"></div>
         </oobe-text-button>
-        <oobe-next-button id="next-button" on-click="onNextTap_"
-            disabled="[[buttonsDisabled]]">
+        <oobe-text-button id="next-button" inverse="[[!equalWeightButtons_]]"
+            on-click="onNextTap_" disabled="[[buttonsDisabled]]">
           <div id="next-button-text" slot="text"></div>
-        </oobe-next-button>
+        </oobe-text-button>
       </div>
     </oobe-adaptive-dialog>
 

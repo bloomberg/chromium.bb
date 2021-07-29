@@ -78,9 +78,15 @@ void av1_compute_num_workers_for_mt(AV1_COMP *cpi);
 
 int av1_get_max_num_workers(AV1_COMP *cpi);
 
-void av1_create_workers(AV1_COMP *cpi, int num_workers);
+void av1_create_workers(AV1_PRIMARY *ppi, int num_workers);
 
-void av1_create_second_pass_workers(AV1_COMP *cpi, int num_workers);
+void av1_init_frame_mt(AV1_PRIMARY *ppi, AV1_COMP *cpi);
+
+#if CONFIG_MULTITHREAD
+void av1_init_mt_sync(AV1_COMP *cpi, int is_first_pass);
+#endif  // CONFIG_MULTITHREAD
+
+void av1_init_tile_thread_data(AV1_PRIMARY *ppi, int is_first_pass);
 
 void av1_cdef_mse_calc_frame_mt(AV1_COMMON *cm, MultiThreadInfo *mt_info,
                                 CdefSearchCtx *cdef_search_ctx);
@@ -92,7 +98,7 @@ void av1_write_tile_obu_mt(
     struct aom_write_bit_buffer *saved_wb, uint8_t obu_extn_header,
     const FrameHeaderInfo *fh_info, int *const largest_tile_id,
     unsigned int *max_tile_size, uint32_t *const obu_header_size,
-    uint8_t **tile_data_start);
+    uint8_t **tile_data_start, const int num_workers);
 
 #ifdef __cplusplus
 }  // extern "C"

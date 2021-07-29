@@ -314,11 +314,6 @@ static int libdav1d_receive_frame(AVCodecContext *c, AVFrame *frame)
 
     // match timestamps and packet size
     frame->pts = p->m.timestamp;
-#if FF_API_PKT_PTS
-FF_DISABLE_DEPRECATION_WARNINGS
-    frame->pkt_pts = p->m.timestamp;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     frame->pkt_dts = p->m.timestamp;
     frame->pkt_pos = p->m.offset;
     frame->pkt_size = p->m.size;
@@ -474,7 +469,7 @@ static const AVClass libdav1d_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_libdav1d_decoder = {
+const AVCodec ff_libdav1d_decoder = {
     .name           = "libdav1d",
     .long_name      = NULL_IF_CONFIG_SMALL("dav1d AV1 decoder by VideoLAN"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -484,8 +479,9 @@ AVCodec ff_libdav1d_decoder = {
     .close          = libdav1d_close,
     .flush          = libdav1d_flush,
     .receive_frame  = libdav1d_receive_frame,
-    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_AUTO_THREADS,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_SETS_PKT_DTS,
+    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_SETS_PKT_DTS |
+                      FF_CODEC_CAP_AUTO_THREADS,
     .priv_class     = &libdav1d_class,
     .wrapper_name   = "libdav1d",
 };

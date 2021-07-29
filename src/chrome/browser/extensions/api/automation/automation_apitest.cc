@@ -370,8 +370,8 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Intents) {
 
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, EnumValidity) {
   StartEmbeddedTestServer();
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "automation/tests/tabs", .page_url = "enum_validity.html"}))
+  ASSERT_TRUE(RunExtensionTest("automation/tests/tabs",
+                               {.page_url = "enum_validity.html"}))
       << message_;
 }
 
@@ -406,7 +406,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Desktop) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopInitialFocus) {
+// TODO(http://crbug.com/1213987): flaky on ChromeOS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_DesktopInitialFocus DISABLED_DesktopInitialFocus
+#else
+#define MAYBE_DesktopInitialFocus DesktopInitialFocus
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_DesktopInitialFocus) {
   ASSERT_TRUE(RunExtensionTest("automation/tests/desktop",
                                {.page_url = "initial_focus.html"}))
       << message_;
@@ -632,10 +638,17 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_TextareaAppendPerf) {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, HitTestMultipleWindows) {
+// TODO(crbug.com/1209766) Flaky on lacros
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_HitTestMultipleWindows DISABLED_HitTestMultipleWindows
+#else
+#define MAYBE_HitTestMultipleWindows HitTestMultipleWindows
+#endif
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_HitTestMultipleWindows) {
   StartEmbeddedTestServer();
-  ASSERT_TRUE(RunExtensionTest({.name = "automation/tests/desktop",
-                                .page_url = "hit_test_multiple_windows.html"}))
+  ASSERT_TRUE(RunExtensionTest("automation/tests/desktop",
+                               {.page_url = "hit_test_multiple_windows.html"}))
       << message_;
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)

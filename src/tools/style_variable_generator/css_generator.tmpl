@@ -10,7 +10,7 @@
 {% macro render_variables_for_mode(mode) -%}
 {%- for model_name, color in colors[mode].items() %}
   {{model_name | to_css_var_name}}-rgb: {{color | css_color_rgb}};
-  {{model_name | to_css_var_name}}: {{css_color_from_rgb_var(model_name, color)}};
+  {{model_name | to_css_var_name}}: {{css_color_var(model_name, color)}};
 {% endfor %}
 
 {%- for name, value in opacities[mode].items() %}
@@ -28,6 +28,18 @@ html:not(body) {
 
 
 }
+
+{%- if untyped_css %}
+
+html {
+{%-   for group_name, vars in untyped_css.items() %}
+  /* {{group_name}} */
+{%-     for name, value in vars.items() %}
+  {{name | to_css_var_name}}: {{value}};
+{%-     endfor %}
+{%   endfor %}
+}
+{%- endif %}
 
 {%- if colors[Modes.DARK] and dark_mode_selector is not none %}
 
@@ -48,3 +60,4 @@ html:not(body) {
 }
 }
 {%- endif %}
+{{debug_placeholder -}}

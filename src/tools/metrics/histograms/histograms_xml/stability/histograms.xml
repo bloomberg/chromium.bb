@@ -90,7 +90,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.Android.RendererCrash" enum="Boolean"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>wnwen@chromium.org</owner>
   <summary>
     Counts renderer crashes including OOMs. Android only. Mirrors old stability
@@ -136,7 +136,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.BadMessageTerminated.Chrome"
-    enum="BadMessageReasonChrome" expires_after="2021-10-04">
+    enum="BadMessageReasonChrome" expires_after="2021-12-12">
   <owner>creis@chromium.org</owner>
   <owner>jamescook@chromium.org</owner>
   <summary>
@@ -157,8 +157,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.BadMessageTerminated.Extensions"
-    enum="BadMessageReasonExtensions" expires_after="M82">
+    enum="BadMessageReasonExtensions" expires_after="2021-11-14">
   <owner>jamescook@chromium.org</owner>
+  <owner>karandeepb@chromium.org</owner>
   <summary>
     Count of extension processes killed because they sent an IPC that couldn't
     be properly handled. Categories are the reasons (code locations) for the
@@ -211,7 +212,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.ChildFrameCrash.ShownAfterCrashingReason"
-    enum="ShownAfterCrashingReason" expires_after="2021-09-30">
+    enum="ShownAfterCrashingReason" expires_after="2021-12-05">
   <owner>alexmos@chromium.org</owner>
   <owner>boliu@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
@@ -244,7 +245,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.ChildFrameCrash.Visibility" enum="CrashVisibility"
-    expires_after="2021-09-30">
+    expires_after="2021-12-05">
   <owner>alexmos@chromium.org</owner>
   <owner>boliu@chromium.org</owner>
   <owner>lfg@chromium.org</owner>
@@ -423,8 +424,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.IOS.Experimental.Counts"
-    enum="IOSStabilityUserVisibleTerminationType" expires_after="2021-06-15">
-  <owner>eugenebut@google.com</owner>
+    enum="IOSStabilityUserVisibleTerminationType" expires_after="2022-06-15">
+  <owner>ajuma@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
     Recorded when iOS app has started after a crash caused by system signal or
@@ -488,7 +489,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.BatteryCharge" units="%"
-    expires_after="2021-08-01">
+    expires_after="2021-12-12">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -511,7 +512,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.HasPossibleExplanation"
-    enum="BooleanHasPossibleExplanation" expires_after="2021-10-10">
+    enum="BooleanHasPossibleExplanation" expires_after="2021-12-12">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -522,7 +523,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.LowPowerModeEnabled" enum="BooleanEnabled"
-    expires_after="2021-08-01">
+    expires_after="2021-12-12">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -532,7 +533,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.MobileSessionAppState" enum="IOSAppState"
-    expires_after="2021-10-04">
+    expires_after="2021-12-05">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -568,7 +569,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.OSRestartedAfterPreviousSession"
-    enum="BooleanRebooted" expires_after="2021-10-10">
+    enum="BooleanRebooted" expires_after="2021-12-12">
   <owner>olivierrobin@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
   <summary>
@@ -579,7 +580,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.OSVersion" enum="VersionComparison"
-    expires_after="2021-08-01">
+    expires_after="2021-12-12">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>

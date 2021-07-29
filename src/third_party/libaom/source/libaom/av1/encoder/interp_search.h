@@ -37,7 +37,7 @@ typedef struct {
 
 /*!\brief Miscellaneous arguments for inter mode search.
  */
-typedef struct {
+typedef struct HandleInterModeArgs {
   /*!
    * Buffer for the above predictor in OBMC
    */

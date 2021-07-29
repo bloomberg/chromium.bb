@@ -47,7 +47,8 @@ enum PolicySource {
 
   // Any non-platform policy was overridden because we are running in a
   // public session or kiosk mode.
-  POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
+  // TODO(crbug/1225922): Remove deprecated policy source.
+  POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE_DEPRECATED,
 
   // The policy was set by a platform source.
   POLICY_SOURCE_PLATFORM,
@@ -60,6 +61,10 @@ enum PolicySource {
 
   // The policy was set by Cloud in Ash and piped to Lacros.
   POLICY_SOURCE_CLOUD_FROM_ASH,
+
+  // The policy was set by the RestrictedManagedGuestSessionEnabled policy. This
+  // source should be kept as highest priority source.
+  POLICY_SOURCE_RESTRICTED_MANAGED_GUEST_SESSION_OVERRIDE,
 
   // Number of source types. Has to be the last element.
   POLICY_SOURCE_COUNT

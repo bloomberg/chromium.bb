@@ -1,7 +1,9 @@
-/* Copyright 2020 The Chromium Authors. All rights reserved.
+/*
+ * Copyright 2020 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 /**
  * These are the new set of colors for the new Light/Dark themes. See
  * https://crbug.com/1122511 and
@@ -98,6 +100,12 @@
   --issue-color-blue: rgb(26 115 232);
   /** Used to indicate an input box */
   --input-outline: rgb(202 205 209);
+
+  /** These colors are used to show errors */
+  --color-error-text: #f00;
+  --color-error-border: hsl(0deg 100% 92%);
+  --color-error-background: hsl(0deg 100% 97%);
+  --color-image-preview-background: rgb(255 255 255);
 }
 
 .-theme-with-dark-background {
@@ -110,7 +118,7 @@
   --color-background-elevation-0: rgb(32 32 35);
   --color-background-elevation-1: rgb(41 42 45);
   --color-background-elevation-2: rgb(53 54 58);
-  --color-background-elevation-dark-only: var(--color-background-elevation-2);
+  --color-background-elevation-dark-only: var(--color-background-elevation-1);
   --color-background-highlight: rgb(75 76 79);
   --divider-line: rgb(255 255 255 / 10%);
   --color-background-hover-overlay: rgb(56 121 217 / 10%);
@@ -159,4 +167,7 @@
   --color-scrollbar-mac-hover: rgb(75 76 79);
   --color-scrollbar-other: rgb(51 51 51);
   --color-scrollbar-other-hover: rgb(75 76 79);
+  --color-error-text: hsl(0deg 100% 75%);
+  --color-error-border: rgb(92 0 0);
+  --color-error-background: hsl(0deg 100% 8%);
 }

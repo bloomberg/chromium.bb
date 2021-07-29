@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/values.h"
 #include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
@@ -80,6 +81,8 @@ class WebApp {
     ClientData();
     ~ClientData();
     ClientData(const ClientData& client_data);
+    base::Value AsDebugValue() const;
+
     absl::optional<WebAppSystemWebAppData> system_web_app_data;
   };
 
@@ -140,6 +143,10 @@ class WebApp {
     return protocol_handlers_;
   }
 
+  const std::vector<std::string>& approved_launch_protocols() const {
+    return approved_launch_protocols_;
+  }
+
   // URL within scope to launch for a "new note" action. Valid iff this is
   // considered a note-taking app.
   // TODO(crbug.com/1185678): Persist this in the database.
@@ -153,6 +160,10 @@ class WebApp {
     return run_on_os_login_mode_;
   }
 
+  bool window_controls_overlay_enabled() const {
+    return window_controls_overlay_enabled_;
+  }
+
   // While local |name| and |theme_color| may vary from device to device, the
   // synced copies of these fields are replicated to all devices. The synced
   // copies are read by a device to generate a placeholder icon (if needed). Any
@@ -164,6 +175,8 @@ class WebApp {
     // Copyable and move-assignable to support Copy-on-Write with Commit.
     SyncFallbackData(const SyncFallbackData& sync_fallback_data);
     SyncFallbackData& operator=(SyncFallbackData&& sync_fallback_data);
+
+    base::Value AsDebugValue() const;
 
     std::string name;
     absl::optional<SkColor> theme_color;
@@ -193,6 +206,8 @@ class WebApp {
   const absl::optional<std::string>& manifest_id() const {
     return manifest_id_;
   }
+
+  bool IsStorageIsolated() const { return is_storage_isolated_; }
 
   // A Web App can be installed from multiple sources simultaneously. Installs
   // add a source to the app. Uninstalls remove a source from the app.
@@ -241,8 +256,10 @@ class WebApp {
       std::vector<std::string> additional_search_terms);
   void SetProtocolHandlers(
       std::vector<apps::ProtocolHandlerInfo> protocol_handlers);
-  void SetNoteTakingNewNoteUrl(const GURL& note_taking_new_note_url);
+  void SetApprovedLaunchProtocols(
+      std::vector<std::string> approved_launch_protocols);
   void SetUrlHandlers(apps::UrlHandlers url_handlers);
+  void SetNoteTakingNewNoteUrl(const GURL& note_taking_new_note_url);
   void SetLastBadgingTime(const base::Time& time);
   void SetLastLaunchTime(const base::Time& time);
   void SetInstallTime(const base::Time& time);
@@ -252,10 +269,13 @@ class WebApp {
   void SetManifestUrl(const GURL& manifest_url);
   void SetManifestId(const absl::optional<std::string>& manifest_id);
   void SetFileHandlerPermissionBlocked(bool permission_blocked);
+  void SetWindowControlsOverlayEnabled(bool enabled);
+  void SetStorageIsolated(bool is_storage_isolated);
 
   // For logging and debug purposes.
   bool operator==(const WebApp&) const;
   bool operator!=(const WebApp&) const;
+  base::Value AsDebugValue() const;
 
  private:
   using Sources = std::bitset<Source::kMaxValue + 1>;
@@ -285,9 +305,9 @@ class WebApp {
   bool is_locally_installed_ = true;
   bool is_in_sync_install_ = false;
   // Note: This field is not persisted in the database.
-  // TODO: Add this field to the protocol buffer file and other places to
-  // save it to the database, and then make sure to continue uninstallation
-  // on startup if any web apps have this field set to true.
+  // TODO(crbug.com/1162477): Add this field to the protocol buffer file and
+  // other places to save it to the database, and then make sure to continue
+  // uninstallation on startup if any web apps have this field set to true.
   bool is_uninstalling_ = false;
   std::vector<WebApplicationIconInfo> icon_infos_;
   SortedSizesPx downloaded_icon_sizes_any_;
@@ -300,22 +320,25 @@ class WebApp {
   absl::optional<apps::ShareTarget> share_target_;
   std::vector<std::string> additional_search_terms_;
   std::vector<apps::ProtocolHandlerInfo> protocol_handlers_;
+  std::vector<std::string> approved_launch_protocols_;
+  apps::UrlHandlers url_handlers_;
   GURL note_taking_new_note_url_;
   base::Time last_badging_time_;
   base::Time last_launch_time_;
   base::Time install_time_;
   RunOnOsLoginMode run_on_os_login_mode_ = RunOnOsLoginMode::kNotRun;
   SyncFallbackData sync_fallback_data_;
-  apps::UrlHandlers url_handlers_;
   blink::mojom::CaptureLinks capture_links_ =
       blink::mojom::CaptureLinks::kUndefined;
   ClientData client_data_;
   GURL manifest_url_;
   absl::optional<std::string> manifest_id_;
   bool file_handler_permission_blocked_ = false;
+  bool window_controls_overlay_enabled_ = false;
+  bool is_storage_isolated_ = false;
   // New fields must be added to:
   //  - |operator==|
-  //  - |operator<<|
+  //  - AsDebugValue()
   //  - WebAppDatabase::CreateWebApp()
   //  - WebAppDatabase::CreateWebAppProto()
   //  - CreateRandomWebApp()
@@ -323,8 +346,6 @@ class WebApp {
 };
 
 // For logging and debug purposes.
-std::ostream& operator<<(std::ostream& out,
-                         const WebApp::SyncFallbackData& sync_fallback_data);
 std::ostream& operator<<(std::ostream& out, const WebApp& app);
 
 bool operator==(const WebApp::SyncFallbackData& sync_fallback_data1,

@@ -218,11 +218,10 @@ static AOM_INLINE void palette_rd_y(
     const AV1_COMP *const cpi, MACROBLOCK *x, MB_MODE_INFO *mbmi,
     BLOCK_SIZE bsize, int dc_mode_cost, const int *data, int *centroids, int n,
     uint16_t *color_cache, int n_cache, MB_MODE_INFO *best_mbmi,
-    uint8_t *best_palette_color_map, int64_t *best_rd, int64_t *best_model_rd,
-    int *rate, int *rate_tokenonly, int64_t *distortion, int *skippable,
-    int *beat_best_rd, PICK_MODE_CONTEXT *ctx, uint8_t *blk_skip,
-    uint8_t *tx_type_map, int *beat_best_palette_rd) {
-  (void)best_model_rd;
+    uint8_t *best_palette_color_map, int64_t *best_rd, int *rate,
+    int *rate_tokenonly, int64_t *distortion, int *skippable, int *beat_best_rd,
+    PICK_MODE_CONTEXT *ctx, uint8_t *blk_skip, uint8_t *tx_type_map,
+    int *beat_best_palette_rd) {
   optimize_palette_colors(color_cache, n_cache, n, 1, centroids,
                           cpi->common.seq_params->bit_depth);
   const int num_unique_colors = av1_remove_duplicates(centroids, n);
@@ -301,10 +300,9 @@ static AOM_INLINE int perform_top_color_palette_search(
     BLOCK_SIZE bsize, int dc_mode_cost, const int *data, int *top_colors,
     int start_n, int end_n, int step_size, int *last_n_searched,
     uint16_t *color_cache, int n_cache, MB_MODE_INFO *best_mbmi,
-    uint8_t *best_palette_color_map, int64_t *best_rd, int64_t *best_model_rd,
-    int *rate, int *rate_tokenonly, int64_t *distortion, int *skippable,
-    int *beat_best_rd, PICK_MODE_CONTEXT *ctx, uint8_t *best_blk_skip,
-    uint8_t *tx_type_map) {
+    uint8_t *best_palette_color_map, int64_t *best_rd, int *rate,
+    int *rate_tokenonly, int64_t *distortion, int *skippable, int *beat_best_rd,
+    PICK_MODE_CONTEXT *ctx, uint8_t *best_blk_skip, uint8_t *tx_type_map) {
   int centroids[PALETTE_MAX_SIZE];
   int n = start_n;
   int top_color_winner = end_n;
@@ -317,8 +315,8 @@ static AOM_INLINE int perform_top_color_palette_search(
     memcpy(centroids, top_colors, n * sizeof(top_colors[0]));
     palette_rd_y(cpi, x, mbmi, bsize, dc_mode_cost, data, centroids, n,
                  color_cache, n_cache, best_mbmi, best_palette_color_map,
-                 best_rd, best_model_rd, rate, rate_tokenonly, distortion,
-                 skippable, beat_best_rd, ctx, best_blk_skip, tx_type_map,
+                 best_rd, rate, rate_tokenonly, distortion, skippable,
+                 beat_best_rd, ctx, best_blk_skip, tx_type_map,
                  &beat_best_palette_rd);
     *last_n_searched = n;
     if (beat_best_palette_rd) {
@@ -342,10 +340,9 @@ static AOM_INLINE int perform_k_means_palette_search(
     int upper_bound, int start_n, int end_n, int step_size,
     int *last_n_searched, uint16_t *color_cache, int n_cache,
     MB_MODE_INFO *best_mbmi, uint8_t *best_palette_color_map, int64_t *best_rd,
-    int64_t *best_model_rd, int *rate, int *rate_tokenonly, int64_t *distortion,
-    int *skippable, int *beat_best_rd, PICK_MODE_CONTEXT *ctx,
-    uint8_t *best_blk_skip, uint8_t *tx_type_map, uint8_t *color_map,
-    int data_points) {
+    int *rate, int *rate_tokenonly, int64_t *distortion, int *skippable,
+    int *beat_best_rd, PICK_MODE_CONTEXT *ctx, uint8_t *best_blk_skip,
+    uint8_t *tx_type_map, uint8_t *color_map, int data_points) {
   int centroids[PALETTE_MAX_SIZE];
   const int max_itr = 50;
   int n = start_n;
@@ -363,8 +360,8 @@ static AOM_INLINE int perform_k_means_palette_search(
     av1_k_means(data, centroids, color_map, data_points, n, 1, max_itr);
     palette_rd_y(cpi, x, mbmi, bsize, dc_mode_cost, data, centroids, n,
                  color_cache, n_cache, best_mbmi, best_palette_color_map,
-                 best_rd, best_model_rd, rate, rate_tokenonly, distortion,
-                 skippable, beat_best_rd, ctx, best_blk_skip, tx_type_map,
+                 best_rd, rate, rate_tokenonly, distortion, skippable,
+                 beat_best_rd, ctx, best_blk_skip, tx_type_map,
                  &beat_best_palette_rd);
     *last_n_searched = n;
     if (beat_best_palette_rd) {
@@ -431,9 +428,9 @@ static AOM_INLINE void fill_data_and_get_bounds(
 void av1_rd_pick_palette_intra_sby(
     const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize, int dc_mode_cost,
     MB_MODE_INFO *best_mbmi, uint8_t *best_palette_color_map, int64_t *best_rd,
-    int64_t *best_model_rd, int *rate, int *rate_tokenonly, int64_t *distortion,
-    int *skippable, int *beat_best_rd, PICK_MODE_CONTEXT *ctx,
-    uint8_t *best_blk_skip, uint8_t *tx_type_map) {
+    int *rate, int *rate_tokenonly, int64_t *distortion, int *skippable,
+    int *beat_best_rd, PICK_MODE_CONTEXT *ctx, uint8_t *best_blk_skip,
+    uint8_t *tx_type_map) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   assert(!is_inter_block(mbmi));
@@ -529,8 +526,8 @@ void av1_rd_pick_palette_intra_sby(
       const int top_color_winner = perform_top_color_palette_search(
           cpi, x, mbmi, bsize, dc_mode_cost, data, top_colors, min_n, max_n + 1,
           step_size, &unused, color_cache, n_cache, best_mbmi,
-          best_palette_color_map, best_rd, best_model_rd, rate, rate_tokenonly,
-          distortion, skippable, beat_best_rd, ctx, best_blk_skip, tx_type_map);
+          best_palette_color_map, best_rd, rate, rate_tokenonly, distortion,
+          skippable, beat_best_rd, ctx, best_blk_skip, tx_type_map);
       // Evaluate neighbors for the winner color (if winner is found) in the
       // above coarse search for dominant colors
       if (top_color_winner <= max_n) {
@@ -541,18 +538,18 @@ void av1_rd_pick_palette_intra_sby(
         perform_top_color_palette_search(
             cpi, x, mbmi, bsize, dc_mode_cost, data, top_colors, stage2_min_n,
             stage2_max_n + 1, stage2_step_size, &unused, color_cache, n_cache,
-            best_mbmi, best_palette_color_map, best_rd, best_model_rd, rate,
-            rate_tokenonly, distortion, skippable, beat_best_rd, ctx,
-            best_blk_skip, tx_type_map);
+            best_mbmi, best_palette_color_map, best_rd, rate, rate_tokenonly,
+            distortion, skippable, beat_best_rd, ctx, best_blk_skip,
+            tx_type_map);
       }
       // K-means clustering.
       // Perform k-means coarse palette search to find the winner candidate
       const int k_means_winner = perform_k_means_palette_search(
           cpi, x, mbmi, bsize, dc_mode_cost, data, lower_bound, upper_bound,
           min_n, max_n + 1, step_size, &unused, color_cache, n_cache, best_mbmi,
-          best_palette_color_map, best_rd, best_model_rd, rate, rate_tokenonly,
-          distortion, skippable, beat_best_rd, ctx, best_blk_skip, tx_type_map,
-          color_map, rows * cols);
+          best_palette_color_map, best_rd, rate, rate_tokenonly, distortion,
+          skippable, beat_best_rd, ctx, best_blk_skip, tx_type_map, color_map,
+          rows * cols);
       // Evaluate neighbors for the winner color (if winner is found) in the
       // above coarse search for k-means
       if (k_means_winner <= max_n) {
@@ -564,9 +561,8 @@ void av1_rd_pick_palette_intra_sby(
             cpi, x, mbmi, bsize, dc_mode_cost, data, lower_bound, upper_bound,
             start_n_stage2, end_n_stage2 + 1, step_size_stage2, &unused,
             color_cache, n_cache, best_mbmi, best_palette_color_map, best_rd,
-            best_model_rd, rate, rate_tokenonly, distortion, skippable,
-            beat_best_rd, ctx, best_blk_skip, tx_type_map, color_map,
-            rows * cols);
+            rate, rate_tokenonly, distortion, skippable, beat_best_rd, ctx,
+            best_blk_skip, tx_type_map, color_map, rows * cols);
       }
     } else {
       const int max_n = AOMMIN(colors, PALETTE_MAX_SIZE),
@@ -576,17 +572,16 @@ void av1_rd_pick_palette_intra_sby(
       perform_top_color_palette_search(
           cpi, x, mbmi, bsize, dc_mode_cost, data, top_colors, max_n, min_n - 1,
           -1, &last_n_searched, color_cache, n_cache, best_mbmi,
-          best_palette_color_map, best_rd, best_model_rd, rate, rate_tokenonly,
-          distortion, skippable, beat_best_rd, ctx, best_blk_skip, tx_type_map);
+          best_palette_color_map, best_rd, rate, rate_tokenonly, distortion,
+          skippable, beat_best_rd, ctx, best_blk_skip, tx_type_map);
 
       if (last_n_searched > min_n) {
         // Search in ascending order until we get to the previous best
         perform_top_color_palette_search(
             cpi, x, mbmi, bsize, dc_mode_cost, data, top_colors, min_n,
             last_n_searched, 1, &unused, color_cache, n_cache, best_mbmi,
-            best_palette_color_map, best_rd, best_model_rd, rate,
-            rate_tokenonly, distortion, skippable, beat_best_rd, ctx,
-            best_blk_skip, tx_type_map);
+            best_palette_color_map, best_rd, rate, rate_tokenonly, distortion,
+            skippable, beat_best_rd, ctx, best_blk_skip, tx_type_map);
       }
       // K-means clustering.
       if (colors == PALETTE_MIN_SIZE) {
@@ -596,26 +591,25 @@ void av1_rd_pick_palette_intra_sby(
         centroids[1] = upper_bound;
         palette_rd_y(cpi, x, mbmi, bsize, dc_mode_cost, data, centroids, colors,
                      color_cache, n_cache, best_mbmi, best_palette_color_map,
-                     best_rd, best_model_rd, rate, rate_tokenonly, distortion,
-                     skippable, beat_best_rd, ctx, best_blk_skip, tx_type_map,
-                     NULL);
+                     best_rd, rate, rate_tokenonly, distortion, skippable,
+                     beat_best_rd, ctx, best_blk_skip, tx_type_map, NULL);
       } else {
         // Perform k-means palette search in descending order
         last_n_searched = max_n;
         perform_k_means_palette_search(
             cpi, x, mbmi, bsize, dc_mode_cost, data, lower_bound, upper_bound,
             max_n, min_n - 1, -1, &last_n_searched, color_cache, n_cache,
-            best_mbmi, best_palette_color_map, best_rd, best_model_rd, rate,
-            rate_tokenonly, distortion, skippable, beat_best_rd, ctx,
-            best_blk_skip, tx_type_map, color_map, rows * cols);
+            best_mbmi, best_palette_color_map, best_rd, rate, rate_tokenonly,
+            distortion, skippable, beat_best_rd, ctx, best_blk_skip,
+            tx_type_map, color_map, rows * cols);
         if (last_n_searched > min_n) {
           // Search in ascending order until we get to the previous best
           perform_k_means_palette_search(
               cpi, x, mbmi, bsize, dc_mode_cost, data, lower_bound, upper_bound,
               min_n, last_n_searched, 1, &unused, color_cache, n_cache,
-              best_mbmi, best_palette_color_map, best_rd, best_model_rd, rate,
-              rate_tokenonly, distortion, skippable, beat_best_rd, ctx,
-              best_blk_skip, tx_type_map, color_map, rows * cols);
+              best_mbmi, best_palette_color_map, best_rd, rate, rate_tokenonly,
+              distortion, skippable, beat_best_rd, ctx, best_blk_skip,
+              tx_type_map, color_map, rows * cols);
         }
       }
     }
@@ -645,7 +639,7 @@ void av1_rd_pick_palette_intra_sbuv(const AV1_COMP *cpi, MACROBLOCK *x,
   const SequenceHeader *const seq_params = cpi->common.seq_params;
   int this_rate;
   int64_t this_rd;
-  int colors_u, colors_v, colors;
+  int colors_u, colors_v;
   int colors_threshold_u = 0, colors_threshold_v = 0, colors_threshold = 0;
   const int src_stride = x->plane[1].src.stride;
   const uint8_t *const src_u = x->plane[1].src.buf;
@@ -676,7 +670,6 @@ void av1_rd_pick_palette_intra_sbuv(const AV1_COMP *cpi, MACROBLOCK *x,
   uint16_t color_cache[2 * PALETTE_MAX_SIZE];
   const int n_cache = av1_get_palette_cache(xd, 1, color_cache);
 
-  colors = colors_u > colors_v ? colors_u : colors_v;
   colors_threshold = colors_threshold_u > colors_threshold_v
                          ? colors_threshold_u
                          : colors_threshold_v;
@@ -726,8 +719,10 @@ void av1_rd_pick_palette_intra_sbuv(const AV1_COMP *cpi, MACROBLOCK *x,
       }
     }
 
-    for (n = colors > PALETTE_MAX_SIZE ? PALETTE_MAX_SIZE : colors; n >= 2;
-         --n) {
+    const int colors = colors_u > colors_v ? colors_u : colors_v;
+    const int max_colors =
+        colors > PALETTE_MAX_SIZE ? PALETTE_MAX_SIZE : colors;
+    for (n = PALETTE_MIN_SIZE; n <= max_colors; ++n) {
       for (i = 0; i < n; ++i) {
         centroids[i * 2] = lb_u + (2 * i + 1) * (ub_u - lb_u) / n / 2;
         centroids[i * 2 + 1] = lb_v + (2 * i + 1) * (ub_v - lb_v) / n / 2;

@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -78,8 +78,7 @@ class WebAppAudioFocusBrowserTest : public WebAppControllerBrowserTest {
 
   const base::UnguessableToken& GetAudioFocusGroupId(
       content::WebContents* web_contents) {
-    WebAppTabHelperBase* helper =
-        WebAppTabHelperBase::FromWebContents(web_contents);
+    WebAppTabHelper* helper = WebAppTabHelper::FromWebContents(web_contents);
     return helper->GetAudioFocusGroupIdForTesting();
   }
 
@@ -128,8 +127,7 @@ IN_PROC_BROWSER_TEST_F(WebAppAudioFocusBrowserTest, AppHasDifferentAudioFocus) {
   // Open a new window from the PWA. It will open in the browser so it should
   // have no group id.
   {
-    content::WebContents* new_contents;
-    OpenWindow(web_contents, app_url, true, true, &new_contents);
+    content::WebContents* new_contents = OpenWindow(web_contents, app_url);
     EXPECT_EQ(base::UnguessableToken::Null(),
               GetAudioFocusGroupId(new_contents));
   }

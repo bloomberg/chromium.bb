@@ -15,8 +15,10 @@
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "url/origin.h"
 
 namespace base {
 class Pickle;
@@ -54,6 +56,13 @@ enum FieldPropertiesFlags : uint32_t {
 // values.
 using FieldPropertiesMask = std::underlying_type_t<FieldPropertiesFlags>;
 
+// For the HTML snippet |<option value="US">United States</option>|, the
+// value is "US" and the contents is "United States".
+struct SelectOption {
+  std::u16string value;
+  std::u16string content;
+};
+
 // Stores information about a field in a form.
 struct FormFieldData {
   using CheckStatus = mojom::FormFieldData_CheckStatus;
@@ -73,7 +82,15 @@ struct FormFieldData {
   FormFieldData& operator=(FormFieldData&&);
   ~FormFieldData();
 
+  // An identifier that is unique across all fields in all frames.
+  // Must not be leaked to renderer process. See FieldGlobalId for details.
   FieldGlobalId global_id() const { return {host_frame, unique_renderer_id}; }
+
+  // An identifier of the renderer form that contained this field.
+  // This may be from the browser form that contains this field in the case of a
+  // frame-transcending form. See ContentAutofillRouter and internal::FormForest
+  // for details on the distinction between renderer and browser forms.
+  FormGlobalId renderer_form_id() const { return {host_frame, host_form_id}; }
 
   // Returns true if both fields are identical, ignoring value- and
   // parsing related members.
@@ -146,13 +163,32 @@ struct FormFieldData {
   std::u16string aria_label;
   std::u16string aria_description;
 
-  // Unique ID of the containing frame. A FormData must not be serialized if
-  // |host_frame| is default-initialized.
+  // A unique identifier of the containing frame. This value is not serialized
+  // because LocalFrameTokens must not be leaked to other renderer processes.
+  // It is not persistent between page loads and therefore not used in
+  // comparison in SameFieldAs().
   LocalFrameToken host_frame;
-  // Unique renderer id returned by
-  // WebFormControlElement::UniqueRendererFormId(). It is not persistent between
-  // page loads, so it is not saved and not used in comparison in SameFieldAs().
+
+  // An identifier of the field that is unique among the field from the same
+  // frame. In the browser process, it should only be used in conjunction with
+  // |host_frame| to identify a field; see global_id(). It is not persistent
+  // between page loads and therefore not used in comparison in SameFieldAs().
   FieldRendererId unique_renderer_id;
+
+  // Unique renderer ID of the enclosing form in the same frame.
+  FormRendererId host_form_id;
+
+  // The signature of the field's renderer form, that is, the signature of the
+  // FormData that contained this field when it was received by the
+  // AutofillDriver (see ContentAutofillRouter and internal::FormForest
+  // for details on the distinction between renderer and browser forms). The
+  // value is only set in ContentAutofillDriver and null on iOS.
+  // This value is written and read only in the browser for voting of
+  // cross-frame forms purposes. It is therefore not sent via mojo.
+  FormSignature host_form_signature;
+
+  // The origin of the frame that hosts the field.
+  url::Origin origin;
 
   // The ax node id of the form control in the accessibility tree.
   int32_t form_control_ax_id = 0;
@@ -182,10 +218,8 @@ struct FormFieldData {
   // trigger.
   std::u16string user_input;
 
-  // For the HTML snippet |<option value="US">United States</option>|, the
-  // value is "US" and the contents are "United States".
-  std::vector<std::u16string> option_values;
-  std::vector<std::u16string> option_contents;
+  // The options of a select box.
+  std::vector<SelectOption> options;
 
   // Password Manager doesn't use labels nor client side nor server side, so
   // label_source isn't in serialize methods.
@@ -199,8 +233,8 @@ struct FormFieldData {
   // The datalist is associated with this field, if any. The following two
   // vectors valid if not empty, will not be synced to the server side or be
   // used for field comparison and aren't in serialize methods.
-  // The datalist option is intentionally separated from option_values and
-  // option_contents because they are handled very differently in autofill.
+  // The datalist option is intentionally separated from |options| because they
+  // are handled very differently in Autofill.
   std::vector<std::u16string> datalist_values;
   std::vector<std::u16string> datalist_labels;
 };

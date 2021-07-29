@@ -12,7 +12,6 @@
 
 #include "ash/app_list/app_list_color_provider_impl.h"
 #include "ash/app_list/app_list_metrics.h"
-#include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/home_launcher_animation_info.h"
 #include "ash/app_list/model/app_list_model.h"
@@ -27,7 +26,7 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
-#include "ash/public/cpp/wallpaper_controller_observer.h"
+#include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/overview/overview_observer.h"
@@ -52,8 +51,9 @@ class MouseWheelEvent;
 
 namespace ash {
 
-class AppListBubble;
+class AppListBubblePresenter;
 class AppListControllerObserver;
+class AppListPresenterImpl;
 
 // Ash's AppListController owns the AppListModel and implements interface
 // functions that allow Chrome to modify and observe the Shelf and AppListModel
@@ -87,7 +87,8 @@ class ASH_EXPORT AppListControllerImpl
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  AppListPresenterImpl* presenter() { return &presenter_; }
+  // TODO(crbug.com/1204554): Rename to fullscreen_presenter().
+  AppListPresenterImpl* presenter() { return fullscreen_presenter_.get(); }
 
   // AppListController:
   void SetClient(AppListClient* client) override;
@@ -133,6 +134,7 @@ class ASH_EXPORT AppListControllerImpl
   void ShowAppList() override;
   aura::Window* GetWindow() override;
   bool IsVisible(const absl::optional<int64_t>& display_id) override;
+  bool IsVisible() override;
 
   // AppListModelObserver:
   void OnAppListItemAdded(AppListItem* item) override;
@@ -197,7 +199,6 @@ class ASH_EXPORT AppListControllerImpl
   void ViewShown(int64_t display_id) override;
   bool AppListTargetVisibility() const override;
   void ViewClosing() override;
-  void ViewClosed() override {}
   const std::vector<SkColor>& GetWallpaperProminentColors() override;
   void ActivateItem(const std::string& id,
                     int event_flags,
@@ -373,7 +374,9 @@ class ASH_EXPORT AppListControllerImpl
   void SetHomeLauncherAnimationCallbackForTesting(
       HomeLauncherAnimationCallback callback);
 
-  AppListBubble* app_list_bubble_for_test() { return app_list_bubble_.get(); }
+  AppListBubblePresenter* bubble_presenter_for_test() {
+    return bubble_presenter_.get();
+  }
 
   void RecordShelfAppLaunched();
 
@@ -472,13 +475,14 @@ class ASH_EXPORT AppListControllerImpl
   // |presenter_| and UI.
   AppListColorProviderImpl color_provider_;
 
-  // |presenter_| should be put below |client_| and |model_| to prevent a crash
-  // in destruction.
-  AppListPresenterImpl presenter_;
+  // Manages the fullscreen/peeking launcher and the tablet mode home launcher.
+  // |fullscreen_presenter_| should be put below |client_| and |model_| to
+  // prevent a crash in destruction.
+  std::unique_ptr<AppListPresenterImpl> fullscreen_presenter_;
 
   // Manages the clamshell launcher bubble. Null when the feature AppListBubble
   // is disabled.
-  std::unique_ptr<AppListBubble> app_list_bubble_;
+  std::unique_ptr<AppListBubblePresenter> bubble_presenter_;
 
   // True if the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;

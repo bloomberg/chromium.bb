@@ -10,23 +10,23 @@
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accelerators/pre_target_accelerator_handler.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/accessibility/magnifier/docked_magnifier_controller_impl.h"
-#include "ash/accessibility/magnifier/magnification_controller.h"
+#include "ash/accessibility/magnifier/docked_magnifier_controller.h"
+#include "ash/accessibility/magnifier/fullscreen_magnifier_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/accessibility/ui/accessibility_confirmation_dialog.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_types.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/mode_indicator_observer.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/media/media_controller_impl.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/capture_mode_test_api.h"
 #include "ash/public/cpp/ime_info.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -52,12 +52,13 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -139,11 +140,25 @@ void AddTestImes() {
   ime1.id = "id1";
   ImeInfo ime2;
   ime2.id = "id2";
-  std::vector<ImeInfo> available_imes;
-  available_imes.push_back(std::move(ime1));
-  available_imes.push_back(std::move(ime2));
-  Shell::Get()->ime_controller()->RefreshIme("id1", std::move(available_imes),
+  std::vector<ImeInfo> visible_imes;
+  visible_imes.push_back(std::move(ime1));
+  visible_imes.push_back(std::move(ime2));
+  Shell::Get()->ime_controller()->RefreshIme("id1", std::move(visible_imes),
                                              std::vector<ImeMenuItem>());
+}
+
+void AddNotVisibleTestIme() {
+  ImeInfo dictation;
+  dictation.id = "_ext_ime_egfdjlfmgnehecnclamagfafdccgfndpdictation";
+  const std::vector<ImeInfo> visible_imes =
+      Shell::Get()->ime_controller()->GetVisibleImes();
+  std::vector<ImeInfo> available_imes;
+  for (auto ime : visible_imes) {
+    available_imes.push_back(ime);
+  }
+  available_imes.push_back(dictation);
+  Shell::Get()->ime_controller()->RefreshIme(
+      dictation.id, std::move(available_imes), std::vector<ImeMenuItem>());
 }
 
 ui::Accelerator CreateReleaseAccelerator(ui::KeyboardCode key_code,
@@ -237,6 +252,8 @@ class MockNewWindowDelegate : public testing::NiceMock<TestNewWindowDelegate> {
 
 }  // namespace
 
+// Note AcceleratorControllerTest can't be in the anonymous namespace because
+// it is referenced as a friend by exit_warning_handler.h
 class AcceleratorControllerTest : public AshTestBase {
  public:
   AcceleratorControllerTest() {
@@ -264,10 +281,10 @@ class AcceleratorControllerTest : public AshTestBase {
       // simulate what happens in reality.
       ui::Accelerator pressed_accelerator = accelerator;
       pressed_accelerator.set_key_state(ui::Accelerator::KeyState::PRESSED);
-      controller->accelerator_history()->StoreCurrentAccelerator(
+      controller->GetAcceleratorHistory()->StoreCurrentAccelerator(
           pressed_accelerator);
     }
-    controller->accelerator_history()->StoreCurrentAccelerator(accelerator);
+    controller->GetAcceleratorHistory()->StoreCurrentAccelerator(accelerator);
     return controller->Process(accelerator);
   }
 
@@ -320,14 +337,14 @@ class AcceleratorControllerTest : public AshTestBase {
   static const ui::Accelerator& GetPreviousAccelerator() {
     return Shell::Get()
         ->accelerator_controller()
-        ->accelerator_history()
+        ->GetAcceleratorHistory()
         ->previous_accelerator();
   }
 
   static const ui::Accelerator& GetCurrentAccelerator() {
     return Shell::Get()
         ->accelerator_controller()
-        ->accelerator_history()
+        ->GetAcceleratorHistory()
         ->current_accelerator();
   }
 
@@ -388,12 +405,14 @@ class AcceleratorControllerTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerTest);
 };
 
+namespace {
+
 // Double press of exit shortcut => exiting
 TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestDoublePress) {
   ui::Accelerator press(ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
   ui::Accelerator release(press);
   release.set_key_state(ui::Accelerator::KeyState::RELEASED);
-  ExitWarningHandler* ewh = controller_->GetExitWarningHandlerForTest();
+  ExitWarningHandler* ewh = test_api_->GetExitWarningHandler();
   ASSERT_TRUE(ewh);
   StubForTest(ewh);
   EXPECT_TRUE(is_idle(ewh));
@@ -415,7 +434,7 @@ TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestSinglePress) {
   ui::Accelerator press(ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
   ui::Accelerator release(press);
   release.set_key_state(ui::Accelerator::KeyState::RELEASED);
-  ExitWarningHandler* ewh = controller_->GetExitWarningHandlerForTest();
+  ExitWarningHandler* ewh = test_api_->GetExitWarningHandler();
   ASSERT_TRUE(ewh);
   StubForTest(ewh);
   EXPECT_TRUE(is_idle(ewh));
@@ -432,7 +451,7 @@ TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestSinglePress) {
 
 // Shutdown ash with exit warning bubble open should not crash.
 TEST_F(AcceleratorControllerTest, LingeringExitWarningBubble) {
-  ExitWarningHandler* ewh = controller_->GetExitWarningHandlerForTest();
+  ExitWarningHandler* ewh = test_api_->GetExitWarningHandler();
   ASSERT_TRUE(ewh);
   StubForTest(ewh);
 
@@ -627,8 +646,6 @@ TEST_F(AcceleratorControllerTest, TestRepeatedSnap) {
   EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
 }
 
-namespace {
-
 class AcceleratorControllerTestWithClamshellSplitView
     : public AcceleratorControllerTest {
  public:
@@ -718,7 +735,7 @@ TEST_F(AcceleratorControllerTestWithClamshellSplitView, WindowSnapUma) {
   wm::ActivateWindow(window1.get());
   left_clamshell_no_overview = 1;
   test("Snap left, clamshell, no overview", WINDOW_CYCLE_SNAP_LEFT,
-       WindowStateType::kLeftSnapped);
+       WindowStateType::kPrimarySnapped);
   left_clamshell_no_overview = 2;
   test("Unsnap left, clamshell, no overview", WINDOW_CYCLE_SNAP_LEFT,
        WindowStateType::kNormal);
@@ -726,14 +743,14 @@ TEST_F(AcceleratorControllerTestWithClamshellSplitView, WindowSnapUma) {
   EnterOverviewAndDragToSnapRight(window1.get());
   left_clamshell_overview = 1;
   test("Snap left, clamshell, overview", WINDOW_CYCLE_SNAP_LEFT,
-       WindowStateType::kLeftSnapped);
+       WindowStateType::kPrimarySnapped);
   left_clamshell_overview = 2;
   test("Unsnap left, clamshell, overview", WINDOW_CYCLE_SNAP_LEFT,
        WindowStateType::kNormal);
   // Alt+], clamshell, no overview
   right_clamshell_no_overview = 1;
   test("Snap right, clamshell, no overview", WINDOW_CYCLE_SNAP_RIGHT,
-       WindowStateType::kRightSnapped);
+       WindowStateType::kSecondarySnapped);
   right_clamshell_no_overview = 2;
   test("Unsnap right, clamshell, no overview", WINDOW_CYCLE_SNAP_RIGHT,
        WindowStateType::kNormal);
@@ -741,7 +758,7 @@ TEST_F(AcceleratorControllerTestWithClamshellSplitView, WindowSnapUma) {
   EnterOverviewAndDragToSnapLeft(window1.get());
   right_clamshell_overview = 1;
   test("Snap right, clamshell, overview", WINDOW_CYCLE_SNAP_RIGHT,
-       WindowStateType::kRightSnapped);
+       WindowStateType::kSecondarySnapped);
   right_clamshell_overview = 2;
   test("Unsnap right, clamshell, overview", WINDOW_CYCLE_SNAP_RIGHT,
        WindowStateType::kNormal);
@@ -749,7 +766,7 @@ TEST_F(AcceleratorControllerTestWithClamshellSplitView, WindowSnapUma) {
   ShellTestApi().SetTabletModeEnabledForTest(true);
   left_tablet = 1;
   test("Snap left, tablet, no overview", WINDOW_CYCLE_SNAP_LEFT,
-       WindowStateType::kLeftSnapped);
+       WindowStateType::kPrimarySnapped);
   ToggleOverview();
   left_tablet = 2;
   test("Unsnap left, tablet, no overview", WINDOW_CYCLE_SNAP_LEFT,
@@ -758,14 +775,14 @@ TEST_F(AcceleratorControllerTestWithClamshellSplitView, WindowSnapUma) {
   EnterOverviewAndDragToSnapRight(window1.get());
   left_tablet = 3;
   test("Snap left, tablet, overview", WINDOW_CYCLE_SNAP_LEFT,
-       WindowStateType::kLeftSnapped);
+       WindowStateType::kPrimarySnapped);
   left_tablet = 4;
   test("Unsnap left, tablet, overview", WINDOW_CYCLE_SNAP_LEFT,
        WindowStateType::kMaximized);
   // Alt+], tablet, no overview
   right_tablet = 1;
   test("Snap right, tablet, no overview", WINDOW_CYCLE_SNAP_RIGHT,
-       WindowStateType::kRightSnapped);
+       WindowStateType::kSecondarySnapped);
   ToggleOverview();
   right_tablet = 2;
   test("Unsnap right, tablet, no overview", WINDOW_CYCLE_SNAP_RIGHT,
@@ -774,13 +791,11 @@ TEST_F(AcceleratorControllerTestWithClamshellSplitView, WindowSnapUma) {
   EnterOverviewAndDragToSnapLeft(window1.get());
   right_tablet = 3;
   test("Snap right, tablet, overview", WINDOW_CYCLE_SNAP_RIGHT,
-       WindowStateType::kRightSnapped);
+       WindowStateType::kSecondarySnapped);
   right_tablet = 4;
   test("Unsnap right, tablet, overview", WINDOW_CYCLE_SNAP_RIGHT,
        WindowStateType::kMaximized);
 }
-
-}  // namespace
 
 TEST_F(AcceleratorControllerTest, RotateScreen) {
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -1150,7 +1165,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, ui::EF_NONE);
   {
     base::UserActionTester user_action_tester;
-    auto* history = controller_->accelerator_history();
+    auto* history = controller_->GetAcceleratorHistory();
 
     EXPECT_EQ(0, user_action_tester.GetActionCount("Accel_VolumeMute_F8"));
     EXPECT_TRUE(ProcessInController(volume_mute));
@@ -1209,7 +1224,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   }
 
   // Exit
-  ExitWarningHandler* ewh = controller_->GetExitWarningHandlerForTest();
+  ExitWarningHandler* ewh = test_api_->GetExitWarningHandler();
   ASSERT_TRUE(ewh);
   StubForTest(ewh);
   EXPECT_TRUE(is_idle(ewh));
@@ -1310,7 +1325,7 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   // When pressed key is interrupted by mouse, the AppList should not toggle.
   EXPECT_FALSE(
       ProcessInController(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  controller_->accelerator_history()->InterruptCurrentAccelerator();
+  controller_->GetAcceleratorHistory()->InterruptCurrentAccelerator();
   EXPECT_FALSE(ProcessInController(
       CreateReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   base::RunLoop().RunUntilIdle();
@@ -1406,7 +1421,7 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppListFullscreen) {
 }
 
 TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
-  ASSERT_EQ(0u, Shell::Get()->ime_controller()->available_imes().size());
+  ASSERT_EQ(0u, Shell::Get()->ime_controller()->GetVisibleImes().size());
 
   // Cycling IME is blocked because there is nothing to switch to.
   ui::Accelerator control_space_down(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
@@ -1418,8 +1433,21 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
   EXPECT_FALSE(ProcessInController(control_space_up));
   EXPECT_FALSE(ProcessInController(control_shift_space));
 
+  // Adding only a not visible IME doesn't make IME accelerators available.
+  AddNotVisibleTestIme();
+  ASSERT_EQ(0u, Shell::Get()->ime_controller()->GetVisibleImes().size());
+  EXPECT_FALSE(ProcessInController(control_space_down));
+  EXPECT_FALSE(ProcessInController(control_space_up));
+  EXPECT_FALSE(ProcessInController(control_shift_space));
+
   // Cycling IME works when there are IMEs available.
   AddTestImes();
+  EXPECT_TRUE(ProcessInController(control_space_down));
+  EXPECT_TRUE(ProcessInController(control_space_up));
+  EXPECT_TRUE(ProcessInController(control_shift_space));
+
+  // Adding the not visible IME back doesn't block cycling.
+  AddNotVisibleTestIme();
   EXPECT_TRUE(ProcessInController(control_space_down));
   EXPECT_TRUE(ProcessInController(control_space_up));
   EXPECT_TRUE(ProcessInController(control_shift_space));
@@ -1490,7 +1518,6 @@ TEST_F(AcceleratorControllerTest, SideVolumeButtonLocation) {
   ASSERT_TRUE(WriteJsonFile(file_path, json_location));
   EXPECT_TRUE(base::PathExists(file_path));
   test_api_->SetSideVolumeButtonFilePath(file_path);
-  controller_->ParseSideVolumeButtonLocationInfo();
   EXPECT_EQ(AcceleratorControllerImpl::kVolumeButtonRegionScreen,
             test_api_->side_volume_button_location().region);
   EXPECT_EQ(AcceleratorControllerImpl::kVolumeButtonSideLeft,
@@ -1666,8 +1693,6 @@ INSTANTIATE_TEST_SUITE_P(
              AcceleratorControllerImpl::kVolumeButtonRegionScreen,
              AcceleratorControllerImpl::kVolumeButtonSideBottom)}));
 
-namespace {
-
 // Tests the TOGGLE_CAPS_LOCK accelerator.
 TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   ImeControllerImpl* controller = Shell::Get()->ime_controller();
@@ -1800,8 +1825,6 @@ class PreferredReservedAcceleratorsTest : public AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(PreferredReservedAcceleratorsTest);
 };
-
-}  // namespace
 
 TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   aura::Window* w1 = CreateTestWindowInShellWithId(0);
@@ -2001,7 +2024,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, ui::EF_NONE);
   {
     base::UserActionTester user_action_tester;
-    auto* history = controller_->accelerator_history();
+    auto* history = controller_->GetAcceleratorHistory();
 
     EXPECT_EQ(0, user_action_tester.GetActionCount("Accel_VolumeMute_F8"));
     EXPECT_TRUE(ProcessInController(volume_mute));
@@ -2133,6 +2156,22 @@ TEST_F(AcceleratorControllerTest, CalculatorKey) {
   EXPECT_TRUE(ProcessInController(accelerator));
 }
 
+// Tests the IME mode change key.
+TEST_F(AcceleratorControllerTest, ChangeIMEMode_SwitchesInputMethod) {
+  AddTestImes();
+
+  ImeController* controller = Shell::Get()->ime_controller();
+
+  TestImeControllerClient client;
+  controller->SetClient(&client);
+
+  EXPECT_EQ(0, client.next_ime_count_);
+
+  ProcessInController(ui::Accelerator(ui::VKEY_MODECHANGE, ui::EF_NONE));
+
+  EXPECT_EQ(1, client.next_ime_count_);
+}
+
 class AcceleratorControllerInputMethodTest : public AcceleratorControllerTest {
  public:
   AcceleratorControllerInputMethodTest() = default;
@@ -2189,8 +2228,6 @@ TEST_F(AcceleratorControllerInputMethodTest, AcceleratorClearsComposition) {
   EXPECT_EQ(1u, mock_input_->cancel_composition_call_count);
 }
 
-namespace {
-
 // TODO(crbug.com/1179893): Remove once the feature is enabled permanently.
 class AcceleratorControllerDeprecatedTest : public AcceleratorControllerTest {
  public:
@@ -2207,8 +2244,6 @@ class AcceleratorControllerDeprecatedTest : public AcceleratorControllerTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-}  // namespace
-
 // TODO(crbug.com/1179893): Remove once the feature is enabled permanently.
 TEST_F(AcceleratorControllerDeprecatedTest, DeskShortcuts_Old) {
   // The shortcuts are Search+Shift+[MINUS|PLUS], but due to event
@@ -2223,8 +2258,6 @@ TEST_F(AcceleratorControllerDeprecatedTest, DeskShortcuts_Old) {
   EXPECT_FALSE(controller_->IsRegistered(ui::Accelerator(
       ui::VKEY_OEM_MINUS, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN)));
 }
-
-namespace {
 
 // Overrides SetUp() to do nothing so that the flag can be tested in both
 // directions during setup.
@@ -2272,8 +2305,6 @@ class AcceleratorControllerStartupNotificationTest
   std::unique_ptr<TestNewWindowDelegateProvider> delegate_provider_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
-
-}  // namespace
 
 TEST_F(AcceleratorControllerStartupNotificationTest,
        StartupNotificationShownWhenEnabled) {
@@ -2432,8 +2463,6 @@ TEST_F(AcceleratorControllerStartupNotificationTest,
                                   /*reply=*/absl::nullopt);
 }
 
-namespace {
-
 // defines a class to test the behavior of deprecated accelerators.
 class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
  public:
@@ -2466,8 +2495,6 @@ class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(DeprecatedAcceleratorTester);
 };
-
-}  // namespace
 
 TEST_F(DeprecatedAcceleratorTester, TestDeprecatedAcceleratorsBehavior) {
   for (size_t i = 0; i < kDeprecatedAcceleratorsLength; ++i) {
@@ -2541,8 +2568,6 @@ TEST_F(AcceleratorControllerGuestModeTest, IncognitoWindowDisabled) {
       NEW_INCOGNITO_WINDOW, {}));
 }
 
-namespace {
-
 constexpr char kUserEmail[] = "user@magnifier";
 
 class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
@@ -2550,12 +2575,12 @@ class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
   MagnifiersAcceleratorsTester() = default;
   ~MagnifiersAcceleratorsTester() override = default;
 
-  DockedMagnifierControllerImpl* docked_magnifier_controller() const {
+  DockedMagnifierController* docked_magnifier_controller() const {
     return Shell::Get()->docked_magnifier_controller();
   }
 
-  MagnificationController* fullscreen_magnifier_controller() const {
-    return Shell::Get()->magnification_controller();
+  FullscreenMagnifierController* fullscreen_magnifier_controller() const {
+    return Shell::Get()->fullscreen_magnifier_controller();
   }
 
   PrefService* user_pref_service() {
@@ -2574,8 +2599,6 @@ class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
   DISALLOW_COPY_AND_ASSIGN(MagnifiersAcceleratorsTester);
 };
 
-}  // namespace
-
 // TODO (afakhry): Remove this class after refactoring MagnificationManager.
 // Mocked chrome/browser/ash/accessibility/magnification_manager.cc
 class FakeMagnificationManager {
@@ -2593,7 +2616,7 @@ class FakeMagnificationManager {
   }
 
   void UpdateMagnifierFromPrefs() {
-    Shell::Get()->magnification_controller()->SetEnabled(
+    Shell::Get()->fullscreen_magnifier_controller()->SetEnabled(
         prefs_->GetBoolean(prefs::kAccessibilityScreenMagnifierEnabled));
   }
 
@@ -2780,8 +2803,6 @@ TEST_F(AccessibilityAcceleratorTester, DisableAccessibilityAccelerators) {
   }
 }
 
-namespace {
-
 struct MediaSessionAcceleratorTestConfig {
   // Runs the test with the media session service enabled.
   bool service_enabled;
@@ -2802,6 +2823,8 @@ struct MediaSessionAcceleratorTestConfig {
 // MediaSessionAcceleratorTest tests media key handling with media session
 // service integration. The parameter is a struct that configures different
 // settings to run the test under.
+// Note this class can't be in the anonymous namespace because it is referenced
+// as a friend by ash/media/media_controller_impl.h.
 class MediaSessionAcceleratorTest
     : public AcceleratorControllerTest,
       public testing::WithParamInterface<MediaSessionAcceleratorTestConfig> {
@@ -3155,22 +3178,6 @@ TEST_P(MediaSessionAcceleratorTest,
     EXPECT_EQ(2, client()->handle_media_next_track_count());
     EXPECT_EQ(0, controller()->next_track_count());
   }
-}
-
-// Tests the IME mode change key.
-TEST_F(AcceleratorControllerTest, ChangeIMEMode_SwitchesInputMethod) {
-  AddTestImes();
-
-  ImeController* controller = Shell::Get()->ime_controller();
-
-  TestImeControllerClient client;
-  controller->SetClient(&client);
-
-  EXPECT_EQ(0, client.next_ime_count_);
-
-  ProcessInController(ui::Accelerator(ui::VKEY_MODECHANGE, ui::EF_NONE));
-
-  EXPECT_EQ(1, client.next_ime_count_);
 }
 
 }  // namespace ash

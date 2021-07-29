@@ -13,12 +13,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1361,7 +1361,7 @@ TEST(HttpStreamParser, Http09PortTests) {
               get_runner.response_info()->headers->GetStatusLine());
 
     EXPECT_EQ(0, get_runner.parser()->received_bytes());
-    int read_lengths[] = {kResponse.size(), 0};
+    int read_lengths[] = {static_cast<int>(kResponse.size()), 0};
     get_runner.ReadBody(kResponse.size(), read_lengths);
     EXPECT_EQ(kResponse.size(),
               static_cast<size_t>(get_runner.parser()->received_bytes()));
@@ -1386,7 +1386,7 @@ TEST(HttpStreamParser, Http09PortTests) {
               get_runner.response_info()->headers->GetStatusLine());
 
     EXPECT_EQ(0, get_runner.parser()->received_bytes());
-    int read_lengths[] = {kShoutcastResponse.size(), 0};
+    int read_lengths[] = {static_cast<int>(kShoutcastResponse.size()), 0};
     get_runner.ReadBody(kShoutcastResponse.size(), read_lengths);
     EXPECT_EQ(kShoutcastResponse.size(),
               static_cast<size_t>(get_runner.parser()->received_bytes()));

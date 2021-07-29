@@ -8,6 +8,7 @@
 #include <tuple>
 
 #include "base/pickle.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -22,14 +23,42 @@ namespace {
 
 // Increment this anytime pickle format is modified as well as provide
 // deserialization routine from previous kFormFieldDataPickleVersion format.
-const int kFormFieldDataPickleVersion = 8;
+const int kFormFieldDataPickleVersion = 9;
 
-void AddVectorToPickle(std::vector<std::u16string> strings,
-                       base::Pickle* pickle) {
-  pickle->WriteInt(static_cast<int>(strings.size()));
-  for (size_t i = 0; i < strings.size(); ++i) {
-    pickle->WriteString16(strings[i]);
+void WriteSelectOption(const SelectOption& option, base::Pickle* pickle) {
+  pickle->WriteString16(option.value);
+  pickle->WriteString16(option.content);
+}
+
+bool ReadSelectOption(base::PickleIterator* iter, SelectOption* option) {
+  std::u16string value;
+  std::u16string content;
+  if (!iter->ReadString16(&value) || !iter->ReadString16(&content))
+    return false;
+  *option = {.value = value, .content = content};
+  return true;
+}
+
+void WriteSelectOptionVector(const std::vector<SelectOption>& options,
+                             base::Pickle* pickle) {
+  pickle->WriteInt(static_cast<int>(options.size()));
+  for (const SelectOption& option : options)
+    WriteSelectOption(option, pickle);
+}
+
+bool ReadSelectOptionVector(base::PickleIterator* iter,
+                            std::vector<SelectOption>* options) {
+  int size;
+  if (!iter->ReadInt(&size))
+    return false;
+
+  for (int i = 0; i < size; i++) {
+    SelectOption pickle_data;
+    if (!ReadSelectOption(iter, &pickle_data))
+      return false;
+    options->push_back(pickle_data);
   }
+  return true;
 }
 
 bool ReadStringVector(base::PickleIterator* iter,
@@ -42,7 +71,6 @@ bool ReadStringVector(base::PickleIterator* iter,
   for (int i = 0; i < size; i++) {
     if (!iter->ReadString16(&pickle_data))
       return false;
-
     strings->push_back(pickle_data);
   }
   return true;
@@ -95,9 +123,25 @@ bool DeserializeSection7(base::PickleIterator* iter,
 
 bool DeserializeSection3(base::PickleIterator* iter,
                          FormFieldData* field_data) {
+  std::vector<std::u16string> option_values;
+  std::vector<std::u16string> option_contents;
+  if (!ReadAsInt(iter, &field_data->text_direction) ||
+      !ReadStringVector(iter, &option_values) ||
+      !ReadStringVector(iter, &option_contents) ||
+      option_values.size() != option_contents.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < option_values.size(); ++i) {
+    field_data->options.push_back({.value = std::move(option_values[i]),
+                                   .content = std::move(option_contents[i])});
+  }
+  return true;
+}
+
+bool DeserializeSection12(base::PickleIterator* iter,
+                          FormFieldData* field_data) {
   return ReadAsInt(iter, &field_data->text_direction) &&
-         ReadStringVector(iter, &field_data->option_values) &&
-         ReadStringVector(iter, &field_data->option_contents);
+         ReadSelectOptionVector(iter, &field_data->options);
 }
 
 bool DeserializeSection2(base::PickleIterator* iter,
@@ -267,8 +311,7 @@ void SerializeFormFieldData(const FormFieldData& field_data,
   pickle->WriteBool(field_data.should_autocomplete);
   pickle->WriteInt(static_cast<int>(field_data.role));
   pickle->WriteInt(field_data.text_direction);
-  AddVectorToPickle(field_data.option_values, pickle);
-  AddVectorToPickle(field_data.option_contents, pickle);
+  WriteSelectOptionVector(field_data.options, pickle);
   pickle->WriteString16(field_data.placeholder);
   pickle->WriteString16(field_data.css_classes);
   pickle->WriteUInt32(field_data.properties_mask);
@@ -389,6 +432,22 @@ bool DeserializeFormFieldData(base::PickleIterator* iter,
       }
       break;
     }
+    case 9: {
+      if (!DeserializeSection1(iter, &temp_form_field_data) ||
+          !DeserializeSection6(iter, &temp_form_field_data) ||
+          !DeserializeSection7(iter, &temp_form_field_data) ||
+          !DeserializeSection2(iter, &temp_form_field_data) ||
+          !DeserializeSection12(iter, &temp_form_field_data) ||
+          !DeserializeSection4(iter, &temp_form_field_data) ||
+          !DeserializeSection8(iter, &temp_form_field_data) ||
+          !DeserializeSection9(iter, &temp_form_field_data) ||
+          !DeserializeSection10(iter, &temp_form_field_data) ||
+          !DeserializeSection11(iter, &temp_form_field_data)) {
+        LOG(ERROR) << "Could not deserialize FormFieldData from pickle";
+        return false;
+      }
+      break;
+    }
     default: {
       LOG(ERROR) << "Unknown FormFieldData pickle version " << version;
       return false;
@@ -400,6 +459,8 @@ bool DeserializeFormFieldData(base::PickleIterator* iter,
 
 std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
   return os << "label='" << field.label << "' "
+            << "unique_Id=" << field.global_id() << " "
+            << "origin='" << field.origin.Serialize() << "' "
             << "name='" << field.name << "' "
             << "id_attribute='" << field.id_attribute << "' "
             << "name_attribute='" << field.name_attribute << "' "
@@ -426,7 +487,15 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
 LogBuffer& operator<<(LogBuffer& buffer, const FormFieldData& field) {
   buffer << Tag{"table"};
   buffer << Tr{} << "Name:" << field.name;
-  buffer << Tr{} << "Unique renderer Id:" << field.unique_renderer_id.value();
+  buffer << Tr{} << "Identifiers:"
+         << base::StrCat(
+                {"renderer id: ",
+                 base::NumberToString(field.unique_renderer_id.value()),
+                 ", host frame: ",
+                 field.renderer_form_id().frame_token.ToString(), " (",
+                 field.origin.Serialize(), "), host form renderer id: ",
+                 base::NumberToString(field.host_form_id.value())});
+  buffer << Tr{} << "Origin:" << field.origin.Serialize();
   buffer << Tr{} << "Name attribute:" << field.name_attribute;
   buffer << Tr{} << "Id attribute:" << field.id_attribute;
   constexpr size_t kMaxLabelSize = 100;

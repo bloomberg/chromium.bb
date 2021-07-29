@@ -32,9 +32,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.locale.LocaleManagerDelegate;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDelegate;
+import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityConstants;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -139,7 +141,7 @@ public class SearchWidgetProviderTest {
         // it should say "Search with X".
         mDelegate.mViews.clear();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            LocaleManager.setInstanceForTest(new LocaleManager() {
+            LocaleManager.getInstance().setDelegateForTest(new LocaleManagerDelegate() {
                 @Override
                 public boolean needToCheckForSearchEnginePromo() {
                     return false;
@@ -178,7 +180,7 @@ public class SearchWidgetProviderTest {
         // updated.
         mDelegate.mViews.clear();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            LocaleManager.setInstanceForTest(new LocaleManager() {
+            LocaleManager.getInstance().setDelegateForTest(new LocaleManagerDelegate() {
                 @Override
                 public boolean needToCheckForSearchEnginePromo() {
                     return false;
@@ -284,7 +286,7 @@ public class SearchWidgetProviderTest {
             // Check that the Activity was launched in the right mode.
             Intent intent = activity.getIntent();
             boolean microphoneState = IntentUtils.safeGetBooleanExtra(
-                    intent, SearchWidgetProvider.EXTRA_START_VOICE_SEARCH, false);
+                    intent, SearchActivityConstants.EXTRA_SHOULD_START_VOICE_SEARCH, false);
             Assert.assertEquals(clickTarget == R.id.microphone_icon, microphoneState);
             boolean fromWidget = IntentUtils.safeGetBooleanExtra(
                     intent, SearchWidgetProvider.EXTRA_FROM_SEARCH_WIDGET, false);

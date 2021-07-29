@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
+#include "media/capture/video/video_capture_buffer_pool_util.h"
 #include "media/capture/video/video_capture_buffer_tracker.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -20,6 +21,11 @@
 #endif  // defined(OS_WIN)
 
 namespace media {
+
+VideoCaptureBufferPoolImpl::VideoCaptureBufferPoolImpl(
+    VideoCaptureBufferType buffer_type)
+    : VideoCaptureBufferPoolImpl(buffer_type,
+                                 kVideoCaptureDefaultMaxBufferPoolSize) {}
 
 VideoCaptureBufferPoolImpl::VideoCaptureBufferPoolImpl(
     VideoCaptureBufferType buffer_type,
@@ -275,7 +281,7 @@ VideoCaptureBufferPoolImpl::ReserveForProducerInternal(
 
   std::unique_ptr<VideoCaptureBufferTracker> tracker =
       buffer_tracker_factory_->CreateTracker(buffer_type_);
-  if (!tracker->Init(dimensions, pixel_format, strides)) {
+  if (!tracker || !tracker->Init(dimensions, pixel_format, strides)) {
     DLOG(ERROR) << "Error initializing VideoCaptureBufferTracker";
     *buffer_id = kInvalidId;
     return VideoCaptureDevice::Client::ReserveResult::kAllocationFailed;

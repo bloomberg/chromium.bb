@@ -10,6 +10,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/unicodestring.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -204,7 +205,7 @@ void CopyAddressLineInformationFromProfile(const AutofillProfile& source,
     types_to_copy = {ADDRESS_HOME_STREET_ADDRESS};
   }
 
-  for (const auto& type : types_to_copy)
+  for (auto type : types_to_copy)
     target->SetRawInfo(type, source.GetRawInfo(type));
 }
 

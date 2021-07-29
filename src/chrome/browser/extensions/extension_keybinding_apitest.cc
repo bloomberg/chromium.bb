@@ -670,10 +670,10 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, ShortcutChangedOnUpdate) {
   EXPECT_TRUE(registry->GetExtensionById(kId, ExtensionRegistry::ENABLED) !=
               NULL);
 
-  // Verify it has a command of Alt+Shift+H.
+  // Verify it has a command of Alt+Shift+J.
   accelerator = command_service->FindCommandByName(
       kId, manifest_values::kBrowserActionCommandEvent).accelerator();
-  EXPECT_EQ(ui::VKEY_H, accelerator.key_code());
+  EXPECT_EQ(ui::VKEY_J, accelerator.key_code());
   EXPECT_FALSE(accelerator.IsCtrlDown());
   EXPECT_TRUE(accelerator.IsShiftDown());
   EXPECT_TRUE(accelerator.IsAltDown());
@@ -979,13 +979,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_ContinuePropagation) {
 
 // Test is only applicable on Chrome OS.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// http://crbug.com/410534
-#if defined(USE_OZONE)
-#define MAYBE_ChromeOSConversions DISABLED_ChromeOSConversions
-#else
-#define MAYBE_ChromeOSConversions ChromeOSConversions
-#endif
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_ChromeOSConversions) {
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, ChromeOSConversions) {
   RunChromeOSConversionTest("keybinding/chromeos_conversions");
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -994,8 +988,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_ChromeOSConversions) {
 // re-adding.
 IN_PROC_BROWSER_TEST_F(CommandsApiTest, AddRemoveAddComponentExtension) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  ASSERT_TRUE(RunExtensionTest({.name = "keybinding/component"},
-                               {.load_as_component = true}))
+  ASSERT_TRUE(
+      RunExtensionTest("keybinding/component", {}, {.load_as_component = true}))
       << message_;
 
   extensions::ExtensionSystem::Get(browser()->profile())
@@ -1003,8 +997,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, AddRemoveAddComponentExtension) {
       ->component_loader()
       ->Remove("pkplfbidichfdicaijlchgnapepdginl");
 
-  ASSERT_TRUE(RunExtensionTest({.name = "keybinding/component"},
-                               {.load_as_component = true}))
+  ASSERT_TRUE(
+      RunExtensionTest("keybinding/component", {}, {.load_as_component = true}))
       << message_;
 }
 
@@ -1037,7 +1031,7 @@ IN_PROC_BROWSER_TEST_P(IncognitoCommandsApiTest, MAYBE_IncognitoMode) {
 
   bool is_incognito_enabled = GetParam();
 
-  ASSERT_TRUE(RunExtensionTest({.name = "keybinding/basics"},
+  ASSERT_TRUE(RunExtensionTest("keybinding/basics", {},
                                {.allow_in_incognito = is_incognito_enabled}))
       << message_;
 

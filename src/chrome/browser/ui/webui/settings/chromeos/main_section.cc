@@ -11,11 +11,11 @@
 #include "base/i18n/number_formatting.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -65,7 +66,7 @@ void AddUpdateRequiredEolStrings(content::WebUIDataSource* html_source) {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   policy::MinimumVersionPolicyHandler* handler =
       connector->GetMinimumVersionPolicyHandler();
-  bool device_managed = connector->IsEnterpriseManaged();
+  bool device_managed = connector->IsDeviceEnterpriseManaged();
 
   // |eol_return_banner_text| contains the update required end of life banner
   // text which is left empty when the banner should not be shown.
@@ -129,8 +130,10 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"dismiss", IDS_SETTINGS_DISMISS},
       {"done", IDS_DONE},
       {"edit", IDS_SETTINGS_EDIT},
+      {"endTime", IDS_SETTINGS_END_TIME},
       {"extensionsLinkTooltip", IDS_SETTINGS_MENU_EXTENSIONS_LINK_TOOLTIP},
       {"learnMore", IDS_LEARN_MORE},
+      {"shortcutBannerDismissed", IDS_SETTINGS_SHORTCUT_BANNER_DISMISSED},
       {"menu", IDS_MENU},
       {"menuButtonLabel", IDS_SETTINGS_MENU_BUTTON_LABEL},
       {"moreActions", IDS_SETTINGS_MORE_ACTIONS},
@@ -141,6 +144,7 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"searchResultsBubbleText", IDS_SEARCH_RESULTS_BUBBLE_TEXT},
       {"settings", IDS_SETTINGS_SETTINGS},
       {"settingsAltPageTitle", IDS_SETTINGS_ALT_PAGE_TITLE},
+      {"startTime", IDS_SETTINGS_START_TIME},
       {"subpageArrowRoleDescription", IDS_SETTINGS_SUBPAGE_BUTTON},
       {"subpageBackButtonAriaLabel",
        IDS_SETTINGS_SUBPAGE_BACK_BUTTON_ARIA_LABEL},
@@ -171,6 +175,10 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("isDeepLinkingEnabled",
                           chromeos::features::IsDeepLinkingEnabled());
+
+  html_source->AddBoolean(
+      "appManagementIntentSettingsEnabled",
+      base::FeatureList::IsEnabled(::features::kAppManagementIntentSettings));
 
   // Add the System Web App resources for Settings.
   html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
@@ -229,7 +237,7 @@ void MainSection::AddChromeOSUserStrings(
       ProfileHelper::Get()->GetUserByProfile(profile());
   const user_manager::User* primary_user =
       user_manager::UserManager::Get()->GetPrimaryUser();
-  std::string primary_user_email = primary_user->GetAccountId().GetUserEmail();
+  std::string primary_user_email = primary_user->GetDisplayEmail();
 
   html_source->AddString("primaryUserEmail", primary_user_email);
   html_source->AddBoolean("isActiveDirectoryUser",

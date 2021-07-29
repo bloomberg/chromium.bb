@@ -45,6 +45,10 @@ std::ostream& operator<<(std::ostream& out,
       return out << "kSessionDataDeleter";
     case ProfileKeepAliveOrigin::kWebAppProtocolHandlerLaunch:
       return out << "kWebAppProtocolHandlerLaunch";
+    case ProfileKeepAliveOrigin::kExtensionUpdater:
+      return out << "kExtensionUpdater";
+    case ProfileKeepAliveOrigin::kProfileCreationFlow:
+      return out << "kProfileCreationFlow";
   }
   NOTREACHED();
   return out << static_cast<int>(origin);

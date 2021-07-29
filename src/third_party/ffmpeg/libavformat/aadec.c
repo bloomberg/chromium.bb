@@ -183,7 +183,7 @@ static int aa_read_header(AVFormatContext *s)
     if (!strcmp(codec_name, "mp332")) {
         st->codecpar->codec_id = AV_CODEC_ID_MP3;
         st->codecpar->sample_rate = 22050;
-        st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
+        st->internal->need_parsing = AVSTREAM_PARSE_FULL_RAW;
         avpriv_set_pts_info(st, 64, 8, 32000 * TIMEPREC);
         // encoded audio frame is MP3_FRAME_SIZE bytes (+1 with padding, unlikely)
     } else if (!strcmp(codec_name, "acelp85")) {
@@ -192,7 +192,7 @@ static int aa_read_header(AVFormatContext *s)
         st->codecpar->channels = 1;
         st->codecpar->sample_rate = 8500;
         st->codecpar->bit_rate = 8500;
-        st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
+        st->internal->need_parsing = AVSTREAM_PARSE_FULL_RAW;
         avpriv_set_pts_info(st, 64, 8, 8500 * TIMEPREC);
     } else if (!strcmp(codec_name, "acelp16")) {
         st->codecpar->codec_id = AV_CODEC_ID_SIPR;
@@ -200,7 +200,7 @@ static int aa_read_header(AVFormatContext *s)
         st->codecpar->channels = 1;
         st->codecpar->sample_rate = 16000;
         st->codecpar->bit_rate = 16000;
-        st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
+        st->internal->need_parsing = AVSTREAM_PARSE_FULL_RAW;
         avpriv_set_pts_info(st, 64, 8, 16000 * TIMEPREC);
     }
 
@@ -222,15 +222,18 @@ static int aa_read_header(AVFormatContext *s)
     c->content_end = start + largest_size;
 
     while ((chapter_pos = avio_tell(pb)) >= 0 && chapter_pos < c->content_end) {
-        int chapter_idx = s->nb_chapters;
+        unsigned chapter_idx = s->nb_chapters;
         uint32_t chapter_size = avio_rb32(pb);
         if (chapter_size == 0 || avio_feof(pb))
             break;
         chapter_pos -= start + CHAPTER_HEADER_SIZE * chapter_idx;
         avio_skip(pb, 4 + chapter_size);
         if (!avpriv_new_chapter(s, chapter_idx, st->time_base,
-            chapter_pos * TIMEPREC, (chapter_pos + chapter_size) * TIMEPREC, NULL))
-                return AVERROR(ENOMEM);
+                                chapter_pos * TIMEPREC,
+                                (chapter_pos + chapter_size) * TIMEPREC, NULL)) {
+            av_freep(&c->tea_ctx);
+            return AVERROR(ENOMEM);
+        }
     }
 
     st->duration = (largest_size - CHAPTER_HEADER_SIZE * s->nb_chapters) * TIMEPREC;
@@ -403,7 +406,7 @@ static const AVClass aa_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVInputFormat ff_aa_demuxer = {
+const AVInputFormat ff_aa_demuxer = {
     .name           = "aa",
     .long_name      = NULL_IF_CONFIG_SMALL("Audible AA format files"),
     .priv_class     = &aa_class,

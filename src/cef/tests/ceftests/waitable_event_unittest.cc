@@ -2,7 +2,7 @@
 // 2012 The Chromium Authors. All rights reserved. Use of this source code is
 // governed by a BSD-style license that can be found in the LICENSE file.
 
-#include "include/base/cef_bind.h"
+#include "include/base/cef_callback.h"
 #include "include/cef_thread.h"
 #include "include/cef_waitable_event.h"
 #include "include/wrapper/cef_closure_task.h"
@@ -68,7 +68,7 @@ TEST(WaitableEventTest, WaitAndDelete) {
   CefRefPtr<CefThread> thread = CefThread::CreateThread("waitable_event_test");
   thread->GetTaskRunner()->PostDelayedTask(
       CefCreateClosureTask(
-          base::Bind(SignalEvent, base::Unretained(event.get()))),
+          base::BindOnce(SignalEvent, base::Unretained(event.get()))),
       10);
 
   event->Wait();

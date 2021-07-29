@@ -86,7 +86,7 @@ class DictInitDouble {
  public:
   explicit DictInitDouble(double v) : init_value(v) {}
   void operator()(base::DictionaryValue* dict) {
-    dict->SetDouble(key, init_value);
+    dict->SetDoubleKey(key, init_value);
   }
 };
 
@@ -292,10 +292,10 @@ TEST(GetOptionalValue, ListNoConversion) {
   base::ListValue lv2;
   lv2.AppendString("2");
 
-  std::unique_ptr<base::ListValue> params(lv1.DeepCopy());
+  base::Value params = lv1.Clone();
 
   base::DictionaryValue dict;
-  dict.SetList(key, std::move(params));
+  dict.SetPath(key, std::move(params));
   const base::ListValue* res = &lv2;
   bool has_value;
   bool has_dict = GetOptionalList(&dict, key, &res, &has_value);

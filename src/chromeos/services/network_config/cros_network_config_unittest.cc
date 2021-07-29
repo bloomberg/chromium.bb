@@ -76,6 +76,37 @@ const char kCellularTestApnUsername3[] = "Test User";
 const char kCellularTestApnPassword3[] = "Test Pass";
 const char kCellularTestApnAttach3[] = "attach";
 
+enum ComparisonType {
+  INTEGER = 0,
+  DOUBLE,
+};
+
+void CompareTrafficCounters(
+    const std::vector<mojom::TrafficCounterPtr>& actual_traffic_counters,
+    const base::Value* expected_traffic_counters,
+    enum ComparisonType comparison_type) {
+  EXPECT_EQ(actual_traffic_counters.size(),
+            expected_traffic_counters->GetList().size());
+  for (size_t i = 0; i < actual_traffic_counters.size(); i++) {
+    auto& actual_tc = actual_traffic_counters[i];
+    auto& expected_tc = expected_traffic_counters->GetList()[i];
+    EXPECT_EQ(actual_tc->source,
+              CrosNetworkConfig::GetTrafficCounterEnumForTesting(
+                  expected_tc.FindKey("source")->GetString()));
+    if (comparison_type == ComparisonType::INTEGER) {
+      EXPECT_EQ(actual_tc->rx_bytes,
+                (size_t)expected_tc.FindKey("rx_bytes")->GetInt());
+      EXPECT_EQ(actual_tc->tx_bytes,
+                (size_t)expected_tc.FindKey("tx_bytes")->GetInt());
+    } else if (comparison_type == ComparisonType::DOUBLE) {
+      EXPECT_EQ(actual_tc->rx_bytes,
+                (size_t)expected_tc.FindKey("rx_bytes")->GetDouble());
+      EXPECT_EQ(actual_tc->tx_bytes,
+                (size_t)expected_tc.FindKey("tx_bytes")->GetDouble());
+    }
+  }
+}
+
 }  // namespace
 
 class CrosNetworkConfigTest : public testing::Test {
@@ -200,7 +231,8 @@ class CrosNetworkConfigTest : public testing::Test {
         R"({"GUID": "eth_guid", "Type": "ethernet", "State": "online"})");
     wifi1_path_ = helper()->ConfigureService(
         R"({"GUID": "wifi1_guid", "Type": "wifi", "State": "ready",
-            "Strength": 50, "AutoConnect": true, "WiFi.HiddenSSID": false})");
+            "Strength": 50, "AutoConnect": true, "WiFi.HiddenSSID": false,
+            "TrafficCounterResetTime": 1234567899876543})");
     helper()->ConfigureService(
         R"({"GUID": "wifi2_guid", "Type": "wifi", "SSID": "wifi2",
             "State": "idle", "SecurityClass": "psk", "Strength": 100,
@@ -582,6 +614,25 @@ class CrosNetworkConfigTest : public testing::Test {
     return inhibit_lock;
   }
 
+  void RequestTrafficCountersAndCompareTrafficCounters(
+      const std::string& guid,
+      base::Value traffic_counters,
+      ComparisonType comparison_type) {
+    base::RunLoop run_loop;
+    cros_network_config()->RequestTrafficCounters(
+        guid,
+        base::BindOnce(
+            [](base::Value* expected_traffic_counters, ComparisonType* type,
+               base::OnceClosure quit_closure,
+               std::vector<mojom::TrafficCounterPtr> actual_traffic_counters) {
+              CompareTrafficCounters(actual_traffic_counters,
+                                     expected_traffic_counters, *type);
+              std::move(quit_closure).Run();
+            },
+            &traffic_counters, &comparison_type, run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
   NetworkHandlerTestHelper* helper() { return helper_.get(); }
   CrosNetworkConfigTestObserver* observer() { return observer_.get(); }
   CrosNetworkConfig* cros_network_config() {
@@ -948,6 +999,10 @@ TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
   EXPECT_EQ(50, properties->type_properties->get_wifi()->signal_strength);
   EXPECT_EQ(mojom::OncSource::kNone, properties->source);
   EXPECT_EQ(false, properties->type_properties->get_wifi()->is_syncable);
+  ASSERT_TRUE(properties->traffic_counter_reset_time);
+  EXPECT_EQ(1234567899876543,
+            properties->traffic_counter_reset_time->ToDeltaSinceWindowsEpoch()
+                .InMilliseconds());
 
   properties = GetManagedProperties("wifi2_guid");
   ASSERT_TRUE(properties);
@@ -1848,6 +1903,52 @@ TEST_F(CrosNetworkConfigTest, SetAlwaysOnVpn) {
   EXPECT_EQ(vpn_path(), helper()->GetProfileStringProperty(
                             helper()->ProfilePathUser(),
                             shill::kAlwaysOnVpnServiceProperty));
+}
+
+TEST_F(CrosNetworkConfigTest, RequestTrafficCountersWithIntegerType) {
+  base::Value traffic_counters(base::Value::Type::LIST);
+
+  base::Value chrome_dict(base::Value::Type::DICTIONARY);
+  chrome_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceChrome));
+  chrome_dict.SetKey("rx_bytes", base::Value(12));
+  chrome_dict.SetKey("tx_bytes", base::Value(32));
+  traffic_counters.Append(std::move(chrome_dict));
+
+  base::Value user_dict(base::Value::Type::DICTIONARY);
+  user_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceUser));
+  user_dict.SetKey("rx_bytes", base::Value(90));
+  user_dict.SetKey("tx_bytes", base::Value(87));
+  traffic_counters.Append(std::move(user_dict));
+
+  ASSERT_TRUE(traffic_counters.is_list());
+  ASSERT_EQ(traffic_counters.GetList().size(), (size_t)2);
+  helper()->service_test()->SetFakeTrafficCounters(traffic_counters.Clone());
+
+  RequestTrafficCountersAndCompareTrafficCounters(
+      "wifi1_guid", traffic_counters.Clone(), ComparisonType::INTEGER);
+}
+
+TEST_F(CrosNetworkConfigTest, RequestTrafficCountersWithDoubleType) {
+  base::Value traffic_counters(base::Value::Type::LIST);
+
+  base::Value chrome_dict(base::Value::Type::DICTIONARY);
+  chrome_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceChrome));
+  chrome_dict.SetKey("rx_bytes", base::Value(123456789987.0));
+  chrome_dict.SetKey("tx_bytes", base::Value(3211234567898.0));
+  traffic_counters.Append(std::move(chrome_dict));
+
+  base::Value user_dict(base::Value::Type::DICTIONARY);
+  user_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceUser));
+  user_dict.SetKey("rx_bytes", base::Value(9000000000000000.0));
+  user_dict.SetKey("tx_bytes", base::Value(8765432112345.0));
+  traffic_counters.Append(std::move(user_dict));
+
+  ASSERT_TRUE(traffic_counters.is_list());
+  ASSERT_EQ(traffic_counters.GetList().size(), (size_t)2);
+  helper()->service_test()->SetFakeTrafficCounters(traffic_counters.Clone());
+
+  RequestTrafficCountersAndCompareTrafficCounters(
+      "wifi1_guid", traffic_counters.Clone(), ComparisonType::DOUBLE);
 }
 
 }  // namespace network_config

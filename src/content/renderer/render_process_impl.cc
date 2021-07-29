@@ -142,12 +142,13 @@ RenderProcessImpl::RenderProcessImpl()
   SetV8FlagIfNotFeature(features::kWebAssemblyCodeProtection,
                         "--no-wasm-write-protect-code-memory");
 
-#if defined(OS_LINUX) && defined(ARCH_CPU_X86_64)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(ARCH_CPU_X86_64)
   SetV8FlagIfFeature(features::kWebAssemblyCodeProtectionPku,
                      "--wasm-memory-protection-keys");
   SetV8FlagIfNotFeature(features::kWebAssemblyCodeProtectionPku,
                         "--no-wasm-memory-protection-keys");
-#endif  // defined(OS_LINUX) && defined(ARCH_CPU_X86_64)
+#endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) &&
+        // defined(ARCH_CPU_X86_64)
 
   SetV8FlagIfFeature(features::kWebAssemblyLazyCompilation,
                      "--wasm-lazy-compilation");
@@ -205,8 +206,6 @@ RenderProcessImpl::RenderProcessImpl()
   SetV8FlagIfFeature(features::kWebAssemblyTiering, "--wasm-tier-up");
   SetV8FlagIfNotFeature(features::kWebAssemblyTiering, "--no-wasm-tier-up");
 
-  SetV8FlagIfNotFeature(features::kWebAssemblyTrapHandler,
-                        "--no-wasm-trap-handler");
 #if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(ARCH_CPU_X86_64)
   if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
     if (command_line->HasSwitch(switches::kEnableCrashpad) ||

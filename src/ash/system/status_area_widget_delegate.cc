@@ -78,7 +78,6 @@ class OverflowGradientBackground : public views::Background {
 StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(Shelf* shelf)
     : shelf_(shelf), focus_cycler_for_testing_(nullptr) {
   DCHECK(shelf_);
-  set_owned_by_client();
   SetOwnedByWidget(true);
 
   // Allow the launcher to surrender the focus to another window upon
@@ -112,6 +111,19 @@ void StatusAreaWidgetDelegate::OnStatusAreaCollapseStateChanged(
       SetBackground(nullptr);
       break;
   }
+}
+
+void StatusAreaWidgetDelegate::Shutdown() {
+  // TODO(pbos): Investigate if this is necessary. This is a bit defensive but
+  // it's done to make sure that StatusAreaWidget isn't accessed by the View
+  // hierarchy during its destruction.
+  RemoveAllChildViews(/*delete=*/true);
+  // StatusAreaWidgetDelegate uses a GridLayout which unfortunately doesn't
+  // handle child add/removal. Remove the LayoutManager early to prevent UAFs
+  // during Widget destruction.
+  // TODO(pbos): This really shouldn't be necessary. It's a deficiency in
+  // GridLayout.
+  SetLayoutManager(nullptr);
 }
 
 views::View* StatusAreaWidgetDelegate::GetDefaultFocusableChild() {

@@ -27,11 +27,12 @@
 #include "core/fxcrt/autorestorer.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxcrt/stl_util.h"
 #include "third_party/base/check.h"
 #include "third_party/base/compiler_specific.h"
+#include "third_party/base/containers/contains.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/numerics/safe_conversions.h"
-#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -79,12 +80,10 @@ CPDF_DataAvail::DownloadHints::~DownloadHints() = default;
 
 CPDF_DataAvail::CPDF_DataAvail(
     FileAvail* pFileAvail,
-    const RetainPtr<IFX_SeekableReadStream>& pFileRead,
-    bool bSupportHintTable)
+    const RetainPtr<IFX_SeekableReadStream>& pFileRead)
     : m_pFileRead(
           pdfium::MakeRetain<CPDF_ReadValidator>(pFileRead, pFileAvail)),
-      m_dwFileLen(m_pFileRead->GetSize()),
-      m_bSupportHintTable(bSupportHintTable) {}
+      m_dwFileLen(m_pFileRead->GetSize()) {}
 
 CPDF_DataAvail::~CPDF_DataAvail() {
   m_pHintTables.reset();
@@ -439,8 +438,7 @@ bool CPDF_DataAvail::CheckFirstPage() {
                                                              data_size))
     return false;
 
-  m_docStatus =
-      m_bSupportHintTable ? PDF_DATAAVAIL_HINTTABLE : PDF_DATAAVAIL_DONE;
+  m_docStatus = PDF_DATAAVAIL_HINTTABLE;
   return true;
 }
 
@@ -497,11 +495,11 @@ CPDF_DataAvail::DocAvailStatus CPDF_DataAvail::CheckHeaderAndLinearized() {
   if (GetValidator()->has_read_problems())
     return kDataNotAvailable;
 
-  if (!header_offset)
+  if (!header_offset.has_value())
     return kDataError;
 
-  m_parser.m_pSyntax =
-      std::make_unique<CPDF_SyntaxParser>(GetValidator(), *header_offset);
+  m_parser.m_pSyntax = std::make_unique<CPDF_SyntaxParser>(
+      GetValidator(), header_offset.value());
   m_pLinearized = m_parser.ParseLinearizedHeader();
   if (GetValidator()->has_read_problems())
     return kDataNotAvailable;
@@ -641,7 +639,7 @@ bool CPDF_DataAvail::CheckPageNode(const CPDF_DataAvail::PageNode& pageNode,
   if (level >= kMaxPageRecursionDepth)
     return false;
 
-  int32_t iSize = pdfium::CollectionSize<int32_t>(pageNode.m_ChildNodes);
+  int32_t iSize = fxcrt::CollectionSize<int32_t>(pageNode.m_ChildNodes);
   if (iSize <= 0 || iPage >= iSize) {
     m_docStatus = PDF_DATAAVAIL_ERROR;
     return false;

@@ -49,6 +49,8 @@ enum {
   kBufferFlagSyncFrame = 1,    // BUFFER_FLAG_SYNC_FRAME
   kBufferFlagEndOfStream = 4,  // BUFFER_FLAG_END_OF_STREAM
   kConfigureFlagEncode = 1,    // CONFIGURE_FLAG_ENCODE
+  kBitrateModeCBR = 2,         // BITRATE_MODE_CBR
+  kBitrateModeVBR = 1,         // BITRATE_MODE_VBR
 };
 
 using CodecSpecificData = std::vector<uint8_t>;
@@ -113,6 +115,19 @@ bool GetCodecSpecificDataForAudio(const AudioDecoderConfig& config,
 
       // The last header is the codec header.
       output_csd1->assign(extra_data + total_length,
+                          extra_data + extra_data_size);
+      break;
+    }
+    case kCodecFLAC: {
+      // According to MediaCodec spec, CSB buffer #0 for FLAC should be:
+      // "fLaC", the FLAC stream marker in ASCII, followed by the STREAMINFO
+      // block (the mandatory metadata block), optionally followed by any number
+      // of other metadata blocks.
+      output_csd0->emplace_back('f');
+      output_csd0->emplace_back('L');
+      output_csd0->emplace_back('a');
+      output_csd0->emplace_back('C');
+      output_csd0->insert(output_csd0->end(), extra_data,
                           extra_data + extra_data_size);
       break;
     }
@@ -260,8 +275,8 @@ std::unique_ptr<MediaCodecBridge> MediaCodecBridgeImpl::CreateVideoEncoder(
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
   ScopedJavaGlobalRef<jobject> j_bridge(
       Java_MediaCodecBridgeBuilder_createVideoEncoder(
-          env, j_mime, size.width(), size.height(), bit_rate, frame_rate,
-          i_frame_interval, color_format));
+          env, j_mime, size.width(), size.height(), kBitrateModeCBR, bit_rate,
+          frame_rate, i_frame_interval, color_format));
 
   if (j_bridge.is_null())
     return nullptr;
@@ -581,6 +596,11 @@ void MediaCodecBridgeImpl::RequestKeyFrameSoon() {
 
 CodecType MediaCodecBridgeImpl::GetCodecType() const {
   return codec_type_;
+}
+
+size_t MediaCodecBridgeImpl::GetMaxInputSize() {
+  JNIEnv* env = AttachCurrentThread();
+  return Java_MediaCodecBridge_getMaxInputSize(env, j_bridge_);
 }
 
 bool MediaCodecBridgeImpl::FillInputBuffer(int index,

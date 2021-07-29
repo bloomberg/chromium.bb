@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_save_update_address_profile_delegate_ios.h"
@@ -22,6 +21,7 @@
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #include "components/autofill/core/common/autofill_features.h"
+#import "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #include "components/infobars/core/infobar.h"
@@ -42,7 +42,7 @@
 #include "ios/chrome/browser/infobars/infobar_utils.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #include "ios/chrome/browser/ui/autofill/card_expiration_date_fix_flow_view_bridge.h"
 #include "ios/chrome/browser/ui/autofill/card_name_fix_flow_view_bridge.h"
@@ -89,8 +89,7 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
     id<AutofillClientIOSBridge> bridge,
     password_manager::PasswordManager* password_manager)
     : pref_service_(browser_state->GetPrefs()),
-      sync_service_(
-          ProfileSyncServiceFactory::GetForBrowserState(browser_state)),
+      sync_service_(SyncServiceFactory::GetForBrowserState(browser_state)),
       personal_data_manager_(PersonalDataManagerFactory::GetForBrowserState(
           browser_state->GetOriginalChromeBrowserState())),
       autocomplete_history_manager_(
@@ -253,18 +252,17 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
           /*upload=*/false, options, card, LegalMessageLines(),
           /*upload_save_card_callback=*/UploadSaveCardPromptCallback(),
-          /*local_save_card_callback=*/std::move(callback), GetPrefs())));
+          /*local_save_card_callback=*/std::move(callback), GetPrefs(),
+          AccountInfo())));
 }
 
 void ChromeAutofillClientIOS::ConfirmAccountNameFixFlow(
     base::OnceCallback<void(const std::u16string&)> callback) {
-  absl::optional<AccountInfo> primary_account_info =
-      identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
-          identity_manager_->GetPrimaryAccountInfo(
-              signin::ConsentLevel::kSync));
-  std::u16string account_name =
-      primary_account_info ? base::UTF8ToUTF16(primary_account_info->full_name)
-                           : std::u16string();
+  std::u16string account_name = base::UTF8ToUTF16(
+      identity_manager_
+          ->FindExtendedAccountInfo(identity_manager_->GetPrimaryAccountInfo(
+              signin::ConsentLevel::kSync))
+          .full_name);
 
   card_name_fix_flow_controller_.Show(
       // CardNameFixFlowViewBridge manages its own lifetime, so
@@ -293,15 +291,38 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     UploadSaveCardPromptCallback callback) {
   DCHECK(options.show_prompt);
 
-  auto save_card_info_bar_delegate_mobile =
+  bool sync_disabled_wallet_transport_enabled =
+      GetPersonalDataManager()->GetSyncSigninState() ==
+      autofill::AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled;
+  bool is_multiple_account_user =
+      identity_manager_->GetAccountsWithRefreshTokens().size() > 1;
+  AccountInfo account_info;
+  // AccountInfo data should be passed down only if the following conditions are
+  // satisfied:
+  // 1) kAutofillEnableSaveCardInfoBarAccountIndicationFooter is on (main flag).
+  // 2) Sync is off or the
+  //   kAutofillEnableInfoBarAccountIndicationFooterForSyncUsers flag is on.
+  // 3) User has multiple accounts or the
+  //   kAutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers is on.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSaveCardInfoBarAccountIndicationFooter) &&
+      (sync_disabled_wallet_transport_enabled ||
+       base::FeatureList::IsEnabled(
+           features::
+               kAutofillEnableInfoBarAccountIndicationFooterForSyncUsers)) &&
+      (is_multiple_account_user ||
+       base::FeatureList::IsEnabled(
+           features::
+               kAutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers))) {
+    account_info = identity_manager_->FindExtendedAccountInfo(
+        identity_manager_->GetPrimaryAccountInfo(
+            signin::ConsentLevel::kSignin));
+  }
+  infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
           /*upload=*/true, options, card, legal_message_lines,
           /*upload_save_card_callback=*/std::move(callback),
-          /*local_save_card_callback=*/LocalSaveCardPromptCallback(),
-          GetPrefs());
-
-  infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
-      std::move(save_card_info_bar_delegate_mobile)));
+          LocalSaveCardPromptCallback(), GetPrefs(), account_info)));
 }
 
 void ChromeAutofillClientIOS::CreditCardUploadCompleted(bool card_saved) {
@@ -429,7 +450,7 @@ void ChromeAutofillClientIOS::ExecuteCommand(int id) {
 
 void ChromeAutofillClientIOS::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {
-  std::move(callback).Run(ios::GetChromeBrowserProvider()->GetRiskData());
+  std::move(callback).Run(ios::GetChromeBrowserProvider().GetRiskData());
 }
 
 LogManager* ChromeAutofillClientIOS::GetLogManager() const {

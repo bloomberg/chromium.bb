@@ -7,12 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
-#include "base/types/strong_alias.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
@@ -20,7 +16,6 @@
 #include "net/http/http_util.h"
 #include "services/network/cors/cors_url_loader.h"
 #include "services/network/cors/preflight_controller.h"
-#include "services/network/crash_keys.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cors/cors.h"
@@ -245,7 +240,7 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     const ResourceRequest& resource_request,
     mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  debug::ScopedRequestCrashKeys request_crash_keys(resource_request);
+  debug::ScopedResourceRequestCrashKeys request_crash_keys(resource_request);
 
   if (!IsValidRequest(resource_request, options)) {
     mojo::Remote<mojom::URLLoaderClient>(std::move(client))
@@ -265,8 +260,8 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     base::WeakPtr<WebBundleURLLoaderFactory> web_bundle_url_loader_factory =
         context_->GetWebBundleManager().CreateWebBundleURLLoaderFactory(
             resource_request.url, *resource_request.web_bundle_token_params,
-            process_id_, request_initiator_origin_lock_,
-            std::move(devtools_observer), resource_request.devtools_request_id);
+            process_id_, std::move(devtools_observer),
+            resource_request.devtools_request_id);
     client =
         web_bundle_url_loader_factory->WrapURLLoaderClient(std::move(client));
   }
@@ -436,24 +431,10 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
 
     case InitiatorLockCompatibility::kIncorrectLock:
       // Requests from the renderer need to always specify a correct initiator.
-      NOTREACHED() << "request_initiator_origin_lock_ = "
-                   << request_initiator_origin_lock_.value_or(
-                          url::Origin::Create(GURL("https://no-lock.com")))
-                   << "; request.request_initiator = "
-                   << request.request_initiator.value_or(url::Origin::Create(
-                          GURL("https://no-initiator.com")));
-      if (base::FeatureList::IsEnabled(
-              features::kRequestInitiatorSiteLockEnfocement)) {
-        url::debug::ScopedOriginCrashKey initiator_lock_crash_key(
-            debug::GetRequestInitiatorOriginLockCrashKey(),
-            base::OptionalOrNullptr(request_initiator_origin_lock_));
-        base::debug::ScopedCrashKeyString debug_tag_crash_key(
-            debug::GetFactoryDebugTagCrashKey(), debug_tag_);
-        mojo::ReportBadMessage(
-            "CorsURLLoaderFactory: lock VS initiator mismatch");
-        return false;
-      }
-      break;
+      NOTREACHED();
+      mojo::ReportBadMessage(
+          "CorsURLLoaderFactory: lock VS initiator mismatch");
+      return false;
   }
 
   if (context_ && !GetAllowAnyCorsExemptHeaderForBrowser() &&

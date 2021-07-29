@@ -13,8 +13,11 @@ class VideoFrame;
 
 namespace blink {
 
+class ExceptionState;
+class ExecutionContext;
 class HTMLVideoElement;
 class VideoFrameMetadata;
+struct WebGLVideoFrameUploadMetadata;
 
 class WebGLVideoTexture final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
@@ -38,9 +41,9 @@ class WebGLVideoTexture final : public WebGLExtension {
 
   bool releaseVideoImageWEBGL(ExecutionContext*, unsigned, ExceptionState&);
 
-  // Helper method for filling in VideoFrameUploadMetadata. Will be default
+  // Helper method for filling in WebGLVideoFrameUploadMetadata. Will be default
   // initialized (skipped = false) if the metadata API is disabled.
-  static WebGLTexture::VideoFrameUploadMetadata CreateVideoFrameUploadMetadata(
+  static WebGLVideoFrameUploadMetadata CreateVideoFrameUploadMetadata(
       const media::VideoFrame* frame,
       int already_uploaded_id);
 

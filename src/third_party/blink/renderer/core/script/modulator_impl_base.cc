@@ -54,10 +54,6 @@ bool ModulatorImplBase::IsScriptingDisabled() const {
   return !GetExecutionContext()->CanExecuteScripts(kAboutToExecuteScript);
 }
 
-bool ModulatorImplBase::ImportMapsEnabled() const {
-  return RuntimeEnabledFeatures::ImportMapsEnabled(GetExecutionContext());
-}
-
 mojom::blink::V8CacheOptions ModulatorImplBase::GetV8CacheOptions() const {
   return GetExecutionContext()->GetV8CacheOptions();
 }
@@ -75,10 +71,9 @@ void ModulatorImplBase::FetchTree(
     const ScriptFetchOptions& options,
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeClient* client) {
-  ModuleTreeLinker::Fetch(url, module_type,
-                          fetch_client_settings_object_fetcher, context_type,
-                          destination, options, this, custom_fetch_type,
-                          tree_linker_registry_, client);
+  tree_linker_registry_->Fetch(
+      url, module_type, fetch_client_settings_object_fetcher, context_type,
+      destination, options, this, custom_fetch_type, client);
 }
 
 void ModulatorImplBase::FetchDescendantsForInlineScript(
@@ -87,10 +82,9 @@ void ModulatorImplBase::FetchDescendantsForInlineScript(
     mojom::blink::RequestContextType context_type,
     network::mojom::RequestDestination destination,
     ModuleTreeClient* client) {
-  ModuleTreeLinker::FetchDescendantsForInlineScript(
+  tree_linker_registry_->FetchDescendantsForInlineScript(
       module_script, fetch_client_settings_object_fetcher, context_type,
-      destination, this, ModuleScriptCustomFetchType::kNone,
-      tree_linker_registry_, client);
+      destination, this, ModuleScriptCustomFetchType::kNone, client);
 }
 
 void ModulatorImplBase::FetchSingle(
@@ -194,7 +188,6 @@ ScriptValue ModulatorImplBase::CreateSyntaxError(const String& message) const {
 void ModulatorImplBase::RegisterImportMap(const ImportMap* import_map,
                                           ScriptValue error_to_rethrow) {
   DCHECK(import_map);
-  DCHECK(ImportMapsEnabled());
 
   // <spec step="7">If import map parse result’s error to rethrow is not null,
   // then:</spec>
@@ -260,22 +253,6 @@ ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
   return ModuleImportMeta(url_string);
 }
 
-ScriptValue ModulatorImplBase::InstantiateModule(
-    v8::Local<v8::Module> module_record,
-    const KURL& source_url) {
-  UseCounter::Count(GetExecutionContext(),
-                    WebFeature::kInstantiateModuleScript);
-
-  ScriptState::Scope scope(script_state_);
-  return ModuleRecord::Instantiate(script_state_, module_record, source_url);
-}
-
-Vector<ModuleRequest> ModulatorImplBase::ModuleRequestsFromModuleRecord(
-    v8::Local<v8::Module> module_record) {
-  ScriptState::Scope scope(script_state_);
-  return ModuleRecord::ModuleRequests(script_state_, module_record);
-}
-
 ModuleType ModulatorImplBase::ModuleTypeFromRequest(
     const ModuleRequest& module_request) const {
   String module_type_string = module_request.GetModuleTypeString();
@@ -328,7 +305,7 @@ void ModulatorImplBase::ProduceCacheModuleTree(
   module_script->ProduceCache();
 
   Vector<ModuleRequest> child_specifiers =
-      ModuleRequestsFromModuleRecord(record);
+      ModuleRecord::ModuleRequests(GetScriptState(), record);
 
   for (const auto& module_request : child_specifiers) {
     KURL child_url =

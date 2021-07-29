@@ -16,6 +16,7 @@
 #include "media/base/waiting.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_support.h"
@@ -35,10 +36,20 @@ namespace blink {
 bool IsValidConfig(const AudioDecoderConfig& config,
                    media::AudioType& out_audio_type,
                    String& out_console_message) {
+  // Match codec strings from the codec registry:
+  // https://www.w3.org/TR/webcodecs-codec-registry/#audio-codec-registry
+  if (config.codec() == "ulaw") {
+    out_audio_type = {media::kCodecPCM_MULAW};
+    return true;
+  } else if (config.codec() == "alaw") {
+    out_audio_type = {media::kCodecPCM_ALAW};
+    return true;
+  }
+
   media::AudioCodec codec = media::kUnknownAudioCodec;
   bool is_codec_ambiguous = true;
-  bool parse_succeeded = ParseAudioCodecString("", config.codec().Utf8(),
-                                               &is_codec_ambiguous, &codec);
+  const bool parse_succeeded = ParseAudioCodecString(
+      "", config.codec().Utf8(), &is_codec_ambiguous, &codec);
 
   if (!parse_succeeded) {
     out_console_message = "Failed to parse codec string.";
@@ -63,8 +74,7 @@ AudioDecoderConfig* CopyConfig(const AudioDecoderConfig& config) {
     DOMArrayPiece buffer(config.description());
     DOMArrayBuffer* buffer_copy =
         DOMArrayBuffer::Create(buffer.Data(), buffer.ByteLength());
-    copy->setDescription(
-        ArrayBufferOrArrayBufferView::FromArrayBuffer(buffer_copy));
+    copy->setDescription(MakeGarbageCollected<V8BufferSource>(buffer_copy));
   }
   return copy;
 }
@@ -226,13 +236,11 @@ CodecConfigEval AudioDecoder::MakeMediaConfig(const ConfigType& config,
 }
 
 media::StatusOr<scoped_refptr<media::DecoderBuffer>>
-AudioDecoder::MakeDecoderBuffer(const InputType& chunk) {
-  auto decoder_buffer = media::DecoderBuffer::CopyFrom(
-      static_cast<uint8_t*>(chunk.data()->Data()), chunk.data()->ByteLength());
-  decoder_buffer->set_timestamp(
-      base::TimeDelta::FromMicroseconds(chunk.timestamp()));
-  decoder_buffer->set_is_key_frame(chunk.type() == "key");
-  return decoder_buffer;
+AudioDecoder::MakeDecoderBuffer(const InputType& chunk, bool verify_key_frame) {
+  if (verify_key_frame && !chunk.buffer()->is_key_frame())
+    return media::Status(media::StatusCode::kKeyFrameRequired);
+
+  return chunk.buffer();
 }
 
 }  // namespace blink

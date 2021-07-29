@@ -16,6 +16,7 @@ TEST(ParsedCookieTest, TestBasic) {
   EXPECT_FALSE(pc1.IsSecure());
   EXPECT_FALSE(pc1.IsHttpOnly());
   EXPECT_FALSE(pc1.IsSameParty());
+  EXPECT_FALSE(pc1.IsPartitioned());
   EXPECT_EQ("a", pc1.Name());
   EXPECT_EQ("b", pc1.Value());
   EXPECT_FALSE(pc1.HasPath());
@@ -27,11 +28,12 @@ TEST(ParsedCookieTest, TestBasic) {
 
   ParsedCookie pc2(
       "c=d; secure; httponly; sameparty; path=/foo; domain=bar.test; "
-      "max-age=60; samesite=lax; priority=high");
+      "max-age=60; samesite=lax; priority=high; partitioned;");
   EXPECT_TRUE(pc2.IsValid());
   EXPECT_TRUE(pc2.IsSecure());
   EXPECT_TRUE(pc2.IsHttpOnly());
   EXPECT_TRUE(pc2.IsSameParty());
+  EXPECT_TRUE(pc2.IsPartitioned());
   EXPECT_EQ("c", pc2.Name());
   EXPECT_EQ("d", pc2.Value());
   EXPECT_TRUE(pc2.HasPath());
@@ -76,6 +78,70 @@ TEST(ParsedCookieTest, TestSetEmptyNameValue) {
   EXPECT_FALSE(empty_name.SetValue(""));
   EXPECT_EQ("value", empty_name.Value());
   EXPECT_TRUE(empty_name.IsValid());
+}
+
+TEST(ParsedCookieTest, ParseValueStrings) {
+  std::string valid_values[] = {
+      "httpONLY", "1%7C1624663551161", "<K0<r<C_<G_<S0",
+      "lastRequest=1624663552846&activeDays=%5B0%2C0", "si=8da88dce-5fee-4835"};
+  for (const auto& value : valid_values) {
+    EXPECT_EQ(ParsedCookie::ParseValueString(value), value);
+    EXPECT_TRUE(ParsedCookie::ValueMatchesParsedValue(value));
+  }
+
+  std::string invalid_values[] = {
+      "\nhttpONLYsecure",            // Newline char at start
+      "httpONLY\nsecure",            // Newline char in middle
+      "httpONLYsecure\n",            // Newline char at end
+      "\r<K0<r<C_<G_<S0",            // Carriage return at start
+      "<K0<r\r<C_<G_<S0",            // Carriage return in middle
+      "<K0<r<C_<G_<S0\r",            // Carriage return at end
+      ";lastRequest=1624663552846",  // Token separator at start
+      "lastRequest=1624663552846; activeDays=%5B0%2C0",  // Token separator in
+                                                         // middle
+      std::string("\0abcdef", 7),                        // 0 byte at start
+      std::string("abc\0def", 7),                        // 0 byte in middle
+      std::string("abcdef\0", 7)};                       // 0 byte at end
+  for (const auto& value : invalid_values) {
+    EXPECT_NE(ParsedCookie::ParseValueString(value), value);
+    EXPECT_FALSE(ParsedCookie::ValueMatchesParsedValue(value));
+  }
+
+  // Strings with leading whitespace should parse OK but
+  // ValueMatchesParsedValue() should fail.
+  std::string leading_whitespace_values[] = {
+      " 1%7C1624663551161",   // Space at start
+      "\t1%7C1624663551161",  // Tab at start
+  };
+  for (const auto& value : leading_whitespace_values) {
+    EXPECT_TRUE(ParsedCookie::ParseValueString(value).length() ==
+                value.length() - 1);
+    EXPECT_FALSE(ParsedCookie::ValueMatchesParsedValue(value));
+  }
+
+  // Strings with trailing whitespace or the separator character should parse OK
+  // but ValueMatchesParsedValue() should fail.
+  std::string valid_values_with_trailing_chars[] = {
+      "lastRequest=1624663552846 ",   // Space at end
+      "lastRequest=1624663552846\t",  // Tab at end
+      "lastRequest=1624663552846;",   // Token separator at end
+  };
+  const size_t valid_value_length =
+      valid_values_with_trailing_chars[0].length() - 1;
+  for (const auto& value : valid_values_with_trailing_chars) {
+    EXPECT_TRUE(ParsedCookie::ParseValueString(value).length() ==
+                valid_value_length);
+    EXPECT_FALSE(ParsedCookie::ValueMatchesParsedValue(value));
+  }
+
+  // A valid value (truncated after the ';') but parses out to a substring.
+  std::string value_with_separator_in_middle(
+      "lastRequest=1624663552846; activeDays=%5B0%2C0");
+  EXPECT_TRUE(
+      ParsedCookie::ParseValueString(value_with_separator_in_middle).length() ==
+      value_with_separator_in_middle.find(';'));
+  EXPECT_FALSE(
+      ParsedCookie::ValueMatchesParsedValue(value_with_separator_in_middle));
 }
 
 TEST(ParsedCookieTest, TestQuoted) {
@@ -138,18 +204,20 @@ TEST(ParsedCookieTest, TestNameless) {
 
 TEST(ParsedCookieTest, TestAttributeCase) {
   ParsedCookie pc(
-      "BLAH; Path=/; sECuRe; httpONLY; sAmESitE=LaX; pRIoRitY=hIgH; samePaRtY");
+      "BLAH; Path=/; sECuRe; httpONLY; sAmESitE=LaX; pRIoRitY=hIgH; samePaRtY; "
+      "pARTitIoNeD;");
   EXPECT_TRUE(pc.IsValid());
   EXPECT_TRUE(pc.IsSecure());
   EXPECT_TRUE(pc.IsHttpOnly());
   EXPECT_TRUE(pc.IsSameParty());
+  EXPECT_TRUE(pc.IsPartitioned());
   EXPECT_EQ(CookieSameSite::LAX_MODE, pc.SameSite());
   EXPECT_TRUE(pc.HasPath());
   EXPECT_EQ("/", pc.Path());
   EXPECT_EQ("", pc.Name());
   EXPECT_EQ("BLAH", pc.Value());
   EXPECT_EQ(COOKIE_PRIORITY_HIGH, pc.Priority());
-  EXPECT_EQ(6U, pc.NumberOfAttributes());
+  EXPECT_EQ(7U, pc.NumberOfAttributes());
 }
 
 TEST(ParsedCookieTest, TestDoubleQuotedNameless) {
@@ -396,10 +464,11 @@ TEST(ParsedCookieTest, SetAttributes) {
   EXPECT_TRUE(pc.SetSameSite("LAX"));
   EXPECT_TRUE(pc.SetPriority("HIGH"));
   EXPECT_TRUE(pc.SetIsSameParty(true));
+  EXPECT_TRUE(pc.SetIsPartitioned(true));
   EXPECT_EQ(
       "name=value; domain=domain.com; path=/; "
       "expires=Sun, 18-Apr-2027 21:06:29 GMT; max-age=12345; secure; "
-      "httponly; samesite=LAX; priority=HIGH; sameparty",
+      "httponly; samesite=LAX; priority=HIGH; sameparty; partitioned",
       pc.ToCookieLine());
   EXPECT_TRUE(pc.HasDomain());
   EXPECT_TRUE(pc.HasPath());
@@ -423,7 +492,7 @@ TEST(ParsedCookieTest, SetAttributes) {
   EXPECT_EQ(
       "name=value; domain=domain.com; path=/foo; "
       "expires=Sun, 18-Apr-2027 21:06:29 GMT; max-age=12345; secure; "
-      "httponly; samesite=LAX; priority=HIGH; sameparty",
+      "httponly; samesite=LAX; priority=HIGH; sameparty; partitioned",
       pc.ToCookieLine());
 
   // Set priority to medium.
@@ -432,16 +501,16 @@ TEST(ParsedCookieTest, SetAttributes) {
   EXPECT_EQ(
       "name=value; domain=domain.com; path=/foo; "
       "expires=Sun, 18-Apr-2027 21:06:29 GMT; max-age=12345; secure; "
-      "httponly; samesite=LAX; priority=medium; sameparty",
+      "httponly; samesite=LAX; priority=medium; sameparty; partitioned",
       pc.ToCookieLine());
 
   // Clear attribute from the end.
-  EXPECT_TRUE(pc.SetIsSameParty(false));
-  EXPECT_FALSE(pc.IsSameParty());
+  EXPECT_TRUE(pc.SetIsPartitioned(false));
+  EXPECT_FALSE(pc.IsPartitioned());
   EXPECT_EQ(
       "name=value; domain=domain.com; path=/foo; "
       "expires=Sun, 18-Apr-2027 21:06:29 GMT; max-age=12345; secure; "
-      "httponly; samesite=LAX; priority=medium",
+      "httponly; samesite=LAX; priority=medium; sameparty",
       pc.ToCookieLine());
 
   // Clear the rest and change the name and value.
@@ -462,8 +531,11 @@ TEST(ParsedCookieTest, SetAttributes) {
   EXPECT_FALSE(pc.IsSecure());
   EXPECT_FALSE(pc.IsHttpOnly());
   EXPECT_EQ(CookieSameSite::UNSPECIFIED, pc.SameSite());
+  EXPECT_TRUE(pc.SetIsSameParty(false));
+  EXPECT_TRUE(pc.SetIsPartitioned(false));
   EXPECT_EQ("name2=value2", pc.ToCookieLine());
   EXPECT_FALSE(pc.IsSameParty());
+  EXPECT_FALSE(pc.IsPartitioned());
 }
 
 // Set the domain attribute twice in a cookie line. If the second attribute's
@@ -691,6 +763,31 @@ TEST(ParsedCookieTest, ToCookieLineSpecialTokens) {
     EXPECT_TRUE(pc.IsSecure());
     EXPECT_TRUE(pc.IsSameParty());
     EXPECT_TRUE(pc.IsHttpOnly());
+  }
+  {
+    ParsedCookie pc("partitioned=foo");
+    EXPECT_EQ("partitioned", pc.Name());
+    EXPECT_EQ("foo", pc.Value());
+    EXPECT_FALSE(pc.IsPartitioned());
+  }
+  {
+    ParsedCookie pc("partitioned=");
+    EXPECT_EQ("partitioned", pc.Name());
+    EXPECT_EQ("", pc.Value());
+    EXPECT_FALSE(pc.IsPartitioned());
+  }
+  {
+    ParsedCookie pc("=partitioned");
+    EXPECT_EQ("", pc.Name());
+    EXPECT_EQ("partitioned", pc.Value());
+    EXPECT_FALSE(pc.IsPartitioned());
+  }
+  {
+    ParsedCookie pc(
+        "partitioned; partitioned; secure; httponly; httponly; secure");
+    EXPECT_EQ("", pc.Name());
+    EXPECT_EQ("partitioned", pc.Value());
+    EXPECT_TRUE(pc.IsPartitioned());
   }
 }
 

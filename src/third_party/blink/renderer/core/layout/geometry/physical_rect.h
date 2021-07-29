@@ -42,7 +42,7 @@ struct CORE_EXPORT PhysicalRect {
                          LayoutUnit height)
       : offset(left, top), size(width, height) {}
 
-  // For testing only. It's defined in core/testing/core_unit_test_helpers.h.
+  // For testing only. It's defined in core/testing/core_unit_test_helper.h.
   inline PhysicalRect(int left, int top, int width, int height);
 
   PhysicalOffset offset;
@@ -81,6 +81,10 @@ struct CORE_EXPORT PhysicalRect {
   // Returns the distance to |target| in horizontal and vertical directions.
   // Each distance is zero if |this| contains |target| in that direction.
   PhysicalSize DistanceAsSize(PhysicalOffset target) const;
+
+  // Returns square of the distance from |point| to the closest edge of |this|.
+  // This function returns 0 if |this| contains |point|.
+  LayoutUnit SquaredDistanceTo(const PhysicalOffset& point) const;
 
   bool Contains(const PhysicalRect&) const;
   bool Contains(LayoutUnit px, LayoutUnit py) const {

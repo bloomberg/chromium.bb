@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #include "chrome/common/pref_names.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
@@ -342,6 +343,7 @@ void ProfileResetter::ResetShortcuts() {
 
 void ProfileResetter::ResetNtpCustomizations() {
   ntp_service_->ResetToDefault();
+  NewTabPageUI::ResetProfilePrefs(profile_->GetPrefs());
   MarkAsDone(NTP_CUSTOMIZATIONS);
 }
 

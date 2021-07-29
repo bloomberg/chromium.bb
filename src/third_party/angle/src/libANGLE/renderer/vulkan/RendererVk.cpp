@@ -171,8 +171,6 @@ constexpr const char *kSkippedMessages[] = {
     // http://anglebug.com/5331
     "VUID-VkSubpassDescriptionDepthStencilResolve-depthResolveMode-parameter",
     "VUID-VkSubpassDescriptionDepthStencilResolve-stencilResolveMode-parameter",
-    // https://crbug.com/1183542
-    "VUID-vkCmdBindDescriptorSets-pDescriptorSets-01979",
     // https://issuetracker.google.com/175584609
     "VUID-vkCmdDraw-None-04584",
     "VUID-vkCmdDrawIndexed-None-04584",
@@ -182,6 +180,12 @@ constexpr const char *kSkippedMessages[] = {
     "VUID-vkCmdDrawIndexedIndirectCount-None-04584",
     // https://anglebug.com/5912
     "VUID-VkImageViewCreateInfo-pNext-01585",
+    // http://crbug.com/1226682
+    "VUID-VkSpecializationMapEntry-constantID-00776",
+    // http://anglebug.com/6155
+    "VUID-vkCmdDraw-None-02699",
+    // http://anglebug.com/6168
+    "VUID-VkImageViewCreateInfo-None-02273",
 };
 
 // Suppress validation errors that are known
@@ -837,9 +841,20 @@ angle::Result RendererVk::initialize(DisplayVk *displayVk,
                                      const char *wsiExtension,
                                      const char *wsiLayer)
 {
+    bool canLoadDebugUtils = true;
 #if defined(ANGLE_SHARED_LIBVULKAN)
     // Set all vk* function ptrs
     ANGLE_VK_TRY(displayVk, volkInitialize());
+
+    uint32_t ver = volkGetInstanceVersion();
+    if (!IsAndroid() && VK_API_VERSION_MAJOR(ver) == 1 &&
+        (VK_API_VERSION_MINOR(ver) < 1 ||
+         (VK_API_VERSION_MINOR(ver) == 1 && VK_API_VERSION_PATCH(ver) < 91)))
+    {
+        // http://crbug.com/1205999 - non-Android Vulkan Loader versions before 1.1.91 have a bug
+        // which prevents loading VK_EXT_debug_utils function pointers.
+        canLoadDebugUtils = false;
+    }
 #endif  // defined(ANGLE_SHARED_LIBVULKAN)
 
     mDisplay                         = display;
@@ -926,9 +941,16 @@ angle::Result RendererVk::initialize(DisplayVk *displayVk,
     }
 
     vk::ExtensionNameList enabledInstanceExtensions;
-    enabledInstanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-    enabledInstanceExtensions.push_back(wsiExtension);
-    mEnableDebugUtils = mEnableValidationLayers &&
+    if (displayVk->isUsingSwapchain())
+    {
+        enabledInstanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+    }
+    if (wsiExtension)
+    {
+        enabledInstanceExtensions.push_back(wsiExtension);
+    }
+
+    mEnableDebugUtils = canLoadDebugUtils && mEnableValidationLayers &&
                         ExtensionFound(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, instanceExtensionNames);
 
     bool enableDebugReport =
@@ -1211,9 +1233,19 @@ void RendererVk::queryDeviceExtensionFeatures(const vk::ExtensionNameList &devic
     mDepthStencilResolveProperties.sType =
         VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES;
 
+    mCustomBorderColorFeatures = {};
+    mCustomBorderColorFeatures.sType =
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT;
+
     mMultisampledRenderToSingleSampledFeatures = {};
     mMultisampledRenderToSingleSampledFeatures.sType =
         VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT;
+
+    mMultiviewFeatures       = {};
+    mMultiviewFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+
+    mMultiviewProperties       = {};
+    mMultiviewProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES;
 
     mDriverProperties       = {};
     mDriverProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES;
@@ -1301,17 +1333,30 @@ void RendererVk::queryDeviceExtensionFeatures(const vk::ExtensionNameList &devic
         vk::AddToPNextChain(&deviceProperties, &mDepthStencilResolveProperties);
     }
 
-    // Query multisampled render to single-sampled properties
+    // Query multisampled render to single-sampled features
     if (ExtensionFound(VK_EXT_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_EXTENSION_NAME,
                        deviceExtensionNames))
     {
         vk::AddToPNextChain(&deviceFeatures, &mMultisampledRenderToSingleSampledFeatures);
     }
 
+    // Query multiview features and properties
+    if (ExtensionFound(VK_KHR_MULTIVIEW_EXTENSION_NAME, deviceExtensionNames))
+    {
+        vk::AddToPNextChain(&deviceFeatures, &mMultiviewFeatures);
+        vk::AddToPNextChain(&deviceProperties, &mMultiviewProperties);
+    }
+
     // Query driver properties
     if (ExtensionFound(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, deviceExtensionNames))
     {
         vk::AddToPNextChain(&deviceProperties, &mDriverProperties);
+    }
+
+    // Query custom border color features
+    if (ExtensionFound(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME, deviceExtensionNames))
+    {
+        vk::AddToPNextChain(&deviceFeatures, &mCustomBorderColorFeatures);
     }
 
     // Query subgroup properties
@@ -1352,9 +1397,12 @@ void RendererVk::queryDeviceExtensionFeatures(const vk::ExtensionNameList &devic
     mIndexTypeUint8Features.pNext                    = nullptr;
     mSubgroupProperties.pNext                        = nullptr;
     mExternalMemoryHostProperties.pNext              = nullptr;
+    mCustomBorderColorFeatures.pNext                 = nullptr;
     mShaderFloat16Int8Features.pNext                 = nullptr;
     mDepthStencilResolveProperties.pNext             = nullptr;
     mMultisampledRenderToSingleSampledFeatures.pNext = nullptr;
+    mMultiviewFeatures.pNext                         = nullptr;
+    mMultiviewProperties.pNext                       = nullptr;
     mDriverProperties.pNext                          = nullptr;
     mSamplerYcbcrConversionFeatures.pNext            = nullptr;
 }
@@ -1425,7 +1473,10 @@ angle::Result RendererVk::initializeDevice(DisplayVk *displayVk, uint32_t queueF
     }
 
     vk::ExtensionNameList enabledDeviceExtensions;
-    enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+    if (displayVk->isUsingSwapchain())
+    {
+        enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+    }
 
     // Queues: map low, med, high priority to whatever is supported up to 3 queues
     uint32_t queueCount = std::min(mQueueFamilyProperties[queueFamilyIndex].queueCount,
@@ -1627,6 +1678,9 @@ angle::Result RendererVk::initializeDevice(DisplayVk *displayVk, uint32_t queueF
     // Used to implement storage buffers and images in the fragment shader:
     enabledFeatures.features.fragmentStoresAndAtomics =
         mPhysicalDeviceFeatures.fragmentStoresAndAtomics;
+    // Used to emulate the primitives generated query:
+    enabledFeatures.features.pipelineStatisticsQuery =
+        getFeatures().supportsPipelineStatisticsQuery.enabled;
     // Used to support geometry shaders:
     enabledFeatures.features.geometryShader = mPhysicalDeviceFeatures.geometryShader;
     // Used to support EXT_gpu_shader5:
@@ -1690,6 +1744,12 @@ angle::Result RendererVk::initializeDevice(DisplayVk *displayVk, uint32_t queueF
         vk::AddToPNextChain(&createInfo, &mTransformFeedbackFeatures);
     }
 
+    if (getFeatures().supportsCustomBorderColorEXT.enabled)
+    {
+        enabledDeviceExtensions.push_back(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);
+        vk::AddToPNextChain(&createInfo, &mCustomBorderColorFeatures);
+    }
+
     if (getFeatures().supportsIndexTypeUint8.enabled)
     {
         enabledDeviceExtensions.push_back(VK_EXT_INDEX_TYPE_UINT8_EXTENSION_NAME);
@@ -1706,6 +1766,16 @@ angle::Result RendererVk::initializeDevice(DisplayVk *displayVk, uint32_t queueF
         enabledDeviceExtensions.push_back(
             VK_EXT_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_EXTENSION_NAME);
         vk::AddToPNextChain(&createInfo, &mMultisampledRenderToSingleSampledFeatures);
+    }
+
+    if (getFeatures().supportsMultiview.enabled)
+    {
+        // OVR_multiview disallows multiview with geometry and tessellation, so don't request these
+        // features.
+        mMultiviewFeatures.multiviewGeometryShader     = VK_FALSE;
+        mMultiviewFeatures.multiviewTessellationShader = VK_FALSE;
+        enabledDeviceExtensions.push_back(VK_KHR_MULTIVIEW_EXTENSION_NAME);
+        vk::AddToPNextChain(&createInfo, &mMultiviewFeatures);
     }
 
     if (getFeatures().logMemoryReportCallbacks.enabled ||
@@ -2292,9 +2362,16 @@ void RendererVk::initFeatures(DisplayVk *displayVk,
             mMultisampledRenderToSingleSampledFeatures.multisampledRenderToSingleSampled ==
                 VK_TRUE);
 
+    ANGLE_FEATURE_CONDITION(&mFeatures, supportsMultiview, mMultiviewFeatures.multiview == VK_TRUE);
+
     ANGLE_FEATURE_CONDITION(&mFeatures, emulateTransformFeedback,
                             (!mFeatures.supportsTransformFeedbackExtension.enabled &&
                              mPhysicalDeviceFeatures.vertexPipelineStoresAndAtomics == VK_TRUE));
+
+    // TODO: http://anglebug.com/5927 - drop dependency on customBorderColorWithoutFormat.
+    ANGLE_FEATURE_CONDITION(&mFeatures, supportsCustomBorderColorEXT,
+                            (mCustomBorderColorFeatures.customBorderColors == VK_TRUE &&
+                             mCustomBorderColorFeatures.customBorderColorWithoutFormat == VK_TRUE));
 
     ANGLE_FEATURE_CONDITION(&mFeatures, disableFifoPresentMode, IsLinux() && isIntel);
 
@@ -2319,7 +2396,7 @@ void RendererVk::initFeatures(DisplayVk *displayVk,
     // that can cause OOM and timeouts.
     ANGLE_FEATURE_CONDITION(&mFeatures, allocateNonZeroMemory, false);
 
-    ANGLE_FEATURE_CONDITION(&mFeatures, shadowBuffers, true);
+    ANGLE_FEATURE_CONDITION(&mFeatures, shadowBuffers, false);
 
     ANGLE_FEATURE_CONDITION(&mFeatures, persistentlyMappedBuffers, true);
 
@@ -2334,11 +2411,12 @@ void RendererVk::initFeatures(DisplayVk *displayVk,
     ANGLE_FEATURE_CONDITION(&mFeatures, enablePreRotateSurfaces,
                             IsAndroid() && supportsNegativeViewport);
 
-    // Currently disabled by default: http://anglebug.com/3078
+    // http://anglebug.com/3078
     ANGLE_FEATURE_CONDITION(
         &mFeatures, enablePrecisionQualifiers,
         !(IsPixel2(mPhysicalDeviceProperties.vendorID, mPhysicalDeviceProperties.deviceID) &&
-          (mPhysicalDeviceProperties.driverVersion < kPixel2DriverWithRelaxedPrecision)));
+          (mPhysicalDeviceProperties.driverVersion < kPixel2DriverWithRelaxedPrecision)) &&
+            !IsPixel4(mPhysicalDeviceProperties.vendorID, mPhysicalDeviceProperties.deviceID));
 
     ANGLE_FEATURE_CONDITION(&mFeatures, preferAggregateBarrierCalls, isNvidia || isAMD || isIntel);
 
@@ -2379,7 +2457,8 @@ void RendererVk::initFeatures(DisplayVk *displayVk,
 
     ANGLE_FEATURE_CONDITION(
         &mFeatures, supportsImageFormatList,
-        (ExtensionFound(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME, deviceExtensionNames)) && isAMD);
+        (ExtensionFound(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME, deviceExtensionNames)) &&
+            (isAMD || isARM));
 
     // Feature disabled due to driver bugs:
     //
@@ -2391,14 +2470,15 @@ void RendererVk::initFeatures(DisplayVk *displayVk,
         mFeatures.supportsMultisampledRenderToSingleSampled.enabled ||
             !(IsApple() && isSwiftShader) && !(IsWindows() && (isIntel || isAMD)));
 
-    // Feature disabled due to driver bugs:
-    //
-    // - Swiftshader: http://anglebug.com/5142
-    // - Qualcomm: http://anglebug.com/5143
-    ANGLE_FEATURE_CONDITION(
-        &mFeatures, supportsImageCubeArray,
-        mPhysicalDeviceFeatures.imageCubeArray == VK_TRUE && !isSwiftShader &&
-            !IsPixel2(mPhysicalDeviceProperties.vendorID, mPhysicalDeviceProperties.deviceID));
+    // Currently we enable cube map arrays based on the imageCubeArray Vk feature.
+    // TODO: Check device caps for full cube map array support. http://anglebug.com/5143
+    ANGLE_FEATURE_CONDITION(&mFeatures, supportsImageCubeArray,
+                            mPhysicalDeviceFeatures.imageCubeArray == VK_TRUE);
+
+    // TODO: Only enable if VK_EXT_primitives_generated_query is not present.
+    // http://anglebug.com/5430
+    ANGLE_FEATURE_CONDITION(&mFeatures, supportsPipelineStatisticsQuery,
+                            mPhysicalDeviceFeatures.pipelineStatisticsQuery == VK_TRUE);
 
     ANGLE_FEATURE_CONDITION(&mFeatures, preferredLargeHeapBlockSize4MB, !isQualcomm);
 
@@ -2442,6 +2522,18 @@ void RendererVk::initFeatures(DisplayVk *displayVk,
     // performance. Most app traces shows frame time reduced and manhattan 3.1 offscreen score
     // improves 7%.
     ANGLE_FEATURE_CONDITION(&mFeatures, preferSubmitAtFBOBoundary, isARM);
+
+    // In order to support immutable samplers tied to external formats, we need to overallocate
+    // descriptor counts for such immutable samplers
+    ANGLE_FEATURE_CONDITION(&mFeatures, useMultipleDescriptorsForExternalFormats, true);
+
+    // When generating SPIR-V, the following workarounds are applied on buggy drivers:
+    //
+    // - AMD/Windows: Function parameters are passed in temporary variables even if they are already
+    //   variables.
+    //
+    // http://anglebug.com/6110
+    ANGLE_FEATURE_CONDITION(&mFeatures, directSPIRVGenerationWorkarounds, IsWindows() && isAMD);
 
     angle::PlatformMethods *platform = ANGLEPlatformCurrent();
     platform->overrideFeaturesVk(platform, &mFeatures);
@@ -3146,6 +3238,25 @@ void RendererVk::logCacheStats() const
     {
         INFO() << "    CacheType " << cacheType++ << ": " << stats.getHitRatio();
     }
+}
+
+angle::Result RendererVk::getFormatDescriptorCountForExternalFormats(ContextVk *contextVk,
+                                                                     uint64_t format,
+                                                                     uint32_t *descriptorCountOut)
+{
+    // TODO: need to query for external formats as well once spec is fixed. http://anglebug.com/6141
+    if (getFeatures().useMultipleDescriptorsForExternalFormats.enabled)
+    {
+        // Vulkan spec has a gap in that there is no mechanism available to query the immutable
+        // sampler descriptor count of an external format. For now, return a default value.
+        constexpr uint32_t kExternalFormatDefaultDescriptorCount = 4;
+        ASSERT(descriptorCountOut);
+        *descriptorCountOut = kExternalFormatDefaultDescriptorCount;
+        return angle::Result::Continue;
+    }
+
+    ANGLE_VK_UNREACHABLE(contextVk);
+    return angle::Result::Stop;
 }
 
 vk::MemoryReport::MemoryReport()

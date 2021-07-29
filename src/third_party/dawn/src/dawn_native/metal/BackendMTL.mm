@@ -222,16 +222,18 @@ namespace dawn_native { namespace metal {
                     [*mDevice supportsFamily:MTLGPUFamilyApple5]) {
                     mSupportedExtensions.EnableExtension(Extension::PipelineStatisticsQuery);
 
-                    // TODO(hao.x.li@intel.com): Not enable timestamp query here becuase it's not
-                    // clear how to convert timestamps to nanoseconds on Metal.
-                    // See https://github.com/gpuweb/gpuweb/issues/1325
+                    // Disable timestamp query on macOS 10.15 on AMD GPU because WriteTimestamp
+                    // fails to call without any copy commands on MTLBlitCommandEncoder. This issue
+                    // has been fixed on macOS 11.0. See crbug.com/dawn/545
+                    if (!gpu_info::IsAMD(GetPCIInfo().vendorId) ||
+                        [NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:{11, 0, 0}]) {
+                        mSupportedExtensions.EnableExtension(Extension::TimestampQuery);
+                    }
                 }
             }
             if (@available(macOS 10.11, iOS 11.0, *)) {
                 mSupportedExtensions.EnableExtension(Extension::DepthClamping);
             }
-
-            mSupportedExtensions.EnableExtension(Extension::ShaderFloat16);
         }
 
         NSPRef<id<MTLDevice>> mDevice;

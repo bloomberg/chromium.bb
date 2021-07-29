@@ -13,11 +13,12 @@
 #include "src/gpu/GrDrawingManager.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrSurfaceProxy.h"
 #include "src/gpu/GrTextureResolveRenderTask.h"
 
-std::unique_ptr<GrSurfaceDrawContext> GrOnFlushResourceProvider::makeRenderTargetContext(
+std::unique_ptr<GrSurfaceDrawContext> GrOnFlushResourceProvider::makeSurfaceDrawContext(
         sk_sp<GrSurfaceProxy> proxy, GrSurfaceOrigin origin, GrColorType colorType,
         sk_sp<SkColorSpace> colorSpace, const SkSurfaceProps& props) {
     // Since this is at flush time and these won't be allocated for us by the GrResourceAllocator
@@ -32,16 +33,16 @@ std::unique_ptr<GrSurfaceDrawContext> GrOnFlushResourceProvider::makeRenderTarge
         return nullptr;
     }
 
-    auto surfaceDrawContext = GrSurfaceDrawContext::Make(context, colorType, std::move(colorSpace),
-                                                         std::move(proxy), origin, props, true);
+    auto sdc = GrSurfaceDrawContext::Make(context, colorType, std::move(proxy),
+                                          std::move(colorSpace), origin, props, true);
 
-    if (!surfaceDrawContext) {
+    if (!sdc) {
         return nullptr;
     }
 
-    surfaceDrawContext->discard();
+    sdc->discard();
 
-    return surfaceDrawContext;
+    return sdc;
 }
 
 void GrOnFlushResourceProvider::addTextureResolveTask(sk_sp<GrTextureProxy> textureProxy,
@@ -50,12 +51,12 @@ void GrOnFlushResourceProvider::addTextureResolveTask(sk_sp<GrTextureProxy> text
     // task gets closed before making a texture resolve task. makeClosed is what will mark msaa and
     // mipmaps dirty.
     if (GrRenderTask* renderTask = fDrawingMgr->getLastRenderTask(textureProxy.get())) {
-        renderTask->makeClosed(*this->caps());
+        renderTask->makeClosed(fDrawingMgr->getContext());
     }
     auto task = static_cast<GrTextureResolveRenderTask*>(fDrawingMgr->fOnFlushRenderTasks.push_back(
             sk_make_sp<GrTextureResolveRenderTask>()).get());
     task->addProxy(fDrawingMgr, std::move(textureProxy), resolveFlags, *this->caps());
-    task->makeClosed(*this->caps());
+    task->makeClosed(fDrawingMgr->getContext());
 }
 
 bool GrOnFlushResourceProvider::assignUniqueKeyToProxy(const GrUniqueKey& key,

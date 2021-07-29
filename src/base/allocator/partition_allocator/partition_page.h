@@ -10,14 +10,17 @@
 #include <limits>
 
 #include "base/allocator/partition_allocator/address_pool_manager.h"
+#include "base/allocator/partition_allocator/address_pool_manager_types.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_freelist_entry.h"
+#include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/allocator/partition_allocator/starscan/object_bitmap.h"
 #include "base/base_export.h"
+#include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/dcheck_is_on.h"
 #include "base/thread_annotations.h"
@@ -34,26 +37,56 @@ namespace internal {
 template <bool thread_safe>
 struct PartitionSuperPageExtentEntry {
   PartitionRoot<thread_safe>* root;
-  char* super_page_base;
-  char* super_pages_end;
   PartitionSuperPageExtentEntry<thread_safe>* next;
+  uint16_t number_of_consecutive_super_pages;
+  uint16_t number_of_nonempty_slot_spans;
+
+  ALWAYS_INLINE void IncrementNumberOfNonemptySlotSpans();
+  ALWAYS_INLINE void DecrementNumberOfNonemptySlotSpans();
 };
 static_assert(
     sizeof(PartitionSuperPageExtentEntry<ThreadSafe>) <= kPageMetadataSize,
     "PartitionSuperPageExtentEntry must be able to fit in a metadata slot");
+static_assert(
+    kMaxSuperPages / kSuperPageSize <=
+        std::numeric_limits<
+            decltype(PartitionSuperPageExtentEntry<
+                     ThreadSafe>::number_of_consecutive_super_pages)>::max(),
+    "number_of_consecutive_super_pages must be big enough");
+
+// Returns the base of the first super page in the range of consecutive super
+// pages. CAUTION! |extent| must point to the extent of the first super page in
+// the range of consecutive super pages.
+template <bool thread_safe>
+ALWAYS_INLINE char* SuperPagesBeginFromExtent(
+    PartitionSuperPageExtentEntry<thread_safe>* extent) {
+  PA_DCHECK(0 < extent->number_of_consecutive_super_pages);
+  PA_DCHECK(IsManagedByNormalBuckets(extent));
+  return base::bits::AlignDown(reinterpret_cast<char*>(extent),
+                               kSuperPageAlignment);
+}
+
+// Returns the end of the last super page in the range of consecutive super
+// pages. CAUTION! |extent| must point to the extent of the first super page in
+// the range of consecutive super pages.
+template <bool thread_safe>
+ALWAYS_INLINE char* SuperPagesEndFromExtent(
+    PartitionSuperPageExtentEntry<thread_safe>* extent) {
+  return SuperPagesBeginFromExtent(extent) +
+         (extent->number_of_consecutive_super_pages * kSuperPageSize);
+}
 
 // SlotSpanMetadata::Free() defers unmapping a large page until the lock is
 // released. Callers of SlotSpanMetadata::Free() must invoke Run().
 // TODO(1061437): Reconsider once the new locking mechanism is implemented.
 struct DeferredUnmap {
-  void* ptr = nullptr;
-  size_t size = 0;
-#if BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
-  bool use_brp_pool = false;
-#endif
+  void* reservation_start = nullptr;
+  size_t reservation_size = 0;
+  pool_handle giga_cage_pool;
 
-  // In most cases there is no page to unmap and ptr == nullptr. This function
-  // is inlined to avoid the overhead of a function call in the common case.
+  // In most cases there is no page to unmap and reservation_start == nullptr.
+  // This function is inlined to avoid the overhead of a function call in the
+  // common case.
   ALWAYS_INLINE void Run();
 
  private:
@@ -127,6 +160,9 @@ struct __attribute__((packed)) SlotSpanMetadata {
       const SlotSpanMetadata* slot_span);
   ALWAYS_INLINE static SlotSpanMetadata* FromSlotStartPtr(void* slot_start);
   ALWAYS_INLINE static SlotSpanMetadata* FromSlotInnerPtr(void* ptr);
+
+  ALWAYS_INLINE PartitionSuperPageExtentEntry<thread_safe>* ToSuperPageExtent()
+      const;
 
   // Checks if it is feasible to store raw_size.
   ALWAYS_INLINE bool CanStoreRawSize() const { return can_store_raw_size; }
@@ -252,8 +288,12 @@ struct PartitionPage {
 
   // The first PartitionPage of the slot span holds its metadata. This offset
   // tells how many pages in from that first page we are.
+  // For direct maps, the first page metadata (that isn't super page extent
+  // entry) uses this field to tell how many pages to the right the direct map
+  // metadata starts.
+  //
   // 6 bits is enough to represent all possible offsets, given that the smallest
-  // partition page is 16kiB and normal buckets won't exceed 1MiB.
+  // partition page is 16kiB and the offset won't exceed 1MiB.
   static constexpr uint16_t kMaxSlotSpanMetadataBits = 6;
   static constexpr uint16_t kMaxSlotSpanMetadataOffset =
       (1 << kMaxSlotSpanMetadataBits) - 1;
@@ -291,10 +331,8 @@ static_assert(offsetof(PartitionPage<NotThreadSafe>,
                        subsequent_page_metadata) == 0,
               "");
 
-// CAUTION! Use only for normal buckets. Using on direct-mapped allocations may
-// lead to undefined behavior.
 ALWAYS_INLINE char* PartitionSuperPageToMetadataArea(char* ptr) {
-  // TODO(bartekn): Add a "is in normal buckets" DCHECK.
+  PA_DCHECK(IsReservationStart(ptr));
   uintptr_t pointer_as_uint = reinterpret_cast<uintptr_t>(ptr);
   PA_DCHECK(!(pointer_as_uint & kSuperPageOffsetMask));
   // The metadata area is exactly one system page (the guard page) into the
@@ -302,18 +340,27 @@ ALWAYS_INLINE char* PartitionSuperPageToMetadataArea(char* ptr) {
   return reinterpret_cast<char*>(pointer_as_uint + SystemPageSize());
 }
 
+template <bool thread_safe>
+ALWAYS_INLINE PartitionSuperPageExtentEntry<thread_safe>*
+PartitionSuperPageToExtent(char* ptr) {
+  return reinterpret_cast<PartitionSuperPageExtentEntry<thread_safe>*>(
+      PartitionSuperPageToMetadataArea(ptr));
+}
+
 // Size that should be reserved for 2 back-to-back quarantine bitmaps (if
 // present) inside a super page. Elements of a super page are
 // partition-page-aligned, hence the returned size is a multiple of partition
 // page size.
-ALWAYS_INLINE size_t ReservedQuarantineBitmapsSize() {
+PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
+ReservedQuarantineBitmapsSize() {
   return (2 * sizeof(QuarantineBitmap) + PartitionPageSize() - 1) &
          PartitionPageBaseMask();
 }
 
 // Size that should be committed for 2 back-to-back quarantine bitmaps (if
 // present) inside a super page. It is a multiple of system page size.
-ALWAYS_INLINE size_t CommittedQuarantineBitmapsSize() {
+PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
+CommittedQuarantineBitmapsSize() {
   return (2 * sizeof(QuarantineBitmap) + SystemPageSize() - 1) &
          SystemPageBaseMask();
 }
@@ -342,10 +389,38 @@ ALWAYS_INLINE char* SuperPagePayloadEnd(char* super_page_base) {
   return super_page_base + kSuperPageSize - PartitionPageSize();
 }
 
-// CAUTION! Use only for normal buckets. Using on direct-mapped allocations may
-// lead to undefined behavior.
+ALWAYS_INLINE size_t SuperPagePayloadSize(char* super_page_base,
+                                          bool with_quarantine) {
+  return SuperPagePayloadEnd(super_page_base) -
+         SuperPagePayloadBegin(super_page_base, with_quarantine);
+}
+
+template <bool thread_safe>
+ALWAYS_INLINE void PartitionSuperPageExtentEntry<
+    thread_safe>::IncrementNumberOfNonemptySlotSpans() {
+#if DCHECK_IS_ON()
+  char* super_page_begin =
+      base::bits::AlignDown(reinterpret_cast<char*>(this), kSuperPageAlignment);
+  PA_DCHECK(
+      (SuperPagePayloadSize(super_page_begin, root->IsQuarantineAllowed()) /
+       PartitionPageSize()) > number_of_nonempty_slot_spans);
+#endif
+  ++number_of_nonempty_slot_spans;
+}
+
+template <bool thread_safe>
+ALWAYS_INLINE void PartitionSuperPageExtentEntry<
+    thread_safe>::DecrementNumberOfNonemptySlotSpans() {
+  PA_DCHECK(number_of_nonempty_slot_spans);
+  --number_of_nonempty_slot_spans;
+}
+
+// Returns whether the pointer lies within a normal-bucket super page's payload
+// area (i.e. area devoted to slot spans). It doesn't check whether it's within
+// a valid slot span. It merely ensures it doesn't fall in a meta-data region
+// that would surely never contain user data.
 ALWAYS_INLINE bool IsWithinSuperPagePayload(void* ptr, bool with_quarantine) {
-  // TODO(bartekn): Add a "is in normal buckets" DCHECK.
+  PA_DCHECK(IsManagedByNormalBuckets(ptr));
   char* super_page_base = reinterpret_cast<char*>(
       reinterpret_cast<uintptr_t>(ptr) & kSuperPageBaseMask);
   void* payload_start = SuperPagePayloadBegin(super_page_base, with_quarantine);
@@ -353,19 +428,17 @@ ALWAYS_INLINE bool IsWithinSuperPagePayload(void* ptr, bool with_quarantine) {
   return ptr >= payload_start && ptr < payload_end;
 }
 
-// Returns the start of a slot or nullptr if |maybe_inner_ptr| is not inside of
-// an existing slot span. The function may return a pointer even inside a
-// decommitted or free slot span, it's the caller responsibility to check if
-// memory is actually allocated.
+// Returns the start of a slot, or nullptr if |maybe_inner_ptr| is not inside of
+// an existing slot span. The function may return a non-nullptr pointer even
+// inside a decommitted or free slot span, it's the caller responsibility to
+// check if memory is actually allocated.
 //
-// Furthermore, |maybe_inner_ptr| must point to payload of a valid super page.
-//
-// CAUTION! Use only for normal buckets. Using on direct-mapped allocations may
-// lead to undefined behavior.
+// |maybe_inner_ptr| must be within a normal-bucket super page, and more
+// specifically within the payload area (i.e. area devoted to slot spans).
 template <bool thread_safe>
 ALWAYS_INLINE char* GetSlotStartInSuperPage(char* maybe_inner_ptr) {
 #if DCHECK_IS_ON()
-  // TODO(bartekn): Add a "is in normal buckets" DCHECK.
+  PA_DCHECK(IsManagedByNormalBuckets(maybe_inner_ptr));
   char* super_page_ptr = reinterpret_cast<char*>(
       reinterpret_cast<uintptr_t>(maybe_inner_ptr) & kSuperPageBaseMask);
   auto* extent = reinterpret_cast<PartitionSuperPageExtentEntry<thread_safe>*>(
@@ -415,9 +488,9 @@ ALWAYS_INLINE void* PartitionPage<thread_safe>::ToSlotSpanStartPtr(
 
 // Converts from a pointer inside a super page into a pointer to the
 // PartitionPage object (within super pages's metadata) that describes the
-// partition page where |ptr| is located. |ptr| doesn't have to be a located
+// partition page where |ptr| is located. |ptr| doesn't have to be located
 // within a valid (i.e. allocated) slot span, but must be within the super
-// page's payload (i.e. region devoted to slot spans).
+// page's payload area (i.e. area devoted to slot spans).
 //
 // While it is generally valid for |ptr| to be in the middle of an allocation,
 // care has to be taken with direct maps that span multiple super pages. This
@@ -425,13 +498,23 @@ ALWAYS_INLINE void* PartitionPage<thread_safe>::ToSlotSpanStartPtr(
 template <bool thread_safe>
 ALWAYS_INLINE PartitionPage<thread_safe>* PartitionPage<thread_safe>::FromPtr(
     void* ptr) {
-  // Force |with_quarantine=false|, because we don't know whether its direct map
-  // and direct map allocations don't have quarantine bitmaps.
-  PA_DCHECK(IsWithinSuperPagePayload(ptr, /* with_quarantine= */ false));
-
   uintptr_t pointer_as_uint = reinterpret_cast<uintptr_t>(ptr);
   char* super_page_ptr =
       reinterpret_cast<char*>(pointer_as_uint & kSuperPageBaseMask);
+
+#if DCHECK_IS_ON()
+  PA_DCHECK(IsReservationStart(super_page_ptr));
+  if (IsManagedByNormalBuckets(ptr)) {
+    auto* extent =
+        reinterpret_cast<PartitionSuperPageExtentEntry<thread_safe>*>(
+            PartitionSuperPageToMetadataArea(super_page_ptr));
+    PA_DCHECK(
+        IsWithinSuperPagePayload(ptr, extent->root->IsQuarantineAllowed()));
+  } else {
+    PA_CHECK(ptr >= super_page_ptr + PartitionPageSize());
+  }
+#endif
+
   uintptr_t partition_page_index =
       (pointer_as_uint & kSuperPageOffsetMask) >> PartitionPageShift();
   // Index 0 is invalid because it is the super page extent metadata and the
@@ -445,15 +528,12 @@ ALWAYS_INLINE PartitionPage<thread_safe>* PartitionPage<thread_safe>::FromPtr(
       (partition_page_index << kPageMetadataShift));
 }
 
-// Converts from a pointer to the SlotSpanMetadata object (within super pages's
-// metadata) into a pointer to the beginning of the slot span.
-//
-// CAUTION! Use only for normal buckets. Using on direct-mapped allocations may
-// lead to undefined behavior.
+// Converts from a pointer to the SlotSpanMetadata object (within a super
+// pages's metadata) into a pointer to the beginning of the slot span. This
+// works on direct maps too.
 template <bool thread_safe>
 ALWAYS_INLINE void* SlotSpanMetadata<thread_safe>::ToSlotSpanStartPtr(
     const SlotSpanMetadata* slot_span) {
-  // TODO(bartekn): Add a "is in normal buckets" DCHECK.
   uintptr_t pointer_as_uint = reinterpret_cast<uintptr_t>(slot_span);
   uintptr_t super_page_offset = (pointer_as_uint & kSuperPageOffsetMask);
 
@@ -481,12 +561,11 @@ ALWAYS_INLINE void* SlotSpanMetadata<thread_safe>::ToSlotSpanStartPtr(
 // object (within super pages's metadata) that describes the slot span
 // containing that slot.
 //
-// CAUTION! Use only for normal buckets. Using on direct-mapped allocations may
-// lead to undefined behavior.
+// CAUTION! For direct-mapped allocation, |ptr| has to be within the first
+// partition page.
 template <bool thread_safe>
 ALWAYS_INLINE SlotSpanMetadata<thread_safe>*
 SlotSpanMetadata<thread_safe>::FromSlotInnerPtr(void* ptr) {
-  // TODO(bartekn): Add a "is in normal buckets" DCHECK.
   auto* page = PartitionPage<thread_safe>::FromPtr(ptr);
   PA_DCHECK(page->is_valid);
   // Partition pages in the same slot span share the same slot span metadata
@@ -495,11 +574,25 @@ SlotSpanMetadata<thread_safe>::FromSlotInnerPtr(void* ptr) {
   page -= page->slot_span_metadata_offset;
   PA_DCHECK(page->is_valid);
   PA_DCHECK(!page->slot_span_metadata_offset);
-  return &page->slot_span_metadata;
+  auto* slot_span = &page->slot_span_metadata;
+  // For direct map, if |ptr| doesn't point within the first partition page,
+  // |slot_span_metadata_offset| will be 0, |page| won't get shifted, leaving
+  // |slot_size| at 0.
+  PA_DCHECK(slot_span->bucket->slot_size);
+  return slot_span;
+}
+
+template <bool thread_safe>
+ALWAYS_INLINE PartitionSuperPageExtentEntry<thread_safe>*
+SlotSpanMetadata<thread_safe>::ToSuperPageExtent() const {
+  char* super_page_base = reinterpret_cast<char*>(
+      reinterpret_cast<uintptr_t>(this) & kSuperPageBaseMask);
+  return reinterpret_cast<PartitionSuperPageExtentEntry<thread_safe>*>(
+      PartitionSuperPageToMetadataArea(super_page_base));
 }
 
 // Like |FromSlotInnerPtr|, but asserts that pointer points to the beginning of
-// the slot.
+// the slot. This works on direct maps too.
 template <bool thread_safe>
 ALWAYS_INLINE SlotSpanMetadata<thread_safe>*
 SlotSpanMetadata<thread_safe>::FromSlotStartPtr(void* slot_start) {
@@ -548,7 +641,8 @@ SlotSpanMetadata<thread_safe>::Free(void* slot_start) {
   // Catches an immediate double free.
   PA_CHECK(slot_start != freelist_head);
   // Look for double free one level deeper in debug.
-  PA_DCHECK(!freelist_head || slot_start != freelist_head->GetNext());
+  PA_DCHECK(!freelist_head ||
+            slot_start != freelist_head->GetNext(bucket->slot_size));
   auto* entry = static_cast<internal::PartitionFreelistEntry*>(slot_start);
   entry->SetNext(freelist_head);
   SetFreelistHead(entry);
@@ -605,24 +699,25 @@ ALWAYS_INLINE void SlotSpanMetadata<thread_safe>::Reset() {
   num_unprovisioned_slots = bucket->get_slots_per_span();
   PA_DCHECK(num_unprovisioned_slots);
 
+  ToSuperPageExtent()->IncrementNumberOfNonemptySlotSpans();
+
   next_slot_span = nullptr;
 }
 
 ALWAYS_INLINE void DeferredUnmap::Run() {
-  if (UNLIKELY(ptr)) {
+  if (UNLIKELY(reservation_start)) {
     Unmap();
   }
 }
 
 enum class QuarantineBitmapType { kMutator, kScanner };
 
-// CAUTION! Use only for normal buckets. Using on direct-mapped allocations may
-// lead to undefined behavior.
+// Returns a quarantine bitmap from a pointer within a normal-bucket super page.
 ALWAYS_INLINE QuarantineBitmap* QuarantineBitmapFromPointer(
     QuarantineBitmapType type,
     size_t pcscan_epoch,
     void* ptr) {
-  // TODO(bartekn): Add a "is in normal buckets" DCHECK.
+  PA_DCHECK(IsManagedByNormalBuckets(ptr));
   auto* super_page_base = reinterpret_cast<char*>(
       reinterpret_cast<uintptr_t>(ptr) & kSuperPageBaseMask);
   auto* first_bitmap = SuperPageQuarantineBitmaps(super_page_base);
@@ -634,13 +729,12 @@ ALWAYS_INLINE QuarantineBitmap* QuarantineBitmapFromPointer(
   return (pcscan_epoch & 1) ? second_bitmap : first_bitmap;
 }
 
-// Iterates over all active and full slot spans in a super-page. Returns number
-// of the visited slot spans. |Callback| must return a bool indicating whether
-// the slot was visited (true) or skipped (false).
+// Iterates over all slot spans in a super-page. |Callback| must return true if
+// early return is needed.
 template <bool thread_safe, typename Callback>
-size_t IterateSlotSpans(char* super_page_base,
-                        bool with_quarantine,
-                        Callback callback) {
+void IterateSlotSpans(char* super_page_base,
+                      bool with_quarantine,
+                      Callback callback) {
 #if DCHECK_IS_ON()
   PA_DCHECK(
       !(reinterpret_cast<uintptr_t>(super_page_base) % kSuperPageAlignment));
@@ -656,7 +750,6 @@ size_t IterateSlotSpans(char* super_page_base,
       Page::FromPtr(SuperPagePayloadBegin(super_page_base, with_quarantine));
   auto* const last_page =
       Page::FromPtr(SuperPagePayloadEnd(super_page_base) - PartitionPageSize());
-  size_t visited = 0;
   Page* page;
   SlotSpan* slot_span;
   for (page = first_page; page <= last_page;) {
@@ -674,7 +767,7 @@ size_t IterateSlotSpans(char* super_page_base,
     }
     slot_span = &page->slot_span_metadata;
     if (callback(slot_span))
-      ++visited;
+      return;
     page += slot_span->bucket->get_pages_per_slot_span();
   }
   // Each super page must have at least one valid slot span.
@@ -683,7 +776,6 @@ size_t IterateSlotSpans(char* super_page_base,
   // was no unnecessary iteration over gaps afterwards.
   PA_DCHECK(page == reinterpret_cast<Page*>(slot_span) +
                         slot_span->bucket->get_pages_per_slot_span());
-  return visited;
 }
 
 }  // namespace internal

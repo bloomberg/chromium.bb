@@ -20,19 +20,21 @@ constexpr char kEventFlagKey[] = "event_flag";
 constexpr char kContainerKey[] = "container";
 constexpr char kDispositionKey[] = "disposition";
 constexpr char kDisplayIdKey[] = "display_id";
-constexpr char kUrlKey[] = "url";
+constexpr char kUrlsKey[] = "urls";
+constexpr char kActiveTabIndexKey[] = "active_tab_index";
 constexpr char kIntentKey[] = "intent";
 constexpr char kFilePathsKey[] = "file_paths";
+constexpr char kAppTypeBrowserKey[] = "is_app";
 constexpr char kActivationIndexKey[] = "index";
 constexpr char kDeskIdKey[] = "desk_id";
 constexpr char kVisibleOnAllWorkspacesKey[] = "all_desk";
-// TODO(sammiequon): This may not be needed as restore bounds are saved in
-// current_bounds if needed. See WindowInfo for more details.
-constexpr char kRestoreBoundsKey[] = "restore_bounds";
 constexpr char kCurrentBoundsKey[] = "current_bounds";
 constexpr char kWindowStateTypeKey[] = "window_state_type";
+constexpr char kPreMinimizedShowStateTypeKey[] = "pre_min_state";
 constexpr char kMinimumSizeKey[] = "min_size";
 constexpr char kMaximumSizeKey[] = "max_size";
+constexpr char kTitleKey[] = "title";
+constexpr char kBoundsInRoot[] = "bounds_in_root";
 constexpr char kPrimaryColorKey[] = "primary_color";
 constexpr char kStatusBarColorKey[] = "status_bar_color";
 
@@ -84,6 +86,18 @@ absl::optional<uint32_t> GetUIntValueFromDict(const base::DictionaryValue& dict,
   return result;
 }
 
+absl::optional<std::u16string> GetU16StringValueFromDict(
+    const base::DictionaryValue& dict,
+    const std::string& key_name) {
+  std::u16string result;
+  if (!dict.HasKey(key_name))
+    return absl::nullopt;
+  const std::string* value = dict.FindStringKey(key_name);
+  if (!base::UTF8ToUTF16(value->c_str(), value->length(), &result))
+    return absl::nullopt;
+  return result;
+}
+
 // Gets display id from base::DictionaryValue, e.g. { "display_id": "22000000" }
 // returns 22000000.
 absl::optional<int64_t> GetDisplayIdFromDict(
@@ -99,6 +113,31 @@ absl::optional<int64_t> GetDisplayIdFromDict(
   }
 
   return absl::nullopt;
+}
+
+// Gets urls from the dictionary value.
+absl::optional<std::vector<GURL>> GetUrlsFromDict(
+    const base::DictionaryValue& dict) {
+  if (!dict.HasKey(kUrlsKey))
+    return absl::nullopt;
+
+  const base::Value* urls_path_value = dict.FindListKey(kUrlsKey);
+  if (!urls_path_value || !urls_path_value->is_list() ||
+      urls_path_value->GetList().empty()) {
+    return absl::nullopt;
+  }
+
+  std::vector<GURL> url_paths;
+  for (const auto& item : urls_path_value->GetList()) {
+    if (item.GetString().empty())
+      continue;
+    GURL url(item.GetString());
+    if (!url.is_valid())
+      continue;
+    url_paths.push_back(url);
+  }
+
+  return url_paths;
 }
 
 // Gets std::vector<base::FilePath> from base::DictionaryValue, e.g.
@@ -176,6 +215,14 @@ absl::optional<chromeos::WindowStateType> GetWindowStateTypeFromDict(
              : absl::nullopt;
 }
 
+absl::optional<ui::WindowShowState> GetPreMinimizedShowStateTypeFromDict(
+    const base::DictionaryValue& dict) {
+  return dict.HasKey(kPreMinimizedShowStateTypeKey)
+             ? absl::make_optional(static_cast<ui::WindowShowState>(
+                   dict.FindIntKey(kPreMinimizedShowStateTypeKey).value()))
+             : absl::nullopt;
+}
+
 }  // namespace
 
 AppRestoreData::AppRestoreData() = default;
@@ -192,17 +239,22 @@ AppRestoreData::AppRestoreData(base::Value&& value) {
   container = GetIntValueFromDict(*data_dict, kContainerKey);
   disposition = GetIntValueFromDict(*data_dict, kDispositionKey);
   display_id = GetDisplayIdFromDict(*data_dict);
-  url = apps_util::GetGurlValueFromDict(*data_dict, kUrlKey);
+  urls = GetUrlsFromDict(*data_dict);
+  active_tab_index = GetIntValueFromDict(*data_dict, kActiveTabIndexKey);
   file_paths = GetFilePathsFromDict(*data_dict);
+  app_type_browser = GetBoolValueFromDict(*data_dict, kAppTypeBrowserKey);
   activation_index = GetIntValueFromDict(*data_dict, kActivationIndexKey);
   desk_id = GetIntValueFromDict(*data_dict, kDeskIdKey);
   visible_on_all_workspaces =
       GetBoolValueFromDict(*data_dict, kVisibleOnAllWorkspacesKey);
-  restore_bounds = GetBoundsRectFromDict(*data_dict, kRestoreBoundsKey);
   current_bounds = GetBoundsRectFromDict(*data_dict, kCurrentBoundsKey);
   window_state_type = GetWindowStateTypeFromDict(*data_dict);
+  pre_minimized_show_state_type =
+      GetPreMinimizedShowStateTypeFromDict(*data_dict);
   maximum_size = GetSizeFromDict(*data_dict, kMaximumSizeKey);
   minimum_size = GetSizeFromDict(*data_dict, kMinimumSizeKey);
+  title = GetU16StringValueFromDict(*data_dict, kTitleKey);
+  bounds_in_root = GetBoundsRectFromDict(*data_dict, kBoundsInRoot);
   primary_color = GetUIntValueFromDict(*data_dict, kPrimaryColorKey);
   status_bar_color = GetUIntValueFromDict(*data_dict, kStatusBarColorKey);
 
@@ -220,9 +272,11 @@ AppRestoreData::AppRestoreData(std::unique_ptr<AppLaunchInfo> app_launch_info) {
   container = std::move(app_launch_info->container);
   disposition = std::move(app_launch_info->disposition);
   display_id = std::move(app_launch_info->display_id);
-  url = std::move(app_launch_info->url);
+  urls = std::move(app_launch_info->urls);
+  active_tab_index = std::move(app_launch_info->active_tab_index);
   file_paths = std::move(app_launch_info->file_paths);
   intent = std::move(app_launch_info->intent);
+  app_type_browser = std::move(app_launch_info->app_type_browser);
 }
 
 AppRestoreData::~AppRestoreData() = default;
@@ -242,14 +296,20 @@ std::unique_ptr<AppRestoreData> AppRestoreData::Clone() const {
   if (display_id.has_value())
     data->display_id = display_id.value();
 
-  if (url.has_value())
-    data->url = url.value();
+  if (urls.has_value())
+    data->urls = urls.value();
+
+  if (active_tab_index.has_value())
+    data->active_tab_index = active_tab_index.value();
 
   if (intent.has_value() && intent.value())
     data->intent = intent.value()->Clone();
 
   if (file_paths.has_value())
     data->file_paths = file_paths.value();
+
+  if (app_type_browser.has_value())
+    data->app_type_browser = app_type_browser.value();
 
   if (activation_index.has_value())
     data->activation_index = activation_index.value();
@@ -260,20 +320,26 @@ std::unique_ptr<AppRestoreData> AppRestoreData::Clone() const {
   if (visible_on_all_workspaces.has_value())
     data->visible_on_all_workspaces = visible_on_all_workspaces.value();
 
-  if (restore_bounds.has_value())
-    data->restore_bounds = restore_bounds.value();
-
   if (current_bounds.has_value())
     data->current_bounds = current_bounds.value();
 
   if (window_state_type.has_value())
     data->window_state_type = window_state_type.value();
 
+  if (pre_minimized_show_state_type.has_value())
+    data->pre_minimized_show_state_type = pre_minimized_show_state_type.value();
+
   if (maximum_size.has_value())
     data->maximum_size = maximum_size.value();
 
   if (minimum_size.has_value())
     data->minimum_size = minimum_size.value();
+
+  if (title.has_value())
+    data->title = title.value();
+
+  if (bounds_in_root.has_value())
+    data->bounds_in_root = bounds_in_root.value();
 
   if (primary_color.has_value())
     data->primary_color = primary_color.value();
@@ -301,8 +367,15 @@ base::Value AppRestoreData::ConvertToValue() const {
                                   base::NumberToString(display_id.value()));
   }
 
-  if (url.has_value())
-    launch_info_dict.SetStringKey(kUrlKey, url.value().spec());
+  if (urls.has_value() && !urls.value().empty()) {
+    base::Value urls_list(base::Value::Type::LIST);
+    for (auto& url : urls.value())
+      urls_list.Append(base::Value(url.spec()));
+    launch_info_dict.SetKey(kUrlsKey, std::move(urls_list));
+  }
+
+  if (active_tab_index.has_value())
+    launch_info_dict.SetIntKey(kActiveTabIndexKey, active_tab_index.value());
 
   if (intent.has_value() && intent.value()) {
     launch_info_dict.SetKey(kIntentKey,
@@ -316,6 +389,9 @@ base::Value AppRestoreData::ConvertToValue() const {
     launch_info_dict.SetKey(kFilePathsKey, std::move(file_paths_list));
   }
 
+  if (app_type_browser.has_value())
+    launch_info_dict.SetBoolKey(kAppTypeBrowserKey, app_type_browser.value());
+
   if (activation_index.has_value())
     launch_info_dict.SetIntKey(kActivationIndexKey, activation_index.value());
 
@@ -325,11 +401,6 @@ base::Value AppRestoreData::ConvertToValue() const {
   if (visible_on_all_workspaces.has_value()) {
     launch_info_dict.SetBoolKey(kVisibleOnAllWorkspacesKey,
                                 visible_on_all_workspaces.value());
-  }
-
-  if (restore_bounds.has_value()) {
-    launch_info_dict.SetKey(kRestoreBoundsKey,
-                            ConvertRectToValue(restore_bounds.value()));
   }
 
   if (current_bounds.has_value()) {
@@ -342,6 +413,12 @@ base::Value AppRestoreData::ConvertToValue() const {
                                static_cast<int>(window_state_type.value()));
   }
 
+  if (pre_minimized_show_state_type.has_value()) {
+    launch_info_dict.SetIntKey(
+        kPreMinimizedShowStateTypeKey,
+        static_cast<int>(pre_minimized_show_state_type.value()));
+  }
+
   if (maximum_size.has_value()) {
     launch_info_dict.SetKey(kMaximumSizeKey,
                             ConvertSizeToValue(maximum_size.value()));
@@ -350,6 +427,15 @@ base::Value AppRestoreData::ConvertToValue() const {
   if (minimum_size.has_value()) {
     launch_info_dict.SetKey(kMinimumSizeKey,
                             ConvertSizeToValue(minimum_size.value()));
+  }
+
+  if (title.has_value()) {
+    launch_info_dict.SetStringKey(kTitleKey, base::UTF16ToUTF8(title.value()));
+  }
+
+  if (bounds_in_root.has_value()) {
+    launch_info_dict.SetKey(kBoundsInRoot,
+                            ConvertRectToValue(bounds_in_root.value()));
   }
 
   if (primary_color.has_value()) {
@@ -375,14 +461,16 @@ void AppRestoreData::ModifyWindowInfo(const WindowInfo& window_info) {
   if (window_info.visible_on_all_workspaces.has_value())
     visible_on_all_workspaces = window_info.visible_on_all_workspaces.value();
 
-  if (window_info.restore_bounds.has_value())
-    restore_bounds = std::move(window_info.restore_bounds.value());
-
   if (window_info.current_bounds.has_value())
     current_bounds = window_info.current_bounds.value();
 
   if (window_info.window_state_type.has_value())
     window_state_type = window_info.window_state_type.value();
+
+  if (window_info.pre_minimized_show_state_type.has_value()) {
+    pre_minimized_show_state_type =
+        window_info.pre_minimized_show_state_type.value();
+  }
 
   if (window_info.display_id.has_value())
     display_id = window_info.display_id.value();
@@ -390,6 +478,8 @@ void AppRestoreData::ModifyWindowInfo(const WindowInfo& window_info) {
   if (window_info.arc_extra_info.has_value()) {
     minimum_size = window_info.arc_extra_info->minimum_size;
     maximum_size = window_info.arc_extra_info->maximum_size;
+    title = window_info.arc_extra_info->title;
+    bounds_in_root = window_info.arc_extra_info->bounds_in_root;
   }
 }
 
@@ -403,13 +493,32 @@ void AppRestoreData::ClearWindowInfo() {
   activation_index.reset();
   desk_id.reset();
   visible_on_all_workspaces.reset();
-  restore_bounds.reset();
   current_bounds.reset();
   window_state_type.reset();
+  pre_minimized_show_state_type.reset();
   minimum_size.reset();
   maximum_size.reset();
+  title.reset();
+  bounds_in_root.reset();
   primary_color.reset();
   status_bar_color.reset();
+}
+
+std::unique_ptr<AppLaunchInfo> AppRestoreData::GetAppLaunchInfo(
+    const std::string& app_id,
+    int window_id) const {
+  auto app_launch_info = std::make_unique<AppLaunchInfo>(app_id, window_id);
+
+  app_launch_info->event_flag = event_flag;
+  app_launch_info->container = container;
+  app_launch_info->disposition = disposition;
+  app_launch_info->display_id = display_id;
+  app_launch_info->urls = urls;
+  app_launch_info->file_paths = file_paths;
+  if (intent.has_value())
+    app_launch_info->intent = intent->Clone();
+  app_launch_info->app_type_browser = app_type_browser;
+  return app_launch_info;
 }
 
 std::unique_ptr<WindowInfo> AppRestoreData::GetWindowInfo() const {
@@ -424,19 +533,24 @@ std::unique_ptr<WindowInfo> AppRestoreData::GetWindowInfo() const {
   if (visible_on_all_workspaces.has_value())
     window_info->visible_on_all_workspaces = visible_on_all_workspaces.value();
 
-  if (restore_bounds.has_value())
-    window_info->restore_bounds = restore_bounds.value();
-
   if (current_bounds.has_value())
     window_info->current_bounds = current_bounds.value();
 
   if (window_state_type.has_value())
     window_info->window_state_type = window_state_type.value();
 
-  if (maximum_size.has_value() || minimum_size.has_value()) {
+  if (pre_minimized_show_state_type.has_value()) {
+    window_info->pre_minimized_show_state_type =
+        pre_minimized_show_state_type.value();
+  }
+
+  if (maximum_size.has_value() || minimum_size.has_value() ||
+      title.has_value() || bounds_in_root.has_value()) {
     window_info->arc_extra_info = WindowInfo::ArcExtraInfo();
     window_info->arc_extra_info->maximum_size = maximum_size;
     window_info->arc_extra_info->minimum_size = minimum_size;
+    window_info->arc_extra_info->title = title;
+    window_info->arc_extra_info->bounds_in_root = bounds_in_root;
   }
 
   // Display id is set as the app launch parameter, so we don't need to return
@@ -450,7 +564,13 @@ apps::mojom::WindowInfoPtr AppRestoreData::GetAppWindowInfo() const {
   if (display_id.has_value())
     window_info->display_id = display_id.value();
 
-  if (current_bounds.has_value()) {
+  if (bounds_in_root.has_value()) {
+    window_info->bounds = apps::mojom::Rect::New();
+    window_info->bounds->x = bounds_in_root.value().x();
+    window_info->bounds->y = bounds_in_root.value().y();
+    window_info->bounds->width = bounds_in_root.value().width();
+    window_info->bounds->height = bounds_in_root.value().height();
+  } else if (current_bounds.has_value()) {
     window_info->bounds = apps::mojom::Rect::New();
     window_info->bounds->x = current_bounds.value().x();
     window_info->bounds->y = current_bounds.value().y();

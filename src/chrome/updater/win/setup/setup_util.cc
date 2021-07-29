@@ -28,9 +28,10 @@
 #include "chrome/updater/app/server/win/updater_internal_idl.h"
 #include "chrome/updater/app/server/win/updater_legacy_idl.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util.h"
-#include "chrome/updater/win/constants.h"
 #include "chrome/updater/win/task_scheduler.h"
+#include "chrome/updater/win/win_constants.h"
 
 // Specialization for std::hash so that IID instances can be stored in an
 // associative container. This implementation of the hash function adds
@@ -53,7 +54,6 @@ struct std::hash<IID> {
 };
 
 namespace updater {
-
 namespace {
 
 constexpr wchar_t kTaskName[] = L"UpdateApps";
@@ -61,6 +61,7 @@ constexpr wchar_t kTaskDescription[] = L"Update all applications.";
 
 }  // namespace
 
+// crbug.com(1216670) - the name of the task must be scoped for user or system.
 bool RegisterWakeTask(const base::CommandLine& run_command) {
   auto task_scheduler = TaskScheduler::CreateInstance();
   if (!task_scheduler->RegisterTask(
@@ -73,19 +74,20 @@ bool RegisterWakeTask(const base::CommandLine& run_command) {
   return true;
 }
 
+// crbug.com(1216670) - the name of the task must be scoped for user or system.
 void UnregisterWakeTask() {
   auto task_scheduler = TaskScheduler::CreateInstance();
   task_scheduler->DeleteTask(kTaskName);
 }
 
-std::vector<GUID> GetSideBySideInterfaces() {
+std::vector<IID> GetSideBySideInterfaces() {
   return {
       __uuidof(IUpdaterInternal),
       __uuidof(IUpdaterInternalCallback),
   };
 }
 
-std::vector<GUID> GetActiveInterfaces() {
+std::vector<IID> GetActiveInterfaces() {
   return {__uuidof(IAppBundleWeb),
           __uuidof(IAppWeb),
           __uuidof(ICompleteStatus),
@@ -98,12 +100,23 @@ std::vector<GUID> GetActiveInterfaces() {
           __uuidof(IUpdaterCallback)};
 }
 
-std::vector<CLSID> GetSideBySideServers() {
-  return {__uuidof(UpdaterInternalClass)};
+std::vector<CLSID> GetSideBySideServers(UpdaterScope scope) {
+  switch (scope) {
+    case UpdaterScope::kUser:
+      return {__uuidof(UpdaterInternalUserClass)};
+    case UpdaterScope::kSystem:
+      return {__uuidof(UpdaterInternalSystemClass)};
+  }
 }
 
-std::vector<CLSID> GetActiveServers() {
-  return {__uuidof(UpdaterClass), __uuidof(GoogleUpdate3WebUserClass)};
+std::vector<CLSID> GetActiveServers(UpdaterScope scope) {
+  switch (scope) {
+    case UpdaterScope::kUser:
+      return {__uuidof(UpdaterUserClass), __uuidof(GoogleUpdate3WebUserClass)};
+    case UpdaterScope::kSystem:
+      return {__uuidof(UpdaterSystemClass),
+              __uuidof(GoogleUpdate3WebSystemClass)};
+  }
 }
 
 void AddInstallComInterfaceWorkItems(HKEY root,
@@ -173,12 +186,9 @@ void AddInstallServerWorkItems(HKEY root,
       kServerServiceSwitch, internal_service
                                 ? kServerUpdateServiceInternalSwitchValue
                                 : kServerUpdateServiceSwitchValue);
-#if !defined(NDEBUG)
   run_com_server_command.AppendSwitch(kEnableLoggingSwitch);
   run_com_server_command.AppendSwitchASCII(kLoggingModuleSwitch,
                                            "*/chrome/updater/*=2");
-#endif
-
   list->AddSetRegValueWorkItem(
       root, local_server32_reg_path, WorkItem::kWow64Default, L"",
       run_com_server_command.GetCommandLineString(), true);
@@ -186,6 +196,7 @@ void AddInstallServerWorkItems(HKEY root,
 
 // Adds work items to register the COM Service with Windows.
 void AddComServiceWorkItems(const base::FilePath& com_service_path,
+                            bool internal_service,
                             WorkItemList* list) {
   DCHECK(::IsUserAnAdmin());
 
@@ -194,10 +205,30 @@ void AddComServiceWorkItems(const base::FilePath& com_service_path,
     return;
   }
 
+  // This assumes the COM service runs elevated and in the system updater scope.
+  base::CommandLine com_service_command(com_service_path);
+  com_service_command.AppendSwitch(kSystemSwitch);
+  com_service_command.AppendSwitch(kComServiceSwitch);
+  com_service_command.AppendSwitchASCII(
+      kServerServiceSwitch, internal_service
+                                ? kServerUpdateServiceInternalSwitchValue
+                                : kServerUpdateServiceSwitchValue);
+  com_service_command.AppendSwitch(kEnableLoggingSwitch);
+  com_service_command.AppendSwitchASCII(kLoggingModuleSwitch,
+                                        "*/chrome/updater/*=2");
   list->AddWorkItem(new installer::InstallServiceWorkItem(
-      kWindowsServiceName, kWindowsServiceName,
-      base::CommandLine(com_service_path), base::ASCIIToWide(UPDATER_KEY),
-      {__uuidof(UpdaterServiceClass)}, {}));
+      kWindowsServiceName, kWindowsServiceName, com_service_command,
+      base::ASCIIToWide(UPDATER_KEY),
+      internal_service ? GetSideBySideServers(UpdaterScope::kSystem)
+                       : GetActiveServers(UpdaterScope::kSystem),
+      {}));
+
+  const std::vector<GUID> com_interfaces_to_install =
+      internal_service ? GetSideBySideInterfaces() : GetActiveInterfaces();
+  for (const auto& iid : com_interfaces_to_install) {
+    AddInstallComInterfaceWorkItems(HKEY_LOCAL_MACHINE, com_service_path, iid,
+                                    list);
+  }
 }
 
 std::wstring GetComServerClsidRegistryPath(REFCLSID clsid) {
@@ -205,16 +236,9 @@ std::wstring GetComServerClsidRegistryPath(REFCLSID clsid) {
       {L"Software\\Classes\\CLSID\\", base::win::WStringFromGUID(clsid)});
 }
 
-std::wstring GetComServiceClsid() {
-  return base::win::WStringFromGUID(__uuidof(UpdaterServiceClass));
-}
-
-std::wstring GetComServiceClsidRegistryPath() {
-  return base::StrCat({L"Software\\Classes\\CLSID\\", GetComServiceClsid()});
-}
-
-std::wstring GetComServiceAppidRegistryPath() {
-  return base::StrCat({L"Software\\Classes\\AppID\\", GetComServiceClsid()});
+std::wstring GetComServerAppidRegistryPath(REFGUID appid) {
+  return base::StrCat(
+      {L"Software\\Classes\\AppID\\", base::win::WStringFromGUID(appid)});
 }
 
 std::wstring GetComIidRegistryPath(REFIID iid) {

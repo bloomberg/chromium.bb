@@ -34,7 +34,7 @@
 // To rebaseline this test on all platforms:
 // 1. Run a CQ+1 dry run.
 // 2. Click the failing bots for android, windows, mac, and linux.
-// 3. Find the failing interactive_ui_browsertests step.
+// 3. Find the failing browser_tests step.
 // 4. Click the "Deterministic failure" link for the failing test case.
 // 5. Copy the "Actual pixels" data url and paste into browser.
 // 6. Save the image into your chromium checkout in
@@ -58,9 +58,12 @@ class AccessibilityFocusHighlightBrowserTest : public InProcessBrowserTest {
   }
 
   bool ColorsApproximatelyEqual(SkColor color1, SkColor color2) {
-    return abs(int{SkColorGetR(color1)} - int{SkColorGetR(color2)}) < 50 &&
-           abs(int{SkColorGetG(color1)} - int{SkColorGetG(color2)}) < 50 &&
-           abs(int{SkColorGetB(color1)} - int{SkColorGetB(color2)}) < 50;
+    return abs(static_cast<int>(SkColorGetR(color1)) -
+               static_cast<int>(SkColorGetR(color2))) < 50 &&
+           abs(static_cast<int>(SkColorGetG(color1)) -
+               static_cast<int>(SkColorGetG(color2))) < 50 &&
+           abs(static_cast<int>(SkColorGetB(color1)) -
+               static_cast<int>(SkColorGetB(color2))) < 50;
   }
 
   float CountPercentPixelsWithColor(const gfx::Image& image, SkColor color) {
@@ -136,14 +139,9 @@ class AccessibilityFocusHighlightBrowserTest : public InProcessBrowserTest {
 // Smoke test that ensures that when a node gets focus, the layer with the
 // focus highlight actually gets drawn.
 //
-// Flaky on Mac. TODO(crbug.com/1083806): Enable this test.
-#if defined(OS_MAC)
-#define MAYBE_DrawsHighlight DISABLED_DrawsHighlight
-#else
-#define MAYBE_DrawsHighlight DrawsHighlight
-#endif
+// Flaky on all platforms. TODO(crbug.com/1083806): Enable this test.
 IN_PROC_BROWSER_TEST_F(AccessibilityFocusHighlightBrowserTest,
-                       MAYBE_DrawsHighlight) {
+                       DISABLED_DrawsHighlight) {
   ui_test_utils::NavigateToURL(
       browser(), GURL("data:text/html,"
                       "<body style='background-color: rgb(204, 255, 255);'>"

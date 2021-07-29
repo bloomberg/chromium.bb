@@ -5,10 +5,10 @@
 #include "include/wrapper/cef_zip_archive.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "include/base/cef_logging.h"
 #include "include/base/cef_macros.h"
-#include "include/base/cef_scoped_ptr.h"
 #include "include/cef_stream.h"
 #include "include/cef_zip_reader.h"
 #include "include/wrapper/cef_byte_read_handler.h"
@@ -42,11 +42,11 @@ class CefZipFile : public CefZipArchive::File {
     }
   }
 
-  virtual const unsigned char* GetData() const OVERRIDE { return data_.get(); }
+  virtual const unsigned char* GetData() const override { return data_.get(); }
 
-  virtual size_t GetDataSize() const OVERRIDE { return data_size_; }
+  virtual size_t GetDataSize() const override { return data_size_; }
 
-  virtual CefRefPtr<CefStreamReader> GetStreamReader() const OVERRIDE {
+  virtual CefRefPtr<CefStreamReader> GetStreamReader() const override {
     CefRefPtr<CefReadHandler> handler(new CefByteReadHandler(
         data_.get(), data_size_, const_cast<CefZipFile*>(this)));
     return CefStreamReader::CreateForHandler(handler);
@@ -56,7 +56,7 @@ class CefZipFile : public CefZipArchive::File {
 
  private:
   size_t data_size_;
-  scoped_ptr<unsigned char[]> data_;
+  std::unique_ptr<unsigned char[]> data_;
 
   IMPLEMENT_REFCOUNTING(CefZipFile);
   DISALLOW_COPY_AND_ASSIGN(CefZipFile);

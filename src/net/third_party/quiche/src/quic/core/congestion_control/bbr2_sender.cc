@@ -16,6 +16,7 @@
 #include "quic/platform/api/quic_flag_utils.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
+#include "common/print_elements.h"
 
 namespace quic {
 
@@ -100,10 +101,6 @@ void Bbr2Sender::SetFromConfig(const QuicConfig& config,
   }
   if (config.HasClientRequestedIndependentOption(kB2RP, perspective)) {
     params_.avoid_unnecessary_probe_rtt = false;
-  }
-  if (GetQuicReloadableFlag(quic_bbr2_avoid_too_low_probe_bw_cwnd) &&
-      config.HasClientRequestedIndependentOption(kB2CL, perspective)) {
-    params_.avoid_too_low_probe_bw_cwnd = false;
   }
   if (config.HasClientRequestedIndependentOption(k1RTT, perspective)) {
     params_.startup_full_bw_rounds = 1;
@@ -287,7 +284,8 @@ void Bbr2Sender::OnCongestionEvent(bool /*rtt_updated*/,
   }
 
   QUIC_DVLOG(3)
-      << this << " END CongestionEvent(acked:" << acked_packets
+      << this
+      << " END CongestionEvent(acked:" << quiche::PrintElements(acked_packets)
       << ", lost:" << lost_packets.size() << ") "
       << ", Mode:" << mode_ << ", RttCount:" << model_.RoundTripCount()
       << ", BytesInFlight:" << congestion_event.bytes_in_flight

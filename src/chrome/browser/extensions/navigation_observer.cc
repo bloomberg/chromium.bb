@@ -102,7 +102,7 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
     in_progress_prompt_navigation_controller_ = nav_controller;
 
     extension_install_prompt_ = std::make_unique<ExtensionInstallPrompt>(
-        nav_controller->GetWebContents());
+        nav_controller->DeprecatedGetWebContents());
     ExtensionInstallPrompt::PromptType type =
         ExtensionInstallPrompt::GetReEnablePromptTypeForExtension(profile_,
                                                                   extension);
@@ -116,7 +116,7 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
 }
 
 void NavigationObserver::OnInstallPromptDone(
-    ExtensionInstallPrompt::Result result) {
+    ExtensionInstallPrompt::DoneCallbackPayload payload) {
   // The extension was already uninstalled.
   if (in_progress_prompt_extension_id_.empty())
     return;
@@ -126,7 +126,7 @@ void NavigationObserver::OnInstallPromptDone(
       in_progress_prompt_extension_id_, ExtensionRegistry::EVERYTHING);
   CHECK(extension);
 
-  if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
+  if (payload.result == ExtensionInstallPrompt::Result::ACCEPTED) {
     NavigationController* nav_controller =
         in_progress_prompt_navigation_controller_;
     CHECK(nav_controller);
@@ -136,17 +136,6 @@ void NavigationObserver::OnInstallPromptDone(
     // Grant permissions, re-enable the extension, and then reload the tab.
     extension_service->GrantPermissionsAndEnableExtension(extension);
     nav_controller->Reload(content::ReloadType::NORMAL, true);
-  } else {
-    // TODO(devlin): These metrics aren't very useful, since they're lumped in
-    // with the same for re-enabling/canceling when the extension first gets
-    // disabled, which is likely significantly more common (though impossible to
-    // tell). We need to separate these.
-    std::string histogram_name =
-       result == ExtensionInstallPrompt::Result::USER_CANCELED
-            ? "ReEnableCancel"
-            : "ReEnableAbort";
-    ExtensionService::RecordPermissionMessagesHistogram(extension,
-                                                        histogram_name.c_str());
   }
 
   in_progress_prompt_extension_id_.clear();

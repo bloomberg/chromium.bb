@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -334,11 +334,11 @@ bool IsLiveCaptionEnabled() {
 }
 
 bool IsMagnifierPanningImprovementsEnabled() {
-  return features::IsMagnifierPanningImprovementsEnabled();
+  return ::features::IsMagnifierPanningImprovementsEnabled();
 }
 
 bool IsMagnifierContinuousMouseFollowingModeSettingEnabled() {
-  return features::IsMagnifierContinuousMouseFollowingModeSettingEnabled();
+  return ::features::IsMagnifierContinuousMouseFollowingModeSettingEnabled();
 }
 
 bool IsSwitchAccessTextAllowed() {
@@ -347,7 +347,7 @@ bool IsSwitchAccessTextAllowed() {
 }
 
 bool IsSwitchAccessPointScanningEnabled() {
-  return features::IsSwitchAccessPointScanningEnabled();
+  return ::features::IsSwitchAccessPointScanningEnabled();
 }
 
 bool IsSwitchAccessSetupGuideAllowed() {
@@ -358,6 +358,10 @@ bool IsSwitchAccessSetupGuideAllowed() {
 bool AreTabletNavigationButtonsAllowed() {
   return ash::features::IsHideShelfControlsInTabletModeEnabled() &&
          ash::TabletMode::IsBoardTypeMarkedAsTabletCapable();
+}
+
+bool AreDictationLocalePrefsAllowed() {
+  return ::features::IsExperimentalAccessibilityDictationOfflineEnabled();
 }
 
 }  // namespace
@@ -498,6 +502,12 @@ void AccessibilitySection::AddLoadTimeData(
       {"dictationDescription",
        IDS_SETTINGS_ACCESSIBILITY_DICTATION_DESCRIPTION},
       {"dictationLabel", IDS_SETTINGS_ACCESSIBILITY_DICTATION_LABEL},
+      {"dictationLocaleMenuLabel",
+       IDS_SETTINGS_ACCESSIBILITY_DICTATION_LOCALE_MENU_LABEL},
+      {"dictationLocaleSubLabelOffline",
+       IDS_SETTINGS_ACCESSIBILITY_DICTATION_LOCALE_SUB_LABEL_OFFLINE},
+      {"dictationLocaleSubLabelNetwork",
+       IDS_SETTINGS_ACCESSIBILITY_DICTATION_LOCALE_SUB_LABEL_NETWORK},
       {"onScreenKeyboardLabel", IDS_SETTINGS_ON_SCREEN_KEYBOARD_LABEL},
       {"monoAudioLabel", IDS_SETTINGS_MONO_AUDIO_LABEL},
       {"startupSoundLabel", IDS_SETTINGS_STARTUP_SOUND_LABEL},
@@ -549,39 +559,61 @@ void AccessibilitySection::AddLoadTimeData(
        IDS_SETTINGS_SWITCH_ACCESS_BLUETOOTH_DEVICE_TYPE_LABEL},
       {"switchAccessUnknownDeviceTypeLabel",
        IDS_SETTINGS_SWITCH_ACCESS_UNKNOWN_DEVICE_TYPE_LABEL},
-      {"switchAccessActionAssignmentDialogAssignedIconLabel",
-       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_ASSIGNED_ICON_LABEL},
-      {"switchAccessActionAssignmentDialogAddAssignmentIconLabel",
-       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_ADD_ASSIGNMENT_ICON_LABEL},
-      {"switchAccessActionAssignmentDialogRemoveAssignmentIconLabel",
-       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_REMOVE_ASSIGNMENT_ICON_LABEL},
-      {"switchAccessActionAssignmentDialogErrorIconLabel",
-       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_ERROR_ICON_LABEL},
+      {"switchAccessActionAssignmentAssignedIconLabel",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_ASSIGNED_ICON_LABEL},
+      {"switchAccessActionAssignmentAddAssignmentIconLabel",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_ADD_ASSIGNMENT_ICON_LABEL},
+      {"switchAccessActionAssignmentRemoveAssignmentIconLabel",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_REMOVE_ASSIGNMENT_ICON_LABEL},
+      {"switchAccessActionAssignmentErrorIconLabel",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_ERROR_ICON_LABEL},
       {"switchAccessActionAssignmentDialogTitle",
        IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_TITLE},
-      {"switchAccessActionAssignmentDialogWarnNotConfirmedPrompt",
-       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_WARN_NOT_CONFIRMED_PROMPT},
-      {"switchAccessActionAssignmentDialogWarnAlreadyAssignedActionPrompt",
-       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_WARN_ALREADY_ASSIGNED_ACTION_PROMPT},
-      {"switchAccessActionAssignmentDialogWarnUnrecognizedKeyPrompt",
-       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_WARN_UNRECOGNIZED_KEY_PROMPT},
-      {"switchAccessActionAssignmentDialogWaitForKeyPromptNoSwitches",
-       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_WAIT_FOR_KEY_PROMPT_NO_SWITCHES},
-      {"switchAccessActionAssignmentDialogWaitForKeyPromptAtLeastOneSwitch",
-       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_WAIT_FOR_KEY_PROMPT_AT_LEAST_ONE_SWITCH},
-      {"switchAccessActionAssignmentDialogWaitForConfirmationPrompt",
-       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_WAIT_FOR_CONFIRMATION_PROMPT},
-      {"switchAccessActionAssignmentDialogWaitForConfirmationRemovalPrompt",
-       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_WAIT_FOR_CONFIRMATION_REMOVAL_PROMPT},
-      {"switchAccessActionAssignmentDialogWarnCannotRemoveLastSelectSwitch",
-       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_DIALOG_WARN_CANNOT_REMOVE_LAST_SELECT_SWITCH},
+      {"switchAccessActionAssignmentWarnNotConfirmedPrompt",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_WARN_NOT_CONFIRMED_PROMPT},
+      {"switchAccessActionAssignmentWarnAlreadyAssignedActionPrompt",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_WARN_ALREADY_ASSIGNED_ACTION_PROMPT},
+      {"switchAccessActionAssignmentWarnUnrecognizedKeyPrompt",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_WARN_UNRECOGNIZED_KEY_PROMPT},
+      {"switchAccessActionAssignmentWaitForKeyPromptNoSwitches",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_WAIT_FOR_KEY_PROMPT_NO_SWITCHES},
+      {"switchAccessActionAssignmentWaitForKeyPromptNoSwitchesSetupGuide",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_WAIT_FOR_KEY_PROMPT_NO_SWITCHES_SETUP_GUIDE},
+      {"switchAccessActionAssignmentWaitForKeyPromptAtLeastOneSwitch",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_WAIT_FOR_KEY_PROMPT_AT_LEAST_ONE_SWITCH},
+      {"switchAccessActionAssignmentWaitForConfirmationPrompt",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_WAIT_FOR_CONFIRMATION_PROMPT},
+      {"switchAccessActionAssignmentExitResponse",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_EXIT_RESPONSE},
+      {"switchAccessActionAssignmentContinueResponse",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_CONTINUE_RESPONSE},
+      {"switchAccessActionAssignmentTryAgainResponse",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_TRY_AGAIN_RESPONSE},
+      {"switchAccessActionAssignmentWaitForConfirmationRemovalPrompt",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_WAIT_FOR_CONFIRMATION_REMOVAL_PROMPT},
+      {"switchAccessActionAssignmentWarnCannotRemoveLastSelectSwitch",
+       IDS_SETTINGS_SWITCH_ACCESS_ACTION_ASSIGNMENT_WARN_CANNOT_REMOVE_LAST_SELECT_SWITCH},
       {"switchAndDeviceType", IDS_SETTINGS_SWITCH_AND_DEVICE_TYPE},
       {"noSwitchesAssigned", IDS_SETTINGS_NO_SWITCHES_ASSIGNED},
+      {"noSwitchesAssignedSetupGuide",
+       IDS_SETTINGS_NO_SWITCHES_ASSIGNED_SETUP_GUIDE},
       {"switchAccessDialogExit", IDS_SETTINGS_SWITCH_ACCESS_DIALOG_EXIT},
+      {"switchAccessSetupGuideWarningDialogTitle",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_GUIDE_WARNING_DIALOG_TITLE},
+      {"switchAccessSetupGuideWarningDialogMessage",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_GUIDE_WARNING_DIALOG_MESSAGE},
       {"switchAccessSetupIntroTitle",
        IDS_SETTINGS_SWITCH_ACCESS_SETUP_INTRO_TITLE},
       {"switchAccessSetupIntroBody",
        IDS_SETTINGS_SWITCH_ACCESS_SETUP_INTRO_BODY},
+      {"switchAccessSetupAssignSelectTitle",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_ASSIGN_SELECT_TITLE},
+      {"switchAccessSetupAutoScanEnabledTitle",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_AUTO_SCAN_ENABLED_TITLE},
+      {"switchAccessSetupAutoScanEnabledExplanation",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_AUTO_SCAN_ENABLED_EXPLANATION},
+      {"switchAccessSetupAutoScanEnabledDirections",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_AUTO_SCAN_ENABLED_DIRECTIONS},
       {"switchAccessSetupChooseSwitchCountTitle",
        IDS_SETTINGS_SWITCH_ACCESS_SETUP_CHOOSE_SWITCH_COUNT_TITLE},
       {"switchAccessSetupChoose1Switch",
@@ -594,6 +626,29 @@ void AccessibilitySection::AddLoadTimeData(
        IDS_SETTINGS_SWITCH_ACCESS_SETUP_CHOOSE_3_SWITCHES},
       {"switchAccessSetupChoose3SwitchesDescription",
        IDS_SETTINGS_SWITCH_ACCESS_SETUP_CHOOSE_3_SWITCHES_DESCRIPTION},
+      {"switchAccessSetupAutoScanSpeedTitle",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_AUTO_SCAN_SPEED_TITLE},
+      {"switchAccessSetupAutoScanSpeedDescription",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_AUTO_SCAN_SPEED_DESCRIPTION},
+      {"switchAccessSetupAssignNextTitle",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_ASSIGN_NEXT_TITLE},
+      {"switchAccessSetupAssignPreviousTitle",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_ASSIGN_PREVIOUS_TITLE},
+      {"switchAccessSetupClosingTitle",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_CLOSING_TITLE},
+      {"switchAccessSetupClosingAutoScanInstructions",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_CLOSING_AUTO_SCAN_INSTRUCTIONS},
+      {"switchAccessSetupClosingManualScanInstructions",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_CLOSING_MANUAL_SCAN_INSTRUCTIONS},
+      {"switchAccessSetupClosingInfo",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_CLOSING_INFO},
+      {"switchAccessSetupAutoScanSlower",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_AUTO_SCAN_SLOWER},
+      {"switchAccessSetupAutoScanFaster",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_AUTO_SCAN_FASTER},
+      {"switchAccessSetupStartOver",
+       IDS_SETTINGS_SWITCH_ACCESS_SETUP_START_OVER},
+      {"switchAccessSetupDone", IDS_SETTINGS_SWITCH_ACCESS_SETUP_DONE},
       {"switchAccessSetupPairBluetooth",
        IDS_SETTINGS_SWITCH_ACCESS_SETUP_PAIR_BLUETOOTH},
       {"switchAccessSetupNext", IDS_SETTINGS_SWITCH_ACCESS_SETUP_NEXT},
@@ -711,6 +766,9 @@ void AccessibilitySection::AddLoadTimeData(
   html_source->AddBoolean(
       "isMagnifierContinuousMouseFollowingModeSettingEnabled",
       IsMagnifierContinuousMouseFollowingModeSettingEnabled());
+
+  html_source->AddBoolean("areDictationLocalePrefsAllowed",
+                          AreDictationLocalePrefsAllowed());
 
   ::settings::AddCaptionSubpageStrings(html_source);
 }
@@ -853,7 +911,7 @@ void AccessibilitySection::UpdateTextToSpeechVoiceSearchTags() {
   content::TtsController* tts_controller =
       content::TtsController::GetInstance();
   std::vector<content::VoiceData> voices;
-  tts_controller->GetVoices(profile(), &voices);
+  tts_controller->GetVoices(profile(), GURL(), &voices);
   if (!voices.empty()) {
     updater.AddSearchTags(GetTextToSpeechVoiceSearchConcepts());
   }

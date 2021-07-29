@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ტბაიტი/წმ</translation>
 <translation id="2353636109065292463">თქვენი ინტერნეტ-კავშირის შემოწმება</translation>
 <translation id="2388990488038464401">გსურთ ამ ნომერზე დარეკვა თქვენი ტელეფონიდან?</translation>
+<translation id="2435457462613246316">პაროლის ჩვენება</translation>
 <translation id="24452542372838207">შეტყობინების გაშლა</translation>
 <translation id="2445449901874883781">მაღალი სიმკვრივის გამოყენება</translation>
 <translation id="2482878487686419369">შეტყობინებები</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 წლის წინ}other{# წლის წინ}}</translation>
 <translation id="2878511608894704031">ყველაფრის წაშლა</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 დღეში}other{# დღეში}}</translation>
+<translation id="2922712708897119705">სვეტი <ph name="COLUMN_NAME" /> დალაგებულია კლებადი მიმდევრობით.</translation>
 <translation id="2931838996092594335">დაწკაპუნება</translation>
 <translation id="2981684127883932071">ნაჩვენებია შემოთავაზებები</translation>
 <translation id="3036649622769666520">გახსენით ფაილები</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">მენიუ</translation>
 <translation id="3909791450649380159">&amp;ამოჭრა</translation>
 <translation id="3990502903496589789">მარჯვენა კიდე</translation>
+<translation id="3994749195054421561">სვეტი <ph name="COLUMN_NAME" /> დალაგებულია ზრდადი მიმდევრობით.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 წაუკითხავი შეტყობინება}other{# წაუკითხავი შეტყობინება}}</translation>
 <translation id="4202807286478387388">გადასვლა</translation>
 <translation id="4250229828105606438">ეკრანის ანაბეჭდი</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">გაცვლის ბუფერიდან ამოშლა.</translation>
 <translation id="4316910396681052118">ყველა აპი</translation>
 <translation id="4491109536499578614">გამოსახულება</translation>
+<translation id="4565377596337484307">პაროლის დამალვა</translation>
 <translation id="4588090240171750605">გადაადგილება მარჯვნივ</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, შეფასებულია <ph name="RATING_SCORE" /> ვარსკვლავით</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, აპის რეკომენდაცია</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">გვერდი <ph name="SELECTED_PAGE" /> / <ph name="TOTAL_PAGE_NUM" />-დან</translation>
 <translation id="6022924867608035986">საძიებო ველში მითითებული ტექსტის გასუფთავება</translation>
 <translation id="6040143037577758943">დახურვა</translation>
+<translation id="6117103120090651229">ცენტრალური ღილაკი</translation>
 <translation id="6119846243427417423">გააქტიურება</translation>
 <translation id="6129953537138746214">ინტერვალი</translation>
 <translation id="6134259848159370930">წამოიწყეთ ძიება თქვენს მოწყობილობაში, აპებში, პარამეტრებსა და ვებში.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">გაშლა ყველა აპის გამოსაჩენად</translation>
 <translation id="6165508094623778733">შეიტყვეთ მეტი</translation>
 <translation id="6166852626429024716">წამოიწყეთ ძიება თქვენს მოწყობილობაში, აპებში, პარამეტრებსა და ვებში...</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> არჩეულია.</translation>
 <translation id="6264365405983206840">ყ&amp;ველას არჩევა</translation>
 <translation id="6351032674660237738">აპების შემოთავაზებები</translation>
 <translation id="6364916375976753737">გადაადგილება მარცხნივ</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">— <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{დარჩენილია 1 წუთი}other{დარჩენილია # წუთი}}</translation>
 <translation id="7430878839542012341">გსურთ ამ ძიების წაშლა თქვენი ისტორიიდან?</translation>
+<translation id="7437971918971306061">სვეტის „<ph name="COLUMN_NAME" />“ დალაგება მოიხსნა.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ტბაიტი</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7620655452534002301">ამოიშალა.</translation>

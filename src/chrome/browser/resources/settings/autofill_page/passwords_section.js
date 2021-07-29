@@ -11,7 +11,7 @@
 /** @typedef {!{model: !{item: !chrome.passwordsPrivate.ExceptionEntry}}} */
 let ExceptionEntryEntryEvent;
 
-import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
@@ -22,29 +22,29 @@ import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import {OpenWindowProxyImpl} from '../open_window_proxy.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
-import {IronA11yKeysBehavior} from 'chrome://resources/polymer/v3_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
 import '../controls/extension_controlled_indicator.js';
 import '../controls/settings_toggle_button.js';
-import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.js';
+import {GlobalScrollTargetMixin} from '../global_scroll_target_mixin.js';
+import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../hats_browser_proxy.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.js';
 import '../prefs/prefs.js';
 import {PrefsBehavior} from '../prefs/prefs_behavior.js';
 import {routes} from '../route.js';
-import {MergeExceptionsStoreCopiesBehavior} from './merge_exceptions_store_copies_behavior.js';
-import {MergePasswordsStoreCopiesBehavior} from './merge_passwords_store_copies_behavior.js';
+import {MergeExceptionsStoreCopiesBehavior, MergeExceptionsStoreCopiesBehaviorInterface} from './merge_exceptions_store_copies_behavior.js';
+import {MergePasswordsStoreCopiesBehavior, MergePasswordsStoreCopiesBehaviorInterface} from './merge_passwords_store_copies_behavior.js';
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {Router} from '../router.js';
 import '../settings_shared_css.js';
 import '../site_favicon.js';
-import {PasswordCheckBehavior} from './password_check_behavior.js';
+import {PasswordCheckMixin, PasswordCheckMixinInterface} from './password_check_mixin.js';
 import './password_list_item.js';
 import './passwords_list_handler.js';
 import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
@@ -70,236 +70,282 @@ function isEditable(element) {
         /^(?:text|search|email|number|tel|url|password)$/i.test(element.type)));
 }
 
-Polymer({
-  is: 'passwords-section',
 
-  _template: html`{__html_template__}`,
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ * @implements {MergePasswordsStoreCopiesBehaviorInterface}
+ * @implements {MergeExceptionsStoreCopiesBehaviorInterface}
+ * @implements {PasswordCheckMixinInterface}
+ * @implements {WebUIListenerBehaviorInterface}
+ */
+const PasswordsSectionElementBase = mixinBehaviors(
+    [
+      I18nBehavior,
+      WebUIListenerBehavior,
+      MergeExceptionsStoreCopiesBehavior,
+      MergePasswordsStoreCopiesBehavior,
+      PrefsBehavior,
+    ],
+    PasswordCheckMixin(GlobalScrollTargetMixin(PolymerElement)));
 
-  behaviors: [
-    I18nBehavior,
-    WebUIListenerBehavior,
-    MergeExceptionsStoreCopiesBehavior,
-    MergePasswordsStoreCopiesBehavior,
-    PasswordCheckBehavior,
-    IronA11yKeysBehavior,
-    GlobalScrollTargetBehavior,
-    PrefsBehavior,
-  ],
+/** @polymer */
+class PasswordsSectionElement extends PasswordsSectionElementBase {
+  static get is() {
+    return 'passwords-section';
+  }
 
-  properties: {
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-    /** @type {!Map<string, (string|Function)>} */
-    focusConfig: {
-      type: Object,
-      observer: 'focusConfigChanged_',
-    },
+  static get properties() {
+    return {
 
-    /** Preferences state. */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
+      /** @type {!Map<string, (string|Function)>} */
+      focusConfig: {
+        type: Object,
+        observer: 'focusConfigChanged_',
+      },
 
-    /** @override */
-    subpageRoute: {
-      type: Object,
-      value: routes.PASSWORDS,
-    },
+      /** Preferences state. */
+      prefs: {
+        type: Object,
+        notify: true,
+      },
 
-    /** The target of the key bindings defined below. */
-    keyEventTarget: {
-      type: Object,
-      value: () => document,
-    },
+      /** @override */
+      subpageRoute: {
+        type: Object,
+        value: routes.PASSWORDS,
+      },
 
-    /** Filter on the saved passwords and exceptions. */
-    filter: {
-      type: String,
-      value: '',
-    },
+      /** Filter on the saved passwords and exceptions. */
+      filter: {
+        type: String,
+        value: '',
+        observer: 'announceSearchResults_',
+      },
 
-    // <if expr="not chromeos">
-    /** @private */
-    storedAccounts_: Array,
-    // </if>
+      /** @private */
+      shownPasswordsCount_: {
+        type: Number,
+        value: 0,
+      },
 
-    /** @private */
-    signedIn_: {
-      type: Boolean,
-      value: true,
-      computed: 'computeSignedIn_(syncStatus_, storedAccounts_)',
-    },
+      /** @private */
+      shownExceptionsCount_: {
+        type: Number,
+        value: 0,
+      },
 
-    /** @private */
-    eligibleForAccountStorage_: {
-      type: Boolean,
-      value: false,
-      computed: 'computeEligibleForAccountStorage_(' +
-          'syncStatus_, signedIn_, syncPrefs_)',
-    },
+      // <if expr="not chromeos">
+      /** @private */
+      storedAccounts_: Array,
+      // </if>
 
-    /** @private */
-    hasNeverCheckedPasswords_: {
-      type: Boolean,
-      computed: 'computeHasNeverCheckedPasswords_(status)',
-    },
+      /** @private */
+      signedIn_: {
+        type: Boolean,
+        value: true,
+        computed: 'computeSignedIn_(syncStatus_, storedAccounts_)',
+      },
 
-    /** @private */
-    hasSavedPasswords_: {
-      type: Boolean,
-      computed:
-          'computeHasSavedPasswords_(savedPasswords, savedPasswords.splices)',
-    },
+      /** @private */
+      eligibleForAccountStorage_: {
+        type: Boolean,
+        value: false,
+        computed: 'computeEligibleForAccountStorage_(' +
+            'syncStatus_, signedIn_, syncPrefs_)',
+      },
+
+      /** @private */
+      hasNeverCheckedPasswords_: {
+        type: Boolean,
+        computed: 'computeHasNeverCheckedPasswords_(status)',
+      },
+
+      /** @private */
+      hasSavedPasswords_: {
+        type: Boolean,
+        computed:
+            'computeHasSavedPasswords_(savedPasswords, savedPasswords.splices)',
+      },
+
+      /**
+       * Used to decide the text on the button leading to 'device passwords'
+       * page.
+       * @private
+       */
+      numberOfDevicePasswords_: {
+        type: Number,
+        computed: 'computeNumberOfDevicePasswords_(savedPasswords, ' +
+            'savedPasswords.splices)',
+      },
+
+      /** @private */
+      hasPasswordExceptions_: {
+        type: Boolean,
+        computed: 'computeHasPasswordExceptions_(passwordExceptions)',
+      },
+
+      /** @private */
+      shouldShowBanner_: {
+        type: Boolean,
+        value: true,
+        computed: 'computeShouldShowBanner_(hasLeakedCredentials_,' +
+            'signedIn_, hasNeverCheckedPasswords_, hasSavedPasswords_)',
+      },
+
+      /**
+       * Whether the edit dialog and removal notification should show
+       * information about which location(s) a password is stored.
+       * @private
+       */
+      shouldShowStorageDetails_: {
+        type: Boolean,
+        value: false,
+        computed: 'computeShouldShowStorageDetails_(' +
+            'eligibleForAccountStorage_, isOptedInForAccountStorage_)',
+      },
+
+      /**
+       * Whether the entry point leading to the device passwords page should be
+       * shown for a user who is already eligible for account storage.
+       * @private
+       */
+      shouldShowDevicePasswordsLink_: {
+        type: Boolean,
+        value: false,
+        computed: 'computeShouldShowDevicePasswordsLink_(' +
+            'isOptedInForAccountStorage_, numberOfDevicePasswords_)',
+      },
+
+      /**
+       * Whether the entry point leading to enroll in trusted vault encryption
+       * should be shown.
+       * @private
+       */
+      shouldOfferTrustedVaultOptIn_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /** @private */
+      hasLeakedCredentials_: {
+        type: Boolean,
+        computed: 'computeHasLeakedCredentials_(leakedPasswords)',
+      },
+
+      /** @private */
+      hidePasswordsLink_: {
+        type: Boolean,
+        computed: 'computeHidePasswordsLink_(syncPrefs_, syncStatus_, ' +
+            'eligibleForAccountStorage_)',
+      },
+
+      /** @private */
+      showImportPasswords_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.valueExists('showImportPasswords') &&
+              loadTimeData.getBoolean('showImportPasswords');
+        }
+      },
+
+      /** @private */
+      accountStorageFeatureEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('enableAccountStorage');
+        }
+      },
+
+      /** @private */
+      profileEmail_: {
+        type: String,
+        value: '',
+        computed: 'getFirstStoredAccountEmail_(storedAccounts_)',
+      },
+
+      /**
+       * The currently selected profile icon as CSS image set.
+       * @private
+       */
+      profileIcon_: String,
+
+      /** @private */
+      isOptedInForAccountStorage_: Boolean,
+
+      /** @private {SyncPrefs} */
+      syncPrefs_: Object,
+
+      /** @private {SyncStatus} */
+      syncStatus_: Object,
+
+      // <if expr="chromeos">
+      /** @private */
+      showPasswordPromptDialog_: Boolean,
+
+      /** @private {BlockingRequestManager} */
+      tokenRequestManager_: Object,
+      // </if>
+
+      /** @private */
+      showPasswordsExportDialog_: Boolean,
+    };
+  }
+
+  constructor() {
+    super();
 
     /**
-     * Used to decide the text on the button leading to 'device passwords' page.
-     * @private
+     * A stack of the elements that triggered dialog to open and should
+     * therefore receive focus when that dialog is closed. The bottom of the
+     * stack is the element that triggered the earliest open dialog and top of
+     * the stack is the element that triggered the most recent (i.e. active)
+     * dialog. If no dialog is open, the stack is empty.
+     * @private {!Array<Element>}
      */
-    numberOfDevicePasswords_: {
-      type: Number,
-      computed: 'computeNumberOfDevicePasswords_(savedPasswords, ' +
-          'savedPasswords.splices)',
-    },
+    this.activeDialogAnchorStack_ = [];
 
-    /** @private */
-    hasPasswordExceptions_: {
-      type: Boolean,
-      computed: 'computeHasPasswordExceptions_(passwordExceptions)',
-    },
+    /** @private {!PasswordManagerProxy} */
+    this.passwordManager_ = PasswordManagerImpl.getInstance();
 
-    /** @private */
-    shouldShowBanner_: {
-      type: Boolean,
-      value: true,
-      computed: 'computeShouldShowBanner_(hasLeakedCredentials_,' +
-          'signedIn_, hasNeverCheckedPasswords_, hasSavedPasswords_)',
-    },
+
+    /** @private {?function(boolean):void} */
+    this.setIsOptedInForAccountStorageListener_ = null;
 
     /**
-     * Whether the edit dialog and removal notification should show
-     * information about which location(s) a password is stored.
-     * @private
+     * @private {?function(!Array<PasswordManagerProxy.ExceptionEntry>):void}
      */
-    shouldShowStorageDetails_: {
-      type: Boolean,
-      value: false,
-      computed: 'computeShouldShowStorageDetails_(' +
-          'eligibleForAccountStorage_, isOptedInForAccountStorage_)',
-    },
-
-    /**
-     * Whether the entry point leading to the device passwords page should be
-     * shown for a user who is already eligible for account storage.
-     * @private
-     */
-    shouldShowDevicePasswordsLink_: {
-      type: Boolean,
-      value: false,
-      computed: 'computeShouldShowDevicePasswordsLink_(' +
-          'isOptedInForAccountStorage_, numberOfDevicePasswords_)',
-    },
-
-    /**
-     * Whether the entry point leading to enroll in trusted vault encryption
-     * should be shown.
-     * @private
-     */
-    shouldOfferTrustedVaultOptIn_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /** @private */
-    hasLeakedCredentials_: {
-      type: Boolean,
-      computed: 'computeHasLeakedCredentials_(leakedPasswords)',
-    },
-
-    /** @private */
-    hidePasswordsLink_: {
-      type: Boolean,
-      computed: 'computeHidePasswordsLink_(syncPrefs_, syncStatus_, ' +
-          'eligibleForAccountStorage_)',
-    },
-
-    /** @private */
-    showImportPasswords_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.valueExists('showImportPasswords') &&
-            loadTimeData.getBoolean('showImportPasswords');
-      }
-    },
-
-    /** @private */
-    accountStorageFeatureEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('enableAccountStorage');
-      }
-    },
-
-    /** @private */
-    profileEmail_: {
-      type: String,
-      value: '',
-      computed: 'getFirstStoredAccountEmail_(storedAccounts_)',
-    },
-
-    /**
-     * The currently selected profile icon as CSS image set.
-     * @private
-     */
-    profileIcon_: String,
-
-    /** @private */
-    isOptedInForAccountStorage_: Boolean,
-
-    /** @private {SyncPrefs} */
-    syncPrefs_: Object,
-
-    /** @private {SyncStatus} */
-    syncStatus_: Object,
-
-    // <if expr="chromeos">
-    /** @private */
-    showPasswordPromptDialog_: Boolean,
-
-    /** @private {BlockingRequestManager} */
-    tokenRequestManager_: Object,
-    // </if>
-  },
-
-  keyBindings: {
-    // <if expr="is_macosx">
-    'meta+z': 'onUndoKeyBinding_',
-    // </if>
-    // <if expr="not is_macosx">
-    'ctrl+z': 'onUndoKeyBinding_',
-    // </if>
-  },
-
-  /**
-   * A stack of the elements that triggered dialog to open and should therefore
-   * receive focus when that dialog is closed. The bottom of the stack is the
-   * element that triggered the earliest open dialog and top of the stack is the
-   * element that triggered the most recent (i.e. active) dialog. If no dialog
-   * is open, the stack is empty.
-   * @private {!Array<Element>}
-   */
-  activeDialogAnchorStack_: [],
-
-  /** @private {?PasswordManagerProxy} */
-  passwordManager_: null,
-
-  /** @private {?function(boolean):void} */
-  setIsOptedInForAccountStorageListener_: null,
-
-  /** @private {?function(!Array<PasswordManagerProxy.ExceptionEntry>):void} */
-  setPasswordExceptionsListener_: null,
+    this.setPasswordExceptionsListener_ = null;
+  }
 
   /** @override */
-  attached() {
+  ready() {
+    super.ready();
+
+    document.addEventListener('keydown', e => {
+      const keyboardEvent = /** @type {!KeyboardEvent} */ (e);
+      // <if expr="is_macosx">
+      if (keyboardEvent.metaKey && keyboardEvent.key === 'z') {
+        this.onUndoKeyBinding_(keyboardEvent);
+      }
+      // </if>
+      // <if expr="not is_macosx">
+      if (keyboardEvent.ctrlKey && keyboardEvent.key === 'z') {
+        this.onUndoKeyBinding_(keyboardEvent);
+      }
+      // </if>
+    });
+  }
+
+  /** @override */
+  connectedCallback() {
+    super.connectedCallback();
+
     // Create listener functions.
     const setIsOptedInForAccountStorageListener = optedIn => {
       this.isOptedInForAccountStorage_ = optedIn;
@@ -307,9 +353,6 @@ Polymer({
 
     this.setIsOptedInForAccountStorageListener_ =
         setIsOptedInForAccountStorageListener;
-
-    // Set the manager. These can be overridden by tests.
-    this.passwordManager_ = PasswordManagerImpl.getInstance();
 
     // <if expr="chromeos">
     // If the user's account supports the password check, an auth token will be
@@ -358,13 +401,18 @@ Polymer({
     afterNextRender(this, function() {
       IronA11yAnnouncer.requestAvailability();
     });
-  },
+
+    HatsBrowserProxyImpl.getInstance().trustSafetyInteractionOccurred(
+        TrustSafetyInteraction.OPENED_PASSWORD_MANAGER);
+  }
 
   /** @override */
-  detached() {
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
     this.passwordManager_.removeAccountStorageOptInStateListener(
         assert(this.setIsOptedInForAccountStorageListener_));
-  },
+  }
 
   /**
    * @return {boolean}
@@ -374,7 +422,7 @@ Polymer({
     return !!this.syncStatus_ && !!this.syncStatus_.signedIn ?
         !this.syncStatus_.hasError :
         (!!this.storedAccounts_ && this.storedAccounts_.length > 0);
-  },
+  }
 
   /**
    * @return {boolean}
@@ -388,7 +436,7 @@ Polymer({
     return this.accountStorageFeatureEnabled_ &&
         (!!this.syncStatus_ && !this.syncStatus_.signedIn) && this.signedIn_ &&
         (!this.syncPrefs_ || !this.syncPrefs_.encryptAllData);
-  },
+  }
 
   /**
    * @return {boolean}
@@ -396,7 +444,7 @@ Polymer({
    */
   computeHasSavedPasswords_() {
     return this.savedPasswords.length > 0;
-  },
+  }
 
   /**
    * @return {number}
@@ -404,7 +452,7 @@ Polymer({
    */
   computeNumberOfDevicePasswords_() {
     return this.savedPasswords.filter(p => p.isPresentOnDevice()).length;
-  },
+  }
 
   /**
    * @return {boolean}
@@ -412,7 +460,7 @@ Polymer({
    */
   computeHasPasswordExceptions_() {
     return this.passwordExceptions.length > 0;
-  },
+  }
 
   /**
    * @return {boolean}
@@ -421,7 +469,7 @@ Polymer({
   computeShouldShowBanner_() {
     return this.signedIn_ && this.hasSavedPasswords_ &&
         this.hasNeverCheckedPasswords_ && !this.hasLeakedCredentials_;
-  },
+  }
 
   /**
    * @return {boolean}
@@ -429,7 +477,7 @@ Polymer({
    */
   computeShouldShowStorageDetails_() {
     return this.eligibleForAccountStorage_ && this.isOptedInForAccountStorage_;
-  },
+  }
 
   /**
    * @return {boolean}
@@ -438,7 +486,7 @@ Polymer({
   computeShouldShowDevicePasswordsLink_() {
     return this.isOptedInForAccountStorage_ &&
         (this.numberOfDevicePasswords_ > 0);
-  },
+  }
 
   /**
    * hide the link to the user's Google Account if:
@@ -451,7 +499,7 @@ Polymer({
     return this.eligibleForAccountStorage_ ||
         (!!this.syncStatus_ && !!this.syncStatus_.signedIn &&
          !!this.syncPrefs_ && !!this.syncPrefs_.encryptAllData);
-  },
+  }
 
   /**
    * @private
@@ -459,7 +507,7 @@ Polymer({
    */
   computeHasLeakedCredentials_() {
     return this.leakedPasswords.length > 0;
-  },
+  }
 
   /**
    * @private
@@ -467,7 +515,7 @@ Polymer({
    */
   computeHasNeverCheckedPasswords_() {
     return !this.status.elapsedTimeSinceLastCheck;
-  },
+  }
 
   /**
    * Shows the check passwords sub page.
@@ -478,7 +526,7 @@ Polymer({
         routes.CHECK_PASSWORDS, new URLSearchParams('start=true'));
     this.passwordManager_.recordPasswordCheckReferrer(
         PasswordManagerProxy.PasswordCheckReferrer.PASSWORD_SETTINGS);
-  },
+  }
 
   /**
    * Shows the page to opt in to trusted vault encryption.
@@ -487,7 +535,7 @@ Polymer({
   onTrustedVaultOptInClick_() {
     OpenWindowProxyImpl.getInstance().openURL(
         loadTimeData.getString('trustedVaultOptInUrl'));
-  },
+  }
 
   /**
    * Shows the 'device passwords' page.
@@ -495,7 +543,7 @@ Polymer({
    */
   onDevicePasswordsLinkClicked_() {
     Router.getInstance().navigateTo(routes.DEVICE_PASSWORDS);
-  },
+  }
 
   // <if expr="chromeos">
   /**
@@ -516,19 +564,19 @@ Polymer({
   onTokenObtained_(e) {
     assert(e.detail);
     this.tokenRequestManager_.resolve();
-  },
+  }
 
   /** @private */
   onPasswordPromptClosed_() {
     this.showPasswordPromptDialog_ = false;
     focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
-  },
+  }
 
   /** @private */
   openPasswordPromptDialog_() {
     this.activeDialogAnchorStack_.push(getDeepActiveElement());
     this.showPasswordPromptDialog_ = true;
-  },
+  }
   // </if>
 
   /**
@@ -537,8 +585,9 @@ Polymer({
    */
   passwordFilter_() {
     return password => [password.urls.shown, password.username].some(
-               term => term.toLowerCase().includes(this.filter.toLowerCase()));
-  },
+               term => term.toLowerCase().includes(
+                   this.filter.trim().toLowerCase()));
+  }
 
   /**
    * @return {function(!chrome.passwordsPrivate.ExceptionEntry): boolean}
@@ -546,8 +595,8 @@ Polymer({
    */
   passwordExceptionFilter_() {
     return exception => exception.urls.shown.toLowerCase().includes(
-               this.filter.toLowerCase());
-  },
+               this.filter.trim().toLowerCase());
+  }
 
   /**
    * Handle the shortcut to undo a removal of passwords/exceptions. This must
@@ -567,7 +616,7 @@ Polymer({
       // search action.
       event.preventDefault();
     }
-  },
+  }
 
   /**
    * Fires an event that should delete the password exception.
@@ -586,7 +635,7 @@ Polymer({
       allExceptionIds.push(exception.deviceId);
     }
     this.passwordManager_.removeExceptions(allExceptionIds);
-  },
+  }
 
   /**
    * Opens the export/import action menu.
@@ -595,11 +644,12 @@ Polymer({
   onImportExportMenuTap_() {
     const menu = /** @type {!CrActionMenuElement} */ (this.$.exportImportMenu);
     const target =
-        /** @type {!HTMLElement} */ (this.$$('#exportImportMenuButton'));
+        /** @type {!HTMLElement} */ (
+            this.shadowRoot.querySelector('#exportImportMenuButton'));
 
     menu.showAt(target);
     this.activeDialogAnchorStack_.push(target);
-  },
+  }
 
   /**
    * Fires an event that should trigger the password import process.
@@ -608,7 +658,7 @@ Polymer({
   onImportTap_() {
     this.passwordManager_.importPasswords();
     this.$.exportImportMenu.close();
-  },
+  }
 
   /**
    * Opens the export passwords dialog.
@@ -617,23 +667,23 @@ Polymer({
   onExportTap_() {
     this.showPasswordsExportDialog_ = true;
     this.$.exportImportMenu.close();
-  },
+  }
 
   /** @private */
   onPasswordsExportDialogClosed_() {
     this.showPasswordsExportDialog_ = false;
     focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
-  },
+  }
 
   /** @private */
-  onOptIn_: function() {
+  onOptIn_() {
     this.passwordManager_.optInForAccountStorage(true);
-  },
+  }
 
   /** @private */
-  onOptOut_: function() {
+  onOptOut_() {
     this.passwordManager_.optInForAccountStorage(false);
-  },
+  }
 
   /**
    * @private
@@ -641,7 +691,7 @@ Polymer({
    */
   showImportOrExportPasswords_() {
     return this.hasSavedPasswords_ || this.showImportPasswords_;
-  },
+  }
 
   /**
    * Return the first available stored account. This is useful when trying to
@@ -655,7 +705,7 @@ Polymer({
     return !!this.storedAccounts_ && this.storedAccounts_.length > 0 ?
         this.storedAccounts_[0].email :
         '';
-  },
+  }
 
   /**
    * @param {!Map<string, string>} newConfig
@@ -671,7 +721,39 @@ Polymer({
     // element, with additional entries that correspond to subpage trigger
     // elements residing in this element's Shadow DOM.
     this.focusConfig.set(assert(routes.CHECK_PASSWORDS).path, () => {
-      focusWithoutInk(assert(this.$$('#icon')));
+      focusWithoutInk(assert(this.shadowRoot.querySelector('#icon')));
     });
-  },
-});
+  }
+
+  /** @private */
+  announceSearchResults_() {
+    if (!this.filter.trim()) {
+      return;
+    }
+    setTimeout(() => {  // Async to allow list to update.
+      IronA11yAnnouncer.requestAvailability();
+      const total = this.shownPasswordsCount_ + this.shownExceptionsCount_;
+      let text;
+      switch (total) {
+        case 0:
+          text = this.i18n('noSearchResults');
+          break;
+        case 1:
+          text = this.i18n('searchResultsSingular', this.filter);
+          break;
+        default:
+          text =
+              this.i18n('searchResultsPlural', total.toString(), this.filter);
+      }
+      this.dispatchEvent(new CustomEvent('iron-announce', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          text: text,
+        }
+      }));
+    }, 0);
+  }
+}
+
+customElements.define(PasswordsSectionElement.is, PasswordsSectionElement);

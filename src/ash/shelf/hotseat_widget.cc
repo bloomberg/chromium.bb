@@ -6,13 +6,13 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/wallpaper_controller_observer.h"
+#include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
 #include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf_app_button.h"
@@ -557,7 +557,7 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
     DoScopedAnimationSetting(&bounds_animation_setter.value());
   }
 
-  const int radius = hotseat_widget_->GetHotseatSize() / 2;
+  const float radius = hotseat_widget_->GetHotseatSize() / 2.0f;
   gfx::RoundedCornersF rounded_corners = {radius, radius, radius, radius};
   if (translucent_background_.rounded_corner_radii() != rounded_corners)
     translucent_background_.SetRoundedCornerRadius(rounded_corners);
@@ -663,6 +663,11 @@ HotseatWidget::~HotseatWidget() {
   ShelfConfig::Get()->RemoveObserver(this);
   shelf_->shelf_widget()->hotseat_transition_animator()->RemoveObserver(
       delegate_view_);
+  // Remove ScrollableShelfView to avoid any children accessing NativeWidget
+  // after its destruction in ~Widget() before RootView clears.
+  // TODO(pbos): This is defensive, consider having children observe
+  // destruction and/or check the result of GetNativeWidget() and others.
+  GetContentsView()->RemoveChildViewT(scrollable_shelf_view_);
 }
 
 bool HotseatWidget::ShouldShowHotseatBackground() {

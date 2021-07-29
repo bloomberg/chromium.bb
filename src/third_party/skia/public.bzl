@@ -223,7 +223,6 @@ BASE_SRCS_ALL = struct(
         "src/utils/win/**/*",
 
         # Exclude multiple definitions.
-        "src/gpu/ccpr/GrCoverageCountingPathRenderer_none.cpp",
         "src/gpu/gl/GrGLMakeNativeInterface_none.cpp",
         "src/pdf/SkDocument_PDF_None.cpp",  # We use src/pdf/SkPDFDocument.cpp.
 
@@ -607,6 +606,8 @@ DM_SRCS_ALL = struct(
         "tools/ResourceFactory.h",
         "tools/Resources.cpp",
         "tools/Resources.h",
+        "tools/RuntimeBlendUtils.cpp",
+        "tools/RuntimeBlendUtils.h",
         "tools/SkMetaData.cpp",
         "tools/SkMetaData.h",
         "tools/SkSharingProc.cpp",

@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -375,6 +376,11 @@ class VIEWS_EXPORT MenuController
   void UpdateInitialLocation(const gfx::Rect& bounds,
                              MenuAnchorPosition position,
                              bool context_menu);
+
+  // Returns the anchor position adjusted for RTL languages. For example,
+  // in RTL MenuAnchorPosition::kBubbleLeft is mapped to kBubbleRight.
+  static MenuAnchorPosition AdjustAnchorPositionForRtl(
+      MenuAnchorPosition position);
 
   // Invoked when the user accepts the selected item. This is only used
   // when blocking. This schedules the loop to quit.

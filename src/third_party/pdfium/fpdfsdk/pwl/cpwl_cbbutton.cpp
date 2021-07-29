@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "core/fxge/cfx_fillrenderoptions.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/cfx_renderdevice.h"
 
 CPWL_CBButton::CPWL_CBButton(
@@ -33,8 +33,10 @@ void CPWL_CBButton::DrawThisAppearance(CFX_RenderDevice* pDevice,
   constexpr float kComboBoxTriangleLength = 6.0f;
   constexpr float kComboBoxTriangleHalfLength = kComboBoxTriangleLength / 2;
   constexpr float kComboBoxTriangleQuarterLength = kComboBoxTriangleLength / 4;
-  if (!IsFloatBigger(window.right - window.left, kComboBoxTriangleLength) ||
-      !IsFloatBigger(window.top - window.bottom, kComboBoxTriangleHalfLength)) {
+  if (!FXSYS_IsFloatBigger(window.right - window.left,
+                           kComboBoxTriangleLength) ||
+      !FXSYS_IsFloatBigger(window.top - window.bottom,
+                           kComboBoxTriangleHalfLength)) {
     return;
   }
 
@@ -45,11 +47,11 @@ void CPWL_CBButton::DrawThisAppearance(CFX_RenderDevice* pDevice,
                  ptCenter.y + kComboBoxTriangleQuarterLength);
   CFX_PointF pt3(ptCenter.x, ptCenter.y - kComboBoxTriangleQuarterLength);
 
-  CFX_PathData path;
-  path.AppendPoint(pt1, FXPT_TYPE::MoveTo);
-  path.AppendPoint(pt2, FXPT_TYPE::LineTo);
-  path.AppendPoint(pt3, FXPT_TYPE::LineTo);
-  path.AppendPoint(pt1, FXPT_TYPE::LineTo);
+  CFX_Path path;
+  path.AppendPoint(pt1, CFX_Path::Point::Type::kMove);
+  path.AppendPoint(pt2, CFX_Path::Point::Type::kLine);
+  path.AppendPoint(pt3, CFX_Path::Point::Type::kLine);
+  path.AppendPoint(pt1, CFX_Path::Point::Type::kLine);
 
   pDevice->DrawPath(&path, &mtUser2Device, nullptr,
                     PWL_DEFAULT_BLACKCOLOR.ToFXColor(GetTransparency()), 0,

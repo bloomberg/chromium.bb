@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
@@ -143,6 +144,9 @@ class TabDragController : public views::WidgetObserver {
 
   // Complete the current drag session.
   void EndDrag(EndDragReason reason);
+
+  // Set a callback to be called when the nested drag loop finishes.
+  void SetDragLoopDoneCallbackForTesting(base::OnceClosure callback);
 
  private:
   friend class TabDragControllerTest;
@@ -705,6 +709,9 @@ class TabDragController : public views::WidgetObserver {
   int attach_x_;
   int attach_index_;
 
+  // Called when the loop in RunMoveLoop finishes. Only for tests.
+  base::OnceClosure drag_loop_done_callback_;
+
   std::unique_ptr<KeyEventTracker> key_event_tracker_;
 
   std::unique_ptr<SourceTabStripEmptinessTracker>
@@ -717,6 +724,9 @@ class TabDragController : public views::WidgetObserver {
 
   base::ScopedObservation<views::Widget, views::WidgetObserver>
       widget_observation_{this};
+
+  // True while RunMoveLoop() has been called on a widget.
+  bool in_move_loop_ = false;
 
   base::WeakPtrFactory<TabDragController> weak_factory_{this};
 };

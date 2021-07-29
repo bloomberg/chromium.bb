@@ -1,0 +1,27 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void round_52c84d() {
+  float2 res = rint(float2());
+}
+
+vertex tint_symbol vertex_main() {
+  round_52c84d();
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  round_52c84d();
+  return;
+}
+
+kernel void compute_main() {
+  round_52c84d();
+  return;
+}
+

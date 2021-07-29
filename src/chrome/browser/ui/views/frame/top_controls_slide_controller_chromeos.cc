@@ -30,7 +30,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/display/screen.h"
+#include "ui/display/display.h"
 #include "ui/views/controls/native/native_view_host.h"
 
 namespace {
@@ -194,14 +194,18 @@ class TopControlsSlideTabObserver
 
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
-    if (navigation_handle->IsInMainFrame() && navigation_handle->HasCommitted())
+    // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+    // frames. This caller was converted automatically to the primary main frame
+    // to preserve its semantics. Follow up to confirm correctness.
+    if (navigation_handle->IsInPrimaryMainFrame() &&
+        navigation_handle->HasCommitted())
       UpdateBrowserControlsStateShown(/*animate=*/true);
   }
 
   void DidFailLoad(content::RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
                    int error_code) override {
-    if (render_frame_host->IsCurrent() &&
+    if (render_frame_host->IsActive() &&
         (render_frame_host == web_contents()->GetMainFrame())) {
       UpdateBrowserControlsStateShown(/*animate=*/true);
     }
@@ -286,7 +290,6 @@ TopControlsSlideControllerChromeOS::TopControlsSlideControllerChromeOS(
   observed_omni_box_->AddObserver(this);
 
   browser_view_->browser()->tab_strip_model()->AddObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   auto* accessibility_manager = ash::AccessibilityManager::Get();
@@ -304,7 +307,6 @@ TopControlsSlideControllerChromeOS::TopControlsSlideControllerChromeOS(
 TopControlsSlideControllerChromeOS::~TopControlsSlideControllerChromeOS() {
   OnEnabledStateChanged(false);
 
-  display::Screen::GetScreen()->RemoveObserver(this);
   browser_view_->browser()->tab_strip_model()->RemoveObserver(this);
 
   if (observed_omni_box_)

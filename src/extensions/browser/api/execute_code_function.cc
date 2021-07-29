@@ -11,14 +11,15 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "extensions/browser/api/extension_types_utils.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/load_and_localize_file.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
-#include "extensions/common/mojom/action_type.mojom-shared.h"
 #include "extensions/common/mojom/css_origin.mojom-shared.h"
 #include "extensions/common/mojom/run_location.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -29,7 +30,6 @@ const char kMoreThanOneValuesError[] =
     "at the same time in the second argument.";
 const char kBadFileEncodingError[] =
     "Could not load file '*' for content script. It isn't UTF-8 encoded.";
-const char kLoadFileError[] = "Failed to load file: \"*\". ";
 const char kCSSOriginForNonCSSError[] =
     "CSS origin should be specified only for CSS code.";
 
@@ -47,22 +47,24 @@ ExecuteCodeFunction::~ExecuteCodeFunction() {
 
 void ExecuteCodeFunction::DidLoadAndLocalizeFile(
     const std::string& file,
-    bool success,
-    std::unique_ptr<std::string> data) {
-  if (!success) {
+    std::vector<std::unique_ptr<std::string>> data,
+    absl::optional<std::string> load_error) {
+  if (load_error) {
     // TODO(viettrungluu): bug: there's no particular reason the path should be
     // UTF-8, in which case this may fail.
-    Respond(Error(ErrorUtils::FormatErrorMessage(kLoadFileError, file)));
+    Respond(Error(std::move(*load_error)));
     return;
   }
 
-  if (!base::IsStringUTF8(*data)) {
+  DCHECK_EQ(1u, data.size());
+  auto& file_data = data.front();
+  if (!base::IsStringUTF8(*file_data)) {
     Respond(Error(ErrorUtils::FormatErrorMessage(kBadFileEncodingError, file)));
     return;
   }
 
   std::string error;
-  if (!Execute(*data, &error))
+  if (!Execute(*file_data, &error))
     Respond(Error(std::move(error)));
 
   // If Execute() succeeds, the function will respond in
@@ -81,12 +83,6 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string,
 
   DCHECK(!(ShouldInsertCSS() && ShouldRemoveCSS()));
 
-  auto action_type = mojom::ActionType::kAddJavascript;
-  if (ShouldInsertCSS())
-    action_type = mojom::ActionType::kAddCss;
-  else if (ShouldRemoveCSS())
-    action_type = mojom::ActionType::kRemoveCss;
-
   ScriptExecutor::FrameScope frame_scope =
       details_->all_frames.get() && *details_->all_frames
           ? ScriptExecutor::INCLUDE_SUB_FRAMES
@@ -101,20 +97,7 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string,
           ? ScriptExecutor::MATCH_ABOUT_BLANK
           : ScriptExecutor::DONT_MATCH_ABOUT_BLANK;
 
-  mojom::RunLocation run_at = mojom::RunLocation::kUndefined;
-  switch (details_->run_at) {
-    case api::extension_types::RUN_AT_NONE:
-    case api::extension_types::RUN_AT_DOCUMENT_IDLE:
-      run_at = mojom::RunLocation::kDocumentIdle;
-      break;
-    case api::extension_types::RUN_AT_DOCUMENT_START:
-      run_at = mojom::RunLocation::kDocumentStart;
-      break;
-    case api::extension_types::RUN_AT_DOCUMENT_END:
-      run_at = mojom::RunLocation::kDocumentEnd;
-      break;
-  }
-  CHECK_NE(mojom::RunLocation::kUndefined, run_at);
+  mojom::RunLocation run_at = ConvertRunLocation(details_->run_at);
 
   mojom::CSSOrigin css_origin = mojom::CSSOrigin::kAuthor;
   switch (details_->css_origin) {
@@ -127,14 +110,36 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string,
       break;
   }
 
+  mojom::CodeInjectionPtr injection;
+  bool is_css_injection = ShouldInsertCSS() || ShouldRemoveCSS();
+  if (is_css_injection) {
+    absl::optional<std::string> injection_key;
+    if (host_id_.type == mojom::HostID::HostType::kExtensions) {
+      injection_key = ScriptExecutor::GenerateInjectionKey(
+          host_id_, script_url_, code_string);
+    }
+    mojom::CSSInjection::Operation operation =
+        ShouldInsertCSS() ? mojom::CSSInjection::Operation::kAdd
+                          : mojom::CSSInjection::Operation::kRemove;
+    std::vector<mojom::CSSSourcePtr> sources;
+    sources.push_back(
+        mojom::CSSSource::New(code_string, std::move(injection_key)));
+    injection = mojom::CodeInjection::NewCss(
+        mojom::CSSInjection::New(std::move(sources), css_origin, operation));
+  } else {
+    bool wants_result = has_callback();
+    std::vector<mojom::JSSourcePtr> sources;
+    sources.push_back(mojom::JSSource::New(code_string, script_url_));
+    injection = mojom::CodeInjection::NewJs(mojom::JSInjection::New(
+        std::move(sources), wants_result, user_gesture()));
+  }
+
   executor->ExecuteScript(
-      host_id_, action_type, code_string, frame_scope, {root_frame_id_},
+      host_id_, std::move(injection), frame_scope, {root_frame_id_},
       match_about_blank, run_at,
       IsWebView() ? ScriptExecutor::WEB_VIEW_PROCESS
                   : ScriptExecutor::DEFAULT_PROCESS,
-      GetWebViewSrc(), script_url_, user_gesture(), css_origin,
-      has_callback() ? ScriptExecutor::JSON_SERIALIZED_RESULT
-                     : ScriptExecutor::NO_RESULT,
+      GetWebViewSrc(),
       base::BindOnce(&ExecuteCodeFunction::OnExecuteCodeFinished, this));
   return true;
 }
@@ -185,10 +190,11 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file,
 
   bool might_require_localization = ShouldInsertCSS() || ShouldRemoveCSS();
 
-  LoadAndLocalizeResource(
-      *extension(), resource, might_require_localization,
+  std::string relative_path = resource.relative_path().AsUTF8Unsafe();
+  LoadAndLocalizeResources(
+      *extension(), {std::move(resource)}, might_require_localization,
       base::BindOnce(&ExecuteCodeFunction::DidLoadAndLocalizeFile, this,
-                     resource.relative_path().AsUTF8Unsafe()));
+                     relative_path));
 
   return true;
 }

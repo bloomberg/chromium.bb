@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/system_tray_test_api.h"
@@ -16,10 +16,10 @@
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/user_policy_mixin.h"
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
+#include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
-#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -140,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientClockTest, PRE_FocusedPod24HourClock) {
   EXPECT_FALSE(tray_test_api->Is24HourClock());
 
   // Test lock screen.
-  chromeos::ScreenLockerTester locker;
+  ash::ScreenLockerTester locker;
   locker.Lock();
 
   EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(account_id1_));

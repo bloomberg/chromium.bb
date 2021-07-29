@@ -62,25 +62,14 @@ class MODULES_EXPORT WebCodecsLogger : public GarbageCollected<WebCodecsLogger>,
   // Returns |close_auditor_| and starts |timer_| if needed.
   scoped_refptr<VideoFrameCloseAuditor> GetCloseAuditor();
 
-  void LogCropDeprecation();
-  void LogPlaneInitSrcDeprecation();
-
   void Trace(Visitor*) const override;
 
  private:
-  enum class Deprecation {
-    kCrop = 1 << 0,
-    kPlaneInitSrc = 1 << 1,
-  };
-
   void LogCloseErrors(TimerBase*);
-  void LogDeprecation(Deprecation, const String& message);
 
   base::TimeTicks last_auditor_access_;
   scoped_refptr<VideoFrameCloseAuditor> close_auditor_;
   HeapTaskRunnerTimer<WebCodecsLogger> timer_;
-
-  uint32_t logged_deprecations_ = 0;
 };
 
 }  // namespace blink

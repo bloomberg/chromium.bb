@@ -31,8 +31,6 @@ source_set("test_support") {
     "ios_chrome_scoped_testing_chrome_browser_state_manager.h",
     "ios_chrome_scoped_testing_local_state.cc",
     "ios_chrome_scoped_testing_local_state.h",
-    "ios_chrome_unit_test_suite.h",
-    "ios_chrome_unit_test_suite.mm",
     "root_view_controller_test.h",
     "root_view_controller_test.mm",
     "scoped_key_window.h",
@@ -51,7 +49,7 @@ source_set("test_support") {
     "//components/network_time",
     "//components/prefs",
     "//components/prefs:test_support",
-    "//components/safe_browsing/core:features",
+    "//components/safe_browsing/core/common",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:browser_state_impl",
@@ -109,10 +107,36 @@ source_set("block_cleanup_test") {
   ]
 }
 
+source_set("ios_chrome_unit_test_suite") {
+  testonly = true
+  sources = [
+    "ios_chrome_unit_test_suite.h",
+    "ios_chrome_unit_test_suite.mm",
+  ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//components/content_settings/core/common",
+    "//ios/chrome/browser:chrome_paths",
+    "//ios/chrome/browser:chrome_url_constants",
+    "//ios/chrome/browser/browser_state:browser_state_impl",
+    "//ios/chrome/test:test_support",
+    "//ios/components/webui:url_constants",
+    "//ios/public/provider/chrome/browser",
+    "//ios/web/public",
+    "//ios/web/public/test",
+    "//testing/gtest",
+    "//ui/base",
+    "//url",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("run_all_unittests") {
   testonly = true
   sources = [ "run_all_unittests.cc" ]
   deps = [
+    ":ios_chrome_unit_test_suite",
     ":test_support",
     "//base",
     "//base/test:test_support",
@@ -141,6 +165,9 @@ test("ios_chrome_perftests") {
     "//ios/chrome/app/resources:packed_resources",
     "//ios/chrome/browser/ui/main",
 
+    # Use the same provider as Chromium.app to have meaningful perf numbers.
+    ios_provider_target,
+
     # Add perf_tests target here.
     "//ios/chrome/browser/ui/ntp:perf_tests",
     "//ios/chrome/browser/ui/omnibox:perf_tests",
@@ -162,6 +189,9 @@ test("ios_chrome_unittests") {
     ":run_all_unittests",
     "//ios/chrome/app:tests_fake_hook",
     "//ios/chrome/app/resources:packed_resources",
+
+    # Use the test implementation of the provider API.
+    "//ios/public/provider/chrome/browser:test_providers",
 
     # Add unit_tests target here.
     "//ios/chrome/app:unit_tests",
@@ -236,10 +266,12 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/authentication/signin:unit_tests",
     "//ios/chrome/browser/ui/authentication/signin/add_account_signin:unit_tests",
     "//ios/chrome/browser/ui/authentication/signin/advanced_settings_signin:unit_tests",
+    "//ios/chrome/browser/ui/authentication/signin/trusted_vault_reauthentication:unit_tests",
     "//ios/chrome/browser/ui/authentication/signin/user_signin:unit_tests",
     "//ios/chrome/browser/ui/authentication/unified_consent:unit_tests",
     "//ios/chrome/browser/ui/authentication/unified_consent/identity_chooser:unit_tests",
     "//ios/chrome/browser/ui/autofill/cells:unit_tests",
+    "//ios/chrome/browser/ui/autofill/form_input_accessory:unit_tests",
     "//ios/chrome/browser/ui/autofill/manual_fill:unit_tests",
     "//ios/chrome/browser/ui/badges:unit_tests",
     "//ios/chrome/browser/ui/bookmarks:unit_tests",
@@ -262,6 +294,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/fancy_ui:unit_tests",
     "//ios/chrome/browser/ui/first_run:unit_tests",
     "//ios/chrome/browser/ui/first_run/signin:unit_tests",
+    "//ios/chrome/browser/ui/first_run/sync:unit_tests",
     "//ios/chrome/browser/ui/fullscreen:unit_tests",
     "//ios/chrome/browser/ui/gestures:unit_tests",
     "//ios/chrome/browser/ui/history:unit_tests",
@@ -269,7 +302,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/incognito_reauth:unit_tests",
     "//ios/chrome/browser/ui/infobars:unit_tests",
     "//ios/chrome/browser/ui/infobars/banners:unit_tests",
-    "//ios/chrome/browser/ui/infobars/modals:unit_tests",
+    "//ios/chrome/browser/ui/infobars/modals/autofill_address_profile:unit_tests",
     "//ios/chrome/browser/ui/keyboard:unit_tests",
     "//ios/chrome/browser/ui/link_to_text:unit_tests",
     "//ios/chrome/browser/ui/list_model:unit_tests",
@@ -351,6 +384,10 @@ test("ios_chrome_unittests") {
     "//ios/public/provider/chrome/browser/signin:unit_tests",
     "//ios/testing:http_server_bundle_data",
   ]
+
+  if (ios_enable_widget_kit_extension) {
+    deps += [ "//ios/chrome/browser/widget_kit:unit_tests" ]
+  }
 
   if (ios_enable_search_widget_extension) {
     deps += [ "//ios/chrome/search_widget_extension:unit_tests" ]

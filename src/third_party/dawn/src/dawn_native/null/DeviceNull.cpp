@@ -122,7 +122,7 @@ namespace dawn_native { namespace null {
         return AcquireRef(new QuerySet(this, descriptor));
     }
     ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
-        const RenderPipelineDescriptor2* descriptor) {
+        const RenderPipelineDescriptor* descriptor) {
         return AcquireRef(new RenderPipeline(this, descriptor));
     }
     ResultOrError<Ref<SamplerBase>> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
@@ -205,7 +205,7 @@ namespace dawn_native { namespace null {
 
     MaybeError Device::IncrementMemoryUsage(uint64_t bytes) {
         static_assert(kMaxMemoryUsage <= std::numeric_limits<size_t>::max(), "");
-        if (bytes > kMaxMemoryUsage || mMemoryUsage + bytes > kMaxMemoryUsage) {
+        if (bytes > kMaxMemoryUsage || mMemoryUsage > kMaxMemoryUsage - bytes) {
             return DAWN_OUT_OF_MEMORY_ERROR("Out of memory.");
         }
         mMemoryUsage += bytes;
@@ -369,7 +369,7 @@ namespace dawn_native { namespace null {
 
     MaybeError SwapChain::Initialize(NewSwapChainBase* previousSwapChain) {
         if (previousSwapChain != nullptr) {
-            // TODO(cwallez@chromium.org): figure out what should happen when surfaces are used by
+            // TODO(crbug.com/dawn/269): figure out what should happen when surfaces are used by
             // multiple backends one after the other. It probably needs to block until the backend
             // and GPU are completely finished with the previous swapchain.
             if (previousSwapChain->GetBackendType() != wgpu::BackendType::Null) {

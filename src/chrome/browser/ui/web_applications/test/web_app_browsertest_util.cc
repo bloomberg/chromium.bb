@@ -28,18 +28,17 @@
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/service_worker_registration_waiter.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -185,8 +184,7 @@ Browser* LaunchWebAppBrowser(Profile* profile, const AppId& app_id) {
 // Launches the app, waits for the app url to load.
 Browser* LaunchWebAppBrowserAndWait(Profile* profile, const AppId& app_id) {
   ui_test_utils::UrlLoadObserver url_observer(
-      WebAppProviderBase::GetProviderBase(profile)->registrar().GetAppLaunchUrl(
-          app_id),
+      WebAppProvider::Get(profile)->registrar().GetAppLaunchUrl(app_id),
       content::NotificationService::AllSources());
   Browser* const app_browser = LaunchWebAppBrowser(profile, app_id);
   url_observer.Wait();
@@ -203,8 +201,7 @@ Browser* LaunchBrowserForWebAppInTab(Profile* profile, const AppId& app_id) {
               apps::mojom::AppLaunchSource::kSourceTest));
   DCHECK(web_contents);
 
-  WebAppTabHelperBase* tab_helper =
-      WebAppTabHelperBase::FromWebContents(web_contents);
+  WebAppTabHelper* tab_helper = WebAppTabHelper::FromWebContents(web_contents);
   DCHECK(tab_helper);
   EXPECT_EQ(app_id, tab_helper->GetAppId());
 
@@ -305,6 +302,18 @@ AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser) {
   return model->IsEnabledAt(index) ? kEnabled : kDisabled;
 }
 
+Browser* FindWebAppBrowser(Profile* profile, const AppId& app_id) {
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->profile() != profile)
+      continue;
+
+    if (AppBrowserController::IsForWebApp(browser, app_id))
+      return browser;
+  }
+
+  return nullptr;
+}
+
 void CloseAndWait(Browser* browser) {
   BrowserRemovedWaiter waiter(browser);
   browser->window()->Close();
@@ -325,7 +334,7 @@ bool IsBrowserOpen(const Browser* test_browser) {
 }
 
 void UninstallWebApp(Profile* profile, const AppId& app_id) {
-  auto* provider = WebAppProviderBase::GetProviderBase(profile);
+  auto* provider = WebAppProvider::Get(profile);
   DCHECK(provider);
   DCHECK(provider->install_finalizer().CanUserUninstallWebApp(app_id));
   provider->install_finalizer().UninstallWebApp(
@@ -335,7 +344,7 @@ void UninstallWebApp(Profile* profile, const AppId& app_id) {
 void UninstallWebAppWithCallback(Profile* profile,
                                  const AppId& app_id,
                                  UninstallWebAppCallback callback) {
-  auto* provider = WebAppProviderBase::GetProviderBase(profile);
+  auto* provider = WebAppProvider::Get(profile);
   DCHECK(provider);
   DCHECK(provider->install_finalizer().CanUserUninstallWebApp(app_id));
   provider->install_finalizer().UninstallWebApp(
@@ -349,7 +358,7 @@ SkColor ReadAppIconPixel(Profile* profile,
                          int y) {
   SkColor result;
   base::RunLoop run_loop;
-  WebAppProviderBase::GetProviderBase(profile)->icon_manager().ReadIcons(
+  WebAppProvider::Get(profile)->icon_manager().ReadIcons(
       app_id, IconPurpose::ANY, {size},
       base::BindLambdaForTesting(
           [&](std::map<SquareSizePx, SkBitmap> icon_bitmaps) {

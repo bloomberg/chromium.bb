@@ -70,6 +70,8 @@ void TypecdClientImpl::ThunderboltDeviceConnectedReceived(
     return;
   }
 
+  VLOG(1) << "Typecd: Received device connected signal with "
+          << "DeviceConnectedType: " << device_connected_type;
   NotifyOnThunderboltDeviceConnected(
       device_connected_type ==
       static_cast<uint32_t>(typecd::DeviceConnectedType::kThunderboltOnly));
@@ -78,8 +80,11 @@ void TypecdClientImpl::ThunderboltDeviceConnectedReceived(
 void TypecdClientImpl::OnSignalConnected(const std::string& interface_name,
                                          const std::string& signal_name,
                                          bool success) {
-  if (!success)
+  if (!success) {
     LOG(ERROR) << "Typecd: Failed to connect to signal " << signal_name << ".";
+    return;
+  }
+  VLOG(1) << "Typecd: Successfully connected to signal " << signal_name << ".";
 }
 
 // TypecdClient

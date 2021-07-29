@@ -43,7 +43,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_performance_mark_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_performance_measure_options.h"
@@ -92,6 +91,10 @@ namespace blink {
 
 namespace {
 
+// LongTask API can be a source of many events. Filter on Performance object
+// level before reporting to UKM to smooth out recorded events over all pages.
+constexpr size_t kLongTaskUkmSampleInterval = 100;
+
 const SecurityOrigin* GetSecurityOrigin(ExecutionContext* context) {
   if (context)
     return context->GetSecurityOrigin();
@@ -127,32 +130,6 @@ void RecordLongTaskUkm(ExecutionContext* execution_context,
           stats.gc_full_incremental_wall_clock_duration_us)
       .SetDuration_V8_GC_Young(stats.gc_young_wall_clock_duration_us)
       .Record(execution_context->UkmRecorder());
-}
-
-#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-V8UnionPerformanceMeasureOptionsOrString*
-StringOrPerformanceMeasureOptionsToNewV8Union(
-    const StringOrPerformanceMeasureOptions& value) {
-  if (value.IsString()) {
-    return MakeGarbageCollected<V8UnionPerformanceMeasureOptionsOrString>(
-        value.GetAsString());
-  }
-  if (value.IsPerformanceMeasureOptions()) {
-    return MakeGarbageCollected<V8UnionPerformanceMeasureOptionsOrString>(
-        value.GetAsPerformanceMeasureOptions());
-  }
-  return nullptr;
-}
-#endif  // !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
-// TODO(crbug.com/1181288): Remove the old IDL union version.
-V8UnionDoubleOrString* StringOrDoubleToV8UnionDoubleOrString(
-    const StringOrDouble& value) {
-  if (value.IsString())
-    return MakeGarbageCollected<V8UnionDoubleOrString>(value.GetAsString());
-  if (value.IsDouble())
-    return MakeGarbageCollected<V8UnionDoubleOrString>(value.GetAsDouble());
-  return nullptr;
 }
 
 }  // namespace
@@ -772,9 +749,12 @@ void Performance::AddLongTaskTiming(base::TimeTicks start_time,
   } else {
     UseCounter::Count(execution_context, WebFeature::kLongTaskBufferFull);
   }
-  RecordLongTaskUkm(execution_context,
-                    base::TimeDelta::FromMillisecondsD(dom_high_res_start_time),
-                    end_time - start_time);
+  if ((++long_task_counter_ % kLongTaskUkmSampleInterval) == 0) {
+    RecordLongTaskUkm(
+        execution_context,
+        base::TimeDelta::FromMillisecondsD(dom_high_res_start_time),
+        end_time - start_time);
+  }
   NotifyObserversOfEntry(*entry);
 }
 
@@ -788,12 +768,12 @@ PerformanceMark* Performance::mark(ScriptState* script_state,
                                    const AtomicString& mark_name,
                                    PerformanceMarkOptions* mark_options,
                                    ExceptionState& exception_state) {
-  DEFINE_STATIC_LOCAL(const AtomicString, mark_fully_loaded,
-                      ("mark_fully_loaded"));
-  DEFINE_STATIC_LOCAL(const AtomicString, mark_fully_visible,
-                      ("mark_fully_visible"));
-  DEFINE_STATIC_LOCAL(const AtomicString, mark_interactive,
-                      ("mark_interactive"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const AtomicString, mark_fully_loaded,
+                                  ("mark_fully_loaded"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const AtomicString, mark_fully_visible,
+                                  ("mark_fully_visible"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const AtomicString, mark_interactive,
+                                  ("mark_interactive"));
   if (mark_options &&
       (mark_options->hasStartTime() || mark_options->hasDetail())) {
     UseCounter::Count(GetExecutionContext(), WebFeature::kUserTimingL3);
@@ -850,7 +830,6 @@ PerformanceMeasure* Performance::measure(ScriptState* script_state,
                          exception_state);
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 PerformanceMeasure* Performance::measure(
     ScriptState* script_state,
     const AtomicString& measure_name,
@@ -859,20 +838,7 @@ PerformanceMeasure* Performance::measure(
   return MeasureInternal(script_state, measure_name, start_or_options,
                          absl::nullopt, exception_state);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-PerformanceMeasure* Performance::measure(
-    ScriptState* script_state,
-    const AtomicString& measure_name,
-    const StringOrPerformanceMeasureOptions& start_or_options,
-    ExceptionState& exception_state) {
-  return MeasureInternal(
-      script_state, measure_name,
-      StringOrPerformanceMeasureOptionsToNewV8Union(start_or_options),
-      absl::nullopt, exception_state);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 PerformanceMeasure* Performance::measure(
     ScriptState* script_state,
     const AtomicString& measure_name,
@@ -882,19 +848,6 @@ PerformanceMeasure* Performance::measure(
   return MeasureInternal(script_state, measure_name, start_or_options,
                          absl::optional<String>(end), exception_state);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-PerformanceMeasure* Performance::measure(
-    ScriptState* script_state,
-    const AtomicString& measure_name,
-    const StringOrPerformanceMeasureOptions& start_or_options,
-    const String& end,
-    ExceptionState& exception_state) {
-  return MeasureInternal(
-      script_state, measure_name,
-      StringOrPerformanceMeasureOptionsToNewV8Union(start_or_options),
-      absl::optional<String>(end), exception_state);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 // |MeasureInternal| exists to unify the arguments from different
 // `performance.measure()` overloads into a consistent form, then delegate to
@@ -947,18 +900,12 @@ PerformanceMeasure* Performance::MeasureInternal(
       return nullptr;
     }
 
-    V8UnionDoubleOrString* start = nullptr;
-    if (options->hasStart()) {
-      start = StringOrDoubleToV8UnionDoubleOrString(options->start());
-    }
+    V8UnionDoubleOrString* start = options->getStartOr(nullptr);
     absl::optional<double> duration;
     if (options->hasDuration()) {
       duration = options->duration();
     }
-    V8UnionDoubleOrString* end = nullptr;
-    if (options->hasEnd()) {
-      end = StringOrDoubleToV8UnionDoubleOrString(options->end());
-    }
+    V8UnionDoubleOrString* end = options->getEndOr(nullptr);
 
     return MeasureWithDetail(
         script_state, measure_name, start, duration, end,
@@ -1002,34 +949,6 @@ PerformanceMeasure* Performance::MeasureWithDetail(
 
 void Performance::clearMeasures(const AtomicString& measure_name) {
   GetUserTiming().ClearMeasures(measure_name);
-}
-
-ScriptPromise Performance::profile(ScriptState* script_state,
-                                   const ProfilerInitOptions* options,
-                                   ExceptionState& exception_state) {
-  auto* execution_context = ExecutionContext::From(script_state);
-  DCHECK(execution_context);
-  DCHECK(
-      RuntimeEnabledFeatures::ExperimentalJSProfilerEnabled(execution_context));
-
-  bool can_profile = false;
-  if (LocalDOMWindow* window = LocalDOMWindow::From(script_state)) {
-    can_profile = ProfilerGroup::CanProfile(window, &exception_state,
-                                            ReportOptions::kReportOnFailure);
-  }
-
-  if (!can_profile)
-    return ScriptPromise();
-
-  auto* profiler_group = ProfilerGroup::From(script_state->GetIsolate());
-  DCHECK(profiler_group);
-
-  auto* profiler = profiler_group->CreateProfiler(
-      script_state, *options, time_origin_, exception_state);
-  if (exception_state.HadException())
-    return ScriptPromise();
-
-  return ScriptPromise::Cast(script_state, ToV8(profiler, script_state));
 }
 
 void Performance::RegisterPerformanceObserver(PerformanceObserver& observer) {

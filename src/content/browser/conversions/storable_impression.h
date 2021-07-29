@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_CONVERSIONS_STORABLE_IMPRESSION_H_
 
 #include <stdint.h>
-#include <string>
 
+#include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "net/base/schemeful_site.h"
@@ -33,47 +33,77 @@ class CONTENT_EXPORT StorableImpression {
     kMaxValue = kEvent,
   };
 
-  // If |impression_id| is not available, 0 should be provided.
-  StorableImpression(const std::string& impression_data,
-                     const url::Origin& impression_origin,
-                     const url::Origin& conversion_origin,
-                     const url::Origin& reporting_origin,
+  // Denotes the attribution logic for an impression.
+  enum class AttributionLogic {
+    // Never send a report for this impression even if it gets attributed.
+    kNever = 0,
+    // Attribute the impression truthfully.
+    kTruthfully = 1,
+    // The browser generates a fake conversion for the source, causing a report
+    // to always be sent for it.
+    kFalsely = 2,
+    kMaxValue = kFalsely,
+  };
+
+  StorableImpression(uint64_t impression_data,
+                     url::Origin impression_origin,
+                     url::Origin conversion_origin,
+                     url::Origin reporting_origin,
                      base::Time impression_time,
                      base::Time expiry_time,
                      SourceType source_type,
                      int64_t priority,
-                     const absl::optional<int64_t>& impression_id);
+                     absl::optional<int64_t> impression_id);
   StorableImpression(const StorableImpression& other);
-  StorableImpression& operator=(const StorableImpression& other) = delete;
+  StorableImpression& operator=(const StorableImpression& other);
+  StorableImpression(StorableImpression&& other);
+  StorableImpression& operator=(StorableImpression&& other);
   ~StorableImpression();
 
-  const std::string& impression_data() const { return impression_data_; }
+  uint64_t impression_data() const WARN_UNUSED_RESULT {
+    return impression_data_;
+  }
 
-  const url::Origin& impression_origin() const { return impression_origin_; }
+  const url::Origin& impression_origin() const WARN_UNUSED_RESULT {
+    return impression_origin_;
+  }
 
-  const url::Origin& conversion_origin() const { return conversion_origin_; }
+  const url::Origin& conversion_origin() const WARN_UNUSED_RESULT {
+    return conversion_origin_;
+  }
 
-  const url::Origin& reporting_origin() const { return reporting_origin_; }
+  const url::Origin& reporting_origin() const WARN_UNUSED_RESULT {
+    return reporting_origin_;
+  }
 
-  base::Time impression_time() const { return impression_time_; }
+  base::Time impression_time() const WARN_UNUSED_RESULT {
+    return impression_time_;
+  }
 
-  base::Time expiry_time() const { return expiry_time_; }
+  base::Time expiry_time() const WARN_UNUSED_RESULT { return expiry_time_; }
 
-  absl::optional<int64_t> impression_id() const { return impression_id_; }
+  absl::optional<int64_t> impression_id() const WARN_UNUSED_RESULT {
+    return impression_id_;
+  }
 
-  SourceType source_type() const { return source_type_; }
+  SourceType source_type() const WARN_UNUSED_RESULT { return source_type_; }
 
-  int64_t priority() const { return priority_; }
+  int64_t priority() const WARN_UNUSED_RESULT { return priority_; }
 
   // Returns the schemeful site of |conversion_origin|.
   //
   // TODO(johnidel): Consider storing the SchemefulSite as a separate member so
-  // that we avoid unnecessary copies of |conversion_origin|.
-  net::SchemefulSite ConversionDestination() const;
+  // that we avoid unnecessary copies of |conversion_origin_|.
+  net::SchemefulSite ConversionDestination() const WARN_UNUSED_RESULT;
+
+  // Returns the schemeful site of |impression_origin|.
+  //
+  // TODO(johnidel): Consider storing the SchemefulSite as a separate member so
+  // that we avoid unnecessary copies of |impression_origin_|.
+  net::SchemefulSite ImpressionSite() const WARN_UNUSED_RESULT;
 
  private:
-  // String representing a valid hexadecimal number.
-  std::string impression_data_;
+  uint64_t impression_data_;
   url::Origin impression_origin_;
   url::Origin conversion_origin_;
   url::Origin reporting_origin_;
@@ -85,8 +115,8 @@ class CONTENT_EXPORT StorableImpression {
   // If null, an ID has not been assigned yet.
   absl::optional<int64_t> impression_id_;
 
-  // When adding new members, the ImpressionsEqual() testing utility in
-  // conversion_test_utils.h should also be updated.
+  // When adding new members, the corresponding `operator==()` definition in
+  // `conversion_test_utils.h` should also be updated.
 };
 
 }  // namespace content

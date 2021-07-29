@@ -74,13 +74,12 @@ class CompositorFrameReporterTest : public testing::Test {
 
   std::unique_ptr<EventMetrics> CreateEventMetrics(
       ui::EventType type,
-      absl::optional<EventMetrics::ScrollUpdateType> scroll_update_type,
-      absl::optional<ui::ScrollInputType> scroll_input_type) {
+      absl::optional<EventMetrics::ScrollParams> scroll_params =
+          absl::nullopt) {
     const base::TimeTicks event_time = AdvanceNowByMs(3);
     AdvanceNowByMs(3);
     std::unique_ptr<EventMetrics> metrics = EventMetrics::CreateForTesting(
-        type, scroll_update_type, scroll_input_type, event_time,
-        &test_tick_clock_);
+        type, scroll_params, event_time, &test_tick_clock_);
     if (metrics) {
       AdvanceNowByMs(3);
       metrics->SetDispatchStageTimestamp(
@@ -277,9 +276,9 @@ TEST_F(CompositorFrameReporterTest,
   base::HistogramTester histogram_tester;
 
   std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
-      CreateEventMetrics(ui::ET_TOUCH_PRESSED, absl::nullopt, absl::nullopt),
-      CreateEventMetrics(ui::ET_TOUCH_MOVED, absl::nullopt, absl::nullopt),
-      CreateEventMetrics(ui::ET_TOUCH_MOVED, absl::nullopt, absl::nullopt),
+      CreateEventMetrics(ui::ET_TOUCH_PRESSED),
+      CreateEventMetrics(ui::ET_TOUCH_MOVED),
+      CreateEventMetrics(ui::ET_TOUCH_MOVED),
   };
   EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
   EventMetrics::List events_metrics(
@@ -329,17 +328,23 @@ TEST_F(CompositorFrameReporterTest,
     const base::HistogramBase::Sample latency_ms;
   } expected_latencies[] = {
       {"EventLatency.TouchPressed.TotalLatency",
-       (presentation_time - event_times[0]).InMicroseconds()},
+       static_cast<base::HistogramBase::Sample>(
+           (presentation_time - event_times[0]).InMicroseconds())},
       {"EventLatency.TouchMoved.TotalLatency",
-       (presentation_time - event_times[1]).InMicroseconds()},
+       static_cast<base::HistogramBase::Sample>(
+           (presentation_time - event_times[1]).InMicroseconds())},
       {"EventLatency.TouchMoved.TotalLatency",
-       (presentation_time - event_times[2]).InMicroseconds()},
+       static_cast<base::HistogramBase::Sample>(
+           (presentation_time - event_times[2]).InMicroseconds())},
       {"EventLatency.TotalLatency",
-       (presentation_time - event_times[0]).InMicroseconds()},
+       static_cast<base::HistogramBase::Sample>(
+           (presentation_time - event_times[0]).InMicroseconds())},
       {"EventLatency.TotalLatency",
-       (presentation_time - event_times[1]).InMicroseconds()},
+       static_cast<base::HistogramBase::Sample>(
+           (presentation_time - event_times[1]).InMicroseconds())},
       {"EventLatency.TotalLatency",
-       (presentation_time - event_times[2]).InMicroseconds()},
+       static_cast<base::HistogramBase::Sample>(
+           (presentation_time - event_times[2]).InMicroseconds())},
   };
   for (const auto& expected_latency : expected_latencies) {
     histogram_tester.ExpectBucketCount(expected_latency.name,
@@ -353,15 +358,24 @@ TEST_F(CompositorFrameReporterTest,
        EventLatencyScrollTotalForPresentedFrameReported) {
   base::HistogramTester histogram_tester;
 
+  const bool kIsInertial = true;
+  const bool kIsNotInertial = false;
   std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
-      CreateEventMetrics(ui::ET_GESTURE_SCROLL_BEGIN, absl::nullopt,
-                         ui::ScrollInputType::kWheel),
+      CreateEventMetrics(ui::ET_GESTURE_SCROLL_BEGIN,
+                         EventMetrics::ScrollParams(ui::ScrollInputType::kWheel,
+                                                    kIsNotInertial)),
       CreateEventMetrics(ui::ET_GESTURE_SCROLL_UPDATE,
-                         EventMetrics::ScrollUpdateType::kStarted,
-                         ui::ScrollInputType::kWheel),
+                         EventMetrics::ScrollParams(
+                             ui::ScrollInputType::kWheel, kIsNotInertial,
+                             EventMetrics::ScrollUpdateType::kStarted)),
       CreateEventMetrics(ui::ET_GESTURE_SCROLL_UPDATE,
-                         EventMetrics::ScrollUpdateType::kContinued,
-                         ui::ScrollInputType::kWheel),
+                         EventMetrics::ScrollParams(
+                             ui::ScrollInputType::kWheel, kIsNotInertial,
+                             EventMetrics::ScrollUpdateType::kContinued)),
+      CreateEventMetrics(ui::ET_GESTURE_SCROLL_UPDATE,
+                         EventMetrics::ScrollParams(
+                             ui::ScrollInputType::kWheel, kIsInertial,
+                             EventMetrics::ScrollUpdateType::kContinued)),
   };
   EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
   EventMetrics::List events_metrics(
@@ -406,7 +420,10 @@ TEST_F(CompositorFrameReporterTest,
        1},
       {"EventLatency.GestureScrollUpdate.Wheel.TotalLatency", 1},
       {"EventLatency.GestureScrollUpdate.Wheel.TotalLatencyToSwapBegin", 1},
-      {"EventLatency.TotalLatency", 3},
+      {"EventLatency.InertialGestureScrollUpdate.Wheel.TotalLatency", 1},
+      {"EventLatency.InertialGestureScrollUpdate.Wheel.TotalLatencyToSwapBegin",
+       1},
+      {"EventLatency.TotalLatency", 4},
   };
   for (const auto& expected_count : expected_counts) {
     histogram_tester.ExpectTotalCount(expected_count.name,
@@ -421,17 +438,29 @@ TEST_F(CompositorFrameReporterTest,
     const base::HistogramBase::Sample latency_ms;
   } expected_latencies[] = {
       {"EventLatency.GestureScrollBegin.Wheel.TotalLatency",
-       (presentation_time - event_times[0]).InMicroseconds()},
+       static_cast<base::HistogramBase::Sample>(
+           (presentation_time - event_times[0]).InMicroseconds())},
       {"EventLatency.GestureScrollBegin.Wheel.TotalLatencyToSwapBegin",
-       (swap_begin_time - event_times[0]).InMicroseconds()},
+       static_cast<base::HistogramBase::Sample>(
+           (swap_begin_time - event_times[0]).InMicroseconds())},
       {"EventLatency.FirstGestureScrollUpdate.Wheel.TotalLatency",
-       (presentation_time - event_times[1]).InMicroseconds()},
+       static_cast<base::HistogramBase::Sample>(
+           (presentation_time - event_times[1]).InMicroseconds())},
       {"EventLatency.FirstGestureScrollUpdate.Wheel.TotalLatencyToSwapBegin",
-       (swap_begin_time - event_times[1]).InMicroseconds()},
+       static_cast<base::HistogramBase::Sample>(
+           (swap_begin_time - event_times[1]).InMicroseconds())},
       {"EventLatency.GestureScrollUpdate.Wheel.TotalLatency",
-       (presentation_time - event_times[2]).InMicroseconds()},
+       static_cast<base::HistogramBase::Sample>(
+           (presentation_time - event_times[2]).InMicroseconds())},
       {"EventLatency.GestureScrollUpdate.Wheel.TotalLatencyToSwapBegin",
-       (swap_begin_time - event_times[2]).InMicroseconds()},
+       static_cast<base::HistogramBase::Sample>(
+           (swap_begin_time - event_times[2]).InMicroseconds())},
+      {"EventLatency.InertialGestureScrollUpdate.Wheel.TotalLatency",
+       static_cast<base::HistogramBase::Sample>(
+           (presentation_time - event_times[3]).InMicroseconds())},
+      {"EventLatency.InertialGestureScrollUpdate.Wheel.TotalLatencyToSwapBegin",
+       static_cast<base::HistogramBase::Sample>(
+           (swap_begin_time - event_times[3]).InMicroseconds())},
   };
   for (const auto& expected_latency : expected_latencies) {
     histogram_tester.ExpectBucketCount(expected_latency.name,
@@ -446,9 +475,9 @@ TEST_F(CompositorFrameReporterTest,
   base::HistogramTester histogram_tester;
 
   std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
-      CreateEventMetrics(ui::ET_TOUCH_PRESSED, absl::nullopt, absl::nullopt),
-      CreateEventMetrics(ui::ET_TOUCH_MOVED, absl::nullopt, absl::nullopt),
-      CreateEventMetrics(ui::ET_TOUCH_MOVED, absl::nullopt, absl::nullopt),
+      CreateEventMetrics(ui::ET_TOUCH_PRESSED),
+      CreateEventMetrics(ui::ET_TOUCH_MOVED),
+      CreateEventMetrics(ui::ET_TOUCH_MOVED),
   };
   EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
   EventMetrics::List events_metrics(

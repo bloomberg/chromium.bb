@@ -105,13 +105,34 @@ _vulkan_backend_sources = [
 
 if (angle_enable_cl) {
   _vulkan_backend_sources += [
+    "CLCommandQueueVk.cpp",
+    "CLCommandQueueVk.h",
     "CLContextVk.cpp",
     "CLContextVk.h",
     "CLDeviceVk.cpp",
     "CLDeviceVk.h",
+    "CLEventVk.cpp",
+    "CLEventVk.h",
+    "CLKernelVk.cpp",
+    "CLKernelVk.h",
+    "CLMemoryVk.cpp",
+    "CLMemoryVk.h",
     "CLPlatformVk.cpp",
     "CLPlatformVk.h",
+    "CLProgramVk.cpp",
+    "CLProgramVk.h",
+    "CLSamplerVk.cpp",
+    "CLSamplerVk.h",
     "cl_types.h",
+  ]
+}
+
+if (angle_use_vulkan_null_display) {
+  _vulkan_backend_sources += [
+    "null/DisplayVkNull.cpp",
+    "null/DisplayVkNull.h",
+    "null/WindowSurfaceVkNull.cpp",
+    "null/WindowSurfaceVkNull.h",
   ]
 }
 

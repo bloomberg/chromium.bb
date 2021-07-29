@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -26,9 +27,10 @@
 #include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
 namespace crosapi {
 namespace mojom {
+class DriveIntegrationService;
 class LocalPrinter;
 }
 }  // namespace crosapi
@@ -115,7 +117,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler {
   // Fires the 'manipulate-settings-for-test' WebUI event with |settings|.
   void SendManipulateSettingsForTest(const base::DictionaryValue& settings);
 
-  virtual PrinterHandler* GetPrinterHandler(PrinterType printer_type);
+  virtual PrinterHandler* GetPrinterHandler(mojom::PrinterType printer_type);
 
  protected:
   // Protected so unit tests can override.
@@ -154,6 +156,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler {
   // Checks policy preferences for a deny list of printer types and initializes
   // the set that stores them.
   void ReadPrinterTypeDenyListFromPrefs();
+
+  void OnPrinterTypeDenyListReady(
+      const std::vector<mojom::PrinterType>& deny_list_types);
 
   // Whether the the handler should be receiving messages from the renderer to
   // forward to the Print Preview JS in response to preview request with id
@@ -225,6 +230,13 @@ class PrintPreviewHandler : public content::WebUIMessageHandler {
                            base::Value policies,
                            const std::string& default_printer);
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Sets |kIsDriveMounted| for Lacros chrome then returns the initial settings.
+  void OnDrivePathReady(base::Value initial_settings,
+                        const std::string& callback_id,
+                        const base::FilePath& drive_path);
+#endif
+
   // Sends the printer capabilities to the Web UI. |settings_info| contains
   // printer capabilities information. If |settings_info| is empty, sends
   // error notification to the Web UI instead.
@@ -254,7 +266,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler {
   // |printer_type|: The type of printers that were added.
   // |printers|: A non-empty list containing information about the printer or
   //     printers that have been added.
-  void OnAddedPrinters(PrinterType printer_type,
+  void OnAddedPrinters(mojom::PrinterType printer_type,
                        const base::ListValue& printers);
 
   // Called when printer search is done for some destination type.
@@ -304,18 +316,29 @@ class PrintPreviewHandler : public content::WebUIMessageHandler {
   base::flat_set<int> preview_failures_;
 
   // Set of printer types on the deny list.
-  base::flat_set<PrinterType> printer_type_deny_list_;
+  base::flat_set<mojom::PrinterType> printer_type_deny_list_;
 
   // Used to transmit mojo interface method calls to the associated receiver.
   mojo::AssociatedRemote<mojom::PrintRenderFrame> print_render_frame_;
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  std::unique_ptr<crosapi::mojom::LocalPrinter> local_printer_;
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
   // Used to transmit mojo interface method calls to ash chrome.
   // Null if the interface is unavailable.
   // Note that this is not propagated to LocalPrinterHandlerLacros.
   // The pointer is constant - if ash crashes and the mojo connection is lost,
   // lacros will automatically be restarted.
   crosapi::mojom::LocalPrinter* local_printer_ = nullptr;
+
+  // Used to transmit mojo interface method calls to ash chrome.
+  // Null if the interface is unavailable.
+  // The pointer is constant - if ash crashes and the mojo connection is lost,
+  // lacros will automatically be restarted.
+  crosapi::mojom::DriveIntegrationService* drive_integration_service_ = nullptr;
+
+  // Version number of the LocalPrinter mojo service.
+  int local_printer_version_ = 0;
 #endif
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_{this};

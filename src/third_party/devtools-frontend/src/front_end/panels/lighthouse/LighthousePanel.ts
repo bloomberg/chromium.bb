@@ -80,8 +80,8 @@ export class LighthousePanel extends UI.Panel.Panel {
 
   private constructor() {
     super('lighthouse');
-    this.registerRequiredCSS('third_party/lighthouse/report-assets/report.css', {enableLegacyPatching: false});
-    this.registerRequiredCSS('panels/lighthouse/lighthousePanel.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('third_party/lighthouse/report-assets/report.css');
+    this.registerRequiredCSS('panels/lighthouse/lighthousePanel.css');
 
     this._protocolService = new ProtocolService();
     this._controller = new LighthouseController(this._protocolService);
@@ -296,7 +296,7 @@ export class LighthousePanel extends UI.Panel.Panel {
   }
 
   async _waitForMainTargetLoad(): Promise<void> {
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+    const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
     if (!mainTarget) {
       return;
     }
@@ -304,7 +304,7 @@ export class LighthousePanel extends UI.Panel.Panel {
     if (!resourceTreeModel) {
       return;
     }
-    return resourceTreeModel.once(SDK.ResourceTreeModel.Events.Load);
+    await resourceTreeModel.once(SDK.ResourceTreeModel.Events.Load);
   }
 
   _buildReportUI(lighthouseResult: ReportRenderer.ReportJSON, artifacts?: ReportRenderer.RunnerResultArtifacts): void {
@@ -449,7 +449,7 @@ export class LighthousePanel extends UI.Panel.Panel {
 
     Emulation.InspectedPagePlaceholder.InspectedPagePlaceholder.instance().update(true);
 
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+    const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
     if (!mainTarget) {
       return;
     }

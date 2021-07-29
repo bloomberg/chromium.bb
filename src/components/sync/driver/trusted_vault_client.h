@@ -11,7 +11,6 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "base/observer_list_types.h"
 
 struct CoreAccountInfo;
@@ -59,9 +58,9 @@ class TrustedVaultClient {
   // second FetchKeys() attempt is worth). During the execution, before |cb| is
   // invoked, the behavior is unspecified if FetchKeys() is invoked, that is,
   // FetchKeys() may or may not treat existing keys as stale (only guaranteed
-  // upon completion of MarkKeysAsStale()).
-  virtual void MarkKeysAsStale(const CoreAccountInfo& account_info,
-                               base::OnceCallback<void(bool)> cb) = 0;
+  // upon completion of MarkLocalKeysAsStale()).
+  virtual void MarkLocalKeysAsStale(const CoreAccountInfo& account_info,
+                                    base::OnceCallback<void(bool)> cb) = 0;
 
   // Allows implementations to store encryption keys fetched by other means such
   // as Web interactions. Implementations are free to completely ignore these
@@ -70,11 +69,6 @@ class TrustedVaultClient {
   virtual void StoreKeys(const std::string& gaia_id,
                          const std::vector<std::vector<uint8_t>>& keys,
                          int last_key_version) = 0;
-
-  // Allows implementation to remove all previously stored keys.
-  // Implementations must erase all keys saved during StoreKeys() call. Used
-  // when accounts cookies deleted by the user action.
-  virtual void RemoveAllStoredKeys() = 0;
 
   // Returns whether recoverability of the keys is degraded and user action is
   // required to add a new method. This may be called frequently and

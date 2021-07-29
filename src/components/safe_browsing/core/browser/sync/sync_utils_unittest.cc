@@ -4,7 +4,7 @@
 
 #include "components/safe_browsing/core/browser/sync/sync_utils.h"
 
-#include "components/safe_browsing/core/common/test_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "testing/platform_test.h"
@@ -13,9 +13,9 @@ namespace safe_browsing {
 
 class SyncUtilsTest : public PlatformTest {
  public:
-  SyncUtilsTest() : task_environment_(CreateTestTaskEnvironment()) {}
+  SyncUtilsTest() {}
 
-  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(SyncUtilsTest, AreSigninAndSyncSetUpForSafeBrowsingTokenFetches_Sync) {
@@ -98,7 +98,8 @@ TEST_F(SyncUtilsTest,
   // to perform URL lookups with tokens (even though the
   // kRealTimeLookupEnabledWithToken feature and sync/history sync are
   // disabled).
-  identity_test_env->MakeUnconsentedPrimaryAccountAvailable("test@example.com");
+  identity_test_env->MakePrimaryAccountAvailable("test@example.com",
+                                                 signin::ConsentLevel::kSignin);
   EXPECT_TRUE(SyncUtils::AreSigninAndSyncSetUpForSafeBrowsingTokenFetches(
       &sync_service, identity_manager,
       /* user_has_enabled_enhanced_protection=*/true));

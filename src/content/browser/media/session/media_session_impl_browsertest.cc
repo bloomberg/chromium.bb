@@ -31,6 +31,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_content_type.h"
 #include "net/base/filename_util.h"
@@ -90,6 +91,8 @@ class MockAudioFocusDelegate : public content::AudioFocusDelegate {
       const media_session::mojom::MediaSessionInfoPtr& session_info) override {}
 
   MOCK_CONST_METHOD0(request_id, const base::UnguessableToken&());
+
+  MOCK_METHOD(void, ReleaseRequestId, (), (override));
 
   void ResolveRequest(bool result) {
     if (!async_mode_)
@@ -2735,7 +2738,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionFaviconBrowserTest, StartupInitalization) {
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
                        PositionStateRouteWithTwoPlayers) {
   media_session::MediaPosition expected_position(
-      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+      /*playback_rate=*/0.0, /*duration=*/base::TimeDelta::FromSeconds(10),
+      /*position=*/base::TimeDelta(), /*end_of_media=*/false);
 
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
   int player_id = player_observer->StartNewPlayer();
@@ -2770,7 +2774,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
                        PositionStateWithOneShotPlayer) {
   media_session::MediaPosition expected_position(
-      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+      /*playback_rate=*/0.0, /*duration=*/base::TimeDelta::FromSeconds(10),
+      /*position=*/base::TimeDelta(), /*end_of_media=*/false);
 
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
   int player_id = player_observer->StartNewPlayer();
@@ -2785,7 +2790,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
                        PositionStateWithPepperPlayer) {
   media_session::MediaPosition expected_position(
-      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+      /*playback_rate=*/0.0, /*duration=*/base::TimeDelta::FromSeconds(10),
+      /*position=*/base::TimeDelta(), /*end_of_media=*/false);
 
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
   int player_id = player_observer->StartNewPlayer();
@@ -2800,7 +2806,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
                        PositionStateRouteWithTwoPlayers_OneShot) {
   media_session::MediaPosition expected_position(
-      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+      /*playback_rate=*/0.0, /*duration=*/base::TimeDelta::FromSeconds(10),
+      /*position=*/base::TimeDelta(), /*end_of_media=*/false);
 
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
   int player_id = player_observer->StartNewPlayer();
@@ -2825,7 +2832,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
                        PositionStateRouteWithTwoPlayers_Pepper) {
   media_session::MediaPosition expected_position(
-      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+      /*playback_rate=*/0.0, /*duration=*/base::TimeDelta::FromSeconds(10),
+      /*position=*/base::TimeDelta(), /*end_of_media=*/false);
 
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
   int player_id = player_observer->StartNewPlayer();
@@ -2875,8 +2883,9 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
 
     ASSERT_TRUE(ExecJs(main_frame, "document.getElementById('video').play()"));
 
-    observer.WaitForExpectedPosition(
-        media_session::MediaPosition(1.0, duration, base::TimeDelta()));
+    observer.WaitForExpectedPosition(media_session::MediaPosition(
+        /*playback_rate=*/1.0, duration,
+        /*position=*/base::TimeDelta(), /*end_of_media=*/false));
   }
 
   {
@@ -2889,7 +2898,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     // We might only learn about the rate going back to 1.0 when the media time
     // has already progressed a bit.
     observer.WaitForExpectedPositionAtLeast(media_session::MediaPosition(
-        1.0, duration, base::TimeDelta::FromSeconds(1)));
+        /*playback_rate=*/1.0, duration,
+        /*position=*/base::TimeDelta::FromSeconds(1), /*end_of_media=*/false));
   }
 
   base::TimeDelta paused_position;
@@ -2902,7 +2912,9 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     // Media time may have progressed since the time we seeked to 1s.
     paused_position =
         observer.WaitForExpectedPositionAtLeast(media_session::MediaPosition(
-            0.0, duration, base::TimeDelta::FromSeconds(1)));
+            /*playback_rate=*/0.0, duration,
+            /*position=*/base::TimeDelta::FromSeconds(1),
+            /*end_of_media=*/false));
   }
 
   base::TimeDelta resumed_position;
@@ -2914,8 +2926,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
 
     // We might only learn about the rate going back to 1.0 when the media time
     // has already progressed a bit.
-    resumed_position = observer.WaitForExpectedPositionAtLeast(
-        media_session::MediaPosition(1.0, duration, paused_position));
+    resumed_position =
+        observer.WaitForExpectedPositionAtLeast(media_session::MediaPosition(
+            /*playback_rate=*/1.0, duration, paused_position,
+            /*end_of_media=*/false));
   }
 
   {
@@ -2926,8 +2940,9 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
                        "document.getElementById('video').playbackRate = 2"));
 
     // Media time may have progressed since the time we resumed playback.
-    observer.WaitForExpectedPositionAtLeast(
-        media_session::MediaPosition(2.0, duration, resumed_position));
+    observer.WaitForExpectedPositionAtLeast(media_session::MediaPosition(
+        /*playback_rate=*/2.0, duration, resumed_position,
+        /*end_of_media=*/false));
   }
 
   {
@@ -3028,6 +3043,86 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, CacheFaviconImages) {
 
     EXPECT_EQ(3, get_favicon_calls());
   }
+}
+
+class MediaSessionImplPrerenderingBrowserTest
+    : public MediaSessionImplBrowserTest {
+ public:
+  MediaSessionImplPrerenderingBrowserTest(
+      const MediaSessionImplPrerenderingBrowserTest&) = delete;
+  MediaSessionImplPrerenderingBrowserTest(
+      MediaSessionImplPrerenderingBrowserTest&&) = delete;
+
+ protected:
+  MediaSessionImplPrerenderingBrowserTest()
+      : prerender_helper_(base::BindRepeating(
+            &MediaSessionImplPrerenderingBrowserTest::web_contents,
+            base::Unretained(this))) {}
+
+  WebContents* web_contents() { return shell()->web_contents(); }
+
+ protected:
+  test::PrerenderTestHelper prerender_helper_;
+};
+
+// Tests the audio device persists a prerender activation on same origin and
+// that it is reset after a navigation cross-origin.
+IN_PROC_BROWSER_TEST_F(MediaSessionImplPrerenderingBrowserTest,
+                       AudioDeviceSettingPersists) {
+  // When an audio output device has been set: in addition to players switching
+  // to that audio device, players created later on the same origin in the same
+  // session should also use that device.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
+  int player_1 = player_observer->StartNewPlayer();
+  AddPlayer(player_observer.get(), player_1,
+            media::MediaContentType::Persistent);
+  UISetAudioSink("speaker1");
+  EXPECT_EQ(player_observer->GetAudioOutputSinkId(player_1), "speaker1");
+
+  // When a second player has been added on the same page, it should use the
+  // audio device previously set.
+  int player_2 = player_observer->StartNewPlayer();
+  AddPlayer(player_observer.get(), player_2,
+            media::MediaContentType::Persistent);
+  EXPECT_EQ(player_observer->GetAudioOutputSinkId(player_2), "speaker1");
+
+  // Clear the players.
+  RemovePlayers(player_observer.get());
+
+  // Prerender the next page.
+  auto prerender_url_a =
+      embedded_test_server()->GetURL("a.com", "/title2.html");
+  auto prerender_host_a = prerender_helper_.AddPrerender(prerender_url_a);
+  content::test::PrerenderHostObserver host_observer_a(*web_contents(),
+                                                       prerender_host_a);
+  // Navigate to a new page on the same origin.
+  test::PrerenderTestHelper::NavigatePrimaryPage(*web_contents(),
+                                                 prerender_url_a);
+  EXPECT_TRUE(host_observer_a.was_activated());
+  player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
+
+  // After navigating to another page on the same origin, newly created players
+  // should use the previously set device.
+  player_1 = player_observer->StartNewPlayer();
+  AddPlayer(player_observer.get(), player_1,
+            media::MediaContentType::Persistent);
+  EXPECT_EQ(player_observer->GetAudioOutputSinkId(player_1), "speaker1");
+
+  // Clear the players and navigate to a new page on a different origin
+  RemovePlayers(player_observer.get());
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
+  player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
+
+  // After navigating to another page on a different origin, newly created
+  // players should not use the previously set device.
+  player_1 = player_observer->StartNewPlayer();
+  AddPlayer(player_observer.get(), player_1,
+            media::MediaContentType::Persistent);
+  EXPECT_NE(player_observer->GetAudioOutputSinkId(player_1), "speaker1");
 }
 
 }  // namespace content

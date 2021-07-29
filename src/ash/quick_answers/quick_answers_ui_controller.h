@@ -22,6 +22,7 @@ class QuickAnswersControllerImpl;
 
 namespace quick_answers {
 class UserNoticeView;
+class UserConsentView;
 }  // namespace quick_answers
 
 // A controller to show/hide and handle interactions for quick
@@ -37,7 +38,8 @@ class ASH_EXPORT QuickAnswersUiController {
   // Constructs/resets |quick_answers_view_|.
   void CreateQuickAnswersView(const gfx::Rect& anchor_bounds,
                               const std::string& title,
-                              const std::string& query);
+                              const std::string& query,
+                              bool is_internal);
 
   // Returns true if there was a QuickAnswersView to close.
   bool CloseQuickAnswersView();
@@ -72,9 +74,24 @@ class ASH_EXPORT QuickAnswersUiController {
   // Invoked when user clicks the settings button on the notice view.
   void OnManageSettingsButtonPressed();
 
+  // Creates a view for asking the user for consent about the Quick Answers
+  // feature vertically aligned to the anchor.
+  void CreateUserConsentView(const gfx::Rect& anchor_bounds,
+                             const std::u16string& intent_type,
+                             const std::u16string& intent_text);
+
+  // Closes the user consent view.
+  void CloseUserConsentView();
+
   // Used by the controller to check if the user notice view is currently
   // showing instead of QuickAnswers.
   bool is_showing_user_notice_view() const {
+    return user_notice_view_ != nullptr;
+  }
+
+  // Used by the controller to check if the user consent view is currently
+  // showing instead of QuickAnswers.
+  bool is_showing_user_consent_view() const {
     return user_notice_view_ != nullptr;
   }
 
@@ -86,6 +103,16 @@ class ASH_EXPORT QuickAnswersUiController {
 
   // Invoked when user clicks the Dogfood button on Quick-Answers related views.
   void OnDogfoodButtonPressed();
+
+  // Invoked when user clicks the settings button on Quick-Answers related
+  // views.
+  void OnSettingsButtonPressed();
+
+  // Invoked when user clicks the report query button on Quick Answers view.
+  void OnReportQueryButtonPressed();
+
+  // Handle consent result from user consent view.
+  void OnUserConsentResult(bool consented);
 
   const QuickAnswersView* quick_answers_view_for_testing() const {
     return quick_answers_view_;
@@ -100,6 +127,7 @@ class ASH_EXPORT QuickAnswersUiController {
   // Owned by view hierarchy.
   QuickAnswersView* quick_answers_view_ = nullptr;
   quick_answers::UserNoticeView* user_notice_view_ = nullptr;
+  quick_answers::UserConsentView* user_consent_view_ = nullptr;
   std::string query_;
 };
 

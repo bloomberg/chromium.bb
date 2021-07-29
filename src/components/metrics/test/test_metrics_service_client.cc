@@ -5,8 +5,10 @@
 #include "components/metrics/test/test_metrics_service_client.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
@@ -15,14 +17,8 @@ namespace metrics {
 // static
 const char TestMetricsServiceClient::kBrandForTesting[] = "brand_for_testing";
 
-TestMetricsServiceClient::TestMetricsServiceClient()
-    : version_string_("5.0.322.0-64-devel"),
-      product_(ChromeUserMetricsExtension::CHROME),
-      reporting_is_managed_(false),
-      enable_default_(EnableMetricsDefault::DEFAULT_UNKNOWN),
-      storage_limits_(MetricsServiceClient::GetStorageLimits()) {}
-
-TestMetricsServiceClient::~TestMetricsServiceClient() {}
+TestMetricsServiceClient::TestMetricsServiceClient() = default;
+TestMetricsServiceClient::~TestMetricsServiceClient() = default;
 
 metrics::MetricsService* TestMetricsServiceClient::GetMetricsService() {
   return nullptr;
@@ -31,6 +27,10 @@ metrics::MetricsService* TestMetricsServiceClient::GetMetricsService() {
 void TestMetricsServiceClient::SetMetricsClientId(
     const std::string& client_id) {
   client_id_ = client_id;
+}
+
+bool TestMetricsServiceClient::ShouldUploadMetricsForUserId(uint64_t user_id) {
+  return base::Contains(allowed_user_ids_, user_id);
 }
 
 int32_t TestMetricsServiceClient::GetProduct() {
@@ -51,7 +51,7 @@ SystemProfileProto::Channel TestMetricsServiceClient::GetChannel() {
 }
 
 bool TestMetricsServiceClient::IsExtendedStableChannel() {
-  return false;
+  return is_extended_stable_channel_;
 }
 
 std::string TestMetricsServiceClient::GetVersionString() {
@@ -86,7 +86,7 @@ TestMetricsServiceClient::GetMetricsReportingDefaultState() {
   return enable_default_;
 }
 
-std::string TestMetricsServiceClient::GetAppPackageName() {
+std::string TestMetricsServiceClient::GetAppPackageNameIfLoggable() {
   return "test app";
 }
 
@@ -97,6 +97,14 @@ bool TestMetricsServiceClient::ShouldResetClientIdsOnClonedInstall() {
 MetricsLogStore::StorageLimits TestMetricsServiceClient::GetStorageLimits()
     const {
   return storage_limits_;
+}
+
+void TestMetricsServiceClient::AllowMetricUploadForUserId(uint64_t user_id) {
+  allowed_user_ids_.insert(user_id);
+}
+
+void TestMetricsServiceClient::RemoveMetricUploadForUserId(uint64_t user_id) {
+  allowed_user_ids_.erase(user_id);
 }
 
 }  // namespace metrics

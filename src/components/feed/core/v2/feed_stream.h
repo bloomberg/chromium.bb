@@ -16,24 +16,26 @@
 #include "base/task_runner_util.h"
 #include "base/version.h"
 #include "components/feed/core/proto/v2/ui.pb.h"
+#include "components/feed/core/proto/v2/wire/reliability_logging_enums.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
 #include "components/feed/core/v2/enums.h"
-#include "components/feed/core/v2/notice_card_tracker.h"
+#include "components/feed/core/v2/launch_reliability_logger.h"
 #include "components/feed/core/v2/persistent_key_value_store_impl.h"
 #include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/core/v2/request_throttler.h"
 #include "components/feed/core/v2/scheduling.h"
+#include "components/feed/core/v2/stream/notice_card_tracker.h"
 #include "components/feed/core/v2/stream/upload_criteria.h"
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/tasks/load_more_task.h"
 #include "components/feed/core/v2/tasks/load_stream_task.h"
 #include "components/feed/core/v2/tasks/wait_for_store_initialize_task.h"
 #include "components/feed/core/v2/web_feed_subscription_coordinator.h"
-#include "components/feed/core/v2/web_feed_subscriptions/web_feed_index.h"
 #include "components/feed/core/v2/wire_response_translator.h"
 #include "components/offline_pages/task/task_queue.h"
 #include "components/prefs/pref_member.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefService;
 
@@ -105,9 +107,11 @@ class FeedStream : public FeedApi,
       const GURL& url,
       base::OnceCallback<void(NetworkResponse)> callback) override;
   void CancelImageFetch(ImageFetchId id) override;
-  PersistentKeyValueStoreImpl* GetPersistentKeyValueStore() override;
+  PersistentKeyValueStoreImpl& GetPersistentKeyValueStore() override;
   void LoadMore(const FeedStreamSurface& surface,
                 base::OnceCallback<void(bool)> callback) override;
+  void ManualRefresh(const FeedStreamSurface& surface,
+                     base::OnceCallback<void(bool)> callback) override;
   void ExecuteOperations(
       const StreamType& stream_type,
       std::vector<feedstore::DataOperation> operations) override;
@@ -147,6 +151,7 @@ class FeedStream : public FeedApi,
   void ReportStreamScrollStart() override;
   void ReportOtherUserAction(const StreamType& stream_type,
                              FeedUserActionType action_type) override;
+  base::Time GetLastFetchTime(const StreamType& stream_type) override;
 
   // offline_pages::TaskQueue::Delegate.
   void OnTaskQueueIsIdle() override;
@@ -184,9 +189,9 @@ class FeedStream : public FeedApi,
       bool upload_now,
       base::OnceCallback<void(UploadActionsTask::Result)> callback);
 
-  FeedNetwork* GetNetwork() { return feed_network_; }
-  FeedStore* GetStore() { return store_; }
-  RequestThrottler* GetRequestThrottler() { return &request_throttler_; }
+  FeedNetwork& GetNetwork() { return *feed_network_; }
+  FeedStore& GetStore() { return *store_; }
+  RequestThrottler& GetRequestThrottler() { return request_throttler_; }
   const feedstore::Metadata& GetMetadata() const;
   void SetMetadata(feedstore::Metadata metadata);
   bool SetMetadata(absl::optional<feedstore::Metadata> metadata);
@@ -196,9 +201,6 @@ class FeedStream : public FeedApi,
 
   void PrefetchImage(const GURL& url);
 
-  // Returns the time of the last content fetch.
-  base::Time GetLastFetchTime();
-
   bool IsSignedIn() const { return !delegate_->GetSyncSignedInGaia().empty(); }
   std::string GetSyncSignedInGaia() const {
     return delegate_->GetSyncSignedInGaia();
@@ -206,8 +208,9 @@ class FeedStream : public FeedApi,
 
   // Determines if we should attempt loading the stream or refreshing at all.
   // Returns |LoadStreamStatus::kNoStatus| if loading may be attempted.
-  LoadStreamStatus ShouldAttemptLoad(const StreamType& stream_type,
-                                     bool model_loading = false);
+  LaunchResult ShouldAttemptLoad(const StreamType& stream_type,
+                                 LoadType load_type,
+                                 bool model_loading = false);
 
   // Whether the last scheduled refresh was missed.
   bool MissedLastRefresh(const StreamType& stream_type);
@@ -217,9 +220,9 @@ class FeedStream : public FeedApi,
   // Otherwise returns the reason. If |consume_quota| is false, no quota is
   // consumed. This can be used to predict the likely result on a subsequent
   // call.
-  LoadStreamStatus ShouldMakeFeedQueryRequest(const StreamType& stream_type,
-                                              bool is_load_more = false,
-                                              bool consume_quota = true);
+  LaunchResult ShouldMakeFeedQueryRequest(const StreamType& stream_type,
+                                          LoadType load_type,
+                                          bool consume_quota = true);
 
   // Returns true if a FeedQuery request made right now should be made without
   // user credentials.
@@ -233,8 +236,10 @@ class FeedStream : public FeedApi,
   void UnloadModels();
 
   // Triggers a stream load. The load will be aborted if |ShouldAttemptLoad()|
-  // is not true.
-  void TriggerStreamLoad(const StreamType& stream_type);
+  // is not true. Returns CARDS_UNSPECIFIED if loading is to proceed, or another
+  // DiscoverLaunchResult if loading will not be attempted.
+  feedwire::DiscoverLaunchResult TriggerStreamLoad(
+      const StreamType& stream_type);
 
   // Only to be called by ClearAllTask. This clears other stream data stored in
   // memory.
@@ -252,12 +257,15 @@ class FeedStream : public FeedApi,
 
   offline_pages::TaskQueue& GetTaskQueue() { return task_queue_; }
 
-  const WireResponseTranslator* GetWireResponseTranslator() const {
-    return wire_response_translator_;
+  const WireResponseTranslator& GetWireResponseTranslator() const {
+    return *wire_response_translator_;
   }
 
+  LaunchReliabilityLogger& GetLaunchReliabilityLogger(
+      const StreamType& stream_type);
+
   // Testing functionality.
-  offline_pages::TaskQueue* GetTaskQueueForTesting();
+  offline_pages::TaskQueue& GetTaskQueueForTesting();
   // Loads |model|. Should be used for testing in place of typical model
   // loading from network or storage.
   void LoadModelForTesting(const StreamType& stream_type,
@@ -299,6 +307,7 @@ class FeedStream : public FeedApi,
     ContentIdSet content_ids;
     std::vector<UnreadContentNotifier> unread_content_notifiers;
     std::vector<base::OnceCallback<void(bool)>> load_more_complete_callbacks;
+    std::vector<base::OnceCallback<void(bool)>> refresh_complete_callbacks;
     bool is_activity_logging_enabled = false;
   };
 
@@ -321,7 +330,7 @@ class FeedStream : public FeedApi,
                                               int sequence_number);
   void UnloadModelIfNoSurfacesAttachedTask(const StreamType& stream_type);
 
-  void InitialStreamLoadComplete(LoadStreamTask::Result result);
+  void StreamLoadComplete(LoadStreamTask::Result result);
   void LoadMoreComplete(LoadMoreTask::Result result);
   void BackgroundRefreshComplete(LoadStreamTask::Result result);
   void LoadTaskComplete(const LoadStreamTask::Result& result);
@@ -354,6 +363,8 @@ class FeedStream : public FeedApi,
   FeedStore* store_;
   PersistentKeyValueStoreImpl* persistent_key_value_store_;
   const WireResponseTranslator* wire_response_translator_;
+
+  StreamModel::Context stream_model_context_;
 
   ChromeInfo chrome_info_;
 

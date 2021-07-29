@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/queue.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
@@ -244,7 +245,7 @@ void RecordPrinterList(size_t* call_count,
                        std::unique_ptr<base::ListValue>* printers_out,
                        const base::ListValue& printers) {
   ++(*call_count);
-  printers_out->reset(printers.DeepCopy());
+  *printers_out = printers.CreateDeepCopy();
 }
 
 // Used as a callback to StartGetPrinters in tests.
@@ -639,8 +640,8 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
           .Set("extensionId", extension_2->id())
           .Set("provisional", true)
           .Build());
-  EXPECT_TRUE(printers->Find(*extension_1_entry) != printers->GetList().end());
-  EXPECT_TRUE(printers->Find(*extension_2_entry) != printers->GetList().end());
+  EXPECT_TRUE(base::Contains(printers->GetList(), *extension_1_entry));
+  EXPECT_TRUE(base::Contains(printers->GetList(), *extension_2_entry));
 
   fake_api->TriggerNextGetPrintersCallback(base::ListValue(), true);
 

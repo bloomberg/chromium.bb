@@ -144,7 +144,7 @@
 ./tools/third_party/pywebsocket3/mod_pywebsocket/dispatch.py
 ./tools/third_party/pywebsocket3/mod_pywebsocket/extensions.py
 ./tools/third_party/pywebsocket3/mod_pywebsocket/fast_masking.i
-./tools/third_party/pywebsocket3/mod_pywebsocket/handshake/_base.py
+./tools/third_party/pywebsocket3/mod_pywebsocket/handshake/base.py
 ./tools/third_party/pywebsocket3/mod_pywebsocket/handshake/hybi.py
 ./tools/third_party/pywebsocket3/mod_pywebsocket/handshake/__init__.py
 ./tools/third_party/pywebsocket3/mod_pywebsocket/http_header_util.py
@@ -217,6 +217,8 @@
 ./tools/webdriver/webdriver/error.py
 ./tools/webdriver/webdriver/protocol.py
 ./tools/webdriver/webdriver/transport.py
+./tools/webdriver/webdriver/bidi/__init__.py
+./tools/webdriver/webdriver/bidi/client.py
 ./tools/wpt/__init__.py
 ./tools/wpt/android.py
 ./tools/wpt/browser.py

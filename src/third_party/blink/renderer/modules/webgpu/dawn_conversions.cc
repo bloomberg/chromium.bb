@@ -6,16 +6,16 @@
 
 #include <dawn/webgpu.h>
 
-#include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
-#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_extent_3d_dict.h"
-#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_origin_3d_dict.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_color_dict.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_extent_3d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_image_copy_texture.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_image_data_layout.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_index_format.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_origin_3d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_programmable_stage.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_doublesequence_gpucolordict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpuextent3ddict_unsignedlongenforcerangesequence.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpuorigin3ddict_unsignedlongenforcerangesequence.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
 
@@ -45,7 +45,6 @@ WGPUColor AsDawnType(const GPUColorDict* webgpu_color) {
   return dawn_color;
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 WGPUColor AsDawnType(const V8GPUColor* webgpu_color) {
   DCHECK(webgpu_color);
 
@@ -59,23 +58,8 @@ WGPUColor AsDawnType(const V8GPUColor* webgpu_color) {
   NOTREACHED();
   return WGPUColor{};
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-WGPUColor AsDawnType(const DoubleSequenceOrGPUColorDict* webgpu_color) {
-  DCHECK(webgpu_color);
 
-  if (webgpu_color->IsDoubleSequence()) {
-    return AsDawnColor(webgpu_color->GetAsDoubleSequence());
-  } else if (webgpu_color->IsGPUColorDict()) {
-    return AsDawnType(webgpu_color->GetAsGPUColorDict());
-  }
-  NOTREACHED();
-  WGPUColor dawn_color = {};
-  return dawn_color;
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-WGPUExtent3D AsDawnType(const V8GPUExtent3D* webgpu_extent, GPUDevice* device) {
+WGPUExtent3D AsDawnType(const V8GPUExtent3D* webgpu_extent) {
   DCHECK(webgpu_extent);
 
   // Set all extents to their default value of 1.
@@ -123,92 +107,42 @@ WGPUExtent3D AsDawnType(const V8GPUExtent3D* webgpu_extent, GPUDevice* device) {
 
   return dawn_extent;
 }
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-WGPUExtent3D AsDawnType(
-    const UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict* webgpu_extent,
-    GPUDevice* device) {
-  DCHECK(webgpu_extent);
-
-  // Set all extents to their default value of 1.
-  // TODO (crbug.com/1206740): The last member of WGPUExtent3D (depth) is being
-  // removed from Dawn soon, but until it has been removed it must be set to 1
-  // or the correct value, in depthOrArrayLayers, will be ignored. Once depth
-  // has been removed from WGPUExtent3D in Dawn this can be to be updated to
-  // WGPUExtent3D dawn_extent = {1, 1, 1};
-  WGPUExtent3D dawn_extent;
-  uint32_t extent_defaults[4] = {1, 1, 1, 1};
-  memcpy(&dawn_extent, extent_defaults, sizeof(WGPUExtent3D));
-
-  if (webgpu_extent->IsUnsignedLongEnforceRangeSequence()) {
-    const Vector<uint32_t>& webgpu_extent_sequence =
-        webgpu_extent->GetAsUnsignedLongEnforceRangeSequence();
-
-    // The WebGPU spec states that if the sequence isn't big enough then the
-    // default values of 1 are used (which are set above).
-    switch (webgpu_extent_sequence.size()) {
-      default:
-        dawn_extent.depthOrArrayLayers = webgpu_extent_sequence[2];
-        FALLTHROUGH;
-      case 2:
-        dawn_extent.height = webgpu_extent_sequence[1];
-        FALLTHROUGH;
-      case 1:
-        dawn_extent.width = webgpu_extent_sequence[0];
-        FALLTHROUGH;
-      case 0:
-        break;
-    }
-
-  } else if (webgpu_extent->IsGPUExtent3DDict()) {
-    const GPUExtent3DDict* webgpu_extent_3d_dict =
-        webgpu_extent->GetAsGPUExtent3DDict();
-    dawn_extent.width = webgpu_extent_3d_dict->width();
-    dawn_extent.height = webgpu_extent_3d_dict->height();
-    dawn_extent.depthOrArrayLayers =
-        webgpu_extent_3d_dict->depthOrArrayLayers();
-  } else {
-    NOTREACHED();
-  }
-
-  return dawn_extent;
-}
-
-WGPUOrigin3D AsDawnType(
-    const UnsignedLongEnforceRangeSequenceOrGPUOrigin3DDict* webgpu_origin) {
+WGPUOrigin3D AsDawnType(const V8GPUOrigin3D* webgpu_origin) {
   DCHECK(webgpu_origin);
 
   WGPUOrigin3D dawn_origin = {0, 0, 0};
 
-  if (webgpu_origin->IsUnsignedLongEnforceRangeSequence()) {
-    const Vector<uint32_t>& webgpu_origin_sequence =
-        webgpu_origin->GetAsUnsignedLongEnforceRangeSequence();
-
-    // The WebGPU spec states that if the sequence isn't big enough then the
-    // default values of 0 are used (which are set above).
-    switch (webgpu_origin_sequence.size()) {
-      default:
-        dawn_origin.z = webgpu_origin_sequence[2];
-        FALLTHROUGH;
-      case 2:
-        dawn_origin.y = webgpu_origin_sequence[1];
-        FALLTHROUGH;
-      case 1:
-        dawn_origin.x = webgpu_origin_sequence[0];
-        FALLTHROUGH;
-      case 0:
-        break;
+  switch (webgpu_origin->GetContentType()) {
+    case V8GPUOrigin3D::ContentType::kGPUOrigin3DDict: {
+      const GPUOrigin3DDict* webgpu_origin_3d_dict =
+          webgpu_origin->GetAsGPUOrigin3DDict();
+      dawn_origin.x = webgpu_origin_3d_dict->x();
+      dawn_origin.y = webgpu_origin_3d_dict->y();
+      dawn_origin.z = webgpu_origin_3d_dict->z();
+      break;
     }
+    case V8GPUOrigin3D::ContentType::kUnsignedLongEnforceRangeSequence: {
+      const Vector<uint32_t>& webgpu_origin_sequence =
+          webgpu_origin->GetAsUnsignedLongEnforceRangeSequence();
 
-  } else if (webgpu_origin->IsGPUOrigin3DDict()) {
-    const GPUOrigin3DDict* webgpu_origin_3d_dict =
-        webgpu_origin->GetAsGPUOrigin3DDict();
-    dawn_origin.x = webgpu_origin_3d_dict->x();
-    dawn_origin.y = webgpu_origin_3d_dict->y();
-    dawn_origin.z = webgpu_origin_3d_dict->z();
-
-  } else {
-    NOTREACHED();
+      // The WebGPU spec states that if the sequence isn't big enough then the
+      // default values of 0 are used (which are set above).
+      switch (webgpu_origin_sequence.size()) {
+        default:
+          dawn_origin.z = webgpu_origin_sequence[2];
+          FALLTHROUGH;
+        case 2:
+          dawn_origin.y = webgpu_origin_sequence[1];
+          FALLTHROUGH;
+        case 1:
+          dawn_origin.x = webgpu_origin_sequence[0];
+          FALLTHROUGH;
+        case 0:
+          break;
+      }
+      break;
+    }
   }
 
   return dawn_origin;
@@ -222,7 +156,7 @@ WGPUTextureCopyView AsDawnType(const GPUImageCopyTexture* webgpu_view,
   WGPUTextureCopyView dawn_view = {};
   dawn_view.texture = webgpu_view->texture()->GetHandle();
   dawn_view.mipLevel = webgpu_view->mipLevel();
-  dawn_view.origin = AsDawnType(&webgpu_view->origin());
+  dawn_view.origin = AsDawnType(webgpu_view->origin());
   dawn_view.aspect = AsDawnEnum<WGPUTextureAspect>(webgpu_view->aspect());
 
   return dawn_view;
@@ -282,6 +216,27 @@ OwnedProgrammableStageDescriptor AsDawnType(
   dawn_stage.entryPoint = entry_point_ptr;
 
   return std::make_tuple(dawn_stage, std::move(entry_point_keepalive));
+}
+
+WGPUTextureFormat AsDawnType(SkColorType color_type) {
+  switch (color_type) {
+    case SkColorType::kRGBA_8888_SkColorType:
+      return WGPUTextureFormat_RGBA8Unorm;
+    case SkColorType::kBGRA_8888_SkColorType:
+      return WGPUTextureFormat_BGRA8Unorm;
+    case SkColorType::kRGBA_1010102_SkColorType:
+      return WGPUTextureFormat_RGB10A2Unorm;
+    case SkColorType::kRGBA_F16_SkColorType:
+      return WGPUTextureFormat_RGBA16Float;
+    case SkColorType::kRGBA_F32_SkColorType:
+      return WGPUTextureFormat_RGBA32Float;
+    case SkColorType::kR8G8_unorm_SkColorType:
+      return WGPUTextureFormat_RG8Unorm;
+    case SkColorType::kR16G16_float_SkColorType:
+      return WGPUTextureFormat_RG16Float;
+    default:
+      return WGPUTextureFormat_Undefined;
+  }
 }
 
 }  // namespace blink

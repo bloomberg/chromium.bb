@@ -5,6 +5,8 @@
 #ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_SIGNIN_CHROME_IDENTITY_SERVICE_H_
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_SIGNIN_CHROME_IDENTITY_SERVICE_H_
 
+#include <CoreFoundation/CoreFoundation.h>
+
 #include <set>
 #include <string>
 #include <vector>
@@ -66,9 +68,36 @@ typedef void (^MDMStatusCallback)(bool is_blocked);
 // |animated| the view will be dismissed with animation if the value is YES.
 typedef void (^DismissASMViewControllerBlock)(BOOL animated);
 
+// Defines account capability state based on GCRSSOCapabilityResult.
+enum class ChromeIdentityCapabilityResult {
+  // Capability is not allowed for identity.
+  kFalse,
+  // Capability is allowed for identity.
+  kTrue,
+  // Capability has not been set for identity.
+  kUnknown,
+};
+
+// Callback to retrieve account capabilities. Maps |capability_result| to the
+// corresponding state in ChromeIdentityCapabilityResult.
+typedef void (^CapabilitiesCallback)(
+    ChromeIdentityCapabilityResult capability_result);
+
+// Callback for fetching the set of supported capabilities and their
+// corresponding states as defined in ChromeIdentityCapabilityResult.
+typedef void (^ChromeIdentityCapabilitiesFetchCompletionBlock)(
+    NSDictionary* capabilities,
+    NSError* error);
+
 // Opaque type representing the MDM (Mobile Device Management) status of the
 // device. Checking for equality is guaranteed to be valid.
 typedef int MDMDeviceStatus;
+
+// Value returned by IdentityIteratorCallback.
+enum IdentityIteratorCallbackResult {
+  kIdentityIteratorContinueIteration,
+  kIdentityIteratorInterruptIteration,
+};
 
 // ChromeIdentityService abstracts the signin flow on iOS.
 class ChromeIdentityService {
@@ -102,6 +131,11 @@ class ChromeIdentityService {
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
+
+  // Callback invoked for each ChromeIdentity when iterating over them with
+  // `IterateOverIdentities()`.
+  using IdentityIteratorCallback =
+      base::RepeatingCallback<IdentityIteratorCallbackResult(ChromeIdentity*)>;
 
   ChromeIdentityService();
   virtual ~ChromeIdentityService();
@@ -155,6 +189,11 @@ class ChromeIdentityService {
   CreateChromeIdentityInteractionManager(
       id<ChromeIdentityInteractionManagerDelegate> delegate) const;
 
+  // Iterates over all known ChromeIdentities, sorted by the ordering used
+  // in account manager, which is typically based on the keychain ordering
+  // of accounts.
+  virtual void IterateOverIdentities(IdentityIteratorCallback callback);
+
   // Returns YES if |identity| is valid and if the service has it in its list of
   // identitites.
   virtual bool IsValidIdentity(ChromeIdentity* identity);
@@ -166,15 +205,11 @@ class ChromeIdentityService {
   // Returns true if there is at least one identity.
   virtual bool HasIdentities();
 
-  // Returns all ChromeIdentity objects in an array.It uses PrefService to
-  // filter ChromeIdentities according to enterprise policies.
-  virtual NSArray* GetAllIdentities(PrefService* pref_service);
-
   // Returns all ChromeIdentity objects sorted by the ordering used in the
   // account manager, which is typically based on the keychain ordering of
-  // accounts.It uses PrefService to filter ChromeIdentities according to
+  // accounts. It uses PrefService to filter ChromeIdentities according to
   // enterprise policies.
-  virtual NSArray* GetAllIdentitiesSortedForDisplay(PrefService* pref_service);
+  virtual NSArray* GetAllIdentities(PrefService* pref_service);
 
   // Forgets the given identity on the device. This method logs the user out.
   // It is asynchronous because it needs to contact the server to revoke the
@@ -219,12 +254,13 @@ class ChromeIdentityService {
   //     has a hosted domain.
   virtual NSString* GetCachedHostedDomainForIdentity(ChromeIdentity* identity);
 
-  // Returns the cached value of the account capability that determines whether
-  // Chrome should apply minor mode restrictions to |identity|.
-  // This value will have a refresh period of 24 hours, meaning that at
-  // retrieval it may be stale or unpopulated, in the case of a fresh install.
-  virtual absl::optional<bool> IsSubjectToMinorModeRestrictions(
-      ChromeIdentity* identity);
+  // Asynchronously returns the value of the account capability that determines
+  // whether Chrome should offer extended sync promos to |identity|. This value
+  // will have a refresh period of 24 hours, meaning that at retrieval it may be
+  // stale. If the value is not populated, as in a fresh install, the callback
+  // will evaluate to false.
+  void CanOfferExtendedSyncPromos(ChromeIdentity* identity,
+                                  CapabilitiesCallback callback);
 
   // Returns the MDM device status associated with |user_info|.
   virtual MDMDeviceStatus GetMDMDeviceStatus(NSDictionary* user_info);
@@ -250,6 +286,12 @@ class ChromeIdentityService {
   virtual bool IsInvalidGrantError(NSDictionary* user_info);
 
  protected:
+  // Asynchronously retrieves the list of supported capabilities for the given
+  // Chrome identity.
+  virtual void FetchCapabilities(
+      NSArray* capabilities,
+      ChromeIdentity* identity,
+      ChromeIdentityCapabilitiesFetchCompletionBlock completion);
   // Fires |OnIdentityListChanged| on all observers.
   // |keychainReload| is true if the identity list is updated by reloading the
   // keychain. This means that a first party Google app had added or removed

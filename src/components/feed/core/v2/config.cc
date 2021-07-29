@@ -4,9 +4,9 @@
 
 #include "components/feed/core/v2/config.h"
 
+#include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_set.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "components/feed/core/proto/v2/wire/capability.pb.h"
 #include "components/feed/core/v2/public/stream_type.h"
@@ -155,6 +155,13 @@ const Config& GetFeedConfig() {
     OverrideWithFinch(s_config);
   }
   return *s_config;
+}
+
+// This is a dev setting that updates Config, which is supposed to be constant.
+// TODO(crbug/1152592): remove when not needed anymore.
+void SetUseFeedQueryRequestsForWebFeeds(const bool use_legacy) {
+  Config& config = const_cast<Config&>(GetFeedConfig());
+  config.use_feed_query_requests_for_web_feeds = use_legacy;
 }
 
 void SetFeedConfigForTesting(const Config& config) {

@@ -22,10 +22,21 @@ namespace {
 
 using MslGeneratorImplTest = TestHelper;
 
+TEST_F(MslGeneratorImplTest, ErrorIfSanitizerNotRun) {
+  auto program = std::make_unique<Program>(std::move(*this));
+  GeneratorImpl gen(program.get());
+  EXPECT_FALSE(gen.Generate());
+  EXPECT_EQ(
+      gen.error(),
+      "error: MSL writer requires the transform::Msl sanitizer to have been "
+      "applied to the input program");
+}
+
 TEST_F(MslGeneratorImplTest, Generate) {
   Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
        ast::DecorationList{
            Stage(ast::PipelineStage::kCompute),
+           WorkgroupSize(1),
        });
 
   GeneratorImpl& gen = Build();
@@ -65,7 +76,6 @@ INSTANTIATE_TEST_SUITE_P(
                     MslBuiltinData{ast::Builtin::kVertexIndex, "vertex_id"},
                     MslBuiltinData{ast::Builtin::kInstanceIndex, "instance_id"},
                     MslBuiltinData{ast::Builtin::kFrontFacing, "front_facing"},
-                    MslBuiltinData{ast::Builtin::kFragCoord, "position"},
                     MslBuiltinData{ast::Builtin::kFragDepth, "depth(any)"},
                     MslBuiltinData{ast::Builtin::kLocalInvocationId,
                                    "thread_position_in_threadgroup"},
@@ -76,10 +86,56 @@ INSTANTIATE_TEST_SUITE_P(
                     MslBuiltinData{ast::Builtin::kWorkgroupId,
                                    "threadgroup_position_in_grid"},
                     MslBuiltinData{ast::Builtin::kSampleIndex, "sample_id"},
-                    MslBuiltinData{ast::Builtin::kSampleMask, "sample_mask"},
-                    MslBuiltinData{ast::Builtin::kSampleMaskIn, "sample_mask"},
-                    MslBuiltinData{ast::Builtin::kSampleMaskOut,
-                                   "sample_mask"}));
+                    MslBuiltinData{ast::Builtin::kSampleMask, "sample_mask"}));
+
+TEST_F(MslGeneratorImplTest, HasInvariantAttribute_True) {
+  auto* out = Structure(
+      "Out", {Member("pos", ty.vec4<f32>(),
+                     {Builtin(ast::Builtin::kPosition), Invariant()})});
+  Func("vert_main", ast::VariableList{}, ty.Of(out),
+       {Return(Construct(ty.Of(out)))}, {Stage(ast::PipelineStage::kVertex)});
+
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_TRUE(gen.HasInvariant());
+  EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
+
+using namespace metal;
+struct Out {
+  float4 pos [[position]] [[invariant]];
+};
+
+vertex Out vert_main() {
+  return {};
+}
+
+)");
+}
+
+TEST_F(MslGeneratorImplTest, HasInvariantAttribute_False) {
+  auto* out = Structure("Out", {Member("pos", ty.vec4<f32>(),
+                                       {Builtin(ast::Builtin::kPosition)})});
+  Func("vert_main", ast::VariableList{}, ty.Of(out),
+       {Return(Construct(ty.Of(out)))}, {Stage(ast::PipelineStage::kVertex)});
+
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_FALSE(gen.HasInvariant());
+  EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
+
+using namespace metal;
+struct Out {
+  float4 pos [[position]];
+};
+
+vertex Out vert_main() {
+  return {};
+}
+
+)");
+}
 
 }  // namespace
 }  // namespace msl

@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -12,10 +13,12 @@
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/task_manager/task_manager_tester.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -36,6 +39,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -88,14 +92,18 @@ class ChromeBackForwardCacheBrowserTest : public InProcessBrowserTest {
 
     EnableFeatureAndSetParams(features::kBackForwardCache,
                               "TimeToLiveInBackForwardCacheInSeconds", "3600");
+    // Navigating quickly between cached pages can fail flakily with:
+    // CanStorePageNow: <URL> : No: blocklisted features: outstanding network
+    // request (others)
+    EnableFeatureAndSetParams(features::kBackForwardCache,
+                              "ignore_outstanding_network_request_for_testing",
+                              "true");
     EnableFeatureAndSetParams(features::kBackForwardCache, "enable_same_site",
                               "true");
     // Allow BackForwardCache for all devices regardless of their memory.
     DisableFeature(features::kBackForwardCacheMemoryControls);
 
     SetupFeaturesAndParameters();
-
-    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
   content::WebContents* web_contents() const {
@@ -147,38 +155,31 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest, Basic) {
 
   // 1) Navigate to A.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), GetURL("a.com")));
-  content::RenderFrameHost* rfh_a = current_frame_host();
-  content::RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
-  EXPECT_TRUE(content::ExecJs(rfh_a, "token = 'rfh_a'"));
+  content::RenderFrameHostWrapper rfh_a(current_frame_host());
 
   // 2) Navigate to B.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), GetURL("b.com")));
-  content::RenderFrameHost* rfh_b = current_frame_host();
-  content::RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
-  EXPECT_TRUE(content::ExecJs(rfh_b, "token = 'rfh_b'"));
+  content::RenderFrameHostWrapper rfh_b(current_frame_host());
 
   // A is frozen in the BackForwardCache.
-  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_EQ(rfh_a->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 
   // 3) Navigate back.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // A is restored, B is stored.
-  EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_FALSE(delete_observer_rfh_b.deleted());
-
-  EXPECT_EQ("rfh_a", content::EvalJs(rfh_a, "token"));
+  EXPECT_EQ(rfh_b->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 
   // 4) Navigate forward.
   web_contents()->GetController().GoForward();
   EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // A is stored, B is restored.
-  EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_FALSE(delete_observer_rfh_b.deleted());
-
-  EXPECT_EQ("rfh_b", content::EvalJs(rfh_b, "token"));
+  EXPECT_EQ(rfh_a->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest, BasicIframe) {
@@ -186,12 +187,10 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest, BasicIframe) {
 
   // 1) Navigate to A.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), GetURL("a.com")));
-  content::RenderFrameHost* rfh_a = current_frame_host();
-  content::RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
-  EXPECT_TRUE(content::ExecJs(rfh_a, "token = 'rfh_a'"));
+  content::RenderFrameHostWrapper rfh_a(current_frame_host());
 
   // 2) Add an iframe B.
-  EXPECT_TRUE(content::ExecJs(rfh_a, R"(
+  EXPECT_TRUE(content::ExecJs(rfh_a.get(), R"(
     let url = new URL(location.href);
     url.hostname = 'b.com';
     let iframe = document.createElement('iframe');
@@ -201,31 +200,31 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest, BasicIframe) {
   EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   content::RenderFrameHost* rfh_b = nullptr;
-  for (content::RenderFrameHost* rfh : web_contents()->GetAllFrames()) {
-    if (rfh != rfh_a)
-      rfh_b = rfh;
-  }
-  content::RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
-
-  EXPECT_TRUE(content::ExecJs(rfh_a, "token = 'rfh_a'"));
-  EXPECT_TRUE(content::ExecJs(rfh_b, "token = 'rfh_b'"));
+  rfh_a->ForEachRenderFrameHost(
+      base::BindLambdaForTesting([&](content::RenderFrameHost* rfh) {
+        if (rfh != rfh_a.get())
+          rfh_b = rfh;
+      }));
+  EXPECT_TRUE(rfh_b);
+  content::RenderFrameHostWrapper rfh_b_wrapper(rfh_b);
 
   // 2) Navigate to C.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), GetURL("c.com")));
+  content::RenderFrameHostWrapper rfh_c(current_frame_host());
 
   // A and B are frozen. The page A(B) is stored in the BackForwardCache.
-  EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_FALSE(delete_observer_rfh_b.deleted());
+  EXPECT_EQ(rfh_a->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
+  EXPECT_EQ(rfh_b_wrapper->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 
   // 3) Navigate back.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
-  // The page A(B) is restored.
-  EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_FALSE(delete_observer_rfh_b.deleted());
-  EXPECT_EQ("rfh_a", content::EvalJs(rfh_a, "token"));
-  EXPECT_EQ("rfh_b", content::EvalJs(rfh_b, "token"));
+  // The page A(B) is restored and C is frozen.
+  EXPECT_EQ(rfh_c->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
@@ -241,19 +240,21 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(web_contents(), url_a));
-  content::RenderFrameHost* rfh_a = current_frame_host();
-  content::RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  content::RenderFrameHostWrapper rfh_a(current_frame_host());
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(web_contents(), url_b));
-  ASSERT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_EQ(rfh_a->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
   base::MockOnceCallback<void(ContentSetting)> callback;
   EXPECT_CALL(callback, Run(ContentSetting::CONTENT_SETTING_ASK));
   PermissionManagerFactory::GetForProfile(browser()->profile())
-      ->RequestPermission(ContentSettingsType::GEOLOCATION, rfh_a, url_a,
+      ->RequestPermission(ContentSettingsType::GEOLOCATION, rfh_a.get(), url_a,
                           /* user_gesture = */ true, callback.Get());
 
-  delete_observer_rfh_a.WaitUntilDeleted();
+  // Ensure |rfh_a| is evicted from the cache because it is not allowed to
+  // service the GEOLOCATION permission request.
+  rfh_a.WaitUntilRenderFrameDeleted();
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
@@ -268,20 +269,17 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(picture_in_picture_page));
   EXPECT_TRUE(content::NavigateToURL(web_contents(), test_page_url));
+  content::RenderFrameHostWrapper rfh(current_frame_host());
 
   // Execute picture-in-picture on the page.
-  bool result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents(), "enterPictureInPicture();", &result));
-  EXPECT_TRUE(result);
-
-  content::RenderFrameDeletedObserver deleted(current_frame_host());
+  ASSERT_EQ(true, content::EvalJs(web_contents(), "enterPictureInPicture();"));
 
   // Navigate away.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), GetURL("b.com")));
 
-  // The page uses Picture-in-Picture so it should be deleted.
-  deleted.WaitUntilDeleted();
+  // The page uses Picture-in-Picture so it must be evicted from the cache and
+  // deleted.
+  rfh.WaitUntilRenderFrameDeleted();
 }
 
 #if defined(OS_ANDROID)
@@ -298,6 +296,7 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
 
   // 1) Navigate to A.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), url_a));
+  content::RenderFrameHostWrapper rfh_a(current_frame_host());
 
   // Use the WebShare feature on the empty page.
   EXPECT_EQ("success", content::EvalJs(current_frame_host(), R"(
@@ -308,13 +307,11 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
     });
   )"));
 
-  content::RenderFrameDeletedObserver deleted(current_frame_host());
-
   // 2) Navigate away.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), url_b));
 
-  // The page uses WebShare so it should be deleted.
-  deleted.WaitUntilDeleted();
+  // The page uses WebShare so it must be evicted from the cache and deleted.
+  rfh_a.WaitUntilRenderFrameDeleted();
 
   // 3) Go back.
   web_contents()->GetController().GoBack();
@@ -334,6 +331,7 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
 
   // 1) Navigate to A.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), url_a));
+  content::RenderFrameHostWrapper rfh_a(current_frame_host());
 
   // Use the WebNfc feature on the empty page.
   EXPECT_EQ("success", content::EvalJs(current_frame_host(), R"(
@@ -348,13 +346,11 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
     });
   )"));
 
-  content::RenderFrameDeletedObserver deleted(current_frame_host());
-
   // 2) Navigate away.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), url_b));
 
-  // The page uses WebShare so it should be deleted.
-  deleted.WaitUntilDeleted();
+  // The page uses WebNfc so it must be evicted from the cache and deleted.
+  rfh_a.WaitUntilRenderFrameDeleted();
 
   // 3) Go back.
   web_contents()->GetController().GoBack();
@@ -375,9 +371,10 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
 
   // 1) Load page A that has mixed content.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), url_a));
+  content::RenderFrameHostWrapper rfh_a(current_frame_host());
   // Mixed content should be blocked at first.
   EXPECT_FALSE(MixedContentSettingsTabHelper::FromWebContents(web_contents())
-                   ->IsRunningInsecureContentAllowed());
+                   ->IsRunningInsecureContentAllowed(*current_frame_host()));
 
   // 2) Emulate link clicking on the mixed script bubble to allow mixed content
   // to run.
@@ -395,21 +392,25 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
 
   // Mixed content should no longer be blocked.
   EXPECT_TRUE(MixedContentSettingsTabHelper::FromWebContents(web_contents())
-                  ->IsRunningInsecureContentAllowed());
+                  ->IsRunningInsecureContentAllowed(*current_frame_host()));
 
   // 4) Navigate to page B, which should use a different SiteInstance and
   // resets the mixed content settings.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), url_b));
   // Mixed content should be blocked in the new page.
   EXPECT_FALSE(MixedContentSettingsTabHelper::FromWebContents(web_contents())
-                   ->IsRunningInsecureContentAllowed());
+                   ->IsRunningInsecureContentAllowed(*current_frame_host()));
 
-  // 5) Go back to page A.
+  // 5) A is stored in BackForwardCache.
+  EXPECT_EQ(rfh_a->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
+
+  // 6) Go back to page A.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
   // Mixed content settings is restored, so it's no longer blocked.
   EXPECT_TRUE(MixedContentSettingsTabHelper::FromWebContents(web_contents())
-                  ->IsRunningInsecureContentAllowed());
+                  ->IsRunningInsecureContentAllowed(*current_frame_host()));
 }
 
 class MetricsChromeBackForwardCacheBrowserTest
@@ -430,8 +431,9 @@ class MetricsChromeBackForwardCacheBrowserTest
   }
 };
 
+// Flaky https://crbug.com/1224780
 IN_PROC_BROWSER_TEST_P(MetricsChromeBackForwardCacheBrowserTest,
-                       FirstInputDelay) {
+                       DISABLED_FirstInputDelay) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -444,16 +446,15 @@ IN_PROC_BROWSER_TEST_P(MetricsChromeBackForwardCacheBrowserTest,
 
   // 1) Navigate to url1.
   EXPECT_TRUE(content::NavigateToURL(web_contents(), url1));
-  content::RenderFrameHost* rfh_a = current_frame_host();
-  content::RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  content::RenderFrameHostWrapper rfh_url1(current_frame_host());
 
   // Simulate mouse click. FirstInputDelay won't get updated immediately.
   content::SimulateMouseClickAt(web_contents(), 0,
                                 blink::WebMouseEvent::Button::kLeft,
                                 gfx::Point(100, 100));
-  // Run arbitrary script and run tasks in the brwoser to ensure the input is
+  // Run arbitrary script and run tasks in the browser to ensure the input is
   // processed in the renderer.
-  EXPECT_TRUE(content::ExecJs(rfh_a, "var foo = 42;"));
+  EXPECT_TRUE(content::ExecJs(rfh_url1.get(), "var foo = 42;"));
   base::RunLoop().RunUntilIdle();
   content::FetchHistogramsFromChildProcesses();
   histogram_tester_->ExpectTotalCount(internal::kHistogramFirstInputDelay, 0);
@@ -464,11 +465,14 @@ IN_PROC_BROWSER_TEST_P(MetricsChromeBackForwardCacheBrowserTest,
   } else {
     EXPECT_TRUE(content::NavigateToURL(web_contents(), url2));
   }
-  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+
+  // Ensure |rfh_url1| is cached.
+  EXPECT_EQ(rfh_url1->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 
   content::FetchHistogramsFromChildProcesses();
   if (GetParam() != "CrossSiteBrowserInitiated" ||
-      rfh_a->GetProcess() == current_frame_host()->GetProcess()) {
+      rfh_url1.get()->GetProcess() == current_frame_host()->GetProcess()) {
     // - For "SameSite" case, since the old and new RenderFrame share a process,
     // the metrics update will be sent to the browser during commit and won't
     // get ignored, successfully updating the FirstInputDelay histogram.
@@ -496,3 +500,172 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     MetricsChromeBackForwardCacheBrowserTest,
     testing::ValuesIn(MetricsChromeBackForwardCacheBrowserTestValues()));
+
+namespace {
+
+// TODO(johannkoenig): Deduplicate this with
+// chrome/browser/portal/portal_browsertest.cc.
+std::vector<std::u16string> GetRendererTaskTitles(
+    task_manager::TaskManagerTester* tester) {
+  std::vector<std::u16string> renderer_titles;
+  renderer_titles.reserve(tester->GetRowCount());
+  for (int row = 0; row < tester->GetRowCount(); row++) {
+    if (tester->GetTabId(row) != SessionID::InvalidValue())
+      renderer_titles.push_back(tester->GetRowTitle(row));
+  }
+  return renderer_titles;
+}
+
+}  // namespace
+
+// Ensure that BackForwardCache RenderFrameHosts are shown in the Task Manager.
+IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
+                       ShowMainFrameInTaskManager) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  const std::u16string expected_url_a_active_title = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_TAB_PREFIX, u"Title Of Awesomeness");
+  const std::u16string expected_url_a_cached_title = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_BACK_FORWARD_CACHE_PREFIX, u"http://a.com/");
+
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title3.html"));
+  const std::u16string expected_url_b_active_title = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_TAB_PREFIX, u"Title Of More Awesomeness");
+  const std::u16string expected_url_b_cached_title = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_BACK_FORWARD_CACHE_PREFIX, u"http://b.com/");
+
+  auto tester =
+      task_manager::TaskManagerTester::Create(base::RepeatingClosure());
+
+  // 1) Navigate to |url_a|.
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url_a));
+  content::RenderFrameHostWrapper rfh_a(current_frame_host());
+
+  // 2) Navigate to |url_b|.
+  ASSERT_TRUE(content::NavigateToURL(web_contents(), url_b));
+  content::RenderFrameHostWrapper rfh_b(current_frame_host());
+
+  // 3) Verify |url_a| is in the BackForwardCache.
+  ASSERT_EQ(rfh_a->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
+
+  // 4) Ensure both tabs show up in Task Manager.
+  task_manager::browsertest_util::WaitForTaskManagerRows(
+      1, expected_url_b_active_title);
+  task_manager::browsertest_util::WaitForTaskManagerRows(
+      1, expected_url_a_cached_title);
+  EXPECT_THAT(GetRendererTaskTitles(tester.get()),
+              ::testing::ElementsAre(expected_url_b_active_title,
+                                     expected_url_a_cached_title));
+
+  // 5) Navigate back to |url_a|.
+  web_contents()->GetController().GoBack();
+  ASSERT_TRUE(content::WaitForLoadStop(web_contents()));
+
+  // 6) Verify |url_b| is in the BackForwardCache.
+  ASSERT_EQ(rfh_b->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
+
+  // 7) Ensure both tabs show up in Task Manager.
+  task_manager::browsertest_util::WaitForTaskManagerRows(
+      1, expected_url_a_active_title);
+  task_manager::browsertest_util::WaitForTaskManagerRows(
+      1, expected_url_b_cached_title);
+  EXPECT_THAT(GetRendererTaskTitles(tester.get()),
+              ::testing::ElementsAre(expected_url_a_active_title,
+                                     expected_url_b_cached_title));
+}
+
+// Ensure that BackForwardCache cross-site subframes are shown in the Task
+// Manager.
+IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
+                       ShowCrossSiteOOPIFInTaskManager) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Load a page on a.com with cross-site iframes on b.com and c.com.
+  GURL url_a(
+      embedded_test_server()->GetURL("a.com", "/iframe_cross_site.html"));
+  const std::u16string expected_url_a_cached_title = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_BACK_FORWARD_CACHE_PREFIX, u"http://a.com/");
+  const std::u16string expected_url_a_cached_subframe_b_title =
+      l10n_util::GetStringFUTF16(
+          IDS_TASK_MANAGER_BACK_FORWARD_CACHE_SUBFRAME_PREFIX,
+          u"http://b.com/");
+  const std::u16string expected_url_a_cached_subframe_c_title =
+      l10n_util::GetStringFUTF16(
+          IDS_TASK_MANAGER_BACK_FORWARD_CACHE_SUBFRAME_PREFIX,
+          u"http://c.com/");
+
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title3.html"));
+  const std::u16string expected_url_b_active_title = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_TAB_PREFIX, u"Title Of More Awesomeness");
+
+  auto tester =
+      task_manager::TaskManagerTester::Create(base::RepeatingClosure());
+
+  // 1) Navigate to |url_a|.
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), url_a));
+  content::RenderFrameHostWrapper rfh_a(current_frame_host());
+
+  // 2) Navigate to |url_b|.
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), url_b));
+
+  // 3) Verify |url_a| is in the BackForwardCache.
+  EXPECT_EQ(rfh_a->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
+
+  // 4) Ensure the subframe tasks for |url_a| show up in Task Manager.
+  task_manager::browsertest_util::WaitForTaskManagerRows(
+      1, expected_url_b_active_title);
+  task_manager::browsertest_util::WaitForTaskManagerRows(
+      1, expected_url_a_cached_title);
+  task_manager::browsertest_util::WaitForTaskManagerRows(
+      1, expected_url_a_cached_subframe_b_title);
+  task_manager::browsertest_util::WaitForTaskManagerRows(
+      1, expected_url_a_cached_subframe_c_title);
+  EXPECT_THAT(GetRendererTaskTitles(tester.get()),
+              ::testing::ElementsAre(expected_url_b_active_title,
+                                     expected_url_a_cached_title,
+                                     expected_url_a_cached_subframe_b_title,
+                                     expected_url_a_cached_subframe_c_title));
+}
+
+// Ensure that BackForwardCache same-site subframes are not shown in the Task
+// Manager.
+IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
+                       DoNotShowSameSiteSubframeInTaskManager) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Load a page on a.com with an a.com iframe.
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/iframe.html"));
+  const std::u16string expected_url_a_cached_title = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_BACK_FORWARD_CACHE_PREFIX, u"http://a.com/");
+
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title3.html"));
+  const std::u16string expected_url_b_active_title = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_TAB_PREFIX, u"Title Of More Awesomeness");
+
+  auto tester =
+      task_manager::TaskManagerTester::Create(base::RepeatingClosure());
+
+  // 1) Navigate to |url_a|.
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), url_a));
+  content::RenderFrameHostWrapper rfh_a(current_frame_host());
+
+  // 2) Navigate to |url_b|.
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), url_b));
+
+  // 3) Verify |url_a| is in the BackForwardCache.
+  EXPECT_EQ(rfh_a->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
+
+  // 4) Ensure that only one task for |url_a| shows up in Task Manager.
+  task_manager::browsertest_util::WaitForTaskManagerRows(
+      1, expected_url_b_active_title);
+  task_manager::browsertest_util::WaitForTaskManagerRows(
+      1, expected_url_a_cached_title);
+  EXPECT_THAT(GetRendererTaskTitles(tester.get()),
+              ::testing::ElementsAre(expected_url_b_active_title,
+                                     expected_url_a_cached_title));
+}

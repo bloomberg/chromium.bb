@@ -72,7 +72,7 @@ typedef struct SegmentContext {
     int segment_idx_wrap;  ///< number after which the index wraps
     int segment_idx_wrap_nb;  ///< number of time the index has wraped
     int segment_count;     ///< number of segment files already written
-    ff_const59 AVOutputFormat *oformat;
+    const AVOutputFormat *oformat;
     AVFormatContext *avf;
     char *format;              ///< format to use for output segment files
     AVDictionary *format_options;
@@ -167,8 +167,10 @@ static int segment_mux_init(AVFormatContext *s)
 
         if (!(st = avformat_new_stream(oc, NULL)))
             return AVERROR(ENOMEM);
+        ret = ff_stream_encode_params_copy(st, ist);
+        if (ret < 0)
+            return ret;
         opar = st->codecpar;
-        avcodec_parameters_copy(opar, ipar);
         if (!oc->oformat->codec_tag ||
             av_codec_get_id (oc->oformat->codec_tag, ipar->codec_tag) == opar->codec_id ||
             av_codec_get_tag(oc->oformat->codec_tag, ipar->codec_id) <= 0) {
@@ -176,17 +178,6 @@ static int segment_mux_init(AVFormatContext *s)
         } else {
             opar->codec_tag = 0;
         }
-        st->sample_aspect_ratio = ist->sample_aspect_ratio;
-        st->time_base           = ist->time_base;
-        st->avg_frame_rate      = ist->avg_frame_rate;
-        st->disposition         = ist->disposition;
-#if FF_API_LAVF_AVCTX
-FF_DISABLE_DEPRECATION_WARNINGS
-        if (ipar->codec_tag == MKTAG('t','m','c','d'))
-            st->codec->time_base = ist->codec->time_base;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
-        av_dict_copy(&st->metadata, ist->metadata, 0);
     }
 
     return 0;
@@ -859,7 +850,7 @@ static int seg_write_packet(AVFormatContext *s, AVPacket *pkt)
         return AVERROR(EINVAL);
 
     if (!st->codecpar->extradata_size) {
-        buffer_size_t pkt_extradata_size;
+        size_t pkt_extradata_size;
         uint8_t *pkt_extradata = av_packet_get_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA, &pkt_extradata_size);
         if (pkt_extradata && pkt_extradata_size > 0) {
             ret = ff_alloc_extradata(st->codecpar, pkt_extradata_size);
@@ -1062,7 +1053,7 @@ static const AVClass seg_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVOutputFormat ff_segment_muxer = {
+const AVOutputFormat ff_segment_muxer = {
     .name           = "segment",
     .long_name      = NULL_IF_CONFIG_SMALL("segment"),
     .priv_data_size = sizeof(SegmentContext),
@@ -1085,7 +1076,7 @@ static const AVClass sseg_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVOutputFormat ff_stream_segment_muxer = {
+const AVOutputFormat ff_stream_segment_muxer = {
     .name           = "stream_segment,ssegment",
     .long_name      = NULL_IF_CONFIG_SMALL("streaming segment muxer"),
     .priv_data_size = sizeof(SegmentContext),

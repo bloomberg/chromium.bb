@@ -8,10 +8,29 @@
 #include <set>
 #include <string>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace variations {
+
+// The test seed data is associated with a VariationsSeed with one study,
+// "UMA-Uniformity-Trial-10-Percent", and ten equally weighted groups: "default"
+// and "group_01" through "group_09". The study is not associated with channels,
+// platforms, or features.
+//
+// The seed and signature pair were generated using the server's private key.
+extern const char kUncompressedBase64TestSeedData[];
+extern const char kCompressedBase64TestSeedData[];
+extern const char kBase64TestSeedSignature[];
+extern const char kTestSeedStudyName[];
+
+// Returns a base64-encoded compressed serialized form of a VariationsSeed.
+std::string GetTestSeedForPrefs();
+
+// Disables the use of the field trial testing config to exercise
+// VariationsFieldTrialCreator::CreateTrialsFromSeed().
+void DisableTestingConfig();
 
 // Decodes the variations header and extracts the variation ids.
 bool ExtractVariationIds(const std::string& variations,

@@ -73,6 +73,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void DidFinishLoad(const KURL& validated_url) override;
   void DispatchLoad() override;
   void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override;
+  void NavigateToAppHistoryKey(const WTF::String& key,
+                               bool has_user_gesture) override {}
   void UpdateTitle(const WTF::String& title,
                    base::i18n::TextDirection title_direction) override;
   void UpdateUserActivationState(
@@ -134,9 +136,10 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       mojom::blink::FrameOwnerPropertiesPtr frame_owner_properties) override;
   void DidChangeOpener(
       const absl::optional<LocalFrameToken>& opener_frame) override;
-  void DidChangeCSPAttribute(const blink::FrameToken& child_frame_token,
-                             network::mojom::blink::ContentSecurityPolicyPtr
-                                 parsed_csp_attribute) override;
+  void DidChangeIframeAttributes(
+      const blink::FrameToken& child_frame_token,
+      network::mojom::blink::ContentSecurityPolicyPtr parsed_csp_attribute,
+      bool anonymous) override;
   void DidChangeFramePolicy(const blink::FrameToken& child_frame_token,
                             const FramePolicy& frame_policy) override;
   void CapturePaintPreviewOfSubframe(
@@ -156,6 +159,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       const WTF::String& untrusted_stack_trace) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
   void DidActivateForPrerendering() override;
+  void DidUpdatePreferredColorScheme(
+      blink::mojom::PreferredColorScheme preferred_color_scheme) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

@@ -30,7 +30,7 @@ class UserBoardViewMojo : public UserBoardView {
                          bool is_warning) override;
   void ShowUserPodCustomIcon(
       const AccountId& account_id,
-      const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions& icon)
+      const proximity_auth::ScreenlockBridge::UserPodCustomIconInfo& icon_info)
       override;
   void HideUserPodCustomIcon(const AccountId& account_id) override;
   void SetAuthType(const AccountId& account_id,
@@ -50,5 +50,11 @@ class UserBoardViewMojo : public UserBoardView {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::UserBoardViewMojo;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_USER_BOARD_VIEW_MOJO_H_

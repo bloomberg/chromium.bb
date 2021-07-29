@@ -96,6 +96,7 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
                                        bool is_handled_within_agent,
                                        bool is_history_api_navigation,
                                        bool is_client_redirect) override;
+  void DispatchDidOpenDocumentInputStream(const KURL& url) override;
   void DispatchDidReceiveTitle(const String&) override;
   void DispatchDidCommitLoad(
       HistoryItem*,
@@ -139,8 +140,6 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
   void DidObserveLoadingBehavior(LoadingBehaviorFlag) override;
   void DidObserveNewFeatureUsage(const UseCounterFeature&) override;
   void DidObserveLayoutShift(double score, bool after_input_or_scroll) override;
-  void DidObserveInputForLayoutShiftTracking(
-      base::TimeTicks timestamp) override;
   void DidObserveLayoutNg(uint32_t all_block_count,
                           uint32_t ng_block_count,
                           uint32_t all_call_count,
@@ -182,6 +181,9 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
       mojo::PendingAssociatedReceiver<mojom::blink::Portal>,
       mojo::PendingAssociatedRemote<mojom::blink::PortalClient>) override;
   RemoteFrame* AdoptPortal(HTMLPortalElement*) override;
+
+  RemoteFrame* CreateFencedFrame(HTMLFencedFrameElement*) override;
+
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
                                        const KURL&,
                                        const Vector<WTF::String>&,

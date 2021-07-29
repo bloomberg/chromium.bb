@@ -81,8 +81,8 @@ function ff_pred16x16_dc_neon, export=1
 .L_pred16x16_dc_end:
         mov             w3,  #8
 6:      st1             {v0.16b}, [x0], x1
-        st1             {v0.16b}, [x0], x1
         subs            w3,  w3,  #1
+        st1             {v0.16b}, [x0], x1
         b.ne            6b
         ret
 endfunc
@@ -91,8 +91,8 @@ function ff_pred16x16_hor_neon, export=1
         sub             x2,  x0,  #1
         mov             w3,  #16
 1:      ld1r            {v0.16b}, [x2], x1
-        st1             {v0.16b}, [x0], x1
         subs            w3,  w3,  #1
+        st1             {v0.16b}, [x0], x1
         b.ne            1b
         ret
 endfunc
@@ -102,9 +102,9 @@ function ff_pred16x16_vert_neon, export=1
         add             x1,  x1,  x1
         ld1             {v0.16b}, [x2], x1
         mov             w3,  #8
-1:      st1             {v0.16b}, [x0], x1
+1:      subs            w3,  w3,  #1
+        st1             {v0.16b}, [x0], x1
         st1             {v0.16b}, [x2], x1
-        subs            w3,  w3,  #1
         b.ne            1b
         ret
 endfunc
@@ -158,8 +158,8 @@ function ff_pred16x16_plane_neon, export=1
         add             v1.8h,  v1.8h,  v2.8h
         sqshrun2        v0.16b, v1.8h,  #5
         add             v1.8h,  v1.8h,  v3.8h
-        st1             {v0.16b}, [x0], x1
         subs            w3,  w3,  #1
+        st1             {v0.16b}, [x0], x1
         b.ne            1b
         ret
 endfunc
@@ -175,8 +175,8 @@ function ff_pred8x8_hor_neon, export=1
         sub             x2,  x0,  #1
         mov             w3,  #8
 1:      ld1r            {v0.8b},  [x2], x1
-        st1             {v0.8b},  [x0], x1
         subs            w3,  w3,  #1
+        st1             {v0.8b},  [x0], x1
         b.ne            1b
         ret
 endfunc
@@ -186,9 +186,9 @@ function ff_pred8x8_vert_neon, export=1
         lsl             x1,  x1,  #1
         ld1             {v0.8b},  [x2], x1
         mov             w3,  #4
-1:      st1             {v0.8b},  [x0], x1
+1:      subs            w3,  w3,  #1
+        st1             {v0.8b},  [x0], x1
         st1             {v0.8b},  [x2], x1
-        subs            w3,  w3,  #1
         b.ne            1b
         ret
 endfunc
@@ -232,9 +232,9 @@ function ff_pred8x8_plane_neon, export=1
         mov             w3,  #8
 1:
         sqshrun         v0.8b,  v1.8h,  #5
+        subs            w3,  w3,  #1
         add             v1.8h,  v1.8h,  v2.8h
         st1             {v0.8b},  [x0], x1
-        subs            w3,  w3,  #1
         b.ne            1b
         ret
 endfunc
@@ -290,9 +290,9 @@ function ff_pred8x8_dc_neon, export=1
 .L_pred8x8_dc_end:
         mov             w3,  #4
         add             x2,  x0,  x1,  lsl #2
-6:      st1             {v0.8b},  [x0], x1
+6:      subs            w3,  w3,  #1
+        st1             {v0.8b},  [x0], x1
         st1             {v1.8b},  [x2], x1
-        subs            w3,  w3,  #1
         b.ne            6b
         ret
 endfunc
@@ -358,4 +358,112 @@ function ff_pred8x8_0l0_dc_neon, export=1
         movi            v0.8b,  #128
         dup             v1.8b,  v1.b[0]
         b               .L_pred8x8_dc_end
+endfunc
+
+.macro ldcol.16  rd,  rs,  rt,  n=4,  hi=0
+.if \n >= 4 || \hi == 0
+        ld1             {\rd\().h}[0],  [\rs], \rt
+        ld1             {\rd\().h}[1],  [\rs], \rt
+.endif
+.if \n >= 4 || \hi == 1
+        ld1             {\rd\().h}[2],  [\rs], \rt
+        ld1             {\rd\().h}[3],  [\rs], \rt
+.endif
+.if \n == 8
+        ld1             {\rd\().h}[4],  [\rs], \rt
+        ld1             {\rd\().h}[5],  [\rs], \rt
+        ld1             {\rd\().h}[6],  [\rs], \rt
+        ld1             {\rd\().h}[7],  [\rs], \rt
+.endif
+.endm
+
+// slower than C
+/*
+function ff_pred16x16_128_dc_neon_10, export=1
+        movi            v0.8h, #2, lsl #8 // 512, 1 << (bit_depth - 1)
+
+        b               .L_pred16x16_dc_10_end
+endfunc
+*/
+
+function ff_pred16x16_top_dc_neon_10, export=1
+        sub             x2,  x0,  x1
+
+        ld1             {v0.8h, v1.8h}, [x2]
+
+        add             v0.8h, v0.8h, v1.8h
+        addv            h0, v0.8h
+
+        urshr           v0.4h,  v0.4h,  #4
+        dup             v0.8h, v0.h[0]
+        b               .L_pred16x16_dc_10_end
+endfunc
+
+// slower than C
+/*
+function ff_pred16x16_left_dc_neon_10, export=1
+        sub             x2,  x0,  #2 // access to the "left" column
+        ldcol.16        v0,  x2,  x1,  8
+        ldcol.16        v1,  x2,  x1,  8 // load "left" column
+
+        add             v0.8h, v0.8h, v1.8h
+        addv            h0,  v0.8h
+
+        urshr           v0.4h,  v0.4h,  #4
+        dup             v0.8h, v0.h[0]
+        b               .L_pred16x16_dc_10_end
+endfunc
+*/
+
+function ff_pred16x16_dc_neon_10, export=1
+        sub             x2,  x0,  x1 // access to the "top" row
+        sub             x3,  x0,  #2 // access to the "left" column
+
+        ld1             {v0.8h, v1.8h}, [x2]
+        ldcol.16        v2,  x3,  x1,  8
+        ldcol.16        v3,  x3,  x1,  8 // load pixels in "top" row and "left" col
+
+        add             v0.8h, v0.8h, v1.8h
+        add             v2.8h, v2.8h, v3.8h
+        add             v0.8h, v0.8h, v2.8h
+        addv            h0, v0.8h
+
+        urshr           v0.4h,  v0.4h,  #5
+        dup             v0.8h,  v0.h[0]
+.L_pred16x16_dc_10_end:
+        mov             v1.16b,  v0.16b
+        mov             w3,  #8
+6:      st1             {v0.8h, v1.8h}, [x0], x1
+        subs            w3,  w3,  #1
+        st1             {v0.8h, v1.8h}, [x0], x1
+        b.ne            6b
+        ret
+endfunc
+
+function ff_pred16x16_hor_neon_10, export=1
+        sub             x2,  x0,  #2
+        add             x3,  x0,  #16
+
+        mov             w4,  #16
+1:      ld1r            {v0.8h},  [x2],  x1
+        subs            w4,  w4,  #1
+        st1             {v0.8h},  [x0],  x1
+        st1             {v0.8h},  [x3],  x1
+        b.ne            1b
+        ret
+endfunc
+
+function ff_pred16x16_vert_neon_10, export=1
+        sub             x2,  x0,  x1
+        add             x1,  x1,  x1
+
+        ld1             {v0.8h, v1.8h},  [x2],  x1
+
+        mov             w3,  #8
+1:      subs            w3,  w3,  #1
+        st1             {v0.8h, v1.8h},  [x0],  x1
+        st1             {v0.8h, v1.8h},  [x2],  x1
+
+        b.ne            1b
+        ret
 endfunc

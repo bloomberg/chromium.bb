@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/platform_util_internal.h"
@@ -20,8 +20,8 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/json/json_string_value_serializer.h"
 #include "base/values.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"

@@ -219,7 +219,8 @@ class PermissionRequestManagerWithBackForwardCacheBrowserTest
     PermissionRequestManagerBrowserTest::SetUpCommandLine(command_line);
     feature_list_.InitWithFeaturesAndParameters(
         {{features::kBackForwardCache,
-          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
+          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"},
+           {"ignore_outstanding_network_request_for_testing", "true"}}}},
         // Allow BackForwardCache for all devices regardless of their memory.
         {features::kBackForwardCacheMemoryControls});
   }
@@ -355,14 +356,9 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
 
 // Prompts are only shown for active tabs and (on Desktop) hidden on tab
 // switching
-// Flaky on Win and Linux bots crbug.com/1003747.
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_MultipleTabs DISABLED_MultipleTabs
-#else
-#define MAYBE_MultipleTabs MultipleTabs
-#endif
+// Flaky on bots crbug.com/1003747.
 IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
-                       MAYBE_MultipleTabs) {
+                       DISABLED_MultipleTabs) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
@@ -830,7 +826,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   base::RunLoop().RunUntilIdle();
 
   permissions::MockPermissionRequest request2(
-      u"request2", permissions::RequestType::kGeolocation,
+      u"request2", permissions::RequestType::kMicStream,
       permissions::PermissionRequestGestureType::UNKNOWN);
   GetPermissionRequestManager()->AddRequest(source_frame, &request2);
   base::RunLoop().RunUntilIdle();
@@ -869,23 +865,21 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerWithBackForwardCacheBrowserTest,
   GURL url_b = embedded_test_server()->GetURL("b.com", "/title1.html");
 
   ui_test_utils::NavigateToURL(browser(), url_a);
-  content::RenderFrameHost* rfh_a = GetActiveMainFrame();
-  content::RenderFrameDeletedObserver a_observer(rfh_a);
+  content::RenderFrameHostWrapper rfh_a(GetActiveMainFrame());
 
   ui_test_utils::NavigateToURL(browser(), url_b);
-  ASSERT_FALSE(a_observer.deleted());
   EXPECT_EQ(rfh_a->GetLifecycleState(),
             content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 
   permissions::MockPermissionRequest req;
-  GetPermissionRequestManager()->AddRequest(rfh_a, &req);
+  GetPermissionRequestManager()->AddRequest(rfh_a.get(), &req);
 
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0, bubble_factory()->show_count());
   EXPECT_EQ(0, bubble_factory()->TotalRequestCount());
-  // Page gets evicted if bubble would have been showed
-  EXPECT_TRUE(a_observer.deleted());
+  // Page gets evicted if bubble would have been shown.
+  rfh_a.WaitUntilRenderFrameDeleted();
 }
 
 IN_PROC_BROWSER_TEST_F(PermissionRequestManagerWithBackForwardCacheBrowserTest,
@@ -895,14 +889,12 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerWithBackForwardCacheBrowserTest,
   GURL url_b = embedded_test_server()->GetURL("b.com", "/title1.html");
 
   ui_test_utils::NavigateToURL(browser(), url_a);
-  content::RenderFrameHost* rfh_a = GetActiveMainFrame();
-  content::RenderFrameDeletedObserver a_observer(rfh_a);
+  content::RenderFrameHostWrapper rfh_a(GetActiveMainFrame());
 
   ui_test_utils::NavigateToURL(browser(), url_b);
-  ASSERT_FALSE(a_observer.deleted());
   EXPECT_EQ(rfh_a->GetLifecycleState(),
             content::RenderFrameHost::LifecycleState::kInBackForwardCache);
-  content::RenderFrameHost* rfh_b = GetActiveMainFrame();
+  content::RenderFrameHostWrapper rfh_b(GetActiveMainFrame());
 
   // Mic, camera, and pan/tilt/zoom requests are grouped if they come from the
   // same origin. Make sure this will not include requests from a cached frame.
@@ -918,10 +910,10 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerWithBackForwardCacheBrowserTest,
   permissions::MockPermissionRequest req_b_2(
       u"req_b_2", permissions::RequestType::kMicStream,
       permissions::PermissionRequestGestureType::GESTURE);
-  GetPermissionRequestManager()->AddRequest(rfh_a,
+  GetPermissionRequestManager()->AddRequest(rfh_a.get(),
                                             &req_a_1);  // Should be skipped
-  GetPermissionRequestManager()->AddRequest(rfh_b, &req_b_1);
-  GetPermissionRequestManager()->AddRequest(rfh_b, &req_b_2);
+  GetPermissionRequestManager()->AddRequest(rfh_b.get(), &req_b_1);
+  GetPermissionRequestManager()->AddRequest(rfh_b.get(), &req_b_2);
 
   bubble_factory()->WaitForPermissionBubble();
 
@@ -930,8 +922,8 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerWithBackForwardCacheBrowserTest,
   EXPECT_EQ(2, bubble_factory()->TotalRequestCount());
   EXPECT_TRUE(req_a_1.cancelled());
 
-  // Page gets evicted if bubble would have been showed.
-  EXPECT_TRUE(a_observer.deleted());
+  // Page gets evicted if bubble would have been shown.
+  rfh_a.WaitUntilRenderFrameDeleted();
 
   // Cleanup before we delete the requests.
   GetPermissionRequestManager()->Closing();
@@ -1041,8 +1033,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(PermissionRequestManagerWithPrerenderingTest,
                        RequestForPermission) {
-  GURL initial_url =
-      embedded_test_server()->GetURL("a.test", "/prerender/add_prerender.html");
+  GURL initial_url = embedded_test_server()->GetURL("a.test", "/empty.html");
   GURL prerender_url = embedded_test_server()->GetURL("a.test", "/title1.html");
   ASSERT_NE(ui_test_utils::NavigateToURL(browser(), initial_url), nullptr);
   ASSERT_EQ(GetActiveMainFrame()->GetLastCommittedURL(), initial_url);
@@ -1069,8 +1060,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerWithPrerenderingTest,
 
 IN_PROC_BROWSER_TEST_F(PermissionRequestManagerWithPrerenderingTest,
                        DuplicateRequestForPermission) {
-  GURL initial_url =
-      embedded_test_server()->GetURL("a.test", "/prerender/add_prerender.html");
+  GURL initial_url = embedded_test_server()->GetURL("a.test", "/empty.html");
   GURL prerender_url = embedded_test_server()->GetURL("a.test", "/title1.html");
   ASSERT_NE(ui_test_utils::NavigateToURL(browser(), initial_url), nullptr);
   ASSERT_EQ(GetActiveMainFrame()->GetLastCommittedURL(), initial_url);
@@ -1100,8 +1090,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerWithPrerenderingTest,
 
 IN_PROC_BROWSER_TEST_F(PermissionRequestManagerWithPrerenderingTest,
                        PrerenderLoadsWhileRequestsPending) {
-  GURL initial_url =
-      embedded_test_server()->GetURL("a.test", "/prerender/add_prerender.html");
+  GURL initial_url = embedded_test_server()->GetURL("a.test", "/empty.html");
   GURL prerender_url = embedded_test_server()->GetURL("a.test", "/title1.html");
   GURL next_url = embedded_test_server()->GetURL("b.test", "/title1.html");
   ASSERT_NE(ui_test_utils::NavigateToURL(browser(), initial_url), nullptr);

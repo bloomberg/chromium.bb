@@ -1,5 +1,5 @@
 export const description = `
-createRenderPipeline validation tests.
+createRenderPipeline and createRenderPipelineAsync validation tests.
 
 TODO: review existing tests, write descriptions, and make sure tests are complete.
       Make sure the following is covered. Consider splitting the file if too large/disjointed.
@@ -23,9 +23,8 @@ TODO: review existing tests, write descriptions, and make sure tests are complet
 
 `;
 
-import { poptions } from '../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../common/framework/test_group.js';
-import { kAllTextureFormats, kAllTextureFormatInfo } from '../../capability_info.js';
+import { kTextureFormats, kTextureFormatInfo } from '../../capability_info.js';
 
 import { ValidationTest } from './validation_test.js';
 
@@ -102,147 +101,89 @@ class F extends ValidationTest {
       sampleCount,
     });
   }
+
+  doCreateRenderPipelineTest(
+    isAsync: boolean,
+    _success: boolean,
+    descriptor: GPURenderPipelineDescriptor
+  ) {
+    if (isAsync) {
+      if (_success) {
+        this.shouldResolve(this.device.createRenderPipelineAsync(descriptor));
+      } else {
+        this.shouldReject('OperationError', this.device.createRenderPipelineAsync(descriptor));
+      }
+    } else {
+      if (_success) {
+        this.device.createRenderPipeline(descriptor);
+      } else {
+        this.expectValidationError(() => {
+          this.device.createRenderPipeline(descriptor);
+        });
+      }
+    }
+  }
 }
 
 export const g = makeTestGroup(F);
 
-g.test('basic_use_of_createRenderPipeline').fn(t => {
-  const descriptor = t.getDescriptor();
+g.test('basic_use_of_createRenderPipeline')
+  .params(u => u.combine('isAsync', [false, true]))
+  .fn(async t => {
+    const { isAsync } = t.params;
+    const descriptor = t.getDescriptor();
 
-  t.device.createRenderPipeline(descriptor);
-});
-
-g.test('at_least_one_color_state_is_required').fn(async t => {
-  const goodDescriptor = t.getDescriptor({
-    targets: [{ format: 'rgba8unorm' }],
+    t.doCreateRenderPipelineTest(isAsync, true, descriptor);
   });
 
-  // Control case
-  t.device.createRenderPipeline(goodDescriptor);
+g.test('at_least_one_color_state_is_required')
+  .params(u => u.combine('isAsync', [false, true]))
+  .fn(async t => {
+    const { isAsync } = t.params;
 
-  // Fail because lack of color states
-  const badDescriptor = t.getDescriptor({
-    targets: [],
-  });
+    const goodDescriptor = t.getDescriptor({
+      targets: [{ format: 'rgba8unorm' }],
+    });
 
-  t.expectValidationError(() => {
-    t.device.createRenderPipeline(badDescriptor);
+    // Control case
+    t.doCreateRenderPipelineTest(isAsync, true, goodDescriptor);
+
+    // Fail because lack of color states
+    const badDescriptor = t.getDescriptor({
+      targets: [],
+    });
+
+    t.doCreateRenderPipelineTest(isAsync, false, badDescriptor);
   });
-});
 
 g.test('color_formats_must_be_renderable')
-  .params(poptions('format', kAllTextureFormats))
+  .params(u => u.combine('isAsync', [false, true]).combine('format', kTextureFormats))
   .fn(async t => {
-    const format: GPUTextureFormat = t.params.format;
-    const info = kAllTextureFormatInfo[format];
+    const { isAsync, format } = t.params;
+    const info = kTextureFormatInfo[format];
     await t.selectDeviceOrSkipTestCase(info.feature);
 
     const descriptor = t.getDescriptor({ targets: [{ format }] });
 
-    if (info.renderable && info.color) {
-      // Succeeds when color format is renderable
-      t.device.createRenderPipeline(descriptor);
-    } else {
-      // Fails because when format is non-renderable
-      t.expectValidationError(() => {
-        t.device.createRenderPipeline(descriptor);
-      });
-    }
+    t.doCreateRenderPipelineTest(isAsync, info.renderable && info.color, descriptor);
   });
 
 g.test('sample_count_must_be_valid')
-  .params([
-    { sampleCount: 0, _success: false },
-    { sampleCount: 1, _success: true },
-    { sampleCount: 2, _success: false },
-    { sampleCount: 3, _success: false },
-    { sampleCount: 4, _success: true },
-    { sampleCount: 8, _success: false },
-    { sampleCount: 16, _success: false },
-  ])
+  .params(u =>
+    u.combine('isAsync', [false, true]).combineWithParams([
+      { sampleCount: 0, _success: false },
+      { sampleCount: 1, _success: true },
+      { sampleCount: 2, _success: false },
+      { sampleCount: 3, _success: false },
+      { sampleCount: 4, _success: true },
+      { sampleCount: 8, _success: false },
+      { sampleCount: 16, _success: false },
+    ])
+  )
   .fn(async t => {
-    const { sampleCount, _success } = t.params;
+    const { isAsync, sampleCount, _success } = t.params;
 
     const descriptor = t.getDescriptor({ sampleCount });
 
-    if (_success) {
-      // Succeeds when sample count is valid
-      t.device.createRenderPipeline(descriptor);
-    } else {
-      // Fails when sample count is not 4 or 1
-      t.expectValidationError(() => {
-        t.device.createRenderPipeline(descriptor);
-      });
-    }
-  });
-
-g.test('sample_count_must_be_equal_to_the_one_of_every_attachment_in_the_render_pass')
-  .params([
-    { attachmentSamples: 4, pipelineSamples: 4, _success: true }, // It is allowed to use multisampled render pass and multisampled render pipeline.
-    { attachmentSamples: 4, pipelineSamples: 1, _success: false }, // It is not allowed to use multisampled render pass and non-multisampled render pipeline.
-    { attachmentSamples: 1, pipelineSamples: 4, _success: false }, // It is not allowed to use non-multisampled render pass and multisampled render pipeline.
-  ])
-  .fn(async t => {
-    const { attachmentSamples, pipelineSamples, _success } = t.params;
-
-    const colorTexture = t.createTexture({
-      format: 'rgba8unorm',
-      sampleCount: attachmentSamples,
-    });
-    const depthStencilTexture = t.createTexture({
-      format: 'depth24plus-stencil8',
-      sampleCount: attachmentSamples,
-    });
-    const renderPassDescriptorWithoutDepthStencil = {
-      colorAttachments: [
-        {
-          view: colorTexture.createView(),
-          loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
-          storeOp: 'store',
-        },
-      ],
-    } as const;
-    const renderPassDescriptorWithDepthStencilOnly = {
-      colorAttachments: [],
-      depthStencilAttachment: {
-        view: depthStencilTexture.createView(),
-        depthLoadValue: 1.0,
-        depthStoreOp: 'store',
-        stencilLoadValue: 0,
-        stencilStoreOp: 'store',
-      },
-    } as const;
-
-    const pipelineWithoutDepthStencil = t.device.createRenderPipeline(
-      t.getDescriptor({
-        sampleCount: pipelineSamples,
-      })
-    );
-    const pipelineWithDepthStencilOnly = t.device.createRenderPipeline(
-      t.getDescriptor({
-        targets: [],
-        depthStencil: { format: 'depth24plus-stencil8' },
-        sampleCount: pipelineSamples,
-      })
-    );
-
-    for (const { renderPassDescriptor, pipeline } of [
-      {
-        renderPassDescriptor: renderPassDescriptorWithoutDepthStencil,
-        pipeline: pipelineWithoutDepthStencil,
-      },
-      {
-        renderPassDescriptor: renderPassDescriptorWithDepthStencilOnly,
-        pipeline: pipelineWithDepthStencilOnly,
-      },
-    ]) {
-      const commandEncoder = t.device.createCommandEncoder();
-      const renderPass = commandEncoder.beginRenderPass(renderPassDescriptor);
-      renderPass.setPipeline(pipeline);
-      renderPass.endPass();
-
-      t.expectValidationError(() => {
-        commandEncoder.finish();
-      }, !_success);
-    }
+    t.doCreateRenderPipelineTest(isAsync, _success, descriptor);
   });

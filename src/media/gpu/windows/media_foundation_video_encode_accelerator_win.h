@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "media/base/bitrate.h"
 #include "media/base/win/dxgi_device_manager.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_encode_accelerator.h"
@@ -45,7 +46,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   bool Initialize(const Config& config, Client* client) override;
   void Encode(scoped_refptr<VideoFrame> frame, bool force_keyframe) override;
   void UseOutputBitstreamBuffer(BitstreamBuffer buffer) override;
-  void RequestEncodingParametersChange(uint32_t bitrate,
+  void RequestEncodingParametersChange(const media::Bitrate& bitrate,
                                        uint32_t framerate) override;
   void Destroy() override;
   bool IsGpuFrameResizeSupported() override;
@@ -109,7 +110,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
       std::unique_ptr<BitstreamBufferRef> buffer_ref);
 
   // Changes encode parameters on |encoder_thread_|.
-  void RequestEncodingParametersChangeTask(uint32_t bitrate,
+  void RequestEncodingParametersChangeTask(const Bitrate& bitrate,
                                            uint32_t framerate);
 
   // Destroys encode session on |encoder_thread_|.
@@ -142,7 +143,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   gfx::Size input_visible_size_;
   size_t bitstream_buffer_size_;
   uint32_t frame_rate_;
-  uint32_t target_bitrate_;
+  Bitrate bitrate_;
 
   // Group of picture length for encoded output stream, indicates the
   // distance between two key frames.

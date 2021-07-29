@@ -9,6 +9,7 @@ interface AbortPaymentEvent : ExtendableEvent
     method constructor
     method respondWith
 interface AbortSignal : EventTarget
+    static method abort
     attribute @@toStringTag
     getter aborted
     getter onabort
@@ -405,9 +406,17 @@ interface DOMStringList
     method item
 interface DatagramDuplexStream
     attribute @@toStringTag
+    getter incomingHighWaterMark
+    getter incomingMaxAge
+    getter outgoingHighWaterMark
+    getter outgoingMaxAge
     getter readable
     getter writable
     method constructor
+    setter incomingHighWaterMark
+    setter incomingMaxAge
+    setter outgoingHighWaterMark
+    setter outgoingMaxAge
 interface DecompressionStream
     attribute @@toStringTag
     getter readable
@@ -564,6 +573,7 @@ interface FileSystemHandle
     method constructor
     method isSameEntry
     method queryPermission
+    method remove
     method requestPermission
 interface FileSystemWritableFileStream : WritableStream
     attribute @@toStringTag
@@ -911,8 +921,10 @@ interface NavigatorUAData
     attribute @@toStringTag
     getter brands
     getter mobile
+    getter platform
     method constructor
     method getHighEntropyValues
+    method toJSON
 interface NetworkInformation : EventTarget
     attribute @@toStringTag
     getter downlink
@@ -1002,6 +1014,7 @@ interface OffscreenCanvasRenderingContext2D
     getter textWordSpacing
     method arc
     method arcTo
+    method beginLayer
     method beginPath
     method bezierCurveTo
     method clearRect
@@ -1016,12 +1029,14 @@ interface OffscreenCanvasRenderingContext2D
     method createRadialGradient
     method drawImage
     method ellipse
+    method endLayer
     method fill
     method fillRect
     method fillText
     method getImageData
     method getLineDash
     method getTransform
+    method isContextLost
     method isPointInPath
     method isPointInStroke
     method lineTo
@@ -1127,7 +1142,6 @@ interface Performance : EventTarget
     method mark
     method measure
     method now
-    method profile
     method setResourceTimingBufferSize
     method toJSON
     setter onresourcetimingbufferfull
@@ -1213,12 +1227,6 @@ interface Permissions
     method request
     method requestAll
     method revoke
-interface Profiler : EventTarget
-    attribute @@toStringTag
-    getter sampleInterval
-    getter stopped
-    method constructor
-    method stop
 interface PromiseRejectionEvent : Event
     attribute @@toStringTag
     getter promise
@@ -1305,7 +1313,7 @@ interface ReadableStreamDefaultReader
     method constructor
     method read
     method releaseLock
-interface ReceiveStream
+interface ReceiveStream : ReadableStream
     attribute @@toStringTag
     getter readable
     getter readingAborted
@@ -1362,6 +1370,11 @@ interface Response
     method formData
     method json
     method text
+interface Scheduler
+    attribute @@toStringTag
+    getter currentTaskSignal
+    method constructor
+    method postTask
 interface SecurityPolicyViolationEvent : Event
     attribute @@toStringTag
     getter blockedURI
@@ -1465,6 +1478,20 @@ interface SyncManager
     method constructor
     method getTags
     method register
+interface TaskController : AbortController
+    attribute @@toStringTag
+    method constructor
+    method setPriority
+interface TaskPriorityChangeEvent : Event
+    attribute @@toStringTag
+    getter previousPriority
+    method constructor
+interface TaskSignal : AbortSignal
+    attribute @@toStringTag
+    getter onprioritychange
+    getter priority
+    method constructor
+    setter onprioritychange
 interface TextDecoder
     attribute @@toStringTag
     getter encoding
@@ -1519,6 +1546,28 @@ interface TransformStream
     getter readable
     getter writable
     method constructor
+interface TrustedHTML
+    attribute @@toStringTag
+    method constructor
+    method toJSON
+    method toString
+interface TrustedScript
+    attribute @@toStringTag
+    method constructor
+    method toJSON
+    method toString
+interface TrustedScriptURL
+    attribute @@toStringTag
+    method constructor
+    method toJSON
+    method toString
+interface TrustedTypePolicy
+    attribute @@toStringTag
+    getter name
+    method constructor
+    method createHTML
+    method createScript
+    method createScriptURL
 interface TrustedTypePolicyFactory : EventTarget
     attribute @@toStringTag
     getter defaultPolicy
@@ -2910,6 +2959,7 @@ interface WebTransport
     getter closed
     getter datagramReadable
     getter datagramWritable
+    getter datagrams
     getter incomingBidirectionalStreams
     getter incomingUnidirectionalStreams
     getter ready
@@ -2943,6 +2993,7 @@ interface WorkerGlobalScope : EventTarget
     getter onunhandledrejection
     getter origin
     getter performance
+    getter scheduler
     getter self
     getter storageFoundation
     getter trustedTypes
@@ -2964,6 +3015,7 @@ interface WorkerGlobalScope : EventTarget
     setter onunhandledrejection
     setter origin
     setter performance
+    setter scheduler
 interface WorkerLocation
     attribute @@toStringTag
     getter hash
@@ -3007,6 +3059,10 @@ interface WritableStream
     method close
     method constructor
     method getWriter
+interface WritableStreamDefaultController
+    attribute @@toStringTag
+    method constructor
+    method error
 interface WritableStreamDefaultWriter
     attribute @@toStringTag
     getter closed

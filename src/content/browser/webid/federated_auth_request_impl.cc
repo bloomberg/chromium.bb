@@ -13,6 +13,7 @@
 #include "content/public/browser/federated_identity_request_permission_context_delegate.h"
 #include "content/public/browser/federated_identity_sharing_permission_context_delegate.h"
 #include "content/public/common/content_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/url_constants.h"
 
 using blink::mojom::LogoutStatus;
@@ -22,10 +23,27 @@ using UserApproval = content::IdentityRequestDialogController::UserApproval;
 
 namespace content {
 
+namespace {
+std::string FormatRequestParams(const std::string& client_id,
+                                const std::string& nonce) {
+  std::string query;
+  // 'openid' scope is required for IdPs using OpenID Connect. We hope that IdPs
+  // using OAuth will ignore it, although some might return errors.
+  query += "scope=openid profile email";
+  if (client_id.length() > 0) {
+    query += "&client_id=" + client_id;
+  }
+  if (nonce.length() > 0) {
+    query += "&nonce=" + nonce;
+  }
+  return query;
+}
+}  // namespace
+
 FederatedAuthRequestImpl::FederatedAuthRequestImpl(
     RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::FederatedAuthRequest> receiver)
-    : FrameServiceBase(host, std::move(receiver)) {}
+    : DocumentServiceBase(host, std::move(receiver)) {}
 
 FederatedAuthRequestImpl::~FederatedAuthRequestImpl() {
   // Ensures key data members are destructed in proper order and resolves any
@@ -43,7 +61,7 @@ void FederatedAuthRequestImpl::Create(
   // the mojo method is invoked, causing the promise to be rejected.
   // https://crbug.com/1141125
   // It is safe to access host->GetLastCommittedOrigin during construction
-  // but FrameServiceBase::origin() should be used thereafter.
+  // but DocumentServiceBase::origin() should be used thereafter.
   if (!IsSameOriginWithAncestors(host, host->GetLastCommittedOrigin())) {
     mojo::ReportBadMessage(
         "navigator.id.get cannot be invoked from within cross-origin iframes.");
@@ -57,7 +75,8 @@ void FederatedAuthRequestImpl::Create(
 }
 
 void FederatedAuthRequestImpl::RequestIdToken(const GURL& provider,
-                                              const std::string& id_request,
+                                              const std::string& client_id,
+                                              const std::string& nonce,
                                               RequestMode mode,
                                               RequestIdTokenCallback callback) {
   if (logout_callback_ || auth_request_callback_) {
@@ -67,7 +86,8 @@ void FederatedAuthRequestImpl::RequestIdToken(const GURL& provider,
 
   auth_request_callback_ = std::move(callback);
   provider_ = provider;
-  id_request_ = id_request;
+  client_id_ = client_id;
+  nonce_ = nonce;
   mode_ = mode;
 
   network_manager_ = CreateNetworkManager(provider);
@@ -96,11 +116,14 @@ void FederatedAuthRequestImpl::RequestIdToken(const GURL& provider,
     case RequestMode::kMediated:
       // Skip permissions for Mediated mode since they are combined with
       // account selection UX.
-      OnSigninApproved(UserApproval::kApproved);
+      network_manager_->FetchIdpWellKnown(
+          base::BindOnce(&FederatedAuthRequestImpl::OnWellKnownFetched,
+                         weak_ptr_factory_.GetWeakPtr()));
       break;
     case RequestMode::kPermission:
       request_dialog_controller_->ShowInitialPermissionDialog(
           web_contents, provider_,
+          IdentityRequestDialogController::PermissionDialogMode::kStateful,
           base::BindOnce(&FederatedAuthRequestImpl::OnSigninApproved,
                          weak_ptr_factory_.GetWeakPtr()));
       break;
@@ -209,7 +232,7 @@ void FederatedAuthRequestImpl::OnWellKnownFetched(
       }
 
       network_manager_->SendSigninRequest(
-          endpoints_.idp, id_request_,
+          endpoints_.idp, FormatRequestParams(client_id_, nonce_),
           base::BindOnce(&FederatedAuthRequestImpl::OnSigninResponseReceived,
                          weak_ptr_factory_.GetWeakPtr()));
       break;
@@ -387,8 +410,15 @@ void FederatedAuthRequestImpl::OnAccountSelected(
     return;
   }
 
+  // Account selection is considered sufficient for logout permission
+  // user consent.
+  if (GetRequestPermissionContext()) {
+    GetRequestPermissionContext()->GrantRequestPermission(
+        origin(), url::Origin::Create(provider_));
+  }
+
   network_manager_->SendTokenRequest(
-      endpoints_.token, account_id, id_request_,
+      endpoints_.token, account_id, FormatRequestParams(client_id_, nonce_),
       base::BindOnce(&FederatedAuthRequestImpl::OnTokenResponseReceived,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -524,9 +554,10 @@ void FederatedAuthRequestImpl::SetSharingPermissionDelegateForTests(
 FederatedIdentityRequestPermissionContextDelegate*
 FederatedAuthRequestImpl::GetRequestPermissionContext() {
   if (!request_permission_delegate_) {
-    render_frame_host()
-        ->GetBrowserContext()
-        ->GetFederatedIdentityRequestPermissionContext();
+    request_permission_delegate_ =
+        render_frame_host()
+            ->GetBrowserContext()
+            ->GetFederatedIdentityRequestPermissionContext();
   }
   return request_permission_delegate_;
 }
@@ -534,9 +565,10 @@ FederatedAuthRequestImpl::GetRequestPermissionContext() {
 FederatedIdentitySharingPermissionContextDelegate*
 FederatedAuthRequestImpl::GetSharingPermissionContext() {
   if (!sharing_permission_delegate_) {
-    render_frame_host()
-        ->GetBrowserContext()
-        ->GetFederatedIdentitySharingPermissionContext();
+    sharing_permission_delegate_ =
+        render_frame_host()
+            ->GetBrowserContext()
+            ->GetFederatedIdentitySharingPermissionContext();
   }
   return sharing_permission_delegate_;
 }

@@ -15,6 +15,7 @@
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ssl/https_only_mode_controller_client.h"
 #include "chrome/browser/ssl/insecure_form/insecure_form_controller_client.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
@@ -31,8 +32,8 @@
 #if defined(OS_WIN)
 #include "base/enterprise_util.h"
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -315,6 +316,19 @@ ChromeSecurityBlockingPageFactory::CreateInsecureFormBlockingPage(
   return page;
 }
 
+std::unique_ptr<security_interstitials::HttpsOnlyModeBlockingPage>
+ChromeSecurityBlockingPageFactory::CreateHttpsOnlyModeBlockingPage(
+    content::WebContents* web_contents,
+    const GURL& request_url) {
+  std::unique_ptr<HttpsOnlyModeControllerClient> client =
+      std::make_unique<HttpsOnlyModeControllerClient>(web_contents,
+                                                      request_url);
+  auto page =
+      std::make_unique<security_interstitials::HttpsOnlyModeBlockingPage>(
+          web_contents, request_url, std::move(client));
+  return page;
+}
+
 // static
 void ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(
     SSLBlockingPageBase* page) {
@@ -327,7 +341,7 @@ void ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
         report->SetIsEnterpriseManaged(g_browser_process->platform_part()
                                            ->browser_policy_connector_chromeos()
-                                           ->IsEnterpriseManaged());
+                                           ->IsDeviceEnterpriseManaged());
 #endif
 
         // TODO(estade): this one is probably necessary for all clients, and

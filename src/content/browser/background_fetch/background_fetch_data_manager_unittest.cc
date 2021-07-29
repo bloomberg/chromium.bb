@@ -19,7 +19,6 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
@@ -45,11 +44,13 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/test/blob_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "url/origin.h"
 
 namespace content {
 namespace {
@@ -114,7 +115,7 @@ void DidStoreUserData(base::OnceClosure quit_closure,
 }
 
 void GetNumUserData(base::OnceClosure quit_closure,
-                    int* out_size,
+                    size_t* out_size,
                     const std::vector<std::string>& data,
                     blink::ServiceWorkerStatusCode status) {
   DCHECK(out_size);
@@ -124,9 +125,9 @@ void GetNumUserData(base::OnceClosure quit_closure,
 }
 
 struct ResponseStateStats {
-  int pending_requests = 0;
-  int active_requests = 0;
-  int completed_requests = 0;
+  size_t pending_requests = 0;
+  size_t active_requests = 0;
+  size_t completed_requests = 0;
 };
 
 bool operator==(const ResponseStateStats& s1, const ResponseStateStats& s2) {
@@ -256,7 +257,7 @@ class BackgroundFetchDataManagerTest
 
   blink::mojom::BackgroundFetchRegistrationDataPtr GetRegistration(
       int64_t service_worker_registration_id,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       const std::string developer_id,
       blink::mojom::BackgroundFetchError* out_error) {
     DCHECK(out_error);
@@ -265,7 +266,7 @@ class BackgroundFetchDataManagerTest
         blink::mojom::BackgroundFetchRegistrationData::New();
     base::RunLoop run_loop;
     background_fetch_data_manager_->GetRegistration(
-        service_worker_registration_id, origin, developer_id,
+        service_worker_registration_id, storage_key, developer_id,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidGetRegistration,
                        base::Unretained(this), run_loop.QuitClosure(),
                        out_error, registration_data.get()));
@@ -293,14 +294,14 @@ class BackgroundFetchDataManagerTest
 
   std::vector<std::string> GetDeveloperIds(
       int64_t service_worker_registration_id,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       blink::mojom::BackgroundFetchError* out_error) {
     DCHECK(out_error);
 
     std::vector<std::string> ids;
     base::RunLoop run_loop;
     background_fetch_data_manager_->GetDeveloperIdsForServiceWorker(
-        service_worker_registration_id, origin,
+        service_worker_registration_id, storage_key,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidGetDeveloperIds,
                        base::Unretained(this), run_loop.QuitClosure(),
                        out_error, &ids));
@@ -453,8 +454,7 @@ class BackgroundFetchDataManagerTest
     // implements StorageKey.
     base::RunLoop run_loop;
     embedded_worker_test_helper()->context_wrapper()->StoreRegistrationUserData(
-        service_worker_registration_id, storage::StorageKey(origin()),
-        {{key, value}},
+        service_worker_registration_id, storage_key(), {{key, value}},
         base::BindOnce(&DidStoreUserData, run_loop.QuitClosure()));
     run_loop.Run();
   }
@@ -465,7 +465,7 @@ class BackgroundFetchDataManagerTest
 
     base::RunLoop run_loop;
     background_fetch_data_manager_->HasCache(
-        origin(), cache_name,
+        storage_key(), cache_name,
         /* trace_id= */ 0,
         base::BindLambdaForTesting([&](blink::mojom::CacheStorageError error) {
           result = error == blink::mojom::CacheStorageError::kSuccess;
@@ -485,7 +485,7 @@ class BackgroundFetchDataManagerTest
     mojo::AssociatedRemote<blink::mojom::CacheStorageCache> cache;
     base::RunLoop run_loop;
     background_fetch_data_manager_->OpenCache(
-        origin(), kExampleUniqueId, trace_id,
+        storage_key(), kExampleUniqueId, trace_id,
         base::BindLambdaForTesting([&](blink::mojom::OpenResultPtr result) {
           EXPECT_FALSE(result->is_status());
 
@@ -510,8 +510,8 @@ class BackgroundFetchDataManagerTest
     mojo::AssociatedRemote<blink::mojom::CacheStorageCache> cache;
     base::RunLoop run_loop;
     background_fetch_data_manager_->OpenCache(
-        origin(),
-        /* cache_name= */ kExampleUniqueId,
+        storage_key(),
+        /* unique_id= */ kExampleUniqueId,
         /* trace_id= */ 0,
         base::BindLambdaForTesting([&](blink::mojom::OpenResultPtr result) {
           EXPECT_TRUE(result->is_cache());
@@ -540,8 +540,8 @@ class BackgroundFetchDataManagerTest
     mojo::AssociatedRemote<blink::mojom::CacheStorageCache> cache;
     base::RunLoop run_loop;
     background_fetch_data_manager_->OpenCache(
-        origin(),
-        /* cache_name= */ kExampleUniqueId,
+        storage_key(),
+        /* unique_id= */ kExampleUniqueId,
         /* trace_id= */ 0,
         base::BindLambdaForTesting([&](blink::mojom::OpenResultPtr result) {
           EXPECT_TRUE(result->is_cache());
@@ -850,12 +850,12 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
             service_worker_registration_id);
 
-  BackgroundFetchRegistrationId registration_id1(service_worker_registration_id,
-                                                 origin(), kExampleDeveloperId,
-                                                 kExampleUniqueId);
+  BackgroundFetchRegistrationId registration_id1(
+      service_worker_registration_id, storage_key(), kExampleDeveloperId,
+      kExampleUniqueId);
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin());
+      CreateValidRequests(storage_key().origin());
   auto options = blink::mojom::BackgroundFetchOptions::New();
 
   blink::mojom::BackgroundFetchError error;
@@ -877,9 +877,9 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
 
   // Different |unique_id|, since this is a new Background Fetch registration,
   // even though it shares the same |developer_id|.
-  BackgroundFetchRegistrationId registration_id2(service_worker_registration_id,
-                                                 origin(), kExampleDeveloperId,
-                                                 kAlternativeUniqueId);
+  BackgroundFetchRegistrationId registration_id2(
+      service_worker_registration_id, storage_key(), kExampleDeveloperId,
+      kAlternativeUniqueId);
 
   // Attempting to create a second registration with the same |developer_id| and
   // |service_worker_registration_id| should yield an error.
@@ -917,11 +917,11 @@ TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaFailsCreation) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
             service_worker_registration_id);
 
-  BackgroundFetchRegistrationId registration_id(service_worker_registration_id,
-                                                origin(), kExampleDeveloperId,
-                                                kExampleUniqueId);
+  BackgroundFetchRegistrationId registration_id(
+      service_worker_registration_id, storage_key(), kExampleDeveloperId,
+      kExampleUniqueId);
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin());
+      CreateValidRequests(storage_key().origin());
   auto options = blink::mojom::BackgroundFetchOptions::New();
   options->download_total = kBackgroundFetchMaxQuotaBytes + 1;
 
@@ -948,7 +948,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationLimitIsEnforced) {
   for (int i = 0; i < 2; i++) {
     // First Service Worker.
     BackgroundFetchRegistrationId registration_id1(
-        swid1, origin(), kExampleDeveloperId + base::NumberToString(i),
+        swid1, storage_key(), kExampleDeveloperId + base::NumberToString(i),
         base::GenerateGUID());
     CreateRegistration(
         registration_id1, std::vector<blink::mojom::FetchAPIRequestPtr>(),
@@ -957,7 +957,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationLimitIsEnforced) {
 
     // Second service Worker.
     BackgroundFetchRegistrationId registration_id2(
-        swid2, origin(), kExampleDeveloperId + base::NumberToString(i),
+        swid2, storage_key(), kExampleDeveloperId + base::NumberToString(i),
         base::GenerateGUID());
     CreateRegistration(
         registration_id2, std::vector<blink::mojom::FetchAPIRequestPtr>(),
@@ -969,7 +969,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationLimitIsEnforced) {
   // bringing us to the limit.
   {
     BackgroundFetchRegistrationId registration_id(
-        swid1, origin(), "developer_id1", base::GenerateGUID());
+        swid1, storage_key(), "developer_id1", base::GenerateGUID());
     CreateRegistration(
         registration_id, std::vector<blink::mojom::FetchAPIRequestPtr>(),
         blink::mojom::BackgroundFetchOptions::New(), SkBitmap(), &error);
@@ -979,7 +979,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationLimitIsEnforced) {
   // A registration this time should fail.
   {
     BackgroundFetchRegistrationId registration_id(
-        swid1, origin(), "developer_id2", base::GenerateGUID());
+        swid1, storage_key(), "developer_id2", base::GenerateGUID());
     CreateRegistration(
         registration_id, std::vector<blink::mojom::FetchAPIRequestPtr>(),
         blink::mojom::BackgroundFetchOptions::New(), SkBitmap(), &error);
@@ -990,7 +990,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationLimitIsEnforced) {
   // The registration should also fail for the other Service Worker.
   {
     BackgroundFetchRegistrationId registration_id(
-        swid2, origin(), "developer_id3", base::GenerateGUID());
+        swid2, storage_key(), "developer_id3", base::GenerateGUID());
     CreateRegistration(
         registration_id, std::vector<blink::mojom::FetchAPIRequestPtr>(),
         blink::mojom::BackgroundFetchOptions::New(), SkBitmap(), &error);
@@ -1004,18 +1004,18 @@ TEST_F(BackgroundFetchDataManagerTest, GetDeveloperIds) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin(), 2u);
+      CreateValidRequests(storage_key().origin(), 2u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
 
   // Verify that no developer IDs can be found.
-  auto developer_ids = GetDeveloperIds(sw_id, origin(), &error);
+  auto developer_ids = GetDeveloperIds(sw_id, storage_key(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_THAT(developer_ids, IsEmpty());
 
   // Create a single registration.
   BackgroundFetchRegistrationId registration_id1(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
   {
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id1, _, _, _, _, _));
 
@@ -1025,20 +1025,20 @@ TEST_F(BackgroundFetchDataManagerTest, GetDeveloperIds) {
   }
 
   // Verify that the developer ID can be found.
-  developer_ids = GetDeveloperIds(sw_id, origin(), &error);
+  developer_ids = GetDeveloperIds(sw_id, storage_key(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_THAT(developer_ids, UnorderedElementsAre(kExampleDeveloperId));
 
   RestartDataManagerFromPersistentStorage();
 
   // After a restart, GetDeveloperIds should still find the IDs.
-  developer_ids = GetDeveloperIds(sw_id, origin(), &error);
+  developer_ids = GetDeveloperIds(sw_id, storage_key(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_THAT(developer_ids, UnorderedElementsAre(kExampleDeveloperId));
 
   // Create another registration.
   BackgroundFetchRegistrationId registration_id2(
-      sw_id, origin(), kAlternativeDeveloperId, kAlternativeUniqueId);
+      sw_id, storage_key(), kAlternativeDeveloperId, kAlternativeUniqueId);
   {
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id2, _, _, _, _, _));
 
@@ -1047,14 +1047,14 @@ TEST_F(BackgroundFetchDataManagerTest, GetDeveloperIds) {
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
   // Verify that both developer IDs can be found.
-  developer_ids = GetDeveloperIds(sw_id, origin(), &error);
+  developer_ids = GetDeveloperIds(sw_id, storage_key(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_THAT(developer_ids, UnorderedElementsAre(kExampleDeveloperId,
                                                   kAlternativeDeveloperId));
   RestartDataManagerFromPersistentStorage();
 
   // After a restart, GetDeveloperIds should still find the IDs.
-  developer_ids = GetDeveloperIds(sw_id, origin(), &error);
+  developer_ids = GetDeveloperIds(sw_id, storage_key(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_THAT(developer_ids, UnorderedElementsAre(kExampleDeveloperId,
                                                   kAlternativeDeveloperId));
@@ -1067,11 +1067,11 @@ TEST_F(BackgroundFetchDataManagerTest, StorageVersionIsPersisted) {
   {
     // Create a single registration.
     BackgroundFetchRegistrationId registration_id(
-        sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+        sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
     std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-        CreateValidRequests(origin(), 2u);
+        CreateValidRequests(storage_key().origin(), 2u);
     auto options = blink::mojom::BackgroundFetchOptions::New();
     blink::mojom::BackgroundFetchError error;
     CreateRegistration(registration_id, CloneRequestVector(requests),
@@ -1090,10 +1090,10 @@ TEST_F(BackgroundFetchDataManagerTest, GetRegistration) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin(), 2u);
+      CreateValidRequests(storage_key().origin(), 2u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
 
@@ -1108,7 +1108,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetRegistration) {
 
   // Verify that the registration can be retrieved.
   auto registration =
-      GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
+      GetRegistration(sw_id, storage_key(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   EXPECT_EQ(kExampleDeveloperId, registration->developer_id);
@@ -1116,13 +1116,14 @@ TEST_F(BackgroundFetchDataManagerTest, GetRegistration) {
 
   // Verify that retrieving using the wrong developer id doesn't work.
   registration =
-      GetRegistration(sw_id, origin(), kAlternativeDeveloperId, &error);
+      GetRegistration(sw_id, storage_key(), kAlternativeDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ID);
 
   RestartDataManagerFromPersistentStorage();
 
   // After a restart, GetRegistration should still find the registration.
-  registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
+  registration =
+      GetRegistration(sw_id, storage_key(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(kExampleDeveloperId, registration->developer_id);
 }
@@ -1132,11 +1133,11 @@ TEST_F(BackgroundFetchDataManagerTest, GetMetadata) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   size_t num_requests = 2u;
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin(), num_requests);
+      CreateValidRequests(storage_key().origin(), num_requests);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
 
@@ -1151,7 +1152,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetMetadata) {
   // Verify that the metadata can be retrieved.
   auto metadata = GetMetadata(sw_id, kExampleUniqueId);
   ASSERT_TRUE(metadata);
-  EXPECT_EQ(metadata->origin(), origin().Serialize());
+  EXPECT_EQ(metadata->origin(), storage_key().origin().Serialize());
   EXPECT_NE(metadata->creation_microseconds_since_unix_epoch(), 0);
   EXPECT_EQ(metadata->num_fetches(), static_cast<int>(num_requests));
 
@@ -1160,7 +1161,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetMetadata) {
   // After a restart, GetMetadata should still find the registration.
   metadata = GetMetadata(sw_id, kExampleUniqueId);
   ASSERT_TRUE(metadata);
-  EXPECT_EQ(metadata->origin(), origin().Serialize());
+  EXPECT_EQ(metadata->origin(), storage_key().origin().Serialize());
   EXPECT_NE(metadata->creation_microseconds_since_unix_epoch(), 0);
   EXPECT_EQ(metadata->num_fetches(), static_cast<int>(num_requests));
 }
@@ -1170,7 +1171,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationUploadInfo) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
 
@@ -1179,7 +1180,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationUploadInfo) {
   {
     // One upload and one download.
     std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-        CreateValidRequests(origin(), 2u);
+        CreateValidRequests(storage_key().origin(), 2u);
     requests[0]->blob = BuildBlob(upload_data);
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
 
@@ -1189,7 +1190,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationUploadInfo) {
   }
 
   auto registration =
-      GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
+      GetRegistration(sw_id, storage_key(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   EXPECT_EQ(registration->developer_id, kExampleDeveloperId);
@@ -1201,11 +1202,11 @@ TEST_F(BackgroundFetchDataManagerTest, LargeIconNotPersisted) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   size_t num_requests = 2u;
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin(), num_requests);
+      CreateValidRequests(storage_key().origin(), num_requests);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
 
@@ -1224,7 +1225,7 @@ TEST_F(BackgroundFetchDataManagerTest, LargeIconNotPersisted) {
   // Verify that the metadata can be retrieved.
   auto metadata = GetMetadata(sw_id, kExampleUniqueId);
   ASSERT_TRUE(metadata);
-  EXPECT_EQ(metadata->origin(), origin().Serialize());
+  EXPECT_EQ(metadata->origin(), storage_key().origin().Serialize());
   EXPECT_NE(metadata->creation_microseconds_since_unix_epoch(), 0);
   EXPECT_EQ(metadata->num_fetches(), static_cast<int>(num_requests));
   EXPECT_TRUE(GetUIOptions(sw_id).second.isNull());
@@ -1235,10 +1236,10 @@ TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id1(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin(), 2u);
+      CreateValidRequests(storage_key().origin(), 2u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   blink::mojom::BackgroundFetchFailureReason failure_reason;
@@ -1256,7 +1257,7 @@ TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
   // Different |unique_id|, since this is a new Background Fetch registration,
   // even though it shares the same |developer_id|.
   BackgroundFetchRegistrationId registration_id2(
-      sw_id, origin(), kExampleDeveloperId, kAlternativeUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kAlternativeUniqueId);
 
   // Attempting to create a second registration with the same |developer_id| and
   // |service_worker_registration_id| should yield an error, even after
@@ -1267,7 +1268,7 @@ TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
 
   // Verify that the registration can be retrieved before deletion.
   auto registration =
-      GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
+      GetRegistration(sw_id, storage_key(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(kExampleDeveloperId, registration->developer_id);
 
@@ -1278,14 +1279,16 @@ TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
   EXPECT_EQ(failure_reason, blink::mojom::BackgroundFetchFailureReason::NONE);
 
   // Verify that the registration cannot be retrieved after deletion
-  registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
+  registration =
+      GetRegistration(sw_id, storage_key(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ID);
 
   RestartDataManagerFromPersistentStorage();
 
   // Verify again that the registration cannot be retrieved after deletion and
   // a restart.
-  registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
+  registration =
+      GetRegistration(sw_id, storage_key(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ID);
 
   // And now registering the second registration should work fine, even after
@@ -1312,10 +1315,10 @@ TEST_F(BackgroundFetchDataManagerTest, MarkRegistrationForDeletion) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id1(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin(), 2u);
+      CreateValidRequests(storage_key().origin(), 2u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   blink::mojom::BackgroundFetchFailureReason failure_reason;
@@ -1326,8 +1329,8 @@ TEST_F(BackgroundFetchDataManagerTest, MarkRegistrationForDeletion) {
 
   // Create a |developer_id| such that the other one is a substring.
   std::string developer_id2 = std::string(kExampleDeveloperId) + "!";
-  BackgroundFetchRegistrationId registration_id2(sw_id, origin(), developer_id2,
-                                                 kAlternativeUniqueId);
+  BackgroundFetchRegistrationId registration_id2(
+      sw_id, storage_key(), developer_id2, kAlternativeUniqueId);
 
   CreateRegistration(registration_id2, CloneRequestVector(requests),
                      std::move(options), SkBitmap(), &error);
@@ -1361,10 +1364,10 @@ TEST_F(BackgroundFetchDataManagerTest,
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id1(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin(), 1u);
+      CreateValidRequests(storage_key().origin(), 1u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   blink::mojom::BackgroundFetchFailureReason failure_reason;
@@ -1390,7 +1393,7 @@ TEST_F(BackgroundFetchDataManagerTest,
   }
 
   BackgroundFetchRegistrationId registration_id2(
-      sw_id, origin(), kAlternativeDeveloperId, kAlternativeUniqueId);
+      sw_id, storage_key(), kAlternativeDeveloperId, kAlternativeUniqueId);
 
   // Complete the fetch with a BAD_STATUS.
   {
@@ -1422,7 +1425,7 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
 
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   // There registration hasn't been created yet, so there are no pending
   // requests.
@@ -1435,7 +1438,7 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
                           /* completed_requests= */ 0}));
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin(), 2u);
+      CreateValidRequests(storage_key().origin(), 2u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
 
   {
@@ -1522,7 +1525,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetUploadBody) {
   blink::mojom::BackgroundFetchError error;
 
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   {
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
@@ -1560,8 +1563,9 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationBytesUpdated) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
-  auto requests = CreateValidRequests(origin(), /* num_requests= */ 3u);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
+  auto requests =
+      CreateValidRequests(storage_key().origin(), /* num_requests= */ 3u);
 
   const std::string upload_payload = "Upload Data";
   requests[0]->blob = BuildBlob(upload_payload);
@@ -1578,7 +1582,7 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationBytesUpdated) {
   }
 
   auto registration =
-      GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
+      GetRegistration(sw_id, storage_key(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(registration->downloaded, 0u);
   EXPECT_EQ(registration->uploaded, 0u);
@@ -1592,7 +1596,8 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationBytesUpdated) {
   MarkRequestAsComplete(registration_id, request_info.get(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
-  registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
+  registration =
+      GetRegistration(sw_id, storage_key(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(registration->downloaded, kResponseSize);
   EXPECT_EQ(registration->uploaded, upload_payload.size());
@@ -1606,7 +1611,8 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationBytesUpdated) {
   MarkRequestAsComplete(registration_id, request_info.get(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
-  registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
+  registration =
+      GetRegistration(sw_id, storage_key(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(registration->downloaded, 2 * kResponseSize);
   EXPECT_EQ(registration->uploaded, 2 * upload_payload.size());
@@ -1618,7 +1624,8 @@ TEST_F(BackgroundFetchDataManagerTest, RegistrationBytesUpdated) {
   MarkRequestAsComplete(registration_id, request_info.get(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
-  registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
+  registration =
+      GetRegistration(sw_id, storage_key(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   EXPECT_EQ(registration->downloaded, 2 * kResponseSize);
@@ -1630,8 +1637,9 @@ TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaIsReported) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
-  auto requests = CreateValidRequests(origin(), /* num_requests= */ 3u);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
+  auto requests =
+      CreateValidRequests(storage_key().origin(), /* num_requests= */ 3u);
 
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
@@ -1657,8 +1665,9 @@ TEST_F(BackgroundFetchDataManagerTest, WriteToCache) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
-  auto requests = CreateValidRequests(origin(), /* num_requests= */ 2u);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
+  auto requests =
+      CreateValidRequests(storage_key().origin(), /* num_requests= */ 2u);
 
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
@@ -1707,11 +1716,11 @@ TEST_F(BackgroundFetchDataManagerTest, CacheDeleted) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   auto request = blink::mojom::FetchAPIRequest::New();
   request->referrer = blink::mojom::Referrer::New();
-  request->url = GURL(origin().GetURL().spec());
+  request->url = GURL(storage_key().origin().GetURL().spec());
 
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
@@ -1751,13 +1760,13 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequests) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
-  size_t num_requests = 2u;
+  constexpr size_t kNumRequests = 2u;
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin(), num_requests);
+      CreateValidRequests(storage_key().origin(), kNumRequests);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   {
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
@@ -1778,9 +1787,9 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequests) {
                 /* cache_query_options= */ nullptr, /* match_all= */ true,
                 &error, &settled_fetches);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
-  EXPECT_EQ(settled_fetches.size(), num_requests);
+  EXPECT_EQ(settled_fetches.size(), kNumRequests);
 
-  for (size_t i = 0; i < num_requests; i++) {
+  for (size_t i = 0; i < kNumRequests; i++) {
     scoped_refptr<BackgroundFetchRequestInfo> request_info;
     PopNextRequest(registration_id, &error, &request_info);
     EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1795,7 +1804,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequests) {
   EXPECT_EQ(
       GetRequestStats(sw_id),
       (ResponseStateStats{/* pending_requests= */ 0, /* active_requests= */ 0,
-                          /* completed_requests= */ num_requests}));
+                          /* completed_requests= */ kNumRequests}));
 
   MatchRequests(registration_id, /* request_to_match= */ nullptr,
                 /* cache_query_options= */ nullptr, /* match_all= */ true,
@@ -1803,7 +1812,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequests) {
 
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   // We are marking the responses as failed in Download Manager.
-  EXPECT_EQ(settled_fetches.size(), num_requests);
+  EXPECT_EQ(settled_fetches.size(), kNumRequests);
 }
 
 TEST_F(BackgroundFetchDataManagerTest, MatchRequestsWithBody) {
@@ -1811,14 +1820,14 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsWithBody) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin(), 2u);
+      CreateValidRequests(storage_key().origin(), 2u);
   const std::string upload_data = "Upload data!";
   requests[1]->blob = BuildBlob(upload_data);
 
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   {
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
@@ -1850,8 +1859,9 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsFromCache) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
-  auto requests = CreateValidRequests(origin(), /* num_requests= */ 2u);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
+  auto requests =
+      CreateValidRequests(storage_key().origin(), /* num_requests= */ 2u);
 
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
@@ -1909,11 +1919,12 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsForASpecificRequest) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
-  auto requests = CreateValidRequests(origin(), /* num_requests= */ 2u);
+  auto requests =
+      CreateValidRequests(storage_key().origin(), /* num_requests= */ 2u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   {
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
@@ -1961,11 +1972,12 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsForAnIncompleteRequest) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
-  auto requests = CreateValidRequests(origin(), /* num_requests= */ 3u);
+  auto requests =
+      CreateValidRequests(storage_key().origin(), /* num_requests= */ 3u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   {
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
@@ -2005,13 +2017,15 @@ TEST_F(BackgroundFetchDataManagerTest, IgnoreMethodAndMatchAll) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests;
-  requests.push_back(CreateValidRequestWithMethod(origin(), "GET"));
-  requests.push_back(CreateValidRequestWithMethod(origin(), "POST"));
+  requests.push_back(
+      CreateValidRequestWithMethod(storage_key().origin(), "GET"));
+  requests.push_back(
+      CreateValidRequestWithMethod(storage_key().origin(), "POST"));
 
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   {
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
@@ -2090,7 +2104,7 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequestsWithDuplicates) {
 
   blink::mojom::BackgroundFetchError error;
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   {
     auto options = blink::mojom::BackgroundFetchOptions::New();
@@ -2140,10 +2154,10 @@ TEST_F(BackgroundFetchDataManagerTest, Cleanup) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin(), 2u);
+      CreateValidRequests(storage_key().origin(), 2u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   blink::mojom::BackgroundFetchFailureReason failure_reason;
@@ -2207,14 +2221,14 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
   }
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin(), 2u);
+      CreateValidRequests(storage_key().origin(), 2u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   options->title = kInitialTitle;
   options->download_total = 42u;
   blink::mojom::BackgroundFetchError error;
   // Register a Background Fetch.
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   {
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
@@ -2279,7 +2293,7 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
 
   // Create another registration.
   BackgroundFetchRegistrationId registration_id2(
-      sw_id, origin(), kAlternativeDeveloperId, kAlternativeUniqueId);
+      sw_id, storage_key(), kAlternativeDeveloperId, kAlternativeUniqueId);
   {
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id2, _, _, _, _, _));
 
@@ -2318,10 +2332,10 @@ TEST_F(BackgroundFetchDataManagerTest, CreateInParallel) {
 
   for (int i = 0; i < num_parallel_creates; i++) {
     std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-        CreateValidRequests(origin());
+        CreateValidRequests(storage_key().origin());
     // New |unique_id| per iteration, since each is a distinct registration.
     BackgroundFetchRegistrationId registration_id(
-        service_worker_registration_id, origin(), kExampleDeveloperId,
+        service_worker_registration_id, storage_key(), kExampleDeveloperId,
         base::GenerateGUID());
 
     background_fetch_data_manager_->CreateRegistration(
@@ -2356,11 +2370,12 @@ TEST_F(BackgroundFetchDataManagerTest, StorageErrorsReported) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
-  auto requests = CreateValidRequests(origin(), /* num_requests= */ 3u);
+  auto requests =
+      CreateValidRequests(storage_key().origin(), /* num_requests= */ 3u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   BackgroundFetchRegistrationId registration_id(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   {
     base::HistogramTester histogram_tester;
@@ -2372,7 +2387,8 @@ TEST_F(BackgroundFetchDataManagerTest, StorageErrorsReported) {
   }
 
   BackgroundFetchRegistrationId registration_id2(
-      sw_id, url::Origin::Create(GURL("https://examplebad.com")),
+      sw_id,
+      blink::StorageKey(url::Origin::Create(GURL("https://examplebad.com"))),
       kAlternativeDeveloperId, kAlternativeUniqueId);
 
   {
@@ -2429,10 +2445,10 @@ TEST_F(BackgroundFetchDataManagerTest, NotifyObserversOnRequestCompletion) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
   BackgroundFetchRegistrationId registration_id1(
-      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+      sw_id, storage_key(), kExampleDeveloperId, kExampleUniqueId);
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests =
-      CreateValidRequests(origin(), 1u);
+      CreateValidRequests(storage_key().origin(), 1u);
   auto options = blink::mojom::BackgroundFetchOptions::New();
   blink::mojom::BackgroundFetchError error;
   blink::mojom::BackgroundFetchFailureReason failure_reason;
@@ -2459,7 +2475,7 @@ TEST_F(BackgroundFetchDataManagerTest, NotifyObserversOnRequestCompletion) {
   }
 
   BackgroundFetchRegistrationId registration_id2(
-      sw_id, origin(), kAlternativeDeveloperId, kAlternativeUniqueId);
+      sw_id, storage_key(), kAlternativeDeveloperId, kAlternativeUniqueId);
 
   // Complete the fetch with a BAD_STATUS, and expect an OnRequestCompleted()
   // call.

@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_service_log.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -485,6 +486,7 @@ TEST_F(SessionServiceTest, ClosingSecondWindowClosesTabs) {
 }
 
 TEST_F(SessionServiceTest, LockingWindowRemembersAll) {
+  signin_util::ScopedForceSigninSetterForTesting force_signin_setter(true);
   SessionID window2_id = SessionID::NewUnique();
   SessionID tab1_id = SessionID::NewUnique();
   SessionID tab2_id = SessionID::NewUnique();
@@ -501,7 +503,7 @@ TEST_F(SessionServiceTest, LockingWindowRemembersAll) {
       manager->GetProfileAttributesStorage().GetProfileAttributesWithPath(
           service()->profile()->GetPath());
   ASSERT_NE(entry, nullptr);
-  entry->SetIsSigninRequired(true);
+  entry->LockForceSigninProfile(true);
 
   service()->WindowClosing(window_id);
   service()->WindowClosed(window_id);
@@ -889,6 +891,8 @@ TEST_F(SessionServiceTest, PersistUserAgentOverrides) {
   client_hints_override.full_version = "18.0.1025.45";
   client_hints_override.platform = "Linux";
   client_hints_override.architecture = "x86_64";
+  // Doesn't have to match, just needs to be different than the default
+  client_hints_override.bitness = "8";
 
   SerializedNavigationEntry nav1 =
       ContentTestHelper::CreateNavigation("http://google.com", "abc");

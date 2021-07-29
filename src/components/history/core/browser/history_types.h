@@ -71,6 +71,11 @@ class VisitRow {
            bool floc_allowed);
   ~VisitRow();
 
+  // Compares two visits based on dates, for sorting.
+  bool operator<(const VisitRow& other) const {
+    return visit_time < other.visit_time;
+  }
+
   // ID of this row (visit ID, used a a referrer for other visits).
   VisitID visit_id = 0;
 
@@ -98,11 +103,6 @@ class VisitRow {
 
   // Records whether the visit incremented the omnibox typed score.
   bool incremented_omnibox_typed_score = false;
-
-  // Compares two visits based on dates, for sorting.
-  bool operator<(const VisitRow& other) const {
-    return visit_time < other.visit_time;
-  }
 
   // We allow the implicit copy constructor and operator=.
 };
@@ -645,23 +645,6 @@ class DomainVisit {
   base::Time visit_time_;
 };
 
-enum class UrlsModifiedReason {
-  // The title was changed.
-  kTitleChanged,
-
-  // Modified because of Sync.
-  kSync,
-
-  // Some number of visits were removed because they were old.
-  kExpired,
-
-  // The user deleted some of the visits.
-  kUserDeleted,
-
-  // Notification is the result of AndroidProviderBackend.
-  kAndroidDb,
-};
-
 // Clusters --------------------------------------------------------------------
 
 // Context annotations about a page visit collected during the page lifetime.
@@ -723,6 +706,7 @@ struct AnnotatedVisit {
                  VisitContextAnnotations context_annotations,
                  VisitContentAnnotations content_annotations);
   AnnotatedVisit(const AnnotatedVisit&);
+  AnnotatedVisit& operator=(const AnnotatedVisit&);
   ~AnnotatedVisit();
 
   URLRow url_row;
@@ -731,7 +715,8 @@ struct AnnotatedVisit {
   VisitContentAnnotations content_annotations;
 };
 
-// The DB representation of `AnnotatedVisit`.
+// A minimal representation of `AnnotationVisit` used when retrieving them from
+// `VisitAnnotationsDatabase`.
 struct AnnotatedVisitRow {
   AnnotatedVisitRow() = default;
   AnnotatedVisitRow(const VisitID visit_id,
@@ -743,15 +728,60 @@ struct AnnotatedVisitRow {
 
   VisitID visit_id;
   VisitContextAnnotations context_annotations;
+  // TODO(manukh): retrieve and persist `content_annotations`; currently, only
+  //  `context_annotations` are being retrieved and persisted.
   VisitContentAnnotations content_annotations;
 };
 
+// An `AnnotatedVisit` associated with a score.
+struct ScoredAnnotatedVisit {
+  AnnotatedVisit annotated_visit;
+  float score;
+};
+
+// A cluster of `ScoredAnnotatedVisit`s with associated `keywords`.
 struct Cluster {
   Cluster();
+  Cluster(int64_t cluster_id,
+          const std::vector<ScoredAnnotatedVisit>& scored_annotated_visits,
+          const std::vector<std::u16string>& keywords);
   Cluster(const Cluster&);
+  Cluster& operator=(const Cluster&);
   ~Cluster();
 
+  int64_t cluster_id;
+  std::vector<ScoredAnnotatedVisit> scored_annotated_visits;
+  // TODO(manukh): retrieve and persist `keywords`.
   std::vector<std::u16string> keywords;
+};
+
+// A minimal representation of `Cluster` used when retrieving them from
+// `VisitAnnotationsDatabase`.
+// TODO(manukh): Also use this representation when inserting them into the DB,
+//  since the additional information in a `Cluster` isn't necessary.
+struct ClusterRow {
+  ClusterRow();
+  explicit ClusterRow(int64_t cluster_id);
+  ClusterRow(const ClusterRow&);
+  ClusterRow& operator=(const ClusterRow&);
+  ~ClusterRow();
+
+  int64_t cluster_id;
+  std::vector<VisitID> visit_ids;
+};
+
+// Sets of `Cluster` IDs and `AnnotatedVisit`s. This is convenient in that,
+// unlike a vector of `Cluster`s, it contains a flat vector of unique
+// `AnnotatedVisit`s.
+struct ClusterIdsAndAnnotatedVisitsResult {
+  ClusterIdsAndAnnotatedVisitsResult();
+  ClusterIdsAndAnnotatedVisitsResult(
+      std::vector<int64_t> cluster_ids,
+      std::vector<AnnotatedVisit> annotated_visits);
+  ClusterIdsAndAnnotatedVisitsResult(const ClusterIdsAndAnnotatedVisitsResult&);
+  ~ClusterIdsAndAnnotatedVisitsResult();
+
+  std::vector<int64_t> cluster_ids;
   std::vector<AnnotatedVisit> annotated_visits;
 };
 

@@ -30,6 +30,8 @@ const base::Feature kIPHReadingListEntryPointFeature{
     "IPH_ReadingListEntryPoint", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHReopenTabFeature{"IPH_ReopenTab",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHTabSearchFeature{"IPH_TabSearch",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHWebUITabStripFeature{"IPH_WebUITabStrip",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDesktopSnoozeFeature{"IPH_DesktopSnoozeFeature",
@@ -37,11 +39,7 @@ const base::Feature kIPHDesktopSnoozeFeature{"IPH_DesktopSnoozeFeature",
 const base::Feature kIPHDesktopPwaInstallFeature{
     "IPH_DesktopPwaInstall", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHProfileSwitchFeature{"IPH_ProfileSwitch",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHUpdatedConnectionSecurityIndicatorsFeature{
-    "IPH_UpdatedConnectionSecurityIndicators",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
@@ -127,6 +125,9 @@ const base::Feature kIPHKeyboardAccessoryPaymentFillingFeature{
     "IPH_KeyboardAccessoryPaymentFilling", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHKeyboardAccessoryPaymentOfferFeature{
     "IPH_KeyboardAccessoryPaymentOffer", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHKeyboardAccessoryPaymentVirtualCardFeature{
+    "IPH_KeyboardAccessoryPaymentVirtualCard",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHNewTabPageHomeButtonFeature{
     "IPH_NewTabPageHomeButton", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHMicToolbarFeature{"IPH_MicToolbar",
@@ -144,7 +145,7 @@ const base::Feature kIPHTabGroupsYourTabsAreTogetherFeature{
 const base::Feature kIPHTabGroupsDragAndDropFeature{
     "IPH_TabGroupsDragAndDrop", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHTabSwitcherButtonFeature{
-    "IPH_TabSwitcherButton", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_TabSwitcherButton", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHTranslateMenuButtonFeature{
     "IPH_TranslateMenuButton", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHVideoTutorialNTPChromeIntroFeature{
@@ -161,6 +162,8 @@ const base::Feature kIPHExploreSitesTileFeature{
     "IPH_ExploreSitesTile", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHFeedHeaderMenuFeature{"IPH_FeedHeaderMenu",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kIPHFeedSwipeRefresh{"IPH_FeedSwipeRefresh",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHChromeReengagementNotification1Feature{
     "IPH_ChromeReengagementNotification1", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHChromeReengagementNotification2Feature{
@@ -172,11 +175,13 @@ const base::Feature kIPHPwaInstallAvailableFeature{
 const base::Feature kIPHShareScreenshotFeature{
     "IPH_ShareScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHWebFeedFollowFeature{"IPH_WebFeedFollow",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHWebFeedPostFollowDialogFeature{
-    "IPH_WebFeedPostFollowDialog", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_WebFeedPostFollowDialog", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHSharedHighlightingBuilder{
     "IPH_SharedHighlightingBuilder", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHStartSurfaceTabSwitcherHomeButton{
+    "IPH_StartSurfaceTabSwitcherHomeButton", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_IOS)
@@ -195,5 +200,13 @@ const base::Feature kIPHBadgedTranslateManualTriggerFeature{
 const base::Feature kIPHDiscoverFeedHeaderFeature{
     "IPH_DiscoverFeedHeaderMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_IOS)
+
+#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS) || defined(OS_ANDROID)
+const base::Feature kIPHUpdatedConnectionSecurityIndicatorsFeature{
+    "IPH_UpdatedConnectionSecurityIndicators",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 }  // namespace feature_engagement

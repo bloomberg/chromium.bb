@@ -10,13 +10,16 @@ devtools_module("issues") {
   sources = [
     "AffectedBlockedByResponseView.ts",
     "AffectedCookiesView.ts",
+    "AffectedDirectivesView.ts",
     "AffectedDocumentsInQuirksModeView.ts",
     "AffectedElementsView.ts",
     "AffectedElementsWithLowContrastView.ts",
     "AffectedHeavyAdView.ts",
     "AffectedResourcesView.ts",
     "AffectedSharedArrayBufferIssueDetailsView.ts",
+    "AffectedSourcesView.ts",
     "AffectedTrustedWebActivityIssueDetailsView.ts",
+    "AttributionReportingIssueDetailsView.ts",
     "CSPViolationsListView.ts",
     "CSPViolationsView.ts",
     "ComboBoxOfCheckBoxes.ts",
@@ -25,6 +28,7 @@ devtools_module("issues") {
     "IssueRevealer.ts",
     "IssueView.ts",
     "IssuesPane.ts",
+    "WasmCrossOriginModuleSharingAffectedResourcesView.ts",
   ]
 
   deps = [
@@ -35,10 +39,12 @@ devtools_module("issues") {
     "../../models/logs:bundle",
     "../../panels/console_counters:bundle",
     "../../panels/elements/components:bundle",
-    "../../panels/network:bundle",
+    "../../panels/network/forward:bundle",
+    "../../ui/components/adorners:bundle",
     "../../ui/components/data_grid:bundle",
     "../../ui/components/linkifier:bundle",
     "../../ui/components/markdown_view:bundle",
+    "../../ui/components/request_link_icon:bundle",
     "../../ui/legacy:bundle",
     "../../ui/legacy/components/utils:bundle",
     "../../ui/lit-html:bundle",

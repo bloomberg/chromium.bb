@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/toolbar/chrome_labs_bubble_view.h"
+
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
@@ -31,7 +32,7 @@
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
-#include "chrome/browser/ash/settings/owner_flags_storage.h"
+#include "chrome/browser/ash/settings/about_flags.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -426,6 +427,10 @@ TEST_F(ChromeLabsBubbleTest, SelectDefaultTwiceNoRestart) {
 // TODO(crbug.com/1128855)
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 TEST_F(ChromeLabsBubbleTest, ShowFeedbackPage) {
+  // TODO(b/185480535): Fix the test for WebUIFeedback
+  if (base::FeatureList::IsEnabled(features::kWebUIFeedback))
+    GTEST_SKIP() << "Skipped due to crash with webui feedback.";
+
   base::HistogramTester histogram_tester;
 
   views::MdTextButton* feedback_button =

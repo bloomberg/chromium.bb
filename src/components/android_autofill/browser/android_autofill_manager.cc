@@ -9,6 +9,7 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+
 namespace autofill {
 
 using base::TimeTicks;
@@ -144,13 +145,21 @@ AutofillProvider* AndroidAutofillManager::GetAutofillProvider() {
     return autofill_provider_for_testing_;
   if (auto* rfh =
           static_cast<ContentAutofillDriver*>(driver())->render_frame_host()) {
-    if (rfh->IsCurrent()) {
+    if (rfh->IsActive()) {
       if (auto* web_contents = content::WebContents::FromRenderFrameHost(rfh)) {
         return AutofillProvider::FromWebContents(web_contents);
       }
     }
   }
   return nullptr;
+}
+
+void AndroidAutofillManager::SendFormDataToRenderer(
+    int query_id,
+    AutofillDriver::RendererFormDataAction action,
+    const FormData& form) {
+  driver()->SendFormDataToRenderer(query_id, action, form,
+                                   form.main_frame_origin, {});
 }
 
 }  // namespace autofill

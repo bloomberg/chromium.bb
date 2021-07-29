@@ -14,6 +14,11 @@
 
 #endif /* GLAD_IMPL_UTIL_C_ */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 
 int GLAD_EGL_VERSION_1_0 = 0;
 int GLAD_EGL_VERSION_1_1 = 0;
@@ -202,9 +207,11 @@ static int glad_egl_find_core_egl(EGLDisplay display) {
         display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     }
 #endif
+#ifndef EGL_VERSION_1_5
     if (display == EGL_NO_DISPLAY) {
         return 0;
     }
+#endif
 
     version = eglQueryString(display, EGL_VERSION);
     (void) eglGetError();
@@ -254,3 +261,7 @@ int gladLoadEGL(EGLDisplay display, GLADloadfunc load) {
 
  
 
+
+#ifdef __cplusplus
+}
+#endif

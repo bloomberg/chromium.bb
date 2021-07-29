@@ -9,12 +9,13 @@
 #import "ios/chrome/common/credential_provider/credential_store.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_list_consumer.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_list_ui_handler.h"
+#import "ios/chrome/credential_provider_extension/ui/feature_flags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface CredentialListMediator () <CredentialListConsumerDelegate>
+@interface CredentialListMediator () <CredentialListHandler>
 
 // The UI Handler of the feature.
 @property(nonatomic, weak) id<CredentialListUIHandler> UIHandler;
@@ -61,6 +62,10 @@
 }
 
 - (void)fetchCredentials {
+  NSString* identifier = self.serviceIdentifiers.firstObject.identifier;
+  NSURL* promptURL = identifier ? [NSURL URLWithString:identifier] : nil;
+  [self.consumer setTopPrompt:promptURL.host];
+
   dispatch_queue_t priorityQueue =
       dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0ul);
   dispatch_async(priorityQueue, ^{
@@ -88,12 +93,13 @@
         return;
       }
       [self.consumer presentSuggestedPasswords:self.suggestedCredentials
-                                  allPasswords:self.allCredentials];
+                                  allPasswords:self.allCredentials
+                         showNewPasswordOption:IsPasswordCreationEnabled()];
     });
   });
 }
 
-#pragma mark - CredentialListConsumerDelegate
+#pragma mark - CredentialListHandler
 
 - (void)navigationCancelButtonWasPressed:(UIButton*)button {
   NSError* error =
@@ -128,11 +134,18 @@
       }
     }
   }
-  [self.consumer presentSuggestedPasswords:suggested allPasswords:all];
+  BOOL showNewPasswordOption = !filter.length && IsPasswordCreationEnabled();
+  [self.consumer presentSuggestedPasswords:suggested
+                              allPasswords:all
+                     showNewPasswordOption:showNewPasswordOption];
 }
 
 - (void)showDetailsForCredential:(id<Credential>)credential {
   [self.UIHandler showDetailsForCredential:credential];
+}
+
+- (void)newPasswordWasSelected {
+  [self.UIHandler showCreateNewPasswordUI];
 }
 
 @end

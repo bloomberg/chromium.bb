@@ -219,7 +219,7 @@ class InProcessContextFactory::PerCompositorData
   }
   viz::Display* display() { return display_.get(); }
 
-  SkMatrix44 output_color_matrix() { return output_color_matrix_; }
+  skia::Matrix44 output_color_matrix() { return output_color_matrix_; }
   gfx::DisplayColorSpaces display_color_spaces() {
     return display_color_spaces_;
   }
@@ -231,7 +231,7 @@ class InProcessContextFactory::PerCompositorData
   std::unique_ptr<viz::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<viz::Display> display_;
 
-  SkMatrix44 output_color_matrix_;
+  skia::Matrix44 output_color_matrix_;
   gfx::DisplayColorSpaces display_color_spaces_;
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
@@ -327,7 +327,6 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   if (renderer_settings_.use_skia_renderer) {
     auto skia_deps = std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
         viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
-        viz::TestGpuServiceHolder::GetInstance()->task_executor(),
         gpu::kNullSurfaceHandle);
     display_dependency =
         std::make_unique<viz::DisplayCompositorMemoryAndTaskController>(
@@ -366,7 +365,8 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   }
   auto scheduler = std::make_unique<viz::DisplayScheduler>(
       begin_frame_source.get(), compositor->task_runner().get(),
-      display_output_surface->capabilities().max_frames_pending);
+      display_output_surface->capabilities().max_frames_pending,
+      display_output_surface->capabilities().max_frames_pending_120hz);
 
   data->SetDisplay(std::make_unique<viz::Display>(
       &shared_bitmap_manager_, renderer_settings_, &debug_settings_,
@@ -448,11 +448,11 @@ viz::HostFrameSinkManager* InProcessContextFactory::GetHostFrameSinkManager() {
   return host_frame_sink_manager_;
 }
 
-SkMatrix44 InProcessContextFactory::GetOutputColorMatrix(
+skia::Matrix44 InProcessContextFactory::GetOutputColorMatrix(
     Compositor* compositor) const {
   auto iter = per_compositor_data_.find(compositor);
   if (iter == per_compositor_data_.end())
-    return SkMatrix44(SkMatrix44::kIdentity_Constructor);
+    return skia::Matrix44(skia::Matrix44::kIdentity_Constructor);
 
   return iter->second->output_color_matrix();
 }

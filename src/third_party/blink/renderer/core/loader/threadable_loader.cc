@@ -42,12 +42,12 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/loader_freeze_mode.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
@@ -73,8 +73,12 @@ class DetachedClient final : public GarbageCollected<DetachedClient>,
   void DidFinishLoading(uint64_t identifier) override {
     self_keep_alive_.Clear();
   }
-  void DidFail(const ResourceError&) override { self_keep_alive_.Clear(); }
-  void DidFailRedirectCheck() override { self_keep_alive_.Clear(); }
+  void DidFail(uint64_t identifier, const ResourceError&) override {
+    self_keep_alive_.Clear();
+  }
+  void DidFailRedirectCheck(uint64_t identifier) override {
+    self_keep_alive_.Clear();
+  }
   void Trace(Visitor* visitor) const override {
     visitor->Trace(loader_);
     ThreadableLoaderClient::Trace(visitor);
@@ -103,8 +107,6 @@ ThreadableLoader::ThreadableLoader(
                      &ThreadableLoader::DidTimeout) {
   DCHECK(client);
   if (!resource_fetcher_) {
-    if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_))
-      scope->EnsureFetcher();
     resource_fetcher_ = execution_context_->Fetcher();
   }
 }
@@ -214,9 +216,8 @@ void ThreadableLoader::Detach() {
 
 void ThreadableLoader::SetDefersLoading(bool value) {
   if (GetResource() && GetResource()->Loader()) {
-    GetResource()->Loader()->SetDefersLoading(
-        value ? WebURLLoader::DeferType::kDeferred
-              : WebURLLoader::DeferType::kNotDeferred);
+    GetResource()->Loader()->SetDefersLoading(value ? LoaderFreezeMode::kStrict
+                                                    : LoaderFreezeMode::kNone);
   }
 }
 
@@ -237,7 +238,8 @@ bool ThreadableLoader::RedirectReceived(
   DCHECK_EQ(resource, GetResource());
   checker_.RedirectReceived();
 
-  return client_->WillFollowRedirect(new_request.Url(), redirect_response);
+  return client_->WillFollowRedirect(resource->InspectorId(), new_request.Url(),
+                                     redirect_response);
 }
 
 void ThreadableLoader::RedirectBlocked() {
@@ -248,7 +250,8 @@ void ThreadableLoader::RedirectBlocked() {
   // unknown reason).
   ThreadableLoaderClient* client = client_;
   Clear();
-  client->DidFailRedirectCheck();
+  uint64_t identifier = 0;  // We don't have an inspector id here.
+  client->DidFailRedirectCheck(identifier);
 }
 
 void ThreadableLoader::DataSent(Resource* resource,
@@ -376,7 +379,7 @@ void ThreadableLoader::DispatchDidFail(const ResourceError& error) {
     resource->SetResponseType(network::mojom::FetchResponseType::kError);
   ThreadableLoaderClient* client = client_;
   Clear();
-  client->DidFail(error);
+  client->DidFail(resource->InspectorId(), error);
 }
 
 void ThreadableLoader::Trace(Visitor* visitor) const {

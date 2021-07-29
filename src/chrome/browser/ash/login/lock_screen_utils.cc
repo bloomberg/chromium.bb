@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ash/login/lock_screen_utils.h"
 
-#include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_constants.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/containers/contains.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -104,13 +104,14 @@ std::string GetUserLastInputMethod(const AccountId& account_id) {
     return std::string();
   }
 
-  if (!users_last_input_methods->GetStringWithoutPathExpansion(
-          account_id.GetUserEmail(), &input_method)) {
+  const std::string* input_method_str =
+      users_last_input_methods->FindStringKey(account_id.GetUserEmail());
+  if (!input_method_str) {
     DVLOG(0) << "GetUserLastInputMethod: no input method for this user";
     return std::string();
   }
 
-  return input_method;
+  return *input_method_str;
 }
 
 void EnforceDevicePolicyInputMethods(std::string user_input_method) {
@@ -118,7 +119,7 @@ void EnforceDevicePolicyInputMethods(std::string user_input_method) {
   const base::ListValue* login_screen_input_methods = nullptr;
   if (!cros_settings->GetList(chromeos::kDeviceLoginScreenInputMethods,
                               &login_screen_input_methods) ||
-      login_screen_input_methods->empty()) {
+      login_screen_input_methods->GetList().empty()) {
     StopEnforcingPolicyInputMethods();
     return;
   }
@@ -130,10 +131,9 @@ void EnforceDevicePolicyInputMethods(std::string user_input_method) {
     allowed_input_methods.push_back(user_input_method);
   }
 
-  std::string input_method;
   for (const auto& input_method_entry : login_screen_input_methods->GetList()) {
-    if (input_method_entry.GetAsString(&input_method))
-      allowed_input_methods.push_back(input_method);
+    if (input_method_entry.is_string())
+      allowed_input_methods.push_back(input_method_entry.GetString());
   }
   chromeos::input_method::InputMethodManager* imm =
       chromeos::input_method::InputMethodManager::Get();

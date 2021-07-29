@@ -2,7 +2,6 @@ export const description = `
 Test indexing, index format and primitive restart.
 `;
 
-import { params, poptions } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../gpu_test.js';
 import { getTextureCopyLayout } from '../../../util/texture/layout.js';
@@ -58,7 +57,7 @@ class IndexFormatTest extends GPUTest {
       // TODO?: These positions will create triangles that cut right through pixel centers. If this
       // results in different rasterization results on different hardware, tweak to avoid this.
       code: `
-        const pos: array<vec2<f32>, 4> = array<vec2<f32>, 4>(
+        let pos: array<vec2<f32>, 4> = array<vec2<f32>, 4>(
           vec2<f32>(0.01,  0.98),
           vec2<f32>(0.99, -0.98),
           vec2<f32>(0.99,  0.98),
@@ -183,7 +182,7 @@ export const g = makeTestGroup(IndexFormatTest);
 
 g.test('index_format,uint16')
   .desc('Test rendering result of indexed draw with index format of uint16.')
-  .params([
+  .paramsSubcasesOnly([
     { indexOffset: 0, _expectedShape: kSquare },
     { indexOffset: 6, _expectedShape: kBottomLeftTriangle },
     { indexOffset: 18, _expectedShape: kNothing },
@@ -200,12 +199,12 @@ g.test('index_format,uint16')
     const result = t.run(indexBuffer, indices.length, 'uint16', indexOffset);
 
     const expectedTextureValues = t.CreateExpectedUint8Array(_expectedShape);
-    t.expectContents(result, expectedTextureValues);
+    t.expectGPUBufferValuesEqual(result, expectedTextureValues);
   });
 
 g.test('index_format,uint32')
   .desc('Test rendering result of indexed draw with index format of uint32.')
-  .params([
+  .paramsSubcasesOnly([
     { indexOffset: 0, _expectedShape: kSquare },
     { indexOffset: 12, _expectedShape: kBottomLeftTriangle },
     { indexOffset: 36, _expectedShape: kNothing },
@@ -221,7 +220,7 @@ g.test('index_format,uint32')
     const result = t.run(indexBuffer, indices.length, 'uint32', indexOffset);
 
     const expectedTextureValues = t.CreateExpectedUint8Array(_expectedShape);
-    t.expectContents(result, expectedTextureValues);
+    t.expectGPUBufferValuesEqual(result, expectedTextureValues);
   });
 
 g.test('primitive_restart')
@@ -316,10 +315,10 @@ is different from what you would get if the topology were incorrect.
         |########|
 `
   )
-  .params(
-    params()
-      .combine(poptions('indexFormat', ['uint16', 'uint32'] as const))
-      .combine([
+  .params(u =>
+    u //
+      .combine('indexFormat', ['uint16', 'uint32'] as const)
+      .combineWithParams([
         {
           primitiveTopology: 'point-list',
           _indices: [0, 1, -1, 2, 3, 0],
@@ -379,5 +378,5 @@ is different from what you would get if the topology were incorrect.
     const result = t.run(indexBuffer, _indices.length, indexFormat, 0, primitiveTopology);
 
     const expectedTextureValues = t.CreateExpectedUint8Array(_expectedShape);
-    t.expectContents(result, expectedTextureValues);
+    t.expectGPUBufferValuesEqual(result, expectedTextureValues);
   });

@@ -26,7 +26,7 @@ void WaylandAuxiliaryWindow::Show(bool inactive) {
     return;
 
   CreateSubsurface();
-  UpdateBufferScale(false);
+  UpdateWindowScale(false);
   WaylandWindow::Show(inactive);
 }
 
@@ -76,8 +76,8 @@ void WaylandAuxiliaryWindow::CreateSubsurface() {
 
   DCHECK(parent_window());
 
-  // We need to make sure that buffer scale matches the parent window.
-  UpdateBufferScale(true);
+  // We need to make sure that window scale matches the parent window.
+  UpdateWindowScale(true);
 
   subsurface_ =
       root_surface()->CreateSubsurface(parent_window()->root_surface());
@@ -90,7 +90,7 @@ void WaylandAuxiliaryWindow::CreateSubsurface() {
   wl_subsurface_set_position(subsurface_.get(), subsurface_bounds_dip.x(),
                              subsurface_bounds_dip.y());
   wl_subsurface_set_desync(subsurface_.get());
-  parent_window()->root_surface()->Commit();
+  root_surface()->Commit();
   connection()->ScheduleFlush();
 
   // Notify the observers the window has been configured. Please note that
@@ -102,6 +102,10 @@ void WaylandAuxiliaryWindow::CreateSubsurface() {
 bool WaylandAuxiliaryWindow::OnInitialize(
     PlatformWindowInitProperties properties) {
   return true;
+}
+
+bool WaylandAuxiliaryWindow::IsSurfaceConfigured() {
+  return !!subsurface_;
 }
 
 }  // namespace ui

@@ -158,10 +158,10 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       DrawQuadParams* params) const;
   // True or false if the DrawQuad can have the scissor rect applied by
   // modifying the quad's visible_rect instead of as a separate clip operation.
-  bool CanExplicitlyScissor(
-      const DrawQuad* quad,
-      const gfx::QuadF* draw_region,
-      const gfx::Transform& contents_device_transform) const;
+  bool CanExplicitlyScissor(const DrawQuad* quad,
+                            const gfx::QuadF* draw_region,
+                            const gfx::Transform& contents_device_transform,
+                            const gfx::Rect& scissor_rect) const;
 
   bool MustFlushBatchedQuads(const DrawQuad* new_quad,
                              const DrawRPDQParams* rpdq_params,
@@ -252,8 +252,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // be sent to GPU scheduler.
   void FlushOutputSurface();
 
-#if defined(OS_APPLE)
-  void PrepareRenderPassOverlay(CALayerOverlay* overlay);
+#if defined(OS_APPLE) || defined(USE_OZONE)
+  void PrepareRenderPassOverlay(
+      OverlayProcessorInterface::PlatformOverlayCandidate* overlay);
 #endif
 
   DisplayResourceProviderSkia* resource_provider() {
@@ -266,6 +267,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     bool generate_mipmap;
     gfx::ColorSpace color_space;
     ResourceFormat format;
+    gpu::Mailbox mailbox;
   };
   base::flat_map<AggregatedRenderPassId, RenderPassBacking>
       render_pass_backings_;

@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -30,6 +31,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
@@ -146,7 +148,7 @@ bool ParseNonTransparentRGBACSSColorString(std::string css_string,
   // preferred style and use our default color.
   if (!match || a == 0)
     return false;
-  uint16_t a_int = uint16_t{a * 255};
+  uint16_t a_int = base::ClampRound<uint16_t>(a * 255);
 #if defined(OS_MAC)
   // On Mac, any opacity lower than 90% leaves rendering artifacts which make
   // it appear like there is a layer of faint text beneath the actual text.
@@ -773,10 +775,10 @@ void CaptionBubble::SetTextColor() {
   views::SetImageFromVectorIcon(collapse_button_, vector_icons::kCaretUpIcon,
                                 kButtonDip, text_color);
 
-  back_to_tab_button_->ink_drop()->SetBaseColor(text_color);
-  close_button_->ink_drop()->SetBaseColor(text_color);
-  expand_button_->ink_drop()->SetBaseColor(text_color);
-  collapse_button_->ink_drop()->SetBaseColor(text_color);
+  views::InkDrop::Get(back_to_tab_button_)->SetBaseColor(text_color);
+  views::InkDrop::Get(close_button_)->SetBaseColor(text_color);
+  views::InkDrop::Get(expand_button_)->SetBaseColor(text_color);
+  views::InkDrop::Get(collapse_button_)->SetBaseColor(text_color);
 }
 
 void CaptionBubble::SetBackgroundColor() {

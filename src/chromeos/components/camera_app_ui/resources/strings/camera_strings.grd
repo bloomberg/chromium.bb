@@ -311,6 +311,21 @@
       <message desc="Label for expert mode option: scan barcode." name="IDS_EXPERT_SCAN_BARCODE">
         Scan barcode
       </message>
+      <message desc="Label for expert mode option: custom video parameters." name="IDS_EXPERT_CUSTOM_VIDEO_PARAMETERS">
+        Custom video parameters
+      </message>
+      <message desc="Label for expert mode option: Multi-stream video recording." name="IDS_EXPERT_MULTISTREAM_RECORDING">
+        Multistream video recording
+      </message>
+      <message desc="Label for expert mode option: enable document mode on all cameras." name="IDS_EXPERT_ENABLE_DOCUMENT_MODE_ON_ALL_CAMERAS">
+        Enable document mode on all cameras
+      </message>
+      <message desc="Label for expert mode option: enable expert mode." name="IDS_EXPERT_ENABLE_EXPERT_MODE">
+        Enable expert mode
+      </message>
+      <message desc="Error message when the device does not support expert mode but tries to enable it." name="IDS_ERROR_MSG_EXPERT_MODE_NOT_SUPPORTED">
+        Expert mode is not supported on this device
+      </message>
       <message desc="Label for snackbar message when a link is copied" name="IDS_SNACKBAR_LINK_COPIED">
         Link copied
       </message>
@@ -337,12 +352,6 @@
       </message>
       <message desc="Label for button that resets all pan/tilt/zoom controls to the default value" name="IDS_PTZ_RESET_ALL_BUTTON">
         Reset all
-      </message>
-      <message desc="Label for expert mode option: custom video parameters." name="IDS_EXPERT_CUSTOM_VIDEO_PARAMETERS">
-        Custom video parameters
-      </message>
-      <message desc="Error message when the device does not support expert mode but tries to enable it." name="IDS_ERROR_MSG_EXPERT_MODE_NOT_SUPPORTED">
-        Expert mode is not supported on this device
       </message>
       <message desc="Label for the feedback button." name="IDS_FEEDBACK_BUTTON">
         Send feedback
@@ -437,6 +446,18 @@
       <message desc="Label for switch to take portrait (bokeh effect, background blur) photo mode button." name="IDS_LABEL_SWITCH_TAKE_PORTRAIT_BOKEH_PHOTO_BUTTON">
         Portrait
       </message>
+      <message desc="Label for spoken feedback to read out for switch to scanner mode button." name="IDS_SWITCH_SCANNER_MODE_BUTTON">
+        Switch to scanner mode
+      </message>
+      <message desc="Label for switch to scanner mode button for scanning QR Code or document." name="IDS_LABEL_SWITCH_SCANNER_MODE_BUTTON">
+        Scanner
+      </message>
+      <message desc="Label for scanning QR code option." name="IDS_LABEL_SCAN_QRCODE_OPTION">
+        QR Code
+      </message>
+      <message desc="Label for spoken feedback to read out for scan QR code option." name="IDS_SCAN_QRCODE_OPTION">
+        Scan QR Code
+      </message>
       <message desc="Label for the confirm button to confirm with the reviewed photo or video." name="IDS_CONFIRM_REVIEW_BUTTON">
         Confirm
       </message>
@@ -465,6 +486,9 @@ If your feedback is about image or video quality, please attach a sample photo o
       </message>
       <message desc="Error message shown on camera app window when the app is paused." name="IDS_ERROR_MSG_CAMERA_PAUSED">
         Paused
+      </message>
+      <message desc="Error message shown when users capture a video which is too short." name="IDS_ERROR_MSG_VIDEO_TOO_SHORT">
+        Video isn't saved since it's too short
       </message>
     </messages>
   </release>

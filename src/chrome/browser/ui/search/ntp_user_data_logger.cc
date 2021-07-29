@@ -24,10 +24,7 @@
 namespace {
 
 // Logs CustomizedShortcutSettings on the NTP.
-void LogCustomizedShortcutSettings(std::pair<bool, bool> settings) {
-  bool using_most_visited = settings.first;
-  bool is_visible = settings.second;
-
+void LogCustomizedShortcutSettings(bool using_most_visited, bool is_visible) {
   CustomizedShortcutSettings setting;
   if (is_visible && using_most_visited) {
     setting =
@@ -299,19 +296,11 @@ void NTPUserDataLogger::LogOneGoogleBarFetchDuration(
 
 void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
                                  base::TimeDelta time) {
-  if (event == NTP_ALL_TILES_LOADED) {
-    EmitNtpStatistics(time);
-  }
-
-  // All other events can only be logged by the Google NTP
   if (!DefaultSearchProviderIsGoogle()) {
     return;
   }
 
   switch (event) {
-    case NTP_ALL_TILES_LOADED:
-      // permitted above for non-Google search providers
-      break;
     case NTP_STATIC_LOGO_SHOWN_FROM_CACHE:
       RecordDoodleImpression(time, /*is_cta=*/false, /*from_cache=*/true);
       break;
@@ -410,6 +399,12 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
   }
 }
 
+void NTPUserDataLogger::LogMostVisitedLoaded(base::TimeDelta time,
+                                             bool using_most_visited,
+                                             bool is_visible) {
+  EmitNtpStatistics(time, using_most_visited, is_visible);
+}
+
 void NTPUserDataLogger::LogSuggestionEventWithValue(
     NTPSuggestionsLoggingEventType event,
     int data,
@@ -458,33 +453,19 @@ bool NTPUserDataLogger::CustomBackgroundIsConfigured() const {
   return instant_service->IsCustomBackgroundSet();
 }
 
-bool NTPUserDataLogger::AreShortcutsCustomized() const {
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile_);
-  return instant_service->AreShortcutsCustomized();
-}
-
-std::pair<bool, bool> NTPUserDataLogger::GetCurrentShortcutSettings() const {
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile_);
-  return instant_service->GetCurrentShortcutSettings();
-}
-
-void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
+void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time,
+                                          bool using_most_visited,
+                                          bool is_visible) {
   // We only send statistics once per page.
   if (has_emitted_) {
     return;
   }
 
-  bool has_server_side_suggestions = false;
   int tiles_count = 0;
   for (const absl::optional<ntp_tiles::NTPTileImpression>& impression :
        logged_impressions_) {
     if (!impression.has_value()) {
       break;
-    }
-    if (impression->source == ntp_tiles::TileSource::SUGGESTIONS_SERVICE) {
-      has_server_side_suggestions = true;
     }
     ntp_tiles::metrics::RecordTileImpression(*impression);
     ++tiles_count;
@@ -495,13 +476,7 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
            << "number of tiles: " << tiles_count;
 
   UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime", load_time);
-
-  // Split between ML (aka SuggestionsService) and MV (aka TopSites).
-  if (has_server_side_suggestions) {
-    UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.MostLikely", load_time);
-  } else {
-    UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.MostVisited", load_time);
-  }
+  UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.MostVisited", load_time);
 
   // Note: This could be inaccurate if the default search engine was changed
   // since the page load started. That's unlikely enough to not warrant special
@@ -515,6 +490,8 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Web.Other", load_time);
   } else if (ntp_url_ == GURL(chrome::kChromeUINewTabPageURL)) {
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.WebUINTP", load_time);
+  } else if (ntp_url_ == GURL(chrome::kChromeUINewTabPageThirdPartyURL)) {
+    UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.WebUI3PNTP", load_time);
   }
 
   // Split between Startup and non-startup.
@@ -525,9 +502,9 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   }
 
   if (is_google) {
-    LogCustomizedShortcutSettings(GetCurrentShortcutSettings());
+    LogCustomizedShortcutSettings(using_most_visited, is_visible);
 
-    if (AreShortcutsCustomized()) {
+    if (!using_most_visited) {
       UMA_HISTOGRAM_ENUMERATION(
           "NewTabPage.Customized",
           LoggingEventToCustomizedFeature(NTP_SHORTCUT_CUSTOMIZED));

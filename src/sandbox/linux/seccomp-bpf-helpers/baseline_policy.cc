@@ -170,12 +170,27 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return Allow();
 #endif
 
+  // V8 uses PKU (a.k.a. MPK / PKEY) for protecting code spaces.
+  if (sysno == __NR_pkey_alloc) {
+    return RestrictPkeyAllocFlags();
+  }
+
+  if (sysno == __NR_pkey_free) {
+    return Allow();
+  }
+
   if (SyscallSets::IsClockApi(sysno)) {
     return RestrictClockID();
   }
 
   if (sysno == __NR_clone) {
     return RestrictCloneToThreadsAndEPERMFork();
+  }
+
+  // clone3 takes a pointer argument which we cannot examine, so return ENOSYS
+  // to force the libc to use clone. See https://crbug.com/1213452.
+  if (sysno == __NR_clone3) {
+    return Error(ENOSYS);
   }
 
   if (sysno == __NR_fcntl)
@@ -253,8 +268,11 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return RestrictMmapFlags();
 #endif
 
-  if (sysno == __NR_mprotect)
+  if (sysno == __NR_mprotect || sysno == __NR_pkey_mprotect) {
+    // pkey_mprotect is identical to mprotect except for the additional (last)
+    // parameter, which can be ignored here.
     return RestrictMprotectFlags();
+  }
 
   if (sysno == __NR_prctl)
     return RestrictPrctl();

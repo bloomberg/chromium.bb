@@ -2,13 +2,9 @@ export const description = `
 Tests for eventualAsyncExpectation and immediateAsyncExpectation.
 `;
 
-import { makeTestGroup, makeTestGroupForUnitTesting } from '../common/framework/test_group.js';
-import {
-  assert,
-  objectEquals,
-  rejectOnTimeout,
-  resolveOnTimeout,
-} from '../common/framework/util/util.js';
+import { makeTestGroup } from '../common/framework/test_group.js';
+import { makeTestGroupForUnitTesting } from '../common/internal/test_group.js';
+import { assert, objectEquals, rejectOnTimeout, resolveOnTimeout } from '../common/util/util.js';
 
 import { TestGroupTest } from './test_group_test.js';
 import { UnitTest } from './unit_test.js';

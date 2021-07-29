@@ -1,0 +1,27 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void isInf_666f2a() {
+  bool3 res = isinf(float3());
+}
+
+vertex tint_symbol vertex_main() {
+  isInf_666f2a();
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  isInf_666f2a();
+  return;
+}
+
+kernel void compute_main() {
+  isInf_666f2a();
+  return;
+}
+

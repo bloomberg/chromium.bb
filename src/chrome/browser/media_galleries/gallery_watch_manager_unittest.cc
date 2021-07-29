@@ -112,6 +112,10 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
     test_user_manager_.reset();
 #endif
 
+    // Make sure any pending network events are run before the
+    // NetworkConnectionTracker is cleared.
+    task_environment_.RunUntilIdle();
+
     // The MediaFileSystemRegistry owned by the TestingBrowserProcess must be
     // destroyed before the StorageMonitor because it calls
     // StorageMonitor::RemoveObserver() in its destructor.
@@ -326,7 +330,8 @@ TEST_F(GalleryWatchManagerTest, MAYBE_RemoveAllWatches) {
 }
 
 // Fails on Mac: crbug.com/1183212
-#if defined(OS_MAC)
+// Fails on Chrome OS: crbug.com/1207878
+#if defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_DropWatchOnGalleryRemoved DISABLED_DropWatchOnGalleryRemoved
 #else
 #define MAYBE_DropWatchOnGalleryRemoved DropWatchOnGalleryRemoved

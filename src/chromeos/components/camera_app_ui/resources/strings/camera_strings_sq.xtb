@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">Printo</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> është shkëputur.</translation>
 <translation id="1473110567575736769">Kohëmatësi me 3 sekonda</translation>
+<translation id="1478594628797167447">Skaner</translation>
+<translation id="1545749641540134597">Skano kodin QR</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Nuk u regjistrua asgjë</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">Portret (vertikal</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> aktive</translation>
 <translation id="2144806332417375165">Personalizo parametrat e videos</translation>
+<translation id="2175927920773552910">Kodi QR</translation>
+<translation id="2268107369530950373">Kalo në modalitetin e skanerit</translation>
 <translation id="229579744168541441">Eksporto në disk</translation>
 <translation id="2320741269052147773">Zgjero majtas</translation>
 <translation id="2501278716633472235">Kthehu prapa</translation>
@@ -38,6 +42,7 @@ Aplikacionet që kanë leje për hapësirën ruajtëse do të kenë qasje te fot
 <translation id="3227137524299004712">Mikrofoni</translation>
 <translation id="3240426699337459095">Lidhja u kopjua</translation>
 <translation id="3259149966178251584">Rezolucioni i kamerës</translation>
+<translation id="3448774564454087943">Videoja nuk është ruajtur duke qenë se është shumë e shkurtër</translation>
 <translation id="3517926952904427380">Nuk mund të nxjerrësh një fotografi portret</translation>
 <translation id="3569311554794739032">Vërtet dëshiron të heqësh <ph name="FILE" />?</translation>
 <translation id="3733597664308256288">Ofrohen kontrolle shtesë të kamerës. Kërko + Shigjeta djathtas për të pasur qasje.</translation>
@@ -56,11 +61,14 @@ Aplikacionet që kanë leje për hapësirën ruajtëse do të kenë qasje te fot
 <translation id="4628948037717959914">Fotografia</translation>
 <translation id="4649291346448517080">Skedari nuk mund të ruhet</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">Regjistrim videoje me disa transmetime</translation>
 <translation id="5057360777601936059">Kamera jote nuk ofrohet aktualisht.
         Kontrollo nëse kamera është lidhur si duhet.</translation>
 <translation id="5152121255775685072">Shko te galeria</translation>
+<translation id="5268823927180092501">Aktivizo modalitetin e dokumenteve në të gjitha kamerat</translation>
 <translation id="5422455049771430511">Fotografitë dhe videot e tua kanë një shtëpi të re</translation>
 <translation id="5671277269877808209">Katror</translation>
+<translation id="5753488212459587150">Aktivizo modalitetin e ekspertit</translation>
 <translation id="5775960006311140197">Modaliteti i ekspertëve</translation>
 <translation id="5869546221129391014">Rrjetë</translation>
 <translation id="5975083100439434680">Zvogëlo</translation>

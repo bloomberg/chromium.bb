@@ -7,13 +7,13 @@
 #include <utility>
 
 #include "base/files/file_util.h"
-#include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/enterprise/connectors/file_system/access_token_fetcher.h"
 #include "chrome/browser/enterprise/connectors/file_system/box_uploader.h"
-#include "chrome/browser/enterprise/connectors/file_system/signin_dialog_delegate.h"
+#include "chrome/browser/enterprise/connectors/file_system/signin_experience.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "components/download/public/common/download_interrupt_reasons_utils.h"
 #include "components/download/public/common/download_item.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -24,6 +24,9 @@ namespace enterprise_connectors {
 
 namespace {
 
+// The OAuth token consumer name.
+const char kOAuthConsumerName[] = "file_system_rename_handler";
+
 PrefService* PrefsFromBrowserContext(content::BrowserContext* context) {
   return Profile::FromBrowserContext(context)->GetPrefs();
 }
@@ -31,64 +34,35 @@ PrefService* PrefsFromBrowserContext(content::BrowserContext* context) {
 PrefService* PrefsFromDownloadItem(download::DownloadItem* item) {
   content::BrowserContext* context =
       content::DownloadItemUtils::GetBrowserContext(item);
-  return context ? Profile::FromBrowserContext(context)->GetPrefs() : nullptr;
+  return context ? PrefsFromBrowserContext(context) : nullptr;
 }
 
-bool MimeTypeMatches(const std::set<std::string>& mime_types,
-                     const std::string& mime_type) {
-  return mime_types.count(kWildcardMimeType) != 0 ||
-         mime_types.count(mime_type) != 0;
-}
+using download::ConvertNetErrorToInterruptReason;
 
 }  // namespace
 
-const base::Feature kFileSystemConnectorEnabled{
-    "FileSystemConnectorsEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// static
-absl::optional<FileSystemSettings> FileSystemRenameHandler::IsEnabled(
-    download::DownloadItem* download_item) {
-  if (!base::FeatureList::IsEnabled(kFileSystemConnectorEnabled))
-    return absl::nullopt;
-
-  // Check to see if the download item matches any rules.  If the URL of the
-  // download itself does not match then check the URL of site on which the
-  // download is hosted.
-  ConnectorsService* service = ConnectorsServiceFactory::GetForBrowserContext(
-      content::DownloadItemUtils::GetBrowserContext(download_item));
-  auto settings = service->GetFileSystemSettings(
-      download_item->GetURL(), FileSystemConnector::SEND_DOWNLOAD_TO_CLOUD);
-  if (settings.has_value() &&
-      MimeTypeMatches(settings->mime_types, download_item->GetMimeType())) {
-    return settings;
-  }
-
-  settings = service->GetFileSystemSettings(
-      download_item->GetTabUrl(), FileSystemConnector::SEND_DOWNLOAD_TO_CLOUD);
-  if (settings.has_value() &&
-      MimeTypeMatches(settings->mime_types, download_item->GetMimeType())) {
-    return settings;
-  }
-
-  return absl::nullopt;
-}
-
-// static
-std::unique_ptr<download::DownloadItemRenameHandler>
-FileSystemRenameHandler::Create(download::DownloadItem* download_item,
-                                FileSystemSettings settings) {
-  return std::make_unique<FileSystemRenameHandler>(download_item,
-                                                   std::move(settings));
-}
+using InterruptReason = download::DownloadInterruptReason;
+constexpr auto kBrowserFailure = download::DOWNLOAD_INTERRUPT_REASON_CRASH;
+constexpr auto kCredentialUpdateFailure = kBrowserFailure;
+// download::DOWNLOAD_INTERRUPT_REASON_CREDENTIALS_UPDATE_FAILED;
+constexpr auto kSignInCancellation =
+    download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
 
 // static
 std::unique_ptr<download::DownloadItemRenameHandler>
 FileSystemRenameHandler::CreateIfNeeded(download::DownloadItem* download_item) {
-  auto settings = IsEnabled(download_item);
-  if (!settings.has_value())
-    return nullptr;
-
-  return Create(download_item, std::move(settings.value()));
+  if (download_item->GetState() == download::DownloadItem::COMPLETE) {
+    return download_item->GetRerouteInfo().IsInitialized()
+               ? std::make_unique<FileSystemRenameHandler>(download_item)
+               : nullptr;
+  }
+  // TODO(https://crbug.com/1213761) Resume upload if state is IN_PROGRESS, and
+  // perhaps also INTERRUPTED and CANCELLED.
+  absl::optional<FileSystemSettings> settings =
+      GetFileSystemSettings(download_item);
+  return settings.has_value() ? std::make_unique<FileSystemRenameHandler>(
+                                    download_item, std::move(settings.value()))
+                              : nullptr;
 }
 
 // The only permitted use of |download_item| in this class other than the ctor
@@ -98,22 +72,24 @@ FileSystemRenameHandler::FileSystemRenameHandler(
     download::DownloadItem* download_item,
     FileSystemSettings settings)
     : download::DownloadItemRenameHandler(download_item),
-      target_path_(download_item->GetTargetFilePath()),
       settings_(std::move(settings)),
       uploader_(BoxUploader::Create(download_item)) {
-  DCHECK_EQ(settings_.service_provider, "box");
+  DCHECK_EQ(settings_.service_provider, kBoxProviderName);
 }
+
+FileSystemRenameHandler::FileSystemRenameHandler(
+    download::DownloadItem* download_item)
+    : download::DownloadItemRenameHandler(download_item),
+      uploader_(BoxUploader::Create(download_item)) {}
 
 FileSystemRenameHandler::~FileSystemRenameHandler() = default;
 
-void FileSystemRenameHandler::Start(Callback callback) {
-  download_callback_ = std::move(callback);
+void FileSystemRenameHandler::Start(ProgressUpdateCallback progress_update_cb,
+                                    DownloadCallback upload_complete_cb) {
   uploader_->Init(
       base::BindRepeating(&FileSystemRenameHandler::OnApiAuthenticationError,
                           weak_factory_.GetWeakPtr()),
-      base::BindOnce(&FileSystemRenameHandler::NotifyResultToDownloadThread,
-                     weak_factory_.GetWeakPtr()),
-      GetPrefs());
+      std::move(progress_update_cb), std::move(upload_complete_cb), GetPrefs());
   StartInternal();
 }
 
@@ -124,7 +100,7 @@ void FileSystemRenameHandler::TryUploaderTask(content::BrowserContext* context,
 
 void FileSystemRenameHandler::PromptUserSignInForAuthorization(
     content::WebContents* contents) {
-  FileSystemSigninDialogDelegate::ShowDialog(
+  StartFileSystemConnectorSigninExperienceForDownloadItem(
       contents, settings_,
       base::BindOnce(&FileSystemRenameHandler::OnAuthorization,
                      weak_factory_.GetWeakPtr()));
@@ -135,7 +111,8 @@ void FileSystemRenameHandler::FetchAccessToken(
     const std::string& refresh_token) {
   token_fetcher_ = std::make_unique<AccessTokenFetcher>(
       GetURLLoaderFactory(context), settings_.service_provider,
-      settings_.token_endpoint, refresh_token, std::string(),
+      settings_.token_endpoint, refresh_token, /*auth_code=*/std::string(),
+      kOAuthConsumerName,
       base::BindOnce(&FileSystemRenameHandler::OnAccessTokenFetched,
                      weak_factory_.GetWeakPtr()));
   token_fetcher_->Start(settings_.client_id, settings_.client_secret,
@@ -156,16 +133,20 @@ void FileSystemRenameHandler::ShowDownloadInContext() {
   AddTabToShowDownload(uploader_->GetDestinationFolderUrl());
 }
 
-void FileSystemRenameHandler::AddTabToShowDownload(GURL url) {
-  content::BrowserContext* context =
-      content::DownloadItemUtils::GetBrowserContext(download_item());
-  Profile* profile = Profile::FromBrowserContext(context);
-  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
-  Browser* browser = displayer.browser();
-  chrome::AddTabAt(browser, url, /*index =*/-1, /*foreground =*/true);
+void FileSystemRenameHandler::AddTabToShowDownload(const GURL& url) {
+  if (url.is_valid()) {
+    content::BrowserContext* context =
+        content::DownloadItemUtils::GetBrowserContext(download_item());
+    Profile* profile = Profile::FromBrowserContext(context);
+    chrome::ScopedTabbedBrowserDisplayer displayer(profile);
+    Browser* browser = displayer.browser();
+    chrome::AddTabAt(browser, url, /* index = */ -1, /* foreground = */ true);
+  }
+  // The uploaded file or folder url's may not be valid before file upload completes, and we should
+  // avoid just opening a new empty tab. Therefore, a new tab is only opened when the url is valid.
 }
 
-void FileSystemRenameHandler::StartInternal() {
+void FileSystemRenameHandler::StartInternal(std::string access_token) {
   PrefService* prefs;
   content::BrowserContext* context =
       content::DownloadItemUtils::GetBrowserContext(download_item());
@@ -178,18 +159,18 @@ void FileSystemRenameHandler::StartInternal() {
   // not to be assumed valid on the UI thread.
   if (!context || !contents || !(prefs = PrefsFromBrowserContext(context))) {
     DLOG(ERROR) << "Empty pointers???";
-    NotifyResultToDownloadThread(false);
+    uploader_->TerminateTask(kBrowserFailure);
     return;
   }
 
-  std::string access_token;
   std::string refresh_token;
-  bool ok = GetFileSystemOAuth2Tokens(prefs, settings_.service_provider,
+  bool ok = access_token.size() ||
+            GetFileSystemOAuth2Tokens(prefs, settings_.service_provider,
                                       &access_token, &refresh_token);
 
-  if (ok && !access_token.empty()) {  // Case 2.
+  if (ok && access_token.size()) {  // Case 2.
     TryUploaderTask(context, access_token);
-  } else if (ok && !refresh_token.empty()) {  // Case 3.
+  } else if (ok && refresh_token.size()) {  // Case 3.
     // Start AccessTokenFetcher to obtain access token with refresh token.
     FetchAccessToken(context, refresh_token);
   } else {  // Case 1.
@@ -203,18 +184,20 @@ void FileSystemRenameHandler::StartInternal() {
 //      AToken  || RToken || Action
 // (1)  N       || N      || PromptUserSignInForAuthorization()
 // (2)  Y       ||        || TryUploaderTask()
-// (3)  N       || Y      || FetchAccessToken
+// (3)  N       || Y      || FetchAccessToken()
 //
 // (1) PromptUserSignInForAuthorization()
 //    (a) Success: SaveTokens -> (2).
 //    (b) Failure with GoogleServiceAuthError::State::REQUEST_CANCELED: [Abort].
-//    (c) Other failures: Retry (1).
+//    (c) Other failures (no network error): ClearRToken->(1).
+//    (d) Network Error: [Abort].
 // (2) TryUploaderTask()
-//    (a) No authentication error: NotifyResultToDownloadThread() [Done].
+//    (a) No authentication error: result sent back to download thread [Done].
 //    (b) Authentication error: ClearAToken -> (3).
-// (3) FetchAccessToken
+// (3) FetchAccessToken()
 //    (a) Success: SaveTokens->(2).
-//    (b) Failure: ClearRToken->(1).
+//    (b) None-Network Failures: ClearRToken->(1).
+//    (c) Network Error: [Abort].
 ////////////////////////////////////////////////////////////////////////////////
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -243,44 +226,51 @@ void FileSystemRenameHandler::OnAccessTokenFetched(
     const GoogleServiceAuthError& status,
     const std::string& access_token,
     const std::string& refresh_token) {
-  PrefService* prefs = PrefsFromDownloadItem(download_item());
-  if (status.state() != GoogleServiceAuthError::State::NONE) {
-    // Case 1c and 3b:
-    if (ClearFileSystemRefreshToken(prefs, settings_.service_provider)) {
-      return OnAuthenticationError(status);
-    }
-  } else if (prefs &&
-             SetFileSystemOAuth2Tokens(prefs, settings_.service_provider,
-                                       access_token, refresh_token)) {
-    // Case 1a and 3a:
-    return StartInternal();
+  // Case 1d or 3c:
+  const net::Error net_error = static_cast<net::Error>(status.network_error());
+  if (net_error) {
+    // Don't clear the OAuth2 tokens if it's only a network error.
+    DCHECK_EQ(status.state(), GoogleServiceAuthError::State::CONNECTION_FAILED);
+    return uploader_->TerminateTask(ConvertNetErrorToInterruptReason(
+        net_error, download::DOWNLOAD_INTERRUPT_FROM_NETWORK));
   }
+
+  // Case 1a and 3a:
+  if (status.state() == GoogleServiceAuthError::State::NONE) {
+    const bool save_success = SetFileSystemOAuth2Tokens(
+        GetPrefs(), settings_.service_provider, access_token, refresh_token);
+    LOG_IF(ERROR, !save_success) << "Failed to save OAuth2 tokens.";
+    // Can proceed with current task using this token even if failed to save.
+    return StartInternal(access_token);
+  }
+
+  // Case 1c and 3b:
+  if (ClearFileSystemRefreshToken(GetPrefs(), settings_.service_provider)) {
+    return OnAuthenticationError(status);
+  }
+
   // Handle token storage operations failure.
-  return NotifyResultToDownloadThread(false);
+  return uploader_->TerminateTask(kCredentialUpdateFailure);
 }
 
 void FileSystemRenameHandler::OnAuthenticationError(
     const GoogleServiceAuthError& error) {
-  PrefService* prefs = GetPrefs();
-  if (prefs && ClearFileSystemAccessToken(prefs, settings_.service_provider)) {
+  if (ClearFileSystemAccessToken(GetPrefs(), settings_.service_provider)) {
     // Case 2b, but also Case 1c and 3b so that now both tokens are cleared.
     VLOG(20) << "Re-authenticating...";
     StartInternal();
   } else {
-    DLOG(ERROR) << "Failed to clear OAuth2 tokens. Notifying failure back.";
-    NotifyResultToDownloadThread(false);
-    // TODO(https://crbug.com/1184351): Handle local temporary file.
+    LOG(ERROR) << "Failed to clear access token. Will notify failure back.";
+    uploader_->TerminateTask(kCredentialUpdateFailure);
   }
 }
 
 void FileSystemRenameHandler::OnSignInCancellation() {
   DLOG(ERROR) << "Sign in canceled!";
-  PrefService* prefs = GetPrefs();
-  if (prefs) {
-    ClearFileSystemOAuth2Tokens(prefs, settings_.service_provider);
-  }
-  NotifyResultToDownloadThread(false);
-  // TODO(https://crbug.com/1184351): Handle local temporary file.
+  const bool clear_success =
+      ClearFileSystemOAuth2Tokens(GetPrefs(), settings_.service_provider);
+  LOG_IF(ERROR, !clear_success) << "Failed to clear OAuth2 tokens.";
+  uploader_->TerminateTask(kSignInCancellation);
 }
 
 void FileSystemRenameHandler::OnApiAuthenticationError() {
@@ -289,20 +279,6 @@ void FileSystemRenameHandler::OnApiAuthenticationError() {
       GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
           GoogleServiceAuthError::InvalidGaiaCredentialsReason::
               CREDENTIALS_REJECTED_BY_SERVER));
-}
-
-void FileSystemRenameHandler::NotifyResultToDownloadThread(bool success) {
-  // TODO(https://crbug.com/1168815): Define required error messages.
-  auto reason = success ? download::DOWNLOAD_INTERRUPT_REASON_NONE
-                        : download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
-  // Make sure target_path_ has been initialized.
-  DCHECK(!target_path_.empty());
-  // TODO(https://crbug.com/1206299): Returns the uploaded file URL here using
-  // uploader_->GetUploadedFileUrl() instead, but make sure the download UI
-  // displays the uploaded status properly. Currently, upon opening the
-  // item/folder for the first time, DownloadItem detects that the file is
-  // deleted and turns the menu bar grey.
-  std::move(download_callback_).Run(reason, target_path_);
 }
 
 PrefService* FileSystemRenameHandler::GetPrefs() {

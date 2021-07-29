@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
 
 #import "base/test/ios/wait_util.h"
+#include "build/build_config.h"
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_pref_names.h"
@@ -61,10 +62,10 @@ class PolicyWatcherBrowserAgentTest : public PlatformTest {
     agent_ = PolicyWatcherBrowserAgent::FromBrowser(browser_.get());
 
     // SceneState Browser Agent.
-    AppState* app_state = [[AppState alloc] initWithBrowserLauncher:nil
-                                                 startupInformation:nil
-                                                applicationDelegate:nil];
-    scene_state_ = [[FakeSceneState alloc] initWithAppState:app_state];
+    app_state_ = [[AppState alloc] initWithBrowserLauncher:nil
+                                        startupInformation:nil
+                                       applicationDelegate:nil];
+    scene_state_ = [[FakeSceneState alloc] initWithAppState:app_state_];
     scene_state_.activationLevel = SceneActivationLevelForegroundActive;
     SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
   }
@@ -94,6 +95,8 @@ class PolicyWatcherBrowserAgentTest : public PlatformTest {
   PolicyWatcherBrowserAgent* agent_;
   std::unique_ptr<Browser> browser_;
   FakeSceneState* scene_state_;
+  // Keep app_state_ alive as it is a weak property of the scene state.
+  AppState* app_state_;
 };
 
 #pragma mark - Tests.
@@ -160,7 +163,8 @@ TEST_F(PolicyWatcherBrowserAgentTest, NoCommandIfNotSignedIn) {
       AuthenticationServiceFactory::GetForBrowserState(
           chrome_browser_state_.get());
 
-  ASSERT_FALSE(authentication_service->IsAuthenticated());
+  ASSERT_FALSE(authentication_service->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin));
 
   // Strict mock, will fail if a method is called.
   id mockHandler =
@@ -181,7 +185,8 @@ TEST_F(PolicyWatcherBrowserAgentTest, CommandIfSignedIn) {
 
   SignIn();
 
-  ASSERT_TRUE(authentication_service->IsAuthenticated());
+  ASSERT_TRUE(authentication_service->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin));
 
   id mockHandler = OCMProtocolMock(@protocol(PolicySignoutPromptCommands));
   agent_->Initialize(mockHandler);
@@ -194,7 +199,8 @@ TEST_F(PolicyWatcherBrowserAgentTest, CommandIfSignedIn) {
 
   // Verify the forceSignOut command was dispatched by the browser agent.
   EXPECT_OCMOCK_VERIFY(mockHandler);
-  EXPECT_FALSE(authentication_service->IsAuthenticated());
+  EXPECT_FALSE(authentication_service->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin));
 }
 
 // Tests that the pref change doesn't trigger a command if the scene isn't
@@ -208,7 +214,8 @@ TEST_F(PolicyWatcherBrowserAgentTest, NoCommandIfNotActive) {
 
   SignIn();
 
-  ASSERT_TRUE(authentication_service->IsAuthenticated());
+  ASSERT_TRUE(authentication_service->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin));
 
   // Strict mock, will fail if a method is called.
   id mockHandler =
@@ -220,7 +227,8 @@ TEST_F(PolicyWatcherBrowserAgentTest, NoCommandIfNotActive) {
                                                 false);
 
   EXPECT_TRUE(scene_state_.appState.shouldShowPolicySignoutPrompt);
-  EXPECT_FALSE(authentication_service->IsAuthenticated());
+  EXPECT_FALSE(authentication_service->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin));
 }
 
 // Tests that the handler is called and the user signed out if the policy is
@@ -256,14 +264,16 @@ TEST_F(PolicyWatcherBrowserAgentTest, SignOutIfPolicyChangedAtColdStart) {
   SceneStateBrowserAgent::CreateForBrowser(browser.get(), scene_state);
 
   // The SignOut will occur when the handler is set.
-  ASSERT_TRUE(authentication_service->IsAuthenticated());
+  ASSERT_TRUE(authentication_service->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin));
 
   id mockHandler = OCMProtocolMock(@protocol(PolicySignoutPromptCommands));
   OCMExpect([mockHandler showPolicySignoutPrompt]);
   agent->Initialize(mockHandler);
 
   EXPECT_OCMOCK_VERIFY(mockHandler);
-  EXPECT_FALSE(authentication_service->IsAuthenticated());
+  EXPECT_FALSE(authentication_service->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin));
 }
 
 // Tests that the command to show the UI isn't sent if the authentication
@@ -283,24 +293,25 @@ TEST_F(PolicyWatcherBrowserAgentTest, UINotShownWhileSignOut) {
                                        name:@"myName"];
   authentication_service->SignIn(identity);
 
-  ASSERT_TRUE(authentication_service->IsAuthenticated());
+  ASSERT_TRUE(authentication_service->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin));
 
   // Strict protocol: method calls will fail until the method is stubbed.
   id mockHandler =
       OCMStrictProtocolMock(@protocol(PolicySignoutPromptCommands));
   agent_->Initialize(mockHandler);
 
-  ASSERT_TRUE(authentication_service->IsAuthenticated());
+  ASSERT_TRUE(authentication_service->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin));
   // As the SignOut callback hasn't been called yet, this shouldn't trigger a UI
   // update.
   agent_->SignInUIDismissed();
 
   OCMExpect([mockHandler showPolicySignoutPrompt]);
 
-  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-      base::test::ios::kWaitForActionTimeout, ^bool {
-        return !authentication_service->IsAuthenticated();
-      }));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(authentication_service->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin));
 
   // Once the SignOut callback is executed, the command should be sent.
   EXPECT_OCMOCK_VERIFY(mockHandler);

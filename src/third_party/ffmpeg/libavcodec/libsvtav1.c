@@ -551,7 +551,7 @@ static const AVCodecDefault eb_enc_defaults[] = {
     { NULL },
 };
 
-AVCodec ff_libsvtav1_encoder = {
+const AVCodec ff_libsvtav1_encoder = {
     .name           = "libsvtav1",
     .long_name      = NULL_IF_CONFIG_SMALL("SVT-AV1(Scalable Video Technology for AV1) encoder"),
     .priv_data_size = sizeof(SvtContext),
@@ -560,7 +560,8 @@ AVCodec ff_libsvtav1_encoder = {
     .init           = eb_enc_init,
     .receive_packet = eb_receive_packet,
     .close          = eb_enc_close,
-    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_AUTO_THREADS,
+    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS,
+    .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
     .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P,
                                                     AV_PIX_FMT_YUV420P10,
                                                     AV_PIX_FMT_NONE },

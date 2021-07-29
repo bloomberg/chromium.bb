@@ -17,13 +17,13 @@
 #include "base/bind_post_task.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -1873,8 +1873,8 @@ void MediaStreamManager::PanTiltZoomPermissionChecked(
   for (const auto& device : video_devices) {
     MaybeStartTrackingCaptureHandleConfig(
         label, device,
-        GlobalFrameRoutingId(request->requesting_process_id,
-                             request->requesting_frame_id));
+        GlobalRenderFrameHostId(request->requesting_process_id,
+                                request->requesting_frame_id));
   }
 }
 
@@ -1979,8 +1979,8 @@ void MediaStreamManager::FinalizeChangeDevice(const std::string& label,
 
   MaybeUpdateTrackedCaptureHandleConfigs(
       label, request->devices,
-      GlobalFrameRoutingId(request->requesting_process_id,
-                           request->requesting_frame_id));
+      GlobalRenderFrameHostId(request->requesting_process_id,
+                              request->requesting_frame_id));
 }
 
 void MediaStreamManager::FinalizeMediaAccessRequest(
@@ -2562,7 +2562,13 @@ std::string MediaStreamManager::GetHMACForMediaDeviceID(
     const std::string& salt,
     const url::Origin& security_origin,
     const std::string& raw_unique_id) {
+  // TODO(crbug.com/1215532): DCHECKs are disabled during automated testing on
+  // CrOS and this check failed when tested on an experimental builder. Revert
+  // https://crrev.com/c/2932244 to enable it. See go/chrome-dcheck-on-cros
+  // or http://crbug.com/1113456 for more details.
+#if !defined(OS_CHROMEOS)
   DCHECK(!raw_unique_id.empty());
+#endif
   if (raw_unique_id == media::AudioDeviceDescription::kDefaultDeviceId ||
       raw_unique_id == media::AudioDeviceDescription::kCommunicationsDeviceId) {
     return raw_unique_id;
@@ -2878,7 +2884,7 @@ void MediaStreamManager::PermissionChangedCallback(
 void MediaStreamManager::MaybeStartTrackingCaptureHandleConfig(
     const std::string& label,
     const MediaStreamDevice& captured_device,
-    GlobalFrameRoutingId capturer) {
+    GlobalRenderFrameHostId capturer) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!blink::IsVideoInputMediaType(captured_device.type) ||
@@ -2924,7 +2930,7 @@ void MediaStreamManager::MaybeStopTrackingCaptureHandleConfig(
 void MediaStreamManager::MaybeUpdateTrackedCaptureHandleConfigs(
     const std::string& label,
     const MediaStreamDevices& new_devices,
-    GlobalFrameRoutingId capturer) {
+    GlobalRenderFrameHostId capturer) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   MediaStreamDevices filtered_new_devices;

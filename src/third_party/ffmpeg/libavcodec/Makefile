@@ -19,7 +19,6 @@ HEADERS = ac3_parser.h                                                  \
           mediacodec.h                                                  \
           packet.h                                                      \
           qsv.h                                                         \
-          vaapi.h                                                       \
           vdpau.h                                                       \
           version.h                                                     \
           videotoolbox.h                                                \
@@ -29,14 +28,14 @@ HEADERS = ac3_parser.h                                                  \
 OBJS = ac3_parser.o                                                     \
        adts_parser.o                                                    \
        allcodecs.o                                                      \
+       avcodec.o                                                        \
        avdct.o                                                          \
        avpacket.o                                                       \
-       avpicture.o                                                      \
        bitstream.o                                                      \
-       bitstream_filter.o                                               \
        bitstream_filters.o                                              \
        bsf.o                                                            \
        codec_desc.o                                                     \
+       codec_par.o                                                      \
        d3d11va.o                                                        \
        decode.o                                                         \
        dirac.o                                                          \
@@ -197,8 +196,7 @@ OBJS-$(CONFIG_AMRWB_DECODER)           += amrwbdec.o celp_filters.o   \
                                           celp_math.o acelp_filters.o \
                                           acelp_vectors.o             \
                                           acelp_pitch_delay.o
-OBJS-$(CONFIG_AMV_ENCODER)             += mjpegenc.o mjpegenc_common.o \
-                                          mjpegenc_huffman.o
+OBJS-$(CONFIG_AMV_ENCODER)             += mjpegenc.o mjpegenc_common.o
 OBJS-$(CONFIG_ANM_DECODER)             += anm.o
 OBJS-$(CONFIG_ANSI_DECODER)            += ansi.o cga_data.o
 OBJS-$(CONFIG_APE_DECODER)             += apedec.o
@@ -312,7 +310,8 @@ OBJS-$(CONFIG_EAMAD_DECODER)           += eamad.o eaidct.o mpeg12.o \
                                           mpeg12data.o
 OBJS-$(CONFIG_EATGQ_DECODER)           += eatgq.o eaidct.o
 OBJS-$(CONFIG_EATGV_DECODER)           += eatgv.o
-OBJS-$(CONFIG_EATQI_DECODER)           += eatqi.o eaidct.o mpeg12.o mpeg12data.o mpegvideodata.o rl.o
+OBJS-$(CONFIG_EATQI_DECODER)           += eatqi.o eaidct.o mpeg12.o \
+                                          mpeg12data.o mpegvideodata.o
 OBJS-$(CONFIG_EIGHTBPS_DECODER)        += 8bps.o
 OBJS-$(CONFIG_EIGHTSVX_EXP_DECODER)    += 8svx.o
 OBJS-$(CONFIG_EIGHTSVX_FIB_DECODER)    += 8svx.o
@@ -374,8 +373,6 @@ OBJS-$(CONFIG_H264_MEDIACODEC_DECODER) += mediacodecdec.o
 OBJS-$(CONFIG_H264_MF_ENCODER)         += mfenc.o mf_utils.o
 OBJS-$(CONFIG_H264_MMAL_DECODER)       += mmaldec.o
 OBJS-$(CONFIG_H264_NVENC_ENCODER)      += nvenc_h264.o
-OBJS-$(CONFIG_NVENC_ENCODER)           += nvenc_h264.o
-OBJS-$(CONFIG_NVENC_H264_ENCODER)      += nvenc_h264.o
 OBJS-$(CONFIG_H264_OMX_ENCODER)        += omx.o
 OBJS-$(CONFIG_H264_QSV_DECODER)        += qsvdec.o
 OBJS-$(CONFIG_H264_QSV_ENCODER)        += qsvenc_h264.o
@@ -396,7 +393,6 @@ OBJS-$(CONFIG_HEVC_CUVID_DECODER)      += cuviddec.o
 OBJS-$(CONFIG_HEVC_MEDIACODEC_DECODER) += mediacodecdec.o
 OBJS-$(CONFIG_HEVC_MF_ENCODER)         += mfenc.o mf_utils.o
 OBJS-$(CONFIG_HEVC_NVENC_ENCODER)      += nvenc_hevc.o
-OBJS-$(CONFIG_NVENC_HEVC_ENCODER)      += nvenc_hevc.o
 OBJS-$(CONFIG_HEVC_QSV_DECODER)        += qsvdec.o
 OBJS-$(CONFIG_HEVC_QSV_ENCODER)        += qsvenc_hevc.o hevc_ps_enc.o       \
                                           hevc_data.o
@@ -872,6 +868,7 @@ OBJS-$(CONFIG_ADPCM_G726_DECODER)         += g726.o
 OBJS-$(CONFIG_ADPCM_G726_ENCODER)         += g726.o
 OBJS-$(CONFIG_ADPCM_G726LE_DECODER)       += g726.o
 OBJS-$(CONFIG_ADPCM_G726LE_ENCODER)       += g726.o
+OBJS-$(CONFIG_ADPCM_IMA_ACORN_DECODER)    += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_AMV_DECODER)      += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_ALP_DECODER)      += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_ALP_ENCODER)      += adpcmenc.o adpcm_data.o
@@ -897,6 +894,7 @@ OBJS-$(CONFIG_ADPCM_IMA_SMJPEG_DECODER)   += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_WAV_DECODER)      += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_WAV_ENCODER)      += adpcmenc.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_WS_DECODER)       += adpcm.o adpcm_data.o
+OBJS-$(CONFIG_ADPCM_IMA_WS_ENCODER)       += adpcmenc.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_MS_DECODER)           += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_MS_ENCODER)           += adpcmenc.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_MTAF_DECODER)         += adpcm.o adpcm_data.o
@@ -978,9 +976,6 @@ OBJS-$(CONFIG_VP8_QSV_HWACCEL)            += qsvdec.o
 OBJS-$(CONFIG_ISO_MEDIA)               += mpeg4audio.o mpegaudiodata.o
 
 OBJS-$(CONFIG_ADTS_MUXER)              += mpeg4audio.o
-OBJS-$(CONFIG_CODEC2_DEMUXER)          += codec2utils.o
-OBJS-$(CONFIG_CODEC2_MUXER)            += codec2utils.o
-OBJS-$(CONFIG_CODEC2RAW_DEMUXER)       += codec2utils.o
 OBJS-$(CONFIG_DNXHD_DEMUXER)           += dnxhddata.o
 OBJS-$(CONFIG_FITS_DEMUXER)            += fits.o
 OBJS-$(CONFIG_LATM_MUXER)              += mpeg4audio.o
@@ -1023,8 +1018,8 @@ OBJS-$(CONFIG_LIBAOM_AV1_DECODER)         += libaomdec.o
 OBJS-$(CONFIG_LIBAOM_AV1_ENCODER)         += libaomenc.o
 OBJS-$(CONFIG_LIBARIBB24_DECODER)         += libaribb24.o ass.o
 OBJS-$(CONFIG_LIBCELT_DECODER)            += libcelt_dec.o
-OBJS-$(CONFIG_LIBCODEC2_DECODER)          += libcodec2.o codec2utils.o
-OBJS-$(CONFIG_LIBCODEC2_ENCODER)          += libcodec2.o codec2utils.o
+OBJS-$(CONFIG_LIBCODEC2_DECODER)          += libcodec2.o
+OBJS-$(CONFIG_LIBCODEC2_ENCODER)          += libcodec2.o
 OBJS-$(CONFIG_LIBDAV1D_DECODER)           += libdav1d.o
 OBJS-$(CONFIG_LIBDAVS2_DECODER)           += libdavs2.o
 OBJS-$(CONFIG_LIBFDK_AAC_DECODER)         += libfdk-aacdec.o
@@ -1080,7 +1075,7 @@ OBJS-$(CONFIG_AAC_PARSER)              += aac_parser.o aac_ac3_parser.o \
                                           mpeg4audio.o
 OBJS-$(CONFIG_AC3_PARSER)              += ac3tab.o aac_ac3_parser.o
 OBJS-$(CONFIG_ADX_PARSER)              += adx_parser.o adx.o
-OBJS-$(CONFIG_AV1_PARSER)              += av1_parser.o av1_parse.o
+OBJS-$(CONFIG_AV1_PARSER)              += av1_parser.o
 OBJS-$(CONFIG_AVS2_PARSER)             += avs2_parser.o
 OBJS-$(CONFIG_AVS3_PARSER)             += avs3_parser.o
 OBJS-$(CONFIG_BMP_PARSER)              += bmp_parser.o
@@ -1164,7 +1159,7 @@ OBJS-$(CONFIG_NULL_BSF)                   += null_bsf.o
 OBJS-$(CONFIG_OPUS_METADATA_BSF)          += opus_metadata_bsf.o
 OBJS-$(CONFIG_PCM_RECHUNK_BSF)            += pcm_rechunk_bsf.o
 OBJS-$(CONFIG_PRORES_METADATA_BSF)        += prores_metadata_bsf.o
-OBJS-$(CONFIG_REMOVE_EXTRADATA_BSF)       += remove_extradata_bsf.o
+OBJS-$(CONFIG_REMOVE_EXTRADATA_BSF)       += remove_extradata_bsf.o av1_parse.o
 OBJS-$(CONFIG_SETTS_BSF)                  += setts_bsf.o
 OBJS-$(CONFIG_TEXT2MOVSUB_BSF)            += movsub_bsf.o
 OBJS-$(CONFIG_TRACE_HEADERS_BSF)          += trace_headers_bsf.o
@@ -1216,7 +1211,6 @@ TESTPROGS = avpacket                                                    \
             celp_math                                                   \
             codec_desc                                                  \
             htmlsubtitles                                               \
-            imgconvert                                                  \
             jpeg2000dwt                                                 \
             mathops                                                    \
             utils                                                       \

@@ -10,6 +10,7 @@
 #include "services/network/public/cpp/cross_origin_opener_policy.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 class NetworkIsolationKey;
@@ -29,19 +30,15 @@ class CrossOriginOpenerPolicyStatus {
   explicit CrossOriginOpenerPolicyStatus(NavigationRequest* navigation_request);
   ~CrossOriginOpenerPolicyStatus();
 
-  // Called after receiving a network response. Returns the
-  // Cross-Origin-Opener-Policy contained in the response.
-  network::CrossOriginOpenerPolicy& RetrieveCOOPFromResponse(
-      network::mojom::URLResponseHead* response_head,
-      const url::Origin& response_origin);
+  // Sanitize the COOP header from the `response`.
+  // Return an error when COOP is used on sandboxed popups.
+  absl::optional<network::mojom::BlockedByResponseReason> SanitizeResponse(
+      network::mojom::URLResponseHead* response) const;
 
-  // Called when receiving a redirect or the final response. Returns a
-  // BlockedByResponse reason if the navigation should be blocked, nullopt
-  // otherwise.
-  absl::optional<network::mojom::BlockedByResponseReason> EnforceCOOP(
-      const network::CrossOriginOpenerPolicy& response_coop,
-      const url::Origin& response_origin,
-      const net::NetworkIsolationKey& network_isolation_key);
+  // Called when receiving a redirect or the final response.
+  void EnforceCOOP(const network::CrossOriginOpenerPolicy& response_coop,
+                   const url::Origin& response_origin,
+                   const net::NetworkIsolationKey& network_isolation_key);
 
   // Set to true whenever the Cross-Origin-Opener-Policy spec requires a
   // "BrowsingContext group" swap:
@@ -80,9 +77,9 @@ class CrossOriginOpenerPolicyStatus {
 
  private:
   // Make sure COOP is relevant or clear the COOP headers.
-  void SanitizeCoopHeaders(const GURL& response_url,
-                           const url::Origin& response_origin,
-                           network::mojom::URLResponseHead* response_head);
+  void SanitizeCoopHeaders(
+      const GURL& response_url,
+      network::mojom::URLResponseHead* response_head) const;
 
   // The NavigationRequest which owns this object.
   NavigationRequest* const navigation_request_;
@@ -95,6 +92,10 @@ class CrossOriginOpenerPolicyStatus {
   int virtual_browsing_context_group_;
 
   // Whether this is the first navigation happening in the browsing context.
+  // TODO(https://crbug.com/1216244): This should be set to whether this
+  // navigation happens on the initial empty document instead. Currently it's
+  // set to FrameTreeNode's has_committed_real_load(), which does not consider
+  // document.open(), etc.
   const bool is_initial_navigation_;
 
   network::CrossOriginOpenerPolicy current_coop_;

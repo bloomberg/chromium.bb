@@ -285,7 +285,7 @@ static const AVCodecDefault xavs2_defaults[] = {
     { NULL },
 };
 
-AVCodec ff_libxavs2_encoder = {
+const AVCodec ff_libxavs2_encoder = {
     .name           = "libxavs2",
     .long_name      = NULL_IF_CONFIG_SMALL("libxavs2 AVS2-P2/IEEE1857.4"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -294,7 +294,8 @@ AVCodec ff_libxavs2_encoder = {
     .init           = xavs2_init,
     .encode2        = xavs2_encode_frame,
     .close          = xavs2_close,
-    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_AUTO_THREADS,
+    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS,
+    .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV420P,
                                                      AV_PIX_FMT_NONE },
     .priv_class     = &libxavs2,

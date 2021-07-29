@@ -29,9 +29,9 @@ LayoutUnit GetSpaceAfterScript(const ComputedStyle& style) {
 // Describes the amount of shift to apply to the sub/sup boxes.
 // Data is populated from the OpenType MATH table.
 // If the OpenType MATH table is not present fallback values are used.
-// https://mathml-refresh.github.io/mathml-core/#base-with-subscript
-// https://mathml-refresh.github.io/mathml-core/#base-with-superscript
-// https://mathml-refresh.github.io/mathml-core/#base-with-subscript-and-superscript
+// https://w3c.github.io/mathml-core/#base-with-subscript
+// https://w3c.github.io/mathml-core/#base-with-superscript
+// https://w3c.github.io/mathml-core/#base-with-subscript-and-superscript
 struct ScriptsVerticalParameters {
   STACK_ALLOCATED();
 
@@ -146,7 +146,7 @@ void NGMathScriptsLayoutAlgorithm::GatherChildren(
         continue;
       case MathScriptType::kMultiscripts: {
         // The structure of mmultiscripts is specified here:
-        // https://mathml-refresh.github.io/mathml-core/#prescripts-and-tensor-indices-mmultiscripts
+        // https://w3c.github.io/mathml-core/#prescripts-and-tensor-indices-mmultiscripts
         if (IsPrescriptDelimiter(block_child)) {
           if (!number_of_scripts_is_even || *prescripts) {
             NOTREACHED();
@@ -296,8 +296,9 @@ scoped_refptr<const NGLayoutResult> NGMathScriptsLayoutAlgorithm::Layout() {
   GatherChildren(&base, &sub_sup_pairs, &prescripts, &first_prescript_index,
                  &container_builder_);
   ChildrenAndMetrics sub_metrics, sup_metrics;
+  ChildAndMetrics prescripts_metrics;
   if (prescripts)
-    LayoutAndGetMetrics(prescripts);
+    prescripts_metrics = LayoutAndGetMetrics(prescripts);
   for (auto sub_sup_pair : sub_sup_pairs) {
     if (sub_sup_pair.sub)
       sub_metrics.emplace_back(LayoutAndGetMetrics(sub_sup_pair.sub));
@@ -356,6 +357,14 @@ scoped_refptr<const NGLayoutResult> NGMathScriptsLayoutAlgorithm::Layout() {
   container_builder_.AddChild(base_metrics.result->PhysicalFragment(),
                               base_offset);
   base.StoreMargins(ConstraintSpace(), base_metrics.margins);
+  if (prescripts) {
+    LogicalOffset prescripts_offset(inline_offset,
+                                    ascent - prescripts_metrics.ascent +
+                                        prescripts_metrics.margins.block_start);
+    container_builder_.AddChild(prescripts_metrics.result->PhysicalFragment(),
+                                prescripts_offset);
+    prescripts.StoreMargins(ConstraintSpace(), prescripts_metrics.margins);
+  }
   inline_offset += base_metrics.inline_size + base_metrics.margins.inline_end;
 
   // Position post scripts if needed.

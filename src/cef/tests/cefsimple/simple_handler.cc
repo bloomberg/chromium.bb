@@ -7,7 +7,7 @@
 #include <sstream>
 #include <string>
 
-#include "include/base/cef_bind.h"
+#include "include/base/cef_callback.h"
 #include "include/cef_app.h"
 #include "include/cef_parser.h"
 #include "include/views/cef_browser_view.h"
@@ -131,8 +131,8 @@ void SimpleHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
 void SimpleHandler::CloseAllBrowsers(bool force_close) {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&SimpleHandler::CloseAllBrowsers, this,
-                                   force_close));
+    CefPostTask(TID_UI, base::BindOnce(&SimpleHandler::CloseAllBrowsers, this,
+                                       force_close));
     return;
   }
 

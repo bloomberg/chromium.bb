@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/ash_features.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
@@ -152,7 +152,8 @@ ScreenLayoutObserverTest::GetDisplayNotification() const {
   return nullptr;
 }
 
-TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
+// This test is flaky. crbug.com/1222612
+TEST_F(ScreenLayoutObserverTest, DISABLED_DisplayNotifications) {
   UpdateDisplay("400x400");
   display::Display::SetInternalDisplayId(display_manager()->first_display_id());
   EXPECT_TRUE(GetDisplayNotificationText().empty());

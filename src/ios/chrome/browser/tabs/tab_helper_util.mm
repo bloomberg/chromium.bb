@@ -17,9 +17,8 @@
 #import "components/history/ios/browser/web_state_top_sites_observer.h"
 #include "components/keyed_service/core/service_access_type.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper.h"
-#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/common/features.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
-#import "components/security_state/ios/insecure_input_tab_helper.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
@@ -28,6 +27,7 @@
 #import "ios/chrome/browser/complex_tasks/ios_task_tab_helper.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
+#import "ios/chrome/browser/download/mobileconfig_tab_helper.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
@@ -61,6 +61,7 @@
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
+#import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
@@ -138,6 +139,10 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     BreadcrumbManagerTabHelper::CreateForWebState(web_state);
   }
 
+  if (base::FeatureList::IsEnabled(kDownloadMobileConfigFile)) {
+    MobileConfigTabHelper::CreateForWebState(web_state);
+  }
+
   SafeBrowsingQueryManager::CreateForWebState(web_state);
   SafeBrowsingTabHelper::CreateForWebState(web_state);
   SafeBrowsingUrlAllowList::CreateForWebState(web_state);
@@ -176,8 +181,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     PasswordTabHelper::FromWebState(web_state)->GetSuggestionProvider(),
     AutofillTabHelper::FromWebState(web_state)->GetSuggestionProvider(),
   ]);
-
-  InsecureInputTabHelper::CreateForWebState(web_state);
 
   ukm::InitializeSourceUrlRecorderForWebState(web_state);
 

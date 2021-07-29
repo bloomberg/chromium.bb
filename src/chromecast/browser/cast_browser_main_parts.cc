@@ -13,13 +13,13 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/task/current_thread.h"
 #include "base/task/thread_pool.h"
@@ -770,7 +770,6 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
 #else
 
 #if defined(USE_AURA)
-  rounded_window_corners_manager_.reset();
   // Reset display change observer here to ensure it is deleted before
   // display_configurator since display_configurator is deleted when
   // `cast_browser_process_` is reset below.
@@ -780,6 +779,10 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
   cast_browser_process_->cast_service()->Finalize();
   cast_browser_process_->cast_browser_metrics()->Finalize();
   cast_browser_process_.reset();
+
+#if defined(USE_AURA)
+  rounded_window_corners_manager_.reset();
+#endif
 
   window_manager_.reset();
 #if defined(USE_AURA)

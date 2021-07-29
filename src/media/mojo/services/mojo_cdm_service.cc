@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "media/base/cdm_config.h"
@@ -220,10 +221,11 @@ void MojoCdmService::OnSessionExpirationUpdate(const std::string& session_id,
   }
 }
 
-void MojoCdmService::OnSessionClosed(const std::string& session_id) {
+void MojoCdmService::OnSessionClosed(const std::string& session_id,
+                                     CdmSessionClosedReason reason) {
   DVLOG(2) << __func__;
   if (client_) {
-    client_->OnSessionClosed(session_id);
+    client_->OnSessionClosed(session_id, reason);
   }
 }
 

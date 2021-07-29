@@ -21,7 +21,7 @@
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -69,8 +69,22 @@ class CopyingFileOutputStream
   base::File file_;
 };
 
+class FlocIdProviderComputationDisabledBrowserTest
+    : public InProcessBrowserTest {};
+
+IN_PROC_BROWSER_TEST_F(FlocIdProviderComputationDisabledBrowserTest,
+                       NoProvider) {
+  EXPECT_FALSE(FlocIdProviderFactory::GetForProfile(browser()->profile()));
+}
+
 class FlocIdProviderBrowserTest : public InProcessBrowserTest {
  public:
+  FlocIdProviderBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        kFederatedLearningOfCohorts,
+        {{"minimum_history_domain_size_required", "1"}});
+  }
+
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
@@ -99,6 +113,8 @@ class FlocIdProviderBrowserTest : public InProcessBrowserTest {
   std::string test_host() const { return "a.test"; }
 
  protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   net::EmbeddedTestServer https_server_{
       net::test_server::EmbeddedTestServer::TYPE_HTTPS};
 };
@@ -181,12 +197,6 @@ class MockFlocEventLogger : public FlocEventLogger {
 class FlocIdProviderSortingLshUninitializedBrowserTest
     : public FlocIdProviderBrowserTest {
  public:
-  FlocIdProviderSortingLshUninitializedBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        kFederatedLearningOfCohorts,
-        {{"minimum_history_domain_size_required", "1"}});
-  }
-
   void SetUpOnMainThread() override {
     FlocIdProviderBrowserTest::SetUpOnMainThread();
     ConfigureReplacementHostAndPortForRemotePermissionService();
@@ -376,7 +386,7 @@ class FlocIdProviderSortingLshUninitializedBrowserTest
 
   syncer::TestSyncService* sync_service() {
     return static_cast<syncer::TestSyncService*>(
-        ProfileSyncServiceFactory::GetForProfile(browser()->profile()));
+        SyncServiceFactory::GetForProfile(browser()->profile()));
   }
 
   syncer::FakeUserEventService* user_event_service() {
@@ -391,7 +401,7 @@ class FlocIdProviderSortingLshUninitializedBrowserTest
 
  protected:
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
-    ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
+    SyncServiceFactory::GetInstance()->SetTestingFactory(
         context,
         base::BindRepeating(&FlocIdProviderSortingLshUninitializedBrowserTest::
                                 CreateSyncService,
@@ -442,7 +452,7 @@ class FlocIdProviderSortingLshUninitializedBrowserTest
     Profile* profile = Profile::FromBrowserContext(context);
 
     syncer::SyncService* sync_service =
-        ProfileSyncServiceFactory::GetForProfile(profile);
+        SyncServiceFactory::GetForProfile(profile);
 
     PrivacySandboxSettings* privacy_sandbox_settings =
         PrivacySandboxSettingsFactory::GetForProfile(profile);
@@ -495,8 +505,6 @@ class FlocIdProviderSortingLshUninitializedBrowserTest
         setting);
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   // Owned by the floc id provider.
   MockFlocEventLogger* floc_event_logger_ = nullptr;
 
@@ -514,6 +522,7 @@ IN_PROC_BROWSER_TEST_F(FlocIdProviderSortingLshUninitializedBrowserTest,
 
   // Expect that the final id is invalid because it was blocked.
   EXPECT_FALSE(GetFlocId().IsValid());
+  EXPECT_EQ(FlocId::Status::kInvalidBlocked, GetFlocId().status());
 
   EXPECT_EQ(1u, floc_event_logger_->NumberOfLogAttemptsQueued());
   floc_event_logger_->HandleLastRequest();
@@ -537,6 +546,7 @@ IN_PROC_BROWSER_TEST_F(FlocIdProviderSortingLshUninitializedBrowserTest,
   // Expect that the final id is invalid due to unexpected sorting-lsh file
   // format.
   EXPECT_FALSE(GetFlocId().IsValid());
+  EXPECT_EQ(FlocId::Status::kInvalidBlocked, GetFlocId().status());
 
   EXPECT_EQ(1u, floc_event_logger_->NumberOfLogAttemptsQueued());
   floc_event_logger_->HandleLastRequest();
@@ -621,6 +631,7 @@ IN_PROC_BROWSER_TEST_F(FlocIdProviderSortingLshInitializedBrowserTest,
 
   // The floc has been invalidated. Expect no additional event logging.
   EXPECT_FALSE(GetFlocId().IsValid());
+  EXPECT_EQ(FlocId::Status::kInvalidReset, GetFlocId().status());
   EXPECT_EQ(1u, floc_event_logger_->NumberOfLogAttemptsQueued());
 }
 

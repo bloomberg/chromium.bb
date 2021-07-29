@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_row_view.h"
@@ -30,6 +31,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/cascading_property.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -173,6 +175,10 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
             &OmniboxPopupContentsView::OnSuggestionGroupVisibilityUpdate,
             base::Unretained(this)));
   }
+
+  views::SetCascadingThemeProviderColor(
+      this, views::kCascadingBackgroundColor,
+      ThemeProperties::COLOR_OMNIBOX_RESULTS_BG);
 }
 
 OmniboxPopupContentsView::~OmniboxPopupContentsView() {

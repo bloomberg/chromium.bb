@@ -7,8 +7,8 @@
 
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/flags_ui/feature_entry.h"
@@ -108,6 +108,8 @@ DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryPaymentFillingFeature,
                        "IPH_KeyboardAccessoryPaymentFilling");
 DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryPaymentOfferFeature,
                        "IPH_KeyboardAccessoryPaymentOffer");
+DEFINE_VARIATION_PARAM(kIPHKeyboardAccessoryPaymentVirtualCardFeature,
+                       "IPH_KeyboardAccessoryPaymentVirtualCard");
 DEFINE_VARIATION_PARAM(kIPHMicToolbarFeature, "IPH_MicToolbar");
 DEFINE_VARIATION_PARAM(kIPHNewTabPageButtonFeature, "IPH_NewTabPageHomeButton");
 DEFINE_VARIATION_PARAM(kIPHPageInfoFeature, "IPH_PageInfo");
@@ -147,12 +149,17 @@ DEFINE_VARIATION_PARAM(kIPHVideoTutorialNTPSummaryFeature,
                        "IPH_VideoTutorial_NTP_Summary");
 DEFINE_VARIATION_PARAM(kIPHExploreSitesTileFeature, "IPH_ExploreSitesTile");
 DEFINE_VARIATION_PARAM(kIPHFeedHeaderMenuFeature, "IPH_FeedHeaderMenu");
+DEFINE_VARIATION_PARAM(kIPHFeedSwipeRefresh, "IPH_FeedSwipeRefresh");
 DEFINE_VARIATION_PARAM(kIPHShareScreenshotFeature, "IPH_ShareScreenshot");
 DEFINE_VARIATION_PARAM(kIPHWebFeedFollowFeature, "IPH_WebFeedFollow");
 DEFINE_VARIATION_PARAM(kIPHWebFeedPostFollowDialogFeature,
                        "IPH_WebFeedPostFollowDialog");
 DEFINE_VARIATION_PARAM(kIPHSharedHighlightingBuilder,
                        "IPH_SharedHighlightingBuilder");
+DEFINE_VARIATION_PARAM(kIPHStartSurfaceTabSwitcherHomeButton,
+                       "IPH_StartSurfaceTabSwitcherHomeButton");
+DEFINE_VARIATION_PARAM(kIPHUpdatedConnectionSecurityIndicatorsFeature,
+                       "IPH_UpdatedConnectionSecurityIndicators");
 #endif  // defined(OS_ANDROID)
 #if defined(OS_IOS)
 DEFINE_VARIATION_PARAM(kIPHBottomToolbarTipFeature, "IPH_BottomToolbarTip");
@@ -181,6 +188,7 @@ DEFINE_VARIATION_PARAM(kIPHReadingListDiscoveryFeature,
 DEFINE_VARIATION_PARAM(kIPHReadingListEntryPointFeature,
                        "IPH_ReadingListEntryPoint");
 DEFINE_VARIATION_PARAM(kIPHReopenTabFeature, "IPH_ReopenTab");
+DEFINE_VARIATION_PARAM(kIPHTabSearchFeature, "IPH_TabSearch");
 DEFINE_VARIATION_PARAM(kIPHWebUITabStripFeature, "IPH_WebUITabStrip");
 DEFINE_VARIATION_PARAM(kIPHDesktopPwaInstallFeature, "IPH_DesktopPwaInstall");
 DEFINE_VARIATION_PARAM(kIPHProfileSwitchFeature, "IPH_ProfileSwitch");
@@ -236,6 +244,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHKeyboardAccessoryPasswordFillingFeature),
         VARIATION_ENTRY(kIPHKeyboardAccessoryPaymentFillingFeature),
         VARIATION_ENTRY(kIPHKeyboardAccessoryPaymentOfferFeature),
+        VARIATION_ENTRY(kIPHKeyboardAccessoryPaymentVirtualCardFeature),
         VARIATION_ENTRY(kIPHMicToolbarFeature),
         VARIATION_ENTRY(kIPHNewTabPageButtonFeature),
         VARIATION_ENTRY(kIPHPageInfoFeature),
@@ -263,6 +272,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHWebFeedFollowFeature),
         VARIATION_ENTRY(kIPHWebFeedPostFollowDialogFeature),
         VARIATION_ENTRY(kIPHSharedHighlightingBuilder),
+        VARIATION_ENTRY(kIPHUpdatedConnectionSecurityIndicatorsFeature),
 #elif defined(OS_IOS)
         VARIATION_ENTRY(kIPHBottomToolbarTipFeature),
         VARIATION_ENTRY(kIPHLongPressToolbarTipFeature),
@@ -281,6 +291,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHReadingListDiscoveryFeature),
         VARIATION_ENTRY(kIPHReadingListEntryPointFeature),
         VARIATION_ENTRY(kIPHReopenTabFeature),
+        VARIATION_ENTRY(kIPHTabSearchFeature),
         VARIATION_ENTRY(kIPHWebUITabStripFeature),
         VARIATION_ENTRY(kIPHDesktopPwaInstallFeature),
         VARIATION_ENTRY(kIPHProfileSwitchFeature),

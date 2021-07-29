@@ -47,7 +47,6 @@
 <translation id="2718390899429598676">セキュリティ強化のため、Chromium ではデータが暗号化されます。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="2799223571221894425">再起動</translation>
-<translation id="2816712596130903444">個別の Chromium プロフィールを使用しますか？</translation>
 <translation id="2837693172913560447"><ph name="USER_EMAIL_ADDRESS" /> 用の新しい Chromium プロファイルが作成されます。</translation>
 <translation id="2847479871509788944">Chromium から削除...</translation>
 <translation id="2885378588091291677">タスク マネージャ</translation>
@@ -71,20 +70,22 @@
 <translation id="328888136576916638">Google API キーが欠落しています。Chromium の一部の機能は無効になります。</translation>
 <translation id="3296368748942286671">Chromium を閉じた際にバックグラウンド アプリの処理を続行する</translation>
 <translation id="331951419404882060">ログイン時にエラーが発生したため、Chromium OS はデータを同期できませんでした。</translation>
+<translation id="3349211344363550267">このファイルのダウンロードや表示は推奨されません</translation>
 <translation id="3350761136195634146">このアカウントの Chromium プロフィールはすでに存在します</translation>
 <translation id="3406848076815591792">既存の Chromium プロフィールに切り替えますか？</translation>
 <translation id="3430503420100763906">Chromium プロフィールを使うと、Chromium のあらゆる項目や設定を個別に管理できます。友達や家族のプロフィールを作成したり、仕事とプライベートでプロフィールを使い分けたりできます。</translation>
+<translation id="3433271666494956603">Chromium OS をインストールしています</translation>
 <translation id="347328004046849135">不正使用されたパスワードでログインした場合、Chromium で通知します</translation>
 <translation id="3474745554856756813">このデバイスから <ph name="ITEMS_COUNT" /> 件の項目を削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="3497319089134299931">Chromium プロフィールを切り替えるには、<ph name="SHORTCUT" /> を使用します</translation>
 <translation id="3509308970982693815">すべての Chromium ウィンドウを閉じてからもう一度お試しください。</translation>
 <translation id="3575459661164320785">お使いのパソコンに有害なソフトウェアが見つかりました。Chromium では、ブラウザを正常な動作に戻すためにこのソフトウェアを削除し、設定を復元して、拡張機能を無効化することができます。</translation>
+<translation id="3610776674893128619">ハードドライブのデータを消去して Chromium OS をインストール</translation>
 <translation id="3639635944603682591">この操作を行うと、このユーザーの閲覧データがこのデバイスから削除されます。データを復元するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Chromium の新しいアップデートを利用できます。再起動するとすぐにアップデートが適用されます。}=1{Chromium の新しいアップデートを利用できます。再起動するとすぐにアップデートが適用されます。シークレット ウィンドウは、再起動後は自動的には開きません。}other{Chromium の新しいアップデートを利用できます。再起動するとすぐにアップデートが適用されます。現在開いている # 個のシークレット ウィンドウは、再起動後は自動的には開きません。}}</translation>
 <translation id="3651803019964686660"><ph name="ORIGIN" /> から Android スマートフォンに番号を送信するには、両方のデバイスで Chromium にログインしてください。</translation>
 <translation id="3685209450716071127">Chromium がパスワードを確認できません。インターネット接続を確認してみてください。</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{管理者が、このアップデートを適用するために Chromium を再起動するよう求めています}=1{管理者が、このアップデートを適用するために Chromium を再起動するよう求めています。シークレット ウィンドウは、再起動後は自動的には開きません。}other{管理者が、このアップデートを適用するために Chromium を再起動するよう求めています。現在開いている # 個のシークレット ウィンドウは、再起動後は自動的には開きません。}}</translation>
-<translation id="371088601698879021">Chromium OS は再起動後に毎回確認することなくアプリとページを復元できます。</translation>
 <translation id="3713809861844741608">新しい Chromium タブでリンクを開く(&amp;T)</translation>
 <translation id="3728336900324680424">Chromium からお客様のドライブにアクセスして、アドレスバーに候補を表示します</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
@@ -102,6 +103,7 @@
 <translation id="4264410486868823224"><ph name="MANAGER" /> では、このデバイスを使用する前に下記の利用規約を確認しこれに同意していただく必要があります。これらの規約は Chromium OS 利用規約を拡張、変更、制限するものではありません。</translation>
 <translation id="4271805377592243930">Chromium のヘルプを見る</translation>
 <translation id="4285930937574705105">原因不明のエラーによりインストールが失敗しました。実行中の Chromium を終了してからもう一度お試しください。</translation>
+<translation id="429583012151745428">インストール中です。デバイスの電源をオフにしないでください。インストールは 20 分以内に完了します。インストール後、マシンは自動的にシャットダウンされます。</translation>
 <translation id="4407044323746248786">今すぐ Chromium を終了しますか？</translation>
 <translation id="4415566066719264597">Chromium をバックグラウンドで実行する</translation>
 <translation id="4423735387467980091">Chromium の設定</translation>
@@ -137,7 +139,6 @@
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
 <translation id="5479196819031988440">Chromium OS ではこのページを開けません。</translation>
 <translation id="5480860683791598150">このサイトで現在地を共有するには、Chromium で位置情報の使用を許可する必要があります</translation>
-<translation id="5481338274774984070">このファイルのダウンロードや表示は推奨されません。</translation>
 <translation id="549669000822060376">Chromium は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
 <translation id="5496810170689441661">Chromium でパスワードを編集しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="5527463683072221100">Chromium で PDF を開く</translation>
@@ -162,6 +163,15 @@
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> は危険なファイルであるため、Chromium でブロックしました。</translation>
 <translation id="6134968993075716475">セーフ ブラウジングがオフになっています。Chromium はオンにすることをおすすめしています。</translation>
 <translation id="6145820983052037069">こちらで Chromium プロフィールを切り替えることができます</translation>
+<translation id="61577490437262925"><ph name="BEGIN_PARAGRAPH1" />Chromium OS をインストールする準備ができました。インストールを開始すると、次の処理が行われます。
+          <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />ファイル、データ、現在のオペレーティング システムが消去されます。
+          <ph name="LIST_ITEM" />Chromium OS がインストールされます。
+          <ph name="LIST_ITEM" />インストールが完了するとデバイスがシャットダウンされます。
+          <ph name="END_LIST" />
+          <ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />重要: インストールすると、ハードドライブのデータはすべて消去されます。大切なデータがすべてバックアップされていることをご確認ください。<ph name="END_PARAGRAPH2" />
+          <ph name="BEGIN_PARAGRAPH3" />インストールを開始した後にキャンセルすることはできません。<ph name="END_PARAGRAPH3" /></translation>
 <translation id="6183079672144801177"><ph name="TARGET_DEVICE_NAME" /> で Chromium にログインしていることを確認してから、もう一度送信してください。</translation>
 <translation id="6212496753309875659">新しいバージョンの Chromium が既にインストールされています。ソフトウェアが動作しない場合は、Chromium をアンインストールしてからもう一度お試しください。</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium は今すぐ再起動されます}=1{Chromium は 1 秒後に再起動されます}other{Chromium は # 秒後に再起動されます}}</translation>
@@ -179,6 +189,7 @@
 <translation id="6434250628340475518">Chromium OS システム</translation>
 <translation id="6455857529632101747">Chromium プロフィールへようこそ</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium は 1 秒後に再起動します}other{Chromium は # 秒後に再起動します}}</translation>
+<translation id="646620589868199210">Chromium OS をインストールできます</translation>
 <translation id="6475912303565314141">この拡張機能では、Chromium の起動時に表示されるページも制御されます。</translation>
 <translation id="6510925080656968729">Chromium をアンインストール</translation>
 <translation id="6542839706527980775">Chromium の情報（ブックマーク、履歴、パスワードなど）はプロフィールごとに分けて保持されます</translation>
@@ -193,6 +204,7 @@
 <translation id="6734291798041940871">Chromium は既にパソコンのすべてのユーザーに対してインストールされています。</translation>
 <translation id="673636774878526923">お使いのすべてのデバイスで Chromium の設定やデータを使用するには、ログインして同期を有効にしてください。</translation>
 <translation id="6774082503108938489">保護者が Chromium の「サイト、アプリ、拡張機能の権限」をオフにしました。この <ph name="EXTENSION_TYPE_PARAMETER" /> を有効にすることはできません。</translation>
+<translation id="6827182711503025204">Chromium OS をインストールすると、デバイスのデータはすべて上書きされます。</translation>
 <translation id="6847869444787758381">Chromium では、特定のパスワードが侵害された事実の有無がわかります</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay（Chromium にコピー）</translation>
@@ -226,6 +238,10 @@
       Chromium OS の設定<ph name="LINK_END" />を確認してください</translation>
 <translation id="761356813943268536">Chromium がカメラとマイクを使用しています。</translation>
 <translation id="7617377681829253106">進化する Chromium</translation>
+<translation id="7627575518938382525"><ph name="BEGIN_PARAGRAPH1" />インストールを開始する前に、最新のデータがバックアップされていることをご確認ください。Chromium OS をインストールすると、ハードドライブのデータはすべて上書きされます。<ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />Google はデータの消失について一切の責任を負わず、未認定のモデルで Chromium OS が動作することも保証しませんのであらかじめご了承ください。認定モデルについて詳しくは、[TBD] をご覧ください。<ph name="END_PARAGRAPH2" />
+          <ph name="BEGIN_PARAGRAPH3" />Chromium OS のインストールとデータの消去について: [TBD URL]<ph name="END_PARAGRAPH3" />
+          <ph name="BEGIN_PARAGRAPH4" />インストールの準備ができたら、[Chromium OS をインストール] をクリックすると、いくつかの簡単なステップに沿って、インストールを行っていただけます。パソコンに実際に変更を加える前に、インストールを確認するメッセージがもう一度表示されます。<ph name="END_PARAGRAPH4" /></translation>
 <translation id="7686590090926151193">Chromium はデフォルトのブラウザとして設定されていません</translation>
 <translation id="7689606757190482937">同期してカスタマイズした Chromium をどのデバイスでも使用できます</translation>
 <translation id="7729447699958282447">お使いのドメインでは同期を利用できないため、Chromium はデータを同期できませんでした。</translation>
@@ -236,7 +252,6 @@
 <translation id="7857220146454061152">今後、Chromium のアップデートを受信するには、OS X 10.11 以降が必要となります。このパソコンでは OS X 10.10 が実行されています。</translation>
 <translation id="7867198900892795913">Chromium を最新版に更新できませんでした。新しい機能とセキュリティ修正は適用されていません。</translation>
 <translation id="7898472181347242998">デバイスが最新の状態かどうか確認するには、<ph name="LINK_BEGIN" />Chromium OS の設定<ph name="LINK_END" />をご覧ください</translation>
-<translation id="7907774600618164274">Chromium OS は正しく終了しませんでした。</translation>
 <translation id="7937630085815544518">Chromium に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
 <translation id="7975919845073681630">この Chromium はセカンダリ インストールのため、既定のブラウザには設定できません。</translation>
 <translation id="8013436988911883588">Chromium にアクセスを許可すると、ウェブサイトからアクセスをリクエストできるようになります。</translation>
@@ -269,7 +284,6 @@
 <translation id="8974095189086268230">Chromium OS は、さらに追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
 <translation id="8986207147630327271">このブラウザに仕事用プロファイルを追加し、管理者がこの仕事用プロファイルのみを管理できるようにします。</translation>
 <translation id="9019929317751753759">Chromium をより安全にご利用いただくために、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない次の拡張機能を無効にしました。これは知らないうちに追加された可能性があります。</translation>
-<translation id="9047197236183657400">新しい Chromium プロフィールにアカウントを移動しますか？</translation>
 <translation id="9089354809943900324">Chromium は古いバージョンです</translation>
 <translation id="9093206154853821181">{0,plural, =1{Chromium は 1 時間後に再起動されます}other{Chromium は # 時間後に再起動されます}}</translation>
 <translation id="91086099826398415">新しい Chromium タブでリンクを開く(&amp;T)</translation>

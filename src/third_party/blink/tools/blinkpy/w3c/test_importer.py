@@ -75,14 +75,8 @@ class TestImporter(object):
         self.new_override_expectations = {}
         self.verbose = False
 
-        args = [
-            '--clean-up-affected-tests-only',
-            '--clean-up-test-expectations',
-            # TODO(crbug.com/1196713): Result download needs to migrate away
-            # from test-results.appspot.com before we can resume using
-            # results from CQ builders.
-            '--rebaseline-blink-try-bots-only'
-        ]
+        args = ['--clean-up-affected-tests-only',
+                '--clean-up-test-expectations']
         self._expectations_updater = WPTExpectationsUpdater(
             self.host, args, wpt_manifests)
 
@@ -192,7 +186,7 @@ class TestImporter(object):
             _log.info('Only manifest was updated; skipping the import.')
             return 0
 
-        with self._expectations_updater.prepare_smoke_tests():
+        with self._expectations_updater.prepare_smoke_tests(self.chromium_git):
             self._commit_changes(commit_message)
             _log.info('Changes imported and committed.')
 
@@ -527,7 +521,7 @@ class TestImporter(object):
         self.fs.remove(dest)
 
     def _upload_patchset(self, message):
-        self.git_cl.run(['upload', '-f', '-t', message])
+        self.git_cl.run(['upload', '--bypass-hooks', '-f', '-t', message])
 
     def _upload_cl(self):
         _log.info('Uploading change list.')
@@ -541,6 +535,7 @@ class TestImporter(object):
 
         self.git_cl.run([
             'upload',
+            '--bypass-hooks',
             '-f',
             '--message-file',
             temp_path,

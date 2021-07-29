@@ -46,7 +46,7 @@ export class SASSSourceMapping implements SourceMapping {
   _bindings: Map<string, Binding>;
 
   constructor(
-      target: SDK.SDKModel.Target,
+      target: SDK.Target.Target,
       sourceMapManager: SDK.SourceMapManager.SourceMapManager<SDK.CSSStyleSheetHeader.CSSStyleSheetHeader>,
       workspace: Workspace.Workspace.WorkspaceImpl) {
     this._sourceMapManager = sourceMapManager;
@@ -157,7 +157,7 @@ export class SASSSourceMapping implements SourceMapping {
   }
 
   dispose(): void {
-    Common.EventTarget.EventTarget.removeEventListeners(this._eventListeners);
+    Common.EventTarget.removeEventListeners(this._eventListeners);
     this._project.dispose();
   }
 }

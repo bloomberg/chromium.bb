@@ -44,15 +44,27 @@ Polymer({
     },
 
     /**
-     * The device type (e.g. "Chromebook" or "Chromebox").
-     * TODO(jamescook): Delete this after M85 once we're sure UX doesn't want
-     * the device type in the dialog.
-     * @private
+     * Indicates whether user is minor mode user (e.g. under age of 18).
      */
-    deviceType_: String,
+    isMinorMode_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * The text key for the opt-in button (it could vary based on whether
+     * the user is in minor mode).
+     */
+    optInButtonTextKey_: {
+      type: String,
+      computed: 'getOptInButtonTextKey_(isMinorMode_)',
+    }
   },
 
-  EXTERNAL_API: ['setThrobberVisible'],
+  EXTERNAL_API: [
+    'setThrobberVisible',
+    'setIsMinorMode',
+  ],
 
   /** Initial UI State for screen */
   getOobeUIInitialState() {
@@ -65,9 +77,7 @@ Polymer({
    */
   onBeforeShow(data) {
     this.setIsChildAccount(data['isChildAccount']);
-    this.setDeviceType(data['deviceType']);
     this.splitSettingsSyncEnabled_ = data['splitSettingsSyncEnabled'];
-    this.setUIStep(this.defaultUIStep());
   },
 
   /**
@@ -89,13 +99,6 @@ Polymer({
    */
   setIsChildAccount(is_child_account) {
     this.isChildAccount_ = is_child_account;
-  },
-
-  /**
-   * @param deviceType {string} The device type (e.g. "Chromebook").
-   */
-  setDeviceType(deviceType) {
-    this.deviceType_ = deviceType;
   },
 
   /** @override */
@@ -126,6 +129,15 @@ Polymer({
   },
 
   /**
+   * Set the minor mode flag, which controls whether we could use nudge
+   * techinuque on the UI.
+   * @param {boolean} isMinorMode
+   */
+  setIsMinorMode(isMinorMode) {
+    this.isMinorMode_ = isMinorMode;
+  },
+
+  /**
    * Returns split settings sync version or regular version depending on if
    * split settings sync is enabled.
    * @private
@@ -138,18 +150,21 @@ Polymer({
    * Continue button click handler for pre-SplitSettingsSync.
    * @private
    */
-  onSettingsSaveAndContinue_(e) {
+  onSettingsSaveAndContinue_(e, opted_in) {
     assert(e.path);
     assert(!this.splitSettingsSyncEnabled_);
-    if (this.$.reviewSettingsBox.checked) {
-      chrome.send('login.SyncConsentScreen.continueAndReview', [
-        this.getConsentDescription_(), this.getConsentConfirmation_(e.path)
-      ]);
-    } else {
-      chrome.send('login.SyncConsentScreen.continueWithDefaults', [
-        this.getConsentDescription_(), this.getConsentConfirmation_(e.path)
-      ]);
-    }
+    chrome.send('login.SyncConsentScreen.nonSplitSettingsContinue', [
+      opted_in, this.$.reviewSettingsBox.checked, this.getConsentDescription_(),
+      this.getConsentConfirmation_(e.path)
+    ]);
+  },
+
+  onNonSplitSettingsAccepted_(e) {
+    this.onSettingsSaveAndContinue_(e, true /* opted_in */);
+  },
+
+  onNonSplitSettingsDeclined_(e) {
+    this.onSettingsSaveAndContinue_(e, false /* opted_in */);
   },
 
   /**
@@ -216,6 +231,15 @@ Polymer({
         .map(element => element.innerHTML.trim());
     assert(consentDescription);
     return consentDescription;
+  },
+
+  /**
+   * @param {boolean} isMinorMode
+   * @return {string} The text key of the accept button.
+   */
+  getOptInButtonTextKey_(isMinorMode) {
+    return isMinorMode ? 'syncConsentTurnOnSync' :
+                         'syncConsentAcceptAndContinue';
   },
 });
 })();

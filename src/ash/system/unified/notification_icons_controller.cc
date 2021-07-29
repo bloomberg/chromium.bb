@@ -4,7 +4,7 @@
 
 #include "ash/system/unified/notification_icons_controller.h"
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/vm_camera_mic_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -23,6 +23,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/vector_icons.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/separator.h"
 
@@ -56,8 +57,10 @@ bool ShouldShowNotification(message_center::Notification* notification) {
 
 }  // namespace
 
-NotificationIconTrayItemView::NotificationIconTrayItemView(Shelf* shelf)
-    : TrayItemView(shelf) {
+NotificationIconTrayItemView::NotificationIconTrayItemView(
+    Shelf* shelf,
+    NotificationIconsController* controller)
+    : TrayItemView(shelf), controller_(controller) {
   CreateImageView();
   image_view()->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(0, kNotificationIconSpacing)));
@@ -68,6 +71,9 @@ NotificationIconTrayItemView::~NotificationIconTrayItemView() = default;
 void NotificationIconTrayItemView::SetNotification(
     message_center::Notification* notification) {
   notification_id_ = notification->id();
+
+  if (!GetWidget())
+    return;
 
   auto* theme = GetNativeTheme();
   gfx::Image masked_small_icon = notification->GenerateMaskedSmallIcon(
@@ -111,6 +117,11 @@ const char* NotificationIconTrayItemView::GetClassName() const {
   return "NotificationIconTrayItemView";
 }
 
+void NotificationIconTrayItemView::OnThemeChanged() {
+  TrayItemView::OnThemeChanged();
+  controller_->UpdateNotificationIcons();
+}
+
 NotificationIconsController::NotificationIconsController(
     UnifiedSystemTray* tray)
     : tray_(tray) {
@@ -128,7 +139,7 @@ void NotificationIconsController::AddNotificationTrayItems(
     TrayContainer* tray_container) {
   for (int i = 0; i < kMaxNotificationIconsShown; ++i) {
     tray_items_.push_back(tray_container->AddChildView(
-        std::make_unique<NotificationIconTrayItemView>(tray_->shelf())));
+        std::make_unique<NotificationIconTrayItemView>(tray_->shelf(), this)));
   }
 
   notification_counter_view_ = tray_container->AddChildView(

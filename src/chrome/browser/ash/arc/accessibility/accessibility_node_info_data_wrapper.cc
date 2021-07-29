@@ -402,7 +402,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kClickable, true);
 
   if (GetProperty(AXBooleanProperty::SELECTED)) {
-    if (ui::SupportsSelected(out_data->role)) {
+    if (ui::IsSelectSupported(out_data->role)) {
       out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
     } else {
       descriptions.push_back(
@@ -436,15 +436,12 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   if (GetProperty(AXIntProperty::LIVE_REGION, &val) && val >= 0 &&
       static_cast<mojom::AccessibilityLiveRegionType>(val) !=
           mojom::AccessibilityLiveRegionType::NONE) {
+    const std::string& live_status = ToLiveStatusString(
+        static_cast<mojom::AccessibilityLiveRegionType>(val));
+    out_data->AddStringAttribute(ax::mojom::StringAttribute::kLiveStatus,
+                                 live_status);
     out_data->AddStringAttribute(
-        ax::mojom::StringAttribute::kLiveStatus,
-        ToLiveStatusString(
-            static_cast<mojom::AccessibilityLiveRegionType>(val)));
-  }
-  if (container_live_status_ != mojom::AccessibilityLiveRegionType::NONE) {
-    out_data->AddStringAttribute(
-        ax::mojom::StringAttribute::kContainerLiveStatus,
-        ToLiveStatusString(container_live_status_));
+        ax::mojom::StringAttribute::kContainerLiveStatus, live_status);
   }
 
   // Standard actions.

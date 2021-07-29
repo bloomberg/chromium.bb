@@ -146,8 +146,6 @@ const char* ToString(ax::mojom::Role role) {
       return "alertDialog";
     case ax::mojom::Role::kAlert:
       return "alert";
-    case ax::mojom::Role::kAnchor:
-      return "anchor";
     case ax::mojom::Role::kApplication:
       return "application";
     case ax::mojom::Role::kArticle:
@@ -590,6 +588,8 @@ const char* ToString(ax::mojom::Action action) {
       return "loadInlineTextBoxes";
     case ax::mojom::Action::kReplaceSelectedText:
       return "replaceSelectedText";
+    case ax::mojom::Action::kResumeMedia:
+      return "resumeMedia";
     case ax::mojom::Action::kScrollBackward:
       return "scrollBackward";
     case ax::mojom::Action::kScrollForward:
@@ -630,6 +630,12 @@ const char* ToString(ax::mojom::Action action) {
       return "hideTooltip";
     case ax::mojom::Action::kInternalInvalidateTree:
       return "internalInvalidateTree";
+    case ax::mojom::Action::kStartDuckingMedia:
+      return "startDuckingMedia";
+    case ax::mojom::Action::kStopDuckingMedia:
+      return "stopDuckingMedia";
+    case ax::mojom::Action::kSuspendMedia:
+      return "suspendMedia";
   }
 
   return "";
@@ -967,8 +973,8 @@ const char* ToString(ax::mojom::BoolAttribute bool_attribute) {
       return "none";
     case ax::mojom::BoolAttribute::kBusy:
       return "busy";
-    case ax::mojom::BoolAttribute::kContentEditableRoot:
-      return "contentEditableRoot";
+    case ax::mojom::BoolAttribute::kNonAtomicTextFieldRoot:
+      return "nonAtomicTextFieldRoot";
     case ax::mojom::BoolAttribute::kContainerLiveAtomic:
       return "containerLiveAtomic";
     case ax::mojom::BoolAttribute::kContainerLiveBusy:

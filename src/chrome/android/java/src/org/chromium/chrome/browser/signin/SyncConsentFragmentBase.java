@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.signin;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -45,9 +46,11 @@ import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.ChildAccountStatus;
-import org.chromium.components.signin.identitymanager.AccountInfoService;
+import org.chromium.components.signin.identitymanager.AccountInfoServiceProvider;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.user_prefs.UserPrefs;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
@@ -64,16 +67,17 @@ import java.util.List;
  * what happens after the signin flow.
  */
 public abstract class SyncConsentFragmentBase
-        extends Fragment implements AccountPickerCoordinator.Listener {
-    private static final String ARGUMENT_ACCESS_POINT = "SigninFragmentBase.AccessPoint";
+        extends Fragment implements AccountPickerCoordinator.Listener, AccountsChangeObserver {
+    private static final String ARGUMENT_ACCESS_POINT = "SyncConsentFragmentBase.AccessPoint";
 
     private static final String SETTINGS_LINK_OPEN = "<LINK1>";
     private static final String SETTINGS_LINK_CLOSE = "</LINK1>";
 
-    private static final String ARGUMENT_ACCOUNT_NAME = "SigninFragmentBase.AccountName";
+    private static final String ARGUMENT_ACCOUNT_NAME = "SyncConsentFragmentBase.AccountName";
     private static final String ARGUMENT_CHILD_ACCOUNT_STATUS =
-            "SigninFragmentBase.ChildAccountStatus";
-    private static final String ARGUMENT_SIGNIN_FLOW_TYPE = "SigninFragmentBase.SigninFlowType";
+            "SyncConsentFragmentBase.ChildAccountStatus";
+    private static final String ARGUMENT_SIGNIN_FLOW_TYPE =
+            "SyncConsentFragmentBase.SigninFlowType";
 
     private static final int ADD_ACCOUNT_REQUEST_CODE = 1;
 
@@ -94,19 +98,18 @@ public abstract class SyncConsentFragmentBase
     private boolean mAccountSelectionPending;
     private @Nullable String mRequestedAccountName;
 
+    private final ProfileDataCache.Observer mProfileDataCacheObserver;
     private String mSelectedAccountName;
     private boolean mIsDefaultAccountSelected;
-    private final AccountsChangeObserver mAccountsChangedObserver;
-    private final ProfileDataCache.Observer mProfileDataCacheObserver;
     private ProfileDataCache mProfileDataCache;
     private boolean mDestroyed;
     private boolean mIsSigninInProgress;
     private boolean mCanUseGooglePlayServices;
     private boolean mRecordUndoSignin;
     protected @SigninAccessPoint int mSigninAccessPoint;
-
+    private ModalDialogManager mModalDialogManager;
     private ConfirmSyncDataStateMachine mConfirmSyncDataStateMachine;
-    private AccountPickerDialogCoordinator mAccountPickerDialogCoordinator;
+    private @Nullable AccountPickerDialogCoordinator mAccountPickerDialogCoordinator;
 
     /**
      * Creates an argument bundle for the default {@link SyncConsentFragment} flow.
@@ -164,7 +167,6 @@ public abstract class SyncConsentFragmentBase
 
     protected SyncConsentFragmentBase() {
         mAccountManagerFacade = AccountManagerFacadeProvider.getInstance();
-        mAccountsChangedObserver = this::triggerUpdateAccounts;
         mProfileDataCacheObserver = this::updateProfileData;
         mCanUseGooglePlayServices = true;
     }
@@ -181,6 +183,12 @@ public abstract class SyncConsentFragmentBase
      */
     protected abstract void onSigninAccepted(String accountName, boolean isDefaultAccount,
             boolean settingsClicked, Runnable callback);
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mModalDialogManager = ((ModalDialogManagerHolder) getActivity()).getModalDialogManager();
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -202,8 +210,8 @@ public abstract class SyncConsentFragmentBase
             // If this fragment is being recreated from a saved state there's no need to show
             // account picked or starting AddAccount flow.
             if (signinFlowType == SigninFlowType.CHOOSE_ACCOUNT) {
-                mAccountPickerDialogCoordinator =
-                        new AccountPickerDialogCoordinator(requireContext(), this);
+                mAccountPickerDialogCoordinator = new AccountPickerDialogCoordinator(
+                        requireContext(), this, mModalDialogManager);
             } else if (signinFlowType == SigninFlowType.ADD_ACCOUNT) {
                 addAccount();
             }
@@ -232,6 +240,7 @@ public abstract class SyncConsentFragmentBase
             mConfirmSyncDataStateMachine.cancel(/* isBeingDestroyed = */ true);
             mConfirmSyncDataStateMachine = null;
         }
+        mModalDialogManager.destroy();
         if (mRecordUndoSignin) RecordUserAction.record("Signin_Undo_Signin");
         mDestroyed = true;
     }
@@ -285,6 +294,14 @@ public abstract class SyncConsentFragmentBase
     }
 
     /**
+     * Implements {@link AccountsChangeObserver}.
+     */
+    @Override
+    public void onAccountsChanged() {
+        mAccountManagerFacade.getAccounts().then(this::updateAccounts);
+    }
+
+    /**
      * Account picker is hidden if there are no accounts on the device. Also, accept button
      * becomes "Add account" button in this case.
      */
@@ -319,11 +336,8 @@ public abstract class SyncConsentFragmentBase
         mConsentTextTracker.setText(mView.getTitleView(), R.string.signin_title);
 
         mConsentTextTracker.setText(mView.getSyncTitleView(), R.string.signin_sync_title);
-        final @StringRes int syncDescription =
-                mChildAccountStatus == ChildAccountStatus.REGULAR_CHILD
-                ? R.string.signin_sync_description_child_account
-                : R.string.signin_sync_description;
-        mConsentTextTracker.setText(mView.getSyncDescriptionView(), syncDescription);
+        mConsentTextTracker.setText(
+                mView.getSyncDescriptionView(), R.string.signin_sync_description);
 
         final @StringRes int refuseButtonTextId =
                 mSigninAccessPoint == SigninAccessPoint.SIGNIN_PROMO
@@ -365,7 +379,7 @@ public abstract class SyncConsentFragmentBase
     private void onAccountPickerClicked() {
         if (ChildAccountStatus.isChild(mChildAccountStatus) || !areControlsEnabled()) return;
         mAccountPickerDialogCoordinator =
-                new AccountPickerDialogCoordinator(requireContext(), this);
+                new AccountPickerDialogCoordinator(requireContext(), this, mModalDialogManager);
     }
 
     private void onRefuseButtonClicked(View button) {
@@ -405,8 +419,8 @@ public abstract class SyncConsentFragmentBase
     }
 
     private void seedAccountsAndSignin(boolean settingsClicked, View confirmationView) {
-        AccountInfoService.get()
-                .getAccountInfoByEmailAsync(mSelectedAccountName)
+        AccountInfoServiceProvider.get()
+                .getAccountInfoByEmail(mSelectedAccountName)
                 .then(accountInfo -> {
                     assert accountInfo != null : "The seeded CoreAccountInfo shouldn't be null";
                     mConsentTextTracker.recordConsent(accountInfo.getId(),
@@ -419,7 +433,8 @@ public abstract class SyncConsentFragmentBase
 
     private void runStateMachineAndSignin(boolean settingsClicked) {
         mConfirmSyncDataStateMachine = new ConfirmSyncDataStateMachine(
-                new ConfirmSyncDataStateMachineDelegate(getChildFragmentManager()),
+                new ConfirmSyncDataStateMachineDelegate(
+                        requireContext(), getChildFragmentManager(), mModalDialogManager),
                 UserPrefs.get(Profile.getLastUsedRegularProfile())
                         .getString(Pref.GOOGLE_SERVICES_LAST_USERNAME),
                 mSelectedAccountName, new ConfirmSyncDataStateMachine.Listener() {
@@ -473,7 +488,9 @@ public abstract class SyncConsentFragmentBase
             if (addedAccountName == null) return;
 
             // Found the account name, dismiss the dialog if it is shown
-            mAccountPickerDialogCoordinator.dismissDialog();
+            if (mAccountPickerDialogCoordinator != null) {
+                mAccountPickerDialogCoordinator.dismissDialog();
+            }
 
             // Wait for the account cache to be updated and select newly-added account.
             mAccountSelectionPending = true;
@@ -484,8 +501,9 @@ public abstract class SyncConsentFragmentBase
     @Override
     public void onResume() {
         super.onResume();
-        mAccountManagerFacade.addObserver(mAccountsChangedObserver);
-        triggerUpdateAccounts();
+        mAccountManagerFacade.addObserver(this);
+        updateAccounts(
+                AccountUtils.getAccountsIfFulfilledOrEmpty(mAccountManagerFacade.getAccounts()));
 
         mView.startAnimations();
     }
@@ -493,7 +511,7 @@ public abstract class SyncConsentFragmentBase
     @Override
     public void onPause() {
         super.onPause();
-        mAccountManagerFacade.removeObserver(mAccountsChangedObserver);
+        mAccountManagerFacade.removeObserver(this);
 
         mView.stopAnimations();
     }
@@ -504,15 +522,10 @@ public abstract class SyncConsentFragmentBase
         updateProfileData(mSelectedAccountName);
     }
 
-    private void triggerUpdateAccounts() {
-        mAccountManagerFacade.tryGetGoogleAccounts(accounts -> {
-            if (isResumed() && mCanUseGooglePlayServices) {
-                updateAccounts(accounts);
-            }
-        });
-    }
-
     private void updateAccounts(List<Account> accounts) {
+        if (!isResumed() || !mCanUseGooglePlayServices) {
+            return;
+        }
         if (accounts.isEmpty()) {
             mSelectedAccountName = null;
             mAccountSelectionPending = false;
@@ -551,6 +564,6 @@ public abstract class SyncConsentFragmentBase
         selectAccount(accounts.get(0).name, true);
         // Show account picker to user to confirm the account selection
         mAccountPickerDialogCoordinator =
-                new AccountPickerDialogCoordinator(requireContext(), this);
+                new AccountPickerDialogCoordinator(requireContext(), this, mModalDialogManager);
     }
 }

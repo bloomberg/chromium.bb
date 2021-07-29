@@ -22,11 +22,13 @@
 #include "storage/browser/file_system/file_stream_test_utils.h"
 #include "storage/browser/file_system/file_stream_writer.h"
 #include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/common/file_system/file_system_types.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace storage {
 
@@ -63,8 +65,8 @@ class SandboxFileStreamWriterTest : public FileStreamWriterTest {
   }
 
   void TearDown() override {
-    quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-    quota_manager_.reset();
+    quota_manager_proxy_ = nullptr;
+    quota_manager_ = nullptr;
     base::RunLoop().RunUntilIdle();
   }
 
@@ -80,7 +82,7 @@ class SandboxFileStreamWriterTest : public FileStreamWriterTest {
     int64_t quota;
   };
 
-  virtual FileSystemContext* CreateFileSystemContext(
+  virtual scoped_refptr<FileSystemContext> CreateFileSystemContext(
       QuotaManagerProxy* quota_manager_proxy,
       const base::ScopedTempDir& dir) {
     return CreateFileSystemContextForTesting(quota_manager_proxy,
@@ -148,7 +150,7 @@ class SandboxFileStreamWriterTest : public FileStreamWriterTest {
   quota_usage_and_info GetUsageAndQuotaSync() {
     quota_usage_and_info info;
     quota_manager_->GetUsageAndQuota(
-        url::Origin::Create(GURL(kURLOrigin)),
+        blink::StorageKey::CreateFromStringForTesting(kURLOrigin),
         blink::mojom::StorageType::kTemporary,
         base::BindLambdaForTesting([&](blink::mojom::QuotaStatusCode status,
                                        int64_t usage, int64_t quota) {
@@ -160,8 +162,9 @@ class SandboxFileStreamWriterTest : public FileStreamWriterTest {
   }
 
   void SetQuota(int64_t quota) {
-    quota_manager_->SetQuota(url::Origin::Create(GURL(kURLOrigin)),
-                             blink::mojom::StorageType::kTemporary, quota);
+    quota_manager_->SetQuota(
+        blink::StorageKey::CreateFromStringForTesting(kURLOrigin),
+        blink::mojom::StorageType::kTemporary, quota);
   }
 
   int64_t GetFreeQuota() {
@@ -320,7 +323,7 @@ class SandboxFileStreamWriterIncognitoTest
   SandboxFileStreamWriterIncognitoTest() = default;
 
  protected:
-  FileSystemContext* CreateFileSystemContext(
+  scoped_refptr<FileSystemContext> CreateFileSystemContext(
       QuotaManagerProxy* quota_manager_proxy,
       const base::ScopedTempDir& dir) override {
     return CreateIncognitoFileSystemContextForTesting(

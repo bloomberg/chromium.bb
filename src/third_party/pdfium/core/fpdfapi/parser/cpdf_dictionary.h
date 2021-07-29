@@ -41,6 +41,9 @@ class CPDF_Dictionary final : public CPDF_Object {
   bool WriteTo(IFX_ArchiveStream* archive,
                const CPDF_Encryptor* encryptor) const override;
 
+  // `key` must be non-empty and ASCII, per PDF 32000 standard, section 7.2.1.
+  static bool IsValidKey(const ByteString& key);
+
   bool IsLocked() const { return !!m_LockCount; }
 
   size_t size() const { return m_Map.size(); }
@@ -85,7 +88,6 @@ class CPDF_Dictionary final : public CPDF_Object {
   typename std::enable_if<!CanInternStrings<T>::value, T*>::type SetNewFor(
       const ByteString& key,
       Args&&... args) {
-    CHECK(!IsLocked());
     return static_cast<T*>(
         SetFor(key, pdfium::MakeRetain<T>(std::forward<Args>(args)...)));
   }
@@ -93,7 +95,6 @@ class CPDF_Dictionary final : public CPDF_Object {
   typename std::enable_if<CanInternStrings<T>::value, T*>::type SetNewFor(
       const ByteString& key,
       Args&&... args) {
-    CHECK(!IsLocked());
     return static_cast<T*>(SetFor(
         key, pdfium::MakeRetain<T>(m_pPool, std::forward<Args>(args)...)));
   }

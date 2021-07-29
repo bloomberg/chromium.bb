@@ -13,10 +13,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/util/values/values_util.h"
 #include "base/values.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/api/messaging/channel_endpoint.h"
@@ -40,10 +40,9 @@ namespace ash {
 
 namespace {
 
-// The native host name that will identify the holding space thumbnail loader to
-// the image loader extension.
-constexpr char kNativeMessageHostName[] =
-    "com.google.holding_space_thumbnail_loader";
+// The native host name that will identify the thumbnail loader to the image
+// loader extension.
+constexpr char kNativeMessageHostName[] = "com.google.ash_thumbnail_loader";
 
 using ThumbnailDataCallback = base::OnceCallback<void(const std::string& data)>;
 
@@ -213,6 +212,11 @@ void ThumbnailLoader::Load(const ThumbnailRequest& request,
                      weak_factory_.GetWeakPtr(), request, std::move(callback)));
 }
 
+void ThumbnailLoader::SetRequestFinishedCallbackForTesting(
+    base::RepeatingClosure callback) {
+  request_finished_callback_for_testing_ = std::move(callback);
+}
+
 void ThumbnailLoader::LoadForFileWithMetadata(
     const ThumbnailRequest& request,
     ImageCallback callback,
@@ -340,6 +344,9 @@ void ThumbnailLoader::RespondToRequest(const base::UnguessableToken& request_id,
   requests_.erase(request_it);
   std::move(callback).Run(cropped_bitmap.isNull() ? bitmap : &cropped_bitmap,
                           error);
+
+  if (!request_finished_callback_for_testing_.is_null())
+    request_finished_callback_for_testing_.Run();
 }
 
 }  // namespace ash

@@ -26,9 +26,9 @@
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/about_flags.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_provider.h"
-#include "chrome/browser/ash/settings/owner_flags_storage.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -46,6 +46,7 @@
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/signature_creator.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace em = enterprise_management;
 
@@ -322,11 +323,12 @@ bool OwnerSettingsServiceAsh::AppendToList(const std::string& setting,
   const base::Value* old_value = CrosSettings::Get()->GetPref(setting);
   if (old_value && !old_value->is_list())
     return false;
-  std::unique_ptr<base::ListValue> new_value(
-      old_value ? static_cast<const base::ListValue*>(old_value)->DeepCopy()
-                : new base::ListValue());
-  new_value->Append(value.Clone());
-  return Set(setting, *new_value);
+
+  base::Value new_value =
+      old_value ? old_value->Clone() : base::Value(base::Value::Type::LIST);
+
+  new_value.Append(value.Clone());
+  return Set(setting, new_value);
 }
 
 bool OwnerSettingsServiceAsh::RemoveFromList(const std::string& setting,
@@ -335,11 +337,11 @@ bool OwnerSettingsServiceAsh::RemoveFromList(const std::string& setting,
   const base::Value* old_value = CrosSettings::Get()->GetPref(setting);
   if (old_value && !old_value->is_list())
     return false;
-  std::unique_ptr<base::ListValue> new_value(
-      old_value ? static_cast<const base::ListValue*>(old_value)->DeepCopy()
-                : new base::ListValue());
-  new_value->Remove(value, nullptr);
-  return Set(setting, *new_value);
+  base::Value new_value(base::Value::Type::LIST);
+  if (old_value)
+    new_value = old_value->Clone();
+  new_value.EraseListValue(value);
+  return Set(setting, std::move(new_value));
 }
 
 bool OwnerSettingsServiceAsh::CommitTentativeDeviceSettings(
@@ -492,30 +494,27 @@ void OwnerSettingsServiceAsh::UpdateDeviceSettings(
         if (entry.GetAsDictionary(&entry_dict)) {
           em::DeviceLocalAccountInfoProto* account =
               device_local_accounts->add_account();
-          std::string account_id;
-          if (entry_dict->GetStringWithoutPathExpansion(
-                  kAccountsPrefDeviceLocalAccountsKeyId, &account_id)) {
-            account->set_account_id(account_id);
-          }
-          int type;
-          if (entry_dict->GetIntegerWithoutPathExpansion(
-                  kAccountsPrefDeviceLocalAccountsKeyType, &type)) {
+          const std::string* account_id =
+              entry_dict->FindStringKey(kAccountsPrefDeviceLocalAccountsKeyId);
+          if (account_id)
+            account->set_account_id(*account_id);
+
+          absl::optional<int> type =
+              entry_dict->FindIntKey(kAccountsPrefDeviceLocalAccountsKeyType);
+          if (type.has_value()) {
             account->set_type(
                 static_cast<em::DeviceLocalAccountInfoProto::AccountType>(
-                    type));
+                    type.value()));
           }
-          std::string kiosk_app_id;
-          if (entry_dict->GetStringWithoutPathExpansion(
-                  kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
-                  &kiosk_app_id)) {
-            account->mutable_kiosk_app()->set_app_id(kiosk_app_id);
-          }
-          std::string kiosk_app_update_url;
-          if (entry_dict->GetStringWithoutPathExpansion(
-                  kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
-                  &kiosk_app_update_url)) {
-            account->mutable_kiosk_app()->set_update_url(kiosk_app_update_url);
-          }
+          const std::string* kiosk_app_id = entry_dict->FindStringKey(
+              kAccountsPrefDeviceLocalAccountsKeyKioskAppId);
+          if (kiosk_app_id)
+            account->mutable_kiosk_app()->set_app_id(*kiosk_app_id);
+
+          const std::string* kiosk_app_update_url = entry_dict->FindStringKey(
+              kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL);
+          if (kiosk_app_update_url)
+            account->mutable_kiosk_app()->set_update_url(*kiosk_app_update_url);
         } else {
           NOTREACHED();
         }
@@ -526,9 +525,8 @@ void OwnerSettingsServiceAsh::UpdateDeviceSettings(
   } else if (path == kAccountsPrefDeviceLocalAccountAutoLoginId) {
     em::DeviceLocalAccountsProto* device_local_accounts =
         settings.mutable_device_local_accounts();
-    std::string id;
-    if (value.GetAsString(&id))
-      device_local_accounts->set_auto_login_id(id);
+    if (value.is_string())
+      device_local_accounts->set_auto_login_id(value.GetString());
     else
       NOTREACHED();
   } else if (path == kAccountsPrefDeviceLocalAccountAutoLoginDelay) {
@@ -564,8 +562,8 @@ void OwnerSettingsServiceAsh::UpdateDeviceSettings(
     em::ReleaseChannelProto* release_channel =
         settings.mutable_release_channel();
     std::string channel_value;
-    if (value.GetAsString(&channel_value))
-      release_channel->set_release_channel(channel_value);
+    if (value.is_string())
+      release_channel->set_release_channel(value.GetString());
     else
       NOTREACHED();
   } else if (path == kStatsReportingPref) {
@@ -634,9 +632,9 @@ void OwnerSettingsServiceAsh::UpdateDeviceSettings(
       NOTREACHED();
     }
   } else if (path == kDevicePeripheralDataAccessEnabled) {
-    em::DevicePciPeripheralDataAccessEnabledProto*
+    em::DevicePciPeripheralDataAccessEnabledProtoV2*
         peripheral_data_access_proto =
-            settings.mutable_device_pci_peripheral_data_access_enabled();
+            settings.mutable_device_pci_peripheral_data_access_enabled_v2();
     if (value.is_bool()) {
       peripheral_data_access_proto->set_enabled(value.GetBool());
     } else {
@@ -653,6 +651,7 @@ void OwnerSettingsServiceAsh::UpdateDeviceSettings(
     //   kHeartbeatFrequency
     //   kReleaseChannelDelegated
     //   kReportDeviceActivityTimes
+    //   kReportDeviceAudioStatus
     //   KReportDeviceBacklightInfo
     //   kReportDeviceBluetoothInfo
     //   kReportDeviceBoardStatus
@@ -663,6 +662,8 @@ void OwnerSettingsServiceAsh::UpdateDeviceSettings(
     //   kReportDeviceLocation
     //   kReportDeviceMemoryInfo
     //   kReportDeviceNetworkInterfaces
+    //   kReportDeviceNetworkConfiguration
+    //   kReportDeviceNetworkStatus
     //   kReportDevicePowerStatus
     //   kReportDeviceStorageStatus
     //   kReportDeviceSessionStatus
@@ -674,6 +675,7 @@ void OwnerSettingsServiceAsh::UpdateDeviceSettings(
     //   kReportDeviceAppInfo
     //   kReportDeviceSystemInfo
     //   kReportDevicePrintJobs
+    //   kReportDeviceLoginLogout
     //   kServiceAccountIdentity
     //   kSystemTimezonePolicy
     //   kVariationsRestrictParameter

@@ -124,9 +124,12 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+        GLint prev_fbo;
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
+
         /* Create a FBO */
-        glGenFramebuffers(1, &fbo_);
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+        GLExtensions::GenFramebuffers(1, &fbo_);
+        GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
 
         /*
          * Only create the texture image and attach it to the framebuffer
@@ -138,15 +141,15 @@ public:
         if (size_.x() != 0 && size_.y() != 0) {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_.x(), size_.y(), 0,
                          GL_RGBA, GL_UNSIGNED_BYTE, 0);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+            GLExtensions::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                    GL_TEXTURE_2D, texture_, 0);
-            unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+            unsigned int status = GLExtensions::CheckFramebufferStatus(GL_FRAMEBUFFER);
             if (status != GL_FRAMEBUFFER_COMPLETE) {
                 Log::error("RenderObject::init: glCheckFramebufferStatus failed (0x%x)\n", status);
             }
         }
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, prev_fbo);
 
         /* Load the shader program when this class if first used */
         if (RenderObject::use_count == 0) {
@@ -170,7 +173,7 @@ public:
         }
         if (fbo_ != 0)
         {
-            glDeleteFramebuffers(1, &fbo_);
+            GLExtensions::DeleteFramebuffers(1, &fbo_);
             fbo_ = 0;
         }
 
@@ -185,7 +188,7 @@ public:
 
     void make_current()
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+        GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
         glViewport(0, 0, size_.x(), size_.y());
     }
 
@@ -204,10 +207,10 @@ public:
             glBindTexture(GL_TEXTURE_2D, texture_);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_.x(), size_.y(), 0,
                          GL_RGBA, GL_UNSIGNED_BYTE, 0);
-            glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+            GLExtensions::BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+            GLExtensions::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                    GL_TEXTURE_2D, texture_, 0);
-            unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+            unsigned int status = GLExtensions::CheckFramebufferStatus(GL_FRAMEBUFFER);
             if (status != GL_FRAMEBUFFER_COMPLETE) {
                 Log::error("RenderObject::size: glCheckFramebufferStatus failed (0x%x)\n", status);
             }
@@ -381,9 +384,11 @@ Program RenderObject::main_program;
  */
 class RenderScreen : public RenderObject
 {
+    Canvas &canvas_;
 public:
-    RenderScreen(Canvas &canvas) { fbo_ = canvas.fbo(); }
-    virtual void init() {}
+    RenderScreen(Canvas &canvas) : canvas_(canvas) {}
+    virtual void init() { fbo_ = canvas_.fbo(); }
+    virtual void size(const LibMatrix::vec2& size) { size_ = size; clear(); }
     virtual void release() {}
 };
 
@@ -808,6 +813,16 @@ SceneDesktop::~SceneDesktop()
 }
 
 bool
+SceneDesktop::supported(bool show_errors)
+{
+    if (show_errors && !GLExtensions::GenFramebuffers) {
+        Log::error("SceneDesktop requires GL framebuffer support\n");
+    }
+
+    return GLExtensions::GenFramebuffers;
+}
+
+bool
 SceneDesktop::load()
 {
     return true;
@@ -911,7 +926,8 @@ SceneDesktop::teardown()
         delete curObj;
     }
     priv_->windows.clear();
-    priv_->screen.make_current();
+    if (supported(false))
+        priv_->screen.make_current();
 
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
@@ -1033,11 +1049,7 @@ SceneDesktop::validate()
     if (dist < radius_3d + 0.01) {
         return Scene::ValidationSuccess;
     }
-    else {
-        Log::debug("Validation failed! Expected: 0x%x Actual: 0x%x Distance: %f\n",
-                    ref.to_le32(), pixel.to_le32(), dist);
-        return Scene::ValidationFailure;
-    }
-
-    return Scene::ValidationUnknown;
+    Log::debug("Validation failed! Expected: 0x%x Actual: 0x%x Distance: %f\n",
+                ref.to_le32(), pixel.to_le32(), dist);
+    return Scene::ValidationFailure;
 }

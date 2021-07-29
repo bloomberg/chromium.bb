@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_ENTERPRISE_CONNECTORS_FILE_SYSTEM_RENAME_HANDLER_H_
 
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
@@ -16,17 +15,16 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefService;
+
 namespace content {
 class BrowserContext;
 class WebContents;
 }  // namespace content
+
 namespace enterprise_connectors {
 
 class AccessTokenFetcher;
 class BoxUploader;
-
-// Experimental flag to enable or disable the file system connector.
-extern const base::Feature kFileSystemConnectorEnabled;
 
 // An implementation of download::DownloadItemRenameHandler that sends a
 // download item file to a cloud-based storage provider as specified in the
@@ -38,16 +36,18 @@ class FileSystemRenameHandler : public download::DownloadItemRenameHandler {
 
   FileSystemRenameHandler(download::DownloadItem* download_item,
                           FileSystemSettings settings);
+  explicit FileSystemRenameHandler(download::DownloadItem* download_item);
   ~FileSystemRenameHandler() override;
 
  protected:
   // download::DownloadItemRenameHandler interface.
-  void Start(Callback callback) override;
+  void Start(ProgressUpdateCallback progress_update_cb,
+             DownloadCallback upload_complete_cb) override;
   void OpenDownload() override;
   void ShowDownloadInContext() override;
 
-  // These methods are declared protected to override in tests so that calls to
-  // other components can be isolated.
+  // These methods are declared protected to be overridden in unit tests so that
+  // calls to other components can be isolated.
   virtual void TryUploaderTask(content::BrowserContext* context,
                                const std::string& access_token);
   virtual void PromptUserSignInForAuthorization(content::WebContents* contents);
@@ -66,19 +66,12 @@ class FileSystemRenameHandler : public download::DownloadItemRenameHandler {
                             const std::string& refresh_token);
 
  private:
-  static absl::optional<FileSystemSettings> IsEnabled(
-      download::DownloadItem* download_item);
-
-  static std::unique_ptr<download::DownloadItemRenameHandler> Create(
-      download::DownloadItem* download_item,
-      FileSystemSettings settings);
-
-  void StartInternal();
+  void StartInternal(std::string access_token = std::string());
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
       content::BrowserContext* context);
 
   // Helper method used in OpenDownload() and ShowDownloadInContext().
-  void AddTabToShowDownload(GURL url);
+  void AddTabToShowDownload(const GURL& url);
 
   // Called when failure status is returned via callbacks but is not
   // GoogleServiceAuthError::State::REQUEST_CANCELED.
@@ -88,18 +81,11 @@ class FileSystemRenameHandler : public download::DownloadItemRenameHandler {
   void OnSignInCancellation();
   // Callback for uploader_ upon API requests returning authentication error.
   void OnApiAuthenticationError();
-  // Notify upload success or failure back to the download thread.
-  void NotifyResultToDownloadThread(bool success);
 
   PrefService* GetPrefs();
 
-  // Fields copied from |download_item| or from policy settings.  These are
-  // constant for the life of the rename handler.
-  const base::FilePath target_path_;
+  // Copied from policy settings. Constant for the life of the rename handler.
   const FileSystemSettings settings_;
-
-  // Invoked to tell the download system when the rename has completed.
-  Callback download_callback_;
 
   std::unique_ptr<AccessTokenFetcher> token_fetcher_;
   // Main uploader that manages the entire API call flow of file upload.

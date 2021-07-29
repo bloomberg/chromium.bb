@@ -155,7 +155,7 @@ typedef struct ScaleContext {
 
 } ScaleContext;
 
-AVFilter ff_vf_scale2ref;
+const AVFilter ff_vf_scale2ref;
 
 static int config_props(AVFilterLink *outlink);
 
@@ -510,8 +510,7 @@ static int config_props(AVFilterLink *outlink)
 
     scale->input_is_pal = desc->flags & AV_PIX_FMT_FLAG_PAL;
     if (outfmt == AV_PIX_FMT_PAL8) outfmt = AV_PIX_FMT_BGR8;
-    scale->output_is_pal = av_pix_fmt_desc_get(outfmt)->flags & AV_PIX_FMT_FLAG_PAL ||
-                           av_pix_fmt_desc_get(outfmt)->flags & FF_PSEUDOPAL;
+    scale->output_is_pal = av_pix_fmt_desc_get(outfmt)->flags & AV_PIX_FMT_FLAG_PAL;
 
     if (scale->sws)
         sws_freeContext(scale->sws);
@@ -633,10 +632,12 @@ static int scale_slice(AVFilterLink *link, AVFrame *out_buf, AVFrame *cur_pic, s
 
     for (i=0; i<4; i++) {
         int vsub= ((i+1)&2) ? scale->vsub : 0;
+        ptrdiff_t  in_offset = ((y>>vsub)+field) * cur_pic->linesize[i];
+        ptrdiff_t out_offset =            field  * out_buf->linesize[i];
          in_stride[i] = cur_pic->linesize[i] * mul;
         out_stride[i] = out_buf->linesize[i] * mul;
-         in[i] = cur_pic->data[i] + ((y>>vsub)+field) * cur_pic->linesize[i];
-        out[i] = out_buf->data[i] +            field  * out_buf->linesize[i];
+         in[i] = FF_PTR_ADD(cur_pic->data[i],  in_offset);
+        out[i] = FF_PTR_ADD(out_buf->data[i], out_offset);
     }
     if (scale->input_is_pal)
          in[1] = cur_pic->data[1];
@@ -880,13 +881,6 @@ static int process_command(AVFilterContext *ctx, const char *cmd, const char *ar
     return ret;
 }
 
-#if FF_API_CHILD_CLASS_NEXT
-static const AVClass *child_class_next(const AVClass *prev)
-{
-    return prev ? NULL : sws_get_class();
-}
-#endif
-
 static const AVClass *child_class_iterate(void **iter)
 {
     const AVClass *c = *iter ? NULL : sws_get_class();
@@ -951,9 +945,6 @@ static const AVClass scale_class = {
     .option           = scale_options,
     .version          = LIBAVUTIL_VERSION_INT,
     .category         = AV_CLASS_CATEGORY_FILTER,
-#if FF_API_CHILD_CLASS_NEXT
-    .child_class_next = child_class_next,
-#endif
     .child_class_iterate = child_class_iterate,
 };
 
@@ -975,7 +966,7 @@ static const AVFilterPad avfilter_vf_scale_outputs[] = {
     { NULL }
 };
 
-AVFilter ff_vf_scale = {
+const AVFilter ff_vf_scale = {
     .name            = "scale",
     .description     = NULL_IF_CONFIG_SMALL("Scale the input video size and/or convert the image format."),
     .init_dict       = init_dict,
@@ -994,9 +985,6 @@ static const AVClass scale2ref_class = {
     .option           = scale_options,
     .version          = LIBAVUTIL_VERSION_INT,
     .category         = AV_CLASS_CATEGORY_FILTER,
-#if FF_API_CHILD_CLASS_NEXT
-    .child_class_next = child_class_next,
-#endif
     .child_class_iterate = child_class_iterate,
 };
 
@@ -1030,7 +1018,7 @@ static const AVFilterPad avfilter_vf_scale2ref_outputs[] = {
     { NULL }
 };
 
-AVFilter ff_vf_scale2ref = {
+const AVFilter ff_vf_scale2ref = {
     .name            = "scale2ref",
     .description     = NULL_IF_CONFIG_SMALL("Scale the input video size and/or convert the image format to the given reference."),
     .init_dict       = init_dict,

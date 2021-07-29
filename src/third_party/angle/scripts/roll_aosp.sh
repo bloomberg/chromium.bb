@@ -7,7 +7,14 @@
 # Generates a roll CL within the ANGLE repository of AOSP.
 
 # exit when any command fails
-set -e
+set -eE -o functrace
+
+failure() {
+  local lineno=$1
+  local msg=$2
+  echo "Failed at $lineno: $msg"
+}
+trap 'failure ${LINENO} "$BASH_COMMAND"' ERR
 
 # Change the working directory to the ANGLE root directory
 cd "${0%/*}/.."
@@ -24,7 +31,7 @@ function generate_Android_bp_file() {
         "x64"
     )
 
-    for abi in ${abis[@]}; do
+    for abi in "${abis[@]}"; do
         # generate gn build files and convert them to blueprints
         gn_args=(
             "target_os = \"android\""
@@ -43,7 +50,7 @@ function generate_Android_bp_file() {
 
             # Disable all backends except Vulkan
             "angle_enable_vulkan = true"
-            "angle_enable_gl = true" # TODO(geofflang): Disable GL once Andrid no longer requires it. anglebug.com/4444
+            "angle_enable_gl = false"
             "angle_enable_d3d9 = false"
             "angle_enable_d3d11 = false"
             "angle_enable_null = false"
@@ -53,8 +60,8 @@ function generate_Android_bp_file() {
             "angle_enable_swiftshader = false"
 
             # Disable all shader translator targets except desktop GL (for Vulkan)
-            "angle_enable_essl = true" # TODO(geofflang): Disable ESSL once Andrid no longer requires it. anglebug.com/4444
-            "angle_enable_glsl = true" # TODO(geofflang): Disable ESSL once Andrid no longer requires it. anglebug.com/4444
+            "angle_enable_essl = false"
+            "angle_enable_glsl = false"
             "angle_enable_hlsl = false"
 
             "angle_enable_commit_id = false"
@@ -64,6 +71,9 @@ function generate_Android_bp_file() {
 
             # Disable _LIBCPP_ABI_UNSTABLE, since it breaks std::string
             "libcxx_abi_unstable = false"
+
+            # rapidJSON is used for ANGLE's frame capture (among other things), which is unnecessary for AOSP builds.
+            "angle_has_rapidjson = false"
         )
 
         if [[ "$1" == "--enableApiTrace" ]]; then
@@ -99,10 +109,8 @@ rm -rf ${DEPOT_TOOLS_DIR}
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git ${DEPOT_TOOLS_DIR}
 export PATH=`pwd`/${DEPOT_TOOLS_DIR}:$PATH
 
-deps=(
+third_party_deps=(
     "third_party/abseil-cpp"
-    "third_party/jsoncpp"
-    "third_party/jsoncpp/source"
     "third_party/vulkan-deps/glslang/src"
     "third_party/vulkan-deps/spirv-headers/src"
     "third_party/vulkan-deps/spirv-tools/src"
@@ -113,53 +121,72 @@ deps=(
 
 # Only add the parts of NDK and vulkan-deps that are required by ANGLE. The entire dep is too large.
 delete_only_deps=(
-    "third_party/android_ndk"
     "third_party/vulkan-deps"
 )
 
-add_only_deps=(
-    "third_party/android_ndk/sources/android/cpufeatures"
-)
-
 # Delete dep directories so that gclient can check them out
-for dep in ${deps[@]} ${delete_only_deps[@]}; do
-    rm -rf $dep
+for dep in "${third_party_deps[@]}" "${delete_only_deps[@]}"; do
+    rm -rf "$dep"
 done
 
 # Sync all of ANGLE's deps so that 'gn gen' works
 python scripts/bootstrap.py
-gclient sync --reset --force --ignore_locks --delete_unversioned_trees --break_repo_locks
+gclient sync --reset --force --delete_unversioned_trees
 
 generate_Android_bp_file
+
+# Delete all unsupported 3rd party dependencies. Do this after generate_Android_bp_file, so
+# it has access to all of the necessary BUILD.gn files.
+# Any 3rd party dependencies that are added to this list must have their licenses verified.
+find third_party/ -maxdepth 2 -type d ! -path third_party/ \
+    ! -path 'third_party/abseil-cpp*' \
+    ! -path 'third_party/vulkan-deps' \
+    ! -path 'third_party/vulkan-deps/glslang*' \
+    ! -path 'third_party/vulkan-deps/spirv-headers*' \
+    ! -path 'third_party/vulkan-deps/spirv-tools*' \
+    ! -path 'third_party/vulkan-deps/vulkan-headers*' \
+    ! -path 'third_party/vulkan_memory_allocator*' \
+    ! -path 'third_party/zlib*' \
+    -print0 | xargs --null rm -rf
+# Special handling for zlib's contrib/ (third_party) folder, since there are some
+# missing license files.
+find third_party/zlib/contrib/ -maxdepth 1 -type d ! -path third_party/zlib/contrib/ \
+    ! -path 'third_party/zlib/contrib/optimizations*' \
+    -print0 | xargs --null rm -rf
 
 git add Android.bp
 
 # Delete the .git files in each dep so that it can be added to this repo. Some deps like jsoncpp
 # have multiple layers of deps so delete everything before adding them.
-for dep in ${deps[@]} ${delete_only_deps[@]}; do
-   rm -rf $dep/.git
+for dep in "${third_party_deps[@]}"; do
+   rm -rf "$dep"/.git
 done
 
 extra_removal_files=(
    # Some third_party deps have OWNERS files which contains users that have not logged into
    # the Android gerrit. Repo cannot upload with these files present.
    "third_party/abseil-cpp/OWNERS"
-   "third_party/jsoncpp/OWNERS"
    "third_party/vulkan_memory_allocator/OWNERS"
    "third_party/zlib/OWNERS"
    "third_party/zlib/google/OWNERS"
    "third_party/zlib/contrib/tests/OWNERS"
    "third_party/zlib/contrib/bench/OWNERS"
    "third_party/zlib/contrib/tests/fuzzers/OWNERS"
+   # Remove Android.mk files to prevent automated CLs:
+   #   "[LSC] Add LOCAL_LICENSE_KINDS to external/angle"
+   "Android.mk"
+   "third_party/vulkan-deps/glslang/src/Android.mk"
+   "third_party/vulkan-deps/glslang/src/ndk_test/Android.mk"
+   "third_party/vulkan-deps/spirv-tools/src/Android.mk"
+   "third_party/vulkan-deps/spirv-tools/src/android_test/Android.mk"
 )
 
-for removal_file in ${extra_removal_files[@]}; do
-   rm -f $removal_file
+for removal_file in "${extra_removal_files[@]}"; do
+   rm -f "$removal_file"
 done
 
-for dep in ${deps[@]} ${add_only_deps[@]}; do
-   git add -f $dep
-done
+# Add all changes to third_party/ so we delete everything not explicitly allowed.
+git add -f "third_party/*"
 
 # Done with depot_tools
 rm -rf $DEPOT_TOOLS_DIR

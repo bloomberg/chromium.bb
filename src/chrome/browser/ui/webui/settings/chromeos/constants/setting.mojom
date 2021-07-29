@@ -79,9 +79,10 @@ enum Setting {
   kRestrictSignIn = 307,
   kAddToUserAllowlist = 308,
   kRemoveFromUserAllowlist = 309,
-  kAddKerberosTicket = 310,
-  kRemoveKerberosTicket = 311,
-  kSetActiveKerberosTicket = 312,
+  // Note: Values 310, 311 and 312 were for kAddKerberosTicket,
+  // kRemoveKerberosTicket and kSetActiveKerberosTicket, respectively. These
+  // settings have been moved to a separate Kerberos section - see
+  // https://crbug.com/1186190. Do not reuse.
   kAddFingerprint = 313,
   kRemoveFingerprint = 314,
   kSetUpParentalControls = 315,
@@ -138,6 +139,8 @@ enum Setting {
   kChangeDeviceAccountImage = 503,
   // Note: Value 504 was for deprecated kAmbientModeUpdatePhotosContainers.
   // Do not reuse.
+  kDarkModeOnOff = 505,
+  kDarkModeThemed = 506,
 
   // Search and Assistant section.
   kPreferredSearchEngine = 600,
@@ -150,6 +153,9 @@ enum Setting {
   kAssistantVoiceInput = 606,
   kTrainAssistantVoiceModel = 607,
   kQuickAnswersOnOff = 608,
+  kQuickAnswersDefinition = 609,
+  kQuickAnswersTranslation = 610,
+  kQuickAnswersUnitConversion = 611,
 
   // Apps section.
   kManageAndroidPreferences = 700,
@@ -199,6 +205,7 @@ enum Setting {
   kOfferTranslation = 1205,
   kAddInputMethod = 1206,
   kSpellCheck = 1207,
+  kShowPredictiveWriting = 1208,
 
   // Files section.
   kGoogleDriveConnection = 1300,

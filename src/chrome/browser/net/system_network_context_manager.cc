@@ -75,9 +75,9 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/net/dhcp_wpad_url_client.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -499,6 +499,38 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   network_service->ConfigureHttpAuthPrefs(
       CreateHttpAuthDynamicParams(local_state_));
 
+  // Configure the Certificate Transparency logs.
+#if !defined(OS_ANDROID)
+  if (g_enable_certificate_transparency) {
+    std::vector<std::string> operated_by_google_logs =
+        certificate_transparency::GetLogsOperatedByGoogle();
+    std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs =
+        certificate_transparency::GetDisqualifiedLogs();
+    std::vector<network::mojom::CTLogInfoPtr> log_list_mojo;
+    for (const auto& ct_log : certificate_transparency::GetKnownLogs()) {
+      network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
+      log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
+      log_info->name = ct_log.log_name;
+
+      std::string log_id = crypto::SHA256HashString(log_info->public_key);
+      log_info->operated_by_google =
+          std::binary_search(std::begin(operated_by_google_logs),
+                             std::end(operated_by_google_logs), log_id);
+      auto it = std::lower_bound(
+          std::begin(disqualified_logs), std::end(disqualified_logs), log_id,
+          [](const auto& disqualified_log, const std::string& log_id) {
+            return disqualified_log.first < log_id;
+          });
+      if (it != std::end(disqualified_logs) && it->first == log_id) {
+        log_info->disqualified_at = it->second;
+      }
+      log_list_mojo.push_back(std::move(log_info));
+    }
+    network_service->UpdateCtLogList(std::move(log_list_mojo),
+                                     base::GetBuildTime());
+  }
+#endif
+
   int max_connections_per_proxy =
       local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);
   if (max_connections_per_proxy != -1)
@@ -533,14 +565,13 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   config->should_use_preference =
       command_line.HasSwitch(switches::kEnableEncryptionSelection);
   chrome::GetDefaultUserDataDirectory(&config->user_data_path);
-  content::GetNetworkService()->SetCryptConfig(std::move(config));
+  network_service->SetCryptConfig(std::move(config));
 #endif
 #if defined(OS_WIN) || defined(OS_MAC)
   // The OSCrypt keys are process bound, so if network service is out of
   // process, send it the required key.
   if (content::IsOutOfProcessNetworkService()) {
-    content::GetNetworkService()->SetEncryptionKey(
-        OSCrypt::GetRawEncryptionKey());
+    network_service->SetEncryptionKey(OSCrypt::GetRawEncryptionKey());
   }
 #endif
 
@@ -602,7 +633,7 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
 
   std::string quic_user_agent_id;
 
-  if (base::FeatureList::IsEnabled(blink::features::kFreezeUserAgent)) {
+  if (base::FeatureList::IsEnabled(blink::features::kReduceUserAgent)) {
     quic_user_agent_id = "";
   } else {
     // Extended stable reports as regular stable due to the similarity, and to
@@ -650,33 +681,8 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
 
   if (g_enable_certificate_transparency) {
     network_context_params->enforce_chrome_ct_policy = true;
-    network_context_params->ct_log_update_time = base::GetBuildTime();
-
-    std::vector<std::string> operated_by_google_logs =
-        certificate_transparency::GetLogsOperatedByGoogle();
-    std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs =
-        certificate_transparency::GetDisqualifiedLogs();
-    for (const auto& ct_log : certificate_transparency::GetKnownLogs()) {
-      // TODO(rsleevi): https://crbug.com/702062 - Remove this duplication.
-      network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
-      log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
-      log_info->name = ct_log.log_name;
-
-      std::string log_id = crypto::SHA256HashString(log_info->public_key);
-      log_info->operated_by_google =
-          std::binary_search(std::begin(operated_by_google_logs),
-                             std::end(operated_by_google_logs), log_id);
-      auto it = std::lower_bound(
-          std::begin(disqualified_logs), std::end(disqualified_logs), log_id,
-          [](const auto& disqualified_log, const std::string& log_id) {
-            return disqualified_log.first < log_id;
-          });
-      if (it != std::end(disqualified_logs) && it->first == log_id) {
-        log_info->disqualified_at = it->second;
-      }
-      network_context_params->ct_logs.push_back(std::move(log_info));
-    }
   }
+
 #endif
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)

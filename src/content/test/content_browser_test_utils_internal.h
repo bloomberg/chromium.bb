@@ -590,7 +590,7 @@ class RenderFrameHostCreatedObserver : public WebContentsObserver {
 BackForwardCache::DisabledReason RenderFrameHostDisabledForTestingReason();
 // Disable using the standard testing DisabledReason.
 void DisableForRenderFrameHostForTesting(RenderFrameHost* render_frame_host);
-void DisableForRenderFrameHostForTesting(GlobalFrameRoutingId id);
+void DisableForRenderFrameHostForTesting(GlobalRenderFrameHostId id);
 
 // Changes the WebContents and active entry user agent override from
 // DidStartNavigation().
@@ -622,6 +622,40 @@ class UserAgentInjector : public WebContentsObserver {
  private:
   blink::UserAgentOverride user_agent_override_;
   bool is_overriding_user_agent_ = true;
+};
+
+// Just like RenderFrameHostWrapper but holds and gives access to a
+// RenderFrameHostImpl.
+class RenderFrameHostImplWrapper : public RenderFrameHostWrapper {
+ public:
+  explicit RenderFrameHostImplWrapper(RenderFrameHost* rfh);
+
+  // Returns the pointer or nullptr if the RFH has already been deleted.
+  RenderFrameHostImpl* get() const;
+
+  // Pointerish operators. Feel free to add more if you need them.
+  RenderFrameHostImpl& operator*() const;
+  RenderFrameHostImpl* operator->() const;
+};
+
+// Use this class to wait for all RenderFrameHosts in a WebContents that are
+// inactive (pending deletion, stored in BackForwardCache, prerendered, etc) to
+// be deleted. This will triggerBackForwardCache flushing and prerender
+// cancellations..
+class InactiveRenderFrameHostDeletionObserver : public WebContentsObserver {
+ public:
+  explicit InactiveRenderFrameHostDeletionObserver(WebContents* content);
+  ~InactiveRenderFrameHostDeletionObserver() override;
+
+  void Wait();
+
+ private:
+  void RenderFrameDeleted(RenderFrameHost*) override;
+
+  void CheckCondition();
+
+  std::unique_ptr<base::RunLoop> loop_;
+  std::set<RenderFrameHost*> inactive_rfhs_;
 };
 
 }  // namespace content

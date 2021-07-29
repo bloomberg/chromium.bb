@@ -27,6 +27,8 @@
 #include "extensions/browser/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::NiceMock;
+
 namespace em = enterprise_management;
 
 namespace enterprise_reporting {
@@ -61,6 +63,9 @@ class ProfileReportGeneratorTest : public ::testing::Test {
   ProfileReportGeneratorTest()
       : generator_(&reporting_delegate_factory_),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+  ProfileReportGeneratorTest(const ProfileReportGeneratorTest&) = delete;
+  ProfileReportGeneratorTest& operator=(const ProfileReportGeneratorTest&) =
+      delete;
   ~ProfileReportGeneratorTest() override = default;
 
   void SetUp() override {
@@ -76,7 +81,7 @@ class ProfileReportGeneratorTest : public ::testing::Test {
   }
 
   void InitMockPolicyService() {
-    policy_service_ = std::make_unique<policy::MockPolicyService>();
+    policy_service_ = std::make_unique<NiceMock<policy::MockPolicyService>>();
 
     ON_CALL(*policy_service_.get(),
             GetPolicies(::testing::Eq(policy::PolicyNamespace(
@@ -146,10 +151,8 @@ class ProfileReportGeneratorTest : public ::testing::Test {
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
 
-  std::unique_ptr<policy::MockPolicyService> policy_service_;
+  std::unique_ptr<NiceMock<policy::MockPolicyService>> policy_service_;
   policy::PolicyMap policy_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileReportGeneratorTest);
 };
 
 TEST_F(ProfileReportGeneratorTest, ProfileNotActivated) {
@@ -174,7 +177,7 @@ TEST_F(ProfileReportGeneratorTest, SignedInProfile) {
   IdentityTestEnvironmentProfileAdaptor identity_test_env_adaptor(profile());
   auto expected_info =
       identity_test_env_adaptor.identity_test_env()->SetPrimaryAccount(
-          "test@mail.com");
+          "test@mail.com", signin::ConsentLevel::kSync);
   auto report = GenerateReport();
   EXPECT_TRUE(report->has_chrome_signed_in_user());
   EXPECT_EQ(expected_info.email, report->chrome_signed_in_user().email());
@@ -282,7 +285,7 @@ TEST_F(ProfileReportGeneratorTest, ExtensionRequestOnlyReport) {
   IdentityTestEnvironmentProfileAdaptor identity_test_env_adaptor(profile());
   auto expected_info =
       identity_test_env_adaptor.identity_test_env()->SetPrimaryAccount(
-          "test@mail.com");
+          "test@mail.com", signin::ConsentLevel::kSync);
 
   auto report = generator_.MaybeGenerate(profile()->GetPath(),
                                          profile()->GetProfileUserName(),
@@ -317,7 +320,7 @@ TEST_F(ProfileReportGeneratorTest, ExtensionRequestOnlyReportWithoutPolicy) {
   IdentityTestEnvironmentProfileAdaptor identity_test_env_adaptor(profile());
   auto expected_info =
       identity_test_env_adaptor.identity_test_env()->SetPrimaryAccount(
-          "test@mail.com");
+          "test@mail.com", signin::ConsentLevel::kSync);
 
   auto report = generator_.MaybeGenerate(profile()->GetPath(),
                                          profile()->GetProfileUserName(),
@@ -337,7 +340,7 @@ TEST_F(ProfileReportGeneratorTest,
   IdentityTestEnvironmentProfileAdaptor identity_test_env_adaptor(profile());
   auto expected_info =
       identity_test_env_adaptor.identity_test_env()->SetPrimaryAccount(
-          "test@mail.com");
+          "test@mail.com", signin::ConsentLevel::kSync);
 
   auto report = generator_.MaybeGenerate(profile()->GetPath(),
                                          profile()->GetProfileUserName(),

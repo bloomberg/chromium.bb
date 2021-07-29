@@ -25,12 +25,15 @@
 
 namespace chromeos {
 namespace full_restore {
-class AppLaunchHandlerBrowserTest;
+class FullRestoreAppLaunchHandlerBrowserTest;
+class FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest;
+class FullRestoreServiceTestHavingFullRestoreFile;
 }
 }
 
 namespace full_restore {
 
+struct AppLaunchInfo;
 class FullRestoreFileHandler;
 class RestoreData;
 struct WindowInfo;
@@ -62,6 +65,11 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreReadHandler
 
   void SetActiveProfilePath(const base::FilePath& profile_path);
 
+  // Sets whether we should check the restore data for `profile_path`. If the
+  // user selects `Restore`, then we should check the restore data for restored
+  // windows. Otherwise, we don't need to to check the restore data.
+  void SetCheckRestoreData(const base::FilePath& profile_path);
+
   // Invoked when the task is created for an ARC app.
   void OnTaskCreated(const std::string& app_id,
                      int32_t task_id,
@@ -89,6 +97,14 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreReadHandler
                             const std::string& app_id,
                             int32_t restore_window_id);
 
+  // Returns true if there are app type browsers from the full restore file.
+  // Otherwise, returns false.
+  bool HasAppTypeBrowser(const base::FilePath& profile_path);
+
+  // Returns true if there are normal browsers (non app type browser) from the
+  // full restore file. Otherwise, returns false.
+  bool HasBrowser(const base::FilePath& profile_path);
+
   // Returns true if there is a window info for |restore_window_id| from the
   // full restore file. Otherwise, returns false. This interface can't be used
   // for Arc app windows.
@@ -97,15 +113,20 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreReadHandler
   // Gets the window information for |window|.
   std::unique_ptr<WindowInfo> GetWindowInfo(aura::Window* window);
 
+  // Gets the ARC app launch information from the full restore file for `app_id`
+  // and `session_id`.
+  std::unique_ptr<AppLaunchInfo> GetArcAppLaunchInfo(const std::string& app_id,
+                                                     int32_t session_id);
+
   // Fetches the restore id for the window from RestoreData for the given
   // |app_id|. |app_id| should be a Chrome app id.
   int32_t FetchRestoreWindowId(const std::string& app_id);
 
   // Returns the restore window id for the ARC app's |task_id|.
-  //
-  // TODO(crbug.com/1146900): Handle the scenario that the window is created
-  // first, and OnTaskCreated is called later..
-  int32_t GetArcRestoreWindowId(int32_t task_id);
+  int32_t GetArcRestoreWindowIdForTaskId(int32_t task_id);
+
+  // Returns the restore window id for the ARC app's |session_id|.
+  int32_t GetArcRestoreWindowIdForSessionId(int32_t session_id);
 
   // Modifies `out_params` based on the window info associated with
   // `restore_window_id`.
@@ -120,13 +141,33 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreReadHandler
   // |arc session id| is assigned when ARC apps are restored.
   void SetArcSessionIdForWindowId(int32_t arc_session_id, int32_t window_id);
 
+  // Applies properties from `window_info` to the given `property_handler`. This
+  // is called from `GetWindowInfo()` when a full restore window is created, or
+  // from `arc_read_handler_` when a task is ready for a full restore window
+  // that has already been created.
+  void ApplyProperties(WindowInfo* window_info,
+                       ui::PropertyHandler* property_handler);
+
+  void AddChromeBrowserLaunchInfoForTesting(const base::FilePath& profile_path);
+
  private:
   friend class ArcReadHandler;
-  friend class ::chromeos::full_restore::AppLaunchHandlerBrowserTest;
+  friend class ::chromeos::full_restore::FullRestoreAppLaunchHandlerBrowserTest;
+  friend class ::chromeos::full_restore::
+      FullRestoreAppLaunchHandlerSystemWebAppsBrowserTest;
+  friend class ::chromeos::full_restore::
+      FullRestoreServiceTestHavingFullRestoreFile;
   friend class FullRestoreReadHandlerTestApi;
 
-  // Gets the window information from |profile_path| for |app_id| and
-  // |restore_window_id|.
+  // Gets the app launch information from `profile_path` for `app_id` and
+  // `restore_window_id`.
+  std::unique_ptr<AppLaunchInfo> GetAppLaunchInfo(
+      const base::FilePath& profile_path,
+      const std::string& app_id,
+      int32_t restore_window_id);
+
+  // Gets the window information from `profile_path` for `app_id` and
+  // `restore_window_id`.
   std::unique_ptr<WindowInfo> GetWindowInfo(const base::FilePath& profile_path,
                                             const std::string& app_id,
                                             int32_t restore_window_id);
@@ -163,6 +204,12 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreReadHandler
       window_id_to_app_restore_info_;
 
   std::unique_ptr<ArcReadHandler> arc_read_handler_;
+
+  // Records whether we need to check the restore data for the profile path. If
+  // the profile path is recorded, we should check the restore data. Otherwise,
+  // we don't need to check the restore data, because the restore process hasn't
+  // started yet.
+  std::set<base::FilePath> should_check_restore_data_;
 
   base::ScopedObservation<aura::Env, aura::EnvObserver> env_observer_{this};
 

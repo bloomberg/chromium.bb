@@ -19,6 +19,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/do_nothing_ct_verifier.h"
+#include "net/cookies/same_party_context.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
@@ -396,7 +397,7 @@ TestNetworkDelegate::TestNetworkDelegate()
       completed_requests_(0),
       canceled_requests_(0),
       cookie_options_bit_mask_(0),
-      blocked_get_cookies_count_(0),
+      blocked_annotate_cookies_count_(0),
       blocked_set_cookie_count_(0),
       set_cookie_count_(0),
       before_start_transaction_count_(0),
@@ -599,20 +600,30 @@ void TestNetworkDelegate::OnURLRequestDestroyed(URLRequest* request) {
   destroyed_requests_++;
 }
 
-void TestNetworkDelegate::OnPACScriptError(int line_number,
-                                           const std::u16string& error) {}
-
-bool TestNetworkDelegate::OnCanGetCookies(const URLRequest& request,
-                                          bool allowed_from_caller) {
+bool TestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
+    const URLRequest& request,
+    net::CookieAccessResultList& maybe_included_cookies,
+    net::CookieAccessResultList& excluded_cookies,
+    bool allowed_from_caller) {
   bool allow = allowed_from_caller;
   if (cookie_options_bit_mask_ & NO_GET_COOKIES)
     allow = false;
 
   if (!allow) {
-    blocked_get_cookies_count_++;
+    blocked_annotate_cookies_count_++;
+    ExcludeAllCookies(CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+                      maybe_included_cookies, excluded_cookies);
   }
 
   return allow;
+}
+
+bool TestNetworkDelegate::OnForcePrivacyMode(
+    const GURL& url,
+    const SiteForCookies& site_for_cookies,
+    const absl::optional<url::Origin>& top_frame_origin,
+    SamePartyContext::Type same_party_context_type) const {
+  return false;
 }
 
 bool TestNetworkDelegate::OnCanSetCookie(const URLRequest& request,
@@ -648,6 +659,76 @@ int TestNetworkDelegate::GetRequestId(URLRequest* request) {
   request->SetUserData(kTestNetworkDelegateRequestIdKey,
                        std::make_unique<TestRequestId>(id));
   return id;
+}
+
+FilteringTestNetworkDelegate::FilteringTestNetworkDelegate() = default;
+FilteringTestNetworkDelegate::~FilteringTestNetworkDelegate() = default;
+
+bool FilteringTestNetworkDelegate::OnCanSetCookie(
+    const URLRequest& request,
+    const net::CanonicalCookie& cookie,
+    CookieOptions* options,
+    bool allowed_from_caller) {
+  // Filter out cookies with the same name as |cookie_name_filter_| and
+  // combine with |allowed_from_caller|.
+  bool allowed = allowed_from_caller && !(cookie.Name() == cookie_name_filter_);
+
+  ++set_cookie_called_count_;
+
+  if (!allowed)
+    ++blocked_set_cookie_count_;
+
+  return TestNetworkDelegate::OnCanSetCookie(request, cookie, options, allowed);
+}
+
+bool FilteringTestNetworkDelegate::OnForcePrivacyMode(
+    const GURL& url,
+    const SiteForCookies& site_for_cookies,
+    const absl::optional<url::Origin>& top_frame_origin,
+    SamePartyContext::Type same_party_context_type) const {
+  if (force_privacy_mode_)
+    return true;
+
+  return TestNetworkDelegate::OnForcePrivacyMode(
+      url, site_for_cookies, top_frame_origin, same_party_context_type);
+}
+
+bool FilteringTestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
+    const URLRequest& request,
+    net::CookieAccessResultList& maybe_included_cookies,
+    net::CookieAccessResultList& excluded_cookies,
+    bool allowed_from_caller) {
+  // Filter out cookies if |block_annotate_cookies_| is set and
+  // combine with |allowed_from_caller|.
+  bool allowed = allowed_from_caller && !block_annotate_cookies_;
+
+  ++annotate_cookies_called_count_;
+
+  if (!allowed) {
+    ++blocked_annotate_cookies_count_;
+    ExcludeAllCookies(net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+                      maybe_included_cookies, excluded_cookies);
+  }
+
+  if (allowed && block_get_cookies_by_name_ && !cookie_name_filter_.empty()) {
+    for (auto& cookie : maybe_included_cookies) {
+      if (cookie.cookie.Name().find(cookie_name_filter_) != std::string::npos) {
+        cookie.access_result.status.AddExclusionReason(
+            net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+      }
+    }
+    for (auto& cookie : excluded_cookies) {
+      if (cookie.cookie.Name().find(cookie_name_filter_) != std::string::npos) {
+        cookie.access_result.status.AddExclusionReason(
+            net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+      }
+    }
+
+    MoveExcludedCookies(maybe_included_cookies, excluded_cookies);
+  }
+
+  return TestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
+      request, maybe_included_cookies, excluded_cookies, allowed);
 }
 
 // URLRequestInterceptor that intercepts only the first request it sees,

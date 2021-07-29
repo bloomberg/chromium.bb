@@ -21,7 +21,7 @@
 
 #include "common/Math.h"
 #include "utils/TestUtils.h"
-#include "utils/TextureFormatUtils.h"
+#include "utils/TextureUtils.h"
 #include "utils/WGPUHelpers.h"
 
 class QueueTests : public DawnTest {};
@@ -112,14 +112,13 @@ TEST_P(QueueWriteBufferTests, ManyWriteBuffer) {
     // fails the test. Since GPUs may or may not complete by then, this test must be disabled OR
     // modified to be well-below the timeout limit.
 
-    // TODO(https://bugs.chromium.org/p/dawn/issues/detail?id=228): Re-enable
-    // once the issue with Metal on 10.14.6 is fixed.
-    DAWN_SKIP_TEST_IF(IsMacOS() && IsIntel() && IsMetal());
+    // TODO(crbug.com/dawn/228): Re-enable once the issue with Metal on 10.14.6 is fixed.
+    DAWN_SUPPRESS_TEST_IF(IsMacOS() && IsIntel() && IsMetal());
 
     // The Vulkan Validation Layers' memory barrier validation keeps track of every range written
     // to independently which causes validation of each WriteBuffer to take increasing time, and
     // this test to take forever. Skip it when VVLs are enabled.
-    DAWN_SKIP_TEST_IF(IsVulkan() && IsBackendValidationEnabled());
+    DAWN_SUPPRESS_TEST_IF(IsVulkan() && IsBackendValidationEnabled());
 
     constexpr uint64_t kSize = 4000 * 1000;
     constexpr uint32_t kElements = 250 * 250;
@@ -542,23 +541,9 @@ TEST_P(QueueWriteTextureTests, BytesPerRowWithOneRowCopy) {
         constexpr wgpu::Extent3D copyExtent = {5, 1, 1};
         DataSpec dataSpec = MinimumDataSpec(copyExtent);
 
-        // bytesPerRow = 0
-        // TODO(crbug.com/dawn/520): This behavior is deprecated; remove this case.
-        dataSpec.bytesPerRow = 0;
-        EXPECT_DEPRECATION_WARNING(DoTest(textureSpec, dataSpec, copyExtent));
-
         // bytesPerRow undefined
         dataSpec.bytesPerRow = wgpu::kCopyStrideUndefined;
         DoTest(textureSpec, dataSpec, copyExtent);
-    }
-
-    // bytesPerRow < bytesInACompleteRow
-    // TODO(crbug.com/dawn/520): This behavior is deprecated; remove this case.
-    {
-        constexpr wgpu::Extent3D copyExtent = {259, 1, 1};
-        DataSpec dataSpec = MinimumDataSpec(copyExtent);
-        dataSpec.bytesPerRow = 256;
-        EXPECT_DEPRECATION_WARNING(DoTest(textureSpec, dataSpec, copyExtent));
     }
 }
 

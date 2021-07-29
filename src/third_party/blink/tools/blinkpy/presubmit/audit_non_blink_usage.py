@@ -14,6 +14,8 @@ $ git ls-files third_party/blink \
     | python third_party/blink/tools/blinkpy/presubmit/audit_non_blink_usage.py
 """
 
+from __future__ import print_function
+
 import os
 import re
 import sys
@@ -197,6 +199,8 @@ _CONFIG = [
 
             # //base/numerics/clamped_math.h.
             'base::ClampAdd',
+            'base::ClampedNumeric',
+            'base::ClampMax',
             'base::ClampSub',
             'base::MakeClampedNum',
 
@@ -271,6 +275,7 @@ _CONFIG = [
             'cc::PaintWorkletInput',
             'cc::NodeId',
             'cc::NodeInfo',
+            'cc::UsePaintCache',
 
             # Chromium geometry types.
             'gfx::Insets',
@@ -283,6 +288,7 @@ _CONFIG = [
             'gfx::RectF',
             'gfx::RRectF',
             'gfx::ScaleToCeiledSize',
+            'gfx::ScaleToEnclosingRectSafe',
             'gfx::ScaleVector2d',
             'gfx::Size',
             'gfx::SizeF',
@@ -346,6 +352,7 @@ _CONFIG = [
 
             # UMA Enums
             'cc::PaintHoldingCommitTrigger',
+            'cc::PaintHoldingReason',
 
             # Scrolling
             'cc::kManipulationInfoPinchZoom',
@@ -383,6 +390,10 @@ _CONFIG = [
 
             # base/types/strong_alias.h
             'base::StrongAlias',
+
+            # Common display structs across display <-> Blink.
+            'display::ScreenInfo',
+            'display::ScreenInfos',
 
             # Standalone utility libraries that only depend on //base
             'skia::.+',
@@ -499,6 +510,12 @@ _CONFIG = [
             # UI Cursor
             'ui::Cursor',
 
+            # UI Pointer and Hover
+            'ui::PointerType',
+            'ui::POINTER_TYPE_.*',
+            'ui::HoverType',
+            'ui::HOVER_TYPE_.*',
+
             # UI Keyconverter
             'ui::DomCode',
             'ui::DomKey',
@@ -512,6 +529,8 @@ _CONFIG = [
             'ui::AXMode',
             'ui::AXNodeData',
             'ui::AXTreeID',
+            'ui::kAXModeBasic',
+            'ui::kAXModeComplete',
             'ax::mojom::BoolAttribute',
             'ax::mojom::HasPopup',
             'ax::mojom::State',
@@ -524,8 +543,11 @@ _CONFIG = [
             'ui::IsContainerWithSelectableChildren',
             'ui::IsDialog',
             'ui::IsHeading',
+            'ui::IsLandmark',
             'ui::IsPlatformDocument',
             'ui::IsPresentational',
+            'ui::IsSelectRequiredOrImplicit',
+            'ui::IsStructure',
             'ui::IsTableLike',
             'ui::IsTableRow',
             'ui::IsTableHeader',
@@ -896,6 +918,22 @@ _CONFIG = [
         ],
     },
     {
+        'paths': [
+            'third_party/blink/renderer/core/loader/document_loader.cc',
+            'third_party/blink/renderer/core/loader/document_loader.h',
+            'third_party/blink/renderer/core/workers/worker_global_scope.cc',
+            'third_party/blink/renderer/core/workers/worker_global_scope.h',
+            'third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h',
+        ],
+        'allowed': [
+            # TODO(mythria): Allow use of non-blink mojo interface for now. Once
+            # we move the CodeCacheHost interface from per-frame to
+            # per-navigation update all uses to
+            # blink::mojom::blink::CodeCacheHost.
+            'blink::mojom::CodeCacheHost',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/xml'],
         'allowed': [
             'xpathyy::.+',
@@ -926,10 +964,13 @@ _CONFIG = [
         'allowed': [
             'base::MRUCache',
             'gl::GpuPreference',
+            'gpu::SHARED_IMAGE_USAGE_WEBGPU',
             'gpu::gles2::GLES2Interface',
             'gpu::raster::RasterInterface',
             'gpu::Mailbox',
             'gpu::MailboxHolder',
+            'gpu::SyncToken',
+            'gpu::webgpu::ReservedTexture',
             'display::Display',
             'media::IsOpaque',
             'media::kNoTransformation',
@@ -938,8 +979,18 @@ _CONFIG = [
             'media::VideoFrame',
             'viz::RasterContextProvider',
             'viz::ReleaseCallback',
-            'viz::TransferableResource',
+            'viz::ResourceFormat',
             'viz::ResourceFormatToClosestSkColorType',
+            'viz::TransferableResource',
+        ],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc',
+        ],
+        # This class needs access to a GPU driver bug workaround entry.
+        'allowed': [
+            'gpu::ENABLE_WEBGL_TIMER_QUERY_EXTENSIONS',
         ],
     },
     {
@@ -1042,6 +1093,7 @@ _CONFIG = [
             'gpu::MailboxHolder',
             'media::.+',
             'libyuv::.+',
+            'viz::SkColorTypeToResourceFormat',
         ]
     },
     {
@@ -1248,6 +1300,9 @@ _CONFIG = [
 
             # The liburlpattern API requires using std::vector.
             'std::vector',
+
+            # Internal namespace used by url_pattern module.
+            'url_pattern::.+',
         ],
     },
     {
@@ -1266,19 +1321,11 @@ _CONFIG = [
         'paths': [
             'third_party/blink/renderer/core/layout/layout_theme.cc',
             'third_party/blink/renderer/core/layout/layout_theme_mac.mm',
-            'third_party/blink/renderer/core/paint/object_painter_base.cc',
+            'third_party/blink/renderer/core/paint/outline_painter.cc',
             'third_party/blink/renderer/core/paint/theme_painter.cc',
             'third_party/blink/renderer/core/paint/theme_painter_default.cc',
         ],
         'allowed': ['ui::NativeTheme.*', 'ui::color_utils.*'],
-    },
-    {
-        'paths': [
-            'third_party/blink/renderer/core/css/counter_style.cc',
-            'third_party/blink/renderer/core/layout/',
-            'third_party/blink/renderer/core/paint/',
-        ],
-        'allowed': ['list_marker_text::.+'],
     },
     {
         'paths': [
@@ -1402,8 +1449,8 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/core/frame/local_frame.cc',
-            'third_party/blink/renderer/core/frame/local_frame.h'
+            'third_party/blink/renderer/core/frame/local_frame_mojo_handler.cc',
+            'third_party/blink/renderer/core/frame/local_frame_mojo_handler.h'
         ],
         'allowed': ['base::Value'],
     },
@@ -1432,7 +1479,13 @@ _CONFIG = [
             'third_party/blink/renderer/platform/graphics/document_transition_shared_element_id.h'
         ],
         'allowed': ['cc::DocumentTransitionSharedElementId'],
-    }
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/storage/',
+        ],
+        'allowed': ['blink::mojom::StorageKeyDataView'],
+    },
 ]
 
 
@@ -1601,11 +1654,11 @@ def main():
                     path,
                     [(i + 1, l) for i, l in enumerate(contents.splitlines())])
                 if disallowed_identifiers:
-                    print '%s uses disallowed identifiers:' % path
+                    print('%s uses disallowed identifiers:' % path)
                     for i in disallowed_identifiers:
                         print(i.line, i.identifier, i.advice)
         except IOError as e:
-            print 'could not open %s: %s' % (path, e)
+            print('could not open %s: %s' % (path, e))
 
 
 if __name__ == '__main__':

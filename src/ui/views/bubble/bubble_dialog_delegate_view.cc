@@ -129,13 +129,15 @@ Widget* CreateBubbleWidget(BubbleDialogDelegate* bubble) {
     bubble_params.shadow_type = Widget::InitParams::ShadowType::kNone;
   else
     bubble_params.shadow_type = Widget::InitParams::ShadowType::kDrop;
+  gfx::NativeView parent = nullptr;
   if (bubble->has_parent()) {
     if (bubble->parent_window()) {
-      bubble_params.parent = bubble->parent_window();
+      parent = bubble->parent_window();
     } else if (bubble->anchor_widget()) {
-      bubble_params.parent = bubble->anchor_widget()->GetNativeView();
+      parent = bubble->anchor_widget()->GetNativeView();
     }
   }
+  bubble_params.parent = parent;
   bubble_params.activatable = bubble->CanActivate()
                                   ? Widget::InitParams::Activatable::kYes
                                   : Widget::InitParams::Activatable::kNo;
@@ -146,8 +148,8 @@ Widget* CreateBubbleWidget(BubbleDialogDelegate* bubble) {
   // On Mac, having a parent window creates a permanent stacking order, so
   // there's no need to do this. Also, calling StackAbove() on Mac shows the
   // bubble implicitly, for which the bubble is currently not ready.
-  if (bubble->has_parent() && bubble_params.parent)
-    bubble_widget->StackAbove(bubble_params.parent);
+  if (bubble->has_parent() && parent)
+    bubble_widget->StackAbove(parent);
 #endif
   return bubble_widget;
 }
@@ -317,8 +319,15 @@ BubbleDialogDelegate::BubbleDialogDelegate(View* anchor_view,
                                            BubbleBorder::Arrow arrow,
                                            BubbleBorder::Shadow shadow)
     : arrow_(arrow), shadow_(shadow) {
-  SetAnchorView(anchor_view);
   SetOwnedByWidget(true);
+  SetAnchorView(anchor_view);
+  SetArrow(arrow);
+  SetShowCloseButton(false);
+
+  LayoutProvider* const layout_provider = LayoutProvider::Get();
+  set_margins(layout_provider->GetDialogInsetsForContentType(
+      DialogContentType::kText, DialogContentType::kText));
+  set_title_margins(layout_provider->GetInsetsMetric(INSETS_DIALOG_TITLE));
 }
 
 BubbleDialogDelegate::~BubbleDialogDelegate() {
@@ -361,7 +370,6 @@ Widget* BubbleDialogDelegate::CreateBubble(
 
 Widget* BubbleDialogDelegateView::CreateBubble(
     std::unique_ptr<BubbleDialogDelegateView> delegate) {
-  DCHECK(delegate->owned_by_client());
   return BubbleDialogDelegate::CreateBubble(std::move(delegate));
 }
 
@@ -376,16 +384,6 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
                                                    BubbleBorder::Arrow arrow,
                                                    BubbleBorder::Shadow shadow)
     : BubbleDialogDelegate(anchor_view, arrow, shadow) {
-  set_owned_by_client();
-  WidgetDelegate::SetShowCloseButton(false);
-
-  SetArrow(arrow);
-  LayoutProvider* provider = LayoutProvider::Get();
-  // An individual bubble should override these margins if its layout differs
-  // from the typical title/text/buttons.
-  set_margins(provider->GetDialogInsetsForContentType(
-      DialogContentType::kText, DialogContentType::kText));
-  set_title_margins(provider->GetInsetsMetric(INSETS_DIALOG_TITLE));
   UMA_HISTOGRAM_BOOLEAN("Dialog.BubbleDialogDelegateView.Create", true);
 }
 

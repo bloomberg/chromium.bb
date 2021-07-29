@@ -11,6 +11,7 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
+#include "remoting/base/running_samples.h"
 #include "remoting/codec/webrtc_video_encoder.h"
 #include "third_party/webrtc/api/video/video_codec_type.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
@@ -35,6 +36,8 @@ class WebrtcVideoEncoderWrapper : public webrtc::VideoEncoder {
       base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer);
   ~WebrtcVideoEncoderWrapper() override;
 
+  void SetEncoderForTest(std::unique_ptr<WebrtcVideoEncoder> encoder);
+
   // webrtc::VideoEncoder interface.
   int32_t InitEncode(const webrtc::VideoCodec* codec_settings,
                      const webrtc::VideoEncoder::Settings& settings) override;
@@ -49,6 +52,8 @@ class WebrtcVideoEncoderWrapper : public webrtc::VideoEncoder {
   webrtc::VideoEncoder::EncoderInfo GetEncoderInfo() const override;
 
  private:
+  static constexpr int kStatsWindow = 5;
+
   // Returns an encoded frame to WebRTC's registered callback.
   webrtc::EncodedImageCallback::Result ReturnEncodedFrame(
       const WebrtcVideoEncoder::EncodedFrame& frame);
@@ -57,9 +62,19 @@ class WebrtcVideoEncoderWrapper : public webrtc::VideoEncoder {
   void OnFrameEncoded(WebrtcVideoEncoder::EncodeResult encode_result,
                       std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> frame);
 
+  // Notifies WebRTC that this encoder has dropped a frame.
+  void NotifyFrameDropped();
+
   // Sets whether top-off is active, and fires a notification if the setting
   // changes.
   void SetTopOffActive(bool active);
+
+  // Returns whether the frame should be encoded at low quality, to reduce
+  // latency for large frame updates. This is only done here for VP8, as VP9
+  // automatically detects target-overshoot and re-encodes the frame at
+  // lower quality. This calculation is based on |frame|'s update-region
+  // (compared with recent history) and the current bandwidth-estimation.
+  bool ShouldDropQualityForLargeFrame(const webrtc::DesktopFrame& frame);
 
   std::unique_ptr<WebrtcVideoEncoder> encoder_
       GUARDED_BY_CONTEXT(sequence_checker_);
@@ -73,6 +88,10 @@ class WebrtcVideoEncoderWrapper : public webrtc::VideoEncoder {
   // passes to Encode().
   uint32_t rtp_timestamp_ GUARDED_BY_CONTEXT(sequence_checker_);
 
+  // FrameStats taken from the input VideoFrameAdapter, then added to the
+  // EncodedFrame when encoding is complete.
+  std::unique_ptr<WebrtcVideoEncoder::FrameStats> frame_stats_;
+
   // Bandwidth estimate from SetRates(), which is expected to be called before
   // Encode().
   int bitrate_kbps_ GUARDED_BY_CONTEXT(sequence_checker_) = 0;
@@ -81,6 +100,44 @@ class WebrtcVideoEncoderWrapper : public webrtc::VideoEncoder {
   bool top_off_active_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
 
   webrtc::VideoCodecType codec_type_ GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // True when a frame is being encoded. This guards against encoding multiple
+  // frames in parallel, which the encoders are not prepared to handle.
+  bool encode_pending_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
+
+  // Stores the expected id of the next incoming frame to be encoded. If this
+  // does not match, it means that WebRTC dropped a frame, and the original
+  // DesktopFrame's updated-region should not be passed to the encoder.
+  // Consecutive frames have incrementing IDs, wrapping around to 0 (which can
+  // happen many times during a connection - the unsigned type guarantees that
+  // the '++' operator will wrap to 0 after overflow).
+  uint16_t next_frame_id_ GUARDED_BY_CONTEXT(sequence_checker_) = 0;
+
+  // Keeps track of any update-rectangles from dropped frames. When WebRTC
+  // requests to encode a frame, this class will either:
+  // * Send it to be encoded - if any prior frames were dropped, this
+  //   accumulated update-rect will be added to the incoming frame, then it will
+  //   be reset to empty.
+  // * Drop the frame - the frame's update-rect will be stored and combined with
+  //   this accumulated update-rect.
+  // This tracking is similar to what WebRTC does whenever it drops frames
+  // internally.  WebRTC will also detect resolution-changes and set the
+  // frame's update-rect to the full area, so no special logic is needed here
+  // for changes in resolution (except to make sure that any frame's update-rect
+  // always lies within the frame's bounding rect).
+  webrtc::VideoFrame::UpdateRect accumulated_update_rect_
+      GUARDED_BY_CONTEXT(sequence_checker_){};
+
+  // Used by ShouldDropQualityForLargeFrame(). This stores the most recent
+  // update-region areas of previously-encoded frames, in order to detect an
+  // unusually-large update.
+  RunningSamples updated_region_area_ GUARDED_BY_CONTEXT(sequence_checker_){
+      kStatsWindow};
+
+  // Stores the time when the most recent frame was sent to the encoder. This is
+  // used to rate-limit the encoding and sending of empty frames.
+  base::TimeTicks latest_frame_encode_start_time_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   // TaskRunner used for notifying |video_channel_state_observer_|.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

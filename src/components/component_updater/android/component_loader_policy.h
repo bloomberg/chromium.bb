@@ -14,6 +14,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/containers/flat_map.h"
+#include "base/files/scoped_file.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "components/component_updater/android/component_loader_policy_forward.h"
@@ -24,6 +25,20 @@ class DictionaryValue;
 }  // namespace base
 
 namespace component_updater {
+
+// Errors that causes failure when loading a component. These values may be
+// persisted to logs. Entries should not be renumbered and numeric values
+// should never be reused. Should be kept synced with its Java counterpart in
+// ComponentLoaderPolicyBridge.
+enum class ComponentLoadError {
+  kFailedToConnectToComponentsProviderService = 0,
+  kRemoteException = 1,
+  kComponentsProviderServiceError = 2,
+  kMissingManifest = 3,
+  kMalformedManifest = 4,
+  kInvalidVersion = 5,
+  kMaxValue = kInvalidVersion,
+};
 
 // Components should use `AndroidComponentLoaderPolicy` by defining a class that
 // implements the members of `ComponentLoaderPolicy`, and then registering a
@@ -58,7 +73,7 @@ class ComponentLoaderPolicy {
   // `manifest` is the manifest for this version of the component.
   virtual void ComponentLoaded(
       const base::Version& version,
-      const base::flat_map<std::string, int>& fd_map,
+      base::flat_map<std::string, base::ScopedFD>& fd_map,
       std::unique_ptr<base::DictionaryValue> manifest) = 0;
 
   // Called if connection to the service fails, components files are not found
@@ -66,9 +81,7 @@ class ComponentLoaderPolicy {
   //
   // Will be called at most once. This is mutually exclusive with
   // ComponentLoaded; if this is called then ComponentLoaded won't be called.
-  //
-  // TODO(crbug.com/1180966) accept error code for different types of errors.
-  virtual void ComponentLoadFailed() = 0;
+  virtual void ComponentLoadFailed(ComponentLoadError error) = 0;
 
   // Returns the component's SHA2 hash as raw bytes, the hash value is used as
   // the unique id of the component and will be used to request components files
@@ -105,7 +118,7 @@ class AndroidComponentLoaderPolicy {
   void ComponentLoaded(JNIEnv* env,
                        const base::android::JavaRef<jobjectArray>& jfile_names,
                        const base::android::JavaRef<jintArray>& jfds);
-  void ComponentLoadFailed(JNIEnv* env);
+  void ComponentLoadFailed(JNIEnv* env, jint error_code);
   base::android::ScopedJavaLocalRef<jstring> GetComponentId(JNIEnv* env);
 
  private:
@@ -113,9 +126,8 @@ class AndroidComponentLoaderPolicy {
   // `org.chromium.components.component_updater.ComponentLoaderPolicy`.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
-  void NotifyNewVersion(const base::flat_map<std::string, int>& fd_map,
+  void NotifyNewVersion(base::flat_map<std::string, base::ScopedFD>& fd_map,
                         std::unique_ptr<base::DictionaryValue> manifest);
-  void CloseFdsAndFail(const base::flat_map<std::string, int>& fd_map);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

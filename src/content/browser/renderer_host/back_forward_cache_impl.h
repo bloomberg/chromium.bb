@@ -24,7 +24,10 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
+#include "net/cookies/canonical_cookie.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/page/page.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
@@ -50,6 +53,20 @@ constexpr base::Feature kRecordBackForwardCacheMetricsWithoutEnabling{
 constexpr base::Feature kBackForwardCacheNoTimeEviction{
     "BackForwardCacheNoTimeEviction", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allows pages with cache-control:no-store to enter the back/forward cache.
+// TODO(crbug.com/1228611): Enable this feature.
+const base::Feature kCacheControlNoStoreEnterBackForwardCache{
+    "CacheControlNoStoreEnterBackForwardCache",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Restore pages with cache-control:no-store from back/forward cache if there is
+// no cookie change while the page is in cache.
+// TODO(crbug.com/1228611): Enable this feature.
+const base::Feature
+    kCacheControlNoStoreRestoreFromBackForwardCacheUnlessCookieChange{
+        "CacheControlNoStoreRestoreFromBackForwardCache",
+        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // BackForwardCache:
 //
 // After the user navigates away from a document, the old one goes into the
@@ -69,6 +86,34 @@ class CONTENT_EXPORT BackForwardCacheImpl
   static MessageHandlingPolicyWhenCached
   GetChannelAssociatedMessageHandlingPolicy();
 
+  // For each BackForwardCacheImpl::Entry, |CookieMonitor| monitors cookie
+  // changes on the entry and records them. Owned by the entry.
+  class CookieMonitor : public ::network::mojom::CookieChangeListener {
+   public:
+    CookieMonitor(RenderFrameHostImpl* rfh);
+    ~CookieMonitor() override;
+    // Returns whether or not any cookie on the bfcache entry has been modified
+    // while the page is in bfcache.
+    bool CookieModified();
+    // Returns whether or not HTTPOnly cookie on the bfcache entry has been
+    // modified while the page is in bfcache.
+    bool HTTPOnlyCookieModified();
+
+   private:
+    // ::network::mojom::CookieChangeListener
+    void OnCookieChange(const net::CookieChangeInfo& change) override;
+
+    mojo::Receiver<::network::mojom::CookieChangeListener>
+        cookie_listener_receiver_{this};
+
+    // Indicates whether or not cookie on the bfcache entry has been modified
+    // while the entry is in bfcache.
+    bool cookie_modified_ = false;
+    // Indicates whether or not HTTPOnly cookie on the bfcache entry has been
+    // modified while the entry is in bfcache.
+    bool http_only_cookie_modified_ = false;
+  };
+
   struct CONTENT_EXPORT Entry {
     using RenderFrameProxyHostMap =
         std::unordered_map<int32_t /* SiteInstance ID */,
@@ -84,6 +129,9 @@ class CONTENT_EXPORT BackForwardCacheImpl
     // received the acknowledgement from renderer that it finished running
     // handlers.
     bool AllRenderViewHostsReceivedAckFromRenderer();
+
+    // Starts monitoring the cookie change in this entry.
+    void StartMonitoringCookieChange();
 
     // The main document being stored.
     std::unique_ptr<RenderFrameHostImpl> render_frame_host;
@@ -109,6 +157,9 @@ class CONTENT_EXPORT BackForwardCacheImpl
     // restoring a page from the back-forward cache.
     blink::mojom::PageRestoreParamsPtr page_restore_params;
 
+    // Only populated if we are monitoring cookies for this entry.
+    std::unique_ptr<CookieMonitor> cookie_monitor;
+
     DISALLOW_COPY_AND_ASSIGN(Entry);
   };
 
@@ -118,8 +169,6 @@ class CONTENT_EXPORT BackForwardCacheImpl
   enum class UnloadSupportStrategy {
     kAlways,
     kOptInHeaderRequired,
-    // TODO(crbug.com/1201653): Consider removing `kNo` to simplify code a bit.
-    kNo,
   };
 
   // Returns whether MediaSessionImpl::OnServiceCreated is allowed for the
@@ -215,7 +264,8 @@ class CONTENT_EXPORT BackForwardCacheImpl
   // Returns true if query does not contain any of the parameters in
   // "blocked_cgi_params" parameter of |feature::kBackForwardCache|. The
   // comparison is done by splitting the query string on "&" and looking for
-  // exact matches in the list (parameter name and value).
+  // exact matches in the list (parameter name and value). It does not consider
+  // URL escaping.
   bool IsQueryAllowed(const GURL& current_url);
 
   // This is a wrapper around the flag that indicates whether or not the
@@ -289,6 +339,18 @@ class CONTENT_EXPORT BackForwardCacheImpl
   void AddProcessesForEntry(Entry& entry);
   void RemoveProcessesForEntry(Entry& entry);
 
+  // Maybe evict the entry before restoring it. Evict if an entry had
+  // cache-control:no-store header.
+  void MaybeEvictDueToCacheControlNoStoreBeforeRestore(Entry* rfh);
+
+  // Returns true if the flag is on for pages with cache-control:no-store to
+  // get restored from back/forward cache unless cookies change.
+  bool AllowStoringPagesWithCacheControlNoStore();
+
+  // Returns true if the flag is on for pages with cache-control:no-store to
+  // temporarily enter back/forward cache.
+  bool AllowRestoringPagesWithCacheControlNoStore();
+
   // Contains the set of stored Entries.
   // Invariant:
   // - Ordered from the most recently used to the last recently used.
@@ -330,7 +392,7 @@ class CONTENT_EXPORT BackForwardCacheImpl
 
   // Data provided from the "blocked_cgi_params" feature param. If any of these
   // occur in the query of the URL then the page is not eligible for caching.
-  // See
+  // See |IsQueryAllowed|.
   const std::unordered_set<std::string> blocked_cgi_params_;
 
   const UnloadSupportStrategy unload_strategy_;
@@ -350,7 +412,7 @@ class CONTENT_EXPORT BackForwardCacheTestDelegate {
   virtual ~BackForwardCacheTestDelegate();
 
   virtual void OnDisabledForFrameWithReason(
-      GlobalFrameRoutingId id,
+      GlobalRenderFrameHostId id,
       BackForwardCache::DisabledReason reason) = 0;
 };
 

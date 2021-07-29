@@ -46,6 +46,9 @@ class TlsConnectionFactory {
 
     // Called when a non-recoverable error occurs.
     virtual void OnError(TlsConnectionFactory* factory, Error error) = 0;
+
+   protected:
+    virtual ~Client();
   };
 
   // The connection factory requires a client for yielding creation results

@@ -334,13 +334,13 @@ void AssignSecondaryOutputLocations(const gl::ProgramState &programState,
             if (outputVar.name == "gl_SecondaryFragColorEXT")
             {
                 AddLocationInfo(variableInfoMapOut, gl::ShaderType::Fragment,
-                                "angle_SecondaryFragColor", 0,
+                                "webgl_SecondaryFragColor", 0,
                                 ShaderInterfaceVariableInfo::kInvalid, 0, 0);
             }
             else if (outputVar.name == "gl_SecondaryFragDataEXT")
             {
                 AddLocationInfo(variableInfoMapOut, gl::ShaderType::Fragment,
-                                "angle_SecondaryFragData", 0, ShaderInterfaceVariableInfo::kInvalid,
+                                "webgl_SecondaryFragData", 0, ShaderInterfaceVariableInfo::kInvalid,
                                 0, 0);
             }
         }
@@ -1046,6 +1046,7 @@ class SpirvIDDiscoverer final : angle::NonCopyable
     spirv::IdRef vec4Id() const { return mVec4Id; }
     spirv::IdRef vec4OutTypePointerId() const { return mVec4OutTypePointerId; }
     spirv::IdRef intId() const { return mIntId; }
+    spirv::IdRef ivec4Id() const { return mIvec4Id; }
     spirv::IdRef uintId() const { return mUintId; }
     spirv::IdRef int0Id() const { return mInt0Id; }
     spirv::IdRef floatHalfId() const { return mFloatHalfId; }
@@ -1082,11 +1083,12 @@ class SpirvIDDiscoverer final : angle::NonCopyable
     // and swizzles.
     //
     // - mFloatId: id of OpTypeFloat 32
-    // - mVec4Id: id of OpTypeVector %mFloatID 4
-    // - mVec4OutTypePointerId: id of OpTypePointer Output %mVec4ID
+    // - mVec4Id: id of OpTypeVector %mFloatId 4
+    // - mVec4OutTypePointerId: id of OpTypePointer Output %mVec4Id
     // - mIntId: id of OpTypeInt 32 1
+    // - mIvecId: id of OpTypeVector %mIntId 4
     // - mUintId: id of OpTypeInt 32 0
-    // - mInt0Id: id of OpConstant %mIntID 0
+    // - mInt0Id: id of OpConstant %mIntId 0
     // - mFloatHalfId: id of OpConstant %mFloatId 0.5f
     // - mOutputPerVertexTypePointerId: id of OpTypePointer Output %mOutputPerVertex.typeId
     // - mOutputPerVertexId: id of OpVariable %mOutputPerVertexTypePointerId Output
@@ -1095,6 +1097,7 @@ class SpirvIDDiscoverer final : angle::NonCopyable
     spirv::IdRef mVec4Id;
     spirv::IdRef mVec4OutTypePointerId;
     spirv::IdRef mIntId;
+    spirv::IdRef mIvec4Id;
     spirv::IdRef mUintId;
     spirv::IdRef mInt0Id;
     spirv::IdRef mFloatHalfId;
@@ -1266,11 +1269,16 @@ void SpirvIDDiscoverer::visitTypeVector(spirv::IdResult id,
                                         spirv::IdRef componentId,
                                         spirv::LiteralInteger componentCount)
 {
-    // Only interested in OpTypeVector %mFloatId 4
+    // Only interested in OpTypeVector %mFloatId 4 and OpTypeVector %mIntId 4
     if (componentId == mFloatId && componentCount == 4)
     {
         ASSERT(!mVec4Id.valid());
         mVec4Id = id;
+    }
+    if (componentId == mIntId && componentCount == 4)
+    {
+        ASSERT(!mIvec4Id.valid());
+        mIvec4Id = id;
     }
 }
 
@@ -1350,6 +1358,12 @@ void SpirvIDDiscoverer::writePendingDeclarations(spirv::Blob *blobOut)
         spirv::WriteTypeInt(blobOut, mIntId, spirv::LiteralInteger(32), spirv::LiteralInteger(1));
     }
 
+    if (!mIvec4Id.valid())
+    {
+        mIvec4Id = SpirvTransformerBase::GetNewId(blobOut);
+        spirv::WriteTypeVector(blobOut, mIvec4Id, mIntId, spirv::LiteralInteger(4));
+    }
+
     ASSERT(!mInt0Id.valid());
     mInt0Id = SpirvTransformerBase::GetNewId(blobOut);
     spirv::WriteConstant(blobOut, mIntId, mInt0Id, spirv::LiteralContextDependentNumber(0));
@@ -1387,8 +1401,12 @@ TransformationState SpirvPerVertexTrimmer::transformMemberDecorate(const SpirvID
                                                                    spirv::LiteralInteger member,
                                                                    spv::Decoration decoration)
 {
-    // Transform only OpMemberDecorate %gl_PerVertex N BuiltIn B
-    if (!ids.isPerVertex(typeId) || decoration != spv::DecorationBuiltIn)
+    // Transform the following:
+    //
+    // - OpMemberDecorate %gl_PerVertex N BuiltIn B
+    // - OpMemberDecorate %gl_PerVertex N Invariant
+    if (!ids.isPerVertex(typeId) ||
+        (decoration != spv::DecorationBuiltIn && decoration != spv::DecorationInvariant))
     {
         return TransformationState::Unchanged;
     }
@@ -2149,6 +2167,13 @@ void SpirvTransformFeedbackCodeGenerator::writePendingDeclarations(
     spirv::WriteTypePointer(blobOut, mFloatUniformPointerId, spv::StorageClassUniform,
                             ids.floatId());
 
+    if (!mIVec4FuncPointerId.valid())
+    {
+        mIVec4FuncPointerId = SpirvTransformerBase::GetNewId(blobOut);
+        spirv::WriteTypePointer(blobOut, mIVec4FuncPointerId, spv::StorageClassFunction,
+                                ids.ivec4Id());
+    }
+
     mIntNIds.resize(4);
     mIntNIds[0] = ids.int0Id();
     for (int n = 1; n < 4; ++n)
@@ -2282,7 +2307,6 @@ void SpirvTransformFeedbackCodeGenerator::writeTransformFeedbackEmulationOutput(
     //
     // - For the initial offsets calculation:
     //
-    //     %getOffsetsParam = OpVariable %mIVec4FuncPointerId Function %stridesComposite
     //    %xfbOffsetsResult = OpFunctionCall %ivec4 %ANGLEGetXfbOffsets %stridesComposite
     //       %xfbOffsetsVar = OpVariable %mIVec4FuncPointerId Function
     //                        OpStore %xfbOffsetsVar %xfbOffsetsResult
@@ -2462,7 +2486,6 @@ void SpirvTransformFeedbackCodeGenerator::getVaryingTypeIds(const SpirvIDDiscove
 void SpirvTransformFeedbackCodeGenerator::writeGetOffsetsCall(spirv::IdRef xfbOffsets,
                                                               spirv::Blob *blobOut)
 {
-    const spirv::IdRef xfbGetOffsetsParam(SpirvTransformerBase::GetNewId(blobOut));
     const spirv::IdRef xfbOffsetsResult(SpirvTransformerBase::GetNewId(blobOut));
     const spirv::IdRef xfbOffsetsVar(SpirvTransformerBase::GetNewId(blobOut));
 
@@ -2470,17 +2493,13 @@ void SpirvTransformFeedbackCodeGenerator::writeGetOffsetsCall(spirv::IdRef xfbOf
     //
     //     ivec4 xfbOffsets = ANGLEGetXfbOffsets(ivec4(stride0, stride1, stride2, stride3));
 
-    // Create a variable to hold the parameter, initialized with the constant ivec4 containing the
-    // strides.
-    spirv::WriteVariable(blobOut, mIVec4FuncPointerId, xfbGetOffsetsParam,
-                         spv::StorageClassFunction, &mBufferStridesCompositeId);
     // Create a variable to hold the result.
     spirv::WriteVariable(blobOut, mIVec4FuncPointerId, xfbOffsetsVar, spv::StorageClassFunction,
                          nullptr);
     // Call a helper function generated by the translator to calculate the offsets for the current
     // vertex.
     spirv::WriteFunctionCall(blobOut, mIVec4Id, xfbOffsetsResult, mGetXfbOffsetsFuncId,
-                             {xfbGetOffsetsParam});
+                             {mBufferStridesCompositeId});
     // Store the results.
     spirv::WriteStore(blobOut, xfbOffsetsVar, xfbOffsetsResult, nullptr);
     // Load from the variable for use in expressions.
@@ -2543,7 +2562,7 @@ void SpirvTransformFeedbackCodeGenerator::addExecutionMode(spirv::IdRef entryPoi
 
     if (mHasTransformFeedbackOutput)
     {
-        spirv::WriteExecutionMode(blobOut, entryPointId, spv::ExecutionModeXfb);
+        spirv::WriteExecutionMode(blobOut, entryPointId, spv::ExecutionModeXfb, {});
     }
 }
 
@@ -3596,7 +3615,7 @@ TransformationState SpirvTransformer::transformExecutionMode(const uint32_t *ins
 {
     spirv::IdRef entryPoint;
     spv::ExecutionMode mode;
-    spirv::ParseExecutionMode(instruction, &entryPoint, &mode);
+    spirv::ParseExecutionMode(instruction, &entryPoint, &mode, nullptr);
 
     if (mode == spv::ExecutionModeEarlyFragmentTests &&
         mOptions.removeEarlyFragmentTestsOptimization)
@@ -4906,6 +4925,8 @@ angle::Result GlslangTransformSpirvCode(const GlslangSpirvOptions &options,
             spirvBlobOut);
         aliasingTransformer.transform();
     }
+
+    spirvBlobOut->shrink_to_fit();
 
     ASSERT(spirv::Validate(*spirvBlobOut));
 

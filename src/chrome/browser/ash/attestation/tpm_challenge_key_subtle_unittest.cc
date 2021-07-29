@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_manager_impl.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/mock_key_permissions_manager.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/user_private_token_kpm_service_factory.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
+#include "chrome/browser/platform_keys/platform_keys.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -607,7 +607,7 @@ TEST_P(DeviceKeysAccessTpmChallengeKeySubtleTest, DeviceKeyRegisteredSuccess) {
       *system_token_key_permissions_manager_,
       AllowKeyForUsage(/*callback=*/_, platform_keys::KeyUsage::kCorporate,
                        GetPublicKey()))
-      .WillOnce(RunOnceCallback<0>(platform_keys::Status::kSuccess));
+      .WillOnce(RunOnceCallback<0>(chromeos::platform_keys::Status::kSuccess));
 
   RunThreeStepsAndExpect(key_type, /*will_register_key=*/true, key_name,
                          TpmChallengeKeyResult::MakeSuccess());
@@ -651,11 +651,11 @@ TEST_F(AffiliatedUserTpmChallengeKeySubtleTest, UserKeyRegisteredSuccess) {
   AttestationClient::Get()->GetTestInterface()->AllowlistRegisterKey(
       kTestUserEmail, key_name);
 
-  EXPECT_CALL(
-      *user_private_token_key_permissions_manager_,
-      AllowKeyForUsage(/*callback=*/_, platform_keys::KeyUsage::kCorporate,
-                       GetPublicKey()))
-      .WillOnce(RunOnceCallback<0>(platform_keys::Status::kSuccess));
+  EXPECT_CALL(*user_private_token_key_permissions_manager_,
+              AllowKeyForUsage(/*callback=*/_,
+                               chromeos::platform_keys::KeyUsage::kCorporate,
+                               GetPublicKey()))
+      .WillOnce(RunOnceCallback<0>(chromeos::platform_keys::Status::kSuccess));
 
   RunThreeStepsAndExpect(key_type, /*will_register_key=*/true, key_name,
                          TpmChallengeKeyResult::MakeSuccess());
@@ -714,7 +714,7 @@ TEST_F(AffiliatedUserTpmChallengeKeySubtleTest, RestorePreparedKeyState) {
       *user_private_token_key_permissions_manager_,
       AllowKeyForUsage(/*callback=*/_, platform_keys::KeyUsage::kCorporate,
                        GetPublicKey()))
-      .WillOnce(RunOnceCallback<0>(platform_keys::Status::kSuccess));
+      .WillOnce(RunOnceCallback<0>(chromeos::platform_keys::Status::kSuccess));
 
   {
     CallbackObserver callback_observer;

@@ -13,7 +13,6 @@ TODO: Since there are no errors here, these should be "robustness" operation tes
 valid results).
 `;
 
-import { params, poptions, pbool } from '../../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
 import { ValidationTest } from '../../validation_test.js';
 
@@ -137,11 +136,12 @@ g.test('out_of_bounds')
     - max uint32 firstIndex and small indexCount
     Together with normal and large instanceCount`
   )
-  .cases(pbool('indirect'))
-  .subcases(
-    () =>
-      params()
-        .combine([
+  .params(
+    u =>
+      u
+        .combine('indirect', [false, true])
+        .beginSubcases()
+        .combineWithParams([
           { indexCount: 6, firstIndex: 1 }, // indexCount + firstIndex out of bound
           { indexCount: 0, firstIndex: 6 }, // indexCount is 0 but firstIndex out of bound
           { indexCount: 6, firstIndex: 6 }, // only firstIndex out of bound
@@ -152,7 +152,7 @@ g.test('out_of_bounds')
           { indexCount: 0xffffffff, firstIndex: 2 }, // max uint32 indexCount and small firstIndex
           { indexCount: 2, firstIndex: 0xffffffff }, // small indexCount and max uint32 firstIndex
         ] as const)
-        .combine(poptions('instanceCount', [1, 10000])) // normal and large instanceCount
+        .combine('instanceCount', [1, 10000]) // normal and large instanceCount
   )
   .fn(t => {
     const { indirect, indexCount, firstIndex, instanceCount } = t.params;
@@ -180,17 +180,17 @@ g.test('out_of_bounds_zero_sized_index_buffer')
     - both are 0s (not out of bound) but index buffer size is 0
     Together with normal and large instanceCount`
   )
-  .cases(pbool('indirect'))
-  .subcases(
-    () =>
-      params()
-        .combine([
+  .params(
+    u =>
+      u
+        .combine('indirect', [false, true])
+        .combineWithParams([
           { indexCount: 3, firstIndex: 1 }, // indexCount + firstIndex out of bound
           { indexCount: 0, firstIndex: 1 }, // indexCount is 0 but firstIndex out of bound
           { indexCount: 3, firstIndex: 0 }, // only indexCount out of bound
           { indexCount: 0, firstIndex: 0 }, // just zeros
         ] as const)
-        .combine(poptions('instanceCount', [1, 10000])) // normal and large instanceCount
+        .combine('instanceCount', [1, 10000]) // normal and large instanceCount
   )
   .fn(t => {
     const { indirect, indexCount, firstIndex, instanceCount } = t.params;

@@ -45,12 +45,12 @@
 #include "chrome/browser/ash/login/ui/signin_ui.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_local_account.h"
+#include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
+#include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
@@ -72,14 +72,14 @@
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/arc_util.h"
 #include "components/arc/enterprise/arc_data_snapshotd_manager.h"
+#include "components/arc/test/arc_util_test_support.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
-#include "components/policy/core/common/cloud/policy_builder.h"
+#include "components/policy/core/common/cloud/test/policy_builder.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -103,6 +103,7 @@ using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
+using ::testing::Mock;
 using ::testing::Return;
 using ::testing::ReturnNull;
 using ::testing::WithArg;
@@ -260,7 +261,9 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
 
     // `existing_user_controller_` has data members that are CrosSettings
     // observers. They need to be destructed before CrosSettings.
+    Mock::VerifyAndClear(mock_login_display_host_.get());
     existing_user_controller_.reset();
+    mock_login_display_host_.reset();
 
     // Test case may be configured with the real user manager but empty user
     // list initially. So network OOBE screen is initialized.
@@ -274,7 +277,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
   void ExpectLoginFailure() {
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(1);
     EXPECT_CALL(*mock_signin_ui_,
-                ShowSigninError(SigninError::kOwnerKeyLost, std::string(), 1))
+                ShowSigninError(SigninError::kOwnerKeyLost, std::string()))
         .Times(1);
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
   }
@@ -782,6 +785,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   EXPECT_EQ(public_session_account_id_, auto_login_account_id());
   EXPECT_EQ(0, auto_login_delay());
   EXPECT_FALSE(auto_login_timer());
+  auto& reset_autologin_callback =
+      arc_data_snapshotd_manager()->get_reset_autologin_callback_for_testing();
+  EXPECT_FALSE(reset_autologin_callback.is_null());
 
   // Allow to launch public account session (MGS).
   arc_data_snapshotd_manager()->set_state_for_testing(
@@ -794,7 +800,8 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
                            public_session_account_id_);
   user_context.SetUserIDHash(user_context.GetAccountId().GetUserEmail());
   ExpectSuccessfulLogin(user_context);
-  existing_user_controller()->OnSigninScreenReady();
+
+  std::move(reset_autologin_callback).Run();
 
   // Start auto-login and wait for login tasks to complete.
   content::RunAllPendingInMessageLoop();
@@ -947,7 +954,7 @@ class ExistingUserControllerActiveDirectoryTest
     EXPECT_CALL(
         *mock_signin_ui_,
         ShowSigninError(SigninError::kGoogleAccountNotAllowed,
-                        "Google accounts are not allowed on this device", 1))
+                        "Google accounts are not allowed on this device"))
         .Times(1);
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
   }
@@ -1331,7 +1338,7 @@ class ExistingUserControllerProfileTest : public LoginManagerTest {
   }
 
   void Login(const LoginManagerMixin::TestUserInfo& test_user) {
-    chromeos::WizardController::SkipPostLoginScreensForTesting();
+    WizardController::SkipPostLoginScreensForTesting();
 
     auto context = LoginManagerMixin::CreateDefaultUserContext(test_user);
     login_manager_mixin_.LoginAndWaitForActiveSession(context);
@@ -1349,7 +1356,6 @@ class ExistingUserControllerProfileTest : public LoginManagerTest {
       AccountId::FromUserEmailGaiaId(kManagedUser, kManagedGaiaID)};
   UserPolicyMixin user_policy_mixin_{&mixin_host_, managed_user_.account_id};
   LoginManagerMixin login_manager_mixin_{&mixin_host_};
-  ScreenLockerTester screen_locker_tester_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerProfileTest,
@@ -1366,9 +1372,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerProfileTest,
   EXPECT_EQ(manager, kManager);
 
   // Set the lock screen so that the managed warning can be queried.
-  screen_locker_tester_.Lock();
+  ScreenLockerTester().Lock();
 
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsManagedMessageInDialogShown(
       managed_user_.account_id));
 
   // Verify that the lock screen text uses the prefs value for its construction.
@@ -1390,9 +1396,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerProfileTest, ManagedUserDomain) {
   EXPECT_EQ(manager, kManagedDomain);
 
   // Set the lock screen so that the managed warning can be queried.
-  screen_locker_tester_.Lock();
+  ScreenLockerTester().Lock();
 
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsManagedMessageInDialogShown(
       managed_user_.account_id));
 
   // Verify that the lock screen text uses the prefs value for its construction.
@@ -1411,10 +1417,10 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerProfileTest, NotManagedUserLogin) {
   EXPECT_FALSE(user_manager::known_user::GetAccountManager(
       not_managed_user_.account_id, &manager));
 
-  screen_locker_tester_.Lock();
+  ScreenLockerTester().Lock();
 
   // Verify that no managed warning is shown for an unmanaged user.
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedMessageInDialogShown(
       not_managed_user_.account_id));
 }
 

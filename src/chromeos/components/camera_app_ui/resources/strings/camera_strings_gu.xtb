@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">પ્રિન્ટ</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> અનપ્લગ કરેલું છે.</translation>
 <translation id="1473110567575736769">3 સેકન્ડનું ટાઇમર</translation>
+<translation id="1478594628797167447">સ્કૅનર</translation>
+<translation id="1545749641540134597">QR કોડ સ્કેન કરો</translation>
 <translation id="1620510694547887537">કૅમેરો</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">કંઈ રેકોર્ડ થયું નથી</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">પોર્ટ્રેટ</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> સક્રિય</translation>
 <translation id="2144806332417375165">કસ્ટમ વીડિયો પેરામીટર</translation>
+<translation id="2175927920773552910">QR કોડ</translation>
+<translation id="2268107369530950373">સ્કૅનર મોડ પર સ્વિચ કરો</translation>
 <translation id="229579744168541441">ડિસ્કમાં નિકાસ કરો</translation>
 <translation id="2320741269052147773">ડાબે બાજુએ ફેરવો</translation>
 <translation id="2501278716633472235">પાછા જાઓ</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">માઇક્રોફોન</translation>
 <translation id="3240426699337459095">લિંક કૉપિ કરી</translation>
 <translation id="3259149966178251584">કૅમેરાનું રિઝોલ્યુશન</translation>
+<translation id="3448774564454087943">વીડિયો ખૂબ જ ટૂંકો હોવાથી તે સાચવવામાં આવ્યો નથી</translation>
 <translation id="3517926952904427380">પોર્ટ્રેટ ફોટો લઈ શકાતો નથી</translation>
 <translation id="3569311554794739032">શું તમે ખરેખર <ph name="FILE" />ને કાઢી નાખવા માગો છો?</translation>
 <translation id="3733597664308256288">કૅમેરાના વધારાના નિયંત્રણો ઉપલબ્ધ છે. ઍક્સેસ કરવા માટે, શોધ + જમણી ઍરો કી પર ક્લિક કરો.</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">ફોટો</translation>
 <translation id="4649291346448517080">ફાઇલ સાચવવામાં નિષ્ફળ રહ્યાં</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">મલ્ટિ-સ્ટ્રીમ સુવિધા વડે વીડિયો રેકોર્ડિંગ કરવું</translation>
 <translation id="5057360777601936059">તમારો કૅમેરા હાલમાં ઉપલબ્ધ નથી.
 કૃપા કરીને તપાસો કે કૅમેરા યોગ્ય રીતે કનેક્ટ થયેલો છે.</translation>
 <translation id="5152121255775685072">ગૅલેરી પર જાઓ</translation>
+<translation id="5268823927180092501">બધા કૅમેરામાં 'દસ્તાવેજ મોડ' ચાલુ કરો</translation>
 <translation id="5422455049771430511">હવે તમારા ફોટા અને વીડિયો માટે નવું સ્થાન ઉપલબ્ધ છે</translation>
 <translation id="5671277269877808209">ચોરસ</translation>
+<translation id="5753488212459587150">નિષ્ણાત મોડ ચાલુ કરો</translation>
 <translation id="5775960006311140197">નિષ્ણાત મોડ</translation>
 <translation id="5869546221129391014">ગ્રિડ</translation>
 <translation id="5975083100439434680">ઝૂમ ઘટાડો</translation>

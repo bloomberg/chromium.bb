@@ -14,6 +14,7 @@
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ambient/ui/ambient_view_ids.h"
 #include "ash/public/cpp/metrics_util.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
@@ -92,9 +93,11 @@ void PhotoView::UpdateImage(const PhotoWithDetails& next_image) {
     return;
 
   image_views_.at(image_index_)
-      ->UpdateImage(next_image.photo, next_image.related_photo);
+      ->UpdateImage(next_image.photo, next_image.related_photo,
+                    next_image.is_portrait, next_image.topic_type);
   image_views_.at(image_index_)
-      ->UpdateImageDetails(base::UTF8ToUTF16(next_image.details));
+      ->UpdateImageDetails(base::UTF8ToUTF16(next_image.details),
+                           base::UTF8ToUTF16(next_image.related_details));
   image_index_ = 1 - image_index_;
 }
 

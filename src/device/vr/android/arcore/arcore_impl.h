@@ -8,48 +8,21 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "base/util/type_safety/id_type.h"
+#include "base/types/id_type.h"
 #include "device/vr/android/arcore/arcore.h"
 #include "device/vr/android/arcore/arcore_anchor_manager.h"
 #include "device/vr/android/arcore/arcore_plane_manager.h"
 #include "device/vr/android/arcore/arcore_sdk.h"
 #include "device/vr/android/arcore/scoped_arcore_objects.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/util/hit_test_subscription_data.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
 class ArCorePlaneManager;
 
-using AnchorId = util::IdTypeU64<class AnchorTag>;
-using HitTestSubscriptionId = util::IdTypeU64<class HitTestSubscriptionTag>;
-
-struct HitTestSubscriptionData {
-  mojom::XRNativeOriginInformationPtr native_origin_information;
-  const std::vector<mojom::EntityTypeForHitTest> entity_types;
-  mojom::XRRayPtr ray;
-
-  HitTestSubscriptionData(
-      mojom::XRNativeOriginInformationPtr native_origin_information,
-      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
-      mojom::XRRayPtr ray);
-  HitTestSubscriptionData(HitTestSubscriptionData&& other);
-  ~HitTestSubscriptionData();
-};
-
-struct TransientInputHitTestSubscriptionData {
-  const std::string profile_name;
-  const std::vector<mojom::EntityTypeForHitTest> entity_types;
-  mojom::XRRayPtr ray;
-
-  TransientInputHitTestSubscriptionData(
-      const std::string& profile_name,
-      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
-      mojom::XRRayPtr ray);
-  TransientInputHitTestSubscriptionData(
-      TransientInputHitTestSubscriptionData&& other);
-  ~TransientInputHitTestSubscriptionData();
-};
+using AnchorId = base::IdTypeU64<class AnchorTag>;
 
 class CreateAnchorRequest {
  public:

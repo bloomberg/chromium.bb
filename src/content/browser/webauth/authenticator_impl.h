@@ -8,11 +8,10 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/frame_service_base.h"
+#include "content/public/browser/document_service_base.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
@@ -42,7 +41,7 @@ class RenderFrameHost;
 
 // Implementation of the public Authenticator interface.
 class CONTENT_EXPORT AuthenticatorImpl
-    : public FrameServiceBase<blink::mojom::Authenticator> {
+    : public DocumentServiceBase<blink::mojom::Authenticator> {
  public:
   static void Create(
       RenderFrameHost* render_frame_host,

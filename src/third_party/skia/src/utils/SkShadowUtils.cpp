@@ -26,13 +26,14 @@
 #include "src/core/SkPathPriv.h"
 #include "src/core/SkRasterPipeline.h"
 #include "src/core/SkResourceCache.h"
+#include "src/core/SkRuntimeEffectPriv.h"
 #include "src/core/SkTLazy.h"
 #include "src/core/SkVM.h"
 #include "src/core/SkVerticesPriv.h"
 #include "src/utils/SkShadowTessellator.h"
 #include <new>
 #if SK_SUPPORT_GPU
-#include "src/gpu/effects/generated/GrBlurredEdgeFragmentProcessor.h"
+#include "src/gpu/effects/GrSkSLFP.h"
 #include "src/gpu/geometry/GrStyledShape.h"
 #endif
 
@@ -58,7 +59,7 @@ protected:
         return true;
     }
 
-    skvm::Color onProgram(skvm::Builder* p, skvm::Color c, SkColorSpace* dstCS, skvm::Uniforms*,
+    skvm::Color onProgram(skvm::Builder* p, skvm::Color c, const SkColorInfo& dst, skvm::Uniforms*,
                           SkArenaAlloc*) const override {
         // x = 1 - x;
         // exp(-x * x * 4) - 0.018f;
@@ -87,7 +88,16 @@ sk_sp<SkFlattenable> SkGaussianColorFilter::CreateProc(SkReadBuffer&) {
 GrFPResult SkGaussianColorFilter::asFragmentProcessor(std::unique_ptr<GrFragmentProcessor> inputFP,
                                                       GrRecordingContext*,
                                                       const GrColorInfo&) const {
-    return GrFPSuccess(GrBlurredEdgeFragmentProcessor::Make(std::move(inputFP)));
+    static auto effect = SkMakeRuntimeEffect(SkRuntimeEffect::MakeForColorFilter, R"(
+        half4 main(half4 inColor) {
+            half factor = 1 - inColor.a;
+            factor = exp(-factor * factor * 4) - 0.018;
+            return half4(factor);
+        }
+    )");
+    SkASSERT(SkRuntimeEffectPriv::SupportsConstantOutputForConstantInput(effect));
+    return GrFPSuccess(
+            GrSkSLFP::Make(effect, "gaussian_fp", std::move(inputFP), GrSkSLFP::OptFlags::kNone));
 }
 #endif
 

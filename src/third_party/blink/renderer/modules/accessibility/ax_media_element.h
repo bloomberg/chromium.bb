@@ -22,7 +22,7 @@ class AccessibilityMediaElement : public AXLayoutObject {
 
   // AXLayoutObject overrides.
   String TextAlternative(bool recursive,
-                         bool in_aria_labelled_by_traversal,
+                         const AXObject* aria_label_or_description_root,
                          AXObjectSet& visited,
                          ax::mojom::NameFrom&,
                          AXRelatedObjectVector*,
@@ -34,8 +34,6 @@ class AccessibilityMediaElement : public AXLayoutObject {
   AXRestriction Restriction() const override;
 
  protected:
-  bool HasControls() const;
-  bool HasEmptySource() const;
   bool IsUnplayable() const;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityMediaElement);

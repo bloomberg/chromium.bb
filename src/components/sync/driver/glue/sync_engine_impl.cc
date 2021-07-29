@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -26,6 +27,7 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/active_devices_provider.h"
 #include "components/sync/driver/glue/sync_engine_backend.h"
+#include "components/sync/driver/glue/sync_transport_data_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/engine_components_factory.h"
@@ -419,8 +421,6 @@ void SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop(
 }
 
 void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
-    ModelTypeSet initial_types,
-    const WeakHandle<JsBackend> js_backend,
     const WeakHandle<DataTypeDebugInfoListener> debug_info_listener,
     std::unique_ptr<ModelTypeConnector> model_type_connector,
     const std::string& birthday,
@@ -465,14 +465,13 @@ void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
     UpdateLastSyncedTime();
   }
 
-  host_->OnEngineInitialized(initial_types, js_backend, debug_info_listener,
-                             /*success=*/true, is_first_time_sync_configure);
+  host_->OnEngineInitialized(debug_info_listener, /*success=*/true,
+                             is_first_time_sync_configure);
 }
 
 void SyncEngineImpl::HandleInitializationFailureOnFrontendLoop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  host_->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
-                             WeakHandle<DataTypeDebugInfoListener>(),
+  host_->OnEngineInitialized(WeakHandle<DataTypeDebugInfoListener>(),
                              /*success=*/false,
                              /*is_first_time_sync_configure=*/false);
 }
@@ -635,15 +634,13 @@ void SyncEngineImpl::OnActiveDevicesChanged() {
   if (!base::FeatureList::IsEnabled(switches::kSyncE2ELatencyMeasurement)) {
     // End-to-end latency measurement relies on reflection, so if this is
     // enabled, don't filter out the local device.
-    local_cache_guid = cached_status_.sync_id;
+    local_cache_guid = cached_status_.cache_guid;
   }
   sync_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SyncEngineBackend::DoOnActiveDevicesChanged, backend_,
-                     active_devices_provider_->CountActiveDevicesIfAvailable(),
-                     active_devices_provider_
-                         ->CollectFCMRegistrationTokensForInvalidations(
-                             local_cache_guid)));
+                     active_devices_provider_->CalculateInvalidationInfo(
+                         local_cache_guid)));
 }
 
 void SyncEngineImpl::UpdateLastSyncedTime() {

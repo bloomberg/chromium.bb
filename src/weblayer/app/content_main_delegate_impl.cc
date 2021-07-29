@@ -8,6 +8,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/cpu.h"
 #include "base/files/file_util.h"
@@ -19,10 +20,12 @@
 #include "build/chromeos_buildflags.h"
 #include "components/content_capture/common/content_capture_features.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/variations/variations_ids_provider.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "device/base/features.h"
 #include "media/base/media_switches.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
@@ -161,19 +164,26 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   // This also turns off Push messaging.
   cl->AppendSwitch(::switches::kDisableNotifications);
 
-  std::vector<base::Feature> enabled_features = {};
+  std::vector<base::Feature> enabled_features = {
+#if defined(OS_ANDROID)
+    // Overlay promotion requires some guarantees we don't have on WebLayer
+    // (e.g. ensuring fullscreen, no movement of the parent view). Given that
+    // we're unsure about the benefits when used embedded in a parent app, we
+    // will only promote to overlays if needed for secure videos.
+    media::kUseAndroidOverlayForSecureOnly,
+#endif
+  };
+
   std::vector<base::Feature> disabled_features = {
     // TODO(crbug.com/1177948): enable WebAR.
     ::features::kWebXr,
     ::features::kWebXrArModule,
-    ::features::kWebXrHitTest,
+    device::features::kWebXrHitTest,
     // TODO(crbug.com/1091212): make Notification triggers work with
     // WebLayer.
     ::features::kNotificationTriggers,
     // TODO(crbug.com/1091211): Support PeriodicBackgroundSync on WebLayer.
     ::features::kPeriodicBackgroundSync,
-    // TODO(crbug.com/1131017): Support SurfaceViews on WebLayer.
-    media::kOverlayFullscreenVideo,
     // TODO(crbug.com/1174856): Support Portals.
     blink::features::kPortals,
     // TODO(crbug.com/1174566): Enable by default after experiment.
@@ -237,6 +247,14 @@ bool ContentMainDelegateImpl::ShouldCreateFeatureList() {
   // TODO(weblayer-dev): Support feature lists on desktop.
   return true;
 #endif
+}
+
+variations::VariationsIdsProvider*
+ContentMainDelegateImpl::CreateVariationsIdsProvider() {
+  // As the embedder supplies the set of ids, the signed-in state does not make
+  // sense and is ignored.
+  return variations::VariationsIdsProvider::Create(
+      variations::VariationsIdsProvider::Mode::kIgnoreSignedInState);
 }
 
 void ContentMainDelegateImpl::PreSandboxStartup() {
@@ -379,7 +397,7 @@ void ContentMainDelegateImpl::InitializeResourceBundle() {
         .LoadSecondaryLocaleDataWithPakFileRegion(base::File(pak_fd),
                                                   pak_region);
 
-    std::vector<std::pair<int, ui::ScaleFactor>> extra_paks = {
+    std::vector<std::pair<int, ui::ResourceScaleFactor>> extra_paks = {
         {kWebLayerMainPakDescriptor, ui::SCALE_FACTOR_NONE},
         {kWebLayer100PercentPakDescriptor, ui::SCALE_FACTOR_100P}};
 

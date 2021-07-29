@@ -52,19 +52,14 @@
 
 namespace google_breakpad {
 
-using dwarf2reader::DwarfAttribute;
-using dwarf2reader::DwarfForm;
-using dwarf2reader::DwarfLanguage;
-using dwarf2reader::DwarfTag;
-
 // Populate a google_breakpad::Module with DWARF debugging information.
 //
 // An instance of this class can be provided as a handler to a
-// dwarf2reader::DIEDispatcher, which can in turn be a handler for a
-// dwarf2reader::CompilationUnit DWARF parser. The handler uses the results
+// DIEDispatcher, which can in turn be a handler for a
+// CompilationUnit DWARF parser. The handler uses the results
 // of parsing to populate a google_breakpad::Module with source file,
 // function, and source line information.
-class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
+class DwarfCUToModule: public RootDIEHandler {
   struct FilePrivate;
  public:
   // Information global to the DWARF-bearing file we are processing,
@@ -91,7 +86,7 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
     // Clear the section map for testing.
     void ClearSectionMapForTest();
 
-    const dwarf2reader::SectionMap& section_map() const;
+    const SectionMap& section_map() const;
 
    private:
     friend class DwarfCUToModule;
@@ -110,7 +105,7 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
 
     // A map of this file's sections, used for finding other DWARF
     // sections that the .debug_info section may refer to.
-    dwarf2reader::SectionMap section_map_;
+    SectionMap section_map_;
 
     // The Module to which we're contributing definitions.
     Module* module_;
@@ -132,14 +127,14 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
     // Called when finishing a function to populate the function's ranges.
     // The entries are read according to the form and data.
     virtual bool ReadRanges(
-        enum dwarf2reader::DwarfForm form, uint64_t data,
-        dwarf2reader::RangeListReader::CURangesInfo* cu_info,
+        enum DwarfForm form, uint64_t data,
+        RangeListReader::CURangesInfo* cu_info,
         vector<Module::Range>* ranges) = 0;
   };
 
   // An abstract base class for handlers that handle DWARF line data
   // for DwarfCUToModule. DwarfCUToModule could certainly just use
-  // dwarf2reader::LineInfo itself directly, but decoupling things
+  // LineInfo itself directly, but decoupling things
   // this way makes unit testing a little easier.
   class LineToModuleHandler {
    public:
@@ -255,7 +250,7 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
 
   // Create a DWARF debugging info handler for a compilation unit
   // within FILE_CONTEXT. This uses information received from the
-  // dwarf2reader::CompilationUnit DWARF parser to populate
+  // CompilationUnit DWARF parser to populate
   // FILE_CONTEXT->module. Use LINE_READER to handle the compilation
   // unit's line number data. Use REPORTER to report problems with the
   // data we find.

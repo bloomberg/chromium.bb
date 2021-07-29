@@ -127,7 +127,7 @@ private:
     void onPrePrepare(GrRecordingContext*,
                       const GrSurfaceProxyView& writeView,
                       GrAppliedClip*,
-                      const GrXferProcessor::DstProxyView&,
+                      const GrDstProxyView&,
                       GrXferBarrierFlags renderPassXferBarriers,
                       GrLoadOp colorLoadOp) override {}
 
@@ -242,7 +242,7 @@ DEF_GPUTEST(OpChainTest, reporter, /*ctxInfo*/) {
                                   GrTextureResolveManager(dContext->priv().drawingManager()),
                                   *caps);
                 }
-                opsTask.makeClosed(*caps);
+                opsTask.makeClosed(dContext.get());
                 opsTask.prepare(&flushState);
                 opsTask.execute(&flushState);
                 opsTask.endFlush(drawingMgr);

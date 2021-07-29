@@ -7,6 +7,7 @@
 
 #include "base/dcheck_is_on.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
@@ -365,7 +366,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
                  scoped_refptr<const NGPhysicalFragment> physical_fragment,
                  NGLineBoxFragmentBuilder*);
 
-  // See https://mathml-refresh.github.io/mathml-core/#box-model
+  // See https://w3c.github.io/mathml-core/#box-model
   struct MathData {
     LayoutUnit italic_correction_;
   };

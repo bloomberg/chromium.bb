@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {getCaller, pending, repeatUntil, RootPath} from '../test_util.js';
+import {testcase} from '../testcase.js';
+
+import {remoteCall, setupAndWaitUntilReady} from './background.js';
+import {FILE_MANAGER_EXTENSIONS_ID} from './test_data.js';
 
 /**
  * Fake task.
@@ -10,16 +14,17 @@
 class FakeTask {
   /**
    * @param {boolean} isDefault Whether the task is default or not.
-   * @param {string} taskId Task ID.
+   * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} descriptor Task
+   *     descriptor.
    * @param {string=} opt_title Title of the task.
    * @param {boolean=} opt_isGenericFileHandler Whether the task is a generic
    *     file handler.
    */
-  constructor(isDefault, taskId, opt_title, opt_isGenericFileHandler) {
+  constructor(isDefault, descriptor, opt_title, opt_isGenericFileHandler) {
     this.driveApp = false;
     this.iconUrl = 'chrome://theme/IDR_DEFAULT_FAVICON';  // Dummy icon
     this.isDefault = isDefault;
-    this.taskId = taskId;
+    this.descriptor = descriptor;
     this.title = opt_title;
     this.isGenericFileHandler = opt_isGenericFileHandler || false;
     Object.freeze(this);
@@ -32,9 +37,15 @@ class FakeTask {
  * @type {Array<FakeTask>}
  * @const
  */
-const DOWNLOADS_FAKE_TASKS = [
-  new FakeTask(true, 'dummytaskid|open-with', 'DummyTask1'),
-  new FakeTask(false, 'dummytaskid-2|open-with', 'DummyTask2')
+export const DOWNLOADS_FAKE_TASKS = [
+  new FakeTask(
+      true,
+      {appId: 'dummytaskid', taskType: 'fake-type', actionId: 'open-with'},
+      'DummyTask1'),
+  new FakeTask(
+      false,
+      {appId: 'dummytaskid-2', taskType: 'fake-type', actionId: 'open-with'},
+      'DummyTask2')
 ];
 
 /**
@@ -44,7 +55,11 @@ const DOWNLOADS_FAKE_TASKS = [
  * @const
  */
 const DOWNLOADS_FAKE_TEXT = [
-  new FakeTask(true, FILE_MANAGER_EXTENSIONS_ID + '|file|view-in-browser'),
+  new FakeTask(true, {
+    appId: FILE_MANAGER_EXTENSIONS_ID,
+    taskType: 'file',
+    actionId: 'view-in-browser'
+  }),
 ];
 
 /**
@@ -54,7 +69,11 @@ const DOWNLOADS_FAKE_TEXT = [
  * @const
  */
 const DOWNLOADS_FAKE_PDF = [
-  new FakeTask(true, FILE_MANAGER_EXTENSIONS_ID + '|file|view-as-pdf'),
+  new FakeTask(true, {
+    appId: FILE_MANAGER_EXTENSIONS_ID,
+    taskType: 'file',
+    actionId: 'view-as-pdf'
+  }),
 ];
 
 /**
@@ -64,8 +83,12 @@ const DOWNLOADS_FAKE_PDF = [
  * @const
  */
 const DRIVE_FAKE_TASKS = [
-  new FakeTask(true, 'dummytaskid|drive|open-with', 'DummyTask1'),
-  new FakeTask(false, 'dummytaskid-2|drive|open-with', 'DummyTask2')
+  new FakeTask(
+      true, {appId: 'dummytaskid', taskType: 'drive', actionId: 'open-with'},
+      'DummyTask1'),
+  new FakeTask(
+      false, {appId: 'dummytaskid-2', taskType: 'drive', actionId: 'open-with'},
+      'DummyTask2')
 ];
 
 /**
@@ -187,7 +210,7 @@ testcase.executeDefaultTaskDrive = async () => {
 
 testcase.executeDefaultTaskDownloads = async () => {
   const appId = await setupTaskTest(RootPath.DOWNLOADS, DOWNLOADS_FAKE_TASKS);
-  await executeDefaultTask(appId, 'dummytaskid|open-with');
+  await executeDefaultTask(appId, 'dummytaskid|fake-type|open-with');
 };
 
 testcase.defaultTaskForTextPlain = async () => {
@@ -209,7 +232,7 @@ testcase.defaultTaskDialogDrive = async () => {
 
 testcase.defaultTaskDialogDownloads = async () => {
   const appId = await setupTaskTest(RootPath.DOWNLOADS, DOWNLOADS_FAKE_TASKS);
-  await defaultTaskDialog(appId, 'dummytaskid-2|open-with');
+  await defaultTaskDialog(appId, 'dummytaskid-2|fake-type|open-with');
 };
 
 
@@ -218,13 +241,34 @@ testcase.defaultTaskDialogDownloads = async () => {
  */
 testcase.changeDefaultDialogScrollList = async () => {
   const tasks = [
-    new FakeTask(true, 'dummytaskid|open-with', 'DummyTask1'),
-    new FakeTask(false, 'dummytaskid-2|open-with', 'DummyTask2'),
-    new FakeTask(false, 'dummytaskid-3|open-with', 'DummyTask3'),
-    new FakeTask(false, 'dummytaskid-3|open-with', 'DummyTask4'),
-    new FakeTask(false, 'dummytaskid-3|open-with', 'DummyTask5'),
-    new FakeTask(false, 'dummytaskid-3|open-with', 'DummyTask6'),
-    new FakeTask(false, 'dummytaskid-3|open-with', 'DummyTask7'),
+    new FakeTask(
+        true,
+        {appId: 'dummytaskid', taskType: 'fake-type', actionId: 'open-with'},
+        'DummyTask1'),
+    new FakeTask(
+        false,
+        {appId: 'dummytaskid-2', taskType: 'fake-type', actionId: 'open-with'},
+        'DummyTask2'),
+    new FakeTask(
+        false,
+        {appId: 'dummytaskid-3', taskType: 'fake-type', actionId: 'open-with'},
+        'DummyTask3'),
+    new FakeTask(
+        false,
+        {appId: 'dummytaskid-3', taskType: 'fake-type', actionId: 'open-with'},
+        'DummyTask4'),
+    new FakeTask(
+        false,
+        {appId: 'dummytaskid-3', taskType: 'fake-type', actionId: 'open-with'},
+        'DummyTask5'),
+    new FakeTask(
+        false,
+        {appId: 'dummytaskid-3', taskType: 'fake-type', actionId: 'open-with'},
+        'DummyTask6'),
+    new FakeTask(
+        false,
+        {appId: 'dummytaskid-3', taskType: 'fake-type', actionId: 'open-with'},
+        'DummyTask7'),
   ];
 
   // Override tasks for the test.
@@ -258,8 +302,9 @@ testcase.changeDefaultDialogScrollList = async () => {
 
 testcase.genericTaskIsNotExecuted = async () => {
   const tasks = [new FakeTask(
-      false, 'dummytaskid|open-with', 'DummyTask1',
-      true /* isGenericFileHandler */)];
+      false,
+      {appId: 'dummytaskid', taskType: 'fake-type', actionId: 'open-with'},
+      'DummyTask1', true /* isGenericFileHandler */)];
 
   // When default task is not set, executeDefaultInternal_ in file_tasks.js
   // tries to show it in a browser tab. By checking the view-in-browser task is
@@ -274,22 +319,28 @@ testcase.genericTaskIsNotExecuted = async () => {
 testcase.genericTaskAndNonGenericTask = async () => {
   const tasks = [
     new FakeTask(
-        false, 'dummytaskid|open-with', 'DummyTask1',
-        true /* isGenericFileHandler */),
+        false,
+        {appId: 'dummytaskid', taskType: 'fake-type', actionId: 'open-with'},
+        'DummyTask1', true /* isGenericFileHandler */),
     new FakeTask(
-        false, 'dummytaskid-2|open-with', 'DummyTask2',
-        false /* isGenericFileHandler */),
+        false,
+        {appId: 'dummytaskid-2', taskType: 'fake-type', actionId: 'open-with'},
+        'DummyTask2', false /* isGenericFileHandler */),
     new FakeTask(
-        false, 'dummytaskid-3|open-with', 'DummyTask3',
-        true /* isGenericFileHandler */)
+        false,
+        {appId: 'dummytaskid-3', taskType: 'fake-type', actionId: 'open-with'},
+        'DummyTask3', true /* isGenericFileHandler */)
   ];
 
   const appId = await setupTaskTest(RootPath.DOWNLOADS, tasks);
-  await executeDefaultTask(appId, 'dummytaskid-2|open-with');
+  await executeDefaultTask(appId, 'dummytaskid-2|fake-type|open-with');
 };
 
 testcase.noActionBarOpenForDirectories = async () => {
-  const tasks = [new FakeTask(true, 'dummytaskid|open-with', 'DummyTask1')];
+  const tasks = [new FakeTask(
+      true,
+      {appId: 'dummytaskid', taskType: 'fake-type', actionId: 'open-with'},
+      'DummyTask1')];
 
   // Override tasks for the test.
   const appId = await setupTaskTest(RootPath.DOWNLOADS, tasks);

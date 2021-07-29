@@ -203,6 +203,24 @@
   "core/host/ResourceLoader.ts | unknownError": {
     "message": "未知错误"
   },
+  "core/i18n/i18nImpl.ts | fdays": {
+    "message": "{PH1} 天"
+  },
+  "core/i18n/i18nImpl.ts | fhrs": {
+    "message": "{PH1} 小时"
+  },
+  "core/i18n/i18nImpl.ts | fmin": {
+    "message": "{PH1} 分钟"
+  },
+  "core/i18n/i18nImpl.ts | fmms": {
+    "message": "{PH1} 微秒"
+  },
+  "core/i18n/i18nImpl.ts | fms": {
+    "message": "{PH1} ms"
+  },
+  "core/i18n/i18nImpl.ts | fs": {
+    "message": "{PH1} 秒"
+  },
   "core/sdk/CPUProfileDataModel.ts | devtoolsCpuProfileParserIsFixing": {
     "message": "DevTools：CPU 性能分析报告解析器正在修复 {PH1} 个缺少的样本。"
   },
@@ -4124,9 +4142,6 @@
   "panels/elements/components/ElementsBreadcrumbsUtils.ts | text": {
     "message": "（文本）"
   },
-  "panels/elements/components/LayoutPane.ts | feedback": {
-    "message": "反馈"
-  },
   "panels/elements/components/LayoutPane.ts | flexbox": {
     "message": "Flexbox"
   },
@@ -4440,13 +4455,13 @@
     "message": "宽度"
   },
   "panels/emulation/EmulatedDevices.ts | laptopWithHiDPIScreen": {
-    "message": "配有 HiDPI 屏幕的笔记本电脑"
+    "message": "Laptop with HiDPI screen"
   },
   "panels/emulation/EmulatedDevices.ts | laptopWithMDPIScreen": {
-    "message": "配有 MDPI 屏幕的笔记本电脑"
+    "message": "Laptop with MDPI screen"
   },
   "panels/emulation/EmulatedDevices.ts | laptopWithTouch": {
-    "message": "触控笔记本电脑"
+    "message": "Laptop with touch"
   },
   "panels/emulation/LocationsSettingsTab.ts | addLocation": {
     "message": "添加位置…"
@@ -4507,15 +4522,6 @@
   },
   "panels/emulation/MediaQueryInspector.ts | revealInSourceCode": {
     "message": "在源代码中显示"
-  },
-  "panels/emulation/ModuleUIStrings.ts | laptopWithHiDPI": {
-    "message": "配有 HiDPI 屏幕的笔记本电脑"
-  },
-  "panels/emulation/ModuleUIStrings.ts | laptopWithMDPI": {
-    "message": "配有 MDPI 屏幕的笔记本电脑"
-  },
-  "panels/emulation/ModuleUIStrings.ts | laptopWithTouch": {
-    "message": "触控笔记本电脑"
   },
   "panels/emulation/SensorsView.ts | adjustWithMousewheelOrUpdownKeys": {
     "message": "使用鼠标滚轮或向上/向下键进行调整。{PH1}：±10、Shift：±1、Alt：±0.01"
@@ -4828,6 +4834,9 @@
   },
   "panels/issues/AffectedElementsView.ts | nElements": {
     "message": "{n,plural, =1{# 个元素}other{# 个元素}}"
+  },
+  "panels/issues/AffectedElementsView.ts | unavailable": {
+    "message": "unavailable"
   },
   "panels/issues/AffectedElementsWithLowContrastView.ts | contrastRatio": {
     "message": "对比度"
@@ -6053,11 +6062,23 @@
   "panels/network/NetworkDataGridNode.ts | servedFromSignedHttpExchange": {
     "message": "通过 Signed HTTP Exchange 提供，资源大小：{PH1}"
   },
+  "panels/network/NetworkDataGridNode.ts | servedFromWebBundle": {
+    "message": "Served from Web Bundle, resource size: {PH1}"
+  },
   "panels/network/NetworkDataGridNode.ts | serviceworker": {
     "message": "(ServiceWorker)"
   },
   "panels/network/NetworkDataGridNode.ts | signedexchange": {
     "message": "signed-exchange"
+  },
+  "panels/network/NetworkDataGridNode.ts | webBundle": {
+    "message": "(Web Bundle)"
+  },
+  "panels/network/NetworkDataGridNode.ts | webBundleError": {
+    "message": "Web Bundle error"
+  },
+  "panels/network/NetworkDataGridNode.ts | webBundleInnerRequest": {
+    "message": "from Web Bundle"
   },
   "panels/network/NetworkItemView.ts | cookies": {
     "message": "Cookie"
@@ -7733,6 +7754,12 @@
   "panels/protocol_monitor/protocol_monitor-meta.ts | showProtocolMonitor": {
     "message": "显示协议监视器"
   },
+  "panels/recorder/recorder-meta.ts | recorder": {
+    "message": "Recorder"
+  },
+  "panels/recorder/recorder-meta.ts | showRecorder": {
+    "message": "Recorder"
+  },
   "panels/screencast/ScreencastApp.ts | toggleScreencast": {
     "message": "开启/关闭抓屏功能"
   },
@@ -7865,14 +7892,8 @@
   "panels/security/SecurityPanel.ts | contentWithCertificateErrors": {
     "message": "具有证书错误的内容"
   },
-  "panels/security/SecurityPanel.ts | dataWasEnteredInAFieldOnA": {
-    "message": "在非安全网页上的字段中输入了数据，系统已向网址栏添加警告。"
-  },
   "panels/security/SecurityPanel.ts | flaggedByGoogleSafeBrowsing": {
     "message": "已被 Google 安全浏览标记"
-  },
-  "panels/security/SecurityPanel.ts | formFieldEditedOnANonsecurePage": {
-    "message": "在非安全网页中修改了表单字段"
   },
   "panels/security/SecurityPanel.ts | hashAlgorithm": {
     "message": "哈希算法"
@@ -9662,6 +9683,12 @@
   "panels/timeline/TimelineUIUtils.ts | cumulativeScore": {
     "message": "累积分数"
   },
+  "panels/timeline/TimelineUIUtils.ts | currentClusterId": {
+    "message": "Current Cluster ID"
+  },
+  "panels/timeline/TimelineUIUtils.ts | currentClusterScore": {
+    "message": "Current Cluster Score"
+  },
   "panels/timeline/TimelineUIUtils.ts | decodedBody": {
     "message": "经过解码的正文"
   },
@@ -9730,6 +9757,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | event": {
     "message": "事件"
+  },
+  "panels/timeline/TimelineUIUtils.ts | evolvedClsLink": {
+    "message": "evolved"
   },
   "panels/timeline/TimelineUIUtils.ts | experience": {
     "message": "体验"
@@ -10085,8 +10115,8 @@
   "panels/timeline/TimelineUIUtils.ts | sBytes": {
     "message": "{n,plural, =1{# 个字节}other{# 个字节}}"
   },
-  "panels/timeline/TimelineUIUtils.ts | sCanResultInPoorUserExperiences": {
-    "message": "{PH1} 可能会导致用户体验不佳。"
+  "panels/timeline/TimelineUIUtils.ts | sCLSInformation": {
+    "message": "{PH1} can result in poor user experiences. It has recently {PH2}."
   },
   "panels/timeline/TimelineUIUtils.ts | sChildren": {
     "message": "{PH1}（子级）"
@@ -10694,6 +10724,9 @@
   "ui/legacy/InspectorView.ts | closeDrawer": {
     "message": "关闭抽屉栏"
   },
+  "ui/legacy/InspectorView.ts | devToolsLanguageMissmatch": {
+    "message": "DevTools is now available in {PH1}!"
+  },
   "ui/legacy/InspectorView.ts | moreTools": {
     "message": "更多工具"
   },
@@ -10708,6 +10741,12 @@
   },
   "ui/legacy/InspectorView.ts | reloadDevtools": {
     "message": "重新加载 DevTools"
+  },
+  "ui/legacy/InspectorView.ts | setToBrowserLanguage": {
+    "message": "Always match Chrome's language"
+  },
+  "ui/legacy/InspectorView.ts | setToSpecificLanguage": {
+    "message": "Switch DevTools to {PH1}"
   },
   "ui/legacy/ListWidget.ts | addString": {
     "message": "添加"
@@ -10837,24 +10876,6 @@
   },
   "ui/legacy/UIUtils.ts | copyLinkAddress": {
     "message": "复制链接地址"
-  },
-  "ui/legacy/UIUtils.ts | fdays": {
-    "message": "{PH1} 天"
-  },
-  "ui/legacy/UIUtils.ts | fhrs": {
-    "message": "{PH1} 小时"
-  },
-  "ui/legacy/UIUtils.ts | fmin": {
-    "message": "{PH1} 分钟"
-  },
-  "ui/legacy/UIUtils.ts | fmms": {
-    "message": "{PH1} 微秒"
-  },
-  "ui/legacy/UIUtils.ts | fms": {
-    "message": "{PH1} 毫秒"
-  },
-  "ui/legacy/UIUtils.ts | fs": {
-    "message": "{PH1} 秒"
   },
   "ui/legacy/UIUtils.ts | ok": {
     "message": "确定"

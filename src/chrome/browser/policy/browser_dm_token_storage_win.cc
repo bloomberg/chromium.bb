@@ -134,7 +134,6 @@ bool StoreDMTokenInRegistry(const std::string& token) {
 
 std::string BrowserDMTokenStorageWin::InitClientId() {
   // For the client id, use the Windows machine GUID.
-  // TODO(crbug.com/821977): Need a backup plan if machine GUID doesn't exist.
   base::win::RegKey key;
   LSTATUS status =
       key.Open(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography",
@@ -179,7 +178,7 @@ std::string BrowserDMTokenStorageWin::InitDMToken() {
       continue;
 
     DWORD dtype = REG_NONE;
-    DWORD size = DWORD{raw_value.size()};
+    DWORD size = static_cast<DWORD>(raw_value.size());
     auto result = key.ReadValue(dm_token_value_name.c_str(), raw_value.data(),
                                 &size, &dtype);
     if (result == ERROR_MORE_DATA && size <= installer::kMaxDMTokenLength) {

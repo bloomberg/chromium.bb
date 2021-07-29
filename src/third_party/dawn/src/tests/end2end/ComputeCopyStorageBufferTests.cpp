@@ -32,8 +32,8 @@ void ComputeCopyStorageBufferTests::BasicTest(const char* shader) {
     auto module = utils::CreateShaderModule(device, shader);
 
     wgpu::ComputePipelineDescriptor csDesc;
-    csDesc.computeStage.module = module;
-    csDesc.computeStage.entryPoint = "main";
+    csDesc.compute.module = module;
+    csDesc.compute.entryPoint = "main";
 
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&csDesc);
 
@@ -88,18 +88,14 @@ void ComputeCopyStorageBufferTests::BasicTest(const char* shader) {
 // Test that a trivial compute-shader memcpy implementation works.
 TEST_P(ComputeCopyStorageBufferTests, SizedArrayOfBasic) {
     BasicTest(R"(
-        [[block]] struct Buf1 {
-            s : array<vec4<u32>, 4>;
-        };
-        [[block]] struct Buf2 {
+        [[block]] struct Buf {
             s : array<vec4<u32>, 4>;
         };
 
-        // TODO(crbug.com/tint/386): Use the same struct type
-        [[set(0), binding(0)]] var<storage> src : [[access(read_write)]] Buf1;
-        [[set(0), binding(1)]] var<storage> dst : [[access(read_write)]] Buf2;
+        [[group(0), binding(0)]] var<storage, read_write> src : Buf;
+        [[group(0), binding(1)]] var<storage, read_write> dst : Buf;
 
-        [[stage(compute)]]
+        [[stage(compute), workgroup_size(1)]]
         fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
             let index : u32 = GlobalInvocationID.x;
             if (index >= 4u) { return; }
@@ -115,18 +111,14 @@ TEST_P(ComputeCopyStorageBufferTests, SizedArrayOfStruct) {
             b : vec2<u32>;
         };
 
-        [[block]] struct Buf1 {
-            s : array<S, 4>;
-        };
-        [[block]] struct Buf2 {
+        [[block]] struct Buf {
             s : array<S, 4>;
         };
 
-        // TODO(crbug.com/tint/386): Use the same struct type
-        [[set(0), binding(0)]] var<storage> src : [[access(read_write)]] Buf1;
-        [[set(0), binding(1)]] var<storage> dst : [[access(read_write)]] Buf2;
+        [[group(0), binding(0)]] var<storage, read_write> src : Buf;
+        [[group(0), binding(1)]] var<storage, read_write> dst : Buf;
 
-        [[stage(compute)]]
+        [[stage(compute), workgroup_size(1)]]
         fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
             let index : u32 = GlobalInvocationID.x;
             if (index >= 4u) { return; }
@@ -137,18 +129,14 @@ TEST_P(ComputeCopyStorageBufferTests, SizedArrayOfStruct) {
 // Test that a trivial compute-shader memcpy implementation works.
 TEST_P(ComputeCopyStorageBufferTests, UnsizedArrayOfBasic) {
     BasicTest(R"(
-        [[block]] struct Buf1 {
-            s : array<vec4<u32>>;
-        };
-        [[block]] struct Buf2 {
+        [[block]] struct Buf {
             s : array<vec4<u32>>;
         };
 
-        // TODO(crbug.com/tint/386): Use the same struct type
-        [[set(0), binding(0)]] var<storage> src : [[access(read_write)]] Buf1;
-        [[set(0), binding(1)]] var<storage> dst : [[access(read_write)]] Buf2;
+        [[group(0), binding(0)]] var<storage, read_write> src : Buf;
+        [[group(0), binding(1)]] var<storage, read_write> dst : Buf;
 
-        [[stage(compute)]]
+        [[stage(compute), workgroup_size(1)]]
         fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
             let index : u32 = GlobalInvocationID.x;
             if (index >= 4u) { return; }

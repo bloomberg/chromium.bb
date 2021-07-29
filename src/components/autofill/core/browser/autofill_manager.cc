@@ -46,8 +46,7 @@ AutofillField* FindAutofillFillField(const FormStructure& form,
   return nullptr;
 }
 
-// Returns true if |live_form| does not match |cached_form|, assuming that
-// |live_form|'s language is |live_form_language|.
+// Returns true if |live_form| does not match |cached_form|.
 bool CachedFormNeedsUpdate(const FormData& live_form,
                            const FormStructure& cached_form) {
   if (live_form.fields.size() != cached_form.field_count())
@@ -290,10 +289,7 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
-  gfx::RectF transformed_box =
-      driver_->TransformBoundingBoxToViewportCoordinates(bounding_box);
-
-  OnTextFieldDidChangeImpl(form, field, transformed_box, timestamp);
+  OnTextFieldDidChangeImpl(form, field, bounding_box, timestamp);
 }
 
 void AutofillManager::OnTextFieldDidScroll(const FormData& form,
@@ -302,10 +298,7 @@ void AutofillManager::OnTextFieldDidScroll(const FormData& form,
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
-  gfx::RectF transformed_box =
-      driver_->TransformBoundingBoxToViewportCoordinates(bounding_box);
-
-  OnTextFieldDidScrollImpl(form, field, transformed_box);
+  OnTextFieldDidScrollImpl(form, field, bounding_box);
 }
 
 void AutofillManager::OnSelectControlDidChange(const FormData& form,
@@ -314,10 +307,7 @@ void AutofillManager::OnSelectControlDidChange(const FormData& form,
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
-  gfx::RectF transformed_box =
-      driver_->TransformBoundingBoxToViewportCoordinates(bounding_box);
-
-  OnSelectControlDidChangeImpl(form, field, transformed_box);
+  OnSelectControlDidChangeImpl(form, field, bounding_box);
 }
 
 void AutofillManager::OnQueryFormFieldAutofill(
@@ -329,10 +319,7 @@ void AutofillManager::OnQueryFormFieldAutofill(
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
-  gfx::RectF transformed_box =
-      driver_->TransformBoundingBoxToViewportCoordinates(bounding_box);
-
-  OnQueryFormFieldAutofillImpl(query_id, form, field, transformed_box,
+  OnQueryFormFieldAutofillImpl(query_id, form, field, bounding_box,
                                autoselect_first_suggestion);
 }
 
@@ -342,17 +329,7 @@ void AutofillManager::OnFocusOnFormField(const FormData& form,
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
-  gfx::RectF transformed_box =
-      driver_->TransformBoundingBoxToViewportCoordinates(bounding_box);
-
-  OnFocusOnFormFieldImpl(form, field, transformed_box);
-}
-
-void AutofillManager::SendFormDataToRenderer(
-    int query_id,
-    AutofillDriver::RendererFormDataAction action,
-    const FormData& data) {
-  driver_->SendFormDataToRenderer(query_id, action, data);
+  OnFocusOnFormFieldImpl(form, field, bounding_box);
 }
 
 // Returns true if |live_form| does not match |cached_form|.
@@ -506,9 +483,9 @@ void AutofillManager::OnLoadedServerPredictions(
     return;
 
   // Parse and store the server predictions.
-  FormStructure::ParseApiQueryResponse(std::move(response), queried_forms,
-                                       queried_form_signatures,
-                                       form_interactions_ukm_logger());
+  FormStructure::ParseApiQueryResponse(
+      std::move(response), queried_forms, queried_form_signatures,
+      form_interactions_ukm_logger(), log_manager_);
 
   // Will log quality metrics for each FormStructure based on the presence of
   // autocomplete attributes, if available.

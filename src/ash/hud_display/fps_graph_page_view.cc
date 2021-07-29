@@ -11,6 +11,7 @@
 #include "ash/hud_display/grid.h"
 #include "ash/hud_display/hud_constants.h"
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window_tree_host.h"
@@ -83,14 +84,21 @@ FPSGraphPageView::FPSGraphPageView(const base::TimeDelta refresh_interval)
         u"second.",
         formatter_float}});
   CreateLegend(legend);
-  AddObserver(this);
 }
 
-FPSGraphPageView::~FPSGraphPageView() {
-  RemoveObserver(this);
-}
+FPSGraphPageView::~FPSGraphPageView() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void FPSGraphPageView::AddedToWidget() {
+  GraphPageViewBase::AddedToWidget();
+  GetWidget()->AddObserver(this);
+}
+
+void FPSGraphPageView::RemovedFromWidget() {
+  GetWidget()->RemoveObserver(this);
+  GraphPageViewBase::RemovedFromWidget();
+}
 
 void FPSGraphPageView::OnPaint(gfx::Canvas* canvas) {
   // TODO: Should probably update last graph point more often than shift graph.
@@ -144,7 +152,8 @@ void FPSGraphPageView::UpdateData(const DataSource::Snapshot& snapshot) {
   RefreshLegendValues();
 }
 
-void FPSGraphPageView::OnViewRemovedFromWidget(View* observed_view) {
+void FPSGraphPageView::OnWidgetDestroying(views::Widget* widget) {
+  DCHECK_EQ(widget, GetWidget());
   // Remove observe for destruction.
   GetWidget()->GetNativeWindow()->RemoveObserver(this);
   GetWidget()->GetCompositor()->RemoveObserver(this);

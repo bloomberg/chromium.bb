@@ -291,6 +291,8 @@
       "/path/to/tmp/json",
       "-service-account-json",
       "fake-credentials.json",
+      "-verification-timeout",
+      "10m",
       "-ref",
       "fake-ref-1",
       "-ref",

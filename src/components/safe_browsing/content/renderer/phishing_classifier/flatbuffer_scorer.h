@@ -28,9 +28,9 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/strings/string_piece.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/scorer.h"
-#include "components/safe_browsing/core/fbs/client_model_generated.h"
-#include "components/safe_browsing/core/proto/client_model.pb.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/fbs/client_model_generated.h"
+#include "components/safe_browsing/core/common/proto/client_model.pb.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace safe_browsing {

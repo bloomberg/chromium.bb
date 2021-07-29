@@ -50,7 +50,7 @@ namespace google_breakpad {
 // instances from parsed DWARF line number data.  
 //
 // An instance of this class can be provided as a handler to a
-// dwarf2reader::LineInfo DWARF line number information parser. The
+// LineInfo DWARF line number information parser. The
 // handler accepts source location information from the parser and
 // uses it to produce a vector of google_breakpad::Module::Line
 // objects, referring to google_breakpad::Module::File objects added
@@ -111,7 +111,7 @@ namespace google_breakpad {
 //   at address zero.)
 //
 // - If a line starts immediately after an omitted line, omit it too.
-class DwarfLineToModule: public dwarf2reader::LineInfoHandler {
+class DwarfLineToModule: public LineInfoHandler {
  public:
   // As the DWARF line info parser passes us line records, add source
   // files to MODULE, and add all lines to the end of LINES. LINES

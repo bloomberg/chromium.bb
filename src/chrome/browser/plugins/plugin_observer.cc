@@ -46,6 +46,10 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_types.h"
+#endif
+
 using content::PluginService;
 
 // PluginObserver -------------------------------------------------------------
@@ -77,7 +81,9 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
 
 PluginObserver::PluginObserver(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      plugin_host_receivers_(web_contents, this) {}
+      plugin_host_receivers_(web_contents,
+                             this,
+                             content::WebContentsFrameReceiverSetPassKey()) {}
 
 PluginObserver::~PluginObserver() {
 }
@@ -199,7 +205,7 @@ void PluginObserver::OpenPDF(const GURL& url) {
   }
 
   content::Referrer referrer = content::Referrer::SanitizeForRequest(
-      url, content::Referrer(web_contents()->GetURL(),
+      url, content::Referrer(web_contents()->GetLastCommittedURL(),
                              network::mojom::ReferrerPolicy::kDefault));
 
 #if BUILDFLAG(ENABLE_PLUGINS)

@@ -47,11 +47,11 @@ class ViewsMenuBar : public CefMenuButtonDelegate, public CefMenuModelDelegate {
   // Returns the CefPanel that represents the menu bar.
   CefRefPtr<CefPanel> GetMenuPanel();
 
-  // Create a new menu with the specified |label|. If |menu_id| is non-NULL it
-  // will be populated with the new menu ID.
+  // Create a new menu with the specified |label|. If |menu_id| is non-nullptr
+  // it will be populated with the new menu ID.
   CefRefPtr<CefMenuModel> CreateMenuModel(const CefString& label, int* menu_id);
 
-  // Returns the menu with the specified |menu_id|, or NULL if no such menu
+  // Returns the menu with the specified |menu_id|, or nullptr if no such menu
   // exists.
   CefRefPtr<CefMenuModel> GetMenuModel(int menu_id) const;
 
@@ -70,25 +70,25 @@ class ViewsMenuBar : public CefMenuButtonDelegate, public CefMenuModelDelegate {
 
  protected:
   // CefButtonDelegate methods:
-  void OnButtonPressed(CefRefPtr<CefButton> button) OVERRIDE {}
+  void OnButtonPressed(CefRefPtr<CefButton> button) override {}
 
   // CefMenuButtonDelegate methods:
   void OnMenuButtonPressed(
       CefRefPtr<CefMenuButton> menu_button,
       const CefPoint& screen_point,
-      CefRefPtr<CefMenuButtonPressedLock> button_pressed_lock) OVERRIDE;
+      CefRefPtr<CefMenuButtonPressedLock> button_pressed_lock) override;
 
   // CefMenuModelDelegate methods:
   void ExecuteCommand(CefRefPtr<CefMenuModel> menu_model,
                       int command_id,
-                      cef_event_flags_t event_flags) OVERRIDE;
+                      cef_event_flags_t event_flags) override;
   void MouseOutsideMenu(CefRefPtr<CefMenuModel> menu_model,
-                        const CefPoint& screen_point) OVERRIDE;
+                        const CefPoint& screen_point) override;
   void UnhandledOpenSubmenu(CefRefPtr<CefMenuModel> menu_model,
-                            bool is_rtl) OVERRIDE;
+                            bool is_rtl) override;
   void UnhandledCloseSubmenu(CefRefPtr<CefMenuModel> menu_model,
-                             bool is_rtl) OVERRIDE;
-  void MenuClosed(CefRefPtr<CefMenuModel> menu_model) OVERRIDE;
+                             bool is_rtl) override;
+  void MenuClosed(CefRefPtr<CefMenuModel> menu_model) override;
 
  private:
   // Creates the menu panel if it doesn't already exist.

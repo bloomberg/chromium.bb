@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -56,13 +56,14 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/keyboard/ui/grit/keyboard_resources.h"
 #include "base/system/sys_info.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/switches.h"
 #include "storage/browser/file_system/file_system_context.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
 #endif
@@ -377,23 +378,19 @@ void ComponentLoader::AddFileManagerExtension() {
 }
 
 void ComponentLoader::AddVideoPlayerExtension() {
-  Add(IDR_VIDEO_PLAYER_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("video_player")));
+  // TODO(b/186168810): Delete this entirely around M96 when it has has a
+  // chance to be cleaned up.
+  if (extensions::ExtensionPrefs::Get(profile_)
+          ->ShouldInstallObsoleteComponentExtension(
+              file_manager::kVideoPlayerAppId)) {
+    Add(IDR_VIDEO_PLAYER_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("video_player")));
+  }
 }
 
 void ComponentLoader::AddAudioPlayerExtension() {
   Add(IDR_AUDIO_PLAYER_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("audio_player")));
-}
-
-void ComponentLoader::AddGalleryExtension() {
-  // TODO(crbug.com/1030935): Delete this entirely around M93 when it has has a
-  // chance to be cleaned up.
-  if (extensions::ExtensionPrefs::Get(profile_)
-          ->ShouldInstallObsoleteComponentExtension(
-              file_manager::kGalleryAppId)) {
-    Add(IDR_GALLERY_MANIFEST, base::FilePath(FILE_PATH_LITERAL("gallery")));
-  }
 }
 
 void ComponentLoader::AddImageLoaderExtension() {
@@ -556,7 +553,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     AddVideoPlayerExtension();
     AddAudioPlayerExtension();
     AddFileManagerExtension();
-    AddGalleryExtension();
     AddImageLoaderExtension();
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -584,11 +580,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
       Add(IDR_WALLPAPERMANAGER_MANIFEST,
           base::FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
     }
-
-    Add(IDR_CONNECTIVITY_DIAGNOSTICS_MANIFEST,
-        base::FilePath(extension_misc::kConnectivityDiagnosticsPath));
-    Add(IDR_CONNECTIVITY_DIAGNOSTICS_LAUNCHER_MANIFEST,
-        base::FilePath(extension_misc::kConnectivityDiagnosticsLauncherPath));
 
     Add(IDR_ARC_SUPPORT_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("chromeos/arc_support")));
@@ -693,6 +684,20 @@ void ComponentLoader::AddChromeOsSpeechSynthesisExtensions() {
             &ComponentLoader::FinishLoadSpeechSynthesisExtension,
             weak_factory_.GetWeakPtr(),
             extension_misc::kEspeakSpeechSynthesisExtensionId));
+  }
+
+  if (features::IsEnhancedNetworkVoicesEnabled() &&
+      !Exists(extension_misc::kEnhancedNetworkTtsExtensionId)) {
+    base::FilePath resources_path =
+        base::PathService::CheckedGet(chrome::DIR_RESOURCES);
+    AddComponentFromDirWithManifestFilename(
+        resources_path.Append(extension_misc::kEnhancedNetworkTtsExtensionPath),
+        extension_misc::kEnhancedNetworkTtsExtensionId,
+        extension_misc::kEnhancedNetworkTtsManifestFilename,
+        extension_misc::kEnhancedNetworkTtsGuestManifestFilename,
+        base::BindOnce(&ComponentLoader::FinishLoadSpeechSynthesisExtension,
+                       weak_factory_.GetWeakPtr(),
+                       extension_misc::kEnhancedNetworkTtsExtensionId));
   }
 }
 

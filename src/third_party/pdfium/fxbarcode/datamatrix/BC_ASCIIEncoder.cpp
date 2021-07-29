@@ -35,7 +35,7 @@ Optional<wchar_t> EncodeASCIIDigits(wchar_t digit1, wchar_t digit2) {
   if (!FXSYS_IsDecimalDigit(digit1) || !FXSYS_IsDecimalDigit(digit2)) {
     // This could potentially return 0 as a sentinel value. Then this function
     // can just return wchar_t instead of Optional<wchar_t>.
-    return {};
+    return pdfium::nullopt;
   }
   return static_cast<wchar_t>((digit1 - 48) * 10 + (digit2 - 48) + 130);
 }
@@ -69,10 +69,10 @@ bool CBC_ASCIIEncoder::Encode(CBC_EncoderContext* context) {
   if (n >= 2) {
     Optional<wchar_t> code = EncodeASCIIDigits(
         context->m_msg[context->m_pos], context->m_msg[context->m_pos + 1]);
-    if (!code)
+    if (!code.has_value())
       return false;
 
-    context->writeCodeword(*code);
+    context->writeCodeword(code.value());
     context->m_pos += 2;
     return true;
   }

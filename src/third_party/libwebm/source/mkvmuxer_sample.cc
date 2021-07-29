@@ -66,7 +66,7 @@ void Usage() {
   printf("                                   1: Equirectangular\n");
   printf("                                   2: Cube map\n");
   printf("                                   3: Mesh\n");
-  printf("  -projection_file <string>      Override projection private data");
+  printf("  -projection_file <string>      Override projection private data\n");
   printf("                                 with contents of this file\n");
   printf("  -projection_pose_yaw <float>   Projection pose yaw\n");
   printf("  -projection_pose_pitch <float> Projection pose pitch\n");
@@ -735,8 +735,8 @@ int main(int argc, char* argv[]) {
           mkvmuxer::Frame muxer_frame;
           if (!muxer_frame.Init(data, frame.len))
             return EXIT_FAILURE;
-          muxer_frame.set_track_number(track_type == Track::kAudio ? aud_track :
-                                                                     vid_track);
+          muxer_frame.set_track_number(track_type == Track::kAudio ? aud_track
+                                                                   : vid_track);
           if (block->GetDiscardPadding())
             muxer_frame.set_discard_padding(block->GetDiscardPadding());
           muxer_frame.set_timestamp(time_ns);

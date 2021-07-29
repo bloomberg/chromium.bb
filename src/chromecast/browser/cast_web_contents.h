@@ -12,6 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
+#include "chromecast/bindings/public/mojom/api_bindings.mojom.h"
 #include "chromecast/common/mojom/feature_manager.mojom.h"
 #include "content/public/common/media_playback_renderer_type.mojom.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
@@ -27,13 +28,9 @@ class AssociatedInterfaceProvider;
 }  // namespace blink
 
 namespace content {
+class NavigationHandle;
 class WebContents;
 }  // namespace content
-
-namespace on_load_script_injector {
-template <typename>
-class OnLoadScriptInjectorHost;
-}  // namespace on_load_script_injector
 
 namespace chromecast {
 
@@ -155,6 +152,11 @@ class CastWebContents {
         service_manager::InterfaceProvider* frame_interfaces,
         blink::AssociatedInterfaceProvider* frame_associated_interfaces) {}
 
+    // Called when the navigation is ready to be committed in the WebContents'
+    // main frame.
+    virtual void MainFrameReadyToCommitNavigation(
+        content::NavigationHandle* navigation_handle) {}
+
     // A navigation has finished in the WebContents' main frame.
     virtual void MainFrameFinishedNavigation() {}
 
@@ -234,6 +236,8 @@ class CastWebContents {
     // Whether WebRTC peer connections are allowed to use legacy versions of the
     // TLS/DTLS protocols.
     bool webrtc_allow_legacy_tls_protocols = false;
+    // Enable NamedMessagePortConnectorCast JS APIs. This is only meant to be
+    // modified by testing targets.
 
     InitParams();
     InitParams(const InitParams& other);
@@ -286,6 +290,15 @@ class CastWebContents {
   virtual void AllowWebAndMojoWebUiBindings() = 0;
   virtual void ClearRenderWidgetHostView() = 0;
 
+  // Associates transparent app properties to a given session ID. This data is
+  // used elsewhere in the browser to gate output stream selection. We expose
+  // this API on CastWebContents for the sake of convenience.
+  virtual void SetAppProperties(const std::string& session_id,
+                                bool is_audio_app) = 0;
+
+  // TODO(b/191718807) need to pass App's page permissions here.
+  virtual void SetCastPermissionUserData(const std::string& app_id) = 0;
+
   // ===========================================================================
   // Page Lifetime
   // ===========================================================================
@@ -332,10 +345,20 @@ class CastWebContents {
   // Page Communication
   // ===========================================================================
 
-  // Returns the script injector instance, which injects scripts at page load
-  // time.
-  virtual on_load_script_injector::OnLoadScriptInjectorHost<std::string>*
-  script_injector() = 0;
+  // Executes a UTF-8 encoded |script| for every subsequent page load where
+  // the frame's URL has an origin reflected in |origins|. The script is
+  // executed early, prior to the execution of the document's scripts.
+  //
+  // Scripts are identified by a client-managed |id|. Any
+  // script previously injected using the same |id| will be replaced.
+  //
+  // The order in which multiple bindings are executed is the same as the
+  // order in which the bindings were added. If a script is added which
+  // clobbers an existing script of the same |id|, the previous script's
+  // precedence in the injection order will be preserved.
+  // |script| and |id| must be non-empty string.
+  virtual void AddBeforeLoadJavaScript(uint64_t id,
+                                       base::StringPiece script) = 0;
 
   // Posts a message to the frame's onMessage handler.
   //
@@ -359,6 +382,13 @@ class CastWebContents {
   virtual void ExecuteJavaScript(
       const std::u16string& javascript,
       base::OnceCallback<void(base::Value)> callback) = 0;
+
+  // Connects and fetches JS API bindings from |api_bindings_remote|.
+  // This method will fetch bindings scripts from |api_bindings_remote|
+  // immediately after the invocation, all of the bindings should be
+  // initialized before this point.
+  virtual void ConnectToBindingsService(
+      mojo::PendingRemote<mojom::ApiBindings> api_bindings_remote) = 0;
 
   // ===========================================================================
   // Utility Methods

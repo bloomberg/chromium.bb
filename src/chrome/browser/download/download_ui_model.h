@@ -11,6 +11,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
@@ -18,7 +19,7 @@
 #include "components/download/public/common/download_item.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/core/proto/download_file_types.pb.h"
+#include "components/safe_browsing/content/common/proto/download_file_types.pb.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/download/download_commands.h"
@@ -49,6 +50,8 @@ class DownloadUIModel {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  base::WeakPtr<DownloadUIModel> GetWeakPtr();
+
   // Does this download have a MIME type (either explicit or inferred from its
   // extension) suggesting that it is a supported image type?
   bool HasSupportedImageMimeType() const;
@@ -62,7 +65,10 @@ class DownloadUIModel {
 
   // Returns a long descriptive string for a download that's in the INTERRUPTED
   // state. For other downloads, the returned string will be empty.
-  std::u16string GetInterruptReasonText() const;
+  std::u16string GetInterruptDescription() const;
+
+  // Returns a status string for the download history page.
+  std::u16string GetHistoryPageStatusText() const;
 
   // Returns a short one-line status string for the download.
   std::u16string GetStatusText() const;
@@ -84,6 +90,10 @@ class DownloadUIModel {
   // Get the caption text for a button for confirming a dangerous download
   // warning.
   std::u16string GetWarningConfirmButtonText() const;
+
+  // Get the text to display for the button to show item in folder on download
+  // history page.
+  std::u16string GetShowInFolderText() const;
 
   // Returns the profile associated with this download.
   virtual Profile* profile() const;
@@ -197,6 +207,9 @@ class DownloadUIModel {
   // Returns the DownloadItem if this is a regular download, or nullptr
   // otherwise.
   virtual download::DownloadItem* download();
+
+  // Returns the display name for the web drive where the file is rerouted to.
+  virtual std::u16string GetWebDriveName() const;
 
   // Returns the file-name that should be reported to the user.
   virtual base::FilePath GetFileNameToReportUser() const;
@@ -324,11 +337,27 @@ class DownloadUIModel {
   // Returns whether the download is triggered by an extension.
   virtual bool IsExtensionDownload() const;
 
+  // Returns the message, if any, to be displayed for file rerouted.
+  virtual std::u16string GetWebDriveMessage(bool verbose) const;
+
   base::ObserverList<Observer>::Unchecked observers_;
 
  private:
   // Returns a string indicating the status of an in-progress download.
-  std::u16string GetInProgressStatusString() const;
+  std::u16string GetInProgressStatusText() const;
+
+  // Returns a string indicating the status of a completed download.
+  std::u16string GetCompletedStatusText() const;
+
+  // Returns a string indicating the status of an interrupted download.
+  std::u16string GetInterruptedStatusText(
+      offline_items_collection::FailState fail_state) const;
+
+  // Returns a short string indicating why the download failed.
+  std::u16string GetFailStateMessage(
+      offline_items_collection::FailState fail_state) const;
+
+  base::WeakPtrFactory<DownloadUIModel> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUIModel);
 };

@@ -871,7 +871,8 @@ void Window::SetNativeWindowProperty(const char* key, void* value) {
 }
 
 void* Window::GetNativeWindowProperty(const char* key) const {
-  return reinterpret_cast<void*>(GetPropertyInternal(key, 0));
+  return reinterpret_cast<void*>(GetPropertyInternal(key, 0,
+                                                     /*search_parent=*/false));
 }
 
 void Window::OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -1614,7 +1615,6 @@ void Window::OnFrameTokenChanged(uint32_t frame_token,
                                  base::TimeTicks activation_time) {}
 
 void Window::UpdateLayerName() {
-#if DCHECK_IS_ON()
   DCHECK(layer());
 
   std::string layer_name(GetName());
@@ -1625,7 +1625,6 @@ void Window::UpdateLayerName() {
     layer_name += " " + base::NumberToString(id_);
 
   layer()->SetName(layer_name);
-#endif
 }
 
 void Window::RegisterFrameSinkId() {
@@ -1748,9 +1747,6 @@ void Window::SetVisible(bool visible) {
     Hide();
   // Changed notification is handled in SetVisibleInternal().
 }
-
-// Under Windows this macro is defined.
-#undef GetClassName
 
 BEGIN_METADATA_BASE(Window)
 ADD_READONLY_PROPERTY_METADATA(gfx::Rect, ActualBoundsInRootWindow)

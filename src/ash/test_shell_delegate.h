@@ -41,6 +41,7 @@ class TestShellDelegate : public ShellDelegate {
   bool CanGoBack(gfx::NativeWindow window) const override;
   void SetTabScrubberEnabled(bool enabled) override;
   bool ShouldWaitForTouchPressAck(gfx::NativeWindow window) override;
+  int GetBrowserWebUITabStripHeight() override;
   void BindMultiDeviceSetup(
       mojo::PendingReceiver<
           chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver)
@@ -54,6 +55,9 @@ class TestShellDelegate : public ShellDelegate {
   void SetSessionRestoreInProgress(bool in_progress);
   bool IsLoggingRedirectDisabled() const override;
   base::FilePath GetPrimaryUserDownloadsFolder() const override;
+  void OpenFeedbackPageForPersistentDesksBar() override {}
+  std::unique_ptr<full_restore::AppLaunchInfo> GetAppLaunchDataForDeskTemplate(
+      aura::Window* window) const override;
 
  private:
   // True if the current top window can go back.

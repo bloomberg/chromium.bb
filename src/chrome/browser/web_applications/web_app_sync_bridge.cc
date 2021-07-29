@@ -14,16 +14,17 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/types/pass_key.h"
-#include "build/chromeos_buildflags.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_install_delegate.h"
 #include "chrome/common/channel_info.h"
@@ -35,19 +36,11 @@
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
+#include "content/public/common/content_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace web_app {
-
-bool AreAppsLocallyInstalledByDefault() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // On Chrome OS, sync always locally installs an app.
-  return true;
-#else
-  return false;
-#endif
-}
 
 std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
   // The Sync System doesn't allow empty entity_data name.
@@ -213,6 +206,8 @@ void WebAppSyncBridge::SetAppUserDisplayMode(const AppId& app_id,
   WebApp* web_app = update->UpdateApp(app_id);
   if (web_app)
     web_app->SetUserDisplayMode(user_display_mode);
+
+  registrar_->NotifyWebAppUserDisplayModeChanged(app_id, user_display_mode);
 }
 
 void WebAppSyncBridge::SetAppRunOnOsLoginMode(const AppId& app_id,
@@ -222,9 +217,16 @@ void WebAppSyncBridge::SetAppRunOnOsLoginMode(const AppId& app_id,
   if (web_app)
     web_app->SetRunOnOsLoginMode(mode);
 }
+void WebAppSyncBridge::SetAppWindowControlsOverlayEnabled(const AppId& app_id,
+                                                          bool enabled) {
+  ScopedRegistryUpdate update(this);
+  WebApp* web_app = update->UpdateApp(app_id);
+  if (web_app)
+    web_app->SetWindowControlsOverlayEnabled(enabled);
+}
 
 void WebAppSyncBridge::SetAppIsDisabled(const AppId& app_id, bool is_disabled) {
-  if (!IsChromeOs())
+  if (!IsChromeOsDataMandatory())
     return;
 
   bool notify = false;
@@ -249,10 +251,28 @@ void WebAppSyncBridge::SetAppIsDisabled(const AppId& app_id, bool is_disabled) {
 }
 
 void WebAppSyncBridge::UpdateAppsDisableMode() {
-  if (!IsChromeOs())
+  if (!IsChromeOsDataMandatory())
     return;
 
   registrar_->NotifyWebAppsDisabledModeChanged();
+}
+
+void WebAppSyncBridge::SetExperimentalTabbedWindowMode(const AppId& app_id,
+                                                       bool enabled,
+                                                       bool is_user_action) {
+  if (enabled) {
+    DCHECK(base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip));
+    UpdateBoolWebAppPref(profile()->GetPrefs(), app_id,
+                         kExperimentalTabbedWindowMode, true);
+
+    // Set non-experimental window mode to standalone for when the user disables
+    // this flag.
+    SetAppUserDisplayMode(app_id, DisplayMode::kStandalone, is_user_action);
+  } else {
+    RemoveWebAppPref(profile()->GetPrefs(), app_id,
+                     kExperimentalTabbedWindowMode);
+  }
+  registrar_->NotifyWebAppExperimentalTabbedWindowModeChanged(app_id, enabled);
 }
 
 void WebAppSyncBridge::SetAppIsLocallyInstalled(const AppId& app_id,
@@ -543,7 +563,7 @@ void WebAppSyncBridge::ApplySyncDataChange(
     ApplySyncDataToApp(specifics, web_app.get());
 
     // For a new app, automatically choose if we want to install it locally.
-    web_app->SetIsLocallyInstalled(AreAppsLocallyInstalledByDefault());
+    web_app->SetIsLocallyInstalled(AreAppsLocallyInstalledBySync());
 
     update_local_data->apps_to_create.push_back(std::move(web_app));
   }

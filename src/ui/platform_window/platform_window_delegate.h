@@ -8,6 +8,7 @@
 #include "base/component_export.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -76,7 +77,8 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowDelegate {
   virtual void OnCloseRequest() = 0;
   virtual void OnClosed() = 0;
 
-  virtual void OnWindowStateChanged(PlatformWindowState new_state) = 0;
+  virtual void OnWindowStateChanged(PlatformWindowState old_state,
+                                    PlatformWindowState new_state) = 0;
 
   virtual void OnLostCapture() = 0;
 
@@ -107,6 +109,9 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowDelegate {
   // `chromeos::kFrameRestoreLookKey` window property
   // with lacros-chrome.
   virtual void OnSurfaceFrameLockingChanged(bool lock);
+
+  // Returns a menu type of the window. Valid only for the menu windows.
+  virtual absl::optional<MenuType> GetMenuType();
 
   // Called when the location of mouse pointer entered the window.  This is
   // different from ui::ET_MOUSE_ENTERED which may not be generated when mouse

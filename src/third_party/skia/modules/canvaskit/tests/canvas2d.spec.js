@@ -592,7 +592,7 @@ describe('Canvas 2D emulation', () => {
             multipleCanvasGM('draw_patterns', (canvas) => {
                 const ctx = canvas.getContext('2d');
                 let img = htmlImage;
-                if (canvas._config == 'software_canvas') {
+                if (canvas._config === 'software_canvas') {
                     img = canvas.decodeImage(skImageData);
                 }
                 ctx.fillStyle = '#EEE';
@@ -623,7 +623,7 @@ describe('Canvas 2D emulation', () => {
             multipleCanvasGM('draw_image', (canvas) => {
                 let ctx = canvas.getContext('2d');
                 let img = htmlImage;
-                if (canvas._config == 'software_canvas') {
+                if (canvas._config === 'software_canvas') {
                     img = canvas.decodeImage(skImageData);
                 }
                 ctx.drawImage(img, 30, -200);

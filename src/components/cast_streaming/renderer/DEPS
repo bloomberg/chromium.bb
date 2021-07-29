@@ -1,6 +1,8 @@
 include_rules = [
-  "+components/cast_streaming/mojo",
+  "+content/public/renderer",
   "+media/base",
   "+media/mojo",
   "+mojo/public",
+  "+third_party/blink/public",
+  "+url",
 ]

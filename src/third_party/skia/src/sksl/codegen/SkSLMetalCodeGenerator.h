@@ -83,15 +83,9 @@ protected:
     class GlobalStructVisitor;
     void visitGlobalStruct(GlobalStructVisitor* visitor);
 
-    void write(const char* s);
+    void write(skstd::string_view s);
 
-    void writeLine();
-
-    void writeLine(const char* s);
-
-    void write(const String& s);
-
-    void writeLine(const String& s);
+    void writeLine(skstd::string_view s = skstd::string_view());
 
     void finishLine();
 
@@ -149,7 +143,7 @@ protected:
 
     void writeVarInitializer(const Variable& var, const Expression& value);
 
-    void writeName(const String& name);
+    void writeName(skstd::string_view name);
 
     void writeVarDeclaration(const VarDeclaration& decl);
 
@@ -186,6 +180,8 @@ protected:
 
     void writeMatrixEqualityHelpers(const Type& left, const Type& right);
 
+    void writeVectorFromMat2x2ConstructorHelper();
+
     void writeArrayEqualityHelpers(const Type& type);
 
     void writeStructEqualityHelpers(const Type& type);
@@ -201,6 +197,8 @@ protected:
     bool canCoerce(const Type& t1, const Type& t2);
 
     void writeConstructorCompound(const ConstructorCompound& c, Precedence parentPrecedence);
+
+    void writeConstructorCompoundVector(const ConstructorCompound& c, Precedence parentPrecedence);
 
     void writeConstructorCompoundMatrix(const ConstructorCompound& c, Precedence parentPrecedence);
 
@@ -272,7 +270,7 @@ protected:
 
     int getUniformSet(const Modifiers& m);
 
-    std::unordered_set<String> fReservedWords;
+    std::unordered_set<skstd::string_view> fReservedWords;
     std::unordered_map<const Type::Field*, const InterfaceBlock*> fInterfaceBlockMap;
     std::unordered_map<const InterfaceBlock*, String> fInterfaceBlockNameMap;
     int fAnonInterfaceCount = 0;
@@ -292,7 +290,7 @@ protected:
     bool fSetupFragPositionLocal = false;
     std::unordered_set<String> fHelpers;
     int fUniformBuffer = -1;
-    String fRTHeightName;
+    String fRTFlipName;
     const FunctionDeclaration* fCurrentFunction = nullptr;
     int fSwizzleHelperCount = 0;
     bool fIgnoreVariableReferenceModifiers = false;

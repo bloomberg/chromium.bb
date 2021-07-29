@@ -209,6 +209,8 @@ static int decode_group3_1d_line(AVCodecContext *avctx, GetBitContext *gb,
     unsigned int run = 0;
     unsigned int t;
     for (;;) {
+        if (get_bits_left(gb) <= 0)
+            return AVERROR_INVALIDDATA;
         t    = get_vlc2(gb, ccitt_vlc[mode].table, 9, 2);
         run += t;
         if (t < 64) {
@@ -227,7 +229,7 @@ static int decode_group3_1d_line(AVCodecContext *avctx, GetBitContext *gb,
             run       = 0;
             mode      = !mode;
         } else if ((int)t == -1) {
-            if (show_bits(gb, 12) == 15) {
+            if (get_bits_left(gb) > 12 && show_bits(gb, 12) == 15) {
                 int ret;
                 skip_bits(gb, 12);
                 ret = decode_uncompressed(avctx, gb, &pix_left, &runs, runend, &mode);
@@ -254,7 +256,10 @@ static int decode_group3_2d_line(AVCodecContext *avctx, GetBitContext *gb,
     unsigned int offs = 0, run = 0;
 
     while (offs < width) {
-        int cmode = get_vlc2(gb, ccitt_group3_2d_vlc.table, 9, 1);
+        int cmode;
+        if (get_bits_left(gb) <= 0)
+            return AVERROR_INVALIDDATA;
+        cmode = get_vlc2(gb, ccitt_group3_2d_vlc.table, 9, 1);
         if (cmode == -1) {
             av_log(avctx, AV_LOG_ERROR, "Incorrect mode VLC\n");
             return AVERROR_INVALIDDATA;

@@ -25,11 +25,13 @@ class WaylandConnection;
 class ShellToplevelWrapper {
  public:
   enum class DecorationMode {
+    // Initial mode that the surface has till the first configure event.
+    kNone,
     // Client-side decoration for a window.
     // In this case, the client is responsible for drawing decorations
     // for a window (e.g. caption bar, close button). This is suitable for
     // windows using custom frame.
-    kClientSide = 1,
+    kClientSide,
     // Server-side decoration for a window.
     // In this case, the ash window manager is responsible for drawing
     // decorations. This is suitable for windows using native frame.
@@ -69,6 +71,9 @@ class ShellToplevelWrapper {
 
   // Sends acknowledge configure event back to wayland.
   virtual void AckConfigure(uint32_t serial) = 0;
+
+  // Tells if the surface has been AckConfigured at least once.
+  virtual bool IsConfigured() = 0;
 
   // Sets a desired window geometry once wayland requests client to do so.
   virtual void SetWindowGeometry(const gfx::Rect& bounds) = 0;

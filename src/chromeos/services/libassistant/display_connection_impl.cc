@@ -8,17 +8,17 @@
 
 #include "base/check.h"
 #include "base/logging.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 
 namespace chromeos {
 namespace libassistant {
 
 DisplayConnectionImpl::DisplayConnectionImpl(
     DisplayConnectionObserver* observer,
-    bool feedback_ui_enabled,
-    bool media_session_enabled)
+    bool feedback_ui_enabled)
     : observer_(observer),
       feedback_ui_enabled_(feedback_ui_enabled),
-      media_session_enabled_(media_session_enabled) {
+      task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   DCHECK(observer_);
 }
 
@@ -40,7 +40,11 @@ void DisplayConnectionImpl::OnAssistantEvent(
   }
 
   if (event.has_speech_level_event()) {
-    observer_->OnSpeechLevelUpdated(event.speech_level_event().speech_level());
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&DisplayConnectionObserver::OnSpeechLevelUpdated,
+                       base::Unretained(observer_),
+                       event.speech_level_event().speech_level()));
   }
 }
 
@@ -130,14 +134,12 @@ void DisplayConnectionImpl::FillDisplayRequestLocked(
     }
   }
 
-  if (media_session_enabled_) {
-    set_capabilities_request->mutable_supported_features()
-        ->set_media_session_detection(
-            related_info_enabled_
-                ? ::assistant::api::RELIABLE_MEDIA_SESSION_DETECTION
-                : ::assistant::api::
-                      MEDIA_SESSION_DETECTION_DISABLED_SCREEN_CONTEXT);
-  }
+  set_capabilities_request->mutable_supported_features()
+      ->set_media_session_detection(
+          related_info_enabled_
+              ? ::assistant::api::RELIABLE_MEDIA_SESSION_DETECTION
+              : ::assistant::api::
+                    MEDIA_SESSION_DETECTION_DISABLED_SCREEN_CONTEXT);
 }
 
 }  // namespace libassistant

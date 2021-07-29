@@ -153,7 +153,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.ClientAppMetadataInstanceIdTokenFetch.Result"
-    enum="InstanceIDResult" expires_after="2021-10-06">
+    enum="InstanceIDResult" expires_after="2021-12-05">
   <owner>khorimoto@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -163,7 +163,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.ClientAppMetadataInstanceIdTokenFetch.Retries"
-    units="retries" expires_after="2021-10-06">
+    units="retries" expires_after="2021-12-05">
   <owner>khorimoto@chromium.org</owner>
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
@@ -175,7 +175,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.DeviceSync.Result" enum="BooleanSuccess"
-    expires_after="2021-10-06">
+    expires_after="2021-12-05">
   <owner>hansberry@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>Indicates success of performing a DeviceSync.</summary>
@@ -238,7 +238,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.DeviceSyncSoftwareFeaturesResult"
-    enum="BooleanSuccess" expires_after="2021-10-06">
+    enum="BooleanSuccess" expires_after="2022-01-02">
   <owner>hansberry@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -263,7 +263,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.DeviceActivityGetter.ApiCallResult.GetDevicesActivityStatus"
-    enum="CryptAuthApiCallResult" expires_after="2021-10-06">
+    enum="CryptAuthApiCallResult" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -287,7 +287,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.DeviceNotifier.ApiCallResult.NotifyGroupDevices"
-    enum="CryptAuthApiCallResult" expires_after="2021-10-06">
+    enum="CryptAuthApiCallResult" expires_after="2021-12-19">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -311,7 +311,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.DeviceSyncer.AsyncTaskResult.DeviceMetadataDecryption"
-    enum="CryptAuthAsyncTaskResult" expires_after="2021-10-06">
+    enum="CryptAuthAsyncTaskResult" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -326,7 +326,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.DeviceSyncer.AsyncTaskResult.GroupPrivateKeyDecryption"
-    enum="CryptAuthAsyncTaskResult" expires_after="2021-10-06">
+    enum="CryptAuthAsyncTaskResult" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -374,7 +374,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.DeviceSyncer.IsLocalDeviceMetadataConsistent"
-    enum="BooleanConsistent" expires_after="2021-10-06">
+    enum="BooleanConsistent" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -385,7 +385,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.DeviceSyncV2.DeviceSyncer.MetadataDecryptionSuccess"
-    enum="BooleanSuccess" expires_after="2021-10-06">
+    enum="BooleanSuccess" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -396,7 +396,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.DeviceSyncV2.DeviceSyncer.MetadataParsingSuccess"
-    enum="BooleanSuccess" expires_after="2021-10-06">
+    enum="BooleanSuccess" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -409,7 +409,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.FeatureStatusGetter.ApiCallResult.GetFeatureStatuses"
-    enum="CryptAuthApiCallResult" expires_after="2021-10-06">
+    enum="CryptAuthApiCallResult" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -421,7 +421,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.FeatureStatusGetter.CorrectNumberOfDevicesInResponse"
-    enum="BooleanExpected" expires_after="2021-10-06">
+    enum="BooleanExpected" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -445,7 +445,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.FeatureStatusGetter.IsDuplicateDeviceId"
-    enum="BooleanDuplicate" expires_after="2021-10-06">
+    enum="BooleanDuplicate" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -457,7 +457,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.DeviceSyncV2.FeatureStatusGetter.IsKnownFeatureType"
-    enum="BooleanKnown" expires_after="2021-10-06">
+    enum="BooleanKnown" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -471,7 +471,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.FeatureStatusGetter.IsUnsupportedFeatureMarkedEnabled"
-    enum="Boolean" expires_after="2021-10-06">
+    enum="Boolean" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -484,7 +484,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.FeatureStatusGetter.WasDeviceInResponseRequested"
-    enum="BooleanRequested" expires_after="2021-10-06">
+    enum="BooleanRequested" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -496,7 +496,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.FeatureStatusSetter.ApiCallResult.SetFeatureStatuses"
-    enum="CryptAuthApiCallResult" expires_after="2021-10-06">
+    enum="CryptAuthApiCallResult" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -520,7 +520,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.GroupPrivateKeySharer.ApiCallResult.ShareGroupPrivateKey"
-    enum="CryptAuthApiCallResult" expires_after="2021-10-06">
+    enum="CryptAuthApiCallResult" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -532,7 +532,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.GroupPrivateKeySharer.AsyncTaskResult.GroupPrivateKeyEncryption"
-    enum="CryptAuthAsyncTaskResult" expires_after="2021-10-06">
+    enum="CryptAuthAsyncTaskResult" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -547,7 +547,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.GroupPrivateKeySharer.EncryptionSuccess"
-    enum="BooleanSuccess" expires_after="2021-10-06">
+    enum="BooleanSuccess" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -584,7 +584,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.GroupPrivateKeySharer.IsEncryptingKeyEmpty"
-    enum="Boolean" expires_after="2021-10-06">
+    enum="Boolean" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -597,7 +597,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.DeviceSyncV2.InvocationReason"
-    enum="CryptAuthV2InvocationReason" expires_after="2021-10-06">
+    enum="CryptAuthV2InvocationReason" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -608,7 +608,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.MetadataSyncer.ApiCallResult.FirstSyncMetadata"
-    enum="CryptAuthApiCallResult" expires_after="2021-10-06">
+    enum="CryptAuthApiCallResult" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -620,7 +620,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.MetadataSyncer.ApiCallResult.SecondSyncMetadata"
-    enum="CryptAuthApiCallResult" expires_after="2021-10-06">
+    enum="CryptAuthApiCallResult" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -632,7 +632,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.MetadataSyncer.AsyncTaskResult.GroupKeyCreation"
-    enum="CryptAuthAsyncTaskResult" expires_after="2021-10-06">
+    enum="CryptAuthAsyncTaskResult" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -644,7 +644,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.MetadataSyncer.AsyncTaskResult.LocalDeviceMetadataEncryption"
-    enum="CryptAuthAsyncTaskResult" expires_after="2021-10-06">
+    enum="CryptAuthAsyncTaskResult" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -704,7 +704,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.MetadataSyncer.IsDeviceMetadataPacketValid"
-    enum="Boolean" expires_after="2021-10-06">
+    enum="Boolean" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -715,7 +715,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.DeviceSyncV2.MetadataSyncer.IsDuplicateDeviceId"
-    enum="Boolean" expires_after="2021-10-06">
+    enum="Boolean" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -727,7 +727,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.DeviceSyncV2.RemoteDeviceProvider.NumV1Devices"
-    units="count" expires_after="2021-10-06">
+    units="count" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -739,7 +739,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.DeviceSyncV2.RemoteDeviceProvider.NumV2Devices"
-    units="count" expires_after="2021-10-06">
+    units="count" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -752,7 +752,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.RemoteDeviceProvider.PercentageOfV1DevicesReplacedByV2Devices"
-    units="%" expires_after="2021-10-06">
+    units="%" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -781,7 +781,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="CryptAuth.DeviceSyncV2.RemoteDeviceProvider.RatioOfV2ToV1Devices"
-    units="%" expires_after="2021-10-06">
+    units="%" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -809,7 +809,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.DeviceSyncV2.Result.ResultCode"
-    enum="CryptAuthV2DeviceSyncResultCode" expires_after="2021-10-06">
+    enum="CryptAuthV2DeviceSyncResultCode" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -819,7 +819,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.DeviceSyncV2.Result.ResultType"
-    enum="CryptAuthV2DeviceSyncResultType" expires_after="2021-10-06">
+    enum="CryptAuthV2DeviceSyncResultType" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -860,7 +860,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.EnrollmentV2.AsyncTaskResult.KeyCreation"
-    enum="CryptAuthAsyncTaskResult" expires_after="2021-10-06">
+    enum="CryptAuthAsyncTaskResult" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -904,7 +904,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.EnrollmentV2.InvocationReason"
-    enum="CryptAuthV2InvocationReason" expires_after="2021-10-06">
+    enum="CryptAuthV2InvocationReason" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -914,7 +914,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.EnrollmentV2.Result.ResultCode"
-    enum="CryptAuthV2EnrollmentResult" expires_after="2021-10-06">
+    enum="CryptAuthV2EnrollmentResult" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -1086,7 +1086,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.InstanceId.DidInstanceIdChange"
-    enum="BooleanChanged" expires_after="2021-10-06">
+    enum="BooleanChanged" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -1097,7 +1097,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CryptAuth.InstanceId.DidInstanceIdTokenChange"
-    enum="BooleanChanged" expires_after="2021-10-06">
+    enum="BooleanChanged" expires_after="2021-12-05">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -1577,8 +1577,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MultiDevice.BetterTogetherSuite.MultiDeviceFeatureState"
-    enum="MultiDevice_FeatureState" expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    enum="MultiDevice_FeatureState" expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     Indicates the feature state of the Better Together Suite feature. This
@@ -1588,8 +1588,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MultiDevice.DeviceSyncService.FindEligibleDevices.Result"
-    enum="BooleanSuccess" expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    enum="BooleanSuccess" expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>Result of trying to find eligible devices.</summary>
 </histogram>
@@ -1597,8 +1597,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="MultiDevice.DeviceSyncService.FindEligibleDevices.Result.FailureReason"
     enum="MultiDevice_DeviceSyncService_DeviceSyncRequestFailureReason"
-    expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     Breaks down the percentages of reasons when failure occurs on
@@ -1609,23 +1609,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="MultiDevice.DeviceSyncService.ForceEnrollmentNow.Result"
     enum="MultiDevice_DeviceSyncService_ForceCryptAuthOperationResult"
     expires_after="2022-02-02">
-  <owner>vecore@google.com</owner>
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>Result for when ForceEnrollmentNow is called.</summary>
 </histogram>
 
 <histogram name="MultiDevice.DeviceSyncService.ForceSyncNow.Result"
     enum="MultiDevice_DeviceSyncService_ForceCryptAuthOperationResult"
-    expires_after="2021-10-25">
-  <owner>vecore@google.com</owner>
+    expires_after="2021-12-26">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>Result for when ForceSyncNow is called.</summary>
 </histogram>
 
 <histogram
     name="MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Disable.FailedFeature"
-    enum="MultiDevice_DeviceSyncService_Features" expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    enum="MultiDevice_DeviceSyncService_Features" expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     Breaks down which features failed when attempted to disable.
@@ -1635,14 +1635,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Enable.FailedFeature"
     enum="MultiDevice_DeviceSyncService_Features" expires_after="2021-08-09">
-  <owner>vecore@google.com</owner>
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>Breaks down which features failed when attempted to enable.</summary>
 </histogram>
 
 <histogram name="MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result"
     enum="BooleanSuccess" expires_after="2021-11-14">
-  <owner>vecore@google.com</owner>
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>Result of enabling and disabling features for devices.</summary>
 </histogram>
@@ -1650,8 +1650,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram
     name="MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result.FailureReason"
     enum="MultiDevice_DeviceSyncService_DeviceSyncRequestFailureReason"
-    expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     Breaks down the percentages of reasons when failure occurs on
@@ -1661,8 +1661,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="MultiDevice.ForgetHostConfirmed"
     enum="MultiDevice_VerifyAndForgetHostConfirmationState"
-    expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     Compares when the Forget Host Button is pressed and when setup completes.
@@ -1670,8 +1670,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MultiDevice.PostOOBESetupFlow.PageShown"
-    enum="MultiDevice_PostOOBESetupFlow_Page" expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    enum="MultiDevice_PostOOBESetupFlow_Page" expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     Provides a count of how many times each page of the MultiDevice setup flow
@@ -1687,8 +1687,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="MultiDevice.SecureChannel.BLE.GattConnectionToAuthentication.EffectiveSuccessRateWithRetries"
-    enum="BooleanSuccess" expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    enum="BooleanSuccess" expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     A histogram measuring the success rate of authenticating a BLE channel once
@@ -1700,8 +1700,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="MultiDevice.SecureChannel.BLE.Performance.ConnectionToAuthenticationDuration.Background"
-    units="ms" expires_after="2021-10-25">
-  <owner>vecore@google.com</owner>
+    units="ms" expires_after="2021-12-26">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     A time histogram measuring the time from the moment a GATT connection is
@@ -1716,8 +1716,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="MultiDevice.SecureChannel.BLE.Performance.ReceiveAdvertisementToConnectionDuration.Background"
-    units="ms" expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    units="ms" expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     A time histogram measuring the time from the moment a background
@@ -1732,8 +1732,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="MultiDevice.SecureChannel.BLE.Performance.StartScanToAuthenticationDuration.Background"
-    units="ms" expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    units="ms" expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     A time histogram measuring the time it takes to create a secure connection
@@ -1749,8 +1749,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="MultiDevice.SecureChannel.BLE.Performance.StartScanToConnectionDuration.Background"
-    units="ms" expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    units="ms" expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     A time histogram measuring the time it from the moment SecureChannelService
@@ -1765,8 +1765,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="MultiDevice.SecureChannel.BLE.Performance.StartScanToReceiveAdvertisementDuration.Background"
-    units="ms" expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    units="ms" expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     A time histogram measuring the time it from the moment SecureChannelService
@@ -1781,8 +1781,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="MultiDevice.SecureChannel.BLE.ReceiveAdvertisementToAuthentication.EffectiveSuccessRateWithRetries"
-    enum="BooleanSuccess" expires_after="2021-10-17">
-  <owner>vecore@google.com</owner>
+    enum="BooleanSuccess" expires_after="2021-12-19">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     A histogram measuring the success rate of authenticating a BLE channel once
@@ -1793,8 +1793,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="MultiDevice.SecureChannel.BLE.ReceiveAdvertisementToGattConnection.EffectiveSuccessRateWithRetries"
-    enum="BooleanSuccess" expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    enum="BooleanSuccess" expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     A histogram measuring the success rate of creating a GATT connection once an
@@ -1918,7 +1918,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MultiDevice.Setup.HasDuplicateEligibleHostDeviceNames"
-    enum="BooleanDuplicate" expires_after="2021-10-25">
+    enum="BooleanDuplicate" expires_after="2021-12-26">
   <owner>nohle@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -1930,8 +1930,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MultiDevice.Setup.HostStatus"
-    enum="MultiDevice_Setup_HostStatus" expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    enum="MultiDevice_Setup_HostStatus" expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     Breaks down percentages of host statuses. This metric is emitted to at the
@@ -1941,7 +1941,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MultiDevice.Setup.HostVerifier.DoesHostHaveCryptoData"
-    enum="Boolean" expires_after="2021-10-10">
+    enum="Boolean" expires_after="2021-12-12">
   <owner>nohle@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -1956,8 +1956,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="MultiDevice.VerifyButtonClicked"
     enum="MultiDevice_VerifyAndForgetHostConfirmationState"
-    expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     Compares when the Verify Host Button is pressed to when setup completes.
@@ -1965,8 +1965,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MultiDeviceSetup.OOBE.UserChoice"
-    enum="MultiDeviceSetupOOBEUserChoice" expires_after="2021-10-17">
-  <owner>vecore@google.com</owner>
+    enum="MultiDeviceSetupOOBEUserChoice" expires_after="2021-12-19">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <owner>hsuregan@chromium.org</owner>
   <summary>
@@ -1976,8 +1976,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MultiDeviceSetup_NotificationClicked"
-    enum="MultiDeviceSetupNotification" expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    enum="MultiDeviceSetupNotification" expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     Counts the number of each MultiDevice setup notification clicked by a user.
@@ -1986,8 +1986,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MultiDeviceSetup_NotificationDismissed"
-    enum="MultiDeviceSetupNotification" expires_after="2021-10-10">
-  <owner>vecore@google.com</owner>
+    enum="MultiDeviceSetupNotification" expires_after="2021-12-12">
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     Counts the number of each MultiDevice setup notification dismissed by a
@@ -1998,7 +1998,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="MultiDeviceSetup_NotificationShown"
     enum="MultiDeviceSetupNotification" expires_after="2022-10-10">
-  <owner>vecore@google.com</owner>
+  <owner>danlee@google.com</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
     Counts the number of each MultiDevice setup notification shown to a user.
@@ -2006,7 +2006,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ProximityAuth.BleWeaveConnectionResult"
-    enum="ProximityAuth_BleWeaveConnectionResult" expires_after="2021-10-17">
+    enum="ProximityAuth_BleWeaveConnectionResult" expires_after="2022-03-21">
   <owner>hansberry@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -2017,7 +2017,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ProximityAuth.BluetoothGattConnectionResult"
     enum="ProximityAuth_BluetoothGattConnectionResult"
-    expires_after="2021-10-17">
+    expires_after="2022-03-21">
   <owner>hansberry@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>
@@ -2033,7 +2033,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ProximityAuth.BluetoothGattNotifySessionResult"
     enum="ProximityAuth_BluetoothGattServiceOperationResult"
-    expires_after="2021-08-01">
+    expires_after="2022-03-21">
   <owner>hansberry@chromium.org</owner>
   <owner>better-together-dev@google.com</owner>
   <summary>

@@ -33,8 +33,6 @@
 #include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/sync_scheduler.h"
-#include "components/sync/js/js_event_handler.h"
-#include "components/sync/js/js_test_util.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/encryption.pb.h"
 #include "components/sync/protocol/extension_specifics.pb.h"
@@ -100,6 +98,7 @@ class SyncManagerObserverMock : public SyncManager::Observer {
   MOCK_METHOD(void, OnActionableError, (const SyncProtocolError&), (override));
   MOCK_METHOD(void, OnMigrationRequested, (ModelTypeSet), (override));
   MOCK_METHOD(void, OnProtocolEvent, (const ProtocolEvent&), (override));
+  MOCK_METHOD(void, OnSyncStatusChanged, (const SyncStatus&), (override));
 };
 
 class SyncEncryptionHandlerObserverMock
@@ -181,6 +180,9 @@ class SyncManagerImplTest : public testing::Test {
     auto scheduler = std::make_unique<MockSyncScheduler>();
     scheduler_ = scheduler.get();
 
+    // This should be the only method called by the Init() in the observer.
+    EXPECT_CALL(manager_observer_, OnSyncStatusChanged).Times(3);
+
     SyncManager::InitArgs args;
     args.service_url = GURL("https://example.com/");
     args.post_factory = std::make_unique<TestHttpPostProviderFactory>();
@@ -210,9 +212,7 @@ class SyncManagerImplTest : public testing::Test {
   MockSyncScheduler* scheduler() { return scheduler_; }
 
  private:
-  // Needed by |sync_manager_|.
-  base::test::TaskEnvironment task_environment_;
-  // Needed by |sync_manager_|.
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<ExtensionsActivity> extensions_activity_;
 

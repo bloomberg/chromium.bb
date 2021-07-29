@@ -185,15 +185,10 @@ static_library("sandbox") {
   public_deps = [ "//base" ]
 
   deps = [
+    ":maybe_set_appcontainer_acls",
     "//base:base_static",
     "//sandbox:common",
   ]
-
-  # NACL on 32-bit builds this target twice, once for 64-bit and once for 32-bit
-  # so avoid this dep from running twice with the same output in that case.
-  if (current_cpu == target_cpu) {
-    deps += [ ":set_appcontainer_acls" ]
-  }
 }
 
 test("sbox_integration_tests") {
@@ -253,19 +248,30 @@ shared_library("sbox_integration_test_hijack_dll") {
     "tests/integration_tests/hijack_dll.def",
   ]
 
-  deps = [ ":set_appcontainer_acls" ]
+  deps = [ ":maybe_set_appcontainer_acls" ]
 }
 
-action("set_appcontainer_acls") {
-  script = "//build/win/set_appcontainer_acls.py"
-  stamp_file = "$target_out_dir/acls.stamp"
-  inputs = [ script ]
-  outputs = [ stamp_file ]
+group("maybe_set_appcontainer_acls") {
+  # NACL on 32-bit builds this target twice, once for 64-bit and once for 32-bit
+  # so avoid this dep from running twice with the same output in that case.
+  # Additionally, exclude setting ACLs when build is not happening on Windows.
+  if (current_cpu == target_cpu && host_os == "win") {
+    deps = [ ":set_appcontainer_acls" ]
+  }
+}
 
-  args = [
-    "--stamp=" + rebase_path(stamp_file, root_out_dir),
-    "--dir=" + rebase_path(root_out_dir, root_out_dir),
-  ]
+if (current_cpu == target_cpu && host_os == "win") {
+  action("set_appcontainer_acls") {
+    script = "//build/win/set_appcontainer_acls.py"
+    stamp_file = "$target_out_dir/acls.stamp"
+    inputs = [ script ]
+    outputs = [ stamp_file ]
+
+    args = [
+      "--stamp=" + rebase_path(stamp_file, root_out_dir),
+      "--dir=" + rebase_path(root_out_dir, root_out_dir),
+    ]
+  }
 }
 
 loadable_module("sbox_integration_test_hijack_shim_dll") {

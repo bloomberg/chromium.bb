@@ -100,8 +100,8 @@ TEST_F(WireCreatePipelineAsyncTest, CreateComputePipelineAsyncSuccess) {
     EXPECT_CALL(api, DeviceCreateShaderModule(apiDevice, _)).WillOnce(Return(apiCsModule));
 
     WGPUComputePipelineDescriptor descriptor{};
-    descriptor.computeStage.module = csModule;
-    descriptor.computeStage.entryPoint = "main";
+    descriptor.compute.module = csModule;
+    descriptor.compute.entryPoint = "main";
 
     wgpuDeviceCreateComputePipelineAsync(device, &descriptor,
                                          ToMockCreateComputePipelineAsyncCallback, this);
@@ -129,8 +129,8 @@ TEST_F(WireCreatePipelineAsyncTest, CreateComputePipelineAsyncError) {
     EXPECT_CALL(api, DeviceCreateShaderModule(apiDevice, _)).WillOnce(Return(apiCsModule));
 
     WGPUComputePipelineDescriptor descriptor{};
-    descriptor.computeStage.module = csModule;
-    descriptor.computeStage.entryPoint = "main";
+    descriptor.compute.module = csModule;
+    descriptor.compute.entryPoint = "main";
 
     wgpuDeviceCreateComputePipelineAsync(device, &descriptor,
                                          ToMockCreateComputePipelineAsyncCallback, this);
@@ -157,7 +157,7 @@ TEST_F(WireCreatePipelineAsyncTest, CreateRenderPipelineAsyncSuccess) {
     WGPUShaderModule apiVsModule = api.GetNewShaderModule();
     EXPECT_CALL(api, DeviceCreateShaderModule(apiDevice, _)).WillOnce(Return(apiVsModule));
 
-    WGPURenderPipelineDescriptor2 pipelineDescriptor{};
+    WGPURenderPipelineDescriptor pipelineDescriptor{};
     pipelineDescriptor.vertex.module = vsModule;
     pipelineDescriptor.vertex.entryPoint = "main";
 
@@ -190,7 +190,7 @@ TEST_F(WireCreatePipelineAsyncTest, CreateRenderPipelineAsyncError) {
     WGPUShaderModule apiVsModule = api.GetNewShaderModule();
     EXPECT_CALL(api, DeviceCreateShaderModule(apiDevice, _)).WillOnce(Return(apiVsModule));
 
-    WGPURenderPipelineDescriptor2 pipelineDescriptor{};
+    WGPURenderPipelineDescriptor pipelineDescriptor{};
     pipelineDescriptor.vertex.module = vsModule;
     pipelineDescriptor.vertex.entryPoint = "main";
 
@@ -228,7 +228,7 @@ TEST_F(WireCreatePipelineAsyncTest, CreateRenderPipelineAsyncThenDisconnect) {
     fragment.module = vsModule;
     fragment.entryPoint = "main";
 
-    WGPURenderPipelineDescriptor2 pipelineDescriptor{};
+    WGPURenderPipelineDescriptor pipelineDescriptor{};
     pipelineDescriptor.vertex.module = vsModule;
     pipelineDescriptor.vertex.entryPoint = "main";
     pipelineDescriptor.fragment = &fragment;
@@ -258,8 +258,8 @@ TEST_F(WireCreatePipelineAsyncTest, CreateComputePipelineAsyncThenDisconnect) {
     EXPECT_CALL(api, DeviceCreateShaderModule(apiDevice, _)).WillOnce(Return(apiCsModule));
 
     WGPUComputePipelineDescriptor descriptor{};
-    descriptor.computeStage.module = csModule;
-    descriptor.computeStage.entryPoint = "main";
+    descriptor.compute.module = csModule;
+    descriptor.compute.entryPoint = "main";
 
     wgpuDeviceCreateComputePipelineAsync(device, &descriptor,
                                          ToMockCreateComputePipelineAsyncCallback, this);
@@ -289,7 +289,7 @@ TEST_F(WireCreatePipelineAsyncTest, CreateRenderPipelineAsyncAfterDisconnect) {
     fragment.module = vsModule;
     fragment.entryPoint = "main";
 
-    WGPURenderPipelineDescriptor2 pipelineDescriptor{};
+    WGPURenderPipelineDescriptor pipelineDescriptor{};
     pipelineDescriptor.vertex.module = vsModule;
     pipelineDescriptor.vertex.entryPoint = "main";
     pipelineDescriptor.fragment = &fragment;
@@ -314,8 +314,8 @@ TEST_F(WireCreatePipelineAsyncTest, CreateComputePipelineAsyncAfterDisconnect) {
     EXPECT_CALL(api, DeviceCreateShaderModule(apiDevice, _)).WillOnce(Return(apiCsModule));
 
     WGPUComputePipelineDescriptor descriptor{};
-    descriptor.computeStage.module = csModule;
-    descriptor.computeStage.entryPoint = "main";
+    descriptor.compute.module = csModule;
+    descriptor.compute.entryPoint = "main";
 
     FlushClient();
 
@@ -335,7 +335,7 @@ TEST_F(WireCreatePipelineAsyncTest, DeviceDeletedBeforeCallback) {
     WGPUShaderModule apiModule = api.GetNewShaderModule();
     EXPECT_CALL(api, DeviceCreateShaderModule(apiDevice, _)).WillOnce(Return(apiModule));
 
-    WGPURenderPipelineDescriptor2 pipelineDescriptor{};
+    WGPURenderPipelineDescriptor pipelineDescriptor{};
     pipelineDescriptor.vertex.module = module;
     pipelineDescriptor.vertex.entryPoint = "main";
 
@@ -361,6 +361,9 @@ TEST_F(WireCreatePipelineAsyncTest, DeviceDeletedBeforeCallback) {
     EXPECT_CALL(api, QueueRelease(apiQueue)).Times(1).InSequence(s1);
     EXPECT_CALL(api, ShaderModuleRelease(apiModule)).Times(1).InSequence(s2);
     EXPECT_CALL(api, OnDeviceSetUncapturedErrorCallback(apiDevice, nullptr, nullptr))
+        .Times(1)
+        .InSequence(s1, s2);
+    EXPECT_CALL(api, OnDeviceSetLoggingCallback(apiDevice, nullptr, nullptr))
         .Times(1)
         .InSequence(s1, s2);
     EXPECT_CALL(api, OnDeviceSetDeviceLostCallback(apiDevice, nullptr, nullptr))

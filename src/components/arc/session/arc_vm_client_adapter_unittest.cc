@@ -4,6 +4,7 @@
 
 #include "components/arc/session/arc_vm_client_adapter.h"
 
+#include <inttypes.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -24,8 +25,10 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/posix/safe_strerror.h"
+#include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/test/bind.h"
@@ -84,7 +87,7 @@ UpgradeParams GetPopulatedUpgradeParams() {
   params.skip_boot_completed_broadcast = true;
   params.packages_cache_mode = UpgradeParams::PackageCacheMode::COPY_ON_INIT;
   params.skip_gms_core_cache = true;
-  params.supervision_transition = ArcSupervisionTransition::CHILD_TO_REGULAR;
+  params.management_transition = ArcManagementTransition::CHILD_TO_REGULAR;
   params.locale = "en-US";
   params.preferred_languages = {"en_US", "en", "ja"};
   params.is_demo_session = true;
@@ -229,11 +232,6 @@ class TestArcVmBootNotificationServer
     fd_.reset(-1);
   }
 
-  // Sets a callback to be run immediately after the next connection.
-  void SetConnectionCallback(base::OnceClosure callback) {
-    callback_ = std::move(callback);
-  }
-
   int connection_count() { return num_connections_; }
 
   std::string received_data() { return received_; }
@@ -255,9 +253,6 @@ class TestArcVmBootNotificationServer
       out.append(buf, len);
     }
     received_.append(out);
-
-    if (callback_)
-      std::move(callback_).Run();
   }
 
   void OnFileCanWriteWithoutBlocking(int fd) override {}
@@ -267,7 +262,6 @@ class TestArcVmBootNotificationServer
   std::unique_ptr<base::MessagePumpForUI::FdWatchController> controller_;
   int num_connections_ = 0;
   std::string received_;
-  base::OnceClosure callback_;
 };
 
 class FakeDemoModeDelegate : public ArcClientAdapter::DemoModeDelegate {
@@ -1195,7 +1189,7 @@ TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_VariousParams2) {
   // Use slightly different params than StartUpgradeArc_VariousParams.
   params.packages_cache_mode =
       UpgradeParams::PackageCacheMode::SKIP_SETUP_COPY_ON_INIT;
-  params.supervision_transition = ArcSupervisionTransition::REGULAR_TO_CHILD;
+  params.management_transition = ArcManagementTransition::REGULAR_TO_CHILD;
   params.preferred_languages = {"en_US"};
 
   UpgradeArcWithParams(true, std::move(params));
@@ -1669,30 +1663,23 @@ TEST_F(ArcVmClientAdapterTest, TestGetArcVmUreadaheadModeDisabled) {
 // twice: once in StartMiniArc to check that it is listening, and the second
 // time in UpgradeArc to send props.
 TEST_F(ArcVmClientAdapterTest, TestConnectToBootNotificationServer) {
-  // Stop the RunLoop after a connection to the server.
-  boot_notification_server()->SetConnectionCallback(run_loop()->QuitClosure());
   SetValidUserInfo();
-  adapter()->StartMiniArc(
-      {}, base::BindOnce([](bool result) { EXPECT_TRUE(result); }));
-  run_loop()->Run();
-
+  StartMiniArc();
   EXPECT_EQ(boot_notification_server()->connection_count(), 1);
   EXPECT_TRUE(boot_notification_server()->received_data().empty());
 
-  RecreateRunLoop();
-  boot_notification_server()->SetConnectionCallback(run_loop()->QuitClosure());
-  adapter()->UpgradeArc(
-      GetPopulatedUpgradeParams(),
-      base::BindOnce([](bool result) { EXPECT_TRUE(result); }));
-  run_loop()->Run();
-
+  UpgradeArcWithParams(/*expect_success=*/true, GetPopulatedUpgradeParams());
   EXPECT_EQ(boot_notification_server()->connection_count(), 2);
   EXPECT_FALSE(boot_notification_server()->received_data().empty());
+
   // Compare received data to expected output
-  std::string expected_props = base::JoinString(
-      GenerateUpgradePropsForTesting(GetPopulatedUpgradeParams(), kSerialNumber,
-                                     "ro.boot"),
-      "\n");
+  std::string expected_props = base::StringPrintf(
+      "CID=%" PRId64 "\n%s", kCid,
+      base::JoinString(
+          GenerateUpgradePropsForTesting(GetPopulatedUpgradeParams(),
+                                         kSerialNumber, "ro.boot"),
+          "\n")
+          .c_str());
   EXPECT_EQ(boot_notification_server()->received_data(), expected_props);
 }
 
@@ -1853,6 +1840,86 @@ TEST_F(ArcVmClientAdapterTest, ArcVmUseHugePagesDisabled) {
   StartMiniArcWithParams(true, std::move(start_params));
   auto request = GetTestConciergeClient()->start_arc_vm_request();
   EXPECT_FALSE(request.use_hugepages());
+}
+
+// Test that StartArcVmRequest has no memory_mib field when kVmMemorySize is
+// disabled.
+TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(kVmMemorySize);
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(request.memory_mib(), 0u);
+}
+
+// Test that StartArcVmRequest has `memory_mib == system memory` when
+// kVmMemorySize is enabled with no maximum and shift_mib := 0.
+TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledBig) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["shift_mib"] = "0";
+  feature_list.InitAndEnableFeatureWithParameters(kVmMemorySize, params);
+  base::SystemMemoryInfoKB info;
+  ASSERT_TRUE(base::GetSystemMemoryInfo(&info));
+  const uint32_t total_mib = info.total / 1024;
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(request.memory_mib(), total_mib);
+}
+
+// Test that StartArcVmRequest has `memory_mib == system memory - 1024` when
+// kVmMemorySize is enabled with no maximum and shift_mib := -1024.
+TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledSmall) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["shift_mib"] = "-1024";
+  feature_list.InitAndEnableFeatureWithParameters(kVmMemorySize, params);
+  base::SystemMemoryInfoKB info;
+  ASSERT_TRUE(base::GetSystemMemoryInfo(&info));
+  const uint32_t total_mib = info.total / 1024;
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(request.memory_mib(), total_mib - 1024);
+}
+
+// Test that StartArcVmRequest has memory_mib unset when kVmMemorySize is
+// enabled, but the requested size is too low (due to max_mib being lower than
+// the 2048 safety minimum).
+TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledLow) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["shift_mib"] = "0";
+  params["max_mib"] = "1024";
+  feature_list.InitAndEnableFeatureWithParameters(kVmMemorySize, params);
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  // The 1024 max_mib is below the 2048 MiB safety cut-off, so we expect
+  // memory_mib to be unset.
+  EXPECT_EQ(request.memory_mib(), 0u);
+}
+
+// Test that StartArcVmRequest has `memory_mib == 2049` when kVmMemorySize is
+// enabled with max_mib := 2049.
+// NOTE: requires that the test running system has more than 2049 MiB of RAM.
+TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledMax) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["shift_mib"] = "0";
+  params["max_mib"] = "2049";  // Above the 2048 minimum cut-off.
+  feature_list.InitAndEnableFeatureWithParameters(kVmMemorySize, params);
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(request.memory_mib(), 2049u);
 }
 
 struct DalvikMemoryProfileTestParam {

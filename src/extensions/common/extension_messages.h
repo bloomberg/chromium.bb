@@ -33,21 +33,17 @@
 #include "extensions/common/extension_guid.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/message_bundle.h"
-#include "extensions/common/mojom/action_type.mojom-shared.h"
-#include "extensions/common/mojom/api_permission_id.mojom-shared.h"
 #include "extensions/common/mojom/css_origin.mojom-shared.h"
+#include "extensions/common/mojom/event_dispatcher.mojom.h"
 #include "extensions/common/mojom/feature_session_type.mojom.h"
 #include "extensions/common/mojom/frame.mojom.h"
 #include "extensions/common/mojom/host_id.mojom.h"
 #include "extensions/common/mojom/injection_type.mojom-shared.h"
 #include "extensions/common/mojom/manifest.mojom-shared.h"
 #include "extensions/common/mojom/run_location.mojom-shared.h"
-#include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/socket_permission_data.h"
 #include "extensions/common/permissions/usb_device_permission_data.h"
 #include "extensions/common/stack_frame.h"
-#include "extensions/common/url_pattern.h"
-#include "extensions/common/url_pattern_set.h"
 #include "extensions/common/user_script.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_start.h"
@@ -66,9 +62,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::SocketPermissionRequest::OperationType,
 
 IPC_ENUM_TRAITS_MAX_VALUE(extensions::mojom::RunLocation,
                           extensions::mojom::RunLocation::kMaxValue)
-
-IPC_ENUM_TRAITS_MAX_VALUE(extensions::mojom::ActionType,
-                          extensions::mojom::ActionType::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(extensions::MessagingEndpoint::Type,
                           extensions::MessagingEndpoint::Type::kLast)
@@ -142,26 +135,26 @@ IPC_STRUCT_TRAITS_BEGIN(extensions::mojom::RequestParams)
   IPC_STRUCT_TRAITS_MEMBER(service_worker_version_id)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_BEGIN(ExtensionMsg_DispatchEvent_Params)
+IPC_STRUCT_TRAITS_BEGIN(extensions::mojom::DispatchEventParams)
   // If this event is for a service worker, then this is the worker thread
   // id. Otherwise, this is 0.
-  IPC_STRUCT_MEMBER(int, worker_thread_id)
+  IPC_STRUCT_TRAITS_MEMBER(worker_thread_id)
 
   // The id of the extension to dispatch the event to.
-  IPC_STRUCT_MEMBER(std::string, extension_id)
+  IPC_STRUCT_TRAITS_MEMBER(extension_id)
 
   // The name of the event to dispatch.
-  IPC_STRUCT_MEMBER(std::string, event_name)
+  IPC_STRUCT_TRAITS_MEMBER(event_name)
 
   // The id of the event for use in the EventAck response message.
-  IPC_STRUCT_MEMBER(int, event_id)
+  IPC_STRUCT_TRAITS_MEMBER(event_id)
 
   // Whether or not the event is part of a user gesture.
-  IPC_STRUCT_MEMBER(bool, is_user_gesture)
+  IPC_STRUCT_TRAITS_MEMBER(is_user_gesture)
 
   // Additional filtering info for the event.
-  IPC_STRUCT_MEMBER(extensions::EventFilteringInfo, filtering_info)
-IPC_STRUCT_END()
+  IPC_STRUCT_TRAITS_MEMBER(filtering_info)
+IPC_STRUCT_TRAITS_END()
 
 // Struct containing information about the sender of connect() calls that
 // originate from a tab.
@@ -279,40 +272,12 @@ IPC_STRUCT_TRAITS_BEGIN(extensions::EventFilteringInfo)
   IPC_STRUCT_TRAITS_MEMBER(window_exposed_by_default)
 IPC_STRUCT_TRAITS_END()
 
-// Identifier containing info about a service worker, used in event listener
-// IPCs.
-IPC_STRUCT_BEGIN(ServiceWorkerIdentifier)
-  IPC_STRUCT_MEMBER(GURL, scope)
-  IPC_STRUCT_MEMBER(int64_t, version_id)
-  IPC_STRUCT_MEMBER(int, thread_id)
-IPC_STRUCT_END()
-
 // Singly-included section for custom IPC traits.
 #ifndef INTERNAL_EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
 #define INTERNAL_EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
 
 // Map of extensions IDs to the executing script paths.
 typedef std::map<std::string, std::set<std::string> > ExecutingScriptsMap;
-
-struct ExtensionMsg_PermissionSetStruct {
-  ExtensionMsg_PermissionSetStruct();
-  explicit ExtensionMsg_PermissionSetStruct(
-      const extensions::PermissionSet& permissions);
-  ~ExtensionMsg_PermissionSetStruct();
-
-  ExtensionMsg_PermissionSetStruct(ExtensionMsg_PermissionSetStruct&& other);
-  ExtensionMsg_PermissionSetStruct& operator=(
-      ExtensionMsg_PermissionSetStruct&& other);
-
-  std::unique_ptr<const extensions::PermissionSet> ToPermissionSet() const;
-
-  extensions::APIPermissionSet apis;
-  extensions::ManifestPermissionSet manifest_permissions;
-  extensions::URLPatternSet explicit_hosts;
-  extensions::URLPatternSet scriptable_hosts;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionMsg_PermissionSetStruct);
-};
 
 struct ExtensionHostMsg_AutomationQuerySelector_Error {
   enum Value { kNone, kNoDocument, kNodeDestroyed };
@@ -321,69 +286,6 @@ struct ExtensionHostMsg_AutomationQuerySelector_Error {
 
   Value value;
 };
-
-namespace IPC {
-
-template <>
-struct ParamTraits<URLPattern> {
-  typedef URLPattern param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<extensions::URLPatternSet> {
-  typedef extensions::URLPatternSet param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<extensions::mojom::APIPermissionID> {
-  typedef extensions::mojom::APIPermissionID param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<extensions::APIPermissionSet> {
-  typedef extensions::APIPermissionSet param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<extensions::ManifestPermissionSet> {
-  typedef extensions::ManifestPermissionSet param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ExtensionMsg_PermissionSetStruct> {
-  typedef ExtensionMsg_PermissionSetStruct param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-}  // namespace IPC
 
 #endif  // INTERNAL_EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
 
@@ -395,32 +297,18 @@ IPC_STRUCT_TRAITS_BEGIN(ExtensionHostMsg_AutomationQuerySelector_Error)
 IPC_STRUCT_TRAITS_MEMBER(value)
 IPC_STRUCT_TRAITS_END()
 
-// Parameters structure for ExtensionMsg_UpdatePermissions.
-IPC_STRUCT_BEGIN(ExtensionMsg_UpdatePermissions_Params)
-  IPC_STRUCT_MEMBER(std::string, extension_id)
-  IPC_STRUCT_MEMBER(ExtensionMsg_PermissionSetStruct, active_permissions)
-  IPC_STRUCT_MEMBER(ExtensionMsg_PermissionSetStruct, withheld_permissions)
-  IPC_STRUCT_MEMBER(extensions::URLPatternSet, policy_blocked_hosts)
-  IPC_STRUCT_MEMBER(extensions::URLPatternSet, policy_allowed_hosts)
-  IPC_STRUCT_MEMBER(bool, uses_default_policy_host_restrictions)
-IPC_STRUCT_END()
-
 // Messages sent from the browser to the renderer:
 
 // Sent to the renderer to dispatch an event to an extension.
 // Note: |event_args| is separate from the params to avoid having the message
 // take ownership.
 IPC_MESSAGE_CONTROL2(ExtensionMsg_DispatchEvent,
-                     ExtensionMsg_DispatchEvent_Params /* params */,
+                     extensions::mojom::DispatchEventParams /* params */,
                      base::ListValue /* event_args */)
 
 // Tell the render view which browser window it's being attached to.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_UpdateBrowserWindowId,
                     int /* id of browser window */)
-
-// Tell the renderer to update an extension's permission set.
-IPC_MESSAGE_CONTROL1(ExtensionMsg_UpdatePermissions,
-                     ExtensionMsg_UpdatePermissions_Params)
 
 // The browser's response to the ExtensionMsg_WakeEventPage IPC.
 IPC_MESSAGE_CONTROL2(ExtensionMsg_WakeEventPageResponse,
@@ -460,56 +348,6 @@ IPC_MESSAGE_ROUTED3(ExtensionMsg_DispatchOnDisconnect,
                     std::string /* error_message */)
 
 // Messages sent from the renderer to the browser:
-
-// Notify the browser that the given extension added a listener to an event from
-// a lazy background page.
-IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddLazyListener,
-                     std::string /* extension_id */,
-                     std::string /* name */)
-
-// Notify the browser that the given extension is no longer interested in
-// receiving the given event from a lazy background page.
-IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RemoveLazyListener,
-                     std::string /* extension_id */,
-                     std::string /* event_name */)
-
-// Notify the browser that the given extension added a listener to an event from
-// an extension service worker.
-IPC_MESSAGE_CONTROL3(ExtensionHostMsg_AddLazyServiceWorkerListener,
-                     std::string /* extension_id */,
-                     std::string /* name */,
-                     GURL /* service_worker_scope */)
-
-// Notify the browser that the given extension is no longer interested in
-// receiving the given event from an extension service worker.
-IPC_MESSAGE_CONTROL3(ExtensionHostMsg_RemoveLazyServiceWorkerListener,
-                     std::string /* extension_id */,
-                     std::string /* name */,
-                     GURL /* service_worker_scope */)
-
-// Notify the browser that the given extension added a listener to instances of
-// the named event that satisfy the filter.
-// If |sw_identifier| is specified, it implies that the listener is for a
-// service worker, and the param is used to identify the worker.
-IPC_MESSAGE_CONTROL5(
-    ExtensionHostMsg_AddFilteredListener,
-    std::string /* extension_id */,
-    std::string /* name */,
-    absl::optional<ServiceWorkerIdentifier> /* sw_identifier */,
-    base::DictionaryValue /* filter */,
-    bool /* lazy */)
-
-// Notify the browser that the given extension is no longer interested in
-// instances of the named event that satisfy the filter.
-// If |sw_identifier| is specified, it implies that the listener is for a
-// service worker, and the param is used to identify the worker.
-IPC_MESSAGE_CONTROL5(
-    ExtensionHostMsg_RemoveFilteredListener,
-    std::string /* extension_id */,
-    std::string /* name */,
-    absl::optional<ServiceWorkerIdentifier> /* sw_identifier */,
-    base::DictionaryValue /* filter */,
-    bool /* lazy */)
 
 // Notify the browser that an event has finished being dispatched.
 IPC_MESSAGE_ROUTED1(ExtensionHostMsg_EventAck, int /* message_id */)

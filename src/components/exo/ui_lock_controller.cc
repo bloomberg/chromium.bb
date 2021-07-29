@@ -4,8 +4,8 @@
 
 #include "components/exo/ui_lock_controller.h"
 
+#include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/app_types.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/bind.h"
@@ -55,6 +55,11 @@ constexpr auto kExitPopupDuration = base::TimeDelta::FromSeconds(3);
 constexpr float kExitPopupDisplayHeight = 3.f;
 // Hide the exit popup if mouse is below this height.
 constexpr float kExitPopupHideHeight = 150.f;
+
+constexpr int kUILockControllerSeatObserverPriority = 1;
+static_assert(
+    exo::Seat::IsValidObserverPriority(kUILockControllerSeatObserverPriority),
+    "kUILockCOntrollerSeatObserverPriority is not in the valid range");
 
 // Create and position Esc notification.
 views::Widget* CreateEscNotification(aura::Window* parent) {
@@ -220,7 +225,7 @@ constexpr auto kExcludedFlags = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
 
 UILockController::UILockController(Seat* seat) : seat_(seat) {
   WMHelper::GetInstance()->AddPreTargetHandler(this);
-  seat_->AddObserver(this);
+  seat_->AddObserver(this, kUILockControllerSeatObserverPriority);
 }
 
 UILockController::~UILockController() {

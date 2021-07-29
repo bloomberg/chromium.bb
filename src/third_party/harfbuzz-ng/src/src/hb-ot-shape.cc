@@ -149,13 +149,15 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
    * Decide who does positioning. GPOS, kerx, kern, or fallback.
    */
 
+  bool has_gsub = hb_ot_layout_has_substitution (face);
+  bool has_gpos = !disable_gpos && hb_ot_layout_has_positioning (face);
   if (0)
     ;
 #ifndef HB_NO_AAT_SHAPE
-  else if (hb_aat_layout_has_positioning (face))
+  else if (hb_aat_layout_has_positioning (face) && !(has_gsub && has_gpos))
     plan.apply_kerx = true;
 #endif
-  else if (!apply_morx && !disable_gpos && hb_ot_layout_has_positioning (face))
+  else if (!apply_morx && has_gpos)
     plan.apply_gpos = true;
 
   if (!plan.apply_kerx && (!has_gpos_kern || !plan.apply_gpos))
@@ -193,6 +195,12 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 				   script_fallback_mark_positioning;
 
 #ifndef HB_NO_AAT_SHAPE
+  /* If we're using morx shaping, we cancel mark position adjustment because
+     Apple Color Emoji assumes this will NOT be done when forming emoji sequences;
+     https://github.com/harfbuzz/harfbuzz/issues/2967. */
+  if (plan.apply_morx)
+    plan.adjust_mark_positioning_when_zeroing = false;
+
   /* Currently we always apply trak. */
   plan.apply_trak = plan.requested_tracking && hb_aat_layout_has_tracking (face);
 #endif
@@ -478,6 +486,14 @@ hb_set_unicode_props (hb_buffer_t *buffer)
     if (unlikely (_hb_glyph_info_get_general_category (&info[i]) == HB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL &&
 		  hb_in_range<hb_codepoint_t> (info[i].codepoint, 0x1F3FBu, 0x1F3FFu)))
     {
+      _hb_glyph_info_set_continuation (&info[i]);
+    }
+    /* Regional_Indicators are hairy as hell...
+     * https://github.com/harfbuzz/harfbuzz/issues/2265 */
+    else if (unlikely (i && hb_in_range<hb_codepoint_t> (info[i].codepoint, 0x1F1E6u, 0x1F1FFu)))
+    {
+      if (hb_in_range<hb_codepoint_t> (info[i - 1].codepoint, 0x1F1E6u, 0x1F1FFu) &&
+	  !_hb_glyph_info_is_continuation (&info[i - 1]))
 	_hb_glyph_info_set_continuation (&info[i]);
     }
 #ifndef HB_NO_EMOJI_SEQUENCES
@@ -1164,7 +1180,7 @@ _hb_ot_shape (hb_shape_plan_t    *shape_plan,
  * @lookup_indexes: (out): The #hb_set_t set of lookups returned
  *
  * Computes the complete set of GSUB or GPOS lookups that are applicable
- * under a given @shape_plan. 
+ * under a given @shape_plan.
  *
  * Since: 0.9.7
  **/

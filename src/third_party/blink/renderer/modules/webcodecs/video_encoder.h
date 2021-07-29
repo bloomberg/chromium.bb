@@ -14,7 +14,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk_output_callback.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoder_base.h"
-#include "third_party/blink/renderer/modules/webcodecs/gpu_factories_retriever.h"
 #include "third_party/blink/renderer/modules/webcodecs/hardware_preference.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 
@@ -88,6 +87,7 @@ class MODULES_EXPORT VideoEncoder final
   void ProcessEncode(Request* request) override;
   void ProcessConfigure(Request* request) override;
   void ProcessReconfigure(Request* request) override;
+  void ResetInternal() override;
 
   void UpdateEncoderLog(std::string encoder_name, bool is_hw_accelerated);
 
@@ -108,6 +108,10 @@ class MODULES_EXPORT VideoEncoder final
       scoped_refptr<media::VideoFrame> txt_frame);
 
   media::VideoFramePool readback_frame_pool_;
+
+  // The number of encoding requests currently handled by |media_encoder_|
+  // Should not exceed |kMaxActiveEncodes|.
+  int active_encodes_ = 0;
 };
 
 }  // namespace blink

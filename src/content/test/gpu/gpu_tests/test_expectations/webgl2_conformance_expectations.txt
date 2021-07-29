@@ -116,6 +116,7 @@ crbug.com/891861 [ android no-passthrough ] WebglExtension_WEBGL_multi_draw_inst
 # ========================
 
 # Failing new updated tests
+crbug.com/891861 conformance2/extensions/webgl-multi-draw-instanced-base-vertex-base-instance.html [ Failure ]
 crbug.com/1131224 conformance2/rendering/framebuffer-mismatched-attachment-targets.html [ Failure ]
 crbug.com/1108086 [ no-passthrough ] conformance2/renderbuffers/framebuffer-object-attachment.html [ Failure ]
 crbug.com/angleproject/4807 [ win angle-d3d11 passthrough ] conformance2/glsl3/switch-case.html [ Failure ]
@@ -179,6 +180,8 @@ crbug.com/1198658 [ android android-pixel-2 ] deqp/functional/gles3/shaderoperat
 ####################
 # Win failures     #
 ####################
+
+crbug.com/1219015 [ win intel ] conformance/textures/misc/video-rotation.html [ Failure ]
 
 crbug.com/1204224 [ win7 angle-d3d11 amd passthrough ] conformance/textures/video/* [ RetryOnFailure ]
 crbug.com/1204224 [ win7 angle-d3d11 amd passthrough ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
@@ -279,9 +282,9 @@ crbug.com/1159539 [ win amd-0x7340 angle-d3d11 passthrough ] deqp/functional/gle
 # Flaky on AMD Win7
 crbug.com/989050 [ angle-d3d11 win7 amd ] conformance2/textures/misc/tex-unpack-params-imagedata.html [ RetryOnFailure ]
 
-# Passthrough command decoder / Linux / OpenGL / NVIDIA
-crbug.com/766918 [ angle-opengl linux passthrough nvidia ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-crbug.com/965648 [ angle-opengl linux passthrough nvidia ] deqp/functional/gles3/shaderstruct.html [ RetryOnFailure ]
+# Win / Intel
+crbug.com/1215624 [ win intel angle-d3d11 ] conformance2/textures/video/* [ RetryOnFailure ]
+crbug.com/1215624 [ win intel angle-d3d11 ] conformance2/textures/webgl_canvas/tex-2d-rgba8-rgba-unsigned_byte.html [ RetryOnFailure ]
 
 ####################
 # Mac failures     #
@@ -388,6 +391,8 @@ crbug.com/870856 [ mac amd ] conformance2/textures/misc/tex-base-level-bug.html 
 crbug.com/870856 [ mac amd no-passthrough ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
 
 crbug.com/1044638 [ mac amd ] conformance2/rendering/framebuffer-texture-level1.html [ RetryOnFailure ]
+crbug.com/1214931 [ mojave amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ RetryOnFailure ]
+crbug.com/1230781 [ mac amd-0x6821 ] conformance/canvas/to-data-url-test.html [ Failure ]
 
 # The transformfeedback tests are specialized for two different AMD
 # GPUs because of different failure modes on each.
@@ -419,6 +424,25 @@ crbug.com/659871 [ mac amd ] deqp/functional/gles3/shaderindexing/tmp.html [ Ret
 
 crbug.com/642822 [ mac amd ] conformance2/rendering/clipping-wide-points.html [ Failure ]
 
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] conformance2/textures/canvas/tex-2d-rgb5_a1-rgba-unsigned_byte.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb5_a1-rgba-unsigned_byte.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] conformance2/textures/image_bitmap_from_canvas/tex-2d-rgb5_a1-rgba-unsigned_byte.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] conformance2/textures/image_bitmap_from_video/tex-2d-rgb5_a1-rgba-unsigned_byte.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] conformance2/textures/video/tex-2d-rgb5_a1-rgba-unsigned_byte.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] conformance2/textures/webgl_canvas/tex-2d-rgb5_a1-rgba-unsigned_byte.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] deqp/functional/gles3/texturespecification/teximage2d_pbo_2d_00.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] deqp/functional/gles3/texturespecification/teximage2d_pbo_2d_01.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] deqp/functional/gles3/texturespecification/teximage3d_pbo_2d_array_00.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] deqp/functional/gles3/texturespecification/teximage3d_pbo_2d_array_01.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] deqp/functional/gles3/texturespecification/teximage3d_pbo_3d_00.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] deqp/functional/gles3/texturespecification/teximage3d_pbo_3d_01.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] deqp/functional/gles3/texturespecification/texsubimage2d_pbo_2d_00.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] deqp/functional/gles3/texturespecification/texsubimage2d_pbo_2d_01.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] deqp/functional/gles3/texturespecification/texsubimage2d_pbo_cube_01.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] deqp/functional/gles3/texturespecification/texsubimage2d_pbo_cube_02.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] deqp/functional/gles3/texturespecification/texsubimage2d_pbo_cube_03.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] deqp/functional/gles3/texturespecification/texsubimage3d_pbo_3d_00.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-renderer-gl ] deqp/functional/gles3/texturespecification/texsubimage3d_pbo_3d_01.html [ Failure ]
 
 # Mac Intel
 crbug.com/886970 [ mac intel-0xa2e ] conformance/rendering/canvas-alpha-bug.html [ Failure ]
@@ -471,6 +495,13 @@ crbug.com/982294 [ mac passthrough amd ] deqp/functional/gles3/transformfeedback
 crbug.com/982294 [ mac passthrough amd ] deqp/functional/gles3/transformfeedback/random_interleaved_lines.html [ Failure ]
 crbug.com/982294 [ mac passthrough amd ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
 crbug.com/982294 [ mac passthrough amd ] deqp/functional/gles3/transformfeedback/random_interleaved_triangles.html [ Failure ]
+
+crbug.com/1227762 [ bigsur amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/teximage3d_pbo_2d_array_00.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/teximage3d_pbo_2d_array_01.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/teximage3d_pbo_3d_00.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/teximage3d_pbo_3d_01.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/texsubimage3d_pbo_3d_00.html [ Failure ]
+crbug.com/1227762 [ bigsur amd-0x6821 angle-opengl passthrough ] deqp/functional/gles3/texturespecification/texsubimage3d_pbo_3d_01.html [ Failure ]
 
 # Mac Passthrough / NVIDIA
 crbug.com/982294 [ mac passthrough nvidia ] conformance/renderbuffers/framebuffer-object-attachment.html [ Failure ]
@@ -546,6 +577,8 @@ crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transf
 crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_lines.html [ Failure ]
 crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
 crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_triangles.html [ Failure ]
+crbug.com/1217713 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/shaderindexing/mat_00.html [ Failure ]
+crbug.com/1217713 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/shaderindexing/mat_02.html [ Failure ]
 
 # ARM-based Mac DTKs
 crbug.com/1130112 [ mac apple-apple-m1 ] deqp/functional/gles3/texturefiltering/cube_combinations_00.html [ Failure ]
@@ -603,6 +636,8 @@ crbug.com/703779 [ angle-opengl linux nvidia-0x1cb3 ] deqp/functional/gles3/fboc
 
 # Linux / OpenGL / NVIDIA failures
 crbug.com/angleproject/4555 [ linux angle-opengl passthrough nvidia ] conformance/misc/type-conversion-test.html [ Skip ]
+crbug.com/766918 [ angle-opengl linux passthrough nvidia ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
+crbug.com/965648 [ angle-opengl linux passthrough nvidia ] deqp/functional/gles3/shaderstruct.html [ RetryOnFailure ]
 
 # Linux GTX 1660
 crbug.com/1115314 [ linux nvidia-0x2184 angle-opengl passthrough ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
@@ -629,6 +664,9 @@ crbug.com/1152590 [ linux amd-0x7340 no-passthrough ] deqp/functional/gles3/inte
 [ android ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
 [ android qualcomm ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
 [ android qualcomm ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
+
+# Until Qualcomm devices on the waterfall and CQ are updated to Android S, skip this new test.
+crbug.com/1076188 [ android qualcomm ] conformance2/glsl3/fragment-shader-loop-crash.html [ Skip ]
 
 # Video tests are flaky. Sometimes the video is black.
 crbug.com/948894 [ android ] conformance/textures/video/* [ RetryOnFailure ]
@@ -760,3 +798,7 @@ crbug.com/1037958 [ mac amd-0x679e ] conformance2/transform_feedback/switching-o
 # Conflicts if between a generic os condition and a specific version
 #[ sierra nvidia debug angle-opengl ] WebglExtension_test_10 [ Failure ]
 #[ mac nvidia debug angle-opengl ] WebglExtension_test_10 [ Failure ]
+
+#######################################################################
+# Automated Entries After This Point - Do Not Manually Add Below Here #
+#######################################################################

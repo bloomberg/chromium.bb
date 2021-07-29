@@ -8,26 +8,50 @@ import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 
 import {DevToolsLocale} from './DevToolsLocale.js';
+import {LocalizedStringSet} from './LocalizedStringSet.js';
+
 import type * as i18nTypes from './i18nTypes.js';
+
+const UIStrings = {
+  /**
+  *@description μs is the short form of micro-seconds and the placeholder is a number
+  *@example {2} PH1
+  */
+  fmms: '{PH1} μs',
+  /**
+  *@description ms is the short form of milli-seconds and the placeholder is a decimal number
+  *@example {2.14} PH1
+  */
+  fms: '{PH1} ms',
+  /**
+  *@description s is short for seconds and the placeholder is a decimal number
+  *@example {2.14} PH1
+  */
+  fs: '{PH1} s',
+  /**
+  *@description min is short for minutes and the placeholder is a decimal number
+  *@example {2.2} PH1
+  */
+  fmin: '{PH1} min',
+  /**
+  *@description hrs is short for hours and the placeholder is a decimal number
+  *@example {2.2} PH1
+  */
+  fhrs: '{PH1} hrs',
+  /**
+  *@description days formatting and the placeholder is a decimal number
+  *@example {2.2} PH1
+  */
+  fdays: '{PH1} days',
+};
+
+const str_ = registerUIStrings('core/i18n/i18nImpl.ts', UIStrings);
+const i18nString = getLocalizedString.bind(undefined, str_);
 
 // All the locales that are part of the DevTools bundle and should not be fetched
 // remotely. Keep this list in sync with "copied_devtools_locale_files" in
 // "all_devtools_files.gni" (except the pseudo locales).
 const BUNDLED_LOCALES = new Set<string>(['en-US', 'en-XL', 'zh']);
-
-/**
- * The strings from the module.json file
- */
-let moduleJSONStrings: Object|undefined;
-
-/**
- * Returns an instance of an object of formatted strings based on locale. If the instance is not
- * set at the time of calling, it is created.
- */
-function getOrSetModuleJSONStrings(): Object {
-  moduleJSONStrings = moduleJSONStrings || i18nBundle.getRendererFormattedStrings(DevToolsLocale.instance().locale);
-  return moduleJSONStrings;
-}
 
 /**
  * Look up the best available locale for the requested language through these fall backs:
@@ -39,6 +63,13 @@ function getOrSetModuleJSONStrings(): Object {
  */
 export function lookupClosestSupportedDevToolsLocale(locale: string): string {
   return i18nBundle.lookupLocale(locale);
+}
+
+/**
+ * Returns a list of all supported DevTools locales, including pseudo locales.
+ */
+export function getAllSupportedDevToolsLocales(): string[] {
+  return i18nBundle.getAllSupportedLocales();
 }
 
 /**
@@ -77,62 +108,32 @@ export async function fetchAndRegisterLocaleData(locale: Intl.UnicodeBCP47Locale
  * meta files used to register module extensions.
  */
 export function getLazilyComputedLocalizedString(
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    str_: (id: string, values: Object) => Platform.UIString.LocalizedString, id: string, values: Object = {}): () =>
+    localizedStringSet: LocalizedStringSet, id: string, values: i18nTypes.Values = {}): () =>
     Platform.UIString.LocalizedString {
-  return (): Platform.UIString.LocalizedString => getLocalizedString(str_, id, values);
+  return (): Platform.UIString.LocalizedString => getLocalizedString(localizedStringSet, id, values);
 }
 
 /**
  * Retrieve the localized string.
  */
-export function getLocalizedString(
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    str_: (id: string, values: Object) => Platform.UIString.LocalizedString, id: string,
-    values: Object = {}): Platform.UIString.LocalizedString {
-  const icuMessage = str_(id, values);
-  return i18nBundle.getFormatted(icuMessage, DevToolsLocale.instance().locale) as Platform.UIString.LocalizedString;
+export function getLocalizedString(localizedStringSet: LocalizedStringSet, id: string, values: i18nTypes.Values = {}):
+    Platform.UIString.LocalizedString {
+  return localizedStringSet.getLocalizedString(id, values);
 }
 
 /**
  * Register a file's UIStrings with i18n, return function to generate the string ids.
  */
-export function registerUIStrings(path: string, stringStructure: Object): (id: string, values: Object) =>
-    Platform.UIString.LocalizedString {
-  /**
-   * Convert a message string & replacement values into an
-   * indexed id value in the form '{messageid} | # {index}'.
-   * */
-  const str: (id: string, value: Object) => Platform.UIString.LocalizedString = (id: string, value: Object) => {
-    try {
-      const i18nInstance = i18nBundle.createIcuMessageFn(path, stringStructure) as (id: string, values: Object) =>
-                               Platform.UIString.LocalizedString;
-      return i18nInstance(id, value);
-    } catch (e) {
-      // ID was not in the main file search for module.json strings
-      if (e instanceof i18nBundle.idNotInMainDictionaryException) {
-        const stringMappingArray = Object.getOwnPropertyNames(getOrSetModuleJSONStrings());
-        const index = stringMappingArray.indexOf(id);
-        if (index >= 0) {
-          return stringMappingArray[index] as Platform.UIString.LocalizedString;
-        }
-      }
-
-      return id as Platform.UIString.LocalizedString;
-    }
-  };
-
-  return str;
+export function registerUIStrings(path: string, stringStructure: {[key: string]: string}): LocalizedStringSet {
+  return new LocalizedStringSet(path, stringStructure);
 }
 
 /**
  * Returns a span element that may contains other DOM element as placeholders
  */
 export function getFormatLocalizedString(
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    str_: (id: string, values: Object) => Platform.UIString.LocalizedString, stringId: string,
-    placeholders: Record<string, Object>): Element {
-  const icuMessage = str_(stringId, placeholders);
+    localizedStringSet: LocalizedStringSet, stringId: string, placeholders: Record<string, Object>): Element {
+  const icuMessage = localizedStringSet.getIcuMessage(stringId, placeholders);
   const formatter = i18nBundle.getFormatter(icuMessage, DevToolsLocale.instance().locale);
 
   const icuElements = formatter.getAst().elements;
@@ -234,3 +235,53 @@ export function getLocalizedLanguageRegion(
   return `${languageInCurrentLocale}${wrappedRegionInCurrentLocale} - ${languageInTargetLocale}${
              wrappedRegionInTargetLocale}` as Platform.UIString.LocalizedString;
 }
+
+export const preciseMillisToString = function(ms: number, precision?: number): string {
+  precision = precision || 0;
+  return i18nString(UIStrings.fms, {PH1: ms.toFixed(precision)});
+};
+
+export const millisToString = function(ms: number, higherResolution?: boolean): string {
+  if (!isFinite(ms)) {
+    return '-';
+  }
+
+  if (ms === 0) {
+    return '0';
+  }
+
+  if (higherResolution && ms < 0.1) {
+    return i18nString(UIStrings.fmms, {PH1: (ms * 1000).toFixed(0)});
+  }
+  if (higherResolution && ms < 1000) {
+    return i18nString(UIStrings.fms, {PH1: (ms).toFixed(2)});
+  }
+  if (ms < 1000) {
+    return i18nString(UIStrings.fms, {PH1: (ms).toFixed(0)});
+  }
+
+  const seconds = ms / 1000;
+  if (seconds < 60) {
+    return i18nString(UIStrings.fs, {PH1: (seconds).toFixed(2)});
+  }
+
+  const minutes = seconds / 60;
+  if (minutes < 60) {
+    return i18nString(UIStrings.fmin, {PH1: (minutes).toFixed(1)});
+  }
+
+  const hours = minutes / 60;
+  if (hours < 24) {
+    return i18nString(UIStrings.fhrs, {PH1: (hours).toFixed(1)});
+  }
+
+  const days = hours / 24;
+  return i18nString(UIStrings.fdays, {PH1: (days).toFixed(1)});
+};
+
+export const secondsToString = function(seconds: number, higherResolution?: boolean): string {
+  if (!isFinite(seconds)) {
+    return '-';
+  }
+  return millisToString(seconds * 1000, higherResolution);
+};

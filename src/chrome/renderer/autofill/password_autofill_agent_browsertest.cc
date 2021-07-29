@@ -5,8 +5,10 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 
 #include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -339,14 +341,14 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     password_generation_->RequestPasswordManagerClientForTesting();
     base::RunLoop().RunUntilIdle();  // Executes binding the interfaces.
     // Reject all requests to bind driver/client to anything but the test class:
-    view_->GetMainRenderFrame()
+    GetMainRenderFrame()
         ->GetRemoteAssociatedInterfaces()
         ->OverrideBinderForTesting(
             mojom::PasswordGenerationDriver::Name_,
             base::BindRepeating([](mojo::ScopedInterfaceEndpointHandle handle) {
               handle.reset();
             }));
-    view_->GetMainRenderFrame()
+    GetMainRenderFrame()
         ->GetRemoteAssociatedInterfaces()
         ->OverrideBinderForTesting(
             mojom::PasswordManagerDriver::Name_,
@@ -414,7 +416,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     // Because the test cases only involve the main frame in this test,
     // the fake password client and the fake driver is only used on main frame.
     blink::AssociatedInterfaceProvider* remote_associated_interfaces =
-        view_->GetMainRenderFrame()->GetRemoteAssociatedInterfaces();
+        GetMainRenderFrame()->GetRemoteAssociatedInterfaces();
     remote_associated_interfaces->OverrideBinderForTesting(
         mojom::PasswordGenerationDriver::Name_,
         base::BindRepeating(
@@ -521,7 +523,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     // This call is necessary to setup the autofill agent appropriate for the
     // user selection; simulates the menu actually popping up.
     SimulatePointClick(gfx::Point(1, 1));
-    autofill_agent_->FormControlElementClicked(input, false);
+    autofill_agent_->FormControlElementClicked(input);
 
     autofill_agent_->FillPasswordSuggestion(username, password);
   }
@@ -636,8 +638,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   // suggestions, or only those starting with |username|.
   void CheckSuggestions(const std::u16string& username, bool show_all) {
     auto show_all_matches = [show_all](int options) {
-      return (show_all == ((options & autofill::SHOW_ALL) != 0)) ||
-             (show_all == ((options & autofill::IS_PASSWORD_FIELD) != 0));
+      return show_all == ((options & autofill::SHOW_ALL) != 0);
     };
 
     EXPECT_CALL(fake_driver_, ShowPasswordSuggestions(
@@ -1290,6 +1291,27 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_Redirection) {
   LoadHTML(kWebpageWithDynamicContent);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
+}
+
+// Tests that fields that are not under a <form> tag are only sent to
+// PasswordManager if they contain a password field.
+TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_UnownedtextInputs) {
+  fake_driver_.reset_password_forms_calls();
+  const char kFormlessFieldsNonPasswordHTML[] =
+      "  <INPUT type='text' name='email'>"
+      "  <INPUT type='submit' value='Login'/>";
+  LoadHTML(kFormlessFieldsNonPasswordHTML);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(fake_driver_.called_password_forms_parsed());
+
+  fake_driver_.reset_password_forms_calls();
+  const char kFormlessFieldsPasswordHTML[] =
+      "  <INPUT type='text' name='email'>"
+      "  <INPUT type='password' name='pw'>"
+      "  <INPUT type='submit' value='Login'/>";
+  LoadHTML(kFormlessFieldsPasswordHTML);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(fake_driver_.called_password_forms_parsed());
 }
 
 // Tests that a password will only be filled as a suggested and will not be
@@ -2021,8 +2043,7 @@ TEST_F(PasswordAutofillAgentTest, NoPopupOnPasswordFieldWithoutSuggestions) {
 // Tests the autosuggestions that are given when the element is clicked.
 // Specifically, tests when the user clicks on the username element after page
 // load and the element is autofilled, when the user clicks on an element that
-// has a non-matching username, and when the user clicks on an element that's
-// already been autofilled and they've already modified.
+// has a matching username.
 TEST_F(PasswordAutofillAgentTest, CredentialsOnClick) {
   // Simulate the browser sending back the login info.
   SimulateOnFillPasswordForm(fill_data_);
@@ -2038,18 +2059,13 @@ TEST_F(PasswordAutofillAgentTest, CredentialsOnClick) {
 
   // Simulate a user clicking on the username element. This should produce a
   // message with all the usernames.
-  autofill_agent_->FormControlElementClicked(username_element_, false);
-  CheckSuggestions(std::u16string(), false);
+  autofill_agent_->FormControlElementClicked(username_element_);
+  CheckSuggestions(std::u16string(), true);
 
-  // Now simulate a user typing in an unrecognized username and then
-  // clicking on the username element. This should also produce a message with
-  // all the usernames.
-  EXPECT_CALL(fake_driver_, ShowPasswordSuggestions).Times(AtMost(3));
-  SimulateUsernameTyping("baz");
-
-  autofill_agent_->FormControlElementClicked(username_element_, true);
-  CheckSuggestions(u"baz", true);
-  ClearUsernameAndPasswordFields();
+  // Now simulate a user typing in a saved username. The list is filtered.
+  EXPECT_CALL(fake_driver_, ShowPasswordSuggestions(_, _, 0, _))
+      .Times(testing::AtLeast(1));
+  SimulateUsernameTyping(kAliceUsername);
 }
 
 // Tests that there is an autosuggestion from the password manager when the
@@ -2069,7 +2085,7 @@ TEST_F(PasswordAutofillAgentTest, NoCredentialsOnPasswordClick) {
 
   // Simulate a user clicking on the password element. This should produce no
   // message.
-  autofill_agent_->FormControlElementClicked(password_element_, false);
+  autofill_agent_->FormControlElementClicked(password_element_);
   EXPECT_CALL(fake_driver_, ShowPasswordSuggestions);
   base::RunLoop().RunUntilIdle();
 }
@@ -2732,7 +2748,7 @@ TEST_F(PasswordAutofillAgentTest,
   SimulateOnFillPasswordForm(fill_data_);
   // Simulate a user clicking on the username element. This should produce a
   // message.
-  autofill_agent_->FormControlElementClicked(username_element_, true);
+  autofill_agent_->FormControlElementClicked(username_element_);
   CheckSuggestions(u"", true);
 }
 
@@ -2749,7 +2765,7 @@ TEST_F(PasswordAutofillAgentTest,
   SimulateOnFillPasswordForm(fill_data_);
   // Simulate a user clicking on the password element. This should produce a
   // message.
-  autofill_agent_->FormControlElementClicked(password_element_, true);
+  autofill_agent_->FormControlElementClicked(password_element_);
   CheckSuggestions(u"", true);
 }
 
@@ -3346,7 +3362,7 @@ TEST_F(PasswordAutofillAgentTest, SuggestPasswordFieldSignInForm) {
 
   // Simulate a user clicking on the password element. This should produce a
   // dropdown with suggestion of all available usernames.
-  autofill_agent_->FormControlElementClicked(password_element_, false);
+  autofill_agent_->FormControlElementClicked(password_element_);
   CheckSuggestions(u"", true);
 }
 
@@ -3402,7 +3418,14 @@ TEST_F(PasswordAutofillAgentTest, ShowAutofillSignaturesFlag) {
     if (show_signatures)
       EnableShowAutofillSignatures();
 
-    LoadHTML(kFormHTML);
+    // An empty DOMSubtreeModified event listener is added for
+    // https://crbug.com/1219852.
+    std::string dom_with_dom_subtree_modified_listener =
+        base::StrCat({"<SCRIPT>"
+                      "window.addEventListener('DOMSubtreeModified', () => {});"
+                      "</SCRIPT>",
+                      kFormHTML});
+    LoadHTML(dom_with_dom_subtree_modified_listener.c_str());
     WebDocument document = GetMainFrame()->GetDocument();
     WebFormElement form_element =
         document.GetElementById(WebString::FromASCII("LoginTestForm"))
@@ -3435,7 +3458,7 @@ TEST_F(PasswordAutofillAgentTest, SuggestWhenJavaScriptUpdatesFieldNames) {
 
   // Simulate a user clicking on the password element. This should produce a
   // dropdown with suggestion of all available usernames.
-  autofill_agent_->FormControlElementClicked(password_element_, false);
+  autofill_agent_->FormControlElementClicked(password_element_);
   CheckSuggestions(u"", true);
 }
 
@@ -3626,7 +3649,7 @@ TEST_F(PasswordAutofillAgentTest, GaiaReauthenticationFormIgnored) {
   UpdateOnlyPasswordElement();
 
   // Simulate a user clicking on the password element.
-  autofill_agent_->FormControlElementClicked(password_element_, false);
+  autofill_agent_->FormControlElementClicked(password_element_);
 
   fake_driver_.Flush();
   // Check that information about Gaia reauthentication is sent to the browser.

@@ -31,7 +31,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/safe_browsing/core/db/fake_database_manager.h"
+#include "components/safe_browsing/core/browser/db/fake_database_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -427,7 +427,9 @@ class PortalSafeBrowsingBrowserTest : public PortalBrowserTest {
   void CreatedBrowserMainParts(
       content::BrowserMainParts* browser_main_parts) override {
     fake_safe_browsing_database_manager_ =
-        base::MakeRefCounted<safe_browsing::FakeSafeBrowsingDatabaseManager>();
+        base::MakeRefCounted<safe_browsing::FakeSafeBrowsingDatabaseManager>(
+            content::GetUIThreadTaskRunner({}),
+            content::GetIOThreadTaskRunner({}));
     safe_browsing_factory_->SetTestDatabaseManager(
         fake_safe_browsing_database_manager_.get());
     safe_browsing::SafeBrowsingService::RegisterFactory(
@@ -455,8 +457,16 @@ class PortalSafeBrowsingBrowserTest : public PortalBrowserTest {
 // Tests that if a page embeds a portal whose contents are considered dangerous
 // by Safe Browsing, the embedder is also treated as dangerous in terms of how
 // we display the Safe Browsing interstitial.
+// Flaky on ChromeOS & under Ozone (crbug.com/1220319)
+#if defined(OS_CHROMEOS) || defined(USE_OZONE)
+#define MAYBE_EmbedderOfDangerousPortalConsideredDangerous \
+  DISABLED_EmbedderOfDangerousPortalConsideredDangerous
+#else
+#define MAYBE_EmbedderOfDangerousPortalConsideredDangerous \
+  EmbedderOfDangerousPortalConsideredDangerous
+#endif
 IN_PROC_BROWSER_TEST_F(PortalSafeBrowsingBrowserTest,
-                       EmbedderOfDangerousPortalConsideredDangerous) {
+                       MAYBE_EmbedderOfDangerousPortalConsideredDangerous) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));

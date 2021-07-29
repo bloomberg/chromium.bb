@@ -7,8 +7,8 @@
 #include <memory>
 #include <vector>
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -27,6 +27,7 @@
 #include "ash/system/tray/tri_view.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"

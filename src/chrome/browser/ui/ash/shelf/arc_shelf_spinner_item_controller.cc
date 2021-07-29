@@ -5,11 +5,13 @@
 #include "chrome/browser/ui/ash/shelf/arc_shelf_spinner_item_controller.h"
 
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/full_restore/arc_app_launch_handler.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_arc_task_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/full_restore/full_restore_utils.h"
 
 ArcShelfSpinnerItemController::ArcShelfSpinnerItemController(
     const std::string& arc_app_id,
@@ -41,15 +43,27 @@ void ArcShelfSpinnerItemController::SetHost(
   observed_profile_ = controller->OwnerProfile();
   ArcAppListPrefs::Get(observed_profile_)->AddObserver(this);
 
-#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
-  auto* arc_task_handler =
-      chromeos::full_restore::FullRestoreArcTaskHandler::GetForProfile(
-          observed_profile_);
-  if (arc_task_handler && arc_task_handler->window_handler())
-    arc_handler_observation_.Observe(arc_task_handler->window_handler());
-#endif
-
   ShelfSpinnerItemController::SetHost(controller);
+}
+
+void ArcShelfSpinnerItemController::ItemSelected(
+    std::unique_ptr<ui::Event> event,
+    int64_t display_id,
+    ash::ShelfLaunchSource source,
+    ItemSelectedCallback callback,
+    const ItemFilterPredicate& filter_predicate) {
+  if (window_info_ &&
+      window_info_->window_id >
+          full_restore::kArcSessionIdOffsetForRestoredLaunching) {
+    chromeos::full_restore::FullRestoreArcTaskHandler::GetForProfile(
+        observed_profile_)
+        ->arc_app_launch_handler()
+        ->LaunchApp(app_id());
+    std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, {});
+    return;
+  }
+
+  std::move(callback).Run(ash::SHELF_ACTION_NONE, {});
 }
 
 void ArcShelfSpinnerItemController::OnAppStatesChanged(
@@ -67,6 +81,12 @@ void ArcShelfSpinnerItemController::OnAppStatesChanged(
   if (!app_info.ready)
     return;
 
+  // If this item is created by full restore, we don't need to launch the app,
+  // because the full restore component will launch the app when the app is
+  // ready.
+  if (IsCreatedByFullRestore())
+    return;
+
   // Close() destroys this object, so start launching the app first.
   arc::LaunchApp(observed_profile_, arc_app_id, event_flags_,
                  user_interaction_type_, std::move(window_info_));
@@ -78,6 +98,17 @@ void ArcShelfSpinnerItemController::OnAppRemoved(
   Close();
 }
 
+void ArcShelfSpinnerItemController::OnAppConnectionReady() {
+  // If this item is created by full restore, start a 1 minute timer to close
+  // this item when timeout.
+  if (IsCreatedByFullRestore() && !close_timer_) {
+    close_timer_ = std::make_unique<base::OneShotTimer>();
+    close_timer_->Start(FROM_HERE, chromeos::full_restore::kStopRestoreDelay,
+                        base::BindOnce(&ArcShelfSpinnerItemController::Close,
+                                       weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
 void ArcShelfSpinnerItemController::OnArcPlayStoreEnabledChanged(bool enabled) {
   if (enabled)
     return;
@@ -85,7 +116,8 @@ void ArcShelfSpinnerItemController::OnArcPlayStoreEnabledChanged(bool enabled) {
   Close();
 }
 
-void ArcShelfSpinnerItemController::OnWindowCloseRequested(int window_id) {
-  if (window_info_ && window_info_->window_id == window_id)
-    Close();
+bool ArcShelfSpinnerItemController::IsCreatedByFullRestore() {
+  return window_info_ &&
+         window_info_->window_id >
+             full_restore::kArcSessionIdOffsetForRestoredLaunching;
 }

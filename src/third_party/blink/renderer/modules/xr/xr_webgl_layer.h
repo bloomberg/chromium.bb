@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/modules/xr/xr_layer.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
-#include "third_party/blink/renderer/modules/xr/xr_webgl_rendering_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/xr_webgl_drawing_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -40,11 +39,7 @@ class XRWebGLLayer final : public XRLayer {
   ~XRWebGLLayer() override;
 
   static XRWebGLLayer* Create(XRSession*,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                               const V8XRWebGLRenderingContext*,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                              const XRWebGLRenderingContext&,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                               const XRWebGLLayerInit*,
                               ExceptionState&);
 

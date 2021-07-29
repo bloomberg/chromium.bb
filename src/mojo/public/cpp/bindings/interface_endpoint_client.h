@@ -21,6 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -85,6 +86,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
   // Returns true if this endpoint has any pending callbacks.
   bool has_pending_responders() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    base::AutoLock lock(async_responders_lock_);
     return !async_responders_.empty() || !sync_responses_.empty();
   }
 
@@ -192,6 +194,20 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
   }
 #endif
 
+  // This allows the endpoint to be reset from a sequence other than the one on
+  // which it was bound. This should only be used with caution, and it is
+  // critical that the calling sequence cannot run tasks concurrently with the
+  // bound sequence. There's no practical way for this to be asserted, so we
+  // have to take your word for it. If this constraint is not upheld, there will
+  // be data races internal to the bindings object which can lead to UAFs or
+  // surprise message dispatches.
+  void ResetFromAnotherSequenceUnsafe();
+
+  // Tells the client to forget about a pending async request for which it still
+  // hasn't seen a response. Called by the router, possibly from other threads.
+  // The router lock must be held when calling this.
+  void ForgetAsyncRequest(uint64_t request_id);
+
  private:
   // Maps from the id of a response to the MessageReceiver that handles the
   // response.
@@ -275,7 +291,8 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
   HandleIncomingMessageThunk thunk_{this};
   MessageDispatcher dispatcher_;
 
-  AsyncResponderMap async_responders_;
+  mutable base::Lock async_responders_lock_;
+  AsyncResponderMap async_responders_ GUARDED_BY(async_responders_lock_);
   SyncResponseMap sync_responses_;
 
   uint64_t next_request_id_ = 1;

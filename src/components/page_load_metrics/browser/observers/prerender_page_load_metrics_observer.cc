@@ -1,76 +1,152 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "components/page_load_metrics/browser/observers/prerender_page_load_metrics_observer.h"
 
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
-namespace {
+namespace internal {
 
-// The purpose of this observer is to estimate how many prerendering pages will
-// use certain features. The plan for prerendering is to delay loading of
-// cross-origin iframes, so we want to ignore feature uses inside cross-origin
-// iframes.  To do this, just check if the |url| is cross-origin to
-// |first_party_url|. This may not be an accurate count if a third-party
-// subframe embeds a first-party subframe, or if there is a way for a frame to
-// access cross-origin storage, but it's probably not significant.
-//
-// This check is somewhat heavy so it should be done after cheaper early
-// returns.
-bool IsFirstParty(const GURL& url, const GURL& first_party_url) {
-  return url::IsSameOriginWith(url, first_party_url);
+const char kHistogramPrerenderNavigationToActivation[] =
+    "PageLoad.Clients.Prerender.NavigationToActivation";
+const char kHistogramPrerenderActivationToFirstPaint[] =
+    "PageLoad.Clients.Prerender.PaintTiming.ActivationToFirstPaint";
+const char kHistogramPrerenderActivationToFirstContentfulPaint[] =
+    "PageLoad.Clients.Prerender.PaintTiming.ActivationToFirstContentfulPaint";
+const char kHistogramPrerenderActivationToLargestContentfulPaint2[] =
+    "PageLoad.Clients.Prerender.PaintTiming."
+    "ActivationToLargestContentfulPaint2";
+const char kHistogramPrerenderFirstInputDelay4[] =
+    "PageLoad.Clients.Prerender.InteractiveTiming.FirstInputDelay4";
+const char kHistogramPrerenderCumulativeShiftScore[] =
+    "PageLoad.Clients.Prerender.LayoutInstability.CumulativeShiftScore";
+const char kHistogramPrerenderCumulativeShiftScoreMainFrame[] =
+    "PageLoad.Clients.Prerender.LayoutInstability.CumulativeShiftScore."
+    "MainFrame";
+
+}  // namespace internal
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+PrerenderPageLoadMetricsObserver::OnPrerenderStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  return CONTINUE_OBSERVING;
 }
 
-}  // namespace
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+PrerenderPageLoadMetricsObserver::OnStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url,
+    bool started_in_foreground) {
+  return STOP_OBSERVING;
+}
+
+void PrerenderPageLoadMetricsObserver::DidActivatePrerenderedPage(
+    content::NavigationHandle* navigation_handle) {
+  // |navigation_handle| here is for the activation navigation, while
+  // |GetDelegate().GetNavigationStart()| is the start time of initial prerender
+  // navigation.
+  base::TimeDelta navigation_to_activation =
+      navigation_handle->NavigationStart() - GetDelegate().GetNavigationStart();
+  PAGE_LOAD_HISTOGRAM(internal::kHistogramPrerenderNavigationToActivation,
+                      navigation_to_activation);
+
+  ukm::builders::PrerenderPageLoad(GetDelegate().GetPageUkmSourceId())
+      .SetWasPrerendered(true)
+      .SetTiming_NavigationToActivation(
+          navigation_to_activation.InMilliseconds())
+      .Record(ukm::UkmRecorder::Get());
+}
+
+void PrerenderPageLoadMetricsObserver::OnFirstPaintInPage(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (!WasActivatedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_paint, GetDelegate())) {
+    return;
+  }
+  PAGE_LOAD_HISTOGRAM(internal::kHistogramPrerenderActivationToFirstPaint,
+                      timing.paint_timing->first_paint.value() -
+                          timing.activation_start.value());
+}
 
 void PrerenderPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
-  did_fcp_ = true;
-}
-
-void PrerenderPageLoadMetricsObserver::OnStorageAccessed(
-    const GURL& url,
-    const GURL& first_party_url,
-    bool blocked_by_policy,
-    page_load_metrics::StorageType access_type) {
-  // TODO(falken): Account for `blocked_by_policy`?
-
-  switch (access_type) {
-    case page_load_metrics::StorageType::kLocalStorage:
-      if (did_local_storage_)
-        return;
-      if (!IsFirstParty(url, first_party_url))
-        return;
-
-      did_local_storage_ = true;
-      RecordFeatureUse(
-          did_fcp_ ? blink::mojom::WebFeature::kLocalStorageFirstUsedAfterFcp
-                   : blink::mojom::WebFeature::kLocalStorageFirstUsedBeforeFcp);
-      break;
-    case page_load_metrics::StorageType::kSessionStorage:
-      if (did_session_storage_)
-        return;
-      if (!IsFirstParty(url, first_party_url))
-        return;
-
-      did_session_storage_ = true;
-      RecordFeatureUse(
-          did_fcp_
-              ? blink::mojom::WebFeature::kSessionStorageFirstUsedAfterFcp
-              : blink::mojom::WebFeature::kSessionStorageFirstUsedBeforeFcp);
-      break;
-    case page_load_metrics::StorageType::kFileSystem:
-    case page_load_metrics::StorageType::kIndexedDb:
-    case page_load_metrics::StorageType::kCacheStorage:
-      return;
+  if (!WasActivatedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_contentful_paint, GetDelegate())) {
+    return;
   }
+  base::TimeDelta activation_to_fcp =
+      timing.paint_timing->first_contentful_paint.value() -
+      timing.activation_start.value();
+  PAGE_LOAD_HISTOGRAM(
+      internal::kHistogramPrerenderActivationToFirstContentfulPaint,
+      activation_to_fcp);
+  ukm::builders::PrerenderPageLoad(GetDelegate().GetPageUkmSourceId())
+      .SetTiming_ActivationToFirstContentfulPaint(
+          activation_to_fcp.InMilliseconds())
+      .Record(ukm::UkmRecorder::Get());
 }
 
-void PrerenderPageLoadMetricsObserver::RecordFeatureUse(
-    blink::mojom::WebFeature feature) {
-  page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
-      GetDelegate().GetWebContents()->GetMainFrame(), feature);
+void PrerenderPageLoadMetricsObserver::OnFirstInputInPage(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (!WasActivatedInForegroundOptionalEventInForeground(
+          timing.interactive_timing->first_input_timestamp, GetDelegate())) {
+    return;
+  }
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      internal::kHistogramPrerenderFirstInputDelay4,
+      timing.interactive_timing->first_input_delay.value(),
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
+      50);
+}
+
+void PrerenderPageLoadMetricsObserver::OnComplete(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  RecordSessionEndHistograms(timing);
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+PrerenderPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  RecordSessionEndHistograms(timing);
+  return STOP_OBSERVING;
+}
+
+void PrerenderPageLoadMetricsObserver::RecordSessionEndHistograms(
+    const page_load_metrics::mojom::PageLoadTiming& main_frame_timing) {
+  if (!GetDelegate().WasPrerenderedThenActivatedInForeground())
+    return;
+
+  const page_load_metrics::ContentfulPaintTimingInfo& largest_contentful_paint =
+      GetDelegate()
+          .GetLargestContentfulPaintHandler()
+          .MergeMainFrameAndSubframes();
+  if (largest_contentful_paint.ContainsValidTime() &&
+      WasActivatedInForegroundOptionalEventInForeground(
+          largest_contentful_paint.Time(), GetDelegate())) {
+    base::TimeDelta activation_to_lcp =
+        largest_contentful_paint.Time().value() -
+        main_frame_timing.activation_start.value();
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramPrerenderActivationToLargestContentfulPaint2,
+        activation_to_lcp);
+    ukm::builders::PrerenderPageLoad(GetDelegate().GetPageUkmSourceId())
+        .SetTiming_ActivationToLargestContentfulPaint(
+            activation_to_lcp.InMilliseconds())
+        .Record(ukm::UkmRecorder::Get());
+  }
+
+  UMA_HISTOGRAM_COUNTS_100(
+      internal::kHistogramPrerenderCumulativeShiftScore,
+      page_load_metrics::LayoutShiftUmaValue(
+          GetDelegate().GetPageRenderData().layout_shift_score));
+  UMA_HISTOGRAM_COUNTS_100(
+      internal::kHistogramPrerenderCumulativeShiftScoreMainFrame,
+      page_load_metrics::LayoutShiftUmaValue(
+          GetDelegate().GetMainFrameRenderData().layout_shift_score));
 }

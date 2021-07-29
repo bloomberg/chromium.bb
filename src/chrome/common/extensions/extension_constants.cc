@@ -22,7 +22,6 @@ const char kLaunchSourceAppListInfoDialog[] = "chrome-app-launcher-info-dialog";
 namespace extension_misc {
 
 const char kCalendarAppId[] = "ejjicmeblgpmajnghnpcppodonldlgfn";
-const char kChromeRemoteDesktopAppId[] = "gbchcmhmhahfdphkhkmpfmihenigjmpp";
 const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";
 const char kDataSaverExtensionId[] = "pfmgfdlgomnbgkofeojodiodmgpgmkac";
 const char kDocsOfflineExtensionId[] = "ghbmnnjooekpmoecnnnilnnbdlolhkhi";
@@ -45,7 +44,6 @@ const char kInAppPaymentsSupportAppId[] = "nmmhkkegccagdldgiimedpiccmgmieda";
 const char* const kBuiltInFirstPartyExtensionIds[] = {
     kCalculatorAppId,
     kCalendarAppId,
-    kChromeRemoteDesktopAppId,
     kCloudPrintAppId,
     kDataSaverExtensionId,
     kDocsOfflineExtensionId,
@@ -93,6 +91,13 @@ const char kAccessibilityCommonGuestManifestFilename[] =
 const char kChromeVoxExtensionPath[] = "chromeos/accessibility";
 const char kChromeVoxManifestFilename[] = "chromevox_manifest.json";
 const char kChromeVoxGuestManifestFilename[] = "chromevox_manifest_guest.json";
+const char kEnhancedNetworkTtsExtensionId[] =
+    "jacnkoglebceckolkoapelihnglgaicd";
+const char kEnhancedNetworkTtsExtensionPath[] = "chromeos/accessibility";
+const char kEnhancedNetworkTtsManifestFilename[] =
+    "enhanced_network_tts_manifest.json";
+const char kEnhancedNetworkTtsGuestManifestFilename[] =
+    "enhanced_network_tts_manifest_guest.json";
 const char kSelectToSpeakExtensionId[] = "klbcgckkldhdhonijdbnhhaiedfkllef";
 const char kSelectToSpeakExtensionPath[] = "chromeos/accessibility";
 const char kSelectToSpeakManifestFilename[] = "select_to_speak_manifest.json";
@@ -104,10 +109,6 @@ const char kSwitchAccessManifestFilename[] = "switch_access_manifest.json";
 const char kSwitchAccessGuestManifestFilename[] =
     "switch_access_manifest_guest.json";
 const char kGuestManifestFilename[] = "manifest_guest.json";
-const char kConnectivityDiagnosticsPath[] =
-    "/usr/share/chromeos-assets/connectivity_diagnostics";
-const char kConnectivityDiagnosticsLauncherPath[] =
-    "/usr/share/chromeos-assets/connectivity_diagnostics_launcher";
 const char kFirstRunDialogId[] = "jdgcneonijmofocbhmijhacgchbihela";
 const char kEspeakSpeechSynthesisExtensionPath[] =
     "/usr/share/chromeos-assets/speech_synthesis/espeak-ng";
@@ -132,4 +133,5 @@ const char kAppStateReadyToRun[] = "ready_to_run";
 
 const char kMediaFileSystemPathPart[] = "_";
 const char kExtensionRequestTimestamp[] = "timestamp";
+const char kExtensionWorkflowJustification[] = "justification";
 }  // namespace extension_misc

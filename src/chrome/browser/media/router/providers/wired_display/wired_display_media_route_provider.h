@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver.h"
@@ -38,7 +37,7 @@ class WiredDisplayPresentationReceiver;
 class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
                                        public display::DisplayObserver {
  public:
-  static const MediaRouteProviderId kProviderId;
+  static const mojom::MediaRouteProviderId kProviderId;
 
   static std::string GetSinkIdForDisplay(const display::Display& display);
 
@@ -208,9 +207,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
   // Used for recording UMA metrics for the number of sinks available.
   WiredDisplayDeviceCountMetrics device_count_metrics_;
 
-  // Keeps track of whether |this| is registered with display::Screen as a
-  // DisplayObserver.
-  bool is_observing_displays_ = false;
+  absl::optional<display::ScopedDisplayObserver> display_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WiredDisplayMediaRouteProvider);
 };

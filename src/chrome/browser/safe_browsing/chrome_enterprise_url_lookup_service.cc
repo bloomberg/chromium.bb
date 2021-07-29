@@ -11,14 +11,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/browser/realtime/policy_engine.h"
+#include "components/safe_browsing/core/browser/realtime/url_lookup_service_base.h"
 #include "components/safe_browsing/core/browser/referrer_chain_provider.h"
-#include "components/safe_browsing/core/common/thread_utils.h"
-#include "components/safe_browsing/core/features.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
-#include "components/safe_browsing/core/proto/realtimeapi.pb.h"
-#include "components/safe_browsing/core/realtime/policy_engine.h"
-#include "components/safe_browsing/core/realtime/url_lookup_service_base.h"
-#include "components/safe_browsing/core/verdict_cache_manager.h"
+#include "components/safe_browsing/core/browser/verdict_cache_manager.h"
+#include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/proto/realtimeapi.pb.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -80,7 +79,8 @@ bool ChromeEnterpriseRealTimeUrlLookupService::CanCheckSafeBrowsingDb() const {
 void ChromeEnterpriseRealTimeUrlLookupService::GetAccessToken(
     const GURL& url,
     RTLookupRequestCallback request_callback,
-    RTLookupResponseCallback response_callback) {
+    RTLookupResponseCallback response_callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {
   NOTREACHED() << "URL lookup with token is disabled for enterprise users.";
 }
 

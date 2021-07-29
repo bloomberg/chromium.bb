@@ -61,14 +61,14 @@ class CPDFSDK_FormFillEnvironment final : public CFX_Timer::HandlerIface,
   // IPWL_SystemHandler:
   void InvalidateRect(PerWindowData* pWidgetData,
                       const CFX_FloatRect& rect) override;
-  void OutputSelectedRect(CFFL_FormFiller* pFormFiller,
+  void OutputSelectedRect(CFFL_FormField* pFormField,
                           const CFX_FloatRect& rect) override;
   bool IsSelectionImplemented() const override;
   void SetCursor(CursorStyle nCursorType) override;
 
-  CPDFSDK_PageView* GetPageView(IPDF_Page* pUnderlyingPage, bool renew);
+  CPDFSDK_PageView* GetOrCreatePageView(IPDF_Page* pUnderlyingPage);
+  CPDFSDK_PageView* GetPageView(IPDF_Page* pUnderlyingPage);
   CPDFSDK_PageView* GetPageViewAtIndex(int nIndex);
-
   void RemovePageView(IPDF_Page* pUnderlyingPage);
   void UpdateAllViews(CPDFSDK_PageView* pSender, CPDFSDK_Annot* pAnnot);
 
@@ -218,7 +218,7 @@ class CPDFSDK_FormFillEnvironment final : public CFX_Timer::HandlerIface,
   CPDFSDK_InteractiveForm* GetInteractiveForm();  // Creates if not present.
 
  private:
-  IPDF_Page* GetPage(int nIndex);
+  IPDF_Page* GetPage(int nIndex) const;
   void SendOnFocusChange(ObservedPtr<CPDFSDK_Annot>* pAnnot);
 
   UnownedPtr<FPDF_FORMFILLINFO> const m_pInfo;
@@ -229,7 +229,7 @@ class CPDFSDK_FormFillEnvironment final : public CFX_Timer::HandlerIface,
   ObservedPtr<CPDFSDK_Annot> m_pFocusAnnot;
   UnownedPtr<CPDF_Document> const m_pCPDFDoc;
   std::unique_ptr<CPDFSDK_AnnotHandlerMgr> m_pAnnotHandlerMgr;
-  std::unique_ptr<CFFL_InteractiveFormFiller> m_pFormFiller;
+  std::unique_ptr<CFFL_InteractiveFormFiller> m_pInteractiveFormFiller;
   bool m_bChangeMask = false;
   bool m_bBeingDestroyed = false;
 

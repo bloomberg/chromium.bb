@@ -337,6 +337,38 @@ class AutofillMetrics {
     NUM_MANAGE_CARDS_PROMPT_METRICS
   };
 
+  // Metrics to measure user interaction with the virtual card manual fallback
+  // bubble after it has appeared upon unmasking and filling a virtual card.
+  enum class VirtualCardManualFallbackBubbleResultMetric {
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+
+    // The reason why the bubble is closed is not clear. Possible reason is the
+    // logging function is invoked before the closed reason is correctly set.
+    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_RESULT_UNKNOWN = 0,
+    // The user explicitly closed the bubble with the close button or ESC.
+    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_CLOSED = 1,
+    // The user did not interact with the bubble.
+    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_NOT_INTERACTED = 2,
+    // The bubble lost focus and was deactivated.
+    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_LOST_FOCUS = 3,
+    kMaxValue = VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_LOST_FOCUS,
+  };
+
+  // Metric to measure which field in the virtual card manual fallback bubble
+  // was selected by the user.
+  enum class VirtualCardManualFallbackBubbleFieldClickedMetric {
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+
+    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_FIELD_CLICKED_CARD_NUMBER = 0,
+    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_FIELD_CLICKED_EXPIRATION_MONTH = 1,
+    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_FIELD_CLICKED_EXPIRATION_YEAR = 2,
+    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_FIELD_CLICKED_CARDHOLDER_NAME = 3,
+    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_FIELD_CLICKED_CVC = 4,
+    kMaxValue = VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_FIELD_CLICKED_CVC,
+  };
+
   // Metrics measuring how well we predict field types.  These metric values are
   // logged for each field in a submitted form for:
   //     - the heuristic prediction
@@ -673,38 +705,41 @@ class AutofillMetrics {
   };
 
   // Events related to the Unmask Credit Card Prompt.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum UnmaskPromptEvent {
     // The prompt was shown.
     UNMASK_PROMPT_SHOWN = 0,
     // The prompt was closed without attempting to unmask the card.
-    UNMASK_PROMPT_CLOSED_NO_ATTEMPTS,
+    UNMASK_PROMPT_CLOSED_NO_ATTEMPTS = 1,
     // The prompt was closed without unmasking the card, but with at least
     // one attempt. The last failure was retriable.
-    UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE,
+    UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE = 2,
     // The prompt was closed without unmasking the card, but with at least
     // one attempt. The last failure was non retriable.
-    UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE,
+    UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE = 3,
     // Successfully unmasked the card in the first attempt.
-    UNMASK_PROMPT_UNMASKED_CARD_FIRST_ATTEMPT,
+    UNMASK_PROMPT_UNMASKED_CARD_FIRST_ATTEMPT = 4,
     // Successfully unmasked the card after retriable failures.
-    UNMASK_PROMPT_UNMASKED_CARD_AFTER_FAILED_ATTEMPTS,
+    UNMASK_PROMPT_UNMASKED_CARD_AFTER_FAILED_ATTEMPTS = 5,
     // Saved the card locally (masked card was upgraded to a full card).
-    UNMASK_PROMPT_SAVED_CARD_LOCALLY,
+    // Deprecated.
+    // UNMASK_PROMPT_SAVED_CARD_LOCALLY = 6,
     // User chose to opt in (checked the checkbox when it was empty).
     // Only logged if there was an attempt to unmask.
-    UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN,
+    UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN = 7,
     // User did not opt in when they had the chance (left the checkbox
     // unchecked).  Only logged if there was an attempt to unmask.
-    UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_IN,
+    UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_IN = 8,
     // User chose to opt out (unchecked the checkbox when it was check).
     // Only logged if there was an attempt to unmask.
-    UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_OUT,
+    UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_OUT = 9,
     // User did not opt out when they had a chance (left the checkbox checked).
     // Only logged if there was an attempt to unmask.
-    UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT,
+    UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT = 10,
     // The prompt was closed while chrome was unmasking the card (user pressed
     // verify and we were waiting for the server response).
-    UNMASK_PROMPT_CLOSED_ABANDON_UNMASKING,
+    UNMASK_PROMPT_CLOSED_ABANDON_UNMASKING = 11,
     NUM_UNMASK_PROMPT_EVENTS,
   };
 
@@ -786,12 +821,16 @@ class AutofillMetrics {
     // Request succeeded.
     PAYMENTS_RESULT_SUCCESS = 0,
     // Request failed; try again.
-    PAYMENTS_RESULT_TRY_AGAIN_FAILURE,
+    PAYMENTS_RESULT_TRY_AGAIN_FAILURE = 1,
     // Request failed; don't try again.
-    PAYMENTS_RESULT_PERMANENT_FAILURE,
+    PAYMENTS_RESULT_PERMANENT_FAILURE = 2,
     // Unable to connect to Payments servers.
-    PAYMENTS_RESULT_NETWORK_ERROR,
-    NUM_PAYMENTS_RESULTS,
+    PAYMENTS_RESULT_NETWORK_ERROR = 3,
+    // Request failed in virtual card information retrieval; try again.
+    PAYMENTS_RESULT_VCN_RETRIEVAL_TRY_AGAIN_FAILURE = 4,
+    // Request failed in virtual card information retrieval; don't try again.
+    PAYMENTS_RESULT_VCN_RETRIEVAL_PERMANENT_FAILURE = 5,
+    kMaxValue = PAYMENTS_RESULT_VCN_RETRIEVAL_PERMANENT_FAILURE,
   };
 
   // For measuring the network request time of various Wallet API calls. See
@@ -1175,6 +1214,12 @@ class AutofillMetrics {
   static void LogOfferNotificationInfoBarResultMetric(
       OfferNotificationInfoBarResultMetric metric);
   static void LogOfferNotificationInfoBarShown();
+  static void LogVirtualCardManualFallbackBubbleShown(bool is_reshow);
+  static void LogVirtualCardManualFallbackBubbleResultMetric(
+      VirtualCardManualFallbackBubbleResultMetric metric,
+      bool is_reshow);
+  static void LogVirtualCardManualFallbackBubbleFieldClicked(
+      VirtualCardManualFallbackBubbleFieldClickedMetric metric);
 
   // Should be called when credit card scan is finished. |duration| should be
   // the time elapsed between launching the credit card scanner and getting back
@@ -1226,10 +1271,13 @@ class AutofillMetrics {
   static void LogUserHappinessByProfileFormType(UserHappinessMetric metric,
                                                 uint32_t profile_form_bitmask);
 
-  // Logs the card fetch latency after a WebAuthn prompt.
+  // Logs the card fetch latency |duration| after a WebAuthn prompt. |result|
+  // indicates whether the unmasking request was successful or not. |card_type|
+  // indicates the type of the credit card that the request fetched.
   static void LogCardUnmaskDurationAfterWebauthn(
       const base::TimeDelta& duration,
-      AutofillClient::PaymentsRpcResult result);
+      AutofillClient::PaymentsRpcResult result,
+      AutofillClient::PaymentsRpcCardType card_type);
 
   // Logs the count of calls to PaymentsClient::GetUnmaskDetails() (aka
   // GetDetailsForGetRealPan).
@@ -1310,16 +1358,23 @@ class AutofillMetrics {
   static void LogTimeBeforeAbandonUnmasking(const base::TimeDelta& duration,
                                             bool has_valid_nickname);
 
-  // Logs |result| to the get real pan result histogram.
-  static void LogRealPanResult(AutofillClient::PaymentsRpcResult result);
+  // Logs |result| to the get real pan result histogram. |card_type| indicates
+  // the type of the credit card that the request fetched.
+  static void LogRealPanResult(AutofillClient::PaymentsRpcResult result,
+                               AutofillClient::PaymentsRpcCardType card_type);
 
-  // Logs |result| to duration of the GetRealPan RPC.
+  // Logs |result| to duration of the GetRealPan RPC. |card_type| indicates the
+  // type of the credit card that the request fetched.
   static void LogRealPanDuration(const base::TimeDelta& duration,
-                                 AutofillClient::PaymentsRpcResult result);
+                                 AutofillClient::PaymentsRpcResult result,
+                                 AutofillClient::PaymentsRpcCardType card_type);
 
-  // Logs |result| to the get real pan result histogram.
-  static void LogUnmaskingDuration(const base::TimeDelta& duration,
-                                   AutofillClient::PaymentsRpcResult result);
+  // Logs |result| to the get real pan result histogram. |card_type| indicates
+  // the type of the credit card that the request fetched.
+  static void LogUnmaskingDuration(
+      const base::TimeDelta& duration,
+      AutofillClient::PaymentsRpcResult result,
+      AutofillClient::PaymentsRpcCardType card_type);
 
   // This should be called when a form that has been Autofilled is submitted.
   // |duration| should be the time elapsed between form load and submission.
@@ -1332,12 +1387,24 @@ class AutofillMetrics {
   static void LogFormFillDurationFromLoadWithoutAutofill(
       const base::TimeDelta& duration);
 
+  // This should be called when a form with |autocomplete="one-time-code"| is
+  // submitted. |duration| should be the time elapsed between form load and
+  // submission.
+  static void LogFormFillDurationFromLoadForOneTimeCode(
+      const base::TimeDelta& duration);
+
   // This should be called when a form is submitted. |duration| should be the
   // time elapsed between the initial form interaction and submission. This
   // metric is sliced by |form_type| and |used_autofill|.
   static void LogFormFillDurationFromInteraction(
       const DenseSet<FormType>& form_types,
       bool used_autofill,
+      const base::TimeDelta& duration);
+
+  // This should be called when a form with |autocomplete="one-time-code"| is
+  // submitted. |duration| should be the time elapsed between the initial form
+  // interaction and submission.
+  static void LogFormFillDurationFromInteractionForOneTimeCode(
       const base::TimeDelta& duration);
 
   static void LogFormFillDuration(const std::string& metric,
@@ -1473,6 +1540,10 @@ class AutofillMetrics {
       const base::TimeTicks& form_parsed_timestamp,
       FormSignature form_signature,
       FormInteractionsUkmLogger* form_interactions_ukm_logger);
+
+  // Logs if every non-empty field in a submitted form was filled by Autofill.
+  // If |is_address| an address was filled, otherwise it was a credit card.
+  static void LogAutofillPerfectFilling(bool is_address, bool perfect_filling);
 
   // This should be called when determining the heuristic types for a form's
   // fields.
@@ -1643,6 +1714,9 @@ class AutofillMetrics {
   // when a profile is used to fill a form.
   static void LogVerificationStatusOfAddressTokensOnProfileUsage(
       const AutofillProfile& profile);
+
+  // Logs the image fetching result for one image in AutofillImageFetcher.
+  static void LogImageFetchResult(bool succeeded);
 
   // The total number of values in the |CardUploadDecisionMetric| enum. Must be
   // updated each time a new value is added.

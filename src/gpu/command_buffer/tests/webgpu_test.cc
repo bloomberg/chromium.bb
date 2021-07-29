@@ -291,4 +291,77 @@ TEST_F(WebGPUTest, RequestDeviceAfterContextLost) {
   EXPECT_TRUE(called);
 }
 
+TEST_F(WebGPUTest, RequestDeviceWitUnsupportedExtension) {
+  if (!WebGPUSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
+    return;
+  }
+
+  Initialize(WebGPUTest::Options());
+
+  // Create device with unsupported extensions, expect to fail to create and
+  // return nullptr
+  WGPUDeviceProperties unsupported_device_properties = {};
+  unsupported_device_properties.invalidExtension = true;
+  WGPUDevice device = nullptr;
+  bool done = false;
+
+  webgpu()->RequestDeviceAsync(
+      GetAdapterId(), unsupported_device_properties,
+      base::BindOnce(
+          [](WGPUDevice* result, bool* done, WGPUDevice device) {
+            *result = device;
+            *done = true;
+          },
+          &device, &done));
+
+  while (!done) {
+    RunPendingTasks();
+  }
+  EXPECT_EQ(device, nullptr);
+
+  // Create device again with supported extensions, expect success and not
+  // blocked by the last failure
+  GetNewDevice();
+}
+
+TEST_F(WebGPUTest, SPIRVIsDisallowed) {
+  if (!WebGPUSupported()) {
+    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
+    return;
+  }
+
+  auto ExpectSPIRVDisallowedError = [](WGPUErrorType type, const char* message,
+                                       void* userdata) {
+    // We match on this string to make sure the shader module creation fails
+    // because SPIR-V is disallowed and not because codeSize=0.
+    EXPECT_NE(std::string(message).find("SPIR-V is disallowed"),
+              std::string::npos);
+    EXPECT_EQ(type, WGPUErrorType_Validation);
+    *static_cast<bool*>(userdata) = true;
+  };
+
+  // The initialization code doesn't set GpuPreferences::enable_webgpu_spirv so
+  // it stays at the default value of "false".
+  Initialize(WebGPUTest::Options());
+  wgpu::Device device = GetNewDevice();
+
+  // Make a invalid ShaderModuleDescriptor because it contains SPIR-V.
+  wgpu::ShaderModuleSPIRVDescriptor spirvDesc;
+  spirvDesc.codeSize = 0;
+  spirvDesc.code = nullptr;
+
+  wgpu::ShaderModuleDescriptor desc;
+  desc.nextInChain = &spirvDesc;
+
+  // Make sure creation fails, and for the correct reason.
+  device.PushErrorScope(wgpu::ErrorFilter::Validation);
+  device.CreateShaderModule(&desc);
+  bool got_error = false;
+  device.PopErrorScope(ExpectSPIRVDisallowedError, &got_error);
+
+  WaitForCompletion(device);
+  EXPECT_TRUE(got_error);
+}
+
 }  // namespace gpu

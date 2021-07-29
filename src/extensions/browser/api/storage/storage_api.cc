@@ -51,7 +51,7 @@ std::vector<std::string> GetKeysFromDict(const base::Value& dict) {
   DCHECK(dict.is_dict());
   std::vector<std::string> keys;
   keys.reserve(dict.DictSize());
-  for (const auto& value : dict.DictItems()) {
+  for (auto value : dict.DictItems()) {
     keys.push_back(value.first);
   }
   return keys;
@@ -106,6 +106,21 @@ SessionStorageManager* GetOrCreateSessionStorage(
   return session_manager;
 }
 
+// Returns a nested dictionary Value converted from a ValueChange.
+base::Value ValueChangeToValue(
+    std::vector<SessionStorageManager::ValueChange> changes) {
+  base::Value changes_value(base::Value::Type::DICTIONARY);
+  for (auto& change : changes) {
+    base::Value change_value(base::Value::Type::DICTIONARY);
+    if (change.old_value.has_value())
+      change_value.SetKey("oldValue", std::move(change.old_value.value()));
+    if (change.new_value)
+      change_value.SetKey("newValue", change.new_value->Clone());
+    changes_value.SetKey(change.key, std::move(change_value));
+  }
+  return changes_value;
+}
+
 }  // namespace
 
 // SettingsFunction
@@ -129,15 +144,14 @@ bool SettingsFunction::ShouldSkipQuotaLimiting() const {
 ExtensionFunction::ResponseAction SettingsFunction::Run() {
   std::string storage_area_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &storage_area_string));
-  args_->Remove(0, nullptr);
+
+  args_->EraseListIter(args_->GetList().begin());
   storage_area_ = StorageAreaFromString(storage_area_string);
   EXTENSION_FUNCTION_VALIDATE(storage_area_ != StorageAreaNamespace::kInvalid);
 
   // Session is the only storage area that does not use ValueStore, and will
   // return synchronously.
   if (storage_area_ == StorageAreaNamespace::kSession) {
-    // TODO(crbug.com/1185226): Get observers to dispatch OnChanged event after
-    // creating OnChangedEventSession in the observer.
     return RespondNow(RunInSession());
   }
 
@@ -203,6 +217,17 @@ ExtensionFunction::ResponseValue SettingsFunction::UseWriteResult(
   }
 
   return NoArguments();
+}
+
+void SettingsFunction::OnSessionSettingsChanged(
+    std::vector<SessionStorageManager::ValueChange> changes) {
+  if (!changes.empty()) {
+    scoped_refptr<SettingsObserverList> observers =
+        StorageFrontend::Get(browser_context())->GetObservers();
+    observers->Notify(FROM_HERE, &SettingsObserver::OnSettingsChanged,
+                      extension_id(), storage_area_,
+                      ValueChangeToValue(std::move(changes)));
+  }
 }
 
 ExtensionFunction::ResponseValue StorageStorageAreaGetFunction::RunWithStorage(
@@ -318,9 +343,37 @@ StorageStorageAreaGetBytesInUseFunction::RunWithStorage(ValueStore* storage) {
 
 ExtensionFunction::ResponseValue
 StorageStorageAreaGetBytesInUseFunction::RunInSession() {
-  // TODO(crbug.com/1185226): Implement RunInSession for
-  // chrome.storage.session.getBytesInUse .
-  return NoArguments();
+  base::Value* input = nullptr;
+  if (!args_->Get(0, &input))
+    return BadMessage();
+
+  size_t bytes_in_use = 0;
+  SessionStorageManager* session_manager =
+      GetOrCreateSessionStorage(browser_context());
+
+  switch (input->type()) {
+    case base::Value::Type::NONE:
+      bytes_in_use = session_manager->GetTotalBytesInUse(extension_id());
+      break;
+
+    case base::Value::Type::STRING:
+      bytes_in_use = session_manager->GetBytesInUse(
+          extension_id(), std::vector<std::string>(1, input->GetString()));
+      break;
+
+    case base::Value::Type::LIST:
+      bytes_in_use = session_manager->GetBytesInUse(extension_id(),
+                                                    GetKeysFromList(*input));
+      break;
+
+    default:
+      return BadMessage();
+  }
+
+  // Checked cast should not overflow since `bytes_in_use` is guaranteed to be a
+  // small number, due to the quota limits we have in place for in-memory
+  // storage
+  return OneArgument(base::Value(base::checked_cast<int>(bytes_in_use)));
 }
 
 ExtensionFunction::ResponseValue StorageStorageAreaSetFunction::RunWithStorage(
@@ -356,11 +409,7 @@ ExtensionFunction::ResponseValue StorageStorageAreaSetFunction::RunInSession() {
         "Session storage quota bytes exceeded. Values were not stored.");
   }
 
-  if (!changes.empty()) {
-    // TODO(crbug.com/1185226): Notify changes after creating
-    // OnChangedEventSession in the observer.
-  }
-
+  OnSessionSettingsChanged(std::move(changes));
   return NoArguments();
 }
 
@@ -391,8 +440,28 @@ StorageStorageAreaRemoveFunction::RunWithStorage(ValueStore* storage) {
 
 ExtensionFunction::ResponseValue
 StorageStorageAreaRemoveFunction::RunInSession() {
-  // TODO(crbug.com/1185226): Implement RunInSession for
-  // chrome.storage.session.remove .
+  base::Value* input = nullptr;
+  if (!args_->Get(0, &input))
+    return BadMessage();
+
+  SessionStorageManager* session_manager =
+      GetOrCreateSessionStorage(browser_context());
+  std::vector<SessionStorageManager::ValueChange> changes;
+
+  switch (input->type()) {
+    case base::Value::Type::STRING:
+      session_manager->Remove(extension_id(), input->GetString(), changes);
+      break;
+
+    case base::Value::Type::LIST:
+      session_manager->Remove(extension_id(), GetKeysFromList(*input), changes);
+      break;
+
+    default:
+      return BadMessage();
+  }
+
+  OnSessionSettingsChanged(std::move(changes));
   return NoArguments();
 }
 
@@ -410,8 +479,10 @@ StorageStorageAreaClearFunction::RunWithStorage(ValueStore* storage) {
 
 ExtensionFunction::ResponseValue
 StorageStorageAreaClearFunction::RunInSession() {
-  // TODO(crbug.com/1185226): Implement RunInSession for
-  // chrome.storage.session.clear .
+  std::vector<SessionStorageManager::ValueChange> changes;
+  GetOrCreateSessionStorage(browser_context())->Clear(extension_id(), changes);
+
+  OnSessionSettingsChanged(std::move(changes));
   return NoArguments();
 }
 

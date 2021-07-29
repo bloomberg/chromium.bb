@@ -177,7 +177,7 @@ class DisplayPasswordButtonTest : public LoginManagerTest {
   DisplayPasswordButtonTest() : LoginManagerTest() {}
 
   void LoginAndLock(const LoginManagerMixin::TestUserInfo& test_user) {
-    chromeos::WizardController::SkipPostLoginScreensForTesting();
+    WizardController::SkipPostLoginScreensForTesting();
 
     auto context = LoginManagerMixin::CreateDefaultUserContext(test_user);
     login_manager_mixin_.LoginAndWaitForActiveSession(context);
@@ -318,7 +318,7 @@ class UserManagementDisclosureTest : public LoginManagerTest {
     if (user_policy_mixin)
       user_policy_mixin->RequestPolicyUpdate();
 
-    chromeos::WizardController::SkipPostLoginScreensForTesting();
+    WizardController::SkipPostLoginScreensForTesting();
 
     auto context = LoginManagerMixin::CreateDefaultUserContext(test_user);
     login_manager_mixin_.LoginAndWaitForActiveSession(context);
@@ -359,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(UserManagementDisclosureTest,
   LoginAndLock(not_managed_user, nullptr);
   EXPECT_FALSE(
       ash::LoginScreenTestApi::IsManagedIconShown(not_managed_user.account_id));
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedMessageInDialogShown(
       not_managed_user.account_id));
 }
 
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(UserManagementDisclosureTest,
                        EnterpriseIconInvisibleNotManagedUser) {
   EXPECT_FALSE(
       ash::LoginScreenTestApi::IsManagedIconShown(not_managed_user.account_id));
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedMessageInDialogShown(
       not_managed_user.account_id));
 }
 
@@ -380,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(UserManagementDisclosureTest,
   LoginAndLock(managed_user, &managed_user_policy_mixin_);
   EXPECT_TRUE(
       ash::LoginScreenTestApi::IsManagedIconShown(managed_user.account_id));
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsManagedMessageInDialogShown(
       managed_user.account_id));
 }
 
@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(UserManagementDisclosureTest,
                        EnterpriseIconVisibleManagedUser) {
   EXPECT_TRUE(
       ash::LoginScreenTestApi::IsManagedIconShown(managed_user.account_id));
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsManagedMessageInDialogShown(
       managed_user.account_id));
 }
 
@@ -414,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(UserManagementDisclosureChildTest,
   screen_locker_tester.Lock();
   EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedIconShown(
       logged_in_user_mixin_.GetAccountId()));
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedMessageInDialogShown(
       logged_in_user_mixin_.GetAccountId()));
 }
 
@@ -424,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(UserManagementDisclosureChildTest,
                        EnterpriseIconVisibleChildUser) {
   EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedIconShown(
       logged_in_user_mixin_.GetAccountId()));
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedMessageInDialogShown(
       logged_in_user_mixin_.GetAccountId()));
 }
 
@@ -528,7 +528,7 @@ class SshWarningTest : public OobeBaseTest,
 };
 
 IN_PROC_BROWSER_TEST_P(SshWarningTest, VisibilityOnGaia) {
-  chromeos::WizardController::default_controller()->SkipToLoginForTesting();
+  WizardController::default_controller()->SkipToLoginForTesting();
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
   test::UIPath ssh_warning = {"gaia-signin", "signin-frame-dialog",
                               "sshWarning"};
@@ -540,7 +540,7 @@ IN_PROC_BROWSER_TEST_P(SshWarningTest, VisibilityOnGaia) {
 }
 
 IN_PROC_BROWSER_TEST_P(SshWarningTest, VisibilityOnEnrollment) {
-  chromeos::WizardController::default_controller()->SkipToLoginForTesting();
+  WizardController::default_controller()->SkipToLoginForTesting();
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   LoginDisplayHost::default_host()->HandleAccelerator(

@@ -65,6 +65,7 @@ class MockWebGPUInterface : public gpu::webgpu::WebGPUInterfaceStub {
     // real WebGPU device.
     procs_.deviceReference = [](WGPUDevice) {};
     procs_.deviceRelease = [](WGPUDevice) {};
+    procs_.textureRelease = [](WGPUTexture) {};
   }
 
   MOCK_METHOD(gpu::webgpu::ReservedTexture,
@@ -240,7 +241,7 @@ class WebGPUImageBitmapHandlerTest : public testing::Test {
     std::vector<uint8_t> results(result_length, 0);
     bool success = CopyBytesFromImageBitmapForWebGPU(
         image, base::span<uint8_t>(results.data(), result_length), copy_rect,
-        color_type);
+        color_type, image->IsPremultiplied(), /* flipY = */ false);
     ASSERT_EQ(success, true);
 
     // Compare content and results

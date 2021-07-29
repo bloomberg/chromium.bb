@@ -62,6 +62,8 @@ class TestGpuService : public viz::mojom::GpuService {
                            bool is_gpu_host,
                            bool cache_shaders_on_disk,
                            EstablishGpuChannelCallback callback) override {}
+  void SetChannelClientPid(int32_t client_id,
+                           base::ProcessId client_pid) override {}
   void CloseChannel(int32_t client_id) override {}
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void CreateArcVideoDecodeAccelerator(
@@ -126,6 +128,8 @@ class TestGpuService : public viz::mojom::GpuService {
   void WriteClangProfilingProfile(
       WriteClangProfilingProfileCallback callback) override {}
 #endif
+  void GetDawnInfo(GetDawnInfoCallback callback) override {}
+
   void Crash() override {}
   void Hang() override {}
   void ThrowJavaException() override {}

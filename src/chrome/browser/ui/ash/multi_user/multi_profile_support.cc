@@ -7,7 +7,6 @@
 #include <set>
 #include <vector>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/multi_user_window_manager_observer.h"
 #include "base/metrics/histogram_macros.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "components/full_restore/features.h"
 #include "components/full_restore/full_restore_utils.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -52,7 +52,7 @@ void RecordUMAForTransferredWindowType(aura::Window* window) {
   if (browser) {
     if (browser->profile()->IsOffTheRecord()) {
       window_type = TELEPORT_WINDOW_INCOGNITO_BROWSER;
-    } else if (browser->deprecated_is_app()) {
+    } else if (browser->is_type_app() || browser->is_type_app_popup()) {
       window_type = TELEPORT_WINDOW_V1_APP;
     } else if (browser->is_type_popup()) {
       window_type = TELEPORT_WINDOW_POPUP;
@@ -225,7 +225,7 @@ void MultiProfileSupport::OnWindowOwnerEntryChanged(aura::Window* window,
 }
 
 void MultiProfileSupport::OnTransitionUserShelfToNewAccount() {
-  if (ash::features::IsFullRestoreEnabled()) {
+  if (full_restore::features::IsFullRestoreEnabled()) {
     full_restore::SetActiveProfilePath(
         ProfileManager::GetActiveUserProfile()->GetPath());
   }

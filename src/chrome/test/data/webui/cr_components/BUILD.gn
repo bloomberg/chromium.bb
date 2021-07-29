@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/crypto.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
@@ -9,58 +10,16 @@ js_type_check("closure_compile") {
   closure_flags = default_closure_args + mojom_js_args + [
                     "browser_resolver_prefix_replacements=\"chrome://settings/=../../chrome/browser/resources/settings/\"",
                     "browser_resolver_prefix_replacements=\"chrome://new-tab-page/=../../chrome/browser/resources/new_tab_page//\"",
+                    "js_module_root=./gen/ui/webui/resources/preprocessed/",
                     "js_module_root=../../chrome/test/data/webui/",
                     "js_module_root=./gen/chrome/test/data/webui/",
                   ]
 
   deps = [
-    ":certificate_manager_provisioning_test",
-    ":certificate_manager_test",
-    ":customize_themes_test",
     ":managed_dialog_test",
+    ":most_visited_focus_test",
+    ":most_visited_test",
   ]
-}
-
-js_library("certificate_manager_provisioning_test") {
-  deps = [
-    "..:chai_assert",
-    "..:test_browser_proxy.m",
-    "//ui/webui/resources/cr_components/certificate_manager:certificate_provisioning_details_dialog",
-    "//ui/webui/resources/cr_components/certificate_manager:certificate_provisioning_entry",
-    "//ui/webui/resources/cr_components/certificate_manager:certificate_provisioning_list",
-  ]
-  externs_list = [ "$externs_path/mocha-2.5.js" ]
-}
-
-js_library("certificate_manager_test") {
-  deps = [
-    "..:chai_assert",
-    "..:test_browser_proxy.m",
-    "//ui/webui/resources/cr_components/certificate_manager:ca_trust_edit_dialog",
-    "//ui/webui/resources/cr_components/certificate_manager:certificate_delete_confirmation_dialog",
-    "//ui/webui/resources/cr_components/certificate_manager:certificate_list",
-    "//ui/webui/resources/cr_components/certificate_manager:certificate_manager",
-    "//ui/webui/resources/cr_components/certificate_manager:certificate_manager_types",
-    "//ui/webui/resources/cr_components/certificate_manager:certificate_password_decryption_dialog",
-    "//ui/webui/resources/cr_components/certificate_manager:certificate_password_encryption_dialog",
-    "//ui/webui/resources/cr_components/certificate_manager:certificate_provisioning_browser_proxy",
-    "//ui/webui/resources/cr_components/certificate_manager:certificate_subentry",
-    "//ui/webui/resources/cr_components/certificate_manager:certificates_browser_proxy",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
-  ]
-  externs_list = [ "$externs_path/mocha-2.5.js" ]
-}
-
-js_library("customize_themes_test") {
-  deps = [
-    "..:chai_assert",
-    "..:test_browser_proxy.m",
-    "..:test_util.m",
-    "//ui/webui/resources/cr_components/customize_themes",
-    "//ui/webui/resources/cr_components/customize_themes:browser_proxy",
-    "//ui/webui/resources/cr_components/customize_themes:theme_icon",
-  ]
-  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
 js_library("managed_dialog_test") {
@@ -68,6 +27,44 @@ js_library("managed_dialog_test") {
     "..:chai_assert",
     "//ui/webui/resources/cr_components/managed_dialog",
     "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("most_visited_focus_test") {
+  deps = [
+    ":most_visited_test_support",
+    "..:test_browser_proxy.m",
+    "..:test_util.m",
+    "//ui/webui/resources/cr_components/most_visited",
+    "//ui/webui/resources/cr_components/most_visited:browser_proxy",
+    "//ui/webui/resources/cr_components/most_visited:mojom_js_library_for_compile",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("most_visited_test") {
+  deps = [
+    ":most_visited_test_support",
+    "..:chai_assert",
+    "..:test_browser_proxy.m",
+    "..:test_util.m",
+    "//ui/webui/resources/cr_components/most_visited",
+    "//ui/webui/resources/cr_components/most_visited:browser_proxy",
+    "//ui/webui/resources/cr_components/most_visited:mojom_js_library_for_compile",
+    "//ui/webui/resources/cr_components/most_visited:window_proxy",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("most_visited_test_support") {
+  deps = [
+    "..:chai_assert",
+    "//ui/webui/resources/js:util.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }

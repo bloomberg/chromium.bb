@@ -1,0 +1,27 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void textureSampleLevel_47daa4(depth2d<float, access::sample> tint_symbol_2, sampler tint_symbol_3) {
+  float res = tint_symbol_2.sample(tint_symbol_3, float2(), level(0), int2());
+}
+
+vertex tint_symbol vertex_main(depth2d<float, access::sample> tint_symbol_4 [[texture(0)]], sampler tint_symbol_5 [[sampler(1)]]) {
+  textureSampleLevel_47daa4(tint_symbol_4, tint_symbol_5);
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main(depth2d<float, access::sample> tint_symbol_6 [[texture(0)]], sampler tint_symbol_7 [[sampler(1)]]) {
+  textureSampleLevel_47daa4(tint_symbol_6, tint_symbol_7);
+  return;
+}
+
+kernel void compute_main(depth2d<float, access::sample> tint_symbol_8 [[texture(0)]], sampler tint_symbol_9 [[sampler(1)]]) {
+  textureSampleLevel_47daa4(tint_symbol_8, tint_symbol_9);
+  return;
+}
+

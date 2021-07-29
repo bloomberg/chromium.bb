@@ -31,9 +31,7 @@ extern const char kIosSettingsPromoAlreadySeen[];
 extern const char kIosSettingsSigninPromoDisplayedCount[];
 extern const char kLastSessionExitedCleanly[];
 extern const char kNTPContentSuggestionsEnabled[];
-extern const char kMetricsReportingWifiOnly[];
 extern const char kPrintingEnabled[];
-extern const char kSavingBrowserHistoryDisabled[];
 extern const char kSearchSuggestEnabled[];
 
 extern const char kNetworkPredictionSetting[];
@@ -44,6 +42,8 @@ extern const char kShowMemoryDebuggingTools[];
 extern const char kSigninLastAccounts[];
 extern const char kSigninLastAccountsMigrated[];
 extern const char kSigninShouldPromptForSigninAgain[];
+extern const char kSigninWebSignDismissalCount[];
+extern const char kSigninBottomSheetShownCount[];
 
 extern const char kIosUserZoomMultipliers[];
 

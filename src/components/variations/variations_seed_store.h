@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -27,7 +28,7 @@ class VariationsSeed;
 
 // VariationsSeedStore is a helper class for reading and writing the variations
 // seed from Local State.
-class VariationsSeedStore {
+class COMPONENT_EXPORT(VARIATIONS) VariationsSeedStore {
  public:
   // Standard constructor. Enables signature verification.
   explicit VariationsSeedStore(PrefService* local_state);
@@ -73,17 +74,21 @@ class VariationsSeedStore {
                      bool is_gzip_compressed,
                      VariationsSeed* parsed_seed) WARN_UNUSED_RESULT;
 
-  // Loads the safe variations seed data from local state into |seed| and
-  // updates any relevant fields in |client_state| and stores the
-  // |seed_fetch_time|. Returns true iff the safe seed was read successfully
+  // Loads the safe variations seed data from local state into |seed|, updates
+  // any relevant fields in |client_state| and sets the |seed_fetch_time|.
+  // Returns LoadSeedResult::kSuccess iff the safe seed was read successfully
   // from prefs. If the safe seed could not be loaded, it is guaranteed that no
-  // fields in |client_state| are modified.
-  // Side-effect: Upon any failure to read or validate the safe seed, clears all
-  // of the safe seed pref values. This occurs iff the method returns false.
+  // fields in |client_state| are modified and that |seed_fetch_time| is not
+  // set.
+  //
+  // Side effect: Upon failing to read or validate the safe seed, clears all
+  // of the safe seed pref values.
+  //
   // Virtual for testing.
-  virtual bool LoadSafeSeed(VariationsSeed* seed,
-                            ClientFilterableState* client_state,
-                            base::Time* seed_fetch_time) WARN_UNUSED_RESULT;
+  virtual LoadSeedResult LoadSafeSeed(VariationsSeed* seed,
+                                      ClientFilterableState* client_state,
+                                      base::Time* seed_fetch_time)
+      WARN_UNUSED_RESULT;
 
   // Stores the given |seed_data| (a serialized protobuf) to local state as a
   // safe seed, along with a base64-encoded digital signature for seed and any
@@ -207,7 +212,7 @@ class VariationsSeedStore {
   // Cached serial number from the most recently fetched variations seed.
   std::string latest_serial_number_;
 
-  // Whether to validate signatures on the seed. Always on except in tests.
+  // Whether to validate signatures on the seed. Always on except in unit tests.
   const bool signature_verification_enabled_;
 
   // Whether this may read or write to Java "first run" SharedPreferences.

@@ -4,7 +4,6 @@
 
 #include "ash/system/message_center/stacked_notification_bar.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/message_center/message_center_style.h"
@@ -23,9 +22,11 @@
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/vector_icons.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -54,7 +55,7 @@ class StackingBarLabelButton : public views::LabelButton {
     // explicitly called after ConfigureTrayPopupButton as
     // ConfigureTrayPopupButton configures the InkDrop and these callbacks
     // override that behavior.
-    ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+    views::InkDrop::Get(this)->SetCreateHighlightCallback(base::BindRepeating(
         [](Button* host) {
           auto highlight = std::make_unique<views::InkDropHighlight>(
               gfx::SizeF(host->size()), message_center_style::kInkRippleColor);
@@ -63,11 +64,11 @@ class StackingBarLabelButton : public views::LabelButton {
           return highlight;
         },
         this));
-    ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+    views::InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
         [](Button* host) -> std::unique_ptr<views::InkDropRipple> {
           return std::make_unique<views::FloodFillInkDropRipple>(
               host->size(),
-              host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+              views::InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
               message_center_style::kInkRippleColor,
               message_center_style::kInkRippleOpacity);
         },

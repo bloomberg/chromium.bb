@@ -4,96 +4,72 @@
 
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 
+#include <limits>
 #include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_frame_pool.h"
+#include "media/base/video_types.h"
 #include "media/base/video_util.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_plane_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_plane_layout.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_cssimagevalue_htmlcanvaselement_htmlimageelement_htmlvideoelement_imagebitmap_offscreencanvas_svgimageelement_videoframe.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_color_space_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_buffer_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_copy_to_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_init.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_plane_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_pixel_format.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/modules/canvas/imagebitmap/image_bitmap_factories.h"
-#include "third_party/blink/renderer/modules/webcodecs/parsed_read_into_options.h"
-#include "third_party/blink/renderer/modules/webcodecs/plane_layout.h"
-#include "third_party/blink/renderer/modules/webcodecs/webcodecs_logger.h"
+#include "third_party/blink/renderer/modules/webcodecs/dom_rect_util.h"
+#include "third_party/blink/renderer/modules/webcodecs/parsed_copy_to_options.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_color_space.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/video_frame_image_util.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/libyuv/include/libyuv/planar_functions.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
 namespace {
 
-struct YUVReadbackContext {
-  gfx::Size coded_size;
-  gfx::Rect visible_rect;
-  gfx::Size natural_size;
-  base::TimeDelta timestamp;
-  scoped_refptr<media::VideoFrame> frame;
-};
-
-void OnYUVReadbackDone(
-    void* raw_ctx,
-    std::unique_ptr<const SkImage::AsyncReadResult> async_result) {
-  if (!async_result)
-    return;
-  auto* context = reinterpret_cast<YUVReadbackContext*>(raw_ctx);
-  context->frame = media::VideoFrame::WrapExternalYuvData(
-      media::PIXEL_FORMAT_I420, context->coded_size, context->visible_rect,
-      context->natural_size, static_cast<int>(async_result->rowBytes(0)),
-      static_cast<int>(async_result->rowBytes(1)),
-      static_cast<int>(async_result->rowBytes(2)),
-      // TODO(crbug.com/1161304): We should be able to wrap readonly memory in
-      // a VideoFrame without resorting to a const_cast.
-      reinterpret_cast<uint8_t*>(const_cast<void*>(async_result->data(0))),
-      reinterpret_cast<uint8_t*>(const_cast<void*>(async_result->data(1))),
-      reinterpret_cast<uint8_t*>(const_cast<void*>(async_result->data(2))),
-      context->timestamp);
-  if (!context->frame)
-    return;
-  context->frame->AddDestructionObserver(
-      ConvertToBaseOnceCallback(WTF::CrossThreadBindOnce(
-          base::DoNothing::Once<
-              std::unique_ptr<const SkImage::AsyncReadResult>>(),
-          std::move(async_result))));
-}
-
 media::VideoPixelFormat ToMediaPixelFormat(V8VideoPixelFormat::Enum fmt) {
   switch (fmt) {
     case V8VideoPixelFormat::Enum::kI420:
       return media::PIXEL_FORMAT_I420;
+    case V8VideoPixelFormat::Enum::kI420A:
+      return media::PIXEL_FORMAT_I420A;
     case V8VideoPixelFormat::Enum::kI422:
       return media::PIXEL_FORMAT_I422;
     case V8VideoPixelFormat::Enum::kI444:
       return media::PIXEL_FORMAT_I444;
     case V8VideoPixelFormat::Enum::kNV12:
       return media::PIXEL_FORMAT_NV12;
-    case V8VideoPixelFormat::Enum::kABGR:
+    case V8VideoPixelFormat::Enum::kRGBA:
       return media::PIXEL_FORMAT_ABGR;
-    case V8VideoPixelFormat::Enum::kXBGR:
+    case V8VideoPixelFormat::Enum::kRGBX:
       return media::PIXEL_FORMAT_XBGR;
-    case V8VideoPixelFormat::Enum::kARGB:
+    case V8VideoPixelFormat::Enum::kBGRA:
       return media::PIXEL_FORMAT_ARGB;
-    case V8VideoPixelFormat::Enum::kXRGB:
+    case V8VideoPixelFormat::Enum::kBGRX:
       return media::PIXEL_FORMAT_XRGB;
   }
 }
@@ -217,29 +193,191 @@ bool IsSupportedPlanarFormat(const media::VideoFrame& frame) {
   }
 }
 
+VideoFrame* CreateFromBufferImpl(ScriptState* script_state,
+                                 unsigned char* data,
+                                 size_t data_length,
+                                 const VideoFrameBufferInit* init,
+                                 ExceptionState& exception_state) {
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+
+  // Handle format; the string was validated by the V8 binding.
+  auto typed_fmt = V8VideoPixelFormat::Create(init->format());
+  auto media_fmt = ToMediaPixelFormat(typed_fmt->AsEnum());
+
+  // Validate coded size.
+  uint32_t coded_width = init->codedWidth();
+  uint32_t coded_height = init->codedHeight();
+  if (coded_width == 0) {
+    exception_state.ThrowTypeError("codedWidth must be nonzero.");
+    return nullptr;
+  }
+  if (coded_height == 0) {
+    exception_state.ThrowTypeError("codedHeight must be nonzero.");
+    return nullptr;
+  }
+  if (coded_width > media::limits::kMaxDimension ||
+      coded_height > media::limits::kMaxDimension ||
+      coded_width * coded_height > media::limits::kMaxCanvas) {
+    exception_state.ThrowTypeError(
+        String::Format("Coded size %u x %u exceeds implementation limit.",
+                       coded_width, coded_height));
+    return nullptr;
+  }
+  const gfx::Size coded_size(static_cast<int>(coded_width),
+                             static_cast<int>(coded_height));
+
+  // Validate visibleRect and layout.
+  VideoFrameCopyToOptions* adapted_init =
+      MakeGarbageCollected<VideoFrameCopyToOptions>();
+  if (init->hasVisibleRect())
+    adapted_init->setRect(init->visibleRect());
+  if (init->hasLayout())
+    adapted_init->setLayout(init->layout());
+
+  ParsedCopyToOptions copy_options(adapted_init, media_fmt, coded_size,
+                                   gfx::Rect(coded_size), exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+  const gfx::Rect visible_rect = copy_options.rect;
+
+  // Validate data.
+  if (data_length < copy_options.min_buffer_size) {
+    exception_state.ThrowTypeError("data is not large enough.");
+    return nullptr;
+  }
+
+  // Validate natural size.
+  uint32_t natural_width = static_cast<uint32_t>(visible_rect.width());
+  uint32_t natural_height = static_cast<uint32_t>(visible_rect.height());
+  if (init->hasDisplayWidth() || init->hasDisplayHeight()) {
+    if (!init->hasDisplayWidth()) {
+      exception_state.ThrowTypeError(
+          "displayHeight specified without displayWidth.");
+      return nullptr;
+    }
+    if (!init->hasDisplayHeight()) {
+      exception_state.ThrowTypeError(
+          "displayWidth specified without displayHeight.");
+      return nullptr;
+    }
+
+    natural_width = init->displayWidth();
+    natural_height = init->displayHeight();
+    if (natural_width == 0) {
+      exception_state.ThrowTypeError("displayWidth must be nonzero.");
+      return nullptr;
+    }
+    if (natural_height == 0) {
+      exception_state.ThrowTypeError("displayHeight must be nonzero.");
+      return nullptr;
+    }
+    // There is no limit on display size in //media; 2 * kMaxDimension is
+    // arbitrary. A big difference is that //media computes display size such
+    // that at least one dimension is the same as the visible size (and the
+    // other is not smaller than the visible size), while WebCodecs apps can
+    // specify any combination.
+    //
+    // Note that at large display sizes, it can become impossible to allocate
+    // a texture large enough to render into. It may be impossible, for example,
+    // to create an ImageBitmap without also scaling down.
+    if (natural_width > 2 * media::limits::kMaxDimension ||
+        natural_height > 2 * media::limits::kMaxDimension) {
+      exception_state.ThrowTypeError(
+          String::Format("Invalid display size (%u, %u); exceeds "
+                         "implementation limit.",
+                         natural_width, natural_height));
+      return nullptr;
+    }
+  }
+  const gfx::Size natural_size(static_cast<int>(natural_width),
+                               static_cast<int>(natural_height));
+
+  // Create a frame.
+  const auto timestamp = base::TimeDelta::FromMicroseconds(init->timestamp());
+  auto& frame_pool = CachedVideoFramePool::From(*execution_context);
+  auto frame = frame_pool.CreateFrame(media_fmt, coded_size, visible_rect,
+                                      natural_size, timestamp);
+  if (!frame) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kOperationError,
+        String::Format("Failed to create a VideoFrame with format: %s, "
+                       "coded size: %s, visibleRect: %s, display size: %s.",
+                       VideoPixelFormatToString(media_fmt).c_str(),
+                       coded_size.ToString().c_str(),
+                       visible_rect.ToString().c_str(),
+                       natural_size.ToString().c_str()));
+    return nullptr;
+  }
+
+  if (init->hasColorSpace()) {
+    VideoColorSpace* video_color_space =
+        MakeGarbageCollected<VideoColorSpace>(init->colorSpace());
+    frame->set_color_space(video_color_space->ToGfxColorSpace());
+  } else {
+    // So far all WebCodecs YUV formats are planar, so this test works. That
+    // might not be the case in the future.
+    frame->set_color_space(media::IsYuvPlanar(media_fmt)
+                               ? gfx::ColorSpace::CreateREC709()
+                               : gfx::ColorSpace::CreateSRGB());
+  }
+
+  if (init->hasDuration()) {
+    frame->metadata().frame_duration =
+        base::TimeDelta::FromMicroseconds(init->duration());
+  }
+
+  // Copy planes.
+  for (wtf_size_t i = 0; i < copy_options.num_planes; ++i) {
+    libyuv::CopyPlane(data + copy_options.planes[i].offset,
+                      static_cast<int>(copy_options.planes[i].stride),
+                      frame->data(i), static_cast<int>(frame->stride(i)),
+                      static_cast<int>(copy_options.planes[i].width_bytes),
+                      static_cast<int>(copy_options.planes[i].height));
+  }
+
+  return MakeGarbageCollected<VideoFrame>(std::move(frame),
+                                          ExecutionContext::From(script_state));
+}
+
 }  // namespace
 
 VideoFrame::VideoFrame(scoped_refptr<media::VideoFrame> frame,
-                       ExecutionContext* context) {
+                       ExecutionContext* context,
+                       std::string monitoring_source_id) {
   DCHECK(frame);
-  handle_ = base::MakeRefCounted<VideoFrameHandle>(std::move(frame), context);
+  handle_ = base::MakeRefCounted<VideoFrameHandle>(
+      frame, context, std::move(monitoring_source_id));
+
+  external_allocated_memory_ =
+      media::VideoFrame::AllocationSize(frame->format(), frame->coded_size());
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+      external_allocated_memory_);
 }
 
 VideoFrame::VideoFrame(scoped_refptr<VideoFrameHandle> handle)
     : handle_(std::move(handle)) {
   DCHECK(handle_);
 
-  // Note: The provided |handle| may be invalid if close() has been called while
-  // a frame is in transit to another thread.
+  // The provided |handle| may be invalid if close() was called while
+  // it was being sent to another thread.
+  auto local_frame = handle_->frame();
+  if (!local_frame)
+    return;
+
+  external_allocated_memory_ = media::VideoFrame::AllocationSize(
+      local_frame->format(), local_frame->coded_size());
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+      external_allocated_memory_);
+}
+
+VideoFrame::~VideoFrame() {
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+      -external_allocated_memory_);
 }
 
 // static
 VideoFrame* VideoFrame::Create(ScriptState* script_state,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                                const V8CanvasImageSource* source,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                               const CanvasImageSourceUnion& source,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                                const VideoFrameInit* init,
                                ExceptionState& exception_state) {
   auto* image_source = ToCanvasImageSource(source, exception_state);
@@ -258,22 +396,16 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
   constexpr char kAlphaKeep[] = "keep";
 
   // Special case <video> and VideoFrame to directly use the underlying frame.
-  if (
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-      source->IsVideoFrame() || source->IsHTMLVideoElement()
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-      source.IsVideoFrame() || source.IsHTMLVideoElement()
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  ) {
+  if (source->IsVideoFrame() || source->IsHTMLVideoElement()) {
     scoped_refptr<media::VideoFrame> source_frame;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     switch (source->GetContentType()) {
       case V8CanvasImageSource::ContentType::kVideoFrame:
-        if (!init || (!init->hasTimestamp() && !init->hasDuration() &&
-                      init->alpha() == kAlphaKeep)) {
+        source_frame = source->GetAsVideoFrame()->frame();
+        if (!init->hasTimestamp() && !init->hasDuration() &&
+            (init->alpha() == kAlphaKeep ||
+             media::IsOpaque(source_frame->format()))) {
           return source->GetAsVideoFrame()->clone(exception_state);
         }
-        source_frame = source->GetAsVideoFrame()->frame();
         break;
       case V8CanvasImageSource::ContentType::kHTMLVideoElement:
         if (auto* wmp = source->GetAsHTMLVideoElement()->GetWebMediaPlayer())
@@ -282,18 +414,6 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
       default:
         NOTREACHED();
     }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    if (source.IsVideoFrame()) {
-      if (!init || (!init->hasTimestamp() && !init->hasDuration() &&
-                    init->alpha() == kAlphaKeep)) {
-        return source.GetAsVideoFrame()->clone(exception_state);
-      }
-      source_frame = source.GetAsVideoFrame()->frame();
-    } else if (source.IsHTMLVideoElement()) {
-      if (auto* wmp = source.GetAsHTMLVideoElement()->GetWebMediaPlayer())
-        source_frame = wmp->GetCurrentFrame();
-    }
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
     if (!source_frame) {
       exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -301,12 +421,12 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
       return nullptr;
     }
 
-    const bool force_opaque = init && init->alpha() == kAlphaDiscard &&
+    const bool force_opaque = init->alpha() == kAlphaDiscard &&
                               !media::IsOpaque(source_frame->format());
 
     // We can't modify the timestamp or duration directly since there may be
     // other owners accessing these fields concurrently.
-    if (init && (init->hasTimestamp() || init->hasDuration() || force_opaque)) {
+    if (init->hasTimestamp() || init->hasDuration() || force_opaque) {
       const auto wrapped_format =
           force_opaque ? ToOpaqueMediaPixelFormat(source_frame->format())
                        : source_frame->format();
@@ -368,7 +488,7 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
   if (!sk_color_space)
     sk_color_space = SkColorSpace::MakeSRGB();
 
-  const auto gfx_color_space = gfx::ColorSpace(*sk_color_space);
+  auto gfx_color_space = gfx::ColorSpace(*sk_color_space);
   if (!gfx_color_space.IsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Invalid color space");
@@ -380,54 +500,62 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
   const gfx::Size natural_size = coded_size;
 
   scoped_refptr<media::VideoFrame> frame;
-  if (sk_image->isTextureBacked()) {
-    YUVReadbackContext result;
-    result.coded_size = coded_size;
-    result.visible_rect = visible_rect;
-    result.natural_size = natural_size;
-    result.timestamp = timestamp;
+  if (image->IsTextureBacked()) {
+    DCHECK(image->IsStaticBitmapImage());
+    auto format = media::VideoPixelFormatFromSkColorType(
+        sk_image->colorType(),
+        image->CurrentFrameKnownToBeOpaque() || init->alpha() == kAlphaDiscard);
 
-    // TODO(crbug.com/1138681): This is currently wrong for alpha == keep, but
-    // we're removing readback for this flow, so it's fine for now.
+    auto* sbi = static_cast<StaticBitmapImage*>(image.get());
+    gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes] = {
+        sbi->GetMailboxHolder()};
+    const bool is_origin_top_left = sbi->IsOriginTopLeft();
 
-    // While this function indicates it's asynchronous, the flushAndSubmit()
-    // call below ensures it completes synchronously.
-    sk_image->asyncRescaleAndReadPixelsYUV420(
-        kRec709_SkYUVColorSpace, sk_color_space, sk_image_info.bounds(),
-        sk_image_info.dimensions(), SkImage::RescaleGamma::kSrc,
-        SkImage::RescaleMode::kRepeatedCubic, &OnYUVReadbackDone, &result);
-    GrDirectContext* gr_context = image->ContextProvider()->GetGrContext();
-    DCHECK(gr_context);
-    gr_context->flushAndSubmit(/*syncCpu=*/true);
+    // The sync token needs to be updated when |frame| is released, but
+    // AcceleratedStaticBitmapImage::UpdateSyncToken() is not thread-safe.
+    auto release_cb = media::BindToCurrentLoop(WTF::Bind(
+        [](scoped_refptr<Image> image, const gpu::SyncToken& sync_token) {
+          static_cast<StaticBitmapImage*>(image.get())
+              ->UpdateSyncToken(sync_token);
+        },
+        std::move(image)));
 
-    if (!result.frame) {
-      exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
-                                        "YUV conversion error during readback");
-      return nullptr;
+    frame = media::VideoFrame::WrapNativeTextures(
+        format, mailbox_holders, std::move(release_cb), coded_size,
+        visible_rect, natural_size, timestamp);
+
+    if (frame)
+      frame->metadata().texture_origin_is_top_left = is_origin_top_left;
+
+    // Drop the SkImage, we don't want it in the VideoFrameHandle.
+    // (We did need it to get the color space though.)
+    //
+    // Note: We could add the StaticBitmapImage to the VideoFrameHandle so we
+    // can round trip through VideoFrame back to canvas w/o any copies, but
+    // this doesn't seem like a common use case.
+    sk_image.reset();
+  } else {
+    if (image->IsTextureBacked()) {
+      sk_image = sk_image->makeRasterImage();
+      if (auto new_cs = sk_image_info.refColorSpace())
+        gfx_color_space = gfx::ColorSpace(*new_cs);
     }
 
-    frame = std::move(result.frame);
-    frame->set_color_space(gfx::ColorSpace::CreateREC709());
-    if (init && init->hasDuration()) {
-      frame->metadata().frame_duration =
-          base::TimeDelta::FromMicroseconds(init->duration());
-    }
-    return MakeGarbageCollected<VideoFrame>(
-        std::move(frame), ExecutionContext::From(script_state));
+    const bool force_opaque =
+        init && init->alpha() == kAlphaDiscard && !sk_image->isOpaque();
+
+    frame = media::CreateFromSkImage(sk_image, visible_rect, natural_size,
+                                     timestamp, force_opaque);
   }
 
-  const bool force_opaque =
-      init && init->alpha() == kAlphaDiscard && !sk_image->isOpaque();
-
-  frame = media::CreateFromSkImage(sk_image, visible_rect, natural_size,
-                                   timestamp, force_opaque);
   if (!frame) {
     exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
                                       "Failed to create video frame");
     return nullptr;
   }
+
   frame->set_color_space(gfx_color_space);
-  if (init && init->hasDuration()) {
+  if (init->hasDuration()) {
     frame->metadata().frame_duration =
         base::TimeDelta::FromMicroseconds(init->duration());
   }
@@ -437,251 +565,34 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
           ExecutionContext::From(script_state)));
 }
 
-// TODO(crbug.com/1198324): Merge shared logic with VideoDecoderConfig.
-// static
 VideoFrame* VideoFrame::Create(ScriptState* script_state,
-                               const HeapVector<Member<PlaneInit>>& planes,
-                               const VideoFramePlaneInit* init,
+                               const MaybeShared<DOMArrayBufferView>& data,
+                               const VideoFrameBufferInit* init,
                                ExceptionState& exception_state) {
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-
-  // Handle format; the string was validated by the V8 binding.
-  auto typed_fmt = V8VideoPixelFormat::Create(init->format());
-  auto media_fmt = ToMediaPixelFormat(typed_fmt->AsEnum());
-
-  // There's no I420A pixel format, so treat I420 + 4 planes as I420A.
-  if (media_fmt == media::PIXEL_FORMAT_I420 && planes.size() == 4)
-    media_fmt = media::PIXEL_FORMAT_I420A;
-
-  // Validate coded size.
-  uint32_t coded_width = init->codedWidth();
-  uint32_t coded_height = init->codedHeight();
-  if (coded_width == 0 || coded_width > media::limits::kMaxDimension ||
-      coded_height == 0 || coded_height > media::limits::kMaxDimension ||
-      coded_width * coded_height > media::limits::kMaxCanvas) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kConstraintError,
-        String::Format("Invalid coded size (%u, %u).", coded_width,
-                       coded_height));
-    return nullptr;
-  }
-
-  const gfx::Size coded_size(coded_width, coded_height);
-
-  // Validate visible rect.
-  uint32_t visible_left = 0;
-  uint32_t visible_top = 0;
-  uint32_t visible_width = coded_width;
-  uint32_t visible_height = coded_height;
-  if (init->hasVisibleRegion()) {
-    visible_left = init->visibleRegion()->left();
-    visible_top = init->visibleRegion()->top();
-    visible_width = init->visibleRegion()->width();
-    visible_height = init->visibleRegion()->height();
-  } else {
-    if (init->hasCropLeft()) {
-      WebCodecsLogger::From(*execution_context).LogCropDeprecation();
-      visible_left = init->cropLeft();
-      if (visible_left >= coded_width) {
-        exception_state.ThrowDOMException(
-            DOMExceptionCode::kConstraintError,
-            String::Format("Invalid cropLeft %u for codedWidth %u.",
-                           visible_left, coded_width));
-        return nullptr;
-      }
-      visible_width = coded_width - visible_left;
-    }
-    if (init->hasCropTop()) {
-      WebCodecsLogger::From(*execution_context).LogCropDeprecation();
-      visible_top = init->cropTop();
-      if (visible_top >= coded_height) {
-        exception_state.ThrowDOMException(
-            DOMExceptionCode::kConstraintError,
-            String::Format("Invalid cropTop %u for codedHeight %u.",
-                           visible_top, coded_height));
-        return nullptr;
-      }
-      visible_height = coded_height - visible_top;
-    }
-    if (init->hasCropWidth()) {
-      WebCodecsLogger::From(*execution_context).LogCropDeprecation();
-      visible_width = init->cropWidth();
-    }
-    if (init->hasCropHeight()) {
-      WebCodecsLogger::From(*execution_context).LogCropDeprecation();
-      visible_height = init->cropHeight();
-    }
-  }
-  if (visible_left >= coded_width || visible_top >= coded_height ||
-      visible_width == 0 || visible_width > media::limits::kMaxDimension ||
-      visible_height == 0 || visible_height > media::limits::kMaxDimension ||
-      visible_left + visible_width > coded_width ||
-      visible_top + visible_height > coded_height) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kConstraintError,
-        String::Format("Invalid visible region {left: %u, top: %u, width: %u, "
-                       "height: %u} for coded size (%u, %u).",
-                       visible_left, visible_top, visible_width, visible_height,
-                       coded_width, coded_height));
-    return nullptr;
-  }
-
-  const gfx::Rect visible_rect(visible_left, visible_top, visible_width,
-                               visible_height);
-
-  // Validate natural size.
-  uint32_t natural_width = visible_width;
-  uint32_t natural_height = visible_height;
-  if (init->hasDisplayWidth() || init->hasDisplayHeight()) {
-    if (!init->hasDisplayWidth()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kConstraintError,
-          String::Format("Invalid display size, displayHeight specified "
-                         "without displayWidth."));
-      return nullptr;
-    }
-    if (!init->hasDisplayHeight()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kConstraintError,
-          String::Format("Invalid display size, displayWidth specified "
-                         "without displayHeight."));
-      return nullptr;
-    }
-
-    natural_width = init->displayWidth();
-    natural_height = init->displayHeight();
-    if (natural_width == 0 || natural_width > media::limits::kMaxDimension ||
-        natural_height == 0 || natural_height > media::limits::kMaxDimension) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kConstraintError,
-          String::Format("Invalid display size (%u, %u).", natural_width,
-                         natural_height));
-      return nullptr;
-    }
-  }
-
-  const gfx::Size natural_size(natural_width, natural_height);
-
-  // Validate planes.
-  if (media::VideoFrame::NumPlanes(media_fmt) != planes.size()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kConstraintError,
-        String::Format("Invalid number of planes for format %s; expected %zu, "
-                       "received %u.",
-                       init->format().Ascii().c_str(),
-                       media::VideoFrame::NumPlanes(media_fmt), planes.size()));
-    return nullptr;
-  }
-
-  for (wtf_size_t i = 0; i < planes.size(); ++i) {
-    if (!planes[i]->hasData()) {
-      if (planes[i]->hasSrc()) {
-        WebCodecsLogger::From(*execution_context).LogPlaneInitSrcDeprecation();
-      } else {
-        // TODO(sandersd): Make |data| an actual required member.
-        exception_state.ThrowTypeError(String::Format(
-            "Required member 'data' is missing for plane %u.", i));
-        return nullptr;
-      }
-    }
-  }
-
-  for (wtf_size_t i = 0; i < planes.size(); ++i) {
-    DOMArrayPiece buffer(planes[i]->hasData() ? planes[i]->data()
-                                              : planes[i]->src());
-
-    size_t offset = 0;
-    if (planes[i]->hasOffset())
-      offset = planes[i]->offset();
-
-    const size_t stride = planes[i]->stride();
-
-    const gfx::Size plane_size =
-        media::VideoFrame::PlaneSize(media_fmt, i, coded_size);
-    const size_t minimum_stride = plane_size.width();
-    const size_t rows = plane_size.height();
-    if (stride < minimum_stride) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kConstraintError,
-          String::Format(
-              "The stride of plane %u is too small for the given coded size "
-              "(%u, %u); expected at least %zu, received %zu",
-              i, coded_width, coded_height, minimum_stride, stride));
-      return nullptr;
-    }
-
-    // Note: This check requires the full stride to be provided for every row,
-    // including the last.
-    const auto end = base::CheckedNumeric<size_t>(stride) * rows + offset;
-    if (!end.IsValid() || end.ValueOrDie() > buffer.ByteLength()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kConstraintError,
-          String::Format(
-              "Plane %u with %zu rows of stride %zu bytes does not fit at "
-              "offset %zu in src buffer with length %zu.",
-              i, rows, stride, offset, buffer.ByteLength()));
-      return nullptr;
-    }
-  }
-
-  // Create a frame.
-  const auto timestamp = base::TimeDelta::FromMicroseconds(init->timestamp());
-  auto& frame_pool = CachedVideoFramePool::From(*execution_context);
-  auto frame = frame_pool.CreateFrame(media_fmt, coded_size, visible_rect,
-                                      natural_size, timestamp);
-  if (!frame) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kConstraintError,
-        String::Format(
-            "Failed to create a video frame with configuration {format: %s, "
-            "coded_size: %s, visible_rect: %s, display_size: %s}",
-            VideoPixelFormatToString(media_fmt).c_str(),
-            coded_size.ToString().c_str(), visible_rect.ToString().c_str(),
-            natural_size.ToString().c_str()));
-    return nullptr;
-  }
-
-  if (init->hasDuration()) {
-    frame->metadata().frame_duration =
-        base::TimeDelta::FromMicroseconds(init->duration());
-  }
-
-  // Copy data.
-  for (wtf_size_t i = 0; i < planes.size(); ++i) {
-    DOMArrayPiece buffer(planes[i]->hasData() ? planes[i]->data()
-                                              : planes[i]->src());
-    size_t offset = 0;
-    if (planes[i]->hasOffset())
-      offset = planes[i]->offset();
-    const size_t stride = planes[i]->stride();
-
-    const gfx::Size plane_size =
-        media::VideoFrame::PlaneSize(media_fmt, i, coded_size);
-    const size_t minimum_stride = plane_size.width();
-    const size_t rows = plane_size.height();
-
-    uint8_t* src_ptr = reinterpret_cast<uint8_t*>(buffer.Data()) + offset;
-    uint8_t* dst_ptr = frame->data(i);
-    for (size_t row = 0; row < rows; ++row) {
-      memcpy(dst_ptr, src_ptr, minimum_stride);
-      src_ptr += stride;
-      dst_ptr += frame->stride(i);
-    }
-  }
-
-  return MakeGarbageCollected<VideoFrame>(std::move(frame),
-                                          ExecutionContext::From(script_state));
+  return CreateFromBufferImpl(
+      script_state, static_cast<unsigned char*>(data->BaseAddressMaybeShared()),
+      data->byteLength(), init, exception_state);
 }
 
-String VideoFrame::format() const {
+VideoFrame* VideoFrame::Create(ScriptState* script_state,
+                               DOMArrayBufferBase* data,
+                               const VideoFrameBufferInit* init,
+                               ExceptionState& exception_state) {
+  return CreateFromBufferImpl(
+      script_state, static_cast<unsigned char*>(data->DataMaybeShared()),
+      data->ByteLength(), init, exception_state);
+}
+
+absl::optional<V8VideoPixelFormat> VideoFrame::format() const {
   auto local_frame = handle_->frame();
   if (!local_frame || !IsSupportedPlanarFormat(*local_frame))
-    return String();
+    return absl::nullopt;
 
   switch (local_frame->format()) {
     case media::PIXEL_FORMAT_I420:
-    case media::PIXEL_FORMAT_I420A:
       return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kI420);
+    case media::PIXEL_FORMAT_I420A:
+      return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kI420A);
     case media::PIXEL_FORMAT_I422:
       return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kI422);
     case media::PIXEL_FORMAT_I444:
@@ -689,35 +600,17 @@ String VideoFrame::format() const {
     case media::PIXEL_FORMAT_NV12:
       return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kNV12);
     case media::PIXEL_FORMAT_ABGR:
-      return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kABGR);
+      return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kRGBA);
     case media::PIXEL_FORMAT_XBGR:
-      return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kXBGR);
+      return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kRGBX);
     case media::PIXEL_FORMAT_ARGB:
-      return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kARGB);
+      return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kBGRA);
     case media::PIXEL_FORMAT_XRGB:
-      return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kXRGB);
+      return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kBGRX);
     default:
       NOTREACHED();
-      return String();
+      return absl::nullopt;
   }
-}
-
-absl::optional<HeapVector<Member<Plane>>> VideoFrame::planes() {
-  // Verify that |this| has not been invalidated, and that the format is
-  // supported.
-  auto local_frame = handle_->frame();
-  if (!local_frame || !IsSupportedPlanarFormat(*local_frame))
-    return absl::nullopt;
-
-  // Create a Plane for each VideoFrame plane, but only the first time.
-  if (planes_.IsEmpty()) {
-    for (size_t i = 0; i < local_frame->layout().num_planes(); i++) {
-      // Note: |handle_| may have been invalidated since |local_frame| was read.
-      planes_.push_back(MakeGarbageCollected<Plane>(handle_, i));
-    }
-  }
-
-  return planes_;
 }
 
 uint32_t VideoFrame::codedWidth() const {
@@ -734,68 +627,31 @@ uint32_t VideoFrame::codedHeight() const {
   return local_frame->coded_size().height();
 }
 
-VideoFrameRegion* VideoFrame::codedRegion() const {
+absl::optional<DOMRectReadOnly*> VideoFrame::codedRect() {
   auto local_frame = handle_->frame();
-  auto* region = MakeGarbageCollected<VideoFrameRegion>();
-  region->setLeft(0);
-  region->setTop(0);
-  if (local_frame) {
-    region->setWidth(local_frame->coded_size().width());
-    region->setHeight(local_frame->coded_size().height());
-  } else {
-    region->setWidth(0);
-    region->setHeight(0);
+  if (!local_frame)
+    return absl::nullopt;
+
+  if (!coded_rect_) {
+    coded_rect_ = MakeGarbageCollected<DOMRectReadOnly>(
+        0, 0, local_frame->coded_size().width(),
+        local_frame->coded_size().height());
   }
-  return region;
+  return coded_rect_;
 }
 
-VideoFrameRegion* VideoFrame::visibleRegion() const {
+absl::optional<DOMRectReadOnly*> VideoFrame::visibleRect() {
   auto local_frame = handle_->frame();
-  auto* region = MakeGarbageCollected<VideoFrameRegion>();
-  if (local_frame) {
-    region->setLeft(local_frame->visible_rect().x());
-    region->setTop(local_frame->visible_rect().y());
-    region->setWidth(local_frame->visible_rect().width());
-    region->setHeight(local_frame->visible_rect().height());
-  } else {
-    region->setLeft(0);
-    region->setTop(0);
-    region->setWidth(0);
-    region->setHeight(0);
+  if (!local_frame)
+    return absl::nullopt;
+
+  if (!visible_rect_) {
+    visible_rect_ = MakeGarbageCollected<DOMRectReadOnly>(
+        local_frame->visible_rect().x(), local_frame->visible_rect().y(),
+        local_frame->visible_rect().width(),
+        local_frame->visible_rect().height());
   }
-  return region;
-}
-
-uint32_t VideoFrame::cropLeft(ExecutionContext* execution_context) const {
-  WebCodecsLogger::From(*execution_context).LogCropDeprecation();
-  auto local_frame = handle_->frame();
-  if (!local_frame)
-    return 0;
-  return local_frame->visible_rect().x();
-}
-
-uint32_t VideoFrame::cropTop(ExecutionContext* execution_context) const {
-  WebCodecsLogger::From(*execution_context).LogCropDeprecation();
-  auto local_frame = handle_->frame();
-  if (!local_frame)
-    return 0;
-  return local_frame->visible_rect().y();
-}
-
-uint32_t VideoFrame::cropWidth(ExecutionContext* execution_context) const {
-  WebCodecsLogger::From(*execution_context).LogCropDeprecation();
-  auto local_frame = handle_->frame();
-  if (!local_frame)
-    return 0;
-  return local_frame->visible_rect().width();
-}
-
-uint32_t VideoFrame::cropHeight(ExecutionContext* execution_context) const {
-  WebCodecsLogger::From(*execution_context).LogCropDeprecation();
-  auto local_frame = handle_->frame();
-  if (!local_frame)
-    return 0;
-  return local_frame->visible_rect().height();
+  return visible_rect_;
 }
 
 uint32_t VideoFrame::displayWidth() const {
@@ -842,7 +698,19 @@ absl::optional<uint64_t> VideoFrame::duration() const {
   return local_frame->metadata().frame_duration->InMicroseconds();
 }
 
-uint32_t VideoFrame::allocationSize(VideoFrameReadIntoOptions* options,
+absl::optional<VideoColorSpace*> VideoFrame::colorSpace() {
+  auto local_frame = handle_->frame();
+  if (!local_frame)
+    return absl::nullopt;
+
+  if (!color_space_) {
+    color_space_ =
+        MakeGarbageCollected<VideoColorSpace>(local_frame->ColorSpace());
+  }
+  return color_space_;
+}
+
+uint32_t VideoFrame::allocationSize(VideoFrameCopyToOptions* options,
                                     ExceptionState& exception_state) {
   auto local_frame = handle_->frame();
   if (!local_frame)
@@ -857,24 +725,40 @@ uint32_t VideoFrame::allocationSize(VideoFrameReadIntoOptions* options,
     return 0;
   }
 
-  ParsedReadIntoOptions layout(options, local_frame->format(),
-                               local_frame->coded_size(),
-                               local_frame->visible_rect(), exception_state);
+  ParsedCopyToOptions layout(options, local_frame->format(),
+                             local_frame->coded_size(),
+                             local_frame->visible_rect(), exception_state);
   if (exception_state.HadException())
     return 0;
 
   return layout.min_buffer_size;
 }
 
-ScriptPromise VideoFrame::readInto(ScriptState* script_state,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                                   const V8BufferSource* destination,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                                   const ArrayBufferOrArrayBufferView&
-                                       destination,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                                   VideoFrameReadIntoOptions* options,
-                                   ExceptionState& exception_state) {
+ScriptPromise VideoFrame::copyTo(
+    ScriptState* script_state,
+    const MaybeShared<DOMArrayBufferView>& destination,
+    VideoFrameCopyToOptions* options,
+    ExceptionState& exception_state) {
+  return CopyToImpl(
+      script_state,
+      static_cast<unsigned char*>(destination->BaseAddressMaybeShared()),
+      destination->byteLength(), options, exception_state);
+}
+
+ScriptPromise VideoFrame::copyTo(ScriptState* script_state,
+                                 DOMArrayBufferBase* destination,
+                                 VideoFrameCopyToOptions* options,
+                                 ExceptionState& exception_state) {
+  return CopyToImpl(script_state,
+                    static_cast<unsigned char*>(destination->DataMaybeShared()),
+                    destination->ByteLength(), options, exception_state);
+}
+
+ScriptPromise VideoFrame::CopyToImpl(ScriptState* script_state,
+                                     unsigned char* destination,
+                                     size_t destination_byte_length,
+                                     VideoFrameCopyToOptions* options,
+                                     ExceptionState& exception_state) {
   auto local_frame = handle_->frame();
   if (!local_frame) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -886,22 +770,20 @@ ScriptPromise VideoFrame::readInto(ScriptState* script_state,
   if (!IsSupportedPlanarFormat(*local_frame)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        "readInto() is not yet implemented when format is null.");
+        "copyTo() is not yet implemented when format is null.");
     return ScriptPromise();
   }
 
   // Compute layout.
-  ParsedReadIntoOptions layout(options, local_frame->format(),
-                               local_frame->coded_size(),
-                               local_frame->visible_rect(), exception_state);
+  ParsedCopyToOptions layout(options, local_frame->format(),
+                             local_frame->coded_size(),
+                             local_frame->visible_rect(), exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
 
   // Validate destination buffer.
-  DOMArrayPiece buffer(destination);
-  if (buffer.ByteLength() < static_cast<size_t>(layout.min_buffer_size)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kConstraintError,
-                                      "destination is not large enough.");
+  if (destination_byte_length < layout.min_buffer_size) {
+    exception_state.ThrowTypeError("destination is not large enough.");
     return ScriptPromise();
   }
 
@@ -918,25 +800,14 @@ ScriptPromise VideoFrame::readInto(ScriptState* script_state,
 
   // Copy data.
   for (wtf_size_t i = 0; i < layout.num_planes; i++) {
-    size_t src_stride = local_frame->stride(i);
-    size_t dest_stride = layout.planes[i].stride;
-    size_t row_bytes = layout.planes[i].width_bytes;
-
-    uint8_t* src = local_frame->data(i) + layout.planes[i].top * src_stride +
+    uint8_t* src = local_frame->data(i) +
+                   layout.planes[i].top * local_frame->stride(i) +
                    layout.planes[i].left_bytes;
-    uint8_t* dest = buffer.Bytes() + layout.planes[i].offset;
-
-    // TODO(crbug.com/1205176): Use libyuv::CopyPlane(). The requirements to use
-    // it are a bit strange though, it computes with ints and expects
-    // intermediate values (like stride * height) to fit.
-    for (size_t row = 0; row < layout.planes[i].height; row++) {
-      // TODO(crbug.com/1205175): Spec what happens to the gaps between
-      // |row_bytes| and |dest_stride|. Probably needs to be compatible with
-      // whatever libyuv does.
-      memcpy(dest, src, row_bytes);
-      src += src_stride;
-      dest += dest_stride;
-    }
+    libyuv::CopyPlane(src, static_cast<int>(local_frame->stride(i)),
+                      destination + layout.planes[i].offset,
+                      static_cast<int>(layout.planes[i].stride),
+                      static_cast<int>(layout.planes[i].width_bytes),
+                      static_cast<int>(layout.planes[i].height));
   }
 
   // Convert and return |layout|.
@@ -967,7 +838,11 @@ VideoFrame* VideoFrame::clone(ExceptionState& exception_state) {
 
 scoped_refptr<Image> VideoFrame::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    const FloatSize&) {
+    const FloatSize&,
+    const AlphaDisposition alpha_disposition) {
+  // UnpremultiplyAlpha is not implemented yet.
+  DCHECK_EQ(alpha_disposition, kPremultiplyAlpha);
+
   const auto local_handle = handle_->CloneForInternalUse();
   if (!local_handle) {
     DLOG(ERROR) << "GetSourceImageForCanvas() called for closed frame.";
@@ -1013,7 +888,8 @@ FloatSize VideoFrame::ElementSize(
     const auto orientation_enum = VideoTransformationToImageOrientation(
         local_frame->metadata().transformation.value_or(
             media::kNoTransformation));
-    auto orientation_adjusted_size = FloatSize(local_frame->natural_size());
+    auto orientation_adjusted_size =
+        FloatSize(local_frame->visible_rect().size());
     if (ImageOrientation(orientation_enum).UsesWidthAsHeight())
       return orientation_adjusted_size.TransposedSize();
     return orientation_adjusted_size;
@@ -1046,7 +922,7 @@ IntSize VideoFrame::BitmapSourceSize() const {
     return IntSize();
 
   // ImageBitmaps should always return the size w/o respecting orientation.
-  return IntSize(local_frame->natural_size());
+  return IntSize(local_frame->visible_rect().size());
 }
 
 ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
@@ -1090,7 +966,9 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
 }
 
 void VideoFrame::Trace(Visitor* visitor) const {
-  visitor->Trace(planes_);
+  visitor->Trace(coded_rect_);
+  visitor->Trace(visible_rect_);
+  visitor->Trace(color_space_);
   ScriptWrappable::Trace(visitor);
 }
 

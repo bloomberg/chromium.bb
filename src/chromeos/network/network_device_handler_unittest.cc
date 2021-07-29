@@ -4,11 +4,14 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -20,6 +23,7 @@
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -124,10 +128,9 @@ class NetworkDeviceHandlerTest : public testing::Test {
                             const std::string& property_name,
                             const std::string& expected_value) {
     GetDeviceProperties(device_path, kResultSuccess);
-    std::string value;
-    ASSERT_TRUE(
-        properties_->GetStringWithoutPathExpansion(property_name, &value));
-    ASSERT_EQ(value, expected_value);
+    std::string* value = properties_->FindStringKey(property_name);
+    ASSERT_NE(value, nullptr);
+    ASSERT_EQ(*value, expected_value);
   }
 
  protected:
@@ -161,10 +164,10 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
   // GetDeviceProperties should return the value set by SetDeviceProperty.
   GetDeviceProperties(kDefaultCellularDevicePath, kResultSuccess);
 
-  int interval = 0;
-  EXPECT_TRUE(properties_->GetIntegerWithoutPathExpansion(
-      shill::kScanIntervalProperty, &interval));
-  EXPECT_EQ(1, interval);
+  absl::optional<int> interval =
+      properties_->FindIntKey(shill::kScanIntervalProperty);
+  EXPECT_TRUE(interval.has_value());
+  EXPECT_EQ(1, interval.value());
 
   // Repeat the same with value false.
   network_device_handler_->SetDeviceProperty(
@@ -175,9 +178,9 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
 
   GetDeviceProperties(kDefaultCellularDevicePath, kResultSuccess);
 
-  EXPECT_TRUE(properties_->GetIntegerWithoutPathExpansion(
-      shill::kScanIntervalProperty, &interval));
-  EXPECT_EQ(2, interval);
+  interval = properties_->FindIntKey(shill::kScanIntervalProperty);
+  EXPECT_TRUE(interval.has_value());
+  EXPECT_EQ(2, interval.value());
 
   // Set property on an invalid path.
   network_device_handler_->SetDeviceProperty(
@@ -209,20 +212,59 @@ TEST_F(NetworkDeviceHandlerTest, CellularAllowRoaming) {
   // Roaming should be enabled now.
   GetDeviceProperties(kDefaultCellularDevicePath, kResultSuccess);
 
-  bool allow_roaming;
-  EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
-      shill::kCellularAllowRoamingProperty, &allow_roaming));
-  EXPECT_TRUE(allow_roaming);
+  absl::optional<bool> allow_roaming =
+      properties_->FindBoolKey(shill::kCellularAllowRoamingProperty);
+  EXPECT_TRUE(allow_roaming.has_value());
+  EXPECT_TRUE(allow_roaming.value());
 
   network_device_handler_->SetCellularAllowRoaming(false);
   base::RunLoop().RunUntilIdle();
 
-  // Roaming should be disable again.
+  // Roaming should be disabled again.
   GetDeviceProperties(kDefaultCellularDevicePath, kResultSuccess);
 
-  EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
-      shill::kCellularAllowRoamingProperty, &allow_roaming));
-  EXPECT_FALSE(allow_roaming);
+  allow_roaming =
+      properties_->FindBoolKey(shill::kCellularAllowRoamingProperty);
+  EXPECT_TRUE(allow_roaming.has_value());
+  EXPECT_FALSE(allow_roaming.value());
+}
+
+// This test is nearly identical to
+// NetworkDeviceHandlerTest.CellularAllowRoaming except that it enables a
+// feature flag that allows it to test using the property that will eventually
+// replace shill::kCellularAllowRoamingProperty for devices.
+TEST_F(NetworkDeviceHandlerTest, CellularPolicyAllowRoaming) {
+  base::test::ScopedFeatureList scoped_feature_list(
+      ash::features::kCellularAllowPerNetworkRoaming);
+
+  // Start with disabled data roaming.
+  ShillDeviceClient::TestInterface* device_test =
+      fake_device_client_->GetTestInterface();
+  device_test->SetDeviceProperty(kDefaultCellularDevicePath,
+                                 shill::kCellularPolicyAllowRoamingProperty,
+                                 base::Value(false), /*notify_changed=*/true);
+
+  network_device_handler_->SetCellularAllowRoaming(true);
+  base::RunLoop().RunUntilIdle();
+
+  // Roaming should be enabled now.
+  GetDeviceProperties(kDefaultCellularDevicePath, kResultSuccess);
+
+  absl::optional<bool> allow_roaming =
+      properties_->FindBoolKey(shill::kCellularPolicyAllowRoamingProperty);
+  EXPECT_TRUE(allow_roaming.has_value());
+  EXPECT_TRUE(allow_roaming.value());
+
+  network_device_handler_->SetCellularAllowRoaming(false);
+  base::RunLoop().RunUntilIdle();
+
+  // Roaming should be disabled again.
+  GetDeviceProperties(kDefaultCellularDevicePath, kResultSuccess);
+
+  allow_roaming =
+      properties_->FindBoolKey(shill::kCellularPolicyAllowRoamingProperty);
+  EXPECT_TRUE(allow_roaming.has_value());
+  EXPECT_FALSE(allow_roaming.value());
 }
 
 TEST_F(NetworkDeviceHandlerTest,

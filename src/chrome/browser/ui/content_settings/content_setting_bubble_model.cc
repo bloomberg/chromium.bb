@@ -11,10 +11,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/scoped_observation.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
@@ -31,11 +32,10 @@
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
-#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
-#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -373,7 +373,8 @@ void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
       MixedContentSettingsTabHelper::FromWebContents(web_contents());
   if (mixed_content_settings) {
     // Update browser side settings to allow active mixed content.
-    mixed_content_settings->AllowRunningOfInsecureContent();
+    mixed_content_settings->AllowRunningOfInsecureContent(
+        *web_contents()->GetMainFrame());
   }
 
   // Update renderer side settings to allow active mixed content.
@@ -1256,6 +1257,11 @@ ContentSettingGeolocationBubbleModel::~ContentSettingGeolocationBubbleModel() =
 void ContentSettingGeolocationBubbleModel::OnDoneButtonClicked() {
   if (show_system_geolocation_bubble_) {
 #if defined(OS_MAC)
+    if (show_system_geolocation_bubble_) {
+      base::RecordAction(UserMetricsAction(
+          "ContentSettings.GeolocationDialog.OpenPreferencesClicked"));
+    }
+
     ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
         GURL(kLocationSettingsURI), web_contents());
     return;
@@ -1277,7 +1283,13 @@ void ContentSettingGeolocationBubbleModel::CommitChanges() {
 void ContentSettingGeolocationBubbleModel::
     InitializeSystemGeolocationPermissionBubble() {
 #if defined(OS_MAC)
-  set_title(l10n_util::GetStringUTF16(IDS_GEOLOCATION_TURNED_OFF_IN_MACOS));
+  if (base::FeatureList::IsEnabled(features::kLocationPermissionsExperiment)) {
+    set_title(l10n_util::GetStringUTF16(
+        IDS_GEOLOCATION_TURNED_OFF_IN_MACOS_SETTINGS));
+  } else {
+    set_title(l10n_util::GetStringUTF16(IDS_GEOLOCATION_TURNED_OFF_IN_MACOS));
+  }
+
   clear_message();
   AddListItem(ContentSettingBubbleModel::ListItem(
       &vector_icons::kLocationOnIcon,

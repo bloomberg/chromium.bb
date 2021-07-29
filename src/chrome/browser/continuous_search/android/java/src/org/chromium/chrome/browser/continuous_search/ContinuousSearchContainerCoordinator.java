@@ -40,9 +40,27 @@ public class ContinuousSearchContainerCoordinator implements View.OnLayoutChange
         void onHeightChange(int newHeight, boolean animate);
     }
 
+    static class VisibilitySettings {
+        private boolean mIsVisible;
+        private Runnable mOnFinishRunnable;
+
+        VisibilitySettings(boolean isVisible, Runnable onFinishRunnable) {
+            mIsVisible = isVisible;
+            mOnFinishRunnable = onFinishRunnable;
+        }
+
+        boolean isVisible() {
+            return mIsVisible;
+        }
+
+        Runnable getOnFinishRunnable() {
+            return mOnFinishRunnable;
+        }
+    }
+
     private final ContinuousSearchContainerMediator mContainerMediator;
     private final ContinuousSearchListCoordinator mListCoordinator;
-    private final ContinuousSearchSceneLayer mSceneLayer;
+    private ContinuousSearchSceneLayer mSceneLayer;
     private int mResourceId;
     private final LayoutManager mLayoutManager;
     private ViewResourceAdapter mResourceAdapter;
@@ -63,24 +81,32 @@ public class ContinuousSearchContainerCoordinator implements View.OnLayoutChange
         mViewStub = containerViewStub;
         mLayoutManager = layoutManager;
         mResourceManager = resourceManager;
-        mSceneLayer = new ContinuousSearchSceneLayer(mResourceManager);
-        mLayoutManager.addSceneOverlay(mSceneLayer);
         mContainerMediator = new ContinuousSearchContainerMediator(browserControlsStateProvider,
                 layoutManager, canAnimateNativeBrowserControls, defaultTopContainerHeightSupplier,
                 this::initializeLayout, hideToolbarShadow);
-        mListCoordinator = new ContinuousSearchListCoordinator(tabSupplier, isVisible -> {
-            if (isVisible) {
-                mContainerMediator.show();
-            } else {
-                mContainerMediator.hide();
-            }
-        }, themeColorProvider, resources);
+        mListCoordinator = new ContinuousSearchListCoordinator(browserControlsStateProvider,
+                tabSupplier, this::updateVisibility, themeColorProvider, resources);
+    }
+
+    private void updateVisibility(VisibilitySettings visibilitySettings) {
+        if (visibilitySettings.isVisible()) {
+            mContainerMediator.show(visibilitySettings.getOnFinishRunnable());
+        } else {
+            mContainerMediator.hide(visibilitySettings.getOnFinishRunnable());
+        }
     }
 
     private void initializeLayout() {
         if (mLayoutInitialized) return;
 
         mRootView = (ContinuousSearchViewResourceFrameLayout) mViewStub.inflate();
+        // Ensure the root view isn't shown until it is set by the property model. This avoids some
+        // animation jank when animations are off.
+        mRootView.setVisibility(View.INVISIBLE);
+
+        mSceneLayer = new ContinuousSearchSceneLayer(
+                mResourceManager, mRootView, mRootView.getShadowHeight());
+        mLayoutManager.addSceneOverlay(mSceneLayer);
         mResourceId = mRootView.getId();
         mSceneLayer.setResourceId(mResourceId);
         mListCoordinator.initializeLayout(mRootView.findViewById(R.id.container_view));
@@ -89,6 +115,8 @@ public class ContinuousSearchContainerCoordinator implements View.OnLayoutChange
         PropertyModel model = new PropertyModel(ContinuousSearchContainerProperties.ALL_KEYS);
         PropertyModelChangeProcessor.create(
                 model, mRootView, ContinuousSearchContainerViewBinder::bindJavaView);
+        model.set(ContinuousSearchContainerProperties.ANDROID_VIEW_VISIBILITY,
+                mRootView.getVisibility());
         mLayoutManager.createCompositorMCP(
                 model, mSceneLayer, ContinuousSearchContainerViewBinder::bindCompositedView);
         mContainerMediator.onLayoutInitialized(model, mRootView::requestLayout);
@@ -122,6 +150,22 @@ public class ContinuousSearchContainerCoordinator implements View.OnLayoutChange
         mContainerMediator.updateTabObscured(isObscured);
     }
 
+    /**
+     * Temporarily force the container to hide until the corresponding show event occurs.
+     * @return a token that should be passed to {@link showContainer} when unhiding.
+     */
+    public int hideContainer() {
+        return mContainerMediator.hideContainer();
+    }
+
+    /**
+     * Release a force hide of the container.
+     * @param token from the {@link hideContainer} call.
+     */
+    public void showContainer(int token) {
+        mContainerMediator.showContainer(token);
+    }
+
     private void registerResource() {
         if (mResourceRegistered) return;
 
@@ -147,5 +191,10 @@ public class ContinuousSearchContainerCoordinator implements View.OnLayoutChange
     @VisibleForTesting
     ContinuousSearchViewResourceFrameLayout getRootViewForTesting() {
         return mRootView;
+    }
+
+    @VisibleForTesting
+    ContinuousSearchContainerMediator getMediatorForTesting() {
+        return mContainerMediator;
     }
 }

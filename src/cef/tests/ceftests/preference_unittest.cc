@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "include/base/cef_bind.h"
+#include "include/base/cef_callback.h"
 #include "include/cef_request_context_handler.h"
 #include "include/cef_waitable_event.h"
 #include "include/wrapper/cef_closure_task.h"
@@ -250,7 +250,8 @@ void ValidateDefaults(CefRefPtr<CefRequestContext> context,
                       bool reset,
                       CefRefPtr<CefWaitableEvent> event) {
   if (!CefCurrentlyOn(TID_UI)) {
-    CefPostTask(TID_UI, base::Bind(ValidateDefaults, context, reset, event));
+    CefPostTask(TID_UI,
+                base::BindOnce(ValidateDefaults, context, reset, event));
     return;
   }
 
@@ -324,7 +325,7 @@ void PopulateRootSet(CefRefPtr<CefDictionaryValue> val) {
 void ValidateSetGet(CefRefPtr<CefRequestContext> context,
                     CefRefPtr<CefWaitableEvent> event) {
   if (!CefCurrentlyOn(TID_UI)) {
-    CefPostTask(TID_UI, base::Bind(ValidateSetGet, context, event));
+    CefPostTask(TID_UI, base::BindOnce(ValidateSetGet, context, event));
     return;
   }
 
@@ -361,7 +362,7 @@ void ValidateSetGet(CefRefPtr<CefRequestContext> context,
 void ValidateGet(CefRefPtr<CefRequestContext> context,
                  CefRefPtr<CefWaitableEvent> event) {
   if (!CefCurrentlyOn(TID_UI)) {
-    CefPostTask(TID_UI, base::Bind(ValidateGet, context, event));
+    CefPostTask(TID_UI, base::BindOnce(ValidateGet, context, event));
     return;
   }
 

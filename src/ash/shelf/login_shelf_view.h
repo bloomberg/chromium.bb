@@ -58,6 +58,8 @@ class ASH_EXPORT LoginShelfView : public views::View,
     kApps,                  // Show list of available kiosk apps.
     kParentAccess,          // Unlock child device with Parent Access Code.
     kEnterpriseEnrollment,  // Start enterprise enrollment flow.
+    kSignIn,                // Start signin.
+    kOsInstall,             // Start OS Install flow.
   };
 
   // Stores and notifies UiUpdate test callbacks.
@@ -173,9 +175,13 @@ class ASH_EXPORT LoginShelfView : public views::View,
 
   bool ShouldShowEnterpriseEnrollmentButton() const;
 
+  bool ShouldShowSignInButton() const;
+
   bool ShouldShowAppsButton() const;
 
   bool ShouldShowGuestAndAppsButtons() const;
+
+  bool ShouldShowOsInstallButton() const;
 
   // Helper function which calls `closure` when device display is on. Or if the
   // number of dropped calls exceeds 'kMaxDroppedCallsWhenDisplaysOff'

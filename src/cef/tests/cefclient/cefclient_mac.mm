@@ -219,13 +219,13 @@ NSMenuItem* GetMenuItemWithAction(NSMenu* menu, SEL action_selector) {
     }
   }
 
-  client::RootWindowConfig window_config;
-  window_config.with_controls = with_controls_;
-  window_config.with_osr = with_osr_;
+  auto window_config = std::make_unique<client::RootWindowConfig>();
+  window_config->with_controls = with_controls_;
+  window_config->with_osr = with_osr_;
 
   // Create the first window.
   client::MainContext::Get()->GetRootWindowManager()->CreateRootWindow(
-      window_config);
+      std::move(window_config));
 }
 
 - (void)tryToTerminateApplication:(NSApplication*)app {
@@ -381,7 +381,7 @@ int RunMain(int argc, char* argv[]) {
       app = new ClientAppBrowser();
 
     // Create the main context object.
-    scoped_ptr<MainContextImpl> context(
+    std::unique_ptr<MainContextImpl> context(
         new MainContextImpl(command_line, true));
 
     CefSettings settings;
@@ -397,14 +397,14 @@ int RunMain(int argc, char* argv[]) {
     context->PopulateSettings(&settings);
 
     // Create the main message loop object.
-    scoped_ptr<MainMessageLoop> message_loop;
+    std::unique_ptr<MainMessageLoop> message_loop;
     if (settings.external_message_pump)
       message_loop = MainMessageLoopExternalPump::Create();
     else
       message_loop.reset(new MainMessageLoopStd);
 
     // Initialize CEF.
-    context->Initialize(main_args, settings, app, NULL);
+    context->Initialize(main_args, settings, app, nullptr);
 
     // Register scheme handlers.
     test_runner::RegisterSchemeHandlers();

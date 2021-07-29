@@ -8,21 +8,23 @@
 #ifndef SkRuntimeEffect_DEFINED
 #define SkRuntimeEffect_DEFINED
 
+#include "include/core/SkBlender.h"
+#include "include/core/SkColorFilter.h"
 #include "include/core/SkData.h"
 #include "include/core/SkImageInfo.h"
 #include "include/core/SkMatrix.h"
 #include "include/core/SkShader.h"
+#include "include/core/SkSpan.h"
 #include "include/core/SkString.h"
 #include "include/private/SkOnce.h"
 #include "include/private/SkSLSampleUsage.h"
 
+#include <string>
 #include <vector>
 
-class GrFragmentProcessor;
 class GrRecordingContext;
-class SkColorFilter;
+class SkFilterColorProgram;
 class SkImage;
-class SkShader;
 
 namespace SkSL {
 class FunctionDefinition;
@@ -42,6 +44,7 @@ class Program;
  */
 class SK_API SkRuntimeEffect : public SkRefCnt {
 public:
+    // Reflected description of a uniform variable in the effect's SkSL
     struct Uniform {
         enum class Type {
             kFloat,
@@ -72,6 +75,7 @@ public:
         size_t sizeInBytes() const;
     };
 
+    // Reflected description of a uniform child (shader or colorFilter) in the effect's SkSL
     struct Child {
         enum class Type {
             kShader,
@@ -83,14 +87,20 @@ public:
         int      index;
     };
 
-    struct Options {
+    class Options {
+    public:
         // For testing purposes, completely disable the inliner. (Normally, Runtime Effects don't
         // run the inliner directly, but they still get an inlining pass once they are painted.)
         bool forceNoInline = false;
-        // For testing purposes only; only honored when GR_TEST_UTILS is enabled. This flag lifts
-        // the ES2 restrictions on Runtime Effects that are gated by the `strictES2Mode` check.
-        // Be aware that the software renderer and pipeline-stage effect are still largely
-        // ES3-unaware and can still fail or crash if post-ES2 features are used.
+
+    private:
+        friend class SkRuntimeEffect;
+        friend class SkRuntimeEffectPriv;
+
+        // This flag lifts the ES2 restrictions on Runtime Effects that are gated by the
+        // `strictES2Mode` check. Be aware that the software renderer and pipeline-stage effect are
+        // still largely ES3-unaware and can still fail or crash if post-ES2 features are used.
+        // This is only intended for use by tests and certain internally created effects.
         bool enforceES2Restrictions = true;
     };
 
@@ -118,6 +128,10 @@ public:
     // Most shaders don't use the input color, so that parameter is optional.
     static Result MakeForShader(SkString sksl, const Options&);
 
+    // Blend SkSL requires an entry point that looks like:
+    //     vec4 main(vec4 srcColor, vec4 dstColor) { ... }
+    static Result MakeForBlender(SkString sksl, const Options&);
+
     // We can't use a default argument for `options` due to a bug in Clang.
     // https://bugs.llvm.org/show_bug.cgi?id=36684
     static Result MakeForColorFilter(SkString sksl) {
@@ -126,14 +140,31 @@ public:
     static Result MakeForShader(SkString sksl) {
         return MakeForShader(std::move(sksl), Options{});
     }
+    static Result MakeForBlender(SkString sksl) {
+        return MakeForBlender(std::move(sksl), Options{});
+    }
 
     static Result MakeForColorFilter(std::unique_ptr<SkSL::Program> program);
 
     static Result MakeForShader(std::unique_ptr<SkSL::Program> program);
 
+    static Result MakeForBlender(std::unique_ptr<SkSL::Program> program);
+
+    // Object that allows passing either an SkShader or SkColorFilter as a child
+    struct ChildPtr {
+        ChildPtr(sk_sp<SkShader> s) : shader(std::move(s)) {}
+        ChildPtr(sk_sp<SkColorFilter> cf) : colorFilter(std::move(cf)) {}
+        sk_sp<SkShader> shader;
+        sk_sp<SkColorFilter> colorFilter;
+    };
+
     sk_sp<SkShader> makeShader(sk_sp<SkData> uniforms,
                                sk_sp<SkShader> children[],
                                size_t childCount,
+                               const SkMatrix* localMatrix,
+                               bool isOpaque) const;
+    sk_sp<SkShader> makeShader(sk_sp<SkData> uniforms,
+                               SkSpan<ChildPtr> children,
                                const SkMatrix* localMatrix,
                                bool isOpaque) const;
 
@@ -149,8 +180,12 @@ public:
     sk_sp<SkColorFilter> makeColorFilter(sk_sp<SkData> uniforms,
                                          sk_sp<SkColorFilter> children[],
                                          size_t childCount) const;
+    sk_sp<SkColorFilter> makeColorFilter(sk_sp<SkData> uniforms,
+                                         SkSpan<ChildPtr> children) const;
 
-    const SkString& source() const { return fSkSL; }
+    sk_sp<SkBlender> makeBlender(sk_sp<SkData> uniforms) const;
+
+    const std::string& source() const;
 
     template <typename T>
     class ConstIterable {
@@ -183,22 +218,16 @@ public:
     static void RegisterFlattenables();
     ~SkRuntimeEffect() override;
 
-#if SK_SUPPORT_GPU
-    // For internal use.
-    std::unique_ptr<GrFragmentProcessor> makeFP(sk_sp<SkData> uniforms,
-                                                std::unique_ptr<GrFragmentProcessor> children[],
-                                                size_t childCount) const;
-#endif
-
 private:
     enum Flags {
-        kUsesSampleCoords_Flag = 0x1,
-        kAllowColorFilter_Flag = 0x2,
-        kAllowShader_Flag      = 0x4,
+        kUsesSampleCoords_Flag   = 0x1,
+        kAllowColorFilter_Flag   = 0x2,
+        kAllowShader_Flag        = 0x4,
+        kAllowBlender_Flag       = 0x8,
+        kSamplesOutsideMain_Flag = 0x10,
     };
 
-    SkRuntimeEffect(SkString sksl,
-                    std::unique_ptr<SkSL::Program> baseProgram,
+    SkRuntimeEffect(std::unique_ptr<SkSL::Program> baseProgram,
                     const Options& options,
                     const SkSL::FunctionDefinition& main,
                     std::vector<Uniform>&& uniforms,
@@ -210,20 +239,18 @@ private:
 
     static Result Make(SkString sksl, const Options& options, SkSL::ProgramKind kind);
 
-    static Result Make(SkString sksl, std::unique_ptr<SkSL::Program> program,
-                       const Options& options, SkSL::ProgramKind kind);
+    static Result Make(std::unique_ptr<SkSL::Program> program,
+                       const Options& options,
+                       SkSL::ProgramKind kind);
 
     uint32_t hash() const { return fHash; }
-    bool usesSampleCoords() const { return (fFlags & kUsesSampleCoords_Flag); }
-    bool allowShader()      const { return (fFlags & kAllowShader_Flag);      }
-    bool allowColorFilter() const { return (fFlags & kAllowColorFilter_Flag); }
+    bool usesSampleCoords()   const { return (fFlags & kUsesSampleCoords_Flag); }
+    bool allowShader()        const { return (fFlags & kAllowShader_Flag);      }
+    bool allowColorFilter()   const { return (fFlags & kAllowColorFilter_Flag); }
+    bool allowBlender()       const { return (fFlags & kAllowBlender_Flag);     }
+    bool samplesOutsideMain() const { return (fFlags & kSamplesOutsideMain_Flag); }
 
-    struct FilterColorInfo {
-        const skvm::Program* program;         // May be nullptr if it's not possible to compute
-        bool                 alphaUnchanged;
-    };
-    void initFilterColorInfo();
-    FilterColorInfo getFilterColorInfo();
+    const SkFilterColorProgram* getFilterColorProgram();
 
 #if SK_SUPPORT_GPU
     friend class GrSkSLFP;             // fBaseProgram, fSampleUsages
@@ -231,10 +258,13 @@ private:
 #endif
 
     friend class SkRTShader;            // fBaseProgram, fMain
+    friend class SkRuntimeBlender;      //
     friend class SkRuntimeColorFilter;  //
 
+    friend class SkFilterColorProgram;
+    friend class SkRuntimeEffectPriv;
+
     uint32_t fHash;
-    SkString fSkSL;
 
     std::unique_ptr<SkSL::Program> fBaseProgram;
     const SkSL::FunctionDefinition& fMain;
@@ -242,8 +272,7 @@ private:
     std::vector<Child> fChildren;
     std::vector<SkSL::SampleUsage> fSampleUsages;
 
-    std::unique_ptr<skvm::Program> fColorFilterProgram;
-    bool fColorFilterProgramLeavesAlphaUnchanged = false;
+    std::unique_ptr<SkFilterColorProgram> fFilterColorProgram;
 
     uint32_t fFlags;  // Flags
 };
@@ -398,6 +427,23 @@ public:
 
 private:
     using INHERITED = SkRuntimeEffectBuilder<sk_sp<SkShader>>;
+};
+
+/**
+ * SkRuntimeBlendBuilder is a utility to simplify creation and uniform setup of runtime blenders.
+ */
+class SK_API SkRuntimeBlendBuilder : public SkRuntimeEffectBuilder<sk_sp<SkBlender>> {
+public:
+    explicit SkRuntimeBlendBuilder(sk_sp<SkRuntimeEffect>);
+    ~SkRuntimeBlendBuilder();
+
+    SkRuntimeBlendBuilder(const SkRuntimeBlendBuilder&) = delete;
+    SkRuntimeBlendBuilder& operator=(const SkRuntimeBlendBuilder&) = delete;
+
+    sk_sp<SkBlender> makeBlender();
+
+private:
+    using INHERITED = SkRuntimeEffectBuilder<sk_sp<SkBlender>>;
 };
 
 #endif

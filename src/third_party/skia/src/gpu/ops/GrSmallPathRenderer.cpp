@@ -137,7 +137,7 @@ public:
 
     const char* name() const override { return "SmallPathOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
         fHelper.visitProxies(func);
     }
 
@@ -168,8 +168,9 @@ private:
     void onCreateProgramInfo(const GrCaps*,
                              SkArenaAlloc*,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&&,
-                             const GrXferProcessor::DstProxyView&,
+                             const GrDstProxyView&,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override {
         // We cannot surface the SmallPathOp's programInfo at record time. As currently
@@ -180,13 +181,13 @@ private:
     void onPrePrepareDraws(GrRecordingContext*,
                            const GrSurfaceProxyView& writeView,
                            GrAppliedClip*,
-                           const GrXferProcessor::DstProxyView&,
+                           const GrDstProxyView&,
                            GrXferBarrierFlags renderPassXferBarriers,
                            GrLoadOp colorLoadOp) override {
         // TODO [PI]: implement
     }
 
-    void onPrepareDraws(Target* target) override {
+    void onPrepareDraws(GrMeshDrawTarget* target) override {
         int instanceCount = fShapes.count();
 
         GrSmallPathAtlasMgr* atlasMgr = target->smallPathAtlasManager();
@@ -363,7 +364,7 @@ private:
         this->flush(target, &flushInfo);
     }
 
-    bool addToAtlasWithRetry(GrMeshDrawOp::Target* target,
+    bool addToAtlasWithRetry(GrMeshDrawTarget* target,
                              FlushInfo* flushInfo,
                              GrSmallPathAtlasMgr* atlasMgr,
                              int width, int height, const void* image,
@@ -391,7 +392,7 @@ private:
         return GrDrawOpAtlas::ErrorCode::kSucceeded == code;
     }
 
-    bool addDFPathToAtlas(GrMeshDrawOp::Target* target, FlushInfo* flushInfo,
+    bool addDFPathToAtlas(GrMeshDrawTarget* target, FlushInfo* flushInfo,
                           GrSmallPathAtlasMgr* atlasMgr, GrSmallPathShapeData* shapeData,
                           const GrStyledShape& shape, uint32_t dimension, SkScalar scale) const {
 
@@ -483,7 +484,7 @@ private:
                                          drawBounds, SK_DistanceFieldPad, shapeData);
     }
 
-    bool addBMPathToAtlas(GrMeshDrawOp::Target* target, FlushInfo* flushInfo,
+    bool addBMPathToAtlas(GrMeshDrawTarget* target, FlushInfo* flushInfo,
                           GrSmallPathAtlasMgr* atlasMgr, GrSmallPathShapeData* shapeData,
                           const GrStyledShape& shape, const SkMatrix& ctm) const {
         const SkRect& bounds = shape.bounds();
@@ -574,7 +575,7 @@ private:
         }
     }
 
-    void flush(GrMeshDrawOp::Target* target, FlushInfo* flushInfo) const {
+    void flush(GrMeshDrawTarget* target, FlushInfo* flushInfo) const {
         GrSmallPathAtlasMgr* atlasMgr = target->smallPathAtlasManager();
         if (!atlasMgr) {
             return;
@@ -694,7 +695,7 @@ private:
 };
 
 bool GrSmallPathRenderer::onDrawPath(const DrawPathArgs& args) {
-    GR_AUDIT_TRAIL_AUTO_FRAME(args.fRenderTargetContext->auditTrail(),
+    GR_AUDIT_TRAIL_AUTO_FRAME(args.fContext->priv().auditTrail(),
                               "GrSmallPathRenderer::onDrawPath");
 
     // we've already bailed on inverse filled paths, so this is safe
@@ -704,7 +705,7 @@ bool GrSmallPathRenderer::onDrawPath(const DrawPathArgs& args) {
     GrOp::Owner op = SmallPathOp::Make(
             args.fContext, std::move(args.fPaint), *args.fShape, *args.fViewMatrix,
             args.fGammaCorrect, args.fUserStencilSettings);
-    args.fRenderTargetContext->addDrawOp(args.fClip, std::move(op));
+    args.fSurfaceDrawContext->addDrawOp(args.fClip, std::move(op));
 
     return true;
 }

@@ -24,23 +24,64 @@ class WebBluetoothPairingManagerDelegate {
   virtual blink::WebBluetoothDeviceId GetCharacteristicDeviceID(
       const std::string& characteristic_instance_id) = 0;
 
+  // Return the cached device ID for the given descriptor instance ID.
+  // The returned device may be invalid - check before use.
+  virtual blink::WebBluetoothDeviceId GetDescriptorDeviceId(
+      const std::string& descriptor_instance_id) = 0;
+
   // Pair the device identified by |device_id|. If successful, |callback| will
   // be run. If unsuccessful |error_callback| wil be run with the corresponding
   // error code.
   virtual void PairDevice(
       const blink::WebBluetoothDeviceId& device_id,
       device::BluetoothDevice::PairingDelegate* pairing_delegate,
-      base::OnceClosure callback,
-      device::BluetoothDevice::ConnectErrorCallback error_callback) = 0;
+      device::BluetoothDevice::ConnectCallback callback) = 0;
+
+  // Cancels a pairing attempt to a remote device, clearing its reference to
+  // the pairing delegate.
+  virtual void CancelPairing(const blink::WebBluetoothDeviceId& device_id) = 0;
 
   // Reads the value for the characteristic identified by
   // |characteristic_instance_id|. If the value is successfully read the
   // callback will be run with WebBluetoothResult::SUCCESS and the
   // characteristic's value. If the value is not successfully read the
-  // callback with be run with the corresponding error and nullptr for value.
+  // callback will be run with the corresponding error and nullptr for value.
   virtual void RemoteCharacteristicReadValue(
       const std::string& characteristic_instance_id,
       blink::mojom::WebBluetoothService::RemoteCharacteristicReadValueCallback
+          callback) = 0;
+
+  // Writes the |value| for the characteristic identified by
+  // |characteristic_instance_id|. If the value is successfully written
+  // |callback| will be run with WebBluetoothResult::SUCCESS. If the value is
+  // not successfully written |callback| will be run with the corresponding
+  // error.
+  virtual void RemoteCharacteristicWriteValue(
+      const std::string& characteristic_instance_id,
+      const std::vector<uint8_t>& value,
+      blink::mojom::WebBluetoothWriteType write_type,
+      blink::mojom::WebBluetoothService::RemoteCharacteristicWriteValueCallback
+          callback) = 0;
+
+  // Reads the value for the descriptor identified by |descriptor_instance_id|.
+  // If successfully read |callback| will be run with
+  // WebBluetoothResult::SUCCESS and the descriptor value. If the value is not
+  // successfully read the callback will be run with the corresponding error
+  // and nullptr for value.
+  virtual void RemoteDescriptorReadValue(
+      const std::string& descriptor_instance_id,
+      blink::mojom::WebBluetoothService::RemoteDescriptorReadValueCallback
+          callback) = 0;
+
+  // Writes the |value| for the descriptor identified by
+  // |descriptor_instance_id|. If the value is successfully written
+  // |callback| will be run with WebBluetoothResult::SUCCESS. If the value is
+  // not successfully written |callback| will be run with the corresponding
+  // error.
+  virtual void RemoteDescriptorWriteValue(
+      const std::string& descriptor_instance_id,
+      const std::vector<uint8_t>& value,
+      blink::mojom::WebBluetoothService::RemoteDescriptorWriteValueCallback
           callback) = 0;
 };
 

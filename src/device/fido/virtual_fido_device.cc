@@ -9,9 +9,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
@@ -540,10 +540,11 @@ VirtualFidoDevice::GenerateAttestationCertificate(
       break;
   }
   const uint8_t kTransportTypesContents[] = {
-      3,                            // BIT STRING
-      2,                            // two bytes long
-      8 - transport_bit - 1,        // trailing bits unused
-      0b10000000 >> transport_bit,  // transport
+      3,                                            // BIT STRING
+      2,                                            // two bytes long
+      static_cast<uint8_t>(8 - transport_bit - 1),  // trailing bits unused
+      static_cast<uint8_t>(0b10000000 >> transport_bit),
+      // transport
   };
 
   // https://www.w3.org/TR/webauthn/#sctn-packed-attestation-cert-requirements

@@ -86,7 +86,7 @@ wuffs_base__color_u32_argb_premul g_background_colors[NUM_BACKGROUND_COLORS] = {
 uint32_t g_width = 0;
 uint32_t g_height = 0;
 wuffs_aux::MemOwner g_pixbuf_mem_owner(nullptr, &free);
-wuffs_base__slice_u8 g_pixbuf_mem_slice = {0};
+wuffs_base__pixel_buffer g_pixbuf = {0};
 uint32_t g_background_color_index = 0;
 
 bool  //
@@ -106,7 +106,7 @@ load_image(const char* filename) {
   g_width = 0;
   g_height = 0;
   g_pixbuf_mem_owner.reset();
-  g_pixbuf_mem_slice = wuffs_base__empty_slice_u8();
+  g_pixbuf = wuffs_base__null_pixel_buffer();
 
   wuffs_aux::DecodeImageCallbacks callbacks;
   wuffs_aux::sync_io::FileInput input(file);
@@ -120,10 +120,29 @@ load_image(const char* filename) {
     fclose(file);
   }
 
+  // wuffs_aux::DecodeImageCallbacks's default implementation should give us an
+  // interleaved (not multi-planar) pixel buffer, so that all of the pixel data
+  // is in a single 2-dimensional table (plane 0). Later on, we re-interpret
+  // that table as XCB image data, which isn't something we could do if we had
+  // e.g. multi-planar YCbCr.
+  if (!res.pixbuf.pixcfg.pixel_format().is_interleaved()) {
+    printf("%s: non-interleaved pixbuf\n", adj_filename);
+    return false;
+  }
+  wuffs_base__table_u8 tab = res.pixbuf.plane(0);
+  if (tab.width != tab.stride) {
+    // The xcb_image_create_native call, later on, assumes that (tab.height *
+    // tab.stride) bytes are readable, which isn't quite the same as what
+    // wuffs_base__table__flattened_length(tab.width, tab.height, tab.stride)
+    // returns unless the table is tight (its width equals its stride).
+    printf("%s: could not allocate tight pixbuf\n", adj_filename);
+    return false;
+  }
+
   g_width = res.pixbuf.pixcfg.width();
   g_height = res.pixbuf.pixcfg.height();
   g_pixbuf_mem_owner = std::move(res.pixbuf_mem_owner);
-  g_pixbuf_mem_slice = res.pixbuf_mem_slice;
+  g_pixbuf = res.pixbuf;
 
   if (res.error_message.empty()) {
     printf("%s: ok (%" PRIu32 " x %" PRIu32 ")\n", adj_filename, g_width,
@@ -193,11 +212,12 @@ load(xcb_connection_t* c,
   if (!load_image(filename)) {
     return false;
   }
+  wuffs_base__table_u8 tab = g_pixbuf.plane(0);
 
   xcb_create_pixmap(c, s->root_depth, g_pixmap, w, g_width, g_height);
   xcb_image_t* image = xcb_image_create_native(
       c, g_width, g_height, XCB_IMAGE_FORMAT_Z_PIXMAP, s->root_depth, NULL,
-      g_pixbuf_mem_slice.len, g_pixbuf_mem_slice.ptr);
+      tab.height * tab.stride, tab.ptr);
   xcb_image_put(c, g_pixmap, g, image, 0, 0, 0);
   xcb_image_destroy(image);
   return true;

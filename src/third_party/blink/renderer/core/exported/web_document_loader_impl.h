@@ -71,7 +71,6 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   const WebURLResponse& GetResponse() const override;
   bool HasUnreachableURL() const override;
   WebURL UnreachableURL() const override;
-  void RedirectChain(WebVector<WebURL>&) const override;
   bool IsClientRedirect() const override;
   bool ReplacesCurrentHistoryItem() const override;
   WebNavigationType GetNavigationType() const override;
@@ -89,6 +88,8 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   WebArchiveInfo GetArchiveInfo() const override;
   bool LastNavigationHadTransientUserActivation() const override;
   bool IsListingFtpDirectory() const override;
+  void SetCodeCacheHost(
+      mojo::PendingRemote<mojom::CodeCacheHost> code_cache_host) override;
 
   void Trace(Visitor*) const override;
 

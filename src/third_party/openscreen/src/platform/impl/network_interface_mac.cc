@@ -6,6 +6,7 @@
 #include <net/if_dl.h>
 #include <net/if_media.h>
 #include <netinet/in.h>
+#include <netinet/in_var.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -133,6 +134,15 @@ std::vector<InterfaceInfo> ProcessInterfacesList(ifaddrs* interfaces) {
       memcpy(&interface->hardware_address[0], &lladdr[0],
              sizeof(interface->hardware_address));
     } else if (cur->ifa_addr->sa_family == AF_INET6) {  // Ipv6 address.
+      struct in6_ifreq ifr = {};
+      // Reject network interfaces that have a deprecated flag set.
+      strncpy(ifr.ifr_name, cur->ifa_name, sizeof(ifr.ifr_name) - 1);
+      memcpy(&ifr.ifr_ifru.ifru_addr, cur->ifa_addr, cur->ifa_addr->sa_len);
+      if (ioctl(ioctl_socket.get(), SIOCGIFAFLAG_IN6, &ifr) != 0 ||
+          ifr.ifr_ifru.ifru_flags & IN6_IFF_DEPRECATED) {
+        continue;
+      }
+
       auto* const addr_in6 =
           reinterpret_cast<const sockaddr_in6*>(cur->ifa_addr);
       uint8_t tmp[sizeof(addr_in6->sin6_addr.s6_addr)];

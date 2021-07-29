@@ -537,12 +537,6 @@ void WebSettingsImpl::SetStrictlyBlockBlockableMixedContent(bool enabled) {
   settings_->SetStrictlyBlockBlockableMixedContent(enabled);
 }
 
-void WebSettingsImpl::SetPassiveEventListenerDefault(
-    PassiveEventListenerDefault default_value) {
-  settings_->SetPassiveListenerDefault(
-      static_cast<PassiveListenerDefault>(default_value));
-}
-
 void WebSettingsImpl::SetPasswordEchoEnabled(bool flag) {
   settings_->SetPasswordEchoEnabled(flag);
 }
@@ -813,6 +807,11 @@ void WebSettingsImpl::SetAccessibilityIncludeSvgGElement(bool include) {
 void WebSettingsImpl::SetWebXRImmersiveArAllowed(
     bool webxr_immersive_ar_allowed) {
   settings_->SetWebXRImmersiveArAllowed(webxr_immersive_ar_allowed);
+}
+
+void WebSettingsImpl::SetLitePageSubresourceRedirectOrigin(
+    const WebString& origin) {
+  settings_->SetLitePageSubresourceRedirectOrigin(origin);
 }
 
 }  // namespace blink

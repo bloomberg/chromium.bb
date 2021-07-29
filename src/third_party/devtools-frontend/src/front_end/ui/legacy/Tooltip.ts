@@ -22,8 +22,8 @@ export class Tooltip {
 
   constructor(doc: Document) {
     this.element = doc.body.createChild('div');
-    this._shadowRoot = createShadowRootWithCoreStyles(
-        this.element, {cssFile: 'ui/legacy/tooltip.css', enableLegacyPatching: true, delegatesFocus: undefined});
+    this._shadowRoot =
+        createShadowRootWithCoreStyles(this.element, {cssFile: 'ui/legacy/tooltip.css', delegatesFocus: undefined});
 
     this._tooltipElement = this._shadowRoot.createChild('div', 'tooltip') as HTMLDivElement;
     doc.addEventListener('mousemove', this._mouseMove.bind(this), true);
@@ -102,8 +102,7 @@ export class Tooltip {
       if (element === this._anchorElement) {
         return;
       }
-      // The offsetParent is null when the element or an ancestor has 'display: none'.
-      if (!(element instanceof HTMLElement) || element.offsetParent === null) {
+      if (!(element instanceof HTMLElement) || getComputedStyle(element).display === 'none') {
         continue;
       }
       if (Tooltip.getContent(element)) {

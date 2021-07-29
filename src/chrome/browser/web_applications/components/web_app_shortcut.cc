@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -89,6 +90,22 @@ void DeleteMultiProfileShortcutsForAppAndPostCallback(
 }
 
 }  // namespace
+
+ShortcutOverrideForTesting::ShortcutOverrideForTesting() = default;
+ShortcutOverrideForTesting::ShortcutOverrideForTesting(
+    const ShortcutOverrideForTesting& other) = default;
+ShortcutOverrideForTesting::~ShortcutOverrideForTesting() = default;
+
+absl::optional<ShortcutOverrideForTesting>& GetShortcutOverrideForTesting() {
+  static base::NoDestructor<absl::optional<ShortcutOverrideForTesting>>
+      g_shortcut_override;
+  return *g_shortcut_override;
+}
+
+void SetShortcutOverrideForTesting(
+    absl::optional<ShortcutOverrideForTesting> shortcut_override_for_testing) {
+  GetShortcutOverrideForTesting() = shortcut_override_for_testing;
+}
 
 ShortcutInfo::ShortcutInfo() = default;
 

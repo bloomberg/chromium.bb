@@ -155,7 +155,7 @@ static inline int put_codeword(PutBitContext *pb, vorbis_enc_codebook *cb,
     av_assert2(entry >= 0);
     av_assert2(entry < cb->nentries);
     av_assert2(cb->lens[entry]);
-    if (pb->size_in_bits - put_bits_count(pb) < cb->lens[entry])
+    if (put_bits_left(pb) < cb->lens[entry])
         return AVERROR(EINVAL);
     put_bits(pb, cb->lens[entry], cb->codewords[entry]);
     return 0;
@@ -637,7 +637,7 @@ static int put_main_header(vorbis_enc_context *venc, uint8_t **out)
     put_bits(&pb,  1, 1); // framing
 
     flush_put_bits(&pb);
-    hlens[0] = put_bits_count(&pb) >> 3;
+    hlens[0] = put_bytes_output(&pb);
     buffer_len -= hlens[0];
     p += hlens[0];
 
@@ -651,7 +651,7 @@ static int put_main_header(vorbis_enc_context *venc, uint8_t **out)
     put_bits(&pb,  1, 1); // framing
 
     flush_put_bits(&pb);
-    hlens[1] = put_bits_count(&pb) >> 3;
+    hlens[1] = put_bytes_output(&pb);
     buffer_len -= hlens[1];
     p += hlens[1];
 
@@ -725,7 +725,7 @@ static int put_main_header(vorbis_enc_context *venc, uint8_t **out)
     put_bits(&pb, 1, 1); // framing
 
     flush_put_bits(&pb);
-    hlens[2] = put_bits_count(&pb) >> 3;
+    hlens[2] = put_bytes_output(&pb);
 
     len = hlens[0] + hlens[1] + hlens[2];
     p = *out = av_mallocz(64 + len + len/255);
@@ -798,7 +798,7 @@ static int floor_encode(vorbis_enc_context *venc, vorbis_enc_floor *fc,
     int coded[MAX_FLOOR_VALUES]; // first 2 values are unused
     int i, counter;
 
-    if (pb->size_in_bits - put_bits_count(pb) < 1 + 2 * ilog(range - 1))
+    if (put_bits_left(pb) < 1 + 2 * ilog(range - 1))
         return AVERROR(EINVAL);
     put_bits(pb, 1, 1); // non zero
     put_bits(pb, ilog(range - 1), posts[0]);
@@ -1135,11 +1135,6 @@ static int vorbis_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
 
     init_put_bits(&pb, avpkt->data, avpkt->size);
 
-    if (pb.size_in_bits - put_bits_count(&pb) < 1 + ilog(venc->nmodes - 1)) {
-        av_log(avctx, AV_LOG_ERROR, "output buffer is too small\n");
-        return AVERROR(EINVAL);
-    }
-
     put_bits(&pb, 1, 0); // magic bit
 
     put_bits(&pb, ilog(venc->nmodes - 1), 1); // Mode for current frame
@@ -1185,7 +1180,7 @@ static int vorbis_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     }
 
     flush_put_bits(&pb);
-    avpkt->size = put_bits_count(&pb) >> 3;
+    avpkt->size = put_bytes_output(&pb);
 
     ff_af_queue_remove(&venc->afq, frame_size, &avpkt->pts, &avpkt->duration);
 
@@ -1259,8 +1254,6 @@ static av_cold int vorbis_encode_close(AVCodecContext *avctx)
     ff_af_queue_close(&venc->afq);
     ff_bufqueue_discard_all(&venc->bufqueue);
 
-    av_freep(&avctx->extradata);
-
     return 0 ;
 }
 
@@ -1298,7 +1291,7 @@ error:
     return ret;
 }
 
-AVCodec ff_vorbis_encoder = {
+const AVCodec ff_vorbis_encoder = {
     .name           = "vorbis",
     .long_name      = NULL_IF_CONFIG_SMALL("Vorbis"),
     .type           = AVMEDIA_TYPE_AUDIO,

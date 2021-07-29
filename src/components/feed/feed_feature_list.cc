@@ -7,6 +7,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "build/build_config.h"
 
 namespace feed {
 
@@ -46,19 +47,23 @@ const base::Feature kInterestFeedV2ClicksAndViewsConditionalUpload{
     "InterestFeedV2ClickAndViewActionsConditionalUpload",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_IOS)
 const base::Feature kInterestFeedNoticeCardAutoDismiss{
     "InterestFeedNoticeCardAutoDismiss", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 const base::Feature kInterestFeedSpinnerAlwaysAnimate{
     "InterestFeedSpinnerAlwaysAnimate", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kFeedShare{"FeedShare", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kWebFeed{"WebFeed", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kDiscoFeedEndpoint{"DiscoFeedEndpoint",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kXsurfaceMetricsReporting{
     "XsurfaceMetricsReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kReliabilityLogging{"FeedReliabilityLogging",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kFeedInteractiveRefresh{"FeedInteractiveRefresh",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kDefaultReferrerUrl[] = "https://www.google.com/";
 

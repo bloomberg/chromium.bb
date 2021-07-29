@@ -35,7 +35,6 @@
 #include "quic/core/quic_versions.h"
 #include "quic/platform/api/quic_expect_bug.h"
 #include "quic/platform/api/quic_flags.h"
-#include "quic/platform/api/quic_map_util.h"
 #include "quic/platform/api/quic_test.h"
 #include "quic/test_tools/qpack/qpack_encoder_peer.h"
 #include "quic/test_tools/qpack/qpack_test_utils.h"
@@ -356,6 +355,13 @@ class TestSession : public QuicSpdySession {
   bool ShouldNegotiateWebTransport() override { return supports_webtransport_; }
   void set_supports_webtransport(bool value) { supports_webtransport_ = value; }
 
+  bool ShouldNegotiateHttp3Datagram() override {
+    return should_negotiate_h3_datagram_;
+  }
+  void set_should_negotiate_h3_datagram(bool value) {
+    should_negotiate_h3_datagram_ = value;
+  }
+
   MOCK_METHOD(void, OnAcceptChFrame, (const AcceptChFrame&), (override));
 
   using QuicSession::closed_streams;
@@ -368,6 +374,7 @@ class TestSession : public QuicSpdySession {
 
   bool writev_consumes_all_data_;
   bool supports_webtransport_ = false;
+  bool should_negotiate_h3_datagram_ = false;
 };
 
 class QuicSpdySessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
@@ -420,7 +427,7 @@ class QuicSpdySessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
       first_stream_id = QuicUtils::GetCryptoStreamId(transport_version());
     }
     for (QuicStreamId i = first_stream_id; i < 100; i++) {
-      if (!QuicContainsKey(closed_streams_, i)) {
+      if (closed_streams_.find(i) == closed_streams_.end()) {
         EXPECT_FALSE(session_.IsClosedStream(i)) << " stream id: " << i;
       } else {
         EXPECT_TRUE(session_.IsClosedStream(i)) << " stream id: " << i;
@@ -566,8 +573,7 @@ class QuicSpdySessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
     headers.OnHeaderBlockStart();
     headers.OnHeader(":method", "CONNECT");
     headers.OnHeader(":protocol", "webtransport");
-    headers.OnHeader("datagram-flow-id",
-                     absl::StrCat(session_.GetNextDatagramFlowId()));
+    headers.OnHeader("datagram-flow-id", absl::StrCat(session_id));
     stream->OnStreamHeaderList(/*fin=*/true, 0, headers);
     WebTransportHttp3* web_transport =
         session_.GetWebTransportSession(session_id);
@@ -1491,61 +1497,6 @@ TEST_P(QuicSpdySessionTestServer, HandshakeUnblocksFlowControlBlockedStream) {
   EXPECT_TRUE(QuicSessionPeer::IsStreamWriteBlocked(&session_, stream2->id()));
   // Stream is now unblocked.
   EXPECT_FALSE(stream2->IsFlowControlBlocked());
-  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-}
-
-TEST_P(QuicSpdySessionTestServer,
-       HandshakeUnblocksFlowControlBlockedCryptoStream) {
-  if (QuicVersionUsesCryptoFrames(transport_version()) ||
-      connection_->encrypted_control_frames()) {
-    // QUIC version 47 onwards uses CRYPTO frames for the handshake, so this
-    // test doesn't make sense for those versions. With
-    // use_encryption_level_context, control frames can only be sent when
-    // encryption gets established, do not send BLOCKED for crypto streams.
-    return;
-  }
-  // Test that if the crypto stream is flow control blocked, then if the SHLO
-  // contains a larger send window offset, the stream becomes unblocked.
-  session_.set_writev_consumes_all_data(true);
-  TestCryptoStream* crypto_stream = session_.GetMutableCryptoStream();
-  EXPECT_FALSE(crypto_stream->IsFlowControlBlocked());
-  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-  QuicHeadersStream* headers_stream =
-      QuicSpdySessionPeer::GetHeadersStream(&session_);
-  EXPECT_FALSE(headers_stream->IsFlowControlBlocked());
-  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-  EXPECT_CALL(*connection_, SendControlFrame(_))
-      .WillOnce(Invoke(&ClearControlFrame));
-  for (QuicStreamId i = 0; !crypto_stream->IsFlowControlBlocked() && i < 1000u;
-       i++) {
-    EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-    EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-    QuicStreamOffset offset = crypto_stream->stream_bytes_written();
-    QuicConfig config;
-    CryptoHandshakeMessage crypto_message;
-    config.ToHandshakeMessage(&crypto_message, transport_version());
-    crypto_stream->SendHandshakeMessage(crypto_message, ENCRYPTION_INITIAL);
-    char buf[1000];
-    QuicDataWriter writer(1000, buf, quiche::NETWORK_BYTE_ORDER);
-    crypto_stream->WriteStreamData(offset, crypto_message.size(), &writer);
-  }
-  EXPECT_TRUE(crypto_stream->IsFlowControlBlocked());
-  EXPECT_FALSE(headers_stream->IsFlowControlBlocked());
-  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-  EXPECT_TRUE(session_.IsStreamFlowControlBlocked());
-  EXPECT_FALSE(session_.HasDataToWrite());
-  EXPECT_TRUE(crypto_stream->HasBufferedData());
-
-  // Now complete the crypto handshake, resulting in an increased flow control
-  // send window.
-  CompleteHandshake();
-  EXPECT_TRUE(QuicSessionPeer::IsStreamWriteBlocked(
-      &session_, QuicUtils::GetCryptoStreamId(transport_version())));
-  // Stream is now unblocked and will no longer have buffered data.
-  EXPECT_FALSE(crypto_stream->IsFlowControlBlocked());
   EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
 }
@@ -2921,18 +2872,13 @@ TEST_P(QuicSpdySessionTestClient, CloseConnectionOnCancelPush) {
       "00");  // push ID
   QuicStreamFrame data3(receive_control_stream_id, /* fin = */ false, offset,
                         cancel_push_frame);
-  if (GetQuicReloadableFlag(quic_error_on_http3_push)) {
-    EXPECT_CALL(*connection_, CloseConnection(QUIC_HTTP_FRAME_ERROR,
-                                              "CANCEL_PUSH frame received.", _))
-        .WillOnce(
-            Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
-    EXPECT_CALL(*connection_,
-                SendConnectionClosePacket(QUIC_HTTP_FRAME_ERROR, _,
-                                          "CANCEL_PUSH frame received."));
-  } else {
-    // CANCEL_PUSH is ignored.
-    EXPECT_CALL(debug_visitor, OnCancelPushFrameReceived(_));
-  }
+  EXPECT_CALL(*connection_, CloseConnection(QUIC_HTTP_FRAME_ERROR,
+                                            "CANCEL_PUSH frame received.", _))
+      .WillOnce(
+          Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+  EXPECT_CALL(*connection_,
+              SendConnectionClosePacket(QUIC_HTTP_FRAME_ERROR, _,
+                                        "CANCEL_PUSH frame received."));
   session_.OnStreamFrame(data3);
 }
 
@@ -3128,18 +3074,13 @@ TEST_P(QuicSpdySessionTestServer, CloseConnectionOnCancelPush) {
       "00");  // push ID
   QuicStreamFrame data3(receive_control_stream_id, /* fin = */ false, offset,
                         cancel_push_frame);
-  if (GetQuicReloadableFlag(quic_error_on_http3_push)) {
-    EXPECT_CALL(*connection_, CloseConnection(QUIC_HTTP_FRAME_ERROR,
-                                              "CANCEL_PUSH frame received.", _))
-        .WillOnce(
-            Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
-    EXPECT_CALL(*connection_,
-                SendConnectionClosePacket(QUIC_HTTP_FRAME_ERROR, _,
-                                          "CANCEL_PUSH frame received."));
-  } else {
-    // CANCEL_PUSH is ignored.
-    EXPECT_CALL(debug_visitor, OnCancelPushFrameReceived(_));
-  }
+  EXPECT_CALL(*connection_, CloseConnection(QUIC_HTTP_FRAME_ERROR,
+                                            "CANCEL_PUSH frame received.", _))
+      .WillOnce(
+          Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+  EXPECT_CALL(*connection_,
+              SendConnectionClosePacket(QUIC_HTTP_FRAME_ERROR, _,
+                                        "CANCEL_PUSH frame received."));
   session_.OnStreamFrame(data3);
 }
 
@@ -3463,31 +3404,11 @@ TEST_P(QuicSpdySessionTestClient, AlpsTwoSettingsFrame) {
   EXPECT_EQ("multiple SETTINGS frames", error.value());
 }
 
-TEST_P(QuicSpdySessionTestClient, GetNextDatagramFlowId) {
-  if (!version().UsesHttp3()) {
-    return;
-  }
-  EXPECT_EQ(session_.GetNextDatagramFlowId(), 0u);
-  EXPECT_EQ(session_.GetNextDatagramFlowId(), 2u);
-  EXPECT_EQ(session_.GetNextDatagramFlowId(), 4u);
-  EXPECT_EQ(session_.GetNextDatagramFlowId(), 6u);
-}
-
-TEST_P(QuicSpdySessionTestServer, GetNextDatagramFlowId) {
-  if (!version().UsesHttp3()) {
-    return;
-  }
-  EXPECT_EQ(session_.GetNextDatagramFlowId(), 1u);
-  EXPECT_EQ(session_.GetNextDatagramFlowId(), 3u);
-  EXPECT_EQ(session_.GetNextDatagramFlowId(), 5u);
-  EXPECT_EQ(session_.GetNextDatagramFlowId(), 7u);
-}
-
 TEST_P(QuicSpdySessionTestClient, H3DatagramSetting) {
   if (!version().UsesHttp3()) {
     return;
   }
-  SetQuicReloadableFlag(quic_h3_datagram, true);
+  session_.set_should_negotiate_h3_datagram(true);
   // HTTP/3 datagrams aren't supported before SETTINGS are received.
   EXPECT_FALSE(session_.h3_datagram_supported());
   // Receive SETTINGS.
@@ -3506,52 +3427,11 @@ TEST_P(QuicSpdySessionTestClient, H3DatagramSetting) {
   EXPECT_TRUE(session_.h3_datagram_supported());
 }
 
-TEST_P(QuicSpdySessionTestClient, H3DatagramRegistration) {
-  if (!version().UsesHttp3()) {
-    return;
-  }
-  CompleteHandshake();
-  SetQuicReloadableFlag(quic_h3_datagram, true);
-  QuicSpdySessionPeer::SetH3DatagramSupported(&session_, true);
-  SavingHttp3DatagramVisitor h3_datagram_visitor;
-  QuicDatagramFlowId flow_id = session_.GetNextDatagramFlowId();
-  ASSERT_EQ(QuicDataWriter::GetVarInt62Len(flow_id), 1);
-  uint8_t datagram[256];
-  datagram[0] = flow_id;
-  for (size_t i = 1; i < ABSL_ARRAYSIZE(datagram); i++) {
-    datagram[i] = i;
-  }
-  session_.RegisterHttp3FlowId(flow_id, &h3_datagram_visitor);
-  session_.OnMessageReceived(absl::string_view(
-      reinterpret_cast<const char*>(datagram), sizeof(datagram)));
-  EXPECT_THAT(
-      h3_datagram_visitor.received_h3_datagrams(),
-      ElementsAre(SavingHttp3DatagramVisitor::SavedHttp3Datagram{
-          flow_id, std::string(reinterpret_cast<const char*>(datagram + 1),
-                               sizeof(datagram) - 1)}));
-  session_.UnregisterHttp3FlowId(flow_id);
-}
-
-TEST_P(QuicSpdySessionTestClient, SendHttp3Datagram) {
-  if (!version().UsesHttp3()) {
-    return;
-  }
-  CompleteHandshake();
-  SetQuicReloadableFlag(quic_h3_datagram, true);
-  QuicSpdySessionPeer::SetH3DatagramSupported(&session_, true);
-  QuicDatagramFlowId flow_id = session_.GetNextDatagramFlowId();
-  std::string h3_datagram_payload = {1, 2, 3, 4, 5, 6};
-  EXPECT_CALL(*connection_, SendMessage(1, _, false))
-      .WillOnce(Return(MESSAGE_STATUS_SUCCESS));
-  EXPECT_EQ(session_.SendHttp3Datagram(flow_id, h3_datagram_payload),
-            MESSAGE_STATUS_SUCCESS);
-}
-
 TEST_P(QuicSpdySessionTestClient, WebTransportSetting) {
   if (!version().UsesHttp3()) {
     return;
   }
-  SetQuicReloadableFlag(quic_h3_datagram, true);
+  session_.set_should_negotiate_h3_datagram(true);
   session_.set_supports_webtransport(true);
 
   EXPECT_FALSE(session_.SupportsWebTransport());
@@ -3581,7 +3461,7 @@ TEST_P(QuicSpdySessionTestClient, WebTransportSettingSetToZero) {
   if (!version().UsesHttp3()) {
     return;
   }
-  SetQuicReloadableFlag(quic_h3_datagram, true);
+  session_.set_should_negotiate_h3_datagram(true);
   session_.set_supports_webtransport(true);
 
   EXPECT_FALSE(session_.SupportsWebTransport());
@@ -3611,7 +3491,7 @@ TEST_P(QuicSpdySessionTestServer, WebTransportSetting) {
   if (!version().UsesHttp3()) {
     return;
   }
-  SetQuicReloadableFlag(quic_h3_datagram, true);
+  session_.set_should_negotiate_h3_datagram(true);
   session_.set_supports_webtransport(true);
 
   EXPECT_FALSE(session_.SupportsWebTransport());
@@ -3628,7 +3508,7 @@ TEST_P(QuicSpdySessionTestServer, BufferingIncomingStreams) {
   if (!version().UsesHttp3()) {
     return;
   }
-  SetQuicReloadableFlag(quic_h3_datagram, true);
+  session_.set_should_negotiate_h3_datagram(true);
   session_.set_supports_webtransport(true);
 
   CompleteHandshake();
@@ -3661,7 +3541,7 @@ TEST_P(QuicSpdySessionTestServer, BufferingIncomingStreamsLimit) {
   if (!version().UsesHttp3()) {
     return;
   }
-  SetQuicReloadableFlag(quic_h3_datagram, true);
+  session_.set_should_negotiate_h3_datagram(true);
   session_.set_supports_webtransport(true);
 
   CompleteHandshake();
@@ -3702,7 +3582,7 @@ TEST_P(QuicSpdySessionTestServer, ResetOutgoingWebTransportStreams) {
   if (!version().UsesHttp3()) {
     return;
   }
-  SetQuicReloadableFlag(quic_h3_datagram, true);
+  session_.set_should_negotiate_h3_datagram(true);
   session_.set_supports_webtransport(true);
 
   CompleteHandshake();

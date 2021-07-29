@@ -8,14 +8,17 @@
 #include <memory>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "dbus/bus.h"
@@ -110,13 +113,18 @@ void FakeShillDeviceClient::SetProperty(const dbus::ObjectPath& device_path,
     return;
   }
 
+  if (simulate_inhibit_scanning_ && name == shill::kInhibitedProperty &&
+      value.GetBool()) {
+    SetScanning(device_path, /*is_scanning=*/true);
+  }
+
   SetPropertyInternal(device_path, name, value, std::move(callback),
                       std::move(error_callback),
                       /*notify_changed=*/true);
 
-  if (simulate_uninhibit_scanning_ && name == shill::kInhibitedProperty &&
+  if (simulate_inhibit_scanning_ && name == shill::kInhibitedProperty &&
       !value.GetBool()) {
-    SimulateUninhibitScanning(device_path);
+    SetScanning(device_path, /*is_scanning=*/false);
   }
 }
 
@@ -335,6 +343,8 @@ void FakeShillDeviceClient::AddDevice(const std::string& device_path,
   if (type == shill::kTypeCellular) {
     properties->SetKey(shill::kCellularAllowRoamingProperty,
                        base::Value(false));
+    properties->SetKey(shill::kCellularPolicyAllowRoamingProperty,
+                       base::Value(false));
   }
 }
 
@@ -426,9 +436,9 @@ void FakeShillDeviceClient::SetUsbEthernetMacAddressSourceError(
   set_usb_ethernet_mac_address_source_error_names_[device_path] = error_name;
 }
 
-void FakeShillDeviceClient::SetSimulateUninhibitScanning(
-    bool simulate_uninhibit_scanning) {
-  simulate_uninhibit_scanning_ = simulate_uninhibit_scanning;
+void FakeShillDeviceClient::SetSimulateInhibitScanning(
+    bool simulate_inhibit_scanning) {
+  simulate_inhibit_scanning_ = simulate_inhibit_scanning;
 }
 
 void FakeShillDeviceClient::SetPropertyChangeDelay(
@@ -597,19 +607,10 @@ FakeShillDeviceClient::GetObserverList(const dbus::ObjectPath& device_path) {
   return *observer_list;
 }
 
-void FakeShillDeviceClient::SimulateUninhibitScanning(
-    const dbus::ObjectPath& device_path) {
-  SetPropertyInternal(
-      device_path, shill::kScanningProperty, base::Value(true),
-      base::BindOnce(&FakeShillDeviceClient::StopUninhibitScanning,
-                     base::Unretained(this), device_path),
-      /*error_callback=*/base::DoNothing(),
-      /*notify_changed=*/true);
-}
-
-void FakeShillDeviceClient::StopUninhibitScanning(
-    const dbus::ObjectPath& device_path) {
-  SetPropertyInternal(device_path, shill::kScanningProperty, base::Value(false),
+void FakeShillDeviceClient::SetScanning(const dbus::ObjectPath& device_path,
+                                        bool is_scanning) {
+  SetPropertyInternal(device_path, shill::kScanningProperty,
+                      base::Value(is_scanning),
                       /*callback=*/base::DoNothing(),
                       /*error_callback=*/base::DoNothing(),
                       /*notify_changed=*/true);

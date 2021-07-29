@@ -11,7 +11,9 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmarks_policy_handler.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/enterprise/browser/reporting/cloud_reporting_policy_handler.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
+#include "components/history/core/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
@@ -48,9 +50,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { policy::key::kChromeVariations,
     variations::prefs::kVariationsRestrictionsByPolicy,
     base::Value::Type::INTEGER },
-  { policy::key::kCloudReportingEnabled,
-    enterprise_reporting::kCloudReportingEnabled,
-    base::Value::Type::BOOLEAN },
   { policy::key::kDisableSafeBrowsingProceedAnyway,
     prefs::kSafeBrowsingProceedAnywayDisabled,
     base::Value::Type::BOOLEAN },
@@ -144,6 +143,8 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildPolicyHandlerList(
       std::make_unique<bookmarks::ManagedBookmarksPolicyHandler>(
           chrome_schema));
   handlers->AddHandler(std::make_unique<syncer::SyncPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<enterprise_reporting::CloudReportingPolicyHandler>());
 
   if (ShouldInstallURLBlocklistPolicyHandlers()) {
     handlers->AddHandler(std::make_unique<policy::URLBlocklistPolicyHandler>(

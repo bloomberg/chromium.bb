@@ -48,8 +48,7 @@ void TableSectionPainter::Paint(const PaintInfo& paint_info) {
   for (const auto* fragment = &layout_table_section_.FirstFragment(); fragment;
        fragment = fragment->NextFragment()) {
     PaintInfo fragment_paint_info = paint_info;
-    fragment_paint_info.SetFragmentLogicalTopInFlowThread(
-        fragment->LogicalTopInFlowThread());
+    fragment_paint_info.SetFragmentID(fragment->FragmentID());
     ScopedDisplayItemFragment scoped_display_item_fragment(
         fragment_paint_info.context, fragment_index++);
     PaintSection(fragment_paint_info);
@@ -106,11 +105,13 @@ void TableSectionPainter::PaintCollapsedBorders(const PaintInfo& paint_info) {
     return;
   }
 
+  unsigned fragment_index = 0;
   for (const auto* fragment = &layout_table_section_.FirstFragment(); fragment;
        fragment = fragment->NextFragment()) {
     PaintInfo fragment_paint_info = paint_info;
-    fragment_paint_info.SetFragmentLogicalTopInFlowThread(
-        fragment->LogicalTopInFlowThread());
+    fragment_paint_info.SetFragmentID(fragment->FragmentID());
+    ScopedDisplayItemFragment scoped_display_item_fragment(
+        fragment_paint_info.context, fragment_index++);
     PaintCollapsedSectionBorders(fragment_paint_info);
   }
 }

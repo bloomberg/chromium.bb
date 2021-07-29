@@ -8,9 +8,11 @@
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/markers/highlight_marker.h"
 #include "third_party/blink/renderer/core/editing/markers/styleable_marker.h"
 #include "third_party/blink/renderer/core/editing/markers/text_marker_base.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/highlight/highlight.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/paint/document_marker_painter.h"
@@ -18,6 +20,7 @@
 #include "third_party/blink/renderer/core/paint/inline_text_box_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_text_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -110,8 +113,11 @@ Color SelectionBackgroundColor(const Document& document,
 
   // If the text color ends up being the same as the selection background,
   // invert the selection background.
-  if (text_color == color)
+  if (text_color == color) {
+    UseCounter::Count(node->GetDocument(),
+                      WebFeature::kSelectionBackgroundColorInversion);
     return Color(0xff - color.Red(), 0xff - color.Green(), 0xff - color.Blue());
+  }
   return color;
 }
 
@@ -301,8 +307,7 @@ void NGHighlightPainter::Paint(Phase phase) {
           Color color;
           if (marker->GetType() == DocumentMarker::kTextMatch) {
             color = LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(
-                text_marker.IsActiveMatch(), document.InForcedColorsMode(),
-                style_.UsedColorScheme());
+                text_marker.IsActiveMatch(), style_.UsedColorScheme());
           } else {
             color = HighlightPaintingUtils::HighlightBackgroundColor(
                 document, style_, node_, kPseudoIdTargetText);
@@ -345,6 +350,49 @@ void NGHighlightPainter::Paint(Phase phase) {
               LayoutUnit(font_data->GetFontMetrics().Height()),
               fragment_item_.GetNode()->GetDocument().InDarkMode());
         }
+      } break;
+
+      case DocumentMarker::kHighlight: {
+        const auto& highlight_marker = To<HighlightMarker>(*marker);
+        const Document& document = node_->GetDocument();
+
+        // Paint background
+        if (phase == kBackground) {
+          Color background_color =
+              HighlightPaintingUtils::HighlightBackgroundColor(
+                  document, style_, node_, kPseudoIdHighlight,
+                  highlight_marker.GetHighlightName());
+
+          PaintRect(paint_info_.context, PhysicalOffset(box_origin_),
+                    fragment_item_.LocalRect(text, paint_start_offset,
+                                             paint_end_offset),
+                    background_color);
+          break;
+        }
+
+        DCHECK_EQ(phase, kForeground);
+        Color text_color = style_.VisitedDependentColor(GetCSSPropertyColor());
+
+        TextPaintStyle text_style;
+        text_style.current_color = text_style.fill_color =
+            text_style.stroke_color = text_style.emphasis_mark_color =
+                text_color;
+        text_style.stroke_width = style_.TextStrokeWidth();
+        text_style.color_scheme = style_.UsedColorScheme();
+        text_style.shadow = nullptr;
+
+        const TextPaintStyle final_text_style =
+            HighlightPaintingUtils::HighlightPaintingStyle(
+                document, style_, node_, kPseudoIdHighlight, text_style,
+                paint_info_, highlight_marker.GetHighlightName());
+
+        if (final_text_style.current_color == Color::kTransparent)
+          break;
+
+        text_painter_.Paint(paint_start_offset, paint_end_offset,
+                            paint_end_offset - paint_start_offset,
+                            final_text_style, kInvalidDOMNodeId);
+
       } break;
 
       default:

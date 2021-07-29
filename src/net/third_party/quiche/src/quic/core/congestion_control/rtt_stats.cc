@@ -29,8 +29,7 @@ RttStats::RttStats()
       mean_deviation_(QuicTime::Delta::Zero()),
       calculate_standard_deviation_(false),
       initial_rtt_(QuicTime::Delta::FromMilliseconds(kInitialRttMs)),
-      last_update_time_(QuicTime::Zero()),
-      ignore_max_ack_delay_(false) {}
+      last_update_time_(QuicTime::Zero()) {}
 
 void RttStats::ExpireSmoothedMetrics() {
   mean_deviation_ = std::max(
@@ -63,17 +62,19 @@ void RttStats::UpdateRtt(QuicTime::Delta send_delta,
 
   QuicTime::Delta rtt_sample(send_delta);
   previous_srtt_ = smoothed_rtt_;
-
-  if (ignore_max_ack_delay_) {
-    ack_delay = QuicTime::Delta::Zero();
-  }
   // Correct for ack_delay if information received from the peer results in a
   // an RTT sample at least as large as min_rtt. Otherwise, only use the
   // send_delta.
+  // TODO(fayang): consider to ignore rtt_sample if rtt_sample < ack_delay and
+  // ack_delay is relatively large.
   if (rtt_sample > ack_delay) {
     if (rtt_sample - min_rtt_ >= ack_delay) {
       rtt_sample = rtt_sample - ack_delay;
+    } else {
+      QUIC_CODE_COUNT(quic_ack_delay_makes_rtt_sample_smaller_than_min_rtt);
     }
+  } else {
+    QUIC_CODE_COUNT(quic_ack_delay_greater_than_rtt_sample);
   }
   latest_rtt_ = rtt_sample;
   if (calculate_standard_deviation_) {
@@ -138,7 +139,6 @@ void RttStats::CloneFrom(const RttStats& stats) {
   calculate_standard_deviation_ = stats.calculate_standard_deviation_;
   initial_rtt_ = stats.initial_rtt_;
   last_update_time_ = stats.last_update_time_;
-  ignore_max_ack_delay_ = stats.ignore_max_ack_delay_;
 }
 
 }  // namespace quic

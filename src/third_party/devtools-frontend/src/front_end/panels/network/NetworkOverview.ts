@@ -37,9 +37,9 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
     this._updateScheduled = false;
     this._highlightedRequest = null;
 
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this._loadEventFired, this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.DOMContentLoaded,
         this._domContentLoadedEventFired, this);
 
@@ -171,7 +171,7 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
       }
       const n = lines.length;
       context.beginPath();
-      context.strokeStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--neutral-layer-l4');
+      context.strokeStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background-opacity-80');
       context.lineWidth = BORDER_WIDTH;
       context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue(RequestTimeRangeNameToColor[type]);
       for (let i = 0; i < n;) {

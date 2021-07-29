@@ -3,22 +3,18 @@
 // found in the LICENSE file.
 
 import * as Root from '../../../core/root/root.js';
-import * as ThemeSupport from '../../legacy/theme_support/theme_support.js';
 
-const sheetsCache = new Map<string, {sheets: CSSStyleSheet[], enableLegacyPatching: boolean}>();
+const sheetsCache = new Map<string, {sheets: CSSStyleSheet[]}>();
 
 /**
  * Helper for importing a legacy stylesheet into a component.
  *
  * Given a path to a stylesheet, it returns a CSSStyleSheet that can then be
  * adopted by your component.
- *
- * Pass `enableLegacyPatching: true` to turn on the legacy dark mode theming and be
- * returned both the original stylesheet and the new patched rules for dark mode.
  */
-export function getStyleSheets(path: string, {enableLegacyPatching = false} = {}): CSSStyleSheet[] {
+export function getStyleSheets(path: string): CSSStyleSheet[] {
   const cachedResult = sheetsCache.get(path);
-  if (cachedResult && cachedResult.enableLegacyPatching === enableLegacyPatching) {
+  if (cachedResult) {
     return cachedResult.sheets;
   }
 
@@ -26,22 +22,10 @@ export function getStyleSheets(path: string, {enableLegacyPatching = false} = {}
   if (!content) {
     throw new Error(`${path} not preloaded.`);
   }
-
   const originalStylesheet = new CSSStyleSheet();
   originalStylesheet.replaceSync(content);
-
-  const themeStyleSheet = ThemeSupport.ThemeSupport.instance().themeStyleSheet(path, content);
-  if (!enableLegacyPatching || !themeStyleSheet) {
-    sheetsCache.set(path, {enableLegacyPatching, sheets: [originalStylesheet]});
-    return [originalStylesheet];
-  }
-
-  const patchedStyleSheet = new CSSStyleSheet();
-
-  patchedStyleSheet.replaceSync(themeStyleSheet + '\n' + Root.Runtime.Runtime.resolveSourceURL(path + '.theme'));
-  sheetsCache.set(path, {enableLegacyPatching, sheets: [originalStylesheet, patchedStyleSheet]});
-
-  return [originalStylesheet, patchedStyleSheet];
+  sheetsCache.set(path, {sheets: [originalStylesheet]});
+  return [originalStylesheet];
 }
 
 /*
@@ -115,14 +99,8 @@ export const CSS_RESOURCES_TO_LOAD_INTO_RUNTIME = [
   'ui/legacy/components/object_ui/objectPopover.css',
   'ui/legacy/components/object_ui/objectPropertiesSection.css',
   'ui/legacy/components/object_ui/objectValue.css',
-  'panels/console/consoleContextSelector.css',
-  'panels/console/consolePinPane.css',
-  'panels/console/consolePrompt.css',
-  'panels/console/consoleSidebar.css',
-  'panels/console/consoleView.css',
   'third_party/codemirror/codemirror.css',
   'ui/legacy/components/text_editor/autocompleteTooltip.css',
   'ui/legacy/components/text_editor/cmdevtools.css',
-  'ui/legacy/components/text_editor/cmdevtools.darkmode.css',
   'panels/application/serviceWorkerUpdateCycleView.css',
 ];

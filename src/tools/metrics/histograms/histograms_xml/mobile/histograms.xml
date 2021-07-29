@@ -67,7 +67,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Mobile.AppMenu.TimeToTakeAction.Abandoned" units="ms"
-    expires_after="2021-09-19">
+    expires_after="2021-11-21">
   <owner>gangwu@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -80,7 +80,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Mobile.AppMenu.TimeToTakeAction.SelectedItem" units="ms"
-    expires_after="2021-09-19">
+    expires_after="2021-11-21">
   <owner>gangwu@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -129,6 +129,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="RecentTabsEntry" summary="Recent Tabs entry"/>
     <variant name="RecentTabsHeader" summary="Recent Tabs header/device"/>
     <variant name="TabGrid" summary="Tab Grid Entry"/>
+    <variant name="TabGridAddTo" summary="Tab Grid Add To"/>
     <variant name="WebImage" summary="Image on a Web page"/>
     <variant name="WebImageLink" summary="Image-Link on a Web page"/>
     <variant name="WebLink" summary="Link on a Web page"/>
@@ -386,6 +387,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="ReadingListEntry" summary="Reading List entry"/>
     <variant name="RecentTabsEntry" summary="Recent Tabs entry"/>
     <variant name="SharedHighlight" summary="highlighted fragment"/>
+    <variant name="TabGridItem" summary="tab grid item"/>
+    <variant name="TabGridSelectionMode" summary="tab grid selection mode"/>
     <variant name="TabShareButton" summary="current tab"/>
   </token>
 </histogram>
@@ -583,7 +586,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MobileDownload.DownloadLaterPromptStatus"
-    enum="DownloadLaterPromptStatus" expires_after="2021-10-04">
+    enum="DownloadLaterPromptStatus" expires_after="2021-12-05">
   <owner>xingliu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
@@ -775,7 +778,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MobileFre.ChildAccountStatusDuration" units="ms"
-    expires_after="2021-10-04">
+    expires_after="2021-12-05">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <summary>
@@ -785,7 +788,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="MobileFre.FragmentInflationSpeed" units="ms"
-    expires_after="2021-10-04">
+    expires_after="2021-12-05">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <summary>
@@ -798,7 +801,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="MobileFre.FromLaunch" units="ms"
-    expires_after="2021-10-04">
+    expires_after="2021-12-05">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <summary>
@@ -847,7 +850,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MobileFre.NativeInitialized" units="ms"
-    expires_after="2021-10-04">
+    expires_after="2021-12-05">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <summary>
@@ -898,7 +901,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MobileFre.Progress" enum="MobileFreProgress"
-    expires_after="2021-10-24">
+    expires_after="2021-12-26">
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
@@ -922,7 +925,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MobileFre.TosFragment.SpinnerVisibleDuration" units="ms"
-    expires_after="2021-10-04">
+    expires_after="2021-12-05">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <summary>
@@ -1007,7 +1010,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MobileIntent.FirstPartyToInternalScheme" enum="Boolean"
-    expires_after="2021-10-17">
+    expires_after="2021-12-19">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1134,7 +1137,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MobileStartup.DailyLaunchCount" units="units"
-    expires_after="2021-11-07">
+    expires_after="2022-01-09">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1183,7 +1186,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MobileStartup.IntentToCreationTime" units="ms"
-    expires_after="2021-11-07">
+    expires_after="2022-01-09">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
@@ -1208,7 +1211,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="MobileStartup.LaunchType" enum="LaunchType"
-    expires_after="2021-11-07">
+    expires_after="2022-01-09">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>

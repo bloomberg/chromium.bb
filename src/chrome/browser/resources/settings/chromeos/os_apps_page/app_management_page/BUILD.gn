@@ -28,10 +28,12 @@ js_type_check("closure_compile_module") {
     ":pin_to_shelf_item.m",
     ":pwa_detail_view.m",
     ":reducers.m",
+    ":resize_lock_item.m",
     ":shared_style.m",
     ":shared_vars.m",
     ":store.m",
     ":store_client.m",
+    ":supported_links_item.m",
     ":toggle_row.m",
     ":types.m",
     ":uninstall_button.m",
@@ -67,6 +69,7 @@ js_library("app_detail_view.m") {
     ":store_client.m",
     "../..:os_route.m",
     "../../..:router",
+    "./borealis_page:borealis_detail_view.m",
     "./plugin_vm_page:plugin_vm_detail_view.m",
     "//ui/webui/resources/js:assert.m",
   ]
@@ -106,6 +109,7 @@ js_library("arc_detail_view.m") {
     ":permission_item.m",
     ":pin_to_shelf_item.m",
     ":store_client.m",
+    ":supported_links_item.m",
     ":util.m",
   ]
   extra_deps = [ ":arc_detail_view_module" ]
@@ -211,6 +215,7 @@ js_library("pwa_detail_view.m") {
     ":permission_item.m",
     ":pin_to_shelf_item.m",
     ":store_client.m",
+    ":supported_links_item.m",
     ":util.m",
   ]
   extra_deps = [ ":pwa_detail_view_module" ]
@@ -226,13 +231,17 @@ js_library("reducers.m") {
   extra_deps = [ ":modulize" ]
 }
 
-js_library("store.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_apps_page/app_management_page/store.m.js" ]
+js_library("resize_lock_item.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_apps_page/app_management_page/resize_lock_item.m.js" ]
   deps = [
-    "//ui/webui/resources/js:cr.m",
-    "//ui/webui/resources/js/cr/ui:store.m",
+    ":browser_proxy.m",
+    ":constants.m",
+    ":toggle_row.m",
+    ":types.m",
+    ":util.m",
+    "//ui/webui/resources/js:assert.m",
   ]
-  extra_deps = [ ":modulize" ]
+  extra_deps = [ ":resize_lock_item_module" ]
 }
 
 js_library("shared_style.m") {
@@ -247,6 +256,15 @@ js_library("shared_vars.m") {
   extra_deps = [ ":shared_vars_module" ]
 }
 
+js_library("store.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_apps_page/app_management_page/store.m.js" ]
+  deps = [
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js/cr/ui:store.m",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
 js_library("store_client.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_apps_page/app_management_page/store_client.m.js" ]
   deps = [
@@ -257,6 +275,20 @@ js_library("store_client.m") {
     "//ui/webui/resources/js/cr/ui:store_client.m",
   ]
   extra_deps = [ ":modulize" ]
+}
+
+js_library("supported_links_item.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_apps_page/app_management_page/supported_links_item.m.js" ]
+  deps = [
+    ":browser_proxy.m",
+    ":constants.m",
+    ":store_client.m",
+    ":types.m",
+    ":util.m",
+    "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button.m",
+    "//ui/webui/resources/cr_elements/cr_radio_group:cr_radio_group.m",
+  ]
+  extra_deps = [ ":supported_links_item_module" ]
 }
 
 js_library("toggle_row.m") {
@@ -313,8 +345,10 @@ group("polymer3_elements") {
     ":permission_item_module",
     ":pin_to_shelf_item_module",
     ":pwa_detail_view_module",
+    ":resize_lock_item_module",
     ":shared_style_module",
     ":shared_vars_module",
+    ":supported_links_item_module",
     ":toggle_row_module",
     ":uninstall_button_module",
   ]
@@ -416,6 +450,15 @@ polymer_modulizer("pwa_detail_view") {
   auto_imports = os_settings_auto_imports
 }
 
+polymer_modulizer("resize_lock_item") {
+  js_file = "resize_lock_item.js"
+  html_file = "resize_lock_item.html"
+  html_type = "dom-module"
+  migrated_imports = os_settings_migrated_imports
+  namespace_rewrites = os_settings_namespace_rewrites
+  auto_imports = os_settings_auto_imports
+}
+
 polymer_modulizer("shared_style") {
   js_file = "shared_style.m.js"
   html_file = "shared_style.html"
@@ -426,6 +469,15 @@ polymer_modulizer("shared_vars") {
   js_file = "shared_vars.m.js"
   html_file = "shared_vars.html"
   html_type = "custom-style"
+}
+
+polymer_modulizer("supported_links_item") {
+  js_file = "supported_links_item.js"
+  html_file = "supported_links_item.html"
+  html_type = "dom-module"
+  migrated_imports = os_settings_migrated_imports
+  namespace_rewrites = os_settings_namespace_rewrites
+  auto_imports = os_settings_auto_imports
 }
 
 polymer_modulizer("toggle_row") {

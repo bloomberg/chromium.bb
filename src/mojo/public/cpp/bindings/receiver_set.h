@@ -80,6 +80,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) ReceiverSetState {
     class DispatchFilter;
 
     void WillDispatch();
+    void DidDispatchOrReject();
     void OnDisconnect(uint32_t custom_reason_code,
                       const std::string& description);
 
@@ -321,7 +322,7 @@ class ReceiverSetBase {
       return nullptr;
 
     ReceiverEntry& entry = static_cast<ReceiverEntry&>(it->second->receiver());
-    return entry.SwapImplForTesting(new_impl);
+    return entry.SwapImplForTesting(std::move(new_impl));
   }
 
  private:
@@ -355,7 +356,7 @@ class ReceiverSetBase {
     void FlushForTesting() override { receiver_.FlushForTesting(); }
 
     ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
-      return receiver_.SwapImplForTesting(new_impl);
+      return receiver_.SwapImplForTesting(std::move(new_impl));
     }
 
     PendingType Unbind() { return receiver_.Unbind(); }

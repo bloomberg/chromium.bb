@@ -1268,6 +1268,10 @@ disabled
 A description of some of the currently available video encoders
 follows.
 
+@section a64_multi, a64_multi5
+
+A64 / Commodore 64 multicolor charset encoder. @code{a64_multi5} is extended with 5th color (colram).
+
 @section GIF
 
 GIF image/animation encoder.
@@ -2305,9 +2309,7 @@ pixel formats as input instead of YUV.
 @subsection Supported Pixel Formats
 
 x264 supports 8- to 10-bit color spaces. The exact bit depth is controlled at
-x264's configure time. FFmpeg only supports one bit depth in one particular
-build. In other words, it is not possible to build one FFmpeg with multiple
-versions of x264 with different bit depths.
+x264's configure time.
 
 @subsection Options
 

@@ -21,6 +21,7 @@ All/SAMLPasswordAttributesTest.*
 All/SshWarningTest.*
 All/SyncConsentPolicyDisabledTest.*
 All/SyncConsentTestWithParams.*
+All/WebviewCloseViewLoginTest.*
 All/WebviewLoginWithIframeTest.*
 All/WizardControllerDeviceStateExplicitRequirementTest.*
 All/WizardControllerUpdateAfterCompletedOobeTest.*
@@ -80,6 +81,7 @@ KioskHiddenWebUITest.*
 KioskTest.*
 KioskUpdateTest.*
 KioskVirtualKeyboardTest.*
+LockOnSuspendUsageTest.*
 LoginCursorTest.*
 LoginOfflineTest.*
 LoginPolicyTestBase.*
@@ -94,13 +96,13 @@ OnboardingUserActivityTest.*
 OobeBaseTest.*
 OobeCompletedUnownedTest.*
 OobeConfigurationEnrollmentTest.*
-OobeConfigurationRollbackTest.*
 OobeConfigurationTest.*
 OobeConfigurationTestNoHID.*
 OobeDisplayChooserTest.*
 OobeSpokenFeedbackTest.*
 OobeTest.*
 OobeZeroTouchInteractiveUITest.*
+OsInstallScreenTest.*
 PackagedLicenseScreenTest.*
 ParentalHandoffScreenBrowserTest.*
 ParentalHandoffScreenChildBrowserTest.*
@@ -167,5 +169,6 @@ WizardControllerKioskFlowTest.*
 WizardControllerOobeConfigurationTest.*
 WizardControllerOobeResumeTest.*
 WizardControllerProxyAuthOnSigninTest.*
+WizardControllerRollbackFlowTest.*
 WizardControllerScreenPriorityOOBETest.*
 WizardControllerTest.*

@@ -16,8 +16,8 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -55,7 +55,6 @@
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/translate/core/browser/translate_prefs.h"
-#include "components/ukm/ios/features.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/crash_report/features.h"
@@ -65,9 +64,11 @@
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
+#import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
@@ -204,6 +205,16 @@ const FeatureEntry::FeatureVariation
         {"Open Links in Chrome",
          kDefaultBrowserFullscreenPromoCTAExperimentOpenLinks,
          base::size(kDefaultBrowserFullscreenPromoCTAExperimentOpenLinks),
+         nullptr}};
+
+const FeatureEntry::FeatureParam
+    kDefaultBrowserFullscreenPromoExperimentRemindMeLater[] = {
+        {kDefaultBrowserFullscreenPromoExperimentRemindMeGroupParam, "true"}};
+const FeatureEntry::FeatureVariation
+    kDefaultBrowserFullscreenPromoExperimentVariations[] = {
+        {"Remind me later",
+         kDefaultBrowserFullscreenPromoExperimentRemindMeLater,
+         base::size(kDefaultBrowserFullscreenPromoExperimentRemindMeLater),
          nullptr}};
 
 const FeatureEntry::FeatureParam kDefaultPromoTailoredIOS[] = {
@@ -378,6 +389,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillCreditCardUploadName,
      flag_descriptions::kAutofillCreditCardUploadDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillUpstream)},
+    {"enable-discover-feed-preview",
+     flag_descriptions::kEnableDiscoverFeedPreviewName,
+     flag_descriptions::kEnableDiscoverFeedPreviewDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEnableDiscoverFeedPreview)},
     {"use-sync-sandbox", flag_descriptions::kSyncSandboxName,
      flag_descriptions::kSyncSandboxDescription, flags_ui::kOsIos,
      SINGLE_VALUE_TYPE_AND_VALUE(
@@ -453,9 +468,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"settings-refresh", flag_descriptions::kSettingsRefreshName,
      flag_descriptions::kSettingsRefreshDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSettingsRefresh)},
-    {"send-uma-cellular", flag_descriptions::kSendUmaOverAnyNetwork,
-     flag_descriptions::kSendUmaOverAnyNetworkDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kUmaCellular)},
     {"autofill-use-mobile-label-disambiguation",
      flag_descriptions::kAutofillUseMobileLabelDisambiguationName,
      flag_descriptions::kAutofillUseMobileLabelDisambiguationDescription,
@@ -472,6 +484,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCollectionsCardPresentationStyleName,
      flag_descriptions::kCollectionsCardPresentationStyleDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kCollectionsCardPresentationStyle)},
+    {"metrickit-crash-reports", flag_descriptions::kMetrickitCrashReportName,
+     flag_descriptions::kMetrickitCrashReportDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kMetrickitCrashReport)},
     {"ios-breadcrumbs", flag_descriptions::kLogBreadcrumbsName,
      flag_descriptions::kLogBreadcrumbsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(breadcrumbs::kLogBreadcrumbs)},
@@ -482,7 +497,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"force-startup-signin-promo",
      flag_descriptions::kForceStartupSigninPromoName,
      flag_descriptions::kForceStartupSigninPromoDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(signin::kForceStartupSigninPromo)},
+     FEATURE_VALUE_TYPE(switches::kForceStartupSigninPromo)},
     {"restore-session-from-cache",
      flag_descriptions::kRestoreSessionFromCacheName,
      flag_descriptions::kRestoreSessionFromCacheDescription, flags_ui::kOsIos,
@@ -618,7 +633,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDefaultBrowserFullscreenPromoExperimentName,
      flag_descriptions::kDefaultBrowserFullscreenPromoExperimentDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kDefaultBrowserFullscreenPromoExperiment)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         kDefaultBrowserFullscreenPromoExperiment,
+         kDefaultBrowserFullscreenPromoExperimentVariations,
+         "IOSDefaultBrowserFullscreenPromoExperiment")},
     {"ios-shared-highlighting-color-change",
      flag_descriptions::kIOSSharedHighlightingColorChangeName,
      flag_descriptions::kIOSSharedHighlightingColorChangeDescription,
@@ -628,18 +646,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIOSPersistCrashRestoreName,
      flag_descriptions::kIOSPersistCrashRestoreDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOSPersistCrashRestore)},
-    {"change-password-affiliation",
-     flag_descriptions::kChangePasswordAffiliationInfoName,
-     flag_descriptions::kChangePasswordAffiliationInfoDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kChangePasswordAffiliationInfo)},
-    {"use-of-hash-affiliation-fetcher",
-     flag_descriptions::kUseOfHashAffiliationFetcherName,
-     flag_descriptions::kUseOfHashAffiliationFetcherDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kUseOfHashAffiliationFetcher)},
     {"omnibox-new-textfield-implementation",
      flag_descriptions::kOmniboxNewImplementationName,
      flag_descriptions::kOmniboxNewImplementationDescription, flags_ui::kOsIos,
@@ -686,6 +692,14 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInterestFeedNoticeCardAutoDismissDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(feed::kInterestFeedNoticeCardAutoDismiss)},
+    {"autofill-address-verification-in-save-prompt",
+     flag_descriptions::kEnableAutofillAddressSavePromptAddressVerificationName,
+     flag_descriptions::
+         kEnableAutofillAddressSavePromptAddressVerificationDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::
+             kAutofillAddressProfileSavePromptAddressVerificationSupport)},
     {"autofill-address-save-prompt",
      flag_descriptions::kEnableAutofillAddressSavePromptName,
      flag_descriptions::kEnableAutofillAddressSavePromptDescription,
@@ -746,10 +760,50 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableAccountWalletStorage)},
+    {"reading-list-messages", flag_descriptions::kReadingListMessagesName,
+     flag_descriptions::kReadingListMessagesDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kReadingListMessages)},
+    {"force-disable-extended-sync-promos",
+     flag_descriptions::kForceDisableExtendedSyncPromosName,
+     flag_descriptions::kForceDisableExtendedSyncPromosDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(switches::kForceDisableExtendedSyncPromos)},
+    {"enable-extended-sync-promos-capability",
+     flag_descriptions::kEnableExtendedSyncPromosCapabilityName,
+     flag_descriptions::kEnableExtendedSyncPromosCapabilityDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(switches::kMinorModeSupport)},
+    {"download-mobileconfig-file",
+     flag_descriptions::kDownloadMobileConfigFileName,
+     flag_descriptions::kDownloadMobileConfigFileDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kDownloadMobileConfigFile)},
+    {"sync-trusted-vault-passphrase-ios-rpc",
+     flag_descriptions::kSyncTrustedVaultPassphraseiOSRPCName,
+     flag_descriptions::kSyncTrustedVaultPassphraseiOSRPCDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(::switches::kSyncTrustedVaultPassphraseiOSRPC)},
+    {"sync-trusted-vault-passphrase-promo",
+     flag_descriptions::kSyncTrustedVaultPassphrasePromoName,
+     flag_descriptions::kSyncTrustedVaultPassphrasePromoDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(::switches::kSyncTrustedVaultPassphrasePromo)},
+    {"sync-trusted-vault-passphrase-recovery",
+     flag_descriptions::kSyncTrustedVaultPassphraseRecoveryName,
+     flag_descriptions::kSyncTrustedVaultPassphraseRecoveryDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(::switches::kSyncTrustedVaultPassphraseRecovery)},
     {"enable-ntp-memory-enhancement",
      flag_descriptions::kEnableNTPMemoryEnhancementName,
      flag_descriptions::kEnableNTPMemoryEnhancementDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableNTPMemoryEnhancement)},
+    {"enable-autofill-save-card-info-bar-account-indication-footer",
+     flag_descriptions::
+         kEnableAutofillSaveCardInfoBarAccountIndicationFooterName,
+     flag_descriptions::
+         kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::
+             kAutofillEnableSaveCardInfoBarAccountIndicationFooter)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -793,7 +847,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     // allowed, otherwise they will be ignored in Beta and Stable. Add them to
     // the |allowed_experimental_policies| array.
     [allowed_experimental_policies addObjectsFromArray:@[
-      base::SysUTF8ToNSString(policy::key::kNTPContentSuggestionsEnabled),
     ]];
 
     [testing_policies addEntriesFromDictionary:@{
@@ -924,7 +977,7 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisableThirdPartyKeyboardWorkaround);
   }
 
-  ios::GetChromeBrowserProvider()->AppendSwitchesFromExperimentalSettings(
+  ios::GetChromeBrowserProvider().AppendSwitchesFromExperimentalSettings(
       defaults, command_line);
 }
 
@@ -957,8 +1010,8 @@ std::vector<std::string> RegisterAllFeatureVariationParameters(
 
 void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
                            flags_ui::FlagAccess access,
-                           base::ListValue* supported_entries,
-                           base::ListValue* unsupported_entries) {
+                           base::Value::ListStorage& supported_entries,
+                           base::Value::ListStorage& unsupported_entries) {
   GetGlobalFlagsState().GetFlagFeatureEntries(
       flags_storage, access, supported_entries, unsupported_entries,
       base::BindRepeating(&SkipConditionalFeatureEntry));

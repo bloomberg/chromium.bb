@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <list>
 #include <memory>
 #include <vector>
 
@@ -152,6 +153,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // a makeCredential or getAssertion request carries any extension.
     bool reject_all_extensions = false;
 
+    // advertised_algorithms overrides the algorithms field of the getInfo
+    // response, if set.
+    absl::optional<absl::optional<std::vector<int32_t>>> advertised_algorithms;
+
     // support_invalid_for_testing_algorithm causes the
     // |CoseAlgorithmIdentifier::kInvalidForTesting| public-key algorithm to be
     // advertised and supported to aid testing of unknown public-key types.
@@ -270,7 +275,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
       const std::string& rp_id,
       const absl::optional<std::vector<uint8_t>>& pin_auth,
       const absl::optional<PINUVAuthProtocol>& pin_protocol,
-      base::span<const uint8_t> pin_token,
       base::span<const uint8_t> client_data_hash,
       UserVerificationRequirement user_verification,
       bool user_presence_required,

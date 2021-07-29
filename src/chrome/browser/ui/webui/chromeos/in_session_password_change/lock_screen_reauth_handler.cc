@@ -4,14 +4,15 @@
 
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/lock_screen_reauth_handler.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/notreached.h"
 #include "chrome/browser/ash/login/saml/in_session_password_sync_manager.h"
 #include "chrome/browser/ash/login/saml/in_session_password_sync_manager_factory.h"
 #include "chrome/browser/ash/login/signin_partition_manager.h"
 #include "chrome/browser/ash/login/ui/login_display_host_webui.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -25,17 +26,19 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace chromeos {
 namespace {
 
-std::vector<std::string> ConvertToVector(const base::ListValue* list) {
+std::vector<std::string> ConvertToVector(const base::Value& list) {
   std::vector<std::string> string_list;
-  if (!list) {
+  if (!list.is_list()) {
     return string_list;
   }
 
-  for (const base::Value& value : list->GetList()) {
+  for (const base::Value& value : list.GetList()) {
     if (value.is_string()) {
       string_list.push_back(value.GetString());
     }
@@ -59,6 +62,16 @@ bool ShouldDoSamlRedirect(const std::string& email) {
   return user && user->using_saml();
 }
 
+chromeos::InSessionPasswordSyncManager* GetInSessionPasswordSyncManager() {
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+
+  return chromeos::InSessionPasswordSyncManagerFactory::GetForProfile(profile);
+}
+
+const char kMainElement[] = "$(\'main-element\').";
+
 }  // namespace
 
 LockScreenReauthHandler::LockScreenReauthHandler(const std::string& email)
@@ -67,13 +80,20 @@ LockScreenReauthHandler::LockScreenReauthHandler(const std::string& email)
 LockScreenReauthHandler::~LockScreenReauthHandler() = default;
 
 void LockScreenReauthHandler::HandleInitialize(const base::ListValue* value) {
+  AllowJavascript();
+  OnJsReadyForTesting();
   LoadAuthenticatorParam();
 }
 
 void LockScreenReauthHandler::HandleAuthenticatorLoaded(
     const base::ListValue* value) {
   VLOG(1) << "Authenticator finished loading";
-  authenticator_being_loaded_ = false;
+  authenticator_state_ = AuthenticatorState::LOADED;
+
+  if (waiting_caller_) {
+    std::move(waiting_caller_).Run();
+  }
+
   // Recreate the client cert usage observer, in order to track only the certs
   // used during the current sign-in attempt.
   extension_provided_client_cert_usage_observer_ =
@@ -81,12 +101,12 @@ void LockScreenReauthHandler::HandleAuthenticatorLoaded(
 }
 
 void LockScreenReauthHandler::LoadAuthenticatorParam() {
-  if (authenticator_being_loaded_) {
+  if (authenticator_state_ == AuthenticatorState::LOADING) {
     VLOG(1) << "Skip loading the Authenticator as it's already being loaded ";
     return;
   }
 
-  authenticator_being_loaded_ = true;
+  authenticator_state_ = AuthenticatorState::LOADING;
   login::GaiaContext context;
   context.force_reload = true;
   context.email = email_;
@@ -174,12 +194,32 @@ void LockScreenReauthHandler::OnSetCookieForLoadGaiaWithPartition(
   params.SetString("gaiaId", context.gaia_id);
   params.SetBoolean("extractSamlPasswordAttributes",
                     login::ExtractSamlPasswordAttributesEnabled());
-  params.SetBoolean("doSamlRedirect", ShouldDoSamlRedirect(context.email));
+  params.SetBoolean("doSamlRedirect", force_saml_redirect_for_testing_ ?
+                    true : ShouldDoSamlRedirect(context.email));
   params.SetString("clientVersion", version_info::GetVersionNumber());
   params.SetBoolean("readOnlyEmail", true);
 
-  AllowJavascript();
-  CallJavascriptFunction("$(\'main-element\').loadAuthenticator", params);
+  CallJavascript("loadAuthenticator", params);
+  if (features::IsNewLockScreenReauthLayoutEnabled()) {
+    UpdateOrientationAndWidth();
+  }
+}
+
+void LockScreenReauthHandler::UpdateOrientationAndWidth() {
+  gfx::Size display = display::Screen::GetScreen()->GetPrimaryDisplay().size();
+  bool is_horizontal = display.width() >= display.height();
+  CallJavascript("setOrientation", base::Value(is_horizontal));
+
+  chromeos::InSessionPasswordSyncManager* password_sync_manager =
+      GetInSessionPasswordSyncManager();
+  int width = password_sync_manager->GetDialogWidth();
+  CallJavascript("setWidth", base::Value(width));
+}
+
+void LockScreenReauthHandler::CallJavascript(
+    const std::string& function,
+    const base::Value& params) {
+  CallJavascriptFunction(std::string(kMainElement) + function, params);
 }
 
 void LockScreenReauthHandler::HandleCompleteAuthentication(
@@ -187,20 +227,18 @@ void LockScreenReauthHandler::HandleCompleteAuthentication(
   CHECK_EQ(params->GetList().size(), 6);
   std::string gaia_id, email, password;
   bool using_saml;
-  const base::ListValue* servicesList;
   ::login::StringList services = ::login::StringList();
   const base::DictionaryValue* password_attributes;
   gaia_id = params->GetList()[0].GetString();
   email = params->GetList()[1].GetString();
   password = params->GetList()[2].GetString();
   using_saml = params->GetList()[3].GetBool();
-  params->GetList(4, &servicesList);
-  services = ConvertToVector(servicesList);
-  params->GetDictionary(5, &password_attributes);
+  services = ConvertToVector(params->GetList()[4]);
+  params->GetList()[5].GetAsDictionary(&password_attributes);
 
   if (gaia::CanonicalizeEmail(email) != gaia::CanonicalizeEmail(email_)) {
     // The authenticated user email doesn't match the current user's email.
-    CallJavascriptFunction("$(\'main-element\').resetAuthenticator");
+    CallJavascriptFunction(std::string(kMainElement) + "resetAuthenticator");
     return;
   }
 
@@ -239,12 +277,15 @@ void LockScreenReauthHandler::HandleCompleteAuthentication(
 
 void LockScreenReauthHandler::OnCookieWaitTimeout() {
   NOTREACHED() << "Cookie has timed out while attempting to login in.";
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
   chromeos::InSessionPasswordSyncManager* password_sync_manager =
-      chromeos::InSessionPasswordSyncManagerFactory::GetForProfile(profile);
+      GetInSessionPasswordSyncManager();
   password_sync_manager->DismissDialog();
+}
+
+void LockScreenReauthHandler::OnJsReadyForTesting() {
+    js_ready_ = true;
+    if (initialization_callback_for_testing_)
+      std::move(initialization_callback_for_testing_).Run();
 }
 
 void LockScreenReauthHandler::CheckCredentials(
@@ -272,7 +313,7 @@ void LockScreenReauthHandler::HandleUpdateUserPassword(
 }
 
 void LockScreenReauthHandler::ShowPasswordChangedScreen() {
-  CallJavascriptFunction("$(\'main-element\').passwordChanged");
+  CallJavascriptFunction(std::string(kMainElement) + "passwordChanged");
 }
 
 void LockScreenReauthHandler::RegisterMessages() {
@@ -295,5 +336,25 @@ void LockScreenReauthHandler::RegisterMessages() {
       base::BindRepeating(&LockScreenReauthHandler::HandleUpdateUserPassword,
                           weak_factory_.GetWeakPtr()));
 }
+
+bool LockScreenReauthHandler::IsAuthenticatorLoaded(
+    base::OnceClosure callback) {
+  if (authenticator_state_ == AuthenticatorState::LOADED)
+    return true;
+
+  waiting_caller_ = std::move(callback);
+  return false;
+}
+
+bool LockScreenReauthHandler::IsJsReadyForTesting(
+  base::OnceClosure js_ready_callback) {
+    if (js_ready_)
+      return true;
+
+    DCHECK(initialization_callback_for_testing_.is_null());
+    initialization_callback_for_testing_ = std::move(js_ready_callback);
+    return false;
+}
+
 
 }  // namespace chromeos

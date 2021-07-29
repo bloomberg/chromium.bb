@@ -1,7 +1,12 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-'use strict';
+
+import {addEntries, ENTRIES, RootPath, sendTestMessage, TestEntryInfo} from '../test_util.js';
+import {testcase} from '../testcase.js';
+
+import {IGNORE_APP_ERRORS, isSinglePartitionFormat, openNewWindow, remoteCall, setupAndWaitUntilReady} from './background.js';
+import {BASIC_DRIVE_ENTRY_SET, BASIC_FAKE_ENTRY_SET, BASIC_LOCAL_ENTRY_SET, COMPUTERS_ENTRY_SET} from './test_data.js';
 
 /**
  * Checks if the files initially added by the C++ side are displayed, and
@@ -11,12 +16,11 @@
  * @param {Array<TestEntryInfo>} defaultEntries Default file entries.
  */
 async function fileDisplay(path, defaultEntries) {
-  const defaultList = TestEntryInfo.getExpectedRows(defaultEntries).sort();
-
   // Open Files app on the given |path| with default file entries.
   const appId = await setupAndWaitUntilReady(path);
 
   // Verify the default file list is present in |result|.
+  const defaultList = TestEntryInfo.getExpectedRows(defaultEntries).sort();
   await remoteCall.waitForFiles(appId, defaultList);
 
   // Add new file entries.
@@ -398,8 +402,7 @@ async function searchDownloads(searchTerm, expectedResults) {
       'fakeEvent', appId, ['#search-box cr-input', 'focus']));
 
   // Input a text.
-  await remoteCall.callRemoteTestUtil(
-      'inputText', appId, ['#search-box cr-input', searchTerm]);
+  await remoteCall.inputText(appId, '#search-box cr-input', searchTerm);
 
   // Notify the element of the input.
   chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
@@ -438,15 +441,13 @@ testcase.fileSearchNotFound = async () => {
       'fakeEvent', appId, ['#search-box cr-input', 'focus']));
 
   // Input a text.
-  await remoteCall.callRemoteTestUtil(
-      'inputText', appId, ['#search-box cr-input', searchTerm]);
+  await remoteCall.inputText(appId, '#search-box cr-input', searchTerm);
 
   // Notify the element of the input.
   await remoteCall.callRemoteTestUtil(
       'fakeEvent', appId, ['#search-box cr-input', 'input']);
-  const element =
-      await remoteCall.waitForElement(appId, ['#empty-folder-label b']);
-  chrome.test.assertEq(element.text, '\"' + searchTerm + '\"');
+
+  await remoteCall.waitForFiles(appId, []);
 };
 
 /**

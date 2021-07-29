@@ -16,8 +16,9 @@
 #include "src/core/SkSurfacePriv.h"
 #include "src/gpu/GrContextThreadSafeProxyPriv.h"
 #include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrSurfaceDrawContext.h"
-#include "src/gpu/SkGpuDevice.h"
 
 sk_sp<GrVkSecondaryCBDrawContext> GrVkSecondaryCBDrawContext::Make(GrRecordingContext* rContext,
                                                                    const SkImageInfo& imageInfo,
@@ -31,11 +32,21 @@ sk_sp<GrVkSecondaryCBDrawContext> GrVkSecondaryCBDrawContext::Make(GrRecordingCo
         return nullptr;
     }
 
-    auto rtc = GrSurfaceDrawContext::MakeFromVulkanSecondaryCB(rContext, imageInfo, vkInfo,
-                                                               SkSurfacePropsCopyOrDefault(props));
-    SkASSERT(rtc->asSurfaceProxy()->isInstantiated());
+    sk_sp<GrSurfaceProxy> proxy(
+            rContext->priv().proxyProvider()->wrapVulkanSecondaryCBAsRenderTarget(imageInfo,
+                                                                                  vkInfo));
+    if (!proxy) {
+        return nullptr;
+    }
 
-    auto device = SkGpuDevice::Make(std::move(rtc), SkBaseGpuDevice::kUninit_InitContents);
+    SkASSERT(proxy->isInstantiated());
+
+    auto device = rContext->priv().createDevice(SkColorTypeToGrColorType(imageInfo.colorType()),
+                                                std::move(proxy),
+                                                imageInfo.refColorSpace(),
+                                                kTopLeft_GrSurfaceOrigin,
+                                                SkSurfacePropsCopyOrDefault(props),
+                                                skgpu::BaseDevice::kUninit_InitContents);
     if (!device) {
         return nullptr;
     }
@@ -44,7 +55,7 @@ sk_sp<GrVkSecondaryCBDrawContext> GrVkSecondaryCBDrawContext::Make(GrRecordingCo
                                                                             props));
 }
 
-GrVkSecondaryCBDrawContext::GrVkSecondaryCBDrawContext(sk_sp<SkGpuDevice> device,
+GrVkSecondaryCBDrawContext::GrVkSecondaryCBDrawContext(sk_sp<skgpu::BaseDevice> device,
                                                        const SkSurfaceProps* props)
     : fDevice(device)
     , fProps(SkSurfacePropsCopyOrDefault(props)) {}

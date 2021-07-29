@@ -82,6 +82,7 @@ class URLRequestContext;
 
 namespace certificate_transparency {
 class ChromeRequireCTDelegate;
+class ChromeCTPolicyEnforcer;
 }  // namespace certificate_transparency
 
 namespace domain_reliability {
@@ -276,6 +277,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const net::SignedCertificateTimestampAndStatusList&
           signed_certificate_timestamps);
   void SetSCTAuditingEnabled(bool enabled) override;
+  void OnCTLogListUpdated(
+      const std::vector<network::mojom::CTLogInfoPtr>& log_list,
+      base::Time update_time);
   bool is_sct_auditing_enabled() { return is_sct_auditing_enabled_; }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
   void CreateUDPSocket(
@@ -323,7 +327,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>
           url_loader_network_observer,
       mojo::PendingRemote<mojom::WebSocketAuthenticationHandler> auth_handler,
-      mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) override;
+      mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
+      const absl::optional<base::UnguessableToken>& throttling_profile_id)
+      override;
   void CreateWebTransport(
       const GURL& url,
       const url::Origin& origin,
@@ -348,9 +354,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const std::string& ocsp_result,
       const std::string& sct_list,
       VerifyCertForSignedExchangeCallback callback) override;
-  void ParseHeaders(const GURL& url,
-                    const scoped_refptr<net::HttpResponseHeaders>& headers,
-                    ParseHeadersCallback callback) override;
   void AddHSTS(const std::string& host,
                base::Time expiry,
                bool include_subdomains,
@@ -389,6 +392,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       override;
   void CreateMdnsResponder(
       mojo::PendingReceiver<mojom::MdnsResponder> responder_receiver) override;
+  void SetDocumentReportingEndpoints(
+      const url::Origin& origin,
+      const net::NetworkIsolationKey& network_isolation_key,
+      const base::flat_map<std::string, std::string>& endpoints) override;
   void QueueReport(const std::string& type,
                    const std::string& group,
                    const GURL& url,
@@ -688,6 +695,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   std::queue<SetExpectCTTestReportCallback>
       outstanding_set_expect_ct_callbacks_;
+
+  // Owned by the URLRequestContext.
+  certificate_transparency::ChromeCTPolicyEnforcer* ct_policy_enforcer_ =
+      nullptr;
 
   bool is_sct_auditing_enabled_ = false;
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)

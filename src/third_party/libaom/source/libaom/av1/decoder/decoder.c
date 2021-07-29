@@ -68,10 +68,6 @@ static void dec_set_mb_mi(CommonModeInfoParams *mi_params, int width,
 
   assert(mi_size_wide[mi_params->mi_alloc_bsize] ==
          mi_size_high[mi_params->mi_alloc_bsize]);
-
-#if CONFIG_LPF_MASK
-  av1_alloc_loop_filter_mask(mi_params);
-#endif
 }
 
 static void dec_setup_mi(CommonModeInfoParams *mi_params) {

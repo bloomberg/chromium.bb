@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/command_observer.h"
@@ -62,7 +61,7 @@ class CastToolbarButton;
 }
 
 namespace send_tab_to_self {
-class SendTabToSelfToolbarButtonView;
+class SendTabToSelfToolbarIconView;
 }
 
 namespace views {
@@ -92,7 +91,7 @@ class ToolbarView : public views::AccessiblePaneView,
   };
 
   ToolbarView(Browser* browser, BrowserView* browser_view,
-              base::Optional<DisplayMode> display_mode);
+              absl::optional<DisplayMode> display_mode);
   ToolbarView(const ToolbarView&) = delete;
   ToolbarView& operator=(const ToolbarView&) = delete;
   ~ToolbarView() override;
@@ -155,7 +154,7 @@ class ToolbarView : public views::AccessiblePaneView,
   media_router::CastToolbarButton* cast_button() const { return cast_; }
   ToolbarButton* read_later_button() const { return read_later_button_; }
   MediaToolbarButtonView* media_button() const { return media_button_; }
-  send_tab_to_self::SendTabToSelfToolbarButtonView* send_tab_to_self_button()
+  send_tab_to_self::SendTabToSelfToolbarIconView* send_tab_to_self_button()
       const {
     return send_tab_to_self_button_;
   }
@@ -280,7 +279,7 @@ class ToolbarView : public views::AccessiblePaneView,
   ToolbarAccountIconContainerView* toolbar_account_icon_container_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;
   MediaToolbarButtonView* media_button_ = nullptr;
-  send_tab_to_self::SendTabToSelfToolbarButtonView* send_tab_to_self_button_ =
+  send_tab_to_self::SendTabToSelfToolbarIconView* send_tab_to_self_button_ =
       nullptr;
   BrowserAppMenuButton* app_menu_button_ = nullptr;
 

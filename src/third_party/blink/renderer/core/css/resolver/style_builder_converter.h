@@ -28,6 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_BUILDER_CONVERTER_H_
 
 #include "cc/input/scroll_snap_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -88,7 +89,8 @@ class StyleBuilderConverterBase {
   static FontDescription::Size ConvertFontSize(
       const CSSValue&,
       const CSSToLengthConversionData&,
-      FontDescription::Size parent_size);
+      FontDescription::Size parent_size,
+      const Document*);
 };
 
 // Note that we assume the parser only allows valid CSSValue types.
@@ -228,7 +230,7 @@ class StyleBuilderConverter {
       GridTrackList&,
       NamedGridLinesMap&,
       OrderedNamedGridLines&,
-      Vector<GridTrackSize>& auto_repeat_track_sizes,
+      Vector<GridTrackSize, 1>& auto_repeat_track_sizes,
       NamedGridLinesMap&,
       OrderedNamedGridLines&,
       size_t& auto_repeat_insertion_point,
@@ -293,6 +295,9 @@ class StyleBuilderConverter {
 
   static ScrollbarGutter ConvertScrollbarGutter(StyleResolverState& state,
                                                 const CSSValue& value);
+
+  static AtomicString ConvertContainerName(StyleResolverState&,
+                                           const CSSValue&);
 
   static void CountSystemColorComputeToSelfUsage(
       const StyleResolverState& state);

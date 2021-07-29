@@ -2,30 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {TrashEntry, TrashRootEntry} from '../../common/js/trash.m.js';
-// #import {FakeEntry} from '../../externs/files_app_entry_interfaces.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
-// #import {EntryLocation} from '../../externs/entry_location.m.js';
-// #import {FileOperationManager} from '../../externs/background/file_operation_manager.m.js';
-// #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import {metadataProxy} from './metadata_proxy.m.js';
-// #import {AsyncUtil} from '../../common/js/async_util.m.js';
-// #import {volumeManagerFactory} from './volume_manager_factory.m.js';
-// #import {FileOperationProgressEvent, FileOperationError} from '../../common/js/file_operation_common.m.js';
-// #import {xfm} from '../../common/js/xfm.m.js';
-// #import {Trash} from './trash.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
 
-// #import {util} from '../../common/js/util.m.js';
-// #import {fileOperationUtil} from './file_operation_util.m.js';
-// clang-format on
+import {AsyncUtil} from '../../common/js/async_util.js';
+import {FileOperationError, FileOperationProgressEvent} from '../../common/js/file_operation_common.js';
+import {TrashEntry, TrashRootEntry} from '../../common/js/trash.js';
+import {util} from '../../common/js/util.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {xfm} from '../../common/js/xfm.js';
+import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
+import {FakeEntry} from '../../externs/files_app_entry_interfaces.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
+
+import {fileOperationUtil} from './file_operation_util.js';
+import {metadataProxy} from './metadata_proxy.js';
+import {Trash} from './trash.js';
+import {volumeManagerFactory} from './volume_manager_factory.js';
 
 /**
  * FileOperationManagerImpl: implementation of {FileOperationManager}.
  *
  * @implements {FileOperationManager}
  */
-/* #export */ class FileOperationManagerImpl {
+export class FileOperationManagerImpl {
   constructor() {
     /**
      * @private {VolumeManager}
@@ -252,6 +251,13 @@
           if (entries.length === 0) {
             return;
           }
+          if (!this.volumeManager_) {
+            volumeManagerFactory.getInstance().then(volumeManager => {
+              this.volumeManager_ = volumeManager;
+              this.queueCopy_(targetEntry, entries, isMove, opt_taskId);
+            });
+            return;
+          }
           this.queueCopy_(targetEntry, entries, isMove, opt_taskId);
         })
         .catch(error => {
@@ -278,8 +284,26 @@
       // When moving between different volumes, moving is implemented as a copy
       // and delete. This is because moving between volumes is slow, and
       // moveTo() is not cancellable nor provides progress feedback.
-      if (util.isSameFileSystem(
-              entries[0].filesystem, targetDirEntry.filesystem)) {
+      const sameFileSystem = util.isSameFileSystem(
+          entries[0].filesystem, targetDirEntry.filesystem);
+      let moveBetweenDownloadsAndMyFiles = false;
+      if (sameFileSystem &&
+          this.volumeManager_.getLocationInfo(assert(entries[0]))
+                  .volumeInfo.volumeType ===
+              VolumeManagerCommon.VolumeType.DOWNLOADS) {
+        // My files and Downloads should be seen as different filesystems, since
+        // a local move is not possible between these locations
+        // (crbug.com/1200251).
+        // TODO(crbug/959083): Remove this special case when move between
+        // MyFiles and Downloads is atomic.
+        const sourceInDownloads = entries[0].fullPath.startsWith('/Downloads/');
+        const destinationInDownloads =
+            targetDirEntry.fullPath.startsWith('/Downloads/') ||
+            targetDirEntry.fullPath === '/Downloads';
+        moveBetweenDownloadsAndMyFiles =
+            sourceInDownloads !== destinationInDownloads;
+      }
+      if (sameFileSystem && !moveBetweenDownloadsAndMyFiles) {
         task = new fileOperationUtil.MoveTask(taskId, entries, targetDirEntry);
       } else {
         task = new fileOperationUtil.CopyTask(

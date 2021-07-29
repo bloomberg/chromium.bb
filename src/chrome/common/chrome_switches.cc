@@ -14,7 +14,6 @@ namespace switches {
 // -----------------------------------------------------------------------------
 // Can't find the switch you are looking for? Try looking in:
 // ash/constants/ash_switches.cc
-// ash/public/cpp/ash_switches.cc
 // base/base_switches.cc
 // etc.
 //
@@ -95,6 +94,15 @@ const char kAutoOpenDevToolsForTabs[]       = "auto-open-devtools-for-tabs";
 // would match "Built-in display" and "External display", whichever comes first.
 const char kAutoSelectDesktopCaptureSource[] =
     "auto-select-desktop-capture-source";
+
+// This flag makes Chrome auto-select a tab with the provided title when
+// the media-picker should otherwise be displayed to the user. This switch
+// is very similar to kAutoSelectDesktopCaptureSource, but limits selection
+// to tabs. This solves the issue of kAutoSelectDesktopCaptureSource being
+// liable to accidentally capturing the Chromium window instead of the tab,
+// as both have the same title if the tab is focused.
+const char kAutoSelectTabCaptureSourceByTitle[] =
+    "auto-select-tab-capture-source-by-title";
 
 // How often (in seconds) to check for updates. Should only be used for testing
 // purposes.
@@ -359,10 +367,6 @@ const char kKioskMode[]                     = "kiosk";
 // Enable automatically pressing the print button in print preview.
 const char kKioskModePrinting[]             = "kiosk-printing";
 
-// Loads the Media Router component extension on startup.
-const char kLoadMediaRouterComponentExtension[] =
-    "load-media-router-component-extension";
-
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 
@@ -433,16 +437,6 @@ const char kPackExtension[]                 = "pack-extension";
 
 // Optional PEM private key to use in signing packaged .crx.
 const char kPackExtensionKey[]              = "pack-extension-key";
-
-// Development flag for permission request API. This flag is needed until
-// the API is finalized.
-// TODO(bauerb): Remove when this flag is not needed anymore.
-const char kPermissionRequestApiScope[]     = "permission-request-api-scope";
-
-// Development flag for permission request API. This flag is needed until
-// the API is finalized.
-// TODO(bauerb): Remove when this flag is not needed anymore.
-const char kPermissionRequestApiUrl[]       = "permission-request-api-url";
 
 // Used to mock the response received from the Web Permission Prediction
 // Service. Used for testing.
@@ -708,10 +702,6 @@ const char kDisableHostedAppShimCreation[] = "disable-hosted-app-shim-creation";
 
 // Enable user metrics from within the installer.
 const char kEnableUserMetrics[] = "enable-user-metrics";
-
-// Shows a notification when quitting Chrome with hosted apps running. Default
-// behavior is to also quit all hosted apps.
-const char kHostedAppQuitNotification[] = "enable-hosted-app-quit-notification";
 
 // This is how the metrics client ID is passed from the browser process to its
 // children. With Crashpad, the metrics client ID is distinct from the crash

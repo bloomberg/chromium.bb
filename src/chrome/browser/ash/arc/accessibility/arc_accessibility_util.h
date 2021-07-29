@@ -11,10 +11,10 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/stl_util.h"
 #include "components/arc/mojom/accessibility_helper.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enum_util.h"
+#include "ui/accessibility/ax_tree_id.h"
 
 namespace aura {
 class Window;
@@ -37,6 +37,9 @@ ax::mojom::Event ToAXEvent(
 
 absl::optional<mojom::AccessibilityActionType> ConvertToAndroidAction(
     ax::mojom::Action action);
+
+ax::mojom::Action ConvertToChromeAction(
+    const mojom::AccessibilityActionType action);
 
 AccessibilityInfoDataWrapper* GetSelectedNodeInfoFromAdapterViewEvent(
     const mojom::AccessibilityEventData& event_data,
@@ -101,7 +104,14 @@ bool HasNonEmptyStringProperty(InfoDataType* node, PropType prop) {
   return !it->second.empty();
 }
 
+bool IsArcOrGhostWindow(const aura::Window* window);
+
+// Finds ARC window from the given window to the parent.
 aura::Window* FindArcWindow(aura::Window* child);
+aura::Window* FindArcOrGhostWindow(aura::Window* child);
+
+// Finds a window with a given child AXTreeId from the entire screen.
+aura::Window* FindWindowFromChildAXTreeId(const ui::AXTreeID& tree_id);
 
 }  // namespace arc
 

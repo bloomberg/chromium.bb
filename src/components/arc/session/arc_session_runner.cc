@@ -23,6 +23,10 @@ constexpr base::TimeDelta kDefaultRestartDelay =
 void RecordInstanceCrashUma(ArcContainerLifetimeEvent sample) {
   UMA_HISTOGRAM_ENUMERATION("Arc.ContainerLifetimeEvent", sample,
                             ArcContainerLifetimeEvent::COUNT);
+  // Log the metric to facilitate finding feedback reports in Xamine.
+  VLOG(1) << "Arc.ContainerLifetimeEvent: "
+          << static_cast<std::underlying_type_t<ArcContainerLifetimeEvent>>(
+                 sample);
 }
 
 void RecordInstanceRestartAfterCrashUma(size_t restart_after_crash_count) {
@@ -285,6 +289,7 @@ void ArcSessionRunner::StartArcSession() {
         !serial_number_.empty()) {
       arc_session_->SetUserInfo(cryptohome_id_, user_id_hash_, serial_number_);
     }
+    arc_session_->SetDefaultDeviceScaleFactor(default_device_scale_factor_);
     arc_session_->SetDemoModeDelegate(demo_mode_delegate_.get());
     arc_session_->AddObserver(this);
     arc_session_->StartMiniInstance();

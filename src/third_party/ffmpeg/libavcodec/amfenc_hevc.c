@@ -309,7 +309,7 @@ static const AVClass hevc_amf_class = {
     .version = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_hevc_amf_encoder = {
+const AVCodec ff_hevc_amf_encoder = {
     .name           = "hevc_amf",
     .long_name      = NULL_IF_CONFIG_SMALL("AMD AMF HEVC encoder"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -320,7 +320,8 @@ AVCodec ff_hevc_amf_encoder = {
     .priv_data_size = sizeof(AmfContext),
     .priv_class     = &hevc_amf_class,
     .defaults       = defaults,
-    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE,
+    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE |
+                      AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = ff_amf_pix_fmts,
     .wrapper_name   = "amf",

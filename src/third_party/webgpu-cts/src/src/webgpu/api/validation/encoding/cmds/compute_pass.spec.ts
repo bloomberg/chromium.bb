@@ -4,7 +4,6 @@ API validation test for compute pass
 Does **not** test usage scopes (resource_usages/) or programmable pass stuff (programmable_pass).
 `;
 
-import { params, poptions } from '../../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
 import { ValidationTest } from '../../validation_test.js';
 
@@ -51,7 +50,7 @@ g.test('set_pipeline')
 setPipeline should generate an error iff using an 'invalid' pipeline.
 `
   )
-  .params(poptions('state', ['valid', 'invalid'] as const))
+  .params(u => u.beginSubcases().combine('state', ['valid', 'invalid'] as const))
   .fn(t => {
     const pipeline = t.createComputePipeline(t.params.state);
     const { encoder, finish } = t.createEncoder('compute pass');
@@ -70,15 +69,14 @@ Test 'direct' and 'indirect' dispatch with various sizes.
     - invalid, TODO: workSizes {x,y,z} just under and above limit, once limit is established.
 `
   )
-  .params(
-    params()
-      .combine(poptions('dispatchType', ['direct', 'indirect'] as const))
-      .combine(
-        poptions('workSizes', [
-          [0, 0, 0],
-          [1, 1, 1],
-        ] as const)
-      )
+  .params(u =>
+    u
+      .combine('dispatchType', ['direct', 'indirect'] as const)
+      .beginSubcases()
+      .combine('workSizes', [
+        [0, 0, 0],
+        [1, 1, 1],
+      ] as const)
   )
   .fn(t => {
     const pipeline = t.createNoOpComputePipeline();
@@ -109,21 +107,19 @@ TODO: test specifically which call the validation error occurs in.
       (Should be finish() for invalid, but submit() for destroyed.)
 `
   )
-  .params(
-    params()
-      .combine(poptions('state', ['valid', 'invalid', 'destroyed'] as const))
-      .combine(
-        poptions('offset', [
-          // valid (for 'valid' buffers)
-          0,
-          Uint32Array.BYTES_PER_ELEMENT,
-          kBufferData.byteLength - 3 * Uint32Array.BYTES_PER_ELEMENT,
-          // invalid, non-multiple of 4 offset
-          1,
-          // invalid, last element outside buffer
-          kBufferData.byteLength - 2 * Uint32Array.BYTES_PER_ELEMENT,
-        ])
-      )
+  .paramsSubcasesOnly(u =>
+    u //
+      .combine('state', ['valid', 'invalid', 'destroyed'] as const)
+      .combine('offset', [
+        // valid (for 'valid' buffers)
+        0,
+        Uint32Array.BYTES_PER_ELEMENT,
+        kBufferData.byteLength - 3 * Uint32Array.BYTES_PER_ELEMENT,
+        // invalid, non-multiple of 4 offset
+        1,
+        // invalid, last element outside buffer
+        kBufferData.byteLength - 2 * Uint32Array.BYTES_PER_ELEMENT,
+      ])
   )
   .fn(t => {
     const { state, offset } = t.params;

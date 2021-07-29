@@ -12,13 +12,13 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -164,7 +164,7 @@ class DownloadsEventsListener : public EventRouter::TestObserver {
         // is only present in one of the dictionaries, ignore it. This allows us
         // to verify the properties we care about in the test without needing to
         // specify each.
-        for (const auto& it : left_dict.DictItems()) {
+        for (auto it : left_dict.DictItems()) {
           const base::Value* right_value = right_dict.FindKey(it.first);
           if (!right_value || *right_value != it.second)
             return false;
@@ -644,7 +644,11 @@ class DownloadExtensionTest : public ExtensionApiTest {
     std::unique_ptr<base::Value> result(
         RunFunctionAndReturnResult(function, args));
     EXPECT_TRUE(result.get());
-    return result.get() && result->GetAsString(result_string);
+    if (result.get() && result->is_string()) {
+      *result_string = result->GetString();
+      return true;
+    }
+    return false;
   }
 
   std::string DownloadItemIdAsArgList(const DownloadItem* download_item) {
@@ -2421,7 +2425,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "  \"incognito\": false,"
                          "  \"bytesReceived\": 0.0,"
                          "  \"fileSize\": 0.0,"
-                         "  \"mime\": \"\","
+                         "  \"mime\": \"text/plain\","
                          "  \"paused\": false,"
                          "  \"url\": \"%s\"}]",
                          download_url.c_str())));
@@ -2560,7 +2564,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       item, download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
       base::StringPrintf("[{\"danger\": \"safe\","
                          "  \"incognito\": false,"
-                         "  \"mime\": \"\","
+                         "  \"mime\": \"text/plain\","
                          "  \"paused\": false,"
                          "  \"id\": %d,"
                          "  \"url\": \"%s\"}]",
@@ -2601,7 +2605,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       item, download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
       base::StringPrintf("[{\"danger\": \"safe\","
                          "  \"incognito\": false,"
-                         "  \"mime\": \"\","
+                         "  \"mime\": \"text/plain\","
                          "  \"paused\": false,"
                          "  \"id\": %d,"
                          "  \"url\": \"%s\"}]",

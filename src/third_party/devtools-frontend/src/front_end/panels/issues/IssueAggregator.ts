@@ -13,43 +13,27 @@ import type * as Protocol from '../../generated/protocol.js';
  * of all resources that are affected by the aggregated issues.
  */
 export class AggregatedIssue extends IssuesManager.Issue.Issue {
-  private affectedCookies: Map<string, {
+  private affectedCookies = new Map<string, {
     cookie: Protocol.Audits.AffectedCookie,
     hasRequest: boolean,
-  }>;
-  private affectedRequests: Map<string, Protocol.Audits.AffectedRequest>;
-  private affectedLocations: Map<string, Protocol.Audits.SourceCodeLocation>;
-  private heavyAdIssues: Set<IssuesManager.HeavyAdIssue.HeavyAdIssue>;
-  private blockedByResponseDetails: Map<string, Protocol.Audits.BlockedByResponseIssueDetails>;
-  private corsIssues: Set<IssuesManager.CorsIssue.CorsIssue>;
-  private cspIssues: Set<IssuesManager.ContentSecurityPolicyIssue.ContentSecurityPolicyIssue>;
-  private issueKind: IssuesManager.Issue.IssueKind;
-  private lowContrastIssues: Set<IssuesManager.LowTextContrastIssue.LowTextContrastIssue>;
-  private mixedContentIssues: Set<IssuesManager.MixedContentIssue.MixedContentIssue>;
-  private sharedArrayBufferIssues: Set<IssuesManager.SharedArrayBufferIssue.SharedArrayBufferIssue>;
-  private trustedWebActivityIssues: Set<IssuesManager.TrustedWebActivityIssue.TrustedWebActivityIssue>;
-  private quirksModeIssues: Set<IssuesManager.QuirksModeIssue.QuirksModeIssue>;
-  private representative: IssuesManager.Issue.Issue|null;
-  private aggregatedIssuesCount: number;
-
-  constructor(code: string) {
-    super(code);
-    this.affectedCookies = new Map();
-    this.affectedRequests = new Map();
-    this.affectedLocations = new Map();
-    this.heavyAdIssues = new Set();
-    this.blockedByResponseDetails = new Map();
-    this.corsIssues = new Set();
-    this.cspIssues = new Set();
-    this.issueKind = IssuesManager.Issue.IssueKind.Improvement;
-    this.lowContrastIssues = new Set();
-    this.mixedContentIssues = new Set();
-    this.sharedArrayBufferIssues = new Set();
-    this.trustedWebActivityIssues = new Set();
-    this.quirksModeIssues = new Set();
-    this.representative = null;
-    this.aggregatedIssuesCount = 0;
-  }
+  }>();
+  private affectedRequests = new Map<string, Protocol.Audits.AffectedRequest>();
+  private affectedLocations = new Map<string, Protocol.Audits.SourceCodeLocation>();
+  private heavyAdIssues = new Set<IssuesManager.HeavyAdIssue.HeavyAdIssue>();
+  private blockedByResponseDetails = new Map<string, Protocol.Audits.BlockedByResponseIssueDetails>();
+  private corsIssues = new Set<IssuesManager.CorsIssue.CorsIssue>();
+  private cspIssues = new Set<IssuesManager.ContentSecurityPolicyIssue.ContentSecurityPolicyIssue>();
+  private issueKind = IssuesManager.Issue.IssueKind.Improvement;
+  private lowContrastIssues = new Set<IssuesManager.LowTextContrastIssue.LowTextContrastIssue>();
+  private mixedContentIssues = new Set<IssuesManager.MixedContentIssue.MixedContentIssue>();
+  private sharedArrayBufferIssues = new Set<IssuesManager.SharedArrayBufferIssue.SharedArrayBufferIssue>();
+  private trustedWebActivityIssues = new Set<IssuesManager.TrustedWebActivityIssue.TrustedWebActivityIssue>();
+  private quirksModeIssues = new Set<IssuesManager.QuirksModeIssue.QuirksModeIssue>();
+  private attributionReportingIssues = new Set<IssuesManager.AttributionReportingIssue.AttributionReportingIssue>();
+  private wasmCrossOriginModuleSharingIssues =
+      new Set<IssuesManager.WasmCrossOriginModuleSharingIssue.WasmCrossOriginModuleSharingIssue>();
+  private representative?: IssuesManager.Issue.Issue;
+  private aggregatedIssuesCount = 0;
 
   primaryKey(): string {
     throw new Error('This should never be called');
@@ -108,6 +92,15 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
 
   getQuirksModeIssues(): Iterable<IssuesManager.QuirksModeIssue.QuirksModeIssue> {
     return this.quirksModeIssues;
+  }
+
+  getAttributionReportingIssues(): ReadonlySet<IssuesManager.AttributionReportingIssue.AttributionReportingIssue> {
+    return this.attributionReportingIssues;
+  }
+
+  getWasmCrossOriginModuleSharingIssue():
+      ReadonlySet<IssuesManager.WasmCrossOriginModuleSharingIssue.WasmCrossOriginModuleSharingIssue> {
+    return this.wasmCrossOriginModuleSharingIssues;
   }
 
   getDescription(): IssuesManager.MarkdownIssueDescription.MarkdownIssueDescription|null {
@@ -190,6 +183,12 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
     if (issue instanceof IssuesManager.QuirksModeIssue.QuirksModeIssue) {
       this.quirksModeIssues.add(issue);
     }
+    if (issue instanceof IssuesManager.AttributionReportingIssue.AttributionReportingIssue) {
+      this.attributionReportingIssues.add(issue);
+    }
+    if (issue instanceof IssuesManager.WasmCrossOriginModuleSharingIssue.WasmCrossOriginModuleSharingIssue) {
+      this.wasmCrossOriginModuleSharingIssues.add(issue);
+    }
   }
 
   getKind(): IssuesManager.Issue.IssueKind {
@@ -198,13 +197,10 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
 }
 
 export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper {
-  private aggregatedIssuesByCode: Map<string, AggregatedIssue>;
-  private issuesManager: IssuesManager.IssuesManager.IssuesManager;
+  private readonly aggregatedIssuesByCode = new Map<string, AggregatedIssue>();
 
-  constructor(issuesManager: IssuesManager.IssuesManager.IssuesManager) {
+  constructor(private readonly issuesManager: IssuesManager.IssuesManager.IssuesManager) {
     super();
-    this.aggregatedIssuesByCode = new Map();
-    this.issuesManager = issuesManager;
     this.issuesManager.addEventListener(IssuesManager.IssuesManager.Events.IssueAdded, this.onIssueAdded, this);
     this.issuesManager.addEventListener(
         IssuesManager.IssuesManager.Events.FullUpdateRequired, this.onFullUpdateRequired, this);

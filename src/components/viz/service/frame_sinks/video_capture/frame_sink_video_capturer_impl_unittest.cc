@@ -22,6 +22,7 @@
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_manager.h"
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
+#include "media/capture/mojom/video_capture_buffer.mojom.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -249,11 +250,14 @@ class FakeCapturableFrameSink : public CapturableFrameSink {
     client_ = nullptr;
   }
 
+  gfx::Size GetCopyOutputRequestSize(
+      SubtreeCaptureId subtree_id) const override {
+    return source_size();
+  }
+
   void OnClientCaptureStarted() override { ++number_clients_capturing_; }
 
   void OnClientCaptureStopped() override { --number_clients_capturing_; }
-
-  gfx::Size GetActiveFrameSize() override { return source_size(); }
 
   void RequestCopyOfOutput(
       PendingCopyOutputRequest pending_copy_output_request) override {
@@ -633,7 +637,9 @@ TEST_F(FrameSinkVideoCapturerTest, CapturesCompositedFrames) {
 
     // Change the content of the frame sink and notify the capturer of the
     // damage.
-    const YUVColor color = {i << 4, (i << 4) + 0x10, (i << 4) + 0x20};
+    const YUVColor color = {static_cast<uint8_t>(i << 4),
+                            static_cast<uint8_t>((i << 4) + 0x10),
+                            static_cast<uint8_t>((i << 4) + 0x20)};
     frame_sink_.SetCopyOutputColor(color);
     task_runner_->FastForwardBy(kVsyncInterval / 4);
     const base::TimeTicks expected_capture_begin_time =

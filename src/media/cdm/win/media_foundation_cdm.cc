@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/win_util.h"
@@ -17,6 +18,7 @@
 #include "media/base/cdm_promise.h"
 #include "media/base/win/media_foundation_cdm_proxy.h"
 #include "media/base/win/mf_helpers.h"
+#include "media/cdm/win/media_foundation_cdm_module.h"
 #include "media/cdm/win/media_foundation_cdm_session.h"
 
 namespace media {
@@ -96,10 +98,35 @@ HRESULT RefreshDecryptor(IMFTransform* decryptor,
   return S_OK;
 }
 
+// The HDCP value follows the feature value in
+// https://docs.microsoft.com/en-us/uwp/api/windows.media.protection.protectioncapabilities.istypesupported?view=winrt-19041
+// - 0 (off)
+// - 1 (on without HDCP 2.2 Type 1 restriction)
+// - 2 (on with HDCP 2.2 Type 1 restriction)
+int GetHdcpValue(HdcpVersion hdcp_version) {
+  switch (hdcp_version) {
+    case HdcpVersion::kHdcpVersionNone:
+      return 0;
+    case HdcpVersion::kHdcpVersion1_0:
+    case HdcpVersion::kHdcpVersion1_1:
+    case HdcpVersion::kHdcpVersion1_2:
+    case HdcpVersion::kHdcpVersion1_3:
+    case HdcpVersion::kHdcpVersion1_4:
+    case HdcpVersion::kHdcpVersion2_0:
+    case HdcpVersion::kHdcpVersion2_1:
+      return 1;
+    case HdcpVersion::kHdcpVersion2_2:
+    case HdcpVersion::kHdcpVersion2_3:
+      return 2;
+  }
+}
+
 class CdmProxyImpl : public MediaFoundationCdmProxy {
  public:
-  explicit CdmProxyImpl(ComPtr<IMFContentDecryptionModule> mf_cdm)
-      : mf_cdm_(mf_cdm) {}
+  CdmProxyImpl(ComPtr<IMFContentDecryptionModule> mf_cdm,
+               base::RepeatingClosure hardware_context_reset_cb)
+      : mf_cdm_(mf_cdm),
+        hardware_context_reset_cb_(std::move(hardware_context_reset_cb)) {}
 
   // MediaFoundationCdmProxy implementation
 
@@ -186,6 +213,19 @@ class CdmProxyImpl : public MediaFoundationCdmProxy {
     return mf_cdm_->SetContentEnabler(content_enabler.Get(), result);
   }
 
+  void OnHardwareContextReset() override {
+    // Hardware context reset happens, all the crypto sessions are in invalid
+    // states. So drop everything here.
+    // TODO(xhwang): Keep the `last_key_ids_` here for faster resume.
+    trusted_input_.Reset();
+    input_trust_authorities_.clear();
+    last_key_ids_.clear();
+
+    // Must be the last call because `this` could be destructed when running
+    // the callback. We are not certain because `this` is ref-counted.
+    hardware_context_reset_cb_.Run();
+  }
+
  private:
   ~CdmProxyImpl() override = default;
 
@@ -208,6 +248,9 @@ class CdmProxyImpl : public MediaFoundationCdmProxy {
 
   ComPtr<IMFContentDecryptionModule> mf_cdm_;
 
+  // A callback to notify hardware context reset.
+  base::RepeatingClosure hardware_context_reset_cb_;
+
   // Store IMFTrustedInput to avoid potential performance cost.
   ComPtr<IMFTrustedInput> trusted_input_;
 
@@ -229,18 +272,21 @@ bool MediaFoundationCdm::IsAvailable() {
 }
 
 MediaFoundationCdm::MediaFoundationCdm(
-    Microsoft::WRL::ComPtr<IMFContentDecryptionModule> mf_cdm,
+    const CreateMFCdmCB& create_mf_cdm_cb,
+    const IsTypeSupportedCB& is_type_supported_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb)
-    : mf_cdm_(std::move(mf_cdm)),
+    : create_mf_cdm_cb_(create_mf_cdm_cb),
+      is_type_supported_cb_(is_type_supported_cb),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb) {
   DVLOG_FUNC(1);
-  DCHECK(mf_cdm_);
+  DCHECK(create_mf_cdm_cb_);
+  DCHECK(is_type_supported_cb_);
   DCHECK(session_message_cb_);
   DCHECK(session_closed_cb_);
   DCHECK(session_keys_change_cb_);
@@ -251,10 +297,28 @@ MediaFoundationCdm::~MediaFoundationCdm() {
   DVLOG_FUNC(1);
 }
 
+HRESULT MediaFoundationCdm::Initialize() {
+  HRESULT hresult = E_FAIL;
+  ComPtr<IMFContentDecryptionModule> mf_cdm;
+  create_mf_cdm_cb_.Run(hresult, mf_cdm);
+  if (!mf_cdm) {
+    DCHECK(FAILED(hresult));
+    return hresult;
+  }
+
+  mf_cdm_.Swap(mf_cdm);
+  return S_OK;
+}
+
 void MediaFoundationCdm::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
     std::unique_ptr<SimpleCdmPromise> promise) {
   DVLOG_FUNC(1);
+
+  if (!mf_cdm_) {
+    promise->reject(Exception::INVALID_STATE_ERROR, 0, "CDM Unavailable");
+    return;
+  }
 
   if (FAILED(mf_cdm_->SetServerCertificate(certificate.data(),
                                            certificate.size()))) {
@@ -265,13 +329,30 @@ void MediaFoundationCdm::SetServerCertificate(
   promise->resolve();
 }
 
-// TODO(xhwang): Implement this.
 void MediaFoundationCdm::GetStatusForPolicy(
     HdcpVersion min_hdcp_version,
     std::unique_ptr<KeyStatusCdmPromise> promise) {
-  NOTIMPLEMENTED();
-  promise->reject(CdmPromise::Exception::NOT_SUPPORTED_ERROR, 0,
-                  "GetStatusForPolicy() is not supported.");
+  if (!mf_cdm_) {
+    promise->reject(Exception::INVALID_STATE_ERROR, 0, "CDM Unavailable");
+    return;
+  }
+
+  // Keys should be always usable when there is no HDCP requirement.
+  if (min_hdcp_version == HdcpVersion::kHdcpVersionNone) {
+    promise->resolve(CdmKeyInformation::KeyStatus::USABLE);
+    return;
+  }
+
+  // HDCP is independent to the codec. So query H.264, which is always supported
+  // by MFCDM.
+  const std::string content_type =
+      base::StringPrintf("video/mp4;codecs=\"avc1\";features=\"hdcp=%d\"",
+                         GetHdcpValue(min_hdcp_version));
+
+  is_type_supported_cb_.Run(
+      content_type,
+      base::BindOnce(&MediaFoundationCdm::OnIsTypeSupportedResult,
+                     weak_factory_.GetWeakPtr(), std::move(promise)));
 }
 
 void MediaFoundationCdm::CreateSessionAndGenerateRequest(
@@ -280,6 +361,11 @@ void MediaFoundationCdm::CreateSessionAndGenerateRequest(
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<NewSessionCdmPromise> promise) {
   DVLOG_FUNC(1);
+
+  if (!mf_cdm_) {
+    promise->reject(Exception::INVALID_STATE_ERROR, 0, "CDM Unavailable");
+    return;
+  }
 
   // TODO(xhwang): Implement session expiration update.
   auto session = std::make_unique<MediaFoundationCdmSession>(
@@ -315,6 +401,12 @@ void MediaFoundationCdm::LoadSession(
     const std::string& session_id,
     std::unique_ptr<NewSessionCdmPromise> promise) {
   DVLOG_FUNC(1);
+
+  if (!mf_cdm_) {
+    promise->reject(Exception::INVALID_STATE_ERROR, 0, "CDM Unavailable");
+    return;
+  }
+
   NOTIMPLEMENTED();
   promise->reject(Exception::NOT_SUPPORTED_ERROR, 0, "Load not supported");
 }
@@ -324,6 +416,11 @@ void MediaFoundationCdm::UpdateSession(
     const std::vector<uint8_t>& response,
     std::unique_ptr<SimpleCdmPromise> promise) {
   DVLOG_FUNC(1);
+
+  if (!mf_cdm_) {
+    promise->reject(Exception::INVALID_STATE_ERROR, 0, "CDM Unavailable");
+    return;
+  }
 
   auto* session = GetSession(session_id);
   if (!session) {
@@ -344,37 +441,19 @@ void MediaFoundationCdm::CloseSession(
     std::unique_ptr<SimpleCdmPromise> promise) {
   DVLOG_FUNC(1);
 
-  // Validate that this is a reference to an open session. close() shouldn't
-  // be called if the session is already closed. However, the operation is
-  // asynchronous, so there is a window where close() was called a second time
-  // just before the closed event arrives. As a result it is possible that the
-  // session is already closed, so assume that the session is closed if it
-  // doesn't exist. https://github.com/w3c/encrypted-media/issues/365.
-  //
-  // close() is called from a MediaKeySession object, so it is unlikely that
-  // this method will be called with a previously unseen |session_id|.
-  auto* session = GetSession(session_id);
-  if (!session) {
-    promise->resolve();
-    return;
-  }
-
-  if (FAILED(session->Close())) {
-    sessions_.erase(session_id);
-    promise->reject(Exception::INVALID_STATE_ERROR, 0, "Close failed");
-    return;
-  }
-
-  // EME requires running session closed algorithm before resolving the promise.
-  sessions_.erase(session_id);
-  session_closed_cb_.Run(session_id);
-  promise->resolve();
+  CloseSessionInternal(session_id, CdmSessionClosedReason::kClose,
+                       std::move(promise));
 }
 
 void MediaFoundationCdm::RemoveSession(
     const std::string& session_id,
     std::unique_ptr<SimpleCdmPromise> promise) {
   DVLOG_FUNC(1);
+
+  if (!mf_cdm_) {
+    promise->reject(Exception::INVALID_STATE_ERROR, 0, "CDM Unavailable");
+    return;
+  }
 
   auto* session = GetSession(session_id);
   if (!session) {
@@ -402,8 +481,17 @@ bool MediaFoundationCdm::GetMediaFoundationCdmProxy(
     GetMediaFoundationCdmProxyCB get_mf_cdm_proxy_cb) {
   DVLOG_FUNC(1);
 
-  if (!cdm_proxy_)
-    cdm_proxy_ = base::MakeRefCounted<CdmProxyImpl>(mf_cdm_);
+  if (!mf_cdm_) {
+    DLOG(ERROR) << __func__ << ": Invalid state with null `mf_cdm_`";
+    return false;
+  }
+
+  if (!cdm_proxy_) {
+    cdm_proxy_ = base::MakeRefCounted<CdmProxyImpl>(
+        mf_cdm_,
+        base::BindRepeating(&MediaFoundationCdm::OnHardwareContextReset,
+                            weak_factory_.GetWeakPtr()));
+  }
 
   BindToCurrentLoop(std::move(get_mf_cdm_proxy_cb)).Run(cdm_proxy_);
   return true;
@@ -440,6 +528,83 @@ MediaFoundationCdmSession* MediaFoundationCdm::GetSession(
     return nullptr;
 
   return itr->second.get();
+}
+
+void MediaFoundationCdm::CloseSessionInternal(
+    const std::string& session_id,
+    CdmSessionClosedReason reason,
+    std::unique_ptr<SimpleCdmPromise> promise) {
+  DVLOG_FUNC(1);
+
+  if (!mf_cdm_) {
+    promise->reject(Exception::INVALID_STATE_ERROR, 0, "CDM Unavailable");
+    return;
+  }
+
+  // Validate that this is a reference to an open session. close() shouldn't
+  // be called if the session is already closed. However, the operation is
+  // asynchronous, so there is a window where close() was called a second time
+  // just before the closed event arrives. As a result it is possible that the
+  // session is already closed, so assume that the session is closed if it
+  // doesn't exist. https://github.com/w3c/encrypted-media/issues/365.
+  //
+  // close() is called from a MediaKeySession object, so it is unlikely that
+  // this method will be called with a previously unseen |session_id|.
+  auto* session = GetSession(session_id);
+  if (!session) {
+    promise->resolve();
+    return;
+  }
+
+  if (FAILED(session->Close())) {
+    sessions_.erase(session_id);
+    promise->reject(Exception::INVALID_STATE_ERROR, 0, "Close failed");
+    return;
+  }
+
+  // EME requires running session closed algorithm before resolving the promise.
+  sessions_.erase(session_id);
+  session_closed_cb_.Run(session_id, reason);
+  promise->resolve();
+}
+
+// When hardware context is reset, all sessions are in a bad state. Close all
+// the sessions and hopefully the player will create new sessions to resume.
+void MediaFoundationCdm::OnHardwareContextReset() {
+  DVLOG_FUNC(1);
+
+  // Collect all the session IDs to avoid iterating the map while we delete
+  // entries in the map (in `CloseSession()`).
+  std::vector<std::string> session_ids;
+  for (const auto& s : sessions_)
+    session_ids.push_back(s.first);
+
+  for (const auto& session_id : session_ids) {
+    CloseSessionInternal(session_id,
+                         CdmSessionClosedReason::kHardwareContextReset,
+                         std::make_unique<DoNothingCdmPromise<>>());
+  }
+
+  cdm_proxy_.reset();
+
+  // Reset IMFContentDecryptionModule which also holds the old ITA.
+  mf_cdm_.Reset();
+
+  // Recreates IMFContentDecryptionModule so we can create new sessions.
+  if (FAILED(Initialize())) {
+    DLOG(ERROR) << __func__ << ": Re-initialization failed";
+    DCHECK(!mf_cdm_);
+  }
+}
+
+void MediaFoundationCdm::OnIsTypeSupportedResult(
+    std::unique_ptr<KeyStatusCdmPromise> promise,
+    bool is_supported) {
+  if (is_supported) {
+    promise->resolve(CdmKeyInformation::KeyStatus::USABLE);
+  } else {
+    promise->resolve(CdmKeyInformation::KeyStatus::OUTPUT_RESTRICTED);
+  }
 }
 
 }  // namespace media

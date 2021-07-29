@@ -63,8 +63,21 @@
   },
   {
     "cmd": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "cwd": "[CACHE]/builder/perfetto",
+    "infra_step": true,
+    "name": "git.rev-parse",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
       "tools/install-build-deps",
-      "--ui",
       "--android"
     ],
     "cwd": "[CACHE]/builder/perfetto",
@@ -73,6 +86,7 @@
   },
   {
     "cmd": [
+      "python3",
       "tools/gn",
       "gen",
       "out/dist",
@@ -83,12 +97,137 @@
   },
   {
     "cmd": [
+      "python3",
       "tools/ninja",
       "-C",
       "out/dist"
     ],
     "cwd": "[CACHE]/builder/perfetto",
     "name": "ninja"
+  },
+  {
+    "cmd": [],
+    "name": "Artifact upload"
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "out/dist/stripped/trace_processor_shell",
+      "gs://perfetto-luci-artifacts//linux-amd64/trace_processor_shell"
+    ],
+    "cwd": "[CACHE]/builder/perfetto",
+    "infra_step": true,
+    "name": "Artifact upload.gsutil upload",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/perfetto-luci-artifacts//linux-amd64/trace_processor_shell@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "out/dist/stripped/trace_to_text",
+      "gs://perfetto-luci-artifacts//linux-amd64/trace_to_text"
+    ],
+    "cwd": "[CACHE]/builder/perfetto",
+    "infra_step": true,
+    "name": "Artifact upload.gsutil upload (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/perfetto-luci-artifacts//linux-amd64/trace_to_text@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "out/dist/stripped/tracebox",
+      "gs://perfetto-luci-artifacts//linux-amd64/tracebox"
+    ],
+    "cwd": "[CACHE]/builder/perfetto",
+    "infra_step": true,
+    "name": "Artifact upload.gsutil upload (3)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/perfetto-luci-artifacts//linux-amd64/tracebox@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "out/dist/stripped/perfetto",
+      "gs://perfetto-luci-artifacts//linux-amd64/perfetto"
+    ],
+    "cwd": "[CACHE]/builder/perfetto",
+    "infra_step": true,
+    "name": "Artifact upload.gsutil upload (4)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/perfetto-luci-artifacts//linux-amd64/perfetto@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "out/dist/stripped/traced",
+      "gs://perfetto-luci-artifacts//linux-amd64/traced"
+    ],
+    "cwd": "[CACHE]/builder/perfetto",
+    "infra_step": true,
+    "name": "Artifact upload.gsutil upload (5)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/perfetto-luci-artifacts//linux-amd64/traced@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "out/dist/stripped/traced_probes",
+      "gs://perfetto-luci-artifacts//linux-amd64/traced_probes"
+    ],
+    "cwd": "[CACHE]/builder/perfetto",
+    "infra_step": true,
+    "name": "Artifact upload.gsutil upload (6)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/perfetto-luci-artifacts//linux-amd64/traced_probes@@@"
+    ]
   },
   {
     "name": "$result"

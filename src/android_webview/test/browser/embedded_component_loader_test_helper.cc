@@ -15,6 +15,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/containers/flat_map.h"
+#include "base/files/scoped_file.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "components/component_updater/android/component_loader_policy.h"
@@ -52,7 +53,7 @@ class AvailableComponentLoaderPolicy : public ComponentLoaderPolicy {
 
   void ComponentLoaded(
       const base::Version& version,
-      const base::flat_map<std::string, int>& fd_map,
+      base::flat_map<std::string, base::ScopedFD>& fd_map,
       std::unique_ptr<base::DictionaryValue> manifest) override {
     // Make sure these values match the values in the
     // EmbeddedComponentLoaderTest.
@@ -65,7 +66,7 @@ class AvailableComponentLoaderPolicy : public ComponentLoaderPolicy {
         base::android::AttachCurrentThread());
   }
 
-  void ComponentLoadFailed() override {
+  void ComponentLoadFailed(ComponentLoadError /*error*/) override {
     ExpectTrueToJava(
         false, "AvailableComponentLoaderPolicy#ComponentLoadFailed is called");
   }
@@ -83,13 +84,13 @@ class UnavailableComponentLoaderPolicy : public ComponentLoaderPolicy {
 
   void ComponentLoaded(
       const base::Version& version,
-      const base::flat_map<std::string, int>& fd_map,
+      base::flat_map<std::string, base::ScopedFD>& fd_map,
       std::unique_ptr<base::DictionaryValue> manifest) override {
     ExpectTrueToJava(
         false, "UnavailableComponentLoaderPolicy#ComponentLoaded is called");
   }
 
-  void ComponentLoadFailed() override {
+  void ComponentLoadFailed(ComponentLoadError /*error*/) override {
     Java_EmbeddedComponentLoaderTest_onComponentLoadFailed(
         base::android::AttachCurrentThread());
   }

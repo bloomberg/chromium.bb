@@ -1,6 +1,6 @@
 Name: libjpeg-turbo
 URL: https://github.com/libjpeg-turbo/libjpeg-turbo/
-Version: 2.1.0
+Version: 9df5786f05c8be702f5a896b231c6e057847c18b (post 2.1.0)
 License: Custom license
 License File: LICENSE.md
 Security Critical: yes
@@ -8,7 +8,7 @@ License Android Compatible: yes
 
 Description:
 This consists of the components:
-* libjpeg-turbo 2.1.0
+* libjpeg-turbo 9df5786f05c8be702f5a896b231c6e057847c18b (post 2.1.0)
 * This file (README.chromium)
 * A build file (BUILD.gn)
 * An OWNERS file

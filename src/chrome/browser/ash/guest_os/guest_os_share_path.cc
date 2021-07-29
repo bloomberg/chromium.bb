@@ -12,16 +12,16 @@
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chrome/browser/chromeos/smb_client/smb_service.h"
-#include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
-#include "chrome/browser/chromeos/smb_client/smbfs_share.h"
+#include "chrome/browser/ash/smb_client/smb_service.h"
+#include "chrome/browser/ash/smb_client/smb_service_factory.h"
+#include "chrome/browser/ash/smb_client/smbfs_share.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
@@ -238,9 +238,8 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
       drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
   base::FilePath drivefs_mount_point_path;
   base::FilePath drivefs_mount_name;
-  chromeos::smb_client::SmbService* smb_service =
-      chromeos::smb_client::SmbServiceFactory::Get(profile_);
-  chromeos::smb_client::SmbFsShare* smb_share = nullptr;
+  auto* smb_service = ash::smb_client::SmbServiceFactory::Get(profile_);
+  ash::smb_client::SmbFsShare* smb_share = nullptr;
   base::FilePath smbfs_mount_point_path;
   base::FilePath smbfs_mount_name;
 
@@ -351,6 +350,9 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
     RegisterPersistedPath(vm_name, path);
   }
   RegisterSharedPath(vm_name, path);
+  for (Observer& observer : observers_) {
+    observer.OnShare(vm_name, path, persist);
+  }
 
   request.mutable_shared_path()->set_path(relative_path.value());
   request.mutable_shared_path()->set_writable(true);
@@ -519,7 +521,7 @@ std::vector<base::FilePath> GuestOsSharePath::GetPersistedSharedPaths(
   const base::DictionaryValue* shared_paths =
       profile_->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
   CHECK(shared_paths);
-  for (const auto& it : shared_paths->DictItems()) {
+  for (const auto it : shared_paths->DictItems()) {
     base::FilePath path(it.first);
     for (const auto& vm : it.second.GetList()) {
       // Register all shared paths for all VMs since we want FilePathWatchers
@@ -551,7 +553,7 @@ void GuestOsSharePath::RegisterPersistedPath(const std::string& vm_name,
   // E.g. if path /foo/bar is already shared, and then we share /foo, we
   // remove /foo/bar from the list since it will be shared as part of /foo.
   std::vector<base::FilePath> children;
-  for (const auto& it : shared_paths->DictItems()) {
+  for (const auto it : shared_paths->DictItems()) {
     base::FilePath shared(it.first);
     auto& vms = it.second;
     auto vm_matches = base::Contains(vms.GetList(), base::Value(vm_name));
@@ -610,7 +612,7 @@ void GuestOsSharePath::OnVolumeMounted(chromeos::MountError error_code,
   // of it then share them with any running VMs.
   const base::DictionaryValue* shared_paths =
       profile_->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
-  for (const auto& it : shared_paths->DictItems()) {
+  for (const auto it : shared_paths->DictItems()) {
     base::FilePath path(it.first);
     if (path != volume.mount_path() && !volume.mount_path().IsParent(path)) {
       continue;

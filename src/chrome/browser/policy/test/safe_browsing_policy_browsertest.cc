@@ -16,8 +16,8 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/features.h"
 #include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingWhitelistDomains) {
   EXPECT_EQ("mydomain.net", canonicalized_domains[1]);
 
   // Invalid domains will be skipped.
-  whitelist_domains.Clear();
+  whitelist_domains.ClearList();
   whitelist_domains.AppendString(std::string("%EF%BF%BDzyx.com"));
   policies.Set(key::kSafeBrowsingWhitelistDomains, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
@@ -195,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionLoginURLs) {
   EXPECT_EQ(GURL("https://mydomian.com/login.html"), login_urls[1]);
 
   // Verify non-http/https schemes, or invalid URLs will be skipped.
-  login_url_values.Clear();
+  login_url_values.ClearList();
   login_url_values.AppendString(std::string("invalid"));
   login_url_values.AppendString(std::string("ftp://login.mydomain.com"));
   policies.Set(key::kPasswordProtectionLoginURLs, POLICY_LEVEL_MANDATORY,

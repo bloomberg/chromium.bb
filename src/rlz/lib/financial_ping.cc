@@ -11,10 +11,10 @@
 #include <memory>
 
 #include "base/atomicops.h"
+#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -32,8 +32,10 @@
 #include "rlz/lib/rlz_value_store.h"
 #include "rlz/lib/string_utils.h"
 #include "rlz/lib/time_util.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 #if !defined(OS_WIN)
 #include "base/time/time.h"

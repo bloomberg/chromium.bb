@@ -11,6 +11,7 @@
 namespace blink {
 
 class Element;
+class ExceptionState;
 class InkTrailStyle;
 class LocalFrame;
 class PointerEvent;
@@ -28,12 +29,12 @@ class MODULES_EXPORT DelegatedInkTrailPresenter : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DelegatedInkTrailPresenter* CreatePresenter(Element* element,
-                                                     LocalFrame* frame);
   DelegatedInkTrailPresenter(Element* element, LocalFrame* frame);
+
   void updateInkTrailStartPoint(ScriptState* state,
                                 PointerEvent* evt,
-                                InkTrailStyle* style);
+                                InkTrailStyle* style,
+                                ExceptionState& exception_state);
   uint32_t expectedImprovement() const { return expected_improvement_; }
   Element* presentationArea() const { return presentation_area_; }
 

@@ -46,7 +46,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_APPLE)
-#error This file must not be included on macOS; Chromium Mac doesn't use Aura.
+#error "This file must not be included on macOS; Chromium Mac doesn't use Aura."
 #endif
 
 namespace cc {
@@ -498,11 +498,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Use SetEmbedFrameSinkId() when this window is embedding another client.
   // See comment for |frame_sink_id_| below for more details.
   void SetEmbedFrameSinkId(const viz::FrameSinkId& embed_frame_sink_id);
-  void set_frame_sink_id(const viz::FrameSinkId& frame_sink_id) {
-    DCHECK(!embeds_external_client_);
-    DCHECK(!frame_sink_id_.is_valid());
-    frame_sink_id_ = frame_sink_id;
-  }
 
   // Starts occlusion state tracking.
   void TrackOcclusionState();

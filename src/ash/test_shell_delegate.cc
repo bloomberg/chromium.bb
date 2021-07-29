@@ -12,6 +12,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/wm/gestures/back_gesture/test_back_gesture_contextual_nudge_delegate.h"
+#include "components/full_restore/app_launch_info.h"
 #include "ui/gfx/image/image.h"
 
 namespace ash {
@@ -56,6 +57,10 @@ bool TestShellDelegate::ShouldWaitForTouchPressAck(gfx::NativeWindow window) {
   return should_wait_for_touch_ack_;
 }
 
+int TestShellDelegate::GetBrowserWebUITabStripHeight() {
+  return 0;
+}
+
 void TestShellDelegate::BindMultiDeviceSetup(
     mojo::PendingReceiver<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
         receiver) {
@@ -92,6 +97,11 @@ bool TestShellDelegate::IsLoggingRedirectDisabled() const {
 
 base::FilePath TestShellDelegate::GetPrimaryUserDownloadsFolder() const {
   return base::FilePath();
+}
+
+std::unique_ptr<full_restore::AppLaunchInfo>
+TestShellDelegate::GetAppLaunchDataForDeskTemplate(aura::Window* window) const {
+  return nullptr;
 }
 
 }  // namespace ash

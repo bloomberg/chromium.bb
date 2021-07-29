@@ -63,21 +63,11 @@ String LayoutThemeDefault::ExtraDefaultStyleSheet() {
           ? UncompressResourceAsASCIIString(
                 IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS)
           : String();
-  String windows_style_sheet =
-      UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_WIN_CSS);
-  String controls_refresh_style_sheet =
-      features::IsFormControlsRefreshEnabled()
-          ? UncompressResourceAsASCIIString(
-                IDR_UASTYLE_THEME_CONTROLS_REFRESH_CSS)
-          : String();
   StringBuilder builder;
-  builder.ReserveCapacity(
-      extra_style_sheet.length() + multiple_fields_style_sheet.length() +
-      windows_style_sheet.length() + controls_refresh_style_sheet.length());
+  builder.ReserveCapacity(extra_style_sheet.length() +
+                          multiple_fields_style_sheet.length());
   builder.Append(extra_style_sheet);
   builder.Append(multiple_fields_style_sheet);
-  builder.Append(windows_style_sheet);
-  builder.Append(controls_refresh_style_sheet);
   return builder.ToString();
 }
 
@@ -108,19 +98,13 @@ Color LayoutThemeDefault::PlatformInactiveSelectionForegroundColor(
 IntSize LayoutThemeDefault::SliderTickSize() const {
   // The value should be synchronized with a -webkit-slider-container rule in
   // html.css.
-  if (features::IsFormControlsRefreshEnabled())
-    return IntSize(1, 4);
-  else
-    return IntSize(1, 6);
+  return IntSize(1, 4);
 }
 
 int LayoutThemeDefault::SliderTickOffsetFromTrackCenter() const {
   // The value should be synchronized with a -webkit-slider-container rule in
   // html.css and LayoutThemeAndroid::ExtraDefaultStyleSheet().
-  if (features::IsFormControlsRefreshEnabled())
-    return 7;
-  else
-    return -16;
+  return 7;
 }
 
 void LayoutThemeDefault::AdjustSliderThumbSize(ComputedStyle& style) const {

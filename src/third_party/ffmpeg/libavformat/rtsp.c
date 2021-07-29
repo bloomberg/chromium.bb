@@ -94,17 +94,9 @@ const AVOption ff_rtsp_options[] = {
     { "min_port", "set minimum local UDP port", OFFSET(rtp_port_min), AV_OPT_TYPE_INT, {.i64 = RTSP_RTP_PORT_MIN}, 0, 65535, DEC|ENC },
     { "max_port", "set maximum local UDP port", OFFSET(rtp_port_max), AV_OPT_TYPE_INT, {.i64 = RTSP_RTP_PORT_MAX}, 0, 65535, DEC|ENC },
     { "listen_timeout", "set maximum timeout (in seconds) to wait for incoming connections (-1 is infinite, imply flag listen)", OFFSET(initial_timeout), AV_OPT_TYPE_INT, {.i64 = -1}, INT_MIN, INT_MAX, DEC },
-#if FF_API_OLD_RTSP_OPTIONS
-    { "timeout", "set maximum timeout (in seconds) to wait for incoming connections (-1 is infinite, imply flag listen) (deprecated, use listen_timeout)", OFFSET(initial_timeout), AV_OPT_TYPE_INT, {.i64 = -1}, INT_MIN, INT_MAX, DEC|AV_OPT_FLAG_DEPRECATED },
-    { "stimeout", "set timeout (in microseconds) of socket TCP I/O operations", OFFSET(stimeout), AV_OPT_TYPE_INT, {.i64 = 0}, INT_MIN, INT_MAX, DEC },
-#else
     { "timeout", "set timeout (in microseconds) of socket TCP I/O operations", OFFSET(stimeout), AV_OPT_TYPE_INT, {.i64 = 0}, INT_MIN, INT_MAX, DEC },
-#endif
     COMMON_OPTS(),
     { "user_agent", "override User-Agent header", OFFSET(user_agent), AV_OPT_TYPE_STRING, {.str = LIBAVFORMAT_IDENT}, 0, 0, DEC },
-#if FF_API_OLD_RTSP_OPTIONS
-    { "user-agent", "override User-Agent header (deprecated, use user_agent)", OFFSET(user_agent), AV_OPT_TYPE_STRING, {.str = LIBAVFORMAT_IDENT}, 0, 0, DEC|AV_OPT_FLAG_DEPRECATED },
-#endif
     { NULL },
 };
 
@@ -226,7 +218,7 @@ static void init_rtp_handler(const RTPDynamicProtocolHandler *handler,
         par->codec_id          = handler->codec_id;
     rtsp_st->dynamic_handler = handler;
     if (st)
-        st->need_parsing = handler->need_parsing;
+        st->internal->need_parsing = handler->need_parsing;
     if (handler->priv_data_size) {
         rtsp_st->dynamic_protocol_context = av_mallocz(handler->priv_data_size);
         if (!rtsp_st->dynamic_protocol_context)
@@ -2472,7 +2464,7 @@ static const AVClass sdp_demuxer_class = {
     .version        = LIBAVUTIL_VERSION_INT,
 };
 
-AVInputFormat ff_sdp_demuxer = {
+const AVInputFormat ff_sdp_demuxer = {
     .name           = "sdp",
     .long_name      = NULL_IF_CONFIG_SMALL("SDP"),
     .priv_data_size = sizeof(RTSPState),
@@ -2506,12 +2498,15 @@ static int rtp_read_header(AVFormatContext *s)
     RTSPState *rt = s->priv_data;
     const char *p;
     AVBPrint sdp;
+    AVDictionary *opts = NULL;
 
     if (!ff_network_init())
         return AVERROR(EIO);
 
+    opts = map_to_opts(rt);
     ret = ffurl_open_whitelist(&in, s->url, AVIO_FLAG_READ,
-                     &s->interrupt_callback, NULL, s->protocol_whitelist, s->protocol_blacklist, NULL);
+                     &s->interrupt_callback, &opts, s->protocol_whitelist, s->protocol_blacklist, NULL);
+    av_dict_free(&opts);
     if (ret)
         goto fail;
 
@@ -2628,7 +2623,7 @@ static const AVClass rtp_demuxer_class = {
     .version        = LIBAVUTIL_VERSION_INT,
 };
 
-AVInputFormat ff_rtp_demuxer = {
+const AVInputFormat ff_rtp_demuxer = {
     .name           = "rtp",
     .long_name      = NULL_IF_CONFIG_SMALL("RTP input"),
     .priv_data_size = sizeof(RTSPState),

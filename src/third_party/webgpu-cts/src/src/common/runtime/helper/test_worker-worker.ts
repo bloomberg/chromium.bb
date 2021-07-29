@@ -1,11 +1,12 @@
-import { DefaultTestFileLoader } from '../../framework/file_loader.js';
-import { Logger } from '../../framework/logging/logger.js';
-import { parseQuery } from '../../framework/query/parseQuery.js';
-import { TestQueryWithExpectation } from '../../framework/query/query.js';
-import { assert } from '../../framework/util/util.js';
+import { DefaultTestFileLoader } from '../../internal/file_loader.js';
+import { Logger } from '../../internal/logging/logger.js';
+import { parseQuery } from '../../internal/query/parseQuery.js';
+import { TestQueryWithExpectation } from '../../internal/query/query.js';
+import { assert } from '../../util/util.js';
 
+// Should be DedicatedWorkerGlobalScope, but importing lib "webworker" conflicts with lib "dom".
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-declare const self: any; // should be DedicatedWorkerGlobalScope
+declare const self: any;
 
 const loader = new DefaultTestFileLoader();
 
@@ -14,7 +15,8 @@ self.onmessage = async (ev: MessageEvent) => {
   const expectations: TestQueryWithExpectation[] = ev.data.expectations;
   const debug: boolean = ev.data.debug;
 
-  const log = new Logger(debug);
+  Logger.globalDebugMode = debug;
+  const log = new Logger();
 
   const testcases = Array.from(await loader.loadCases(parseQuery(query)));
   assert(testcases.length === 1, 'worker query resulted in != 1 cases');

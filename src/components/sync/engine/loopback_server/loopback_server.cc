@@ -17,7 +17,6 @@
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -321,6 +320,10 @@ net::HttpStatusCode LoopbackServer::HandleCommand(
 
   if (message.has_store_birthday() &&
       message.store_birthday() != GetStoreBirthday()) {
+    // The birthday provided by the client does not match the authoritative
+    // value server-side, which in the absence of client-side bugs means that
+    // the birthday was reset (e.g. via ClearServerDataMessage) since the last
+    // time the client interacted with the server.
     response->set_error_code(sync_pb::SyncEnums::NOT_MY_BIRTHDAY);
   } else {
     bool success = false;
@@ -741,8 +744,7 @@ LoopbackServer::GetEntitiesAsDictionaryValue() {
   // Initialize an empty ListValue for all ModelTypes.
   ModelTypeSet all_types = ModelTypeSet::All();
   for (ModelType type : all_types) {
-    dictionary->Set(ModelTypeToString(type),
-                    std::make_unique<base::ListValue>());
+    dictionary->SetKey(ModelTypeToString(type), base::ListValue());
   }
 
   for (const auto& kv : entities_) {

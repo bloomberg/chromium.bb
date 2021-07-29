@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Internetera konektatuta zaudela egiaztatzea</translation>
 <translation id="2388990488038464401">Zenbaki honetara deitu nahi duzu telefonotik?</translation>
+<translation id="2435457462613246316">Erakutsi pasahitza</translation>
 <translation id="24452542372838207">Zabaldu jakinarazpena</translation>
 <translation id="2445449901874883781">Erabili dentsitate handia</translation>
 <translation id="2482878487686419369">Jakinarazpenak</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{Duela 1 urte}other{Duela # urte}}</translation>
 <translation id="2878511608894704031">Ezabatu dena</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 egun barru}other{# egun barru}}</translation>
+<translation id="2922712708897119705">"<ph name="COLUMN_NAME" />" zutabea beherantz ordenatu da.</translation>
 <translation id="2931838996092594335">egin klik</translation>
 <translation id="2981684127883932071">Iradokizunak daude ikusgai</translation>
 <translation id="3036649622769666520">Ireki fitxategiak</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Menua</translation>
 <translation id="3909791450649380159">&amp;Ebaki</translation>
 <translation id="3990502903496589789">Eskuineko ertza</translation>
+<translation id="3994749195054421561">"<ph name="COLUMN_NAME" />" zutabea gorantz ordenatu da.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{Irakurri gabeko 1 jakinarazpen}other{Irakurri gabeko # jakinarazpen}}</translation>
 <translation id="4202807286478387388">saltatu</translation>
 <translation id="4250229828105606438">Pantaila-argazkia</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Kendu arbeletik.</translation>
 <translation id="4316910396681052118">APLIKAZIO GUZTIAK</translation>
 <translation id="4491109536499578614">Irudia</translation>
+<translation id="4565377596337484307">Ezkutatu pasahitza</translation>
 <translation id="4588090240171750605">Joan eskuinera</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" /> aplikazioa. <ph name="RATING_SCORE" /> izarreko balorazioa dauka.</translation>
 <translation id="4648249871170053485">Gomendatutako aplikazioa (<ph name="APP_NAME" />)</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /> orria</translation>
 <translation id="6022924867608035986">Garbitu bilaketa-koadroko testua</translation>
 <translation id="6040143037577758943">Itxi</translation>
+<translation id="6117103120090651229">Erdiko botoia</translation>
 <translation id="6119846243427417423">aktibatu</translation>
 <translation id="6129953537138746214">Zuriunea</translation>
 <translation id="6134259848159370930">Bilatu gailuan, aplikazioetan, ezarpenetan eta sarean</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Erakutsi aplikazio guztiak</translation>
 <translation id="6165508094623778733">Lortu informazio gehiago</translation>
 <translation id="6166852626429024716">Bilatu gailuan, aplikazioetan, ezarpenetan, sarean…</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> dago hautatuta.</translation>
 <translation id="6264365405983206840">Hautatu &amp;guztiak</translation>
 <translation id="6351032674660237738">APLIKAZIOEN IRADOKIZUNAK</translation>
 <translation id="6364916375976753737">Joan ezkerrera</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minutu bat gelditzen da}other{# minutu gelditzen dira}}</translation>
 <translation id="7430878839542012341">Bilaketa hori historiatik ezabatu nahi duzu?</translation>
+<translation id="7437971918971306061">"<ph name="COLUMN_NAME" />" zutabea ordenatzeari utzi zaio.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emojiak</translation>
 <translation id="7620655452534002301">Kendu da.</translation>

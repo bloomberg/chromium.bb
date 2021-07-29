@@ -11,7 +11,7 @@
 
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "base/util/type_safety/id_type.h"
+#include "base/types/id_type.h"
 #include "base/version.h"
 #include "components/version_info/channel.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -39,9 +39,9 @@ struct DisplayMetrics {
 };
 
 // A unique ID for an ephemeral change.
-using EphemeralChangeId = util::IdTypeU32<class EphemeralChangeIdClass>;
-using SurfaceId = util::IdTypeU32<class SurfaceIdClass>;
-using ImageFetchId = util::IdTypeU32<class ImageFetchIdClass>;
+using EphemeralChangeId = base::IdTypeU32<class EphemeralChangeIdClass>;
+using SurfaceId = base::IdTypeU32<class SurfaceIdClass>;
+using ImageFetchId = base::IdTypeU32<class ImageFetchIdClass>;
 
 // A map of trial names (key) to group names (value) that is
 // sent from the server.
@@ -62,6 +62,8 @@ struct NetworkResponseInfo {
   GURL base_request_url;
   size_t response_body_bytes = 0;
   bool was_signed_in = false;
+  base::TimeTicks fetch_time_ticks;
+  base::TimeTicks loader_start_time_ticks;
 };
 
 std::ostream& operator<<(std::ostream& os, const NetworkResponseInfo& o);
@@ -119,7 +121,6 @@ class WebFeedPageInformation {
  private:
   GURL url_;
   std::vector<GURL> rss_urls_;
-  // TODO(crbug/1152592): There will be additional optional information.
 };
 std::ostream& operator<<(std::ostream& os, const WebFeedPageInformation& value);
 
@@ -154,6 +155,9 @@ struct WebFeedMetadata {
 };
 std::ostream& operator<<(std::ostream& out, const WebFeedMetadata& value);
 
+// This must be kept in sync with WebFeedSubscriptionRequestStatus in enums.xml.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.feed.webfeed
 enum class WebFeedSubscriptionRequestStatus {
   kUnknown = 0,
@@ -162,9 +166,12 @@ enum class WebFeedSubscriptionRequestStatus {
   kFailedTooManySubscriptions = 3,
   kFailedUnknownError = 4,
   kAbortWebFeedSubscriptionPendingClearAll = 5,
+  kMaxValue = kAbortWebFeedSubscriptionPendingClearAll,
 };
 std::ostream& operator<<(std::ostream& out,
                          WebFeedSubscriptionRequestStatus value);
+
+using NetworkRequestId = base::IdTypeU32<class NetworkRequestIdClass>;
 
 }  // namespace feed
 

@@ -17,7 +17,7 @@
 #include "fpdfsdk/pwl/ipwl_fillernotify.h"
 #include "fpdfsdk/pwl/ipwl_systemhandler.h"
 
-class CFFL_FormFiller;
+class CFFL_FormField;
 class CPDFSDK_FormFillEnvironment;
 class CPDFSDK_PageView;
 class CPDFSDK_Widget;
@@ -31,7 +31,7 @@ class CFFL_InteractiveFormFiller final : public IPWL_FillerNotify {
   bool Annot_HitTest(CPDFSDK_PageView* pPageView,
                      CPDFSDK_Annot* pAnnot,
                      const CFX_PointF& point);
-  FX_RECT GetViewBBox(CPDFSDK_PageView* pPageView, CPDFSDK_Annot* pAnnot);
+  FX_RECT GetViewBBox(const CPDFSDK_PageView* pPageView, CPDFSDK_Annot* pAnnot);
   void OnDraw(CPDFSDK_PageView* pPageView,
               CPDFSDK_Annot* pAnnot,
               CFX_RenderDevice* pDevice,
@@ -81,8 +81,8 @@ class CFFL_InteractiveFormFiller final : public IPWL_FillerNotify {
   bool OnSetFocus(ObservedPtr<CPDFSDK_Annot>* pAnnot, uint32_t nFlag);
   bool OnKillFocus(ObservedPtr<CPDFSDK_Annot>* pAnnot, uint32_t nFlag);
 
-  CFFL_FormFiller* GetFormFillerForTesting(CPDFSDK_Annot* pAnnot) {
-    return GetFormFiller(pAnnot);
+  CFFL_FormField* GetFormFieldForTesting(CPDFSDK_Annot* pAnnot) {
+    return GetFormField(pAnnot);
   }
 
   WideString GetText(CPDFSDK_Annot* pAnnot);
@@ -97,22 +97,23 @@ class CFFL_InteractiveFormFiller final : public IPWL_FillerNotify {
 
   static bool IsVisible(CPDFSDK_Widget* pWidget);
   static bool IsReadOnly(CPDFSDK_Widget* pWidget);
-  static bool IsValidAnnot(CPDFSDK_PageView* pPageView, CPDFSDK_Annot* pAnnot);
+  static bool IsValidAnnot(const CPDFSDK_PageView* pPageView,
+                           CPDFSDK_Annot* pAnnot);
 
   bool OnKeyStrokeCommit(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                         CPDFSDK_PageView* pPageView,
+                         const CPDFSDK_PageView* pPageView,
                          uint32_t nFlag);
   bool OnValidate(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                  CPDFSDK_PageView* pPageView,
+                  const CPDFSDK_PageView* pPageView,
                   uint32_t nFlag);
   void OnCalculate(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                   CPDFSDK_PageView* pPageView,
+                   const CPDFSDK_PageView* pPageView,
                    uint32_t nFlag);
   void OnFormat(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                CPDFSDK_PageView* pPageView,
+                const CPDFSDK_PageView* pPageView,
                 uint32_t nFlag);
   bool OnButtonUp(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                  CPDFSDK_PageView* pPageView,
+                  const CPDFSDK_PageView* pPageView,
                   uint32_t nFlag);
 
   bool SetIndexSelected(ObservedPtr<CPDFSDK_Annot>* pAnnot,
@@ -122,7 +123,7 @@ class CFFL_InteractiveFormFiller final : public IPWL_FillerNotify {
 
  private:
   using WidgetToFormFillerMap =
-      std::map<CPDFSDK_Annot*, std::unique_ptr<CFFL_FormFiller>>;
+      std::map<CPDFSDK_Annot*, std::unique_ptr<CFFL_FormField>>;
 
   // IPWL_FillerNotify:
   void QueryWherePopup(const IPWL_SystemHandler::PerWindowData* pAttached,
@@ -147,23 +148,23 @@ class CFFL_InteractiveFormFiller final : public IPWL_FillerNotify {
 #ifdef PDF_ENABLE_XFA
   void SetFocusAnnotTab(CPDFSDK_Annot* pWidget, bool bSameField, bool bNext);
   bool OnClick(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-               CPDFSDK_PageView* pPageView,
+               const CPDFSDK_PageView* pPageView,
                uint32_t nFlag);
   bool OnFull(ObservedPtr<CPDFSDK_Widget>* pAnnot,
-              CPDFSDK_PageView* pPageView,
+              const CPDFSDK_PageView* pPageView,
               uint32_t nFlag);
   bool OnPreOpen(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                 CPDFSDK_PageView* pPageView,
+                 const CPDFSDK_PageView* pPageView,
                  uint32_t nFlag);
   bool OnPostOpen(ObservedPtr<CPDFSDK_Annot>* pAnnot,
-                  CPDFSDK_PageView* pPageView,
+                  const CPDFSDK_PageView* pPageView,
                   uint32_t nFlag);
 #endif  // PDF_ENABLE_XFA
 
   bool IsFillingAllowed(CPDFSDK_Widget* pWidget) const;
-  CFFL_FormFiller* GetFormFiller(CPDFSDK_Annot* pAnnot);
-  CFFL_FormFiller* GetOrCreateFormFiller(CPDFSDK_Annot* pAnnot);
-  void UnRegisterFormFiller(CPDFSDK_Annot* pAnnot);
+  CFFL_FormField* GetFormField(CPDFSDK_Annot* pAnnot);
+  CFFL_FormField* GetOrCreateFormField(CPDFSDK_Annot* pAnnot);
+  void UnregisterFormField(CPDFSDK_Annot* pAnnot);
 
   UnownedPtr<CPDFSDK_FormFillEnvironment> const m_pFormFillEnv;
   WidgetToFormFillerMap m_Map;

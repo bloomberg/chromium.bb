@@ -9,6 +9,7 @@
 #include "base/debug/task_trace.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/features.h"
 #include "net/base/net_errors.h"
@@ -17,14 +18,22 @@
 #include "url/gurl.h"
 
 namespace content_settings {
-namespace {
-bool IsThirdPartyRequest(const GURL& url, const GURL& site_for_cookies) {
+
+// static
+bool CookieSettingsBase::IsThirdPartyRequest(const GURL& url,
+                                             const GURL& site_for_cookies) {
   net::StaticCookiePolicy policy(
       net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES);
   return policy.CanAccessCookies(
              url, net::SiteForCookies::FromUrl(site_for_cookies)) != net::OK;
 }
-}  // namespace
+
+// static
+GURL CookieSettingsBase::GetFirstPartyURL(const GURL& site_for_cookies,
+                                          const url::Origin* top_frame_origin) {
+  return top_frame_origin != nullptr ? top_frame_origin->GetURL()
+                                     : site_for_cookies;
+}
 
 bool CookieSettingsBase::ShouldDeleteCookieOnExit(
     const ContentSettingsForOneType& cookie_settings,
@@ -68,7 +77,7 @@ ContentSetting CookieSettingsBase::GetCookieSetting(
       url, first_party_url, IsThirdPartyRequest(url, first_party_url), source);
 }
 
-bool CookieSettingsBase::IsCookieAccessAllowed(
+bool CookieSettingsBase::IsFullCookieAccessAllowed(
     const GURL& url,
     const GURL& first_party_url) const {
 #if !defined(OS_IOS)
@@ -79,12 +88,14 @@ bool CookieSettingsBase::IsCookieAccessAllowed(
   return IsAllowed(GetCookieSetting(url, first_party_url, nullptr));
 }
 
-bool CookieSettingsBase::IsCookieAccessAllowed(
+bool CookieSettingsBase::IsFullCookieAccessAllowed(
     const GURL& url,
     const GURL& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin) const {
   ContentSetting setting = GetCookieSettingInternal(
-      url, top_frame_origin ? top_frame_origin->GetURL() : site_for_cookies,
+      url,
+      GetFirstPartyURL(site_for_cookies,
+                       base::OptionalOrNullptr(top_frame_origin)),
       IsThirdPartyRequest(url, site_for_cookies), nullptr);
   return IsAllowed(setting);
 }

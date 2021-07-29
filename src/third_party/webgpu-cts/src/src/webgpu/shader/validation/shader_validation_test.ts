@@ -1,5 +1,8 @@
 import { GPUTest } from '../../gpu_test.js';
 
+/**
+ * Base fixture for WGSL shader validation tests.
+ */
 export class ShaderValidationTest extends GPUTest {
   /**
    * Add a test expectation for whether a createShaderModule call succeeds or not.
@@ -8,7 +11,7 @@ export class ShaderValidationTest extends GPUTest {
    * ```ts
    * t.expectCompileResult(true, `wgsl code`); // Expect success
    * t.expectCompileResult(false, `wgsl code`); // Expect validation error with any error string
-   * t.expectCompileResult('v-0000', `wgsl code`); // Expect validation error containing 'v-0000'
+   * t.expectCompileResult('substr', `wgsl code`); // Expect validation error containing 'substr'
    * ```
    */
   expectCompileResult(result: boolean | string, code: string) {

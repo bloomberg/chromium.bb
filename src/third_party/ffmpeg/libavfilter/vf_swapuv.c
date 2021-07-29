@@ -46,12 +46,6 @@ static void do_swap(AVFrame *frame)
     FFSWAP(uint8_t*,     frame->data[1],     frame->data[2]);
     FFSWAP(int,          frame->linesize[1], frame->linesize[2]);
     FFSWAP(AVBufferRef*, frame->buf[1],      frame->buf[2]);
-
-#if FF_API_ERROR_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-    FFSWAP(uint64_t,     frame->error[1],    frame->error[2]);
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
 }
 
 static AVFrame *get_video_buffer(AVFilterLink *link, int w, int h)
@@ -117,7 +111,7 @@ static const AVFilterPad swapuv_outputs[] = {
     { NULL }
 };
 
-AVFilter ff_vf_swapuv = {
+const AVFilter ff_vf_swapuv = {
     .name          = "swapuv",
     .description   = NULL_IF_CONFIG_SMALL("Swap U and V components."),
     .query_formats = query_formats,

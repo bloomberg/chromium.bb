@@ -4,7 +4,7 @@
 
 #include "tests/cefclient/browser/client_handler_osr.h"
 
-#include "include/base/cef_bind.h"
+#include "include/base/cef_callback.h"
 #include "include/wrapper/cef_closure_task.h"
 #include "include/wrapper/cef_helpers.h"
 
@@ -20,7 +20,8 @@ ClientHandlerOsr::ClientHandlerOsr(Delegate* delegate,
 void ClientHandlerOsr::DetachOsrDelegate() {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute this method on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&ClientHandlerOsr::DetachOsrDelegate, this));
+    CefPostTask(TID_UI,
+                base::BindOnce(&ClientHandlerOsr::DetachOsrDelegate, this));
     return;
   }
 

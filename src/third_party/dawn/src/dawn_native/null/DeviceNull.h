@@ -135,7 +135,7 @@ namespace dawn_native { namespace null {
         ResultOrError<Ref<QuerySetBase>> CreateQuerySetImpl(
             const QuerySetDescriptor* descriptor) override;
         ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipelineImpl(
-            const RenderPipelineDescriptor2* descriptor) override;
+            const RenderPipelineDescriptor* descriptor) override;
         ResultOrError<Ref<SamplerBase>> CreateSamplerImpl(
             const SamplerDescriptor* descriptor) override;
         ResultOrError<Ref<ShaderModuleBase>> CreateShaderModuleImpl(
@@ -160,7 +160,7 @@ namespace dawn_native { namespace null {
 
         std::vector<std::unique_ptr<PendingOperation>> mPendingOperations;
 
-        static constexpr uint64_t kMaxMemoryUsage = 256 * 1024 * 1024;
+        static constexpr uint64_t kMaxMemoryUsage = 512 * 1024 * 1024;
         size_t mMemoryUsage = 0;
     };
 

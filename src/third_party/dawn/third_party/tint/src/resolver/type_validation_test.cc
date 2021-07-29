@@ -27,6 +27,35 @@ namespace tint {
 namespace resolver {
 namespace {
 
+// Helpers and typedefs
+template <typename T>
+using DataType = builder::DataType<T>;
+template <typename T>
+using vec2 = builder::vec2<T>;
+template <typename T>
+using vec3 = builder::vec3<T>;
+template <typename T>
+using vec4 = builder::vec4<T>;
+template <typename T>
+using mat2x2 = builder::mat2x2<T>;
+template <typename T>
+using mat3x3 = builder::mat3x3<T>;
+template <typename T>
+using mat4x4 = builder::mat4x4<T>;
+template <int N, typename T>
+using array = builder::array<N, T>;
+template <typename T>
+using alias = builder::alias<T>;
+template <typename T>
+using alias1 = builder::alias1<T>;
+template <typename T>
+using alias2 = builder::alias2<T>;
+template <typename T>
+using alias3 = builder::alias3<T>;
+using f32 = builder::f32;
+using i32 = builder::i32;
+using u32 = builder::u32;
+
 class ResolverTypeValidationTest : public resolver::TestHelper,
                                    public testing::Test {};
 
@@ -58,23 +87,22 @@ TEST_F(ResolverTypeValidationTest, GlobalConstantNoConstructor_Pass) {
 }
 
 TEST_F(ResolverTypeValidationTest, GlobalVariableWithStorageClass_Pass) {
-  // var<in> global_var: f32;
-  Global(Source{{12, 34}}, "global_var", ty.f32(), ast::StorageClass::kInput);
+  // var<private> global_var: f32;
+  Global(Source{{12, 34}}, "global_var", ty.f32(), ast::StorageClass::kPrivate);
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 }
 
 TEST_F(ResolverTypeValidationTest, GlobalConstantWithStorageClass_Fail) {
-  // const<in> global_var: f32;
-  AST().AddGlobalVariable(
-      create<ast::Variable>(Source{{12, 34}}, Symbols().Register("global_var"),
-                            ast::StorageClass::kInput, ty.f32(), true,
-                            Expr(1.23f), ast::DecorationList{}));
+  // const<private> global_var: f32;
+  AST().AddGlobalVariable(create<ast::Variable>(
+      Source{{12, 34}}, Symbols().Register("global_var"),
+      ast::StorageClass::kPrivate, ast::Access::kUndefined, ty.f32(), true,
+      Expr(1.23f), ast::DecorationList{}));
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error v-global01: global constants shouldn't have a storage "
-            "class");
+            "12:34 error: global constants shouldn't have a storage class");
 }
 
 TEST_F(ResolverTypeValidationTest, GlobalConstNoStorageClass_Pass) {
@@ -189,10 +217,9 @@ TEST_F(ResolverTypeValidationTest, RuntimeArrayInFunction_Fail) {
        });
 
   EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(
-      r()->error(),
-      "12:34 error v-0015: runtime arrays may only appear as the last member "
-      "of a struct");
+  EXPECT_EQ(r()->error(),
+            "12:34 error: runtime arrays may only appear as the last member of "
+            "a struct");
 }
 
 TEST_F(ResolverTypeValidationTest, RuntimeArrayIsLast_Pass) {
@@ -229,8 +256,8 @@ TEST_F(ResolverTypeValidationTest, RuntimeArrayIsLastNoBlock_Fail) {
 
   EXPECT_FALSE(r()->Resolve()) << r()->error();
   EXPECT_EQ(r()->error(),
-            "12:34 error v-0015: a struct containing a runtime-sized array "
-            "requires the [[block]] attribute: 'Foo'");
+            "12:34 error: a struct containing a runtime-sized array requires "
+            "the [[block]] attribute: 'Foo'");
 }
 
 TEST_F(ResolverTypeValidationTest, RuntimeArrayIsNotLast_Fail) {
@@ -252,7 +279,7 @@ TEST_F(ResolverTypeValidationTest, RuntimeArrayIsNotLast_Fail) {
   EXPECT_FALSE(r()->Resolve()) << r()->error();
   EXPECT_EQ(
       r()->error(),
-      R"(12:34 error v-0015: runtime arrays may only appear as the last member of a struct)");
+      R"(12:34 error: runtime arrays may only appear as the last member of a struct)");
 }
 
 TEST_F(ResolverTypeValidationTest, RuntimeArrayAsGlobalVariable) {
@@ -262,7 +289,7 @@ TEST_F(ResolverTypeValidationTest, RuntimeArrayAsGlobalVariable) {
 
   EXPECT_EQ(
       r()->error(),
-      R"(56:78 error v-0015: runtime arrays may only appear as the last member of a struct)");
+      R"(56:78 error: runtime arrays may only appear as the last member of a struct)");
 }
 
 TEST_F(ResolverTypeValidationTest, RuntimeArrayAsLocalVariable) {
@@ -273,7 +300,7 @@ TEST_F(ResolverTypeValidationTest, RuntimeArrayAsLocalVariable) {
 
   EXPECT_EQ(
       r()->error(),
-      R"(56:78 error v-0015: runtime arrays may only appear as the last member of a struct)");
+      R"(56:78 error: runtime arrays may only appear as the last member of a struct)");
 }
 
 TEST_F(ResolverTypeValidationTest, RuntimeArrayAsParameter_Fail) {
@@ -297,10 +324,9 @@ TEST_F(ResolverTypeValidationTest, RuntimeArrayAsParameter_Fail) {
        });
 
   EXPECT_FALSE(r()->Resolve()) << r()->error();
-  EXPECT_EQ(
-      r()->error(),
-      "12:34 error v-0015: runtime arrays may only appear as the last member "
-      "of a struct");
+  EXPECT_EQ(r()->error(),
+            "12:34 error: runtime arrays may only appear as the last member of "
+            "a struct");
 }
 
 TEST_F(ResolverTypeValidationTest, AliasRuntimeArrayIsNotLast_Fail) {
@@ -311,12 +337,10 @@ TEST_F(ResolverTypeValidationTest, AliasRuntimeArrayIsNotLast_Fail) {
   //  a: u32;
   //}
 
-  auto* alias = ty.alias("RTArr", ty.array<u32>());
-  AST().AddConstructedType(alias);
-
+  auto* alias = Alias("RTArr", ty.array<u32>());
   Structure("s",
             {
-                Member(Source{{12, 34}}, "b", alias),
+                Member(Source{{12, 34}}, "b", ty.Of(alias)),
                 Member("a", ty.u32()),
             },
             {create<ast::StructBlockDecoration>()});
@@ -324,10 +348,9 @@ TEST_F(ResolverTypeValidationTest, AliasRuntimeArrayIsNotLast_Fail) {
   WrapInFunction();
 
   EXPECT_FALSE(r()->Resolve()) << r()->error();
-  EXPECT_EQ(
-      r()->error(),
-      "12:34 error v-0015: runtime arrays may only appear as the last member "
-      "of a struct");
+  EXPECT_EQ(r()->error(),
+            "12:34 error: runtime arrays may only appear as the last member of "
+            "a struct");
 }
 
 TEST_F(ResolverTypeValidationTest, AliasRuntimeArrayIsLast_Pass) {
@@ -338,13 +361,11 @@ TEST_F(ResolverTypeValidationTest, AliasRuntimeArrayIsLast_Pass) {
   //  b: RTArr;
   //}
 
-  auto* alias = ty.alias("RTArr", ty.array<u32>());
-  AST().AddConstructedType(alias);
-
+  auto* alias = Alias("RTArr", ty.array<u32>());
   Structure("s",
             {
                 Member("a", ty.u32()),
-                Member("b", alias),
+                Member("b", ty.Of(alias)),
             },
             {create<ast::StructBlockDecoration>()});
 
@@ -353,47 +374,57 @@ TEST_F(ResolverTypeValidationTest, AliasRuntimeArrayIsLast_Pass) {
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 }
 
+TEST_F(ResolverTypeValidationTest, ArrayOfNonStorableType) {
+  auto* tex_ty = ty.sampled_texture(ast::TextureDimension::k2d, ty.f32());
+  Global("arr", ty.array(Source{{12, 34}}, tex_ty, 4),
+         ast::StorageClass::kPrivate);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: texture_2d<f32> cannot be used as an element type of "
+            "an array");
+}
+
 namespace GetCanonicalTests {
 struct Params {
-  create_ast_type_func_ptr create_ast_type;
-  create_sem_type_func_ptr create_sem_type;
+  builder::ast_type_func_ptr create_ast_type;
+  builder::sem_type_func_ptr create_sem_type;
 };
 
+template <typename T>
+constexpr Params ParamsFor() {
+  return Params{DataType<T>::AST, DataType<T>::Sem};
+}
+
 static constexpr Params cases[] = {
-    Params{ast_bool, sem_bool},
-    Params{ast_alias<ast_bool>, sem_bool},
-    Params{ast_alias<ast_alias<ast_bool>>, sem_bool},
+    ParamsFor<bool>(),
+    ParamsFor<alias<bool>>(),
+    ParamsFor<alias1<alias<bool>>>(),
 
-    Params{ast_vec3<ast_f32>, sem_vec3<sem_f32>},
-    Params{ast_alias<ast_vec3<ast_f32>>, sem_vec3<sem_f32>},
-    Params{ast_alias<ast_alias<ast_vec3<ast_f32>>>, sem_vec3<sem_f32>},
+    ParamsFor<vec3<f32>>(),
+    ParamsFor<alias<vec3<f32>>>(),
+    ParamsFor<alias1<alias<vec3<f32>>>>(),
 
-    Params{ast_vec3<ast_alias<ast_f32>>, sem_vec3<sem_f32>},
-    Params{ast_alias<ast_vec3<ast_alias<ast_f32>>>, sem_vec3<sem_f32>},
-    Params{ast_alias<ast_alias<ast_vec3<ast_alias<ast_f32>>>>,
-           sem_vec3<sem_f32>},
-    Params{ast_alias<ast_alias<ast_vec3<ast_alias<ast_alias<ast_f32>>>>>,
-           sem_vec3<sem_f32>},
+    ParamsFor<vec3<alias<f32>>>(),
+    ParamsFor<alias1<vec3<alias<f32>>>>(),
+    ParamsFor<alias2<alias1<vec3<alias<f32>>>>>(),
+    ParamsFor<alias3<alias2<vec3<alias1<alias<f32>>>>>>(),
 
-    Params{ast_mat3x3<ast_alias<ast_f32>>, sem_mat3x3<sem_f32>},
-    Params{ast_alias<ast_mat3x3<ast_alias<ast_f32>>>, sem_mat3x3<sem_f32>},
-    Params{ast_alias<ast_alias<ast_mat3x3<ast_alias<ast_f32>>>>,
-           sem_mat3x3<sem_f32>},
-    Params{ast_alias<ast_alias<ast_mat3x3<ast_alias<ast_alias<ast_f32>>>>>,
-           sem_mat3x3<sem_f32>},
+    ParamsFor<mat3x3<alias<f32>>>(),
+    ParamsFor<alias1<mat3x3<alias<f32>>>>(),
+    ParamsFor<alias2<alias1<mat3x3<alias<f32>>>>>(),
+    ParamsFor<alias3<alias2<mat3x3<alias1<alias<f32>>>>>>(),
 
-    Params{ast_alias<ast_access<ast_alias<ast_bool>>>, sem_bool},
-    Params{ast_alias<ast_access<ast_alias<ast_vec3<ast_access<ast_f32>>>>>,
-           sem_vec3<sem_f32>},
-    Params{ast_alias<ast_access<ast_alias<ast_mat3x3<ast_access<ast_f32>>>>>,
-           sem_mat3x3<sem_f32>},
+    ParamsFor<alias1<alias<bool>>>(),
+    ParamsFor<alias1<alias<vec3<f32>>>>(),
+    ParamsFor<alias1<alias<mat3x3<f32>>>>(),
 };
 
 using CanonicalTest = ResolverTestWithParam<Params>;
 TEST_P(CanonicalTest, All) {
   auto& params = GetParam();
 
-  auto* type = params.create_ast_type(ty);
+  auto* type = params.create_ast_type(*this);
 
   auto* var = Var("v", type);
   auto* expr = Expr("v");
@@ -402,7 +433,7 @@ TEST_P(CanonicalTest, All) {
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
   auto* got = TypeOf(expr)->UnwrapRef();
-  auto* expected = params.create_sem_type(ty);
+  auto* expected = params.create_sem_type(*this);
 
   EXPECT_EQ(got, expected) << "got:      " << FriendlyName(got) << "\n"
                            << "expected: " << FriendlyName(expected) << "\n";
@@ -430,7 +461,7 @@ static constexpr DimensionParams dimension_cases[] = {
 using MultisampledTextureDimensionTest = ResolverTestWithParam<DimensionParams>;
 TEST_P(MultisampledTextureDimensionTest, All) {
   auto& params = GetParam();
-  Global("a", ty.multisampled_texture(params.dim, ty.i32()),
+  Global(Source{{12, 34}}, "a", ty.multisampled_texture(params.dim, ty.i32()),
          ast::StorageClass::kNone, nullptr,
          ast::DecorationList{
              create<ast::BindingDecoration>(0),
@@ -441,6 +472,8 @@ TEST_P(MultisampledTextureDimensionTest, All) {
     EXPECT_TRUE(r()->Resolve()) << r()->error();
   } else {
     EXPECT_FALSE(r()->Resolve());
+    EXPECT_EQ(r()->error(),
+              "12:34 error: only 2d multisampled textures are supported");
   }
 }
 INSTANTIATE_TEST_SUITE_P(ResolverTypeValidationTest,
@@ -448,43 +481,52 @@ INSTANTIATE_TEST_SUITE_P(ResolverTypeValidationTest,
                          testing::ValuesIn(dimension_cases));
 
 struct TypeParams {
-  create_ast_type_func_ptr type_func;
+  builder::ast_type_func_ptr type_func;
   bool is_valid;
 };
 
+template <typename T>
+constexpr TypeParams TypeParamsFor(bool is_valid) {
+  return TypeParams{DataType<T>::AST, is_valid};
+}
+
 static constexpr TypeParams type_cases[] = {
-    TypeParams{ast_bool, false},
-    TypeParams{ast_i32, true},
-    TypeParams{ast_u32, true},
-    TypeParams{ast_f32, true},
+    TypeParamsFor<bool>(false),
+    TypeParamsFor<i32>(true),
+    TypeParamsFor<u32>(true),
+    TypeParamsFor<f32>(true),
 
-    TypeParams{ast_alias<ast_bool>, false},
-    TypeParams{ast_alias<ast_i32>, true},
-    TypeParams{ast_alias<ast_u32>, true},
-    TypeParams{ast_alias<ast_f32>, true},
+    TypeParamsFor<alias<bool>>(false),
+    TypeParamsFor<alias<i32>>(true),
+    TypeParamsFor<alias<u32>>(true),
+    TypeParamsFor<alias<f32>>(true),
 
-    TypeParams{ast_vec3<ast_f32>, false},
-    TypeParams{ast_mat3x3<ast_f32>, false},
+    TypeParamsFor<vec3<f32>>(false),
+    TypeParamsFor<mat3x3<f32>>(false),
 
-    TypeParams{ast_alias<ast_vec3<ast_f32>>, false},
-    TypeParams{ast_alias<ast_mat3x3<ast_f32>>, false}};
+    TypeParamsFor<alias<vec3<f32>>>(false),
+    TypeParamsFor<alias<mat3x3<f32>>>(false),
+};
 
 using MultisampledTextureTypeTest = ResolverTestWithParam<TypeParams>;
 TEST_P(MultisampledTextureTypeTest, All) {
   auto& params = GetParam();
-  Global(
-      "a",
-      ty.multisampled_texture(ast::TextureDimension::k2d, params.type_func(ty)),
-      ast::StorageClass::kNone, nullptr,
-      ast::DecorationList{
-          create<ast::BindingDecoration>(0),
-          create<ast::GroupDecoration>(0),
-      });
+  Global(Source{{12, 34}}, "a",
+         ty.multisampled_texture(ast::TextureDimension::k2d,
+                                 params.type_func(*this)),
+         ast::StorageClass::kNone, nullptr,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(0),
+             create<ast::GroupDecoration>(0),
+         });
 
   if (params.is_valid) {
     EXPECT_TRUE(r()->Resolve()) << r()->error();
   } else {
     EXPECT_FALSE(r()->Resolve());
+    EXPECT_EQ(r()->error(),
+              "12:34 error: texture_multisampled_2d<type>: type must be f32, "
+              "i32 or u32");
   }
 }
 INSTANTIATE_TEST_SUITE_P(ResolverTypeValidationTest,
@@ -510,13 +552,13 @@ static constexpr DimensionParams Dimension_cases[] = {
 using StorageTextureDimensionTest = ResolverTestWithParam<DimensionParams>;
 TEST_P(StorageTextureDimensionTest, All) {
   // [[group(0), binding(0)]]
-  // var a : [[access(read)]] texture_storage_*<ru32int>;
+  // var a : texture_storage_*<ru32int, read>;
   auto& params = GetParam();
 
-  auto* st = ty.storage_texture(params.dim, ast::ImageFormat::kR32Uint);
-  auto* ac = ty.access(ast::AccessControl::kReadOnly, st);
+  auto* st = ty.storage_texture(Source{{12, 34}}, params.dim,
+                                ast::ImageFormat::kR32Uint, ast::Access::kRead);
 
-  Global("a", ac, ast::StorageClass::kNone, nullptr,
+  Global("a", st, ast::StorageClass::kNone,
          ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
@@ -526,6 +568,9 @@ TEST_P(StorageTextureDimensionTest, All) {
     EXPECT_TRUE(r()->Resolve()) << r()->error();
   } else {
     EXPECT_FALSE(r()->Resolve());
+    EXPECT_EQ(
+        r()->error(),
+        "12:34 error: cube dimensions for storage textures are not supported");
   }
 }
 INSTANTIATE_TEST_SUITE_P(ResolverTypeValidationTest,
@@ -578,42 +623,41 @@ using StorageTextureFormatTest = ResolverTestWithParam<FormatParams>;
 TEST_P(StorageTextureFormatTest, All) {
   auto& params = GetParam();
   // [[group(0), binding(0)]]
-  // var a : [[access(read)]] texture_storage_1d<*>;
+  // var a : texture_storage_1d<*, read>;
   // [[group(0), binding(1)]]
-  // var b : [[access(read)]] texture_storage_2d<*>;
+  // var b : texture_storage_2d<*, read>;
   // [[group(0), binding(2)]]
-  // var c : [[access(read)]] texture_storage_2d_array<*>;
+  // var c : texture_storage_2d_array<*, read>;
   // [[group(0), binding(3)]]
-  // var d : [[access(read)]] texture_storage_3d<*>;
+  // var d : texture_storage_3d<*, read>;
 
-  auto* st_a = ty.storage_texture(ast::TextureDimension::k1d, params.format);
-  auto* ac_a = ty.access(ast::AccessControl::kReadOnly, st_a);
-  Global("a", ac_a, ast::StorageClass::kNone, nullptr,
+  auto* st_a = ty.storage_texture(Source{{12, 34}}, ast::TextureDimension::k1d,
+                                  params.format, ast::Access::kRead);
+  Global("a", st_a, ast::StorageClass::kNone,
          ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
          });
 
-  auto* st_b = ty.storage_texture(ast::TextureDimension::k2d, params.format);
-  auto* ac_b = ty.access(ast::AccessControl::kReadOnly, st_b);
-  Global("b", ac_b, ast::StorageClass::kNone, nullptr,
+  auto* st_b = ty.storage_texture(ast::TextureDimension::k2d, params.format,
+                                  ast::Access::kRead);
+  Global("b", st_b, ast::StorageClass::kNone,
          ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(1),
          });
 
-  auto* st_c =
-      ty.storage_texture(ast::TextureDimension::k2dArray, params.format);
-  auto* ac_c = ty.access(ast::AccessControl::kReadOnly, st_c);
-  Global("c", ac_c, ast::StorageClass::kNone, nullptr,
+  auto* st_c = ty.storage_texture(ast::TextureDimension::k2dArray,
+                                  params.format, ast::Access::kRead);
+  Global("c", st_c, ast::StorageClass::kNone,
          ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(2),
          });
 
-  auto* st_d = ty.storage_texture(ast::TextureDimension::k3d, params.format);
-  auto* ac_d = ty.access(ast::AccessControl::kReadOnly, st_d);
-  Global("d", ac_d, ast::StorageClass::kNone, nullptr,
+  auto* st_d = ty.storage_texture(ast::TextureDimension::k3d, params.format,
+                                  ast::Access::kRead);
+  Global("d", st_d, ast::StorageClass::kNone,
          ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(3),
@@ -623,20 +667,44 @@ TEST_P(StorageTextureFormatTest, All) {
     EXPECT_TRUE(r()->Resolve()) << r()->error();
   } else {
     EXPECT_FALSE(r()->Resolve());
+    EXPECT_EQ(r()->error(),
+              "12:34 error: image format must be one of the texel formats "
+              "specified for storage textues in "
+              "https://gpuweb.github.io/gpuweb/wgsl/#texel-formats");
   }
 }
 INSTANTIATE_TEST_SUITE_P(ResolverTypeValidationTest,
                          StorageTextureFormatTest,
                          testing::ValuesIn(format_cases));
 
-using StorageTextureAccessControlTest = ResolverTest;
+using StorageTextureAccessTest = ResolverTest;
 
-TEST_F(StorageTextureAccessControlTest, MissingAccessControl_Fail) {
+TEST_F(StorageTextureAccessTest, MissingAccess_Fail) {
   // [[group(0), binding(0)]]
   // var a : texture_storage_1d<ru32int>;
 
-  auto* st = ty.storage_texture(ast::TextureDimension::k1d,
-                                ast::ImageFormat::kR32Uint);
+  auto* st =
+      ty.storage_texture(Source{{12, 34}}, ast::TextureDimension::k1d,
+                         ast::ImageFormat::kR32Uint, ast::Access::kUndefined);
+
+  Global("a", st, ast::StorageClass::kNone,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(0),
+             create<ast::GroupDecoration>(0),
+         });
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: storage textures must have access control");
+}
+
+TEST_F(StorageTextureAccessTest, RWAccess_Fail) {
+  // [[group(0), binding(0)]]
+  // var a : texture_storage_1d<ru32int, read_write>;
+
+  auto* st =
+      ty.storage_texture(Source{{12, 34}}, ast::TextureDimension::k1d,
+                         ast::ImageFormat::kR32Uint, ast::Access::kReadWrite);
 
   Global("a", st, ast::StorageClass::kNone, nullptr,
          ast::DecorationList{
@@ -645,33 +713,19 @@ TEST_F(StorageTextureAccessControlTest, MissingAccessControl_Fail) {
          });
 
   EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: storage textures only support read-only and "
+            "write-only access");
 }
 
-TEST_F(StorageTextureAccessControlTest, RWAccessControl_Fail) {
+TEST_F(StorageTextureAccessTest, ReadOnlyAccess_Pass) {
   // [[group(0), binding(0)]]
-  // var a : [[access(readwrite)]] texture_storage_1d<ru32int>;
+  // var a : texture_storage_1d<ru32int, read>;
 
   auto* st = ty.storage_texture(ast::TextureDimension::k1d,
-                                ast::ImageFormat::kR32Uint);
+                                ast::ImageFormat::kR32Uint, ast::Access::kRead);
 
   Global("a", st, ast::StorageClass::kNone, nullptr,
-         ast::DecorationList{
-             create<ast::BindingDecoration>(0),
-             create<ast::GroupDecoration>(0),
-         });
-
-  EXPECT_FALSE(r()->Resolve());
-}
-
-TEST_F(StorageTextureAccessControlTest, ReadOnlyAccessControl_Pass) {
-  // [[group(0), binding(0)]]
-  // var a : [[access(read)]] texture_storage_1d<ru32int>;
-
-  auto* st = ty.storage_texture(ast::TextureDimension::k1d,
-                                ast::ImageFormat::kR32Uint);
-  auto* ac = ty.access(ast::AccessControl::kReadOnly, st);
-
-  Global("a", ac, ast::StorageClass::kNone, nullptr,
          ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
@@ -680,15 +734,15 @@ TEST_F(StorageTextureAccessControlTest, ReadOnlyAccessControl_Pass) {
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 }
 
-TEST_F(StorageTextureAccessControlTest, WriteOnlyAccessControl_Pass) {
+TEST_F(StorageTextureAccessTest, WriteOnlyAccess_Pass) {
   // [[group(0), binding(0)]]
-  // var a : [[access(write)]] texture_storage_1d<ru32int>;
+  // var a : texture_storage_1d<ru32int, write>;
 
-  auto* st = ty.storage_texture(ast::TextureDimension::k1d,
-                                ast::ImageFormat::kR32Uint);
-  auto* ac = ty.access(ast::AccessControl::kWriteOnly, st);
+  auto* st =
+      ty.storage_texture(ast::TextureDimension::k1d, ast::ImageFormat::kR32Uint,
+                         ast::Access::kWrite);
 
-  Global("a", ac, ast::StorageClass::kNone, nullptr,
+  Global("a", st, ast::StorageClass::kNone, nullptr,
          ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
@@ -698,6 +752,126 @@ TEST_F(StorageTextureAccessControlTest, WriteOnlyAccessControl_Pass) {
 }
 
 }  // namespace StorageTextureTests
+
+namespace MatrixTests {
+struct Params {
+  uint32_t columns;
+  uint32_t rows;
+  builder::ast_type_func_ptr elem_ty;
+};
+
+template <typename T>
+constexpr Params ParamsFor(uint32_t columns, uint32_t rows) {
+  return Params{columns, rows, DataType<T>::AST};
+}
+
+using ValidMatrixTypes = ResolverTestWithParam<Params>;
+TEST_P(ValidMatrixTypes, Okay) {
+  // var a : matNxM<EL_TY>;
+  auto& params = GetParam();
+  Global("a", ty.mat(params.elem_ty(*this), params.columns, params.rows),
+         ast::StorageClass::kPrivate);
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+}
+INSTANTIATE_TEST_SUITE_P(ResolverTypeValidationTest,
+                         ValidMatrixTypes,
+                         testing::Values(ParamsFor<f32>(2, 2),
+                                         ParamsFor<f32>(2, 3),
+                                         ParamsFor<f32>(2, 4),
+                                         ParamsFor<f32>(3, 2),
+                                         ParamsFor<f32>(3, 3),
+                                         ParamsFor<f32>(3, 4),
+                                         ParamsFor<f32>(4, 2),
+                                         ParamsFor<f32>(4, 3),
+                                         ParamsFor<f32>(4, 4),
+                                         ParamsFor<alias<f32>>(4, 2),
+                                         ParamsFor<alias<f32>>(4, 3),
+                                         ParamsFor<alias<f32>>(4, 4)));
+
+using InvalidMatrixElementTypes = ResolverTestWithParam<Params>;
+TEST_P(InvalidMatrixElementTypes, InvalidElementType) {
+  // var a : matNxM<EL_TY>;
+  auto& params = GetParam();
+  Global("a",
+         ty.mat(Source{{12, 34}}, params.elem_ty(*this), params.columns,
+                params.rows),
+         ast::StorageClass::kPrivate);
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: matrix element type must be 'f32'");
+}
+INSTANTIATE_TEST_SUITE_P(ResolverTypeValidationTest,
+                         InvalidMatrixElementTypes,
+                         testing::Values(ParamsFor<bool>(4, 2),
+                                         ParamsFor<i32>(4, 3),
+                                         ParamsFor<u32>(4, 4),
+                                         ParamsFor<vec2<f32>>(2, 2),
+                                         ParamsFor<vec3<i32>>(2, 3),
+                                         ParamsFor<vec4<u32>>(2, 4),
+                                         ParamsFor<mat2x2<f32>>(3, 2),
+                                         ParamsFor<mat3x3<f32>>(3, 3),
+                                         ParamsFor<mat4x4<f32>>(3, 4),
+                                         ParamsFor<array<2, f32>>(4, 2)));
+}  // namespace MatrixTests
+
+namespace VectorTests {
+struct Params {
+  uint32_t width;
+  builder::ast_type_func_ptr elem_ty;
+};
+
+template <typename T>
+constexpr Params ParamsFor(uint32_t width) {
+  return Params{width, DataType<T>::AST};
+}
+
+using ValidVectorTypes = ResolverTestWithParam<Params>;
+TEST_P(ValidVectorTypes, Okay) {
+  // var a : vecN<EL_TY>;
+  auto& params = GetParam();
+  Global("a", ty.vec(params.elem_ty(*this), params.width),
+         ast::StorageClass::kPrivate);
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+}
+INSTANTIATE_TEST_SUITE_P(ResolverTypeValidationTest,
+                         ValidVectorTypes,
+                         testing::Values(ParamsFor<bool>(2),
+                                         ParamsFor<f32>(2),
+                                         ParamsFor<i32>(2),
+                                         ParamsFor<u32>(2),
+                                         ParamsFor<bool>(3),
+                                         ParamsFor<f32>(3),
+                                         ParamsFor<i32>(3),
+                                         ParamsFor<u32>(3),
+                                         ParamsFor<bool>(4),
+                                         ParamsFor<f32>(4),
+                                         ParamsFor<i32>(4),
+                                         ParamsFor<u32>(4),
+                                         ParamsFor<alias<bool>>(4),
+                                         ParamsFor<alias<f32>>(4),
+                                         ParamsFor<alias<i32>>(4),
+                                         ParamsFor<alias<u32>>(4)));
+
+using InvalidVectorElementTypes = ResolverTestWithParam<Params>;
+TEST_P(InvalidVectorElementTypes, InvalidElementType) {
+  // var a : vecN<EL_TY>;
+  auto& params = GetParam();
+  Global("a", ty.vec(Source{{12, 34}}, params.elem_ty(*this), params.width),
+         ast::StorageClass::kPrivate);
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(
+      r()->error(),
+      "12:34 error: vector element type must be 'bool', 'f32', 'i32' or 'u32'");
+}
+INSTANTIATE_TEST_SUITE_P(ResolverTypeValidationTest,
+                         InvalidVectorElementTypes,
+                         testing::Values(ParamsFor<vec2<f32>>(2),
+                                         ParamsFor<vec3<i32>>(2),
+                                         ParamsFor<vec4<u32>>(2),
+                                         ParamsFor<mat2x2<f32>>(2),
+                                         ParamsFor<mat3x3<f32>>(2),
+                                         ParamsFor<mat4x4<f32>>(2),
+                                         ParamsFor<array<2, f32>>(2)));
+}  // namespace VectorTests
 
 }  // namespace
 }  // namespace resolver

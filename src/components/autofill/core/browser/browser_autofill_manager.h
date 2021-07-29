@@ -51,6 +51,7 @@ namespace autofill {
 
 class AutofillField;
 class AutofillClient;
+class AutofillSuggestionGenerator;
 class BrowserAutofillManagerTestDelegate;
 class AutofillProfile;
 class AutofillType;
@@ -126,6 +127,8 @@ class BrowserAutofillManager
 #endif
 
   // Called from our external delegate so they cannot be private.
+  // FillCreditCardForm() is also called by Autofill Assistant through
+  // ContentAutofillDriver::FillFormForAssistant().
   virtual void FillOrPreviewForm(AutofillDriver::RendererFormDataAction action,
                                  int query_id,
                                  const FormData& form,
@@ -140,10 +143,18 @@ class BrowserAutofillManager
                           const FormData& form,
                           const FormFieldData& field);
 
-  // Called from autofill assistant.
+  // Called only from Autofill Assistant through
+  // ContentAutofillDriver::FillFormForAssistant().
   virtual void FillProfileForm(const autofill::AutofillProfile& profile,
                                const FormData& form,
                                const FormFieldData& field);
+
+  // Fetches the related virtual card information given the related actual card
+  // |guid| and fills the information into the form.
+  virtual void FillVirtualCardInformation(const std::string& guid,
+                                          int query_id,
+                                          const FormData& form,
+                                          const FormFieldData& field);
 
   // Returns true if the value/identifier is deletable. Fills out
   // |title| and |body| with relevant user-facing text.
@@ -461,7 +472,7 @@ class BrowserAutofillManager
 
   // CreditCardAccessManager::Accessor
   void OnCreditCardFetched(
-      bool did_succeed,
+      CreditCardFetchResult result,
       const CreditCard* credit_card = nullptr,
       const std::u16string& cvc = std::u16string()) override;
 
@@ -541,6 +552,7 @@ class BrowserAutofillManager
   // |should_display_gpay_logo| will be set to true if there is no credit card
   // suggestions or all suggestions come from Payments server.
   std::vector<Suggestion> GetCreditCardSuggestions(
+      const FormStructure& form_structure,
       const FormFieldData& field,
       const AutofillType& type,
       bool* should_display_gpay_logo) const;
@@ -704,6 +716,9 @@ class BrowserAutofillManager
   // suggestions. Initialized when BrowserAutofillManager is created.
   // |offer_manager_| is never null.
   AutofillOfferManager* offer_manager_;
+
+  // Helper class to generate Autofill suggestions.
+  std::unique_ptr<AutofillSuggestionGenerator> suggestion_generator_;
 
   // Collected information about the autofill form where a credit card will be
   // filled.

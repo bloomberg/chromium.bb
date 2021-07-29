@@ -9,9 +9,9 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/app_types.h"
 #include "ash/display/privacy_screen_controller.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
-#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/shelf_item.h"
@@ -141,7 +141,7 @@ void UpdateAXNodeDataPosition(
 // Returns true if the given |item| should be excluded from the view, since
 // certain shortcuts can be associated with a disabled feature behind a flag,
 // or specific device property, e.g. keyboard layout.
-bool ShouldExcludeItem(const KeyboardShortcutItem& item) {
+bool ShouldExcludeItem(const ash::KeyboardShortcutItem& item) {
   switch (item.description_message_id) {
     case IDS_KSV_DESCRIPTION_OPEN_GOOGLE_ASSISTANT:
       return ui::DeviceKeyboardHasAssistantKey();
@@ -340,6 +340,12 @@ void KeyboardShortcutView::BackButtonPressed() {
   search_box_view_->SetSearchBoxActive(false, ui::ET_UNKNOWN);
 }
 
+void KeyboardShortcutView::CloseButtonPressed() {
+  // After clicking search box close button focus the search box text field.
+  search_box_view_->search_box()->RequestFocus();
+  search_box_view_->ClearSearch();
+}
+
 void KeyboardShortcutView::ActiveChanged(ash::SearchBoxViewBase* sender) {
   const bool is_search_box_active = sender->is_search_box_active();
   is_search_box_empty_ = sender->IsSearchBoxTrimmedQueryEmpty();
@@ -348,6 +354,10 @@ void KeyboardShortcutView::ActiveChanged(ash::SearchBoxViewBase* sender) {
         base::UserMetricsAction("KeyboardShortcutViewer.Search"));
   }
   UpdateViewsLayout(is_search_box_active);
+}
+
+bool KeyboardShortcutView::CanSelectSearchResults() {
+  return true;
 }
 
 KeyboardShortcutView::KeyboardShortcutView() {
@@ -365,9 +375,9 @@ KeyboardShortcutView::KeyboardShortcutView() {
 void KeyboardShortcutView::InitViews() {
   TRACE_EVENT0("shortcut_viewer", "InitViews");
   // Init search box view.
-  search_box_view_ = std::make_unique<KSVSearchBoxView>(this);
-  search_box_view_->Init();
-  AddChildView(search_box_view_.get());
+  auto search_box_view = std::make_unique<KSVSearchBoxView>(this);
+  search_box_view->Init();
+  search_box_view_ = AddChildView(std::move(search_box_view));
 
   // Init no search result illustration view.
   search_no_result_view_ = CreateNoSearchResultView();
@@ -410,26 +420,26 @@ void KeyboardShortcutView::InitViews() {
   // the startup time, we only initialize the first category pane, which is
   // visible to user, and defer initialization of other categories in the
   // background.
-  InitCategoriesTabbedPane(ShortcutCategory::kPopular);
+  InitCategoriesTabbedPane(ash::ShortcutCategory::kPopular);
 }
 
 void KeyboardShortcutView::InitCategoriesTabbedPane(
-    absl::optional<ShortcutCategory> initial_category) {
+    absl::optional<ash::ShortcutCategory> initial_category) {
   active_tab_index_ = categories_tabbed_pane_->GetSelectedTabIndex();
   // If the tab count is 0, GetSelectedTabIndex() will return kNoSelectedTab,
   // which we do not want to cache.
   if (active_tab_index_ == views::TabStrip::kNoSelectedTab)
     active_tab_index_ = 0;
 
-  ShortcutCategory current_category = ShortcutCategory::kUnknown;
+  ash::ShortcutCategory current_category = ash::ShortcutCategory::kUnknown;
   KeyboardShortcutItemListView* item_list_view = nullptr;
   std::vector<KeyboardShortcutItemView*> shortcut_items;
   const bool already_has_tabs = categories_tabbed_pane_->GetTabCount() > 0;
   size_t tab_index = 0;
   views::View* const tab_contents = categories_tabbed_pane_->children()[1];
   for (const auto& item_view : shortcut_views_) {
-    const ShortcutCategory category = item_view->category();
-    DCHECK_NE(ShortcutCategory::kUnknown, category);
+    const ash::ShortcutCategory category = item_view->category();
+    DCHECK_NE(ash::ShortcutCategory::kUnknown, category);
     if (current_category != category) {
       current_category = category;
       std::unique_ptr<views::View> content_view;
@@ -520,7 +530,7 @@ void KeyboardShortcutView::ShowSearchResults(
   auto found_items_list_view = std::make_unique<KeyboardShortcutItemListView>();
   base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents finder(
       search_query);
-  ShortcutCategory current_category = ShortcutCategory::kUnknown;
+  ash::ShortcutCategory current_category = ash::ShortcutCategory::kUnknown;
   bool has_category_item = false;
   found_shortcut_items_.clear();
 
@@ -537,7 +547,7 @@ void KeyboardShortcutView::ShowSearchResults(
     // |shortcut_label_view_|.
     if (finder.Search(description_text, &match_index, &match_length) ||
         finder.Search(shortcut_text, nullptr, nullptr)) {
-      const ShortcutCategory category = item_view->category();
+      const ash::ShortcutCategory category = item_view->category();
       if (current_category != category) {
         current_category = category;
         has_category_item = false;
@@ -611,7 +621,7 @@ KeyboardShortcutView::GetShortcutViewsForTesting() const {
 }
 
 KSVSearchBoxView* KeyboardShortcutView::GetSearchBoxViewForTesting() {
-  return search_box_view_.get();
+  return search_box_view_;
 }
 
 const std::vector<KeyboardShortcutItemView*>&

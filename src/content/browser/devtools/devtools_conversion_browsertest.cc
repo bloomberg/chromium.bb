@@ -4,10 +4,8 @@
 
 #include <iostream>
 
-#include "base/test/scoped_feature_list.h"
 #include "content/browser/conversions/conversion_manager_impl.h"
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -24,7 +22,6 @@ class DevToolsConversionBrowserTest : public DevToolsProtocolTest {
  public:
   DevToolsConversionBrowserTest() {
     ConversionManagerImpl::RunInMemoryForTesting();
-    feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -53,9 +50,6 @@ class DevToolsConversionBrowserTest : public DevToolsProtocolTest {
   WebContents* web_contents() { return shell()->web_contents(); }
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
 
- protected:
-  base::test::ScopedFeatureList feature_list_;
-
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
@@ -75,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsConversionBrowserTest,
   EXPECT_EQ(notifications_.size(), 0ul);
 
   // 3) Trigger the conversion redirect.
-  EXPECT_TRUE(ExecJs(web_contents(), "registerConversion(123)"));
+  EXPECT_TRUE(ExecJs(web_contents(), "registerConversion({data: 123})"));
 
   // 4) Verify the request is marked as successful and not as failed.
   WaitForNotification("Network.loadingFinished", true);

@@ -46,7 +46,7 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if BUILDFLAG(ENABLE_CEF)
-#include "cef/libcef/browser/alloy/alloy_browser_host_impl.h"
+#include "cef/libcef/browser/alloy/alloy_dialog_util.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -398,25 +398,21 @@ void NetExportMessageHandler::ShowSelectFileDialog(
 
 void NetExportMessageHandler::ShowCefSaveAsDialog(
     content::WebContents* web_contents) {
-  CefRefPtr<AlloyBrowserHostImpl> cef_browser =
-      AlloyBrowserHostImpl::GetBrowserForContents(web_contents);
-  if (!cef_browser)
-    return;
-
   base::FilePath initial_dir;
   if (!last_save_dir.Pointer()->empty())
     initial_dir = *last_save_dir.Pointer();
   base::FilePath initial_path =
       initial_dir.Append(FILE_PATH_LITERAL("chrome-net-export-log.json"));
 
-  CefFileDialogRunner::FileChooserParams params;
+  blink::mojom::FileChooserParams params;
   params.mode = blink::mojom::FileChooserParams::Mode::kSave;
   params.default_file_name = initial_path;
-  params.accept_types.push_back(CefString(initial_path.Extension()));
+  params.accept_types.push_back(
+      alloy::FilePathTypeToString16(initial_path.Extension()));
 
-  cef_browser->RunFileChooser(
-      params, base::BindOnce(&NetExportMessageHandler::SaveAsDialogDismissed,
-                             weak_ptr_factory_.GetWeakPtr()));
+  alloy::RunFileChooser(web_contents, params,
+      base::BindOnce(&NetExportMessageHandler::SaveAsDialogDismissed,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void NetExportMessageHandler::SaveAsDialogDismissed(

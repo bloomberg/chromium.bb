@@ -16,7 +16,7 @@
 
 #include <utility>
 
-#include "src/ast/named_type.h"
+#include "src/ast/type_decl.h"
 #include "src/program_builder.h"
 
 TINT_INSTANTIATE_TYPEINFO(tint::ast::Module);
@@ -36,23 +36,23 @@ Module::Module(ProgramID program_id,
       continue;
     }
 
-    if (auto* ty = decl->As<ast::NamedType>()) {
-      constructed_types_.push_back(ty);
+    if (auto* ty = decl->As<ast::TypeDecl>()) {
+      type_decls_.push_back(ty);
     } else if (auto* func = decl->As<Function>()) {
       functions_.push_back(func);
     } else if (auto* var = decl->As<Variable>()) {
       global_variables_.push_back(var);
     } else {
       diag::List diagnostics;
-      TINT_ICE(diagnostics) << "Unknown global declaration type";
+      TINT_ICE(AST, diagnostics) << "Unknown global declaration type";
     }
   }
 }
 
 Module::~Module() = default;
 
-const ast::NamedType* Module::LookupType(Symbol name) const {
-  for (auto* ty : ConstructedTypes()) {
+const ast::TypeDecl* Module::LookupType(Symbol name) const {
+  for (auto* ty : TypeDecls()) {
     if (ty->name() == name) {
       return ty;
     }
@@ -61,21 +61,22 @@ const ast::NamedType* Module::LookupType(Symbol name) const {
 }
 
 void Module::AddGlobalVariable(ast::Variable* var) {
-  TINT_ASSERT(var);
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(var, program_id());
+  TINT_ASSERT(AST, var);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, var, program_id());
   global_variables_.push_back(var);
   global_declarations_.push_back(var);
 }
 
-void Module::AddConstructedType(ast::NamedType* type) {
-  TINT_ASSERT(type);
-  constructed_types_.push_back(type);
+void Module::AddTypeDecl(ast::TypeDecl* type) {
+  TINT_ASSERT(AST, type);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, type, program_id());
+  type_decls_.push_back(type);
   global_declarations_.push_back(type);
 }
 
 void Module::AddFunction(ast::Function* func) {
-  TINT_ASSERT(func);
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(func, program_id());
+  TINT_ASSERT(AST, func);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, func, program_id());
   functions_.push_back(func);
   global_declarations_.push_back(func);
 }
@@ -87,19 +88,32 @@ Module* Module::Clone(CloneContext* ctx) const {
 }
 
 void Module::Copy(CloneContext* ctx, const Module* src) {
-  for (auto* decl : ctx->Clone(src->global_declarations_)) {
+  ctx->Clone(global_declarations_, src->global_declarations_);
+
+  // During the clone, declarations may have been placed into the module.
+  // Clear everything out, as we're about to re-bin the declarations.
+  type_decls_.clear();
+  functions_.clear();
+  global_variables_.clear();
+
+  for (auto* decl : global_declarations_) {
     if (!decl) {
-      TINT_ICE(ctx->dst->Diagnostics()) << "src global declaration was nullptr";
+      TINT_ICE(AST, ctx->dst->Diagnostics())
+          << "src global declaration was nullptr";
       continue;
     }
-    if (auto* ty = decl->As<ast::NamedType>()) {
-      AddConstructedType(ty);
+    if (auto* type = decl->As<ast::TypeDecl>()) {
+      TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, type, program_id());
+      type_decls_.push_back(type);
     } else if (auto* func = decl->As<Function>()) {
-      AddFunction(func);
+      TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, func, program_id());
+      functions_.push_back(func);
     } else if (auto* var = decl->As<Variable>()) {
-      AddGlobalVariable(var);
+      TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, var, program_id());
+      global_variables_.push_back(var);
     } else {
-      TINT_ICE(ctx->dst->Diagnostics()) << "Unknown global declaration type";
+      TINT_ICE(AST, ctx->dst->Diagnostics())
+          << "Unknown global declaration type";
     }
   }
 }
@@ -110,14 +124,11 @@ void Module::to_str(const sem::Info& sem,
   make_indent(out, indent);
   out << "Module{" << std::endl;
   indent += 2;
-  for (auto* ty : constructed_types_) {
+  for (auto* ty : type_decls_) {
     make_indent(out, indent);
     if (auto* alias = ty->As<ast::Alias>()) {
       out << alias->symbol().to_str() << " -> " << alias->type()->type_name()
           << std::endl;
-      if (auto* str = alias->type()->As<ast::Struct>()) {
-        str->to_str(sem, out, indent);
-      }
     } else if (auto* str = ty->As<ast::Struct>()) {
       str->to_str(sem, out, indent);
     }

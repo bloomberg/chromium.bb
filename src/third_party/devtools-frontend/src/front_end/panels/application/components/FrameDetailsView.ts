@@ -1,17 +1,20 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import type {StackTraceData} from './StackTrace.js';
 import {StackTrace} from './StackTrace.js';
+import type {PermissionsPolicySectionData} from './PermissionsPolicySection.js';
+import {PermissionsPolicySection, renderIconLink} from './PermissionsPolicySection.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as Network from '../../network/network.js';
+import * as NetworkForward from '../../../panels/network/forward/forward.js';
 import type * as Platform from '../../../core/platform/platform.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';  // eslint-disable-line no-unused-vars
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as ExpandableList from '../../../ui/components/expandable_list/expandable_list.js';
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
@@ -19,6 +22,11 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as Protocol from '../../../generated/protocol.js';
+import type {OriginTrialTreeViewData} from './OriginTrialTreeView.js';
+import {OriginTrialTreeView} from './OriginTrialTreeView.js';
+import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+
+import frameDetailsReportViewStyles from './frameDetailsReportView.css.js';
 
 const UIStrings = {
   /**
@@ -77,7 +85,7 @@ const UIStrings = {
   /**
   *@description Description for ad frame type
   */
-  thisFrameHasBeenIdentifiedAsThe: 'This frame has been identified as the root frame of an ad',
+  rootDescription: 'This frame has been identified as the root frame of an ad',
   /**
   *@description Value for ad frame type
   */
@@ -85,7 +93,7 @@ const UIStrings = {
   /**
   *@description Description for ad frame type
   */
-  thisFrameHasBeenIdentifiedAsTheA: 'This frame has been identified as a child frame of an ad',
+  childDescription: 'This frame has been identified as a child frame of an ad',
   /**
   *@description Value for ad frame type
   */
@@ -210,40 +218,23 @@ const UIStrings = {
   */
   creationStackTraceExplanation: 'This frame was created programmatically. The stack trace shows where this happened.',
   /**
-   *@description Label for a button. When clicked more details (for the content this button refers to) will be shown.
+  *@description Text descripting why a frame has been indentified as an advertisement.
+  */
+  parentIsAdExplanation: 'This frame is considered an ad frame because its parent frame is an ad frame.',
+  /**
+  *@description Text descripting why a frame has been indentified as an advertisement.
+  */
+  matchedBlockingRuleExplanation:
+      'This frame is considered an ad frame because its current (or previous) main document is an ad resource.',
+  /**
+  *@description Text descripting why a frame has been indentified as an advertisement.
+  */
+  createdByAdScriptExplanation:
+      'There was an ad script in the (async) stack when this frame was created. Examining the creation stack trace of this frame might provide more insight.',
+  /**
+   *@description Label for a list of origin trials that associated with at least one token.
    */
-  showDetails: 'Show details',
-  /**
-  *@description Label for a button. When clicked some details (for the content this button refers to) will be hidden.
-  */
-  hideDetails: 'Hide details',
-  /**
-  *@description Label for a list of features which are allowed according to the current Permissions policy
-  *(a mechanism that allows developers to enable/disable browser features and APIs (e.g. camera, geolocation, autoplay))
-  */
-  allowedFeatures: 'Allowed Features',
-  /**
-  *@description Label for a list of features which are disabled according to the current Permissions policy
-  *(a mechanism that allows developers to enable/disable browser features and APIs (e.g. camera, geolocation, autoplay))
-  */
-  disabledFeatures: 'Disabled Features',
-  /**
-  *@description Tooltip text for a link to a specific request's headers in the Network panel.
-  */
-  clickToShowHeader: 'Click to reveal the request whose "`Permissions-Policy`" HTTP header disables this feature.',
-  /**
-  *@description Tooltip text for a link to a specific iframe in the Elements panel (Iframes can be nested, the link goes
-  *  to the outer-most iframe which blocks a certain feature).
-  */
-  clickToShowIframe: 'Click to reveal the top-most iframe which does not allow this feature in the elements panel.',
-  /**
-  *@description Text describing that a specific feature is blocked by not being included in the iframe's "allow" attribute.
-  */
-  disabledByIframe: 'missing in iframe "`allow`" attribute',
-  /**
-  *@description Text describing that a specific feature is blocked by a Permissions Policy specified in a request header.
-  */
-  disabledByHeader: 'disabled by "`Permissions-Policy`" header',
+  originTrials: 'Origin Trials',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/FrameDetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -264,252 +255,75 @@ export class FrameDetailsView extends UI.ThrottledWidget.ThrottledWidget {
   }
 }
 
+const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
+
 export interface FrameDetailsReportViewData {
   frame: SDK.ResourceTreeModel.ResourceTreeFrame;
 }
 
 export class FrameDetailsReportView extends HTMLElement {
+  static readonly litTagName = LitHtml.literal`devtools-resources-frame-details-view`;
   private readonly shadow = this.attachShadow({mode: 'open'});
   private frame?: SDK.ResourceTreeModel.ResourceTreeFrame;
   private protocolMonitorExperimentEnabled = false;
-  private showPermissionsDisallowedDetails = false;
+  private permissionsPolicies: Promise<Protocol.Page.PermissionsPolicyFeatureState[]|null>|null = null;
+  private permissionsPolicySectionData: PermissionsPolicySectionData = {policies: [], showDetails: false};
 
   connectedCallback(): void {
     this.protocolMonitorExperimentEnabled = Root.Runtime.experiments.isEnabled('protocolMonitor');
+    this.shadow.adoptedStyleSheets = [frameDetailsReportViewStyles];
   }
 
   set data(data: FrameDetailsReportViewData) {
     this.frame = data.frame;
+    if (!this.permissionsPolicies && this.frame) {
+      this.permissionsPolicies = this.frame.getPermissionsPolicyState();
+    }
     this.render();
   }
 
   private async render(): Promise<void> {
-    if (!this.frame) {
-      return;
-    }
+    await coordinator.write('FrameDetailsView render', () => {
+      if (!this.frame) {
+        return;
+      }
 
-    // Disabled until https://crbug.com/1079231 is fixed.
-    // clang-format off
-    LitHtml.render(LitHtml.html`
-      <style>
-        .text-ellipsis {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-
-        button ~ .text-ellipsis {
-          padding-left: 2px;
-        }
-
-        .link,
-        .devtools-link {
-          color: var(--color-link);
-          text-decoration: underline;
-          cursor: pointer;
-          padding: 2px 0; /* adjust focus ring size */
-        }
-
-        button.link {
-          border: none;
-          background: none;
-          font-family: inherit;
-          font-size: inherit;
-        }
-
-        .inline-comment {
-          padding-left: 1ex;
-          white-space: pre-line;
-        }
-
-        .inline-comment::before {
-          content: "(";
-        }
-
-        .inline-comment::after {
-          content: ")";
-        }
-
-        .inline-name {
-          color: var(--color-text-secondary);
-          padding-left: 2ex;
-          user-select: none;
-          white-space: pre-line;
-        }
-
-        .inline-name::after {
-          content: ':\u00a0';
-        }
-
-        .inline-items {
-          display: flex;
-        }
-
-        .span-cols {
-          grid-column-start: span 2;
-          margin: 0 0 8px 30px;
-          line-height: 28px;
-        }
-
-        .policies-list {
-          padding-top: 3px;
-        }
-      </style>
-      <${ReportView.ReportView.Report.litTagName} .data=${{reportTitle: this.frame.displayName()} as ReportView.ReportView.ReportData}>
-        ${this.renderDocumentSection()}
-        ${this.renderIsolationSection()}
-        ${this.renderApiAvailabilitySection()}
-        ${LitHtml.Directives.until(this.renderPermissionPolicy(), LitHtml.nothing)}
-        ${this.protocolMonitorExperimentEnabled ? this.renderAdditionalInfoSection() : LitHtml.nothing}
-      </${ReportView.ReportView.Report.litTagName}>
-    `, this.shadow);
-    // clang-format on
+      // Disabled until https://crbug.com/1079231 is fixed.
+      // clang-format off
+      LitHtml.render(LitHtml.html`
+        <${ReportView.ReportView.Report.litTagName} .data=${{reportTitle: this.frame.displayName()} as ReportView.ReportView.ReportData}>
+          ${this.renderDocumentSection()}
+          ${this.renderIsolationSection()}
+          ${this.renderApiAvailabilitySection()}
+          ${this.renderOriginTrial()}
+          ${LitHtml.Directives.until(this.permissionsPolicies?.then(policies => {
+            this.permissionsPolicySectionData.policies = policies || [];
+            return LitHtml.html`
+              <${PermissionsPolicySection.litTagName}
+                .data=${this.permissionsPolicySectionData as PermissionsPolicySectionData}
+              >
+              </${PermissionsPolicySection.litTagName}>
+            `;
+          }), LitHtml.nothing)}
+          ${this.protocolMonitorExperimentEnabled ? this.renderAdditionalInfoSection() : LitHtml.nothing}
+        </${ReportView.ReportView.Report.litTagName}>
+      `, this.shadow, {host: this});
+      // clang-format on
+    });
   }
 
-  private async renderPermissionPolicy(): Promise<LitHtml.TemplateResult|{}> {
-    const policies = await (this.frame && this.frame.getPermissionsPolicyState());
-    if (!policies) {
+  private renderOriginTrial(): LitHtml.TemplateResult|{} {
+    const originTrials = this.frame?.getOriginTrials();
+    if (!originTrials?.length) {
       return LitHtml.nothing;
     }
-
-    const toggleShowPermissionsDisallowedDetails = (): void => {
-      this.showPermissionsDisallowedDetails = !this.showPermissionsDisallowedDetails;
-      this.render();
-    };
-
-    const renderAllowed = (): LitHtml.TemplateResult|{} => {
-      const allowed = policies.filter(p => p.allowed).map(p => p.feature).sort();
-      if (!allowed.length) {
-        return LitHtml.nothing;
-      }
-      return LitHtml.html`
-        <${ReportView.ReportView.ReportKey.litTagName}>${i18nString(UIStrings.allowedFeatures)}</${
-          ReportView.ReportView.ReportKey.litTagName}>
-        <${ReportView.ReportView.ReportValue.litTagName}>
-          ${allowed.join(', ')}
-        </${ReportView.ReportView.ReportValue.litTagName}>
-      `;
-    };
-
-    const renderDisallowed = async(): Promise<LitHtml.TemplateResult|{}> => {
-      const disallowed = policies.filter(p => !p.allowed).sort((a, b) => a.feature.localeCompare(b.feature));
-      if (!disallowed.length) {
-        return LitHtml.nothing;
-      }
-      if (!this.showPermissionsDisallowedDetails) {
-        return LitHtml.html`
-          <${ReportView.ReportView.ReportKey.litTagName}>${i18nString(UIStrings.disabledFeatures)}</${
-            ReportView.ReportView.ReportKey.litTagName}>
-          <${ReportView.ReportView.ReportValue.litTagName}>
-            ${disallowed.map(p => p.feature).join(', ')}
-            <button class="link" @click=${(): void => toggleShowPermissionsDisallowedDetails()}>
-              ${i18nString(UIStrings.showDetails)}
-            </button>
-          </${ReportView.ReportView.ReportValue.litTagName}>
-        `;
-      }
-
-      const frameManager = SDK.FrameManager.FrameManager.instance();
-      const featureRows = await Promise.all(disallowed.map(async policy => {
-        const frame = policy.locator ? frameManager.getFrame(policy.locator.frameId) : null;
-        const blockReason = policy.locator?.blockReason;
-        const linkTargetDOMNode = await (
-            blockReason === Protocol.Page.PermissionsPolicyBlockReason.IframeAttribute && frame &&
-            frame.getOwnerDOMNodeOrDocument());
-        const resource = frame && frame.resourceForURL(frame.url);
-        const linkTargetRequest =
-            blockReason === Protocol.Page.PermissionsPolicyBlockReason.Header && resource && resource.request;
-        const blockReasonText = blockReason === Protocol.Page.PermissionsPolicyBlockReason.IframeAttribute ?
-            i18nString(UIStrings.disabledByIframe) :
-            blockReason === Protocol.Page.PermissionsPolicyBlockReason.Header ? i18nString(UIStrings.disabledByHeader) :
-                                                                                '';
-        const revealHeader = async(): Promise<void> => {
-          if (!linkTargetRequest) {
-            return;
-          }
-          const headerName =
-              linkTargetRequest.responseHeaderValue('permissions-policy') ? 'permissions-policy' : 'feature-policy';
-          const requestLocation = Network.NetworkSearchScope.UIRequestLocation.responseHeaderMatch(
-              linkTargetRequest,
-              {name: headerName, value: ''},
-          );
-          // TODO(crbug.com/1196676) Refactor to use Common.Revealer
-          await Network.NetworkPanel.RequestLocationRevealer.instance().reveal(requestLocation);
-        };
-
-        return LitHtml.html`
-          <div class="permissions-row">
-            <div>
-              <${IconButton.Icon.Icon.litTagName} class="allowed-icon"
-                .data=${{color: '', iconName: 'error_icon', width: '14px'} as IconButton.Icon.IconData}>
-              </${IconButton.Icon.Icon.litTagName}>
-            </div>
-            <div class="feature-name text-ellipsis">
-              ${policy.feature}
-            </div>
-            <div class="block-reason">${blockReasonText}</div>
-            <div>
-              ${
-            linkTargetDOMNode ? this.renderIconLink(
-                                    'elements_panel_icon',
-                                    i18nString(UIStrings.clickToShowIframe),
-                                    (): Promise<void> => Common.Revealer.reveal(linkTargetDOMNode),
-                                    ) :
-                                LitHtml.nothing}
-              ${
-            linkTargetRequest ? this.renderIconLink(
-                                    'network_panel_icon',
-                                    i18nString(UIStrings.clickToShowHeader),
-                                    revealHeader,
-                                    ) :
-                                LitHtml.nothing}
-            </div>
-          </div>
-        `;
-      }));
-
-      return LitHtml.html`
-        <${ReportView.ReportView.ReportKey.litTagName}>${i18nString(UIStrings.disabledFeatures)}</${
-          ReportView.ReportView.ReportKey.litTagName}>
-        <${ReportView.ReportView.ReportValue.litTagName} class="policies-list">
-          <style>
-            .permissions-row {
-              display: flex;
-              line-height: 22px;
-            }
-
-            .permissions-row div {
-              padding-right: 5px;
-            }
-
-            .feature-name {
-              width: 135px;
-            }
-
-            .allowed-icon {
-              padding: 2.5px 0;
-            }
-
-            .block-reason {
-              width: 215px;
-            }
-          </style>
-          ${featureRows}
-          <div class="permissions-row">
-            <button class="link" @click=${(): void => toggleShowPermissionsDisallowedDetails()}>
-              ${i18nString(UIStrings.hideDetails)}
-            </button>
-          </div>
-        </${ReportView.ReportView.ReportValue.litTagName}>
-      `;
-    };
-
     return LitHtml.html`
-      <${ReportView.ReportView.ReportSectionHeader.litTagName}>${i18n.i18n.lockedString('Permissions Policy')}</${
-        ReportView.ReportView.ReportSectionHeader.litTagName}>
-      ${renderAllowed()}
-      ${LitHtml.Directives.until(renderDisallowed(), LitHtml.nothing)}
-      <${ReportView.ReportView.ReportSectionDivider.litTagName}></${
+    <${ReportView.ReportView.ReportSectionHeader.litTagName}>${i18nString(UIStrings.originTrials)}
+    </${ReportView.ReportView.ReportSectionHeader.litTagName}>
+    <${OriginTrialTreeView.litTagName} class="span-cols"
+      .data=${{trials: originTrials} as OriginTrialTreeViewData}>
+    </${OriginTrialTreeView.litTagName}>
+    <${ReportView.ReportView.ReportSectionDivider.litTagName}></${
         ReportView.ReportView.ReportSectionDivider.litTagName}>
     `;
   }
@@ -546,7 +360,7 @@ export class FrameDetailsReportView extends HTMLElement {
       return LitHtml.nothing;
     }
     const sourceCode = this.uiSourceCodeForFrame(this.frame);
-    return this.renderIconLink(
+    return renderIconLink(
         'sources_panel_icon',
         i18nString(UIStrings.clickToRevealInSourcesPanel),
         (): Promise<void> => Common.Revealer.reveal(sourceCode),
@@ -558,33 +372,15 @@ export class FrameDetailsReportView extends HTMLElement {
       const resource = this.frame.resourceForURL(this.frame.url);
       if (resource && resource.request) {
         const request = resource.request;
-        return this.renderIconLink(
-            'network_panel_icon',
-            i18nString(UIStrings.clickToRevealInNetworkPanel),
-            (): Promise<void> =>
-                Network.NetworkPanel.NetworkPanel.selectAndShowRequest(request, Network.NetworkItemView.Tabs.Headers),
-        );
+        return renderIconLink(
+            'network_panel_icon', i18nString(UIStrings.clickToRevealInNetworkPanel), (): Promise<void> => {
+              const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(
+                  request, NetworkForward.UIRequestLocation.UIRequestTabs.Headers);
+              return Common.Revealer.reveal(requestLocation);
+            });
       }
     }
     return LitHtml.nothing;
-  }
-
-  private renderIconLink(
-      iconName: string, title: Platform.UIString.LocalizedString,
-      clickHandler: (() => void)|(() => Promise<void>)): LitHtml.TemplateResult {
-    // Disabled until https://crbug.com/1079231 is fixed.
-    // clang-format off
-    return LitHtml.html`
-      <button class="link" role="link" tabindex=0 @click=${clickHandler} title=${title}>
-        <${IconButton.Icon.Icon.litTagName} .data=${{
-          iconName: iconName,
-          color: 'var(--color-primary)',
-          width: '16px',
-          height: '16px',
-        } as IconButton.Icon.IconData}>
-      </button>
-    `;
-    // clang-format on
   }
 
   private uiSourceCodeForFrame(frame: SDK.ResourceTreeModel.ResourceTreeFrame): Workspace.UISourceCode.UISourceCode
@@ -621,23 +417,21 @@ export class FrameDetailsReportView extends HTMLElement {
     if (this.frame) {
       const unreachableUrl = Common.ParsedURL.ParsedURL.fromString(this.frame.unreachableUrl());
       if (unreachableUrl) {
-        return this.renderIconLink(
+        return renderIconLink(
             'network_panel_icon',
             i18nString(UIStrings.clickToRevealInNetworkPanelMight),
             ():
                 void => {
-                  Network.NetworkPanel.NetworkPanel.revealAndFilter([
+                  Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
                     {
-                      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-                      // @ts-expect-error
-                      filterType: 'domain',
+                      filterType: NetworkForward.UIFilter.FilterType.Domain,
                       filterValue: unreachableUrl.domain(),
                     },
                     {
                       filterType: null,
                       filterValue: unreachableUrl.path,
                     },
-                  ]);
+                  ]));
                 },
         );
       }
@@ -665,15 +459,6 @@ export class FrameDetailsReportView extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return LitHtml.html`
-          <style>
-            .button-icon-with-text {
-              vertical-align: sub;
-            }
-
-            .without-min-width {
-              min-width: auto;
-            }
-          </style>
             <${ReportView.ReportView.ReportKey.litTagName}>${i18nString(UIStrings.ownerElement)}</${ReportView.ReportView.ReportKey.litTagName}>
           <${ReportView.ReportView.ReportValue.litTagName} class="without-min-width">
               <button class="link" role="link" tabindex=0 title=${i18nString(UIStrings.clickToRevealInElementsPanel)}
@@ -718,28 +503,50 @@ export class FrameDetailsReportView extends HTMLElement {
     return LitHtml.nothing;
   }
 
-  private maybeRenderAdStatus(): LitHtml.TemplateResult|{} {
-    if (this.frame) {
-      if (this.frame.adFrameType() === Protocol.Page.AdFrameType.Root) {
-        return LitHtml.html`
-          <${ReportView.ReportView.ReportKey.litTagName}>${i18nString(UIStrings.adStatus)}</${
-            ReportView.ReportView.ReportKey.litTagName}>
-          <${ReportView.ReportView.ReportValue.litTagName} title=${
-            i18nString(UIStrings.thisFrameHasBeenIdentifiedAsThe)}>${i18nString(UIStrings.root)}</${
-            ReportView.ReportView.ReportValue.litTagName}>
-        `;
-      }
-      if (this.frame.adFrameType() === Protocol.Page.AdFrameType.Child) {
-        return LitHtml.html`
-          <${ReportView.ReportView.ReportKey.litTagName}>${i18nString(UIStrings.adStatus)}</${
-            ReportView.ReportView.ReportKey.litTagName}>
-          <${ReportView.ReportView.ReportValue.litTagName} title=${
-            i18nString(UIStrings.thisFrameHasBeenIdentifiedAsTheA)}>${i18nString(UIStrings.child)}</${
-            ReportView.ReportView.ReportValue.litTagName}>
-        `;
-      }
+  private getAdFrameTypeStrings(type: Protocol.Page.AdFrameType.Child|Protocol.Page.AdFrameType.Root):
+      {value: Platform.UIString.LocalizedString, description: Platform.UIString.LocalizedString} {
+    switch (type) {
+      case Protocol.Page.AdFrameType.Child:
+        return {value: i18nString(UIStrings.child), description: i18nString(UIStrings.childDescription)};
+      case Protocol.Page.AdFrameType.Root:
+        return {value: i18nString(UIStrings.root), description: i18nString(UIStrings.rootDescription)};
     }
-    return LitHtml.nothing;
+  }
+
+  private getAdFrameExplanationString(explanation: Protocol.Page.AdFrameExplanation):
+      Platform.UIString.LocalizedString {
+    switch (explanation) {
+      case Protocol.Page.AdFrameExplanation.CreatedByAdScript:
+        return i18nString(UIStrings.createdByAdScriptExplanation);
+      case Protocol.Page.AdFrameExplanation.MatchedBlockingRule:
+        return i18nString(UIStrings.matchedBlockingRuleExplanation);
+      case Protocol.Page.AdFrameExplanation.ParentIsAd:
+        return i18nString(UIStrings.parentIsAdExplanation);
+    }
+  }
+
+
+  private maybeRenderAdStatus(): LitHtml.TemplateResult|{} {
+    if (!this.frame) {
+      return LitHtml.nothing;
+    }
+    const adFrameType = this.frame.adFrameType();
+    if (adFrameType === Protocol.Page.AdFrameType.None) {
+      return LitHtml.nothing;
+    }
+    const typeStrings = this.getAdFrameTypeStrings(adFrameType);
+    const rows = [LitHtml.html`<div title="${typeStrings.description}">${typeStrings.value}</div>`];
+    for (const explanation of this.frame.adFrameStatus()?.explanations || []) {
+      rows.push(LitHtml.html`<div>${this.getAdFrameExplanationString(explanation)}</div>`);
+    }
+    return LitHtml.html`
+      <${ReportView.ReportView.ReportKey.litTagName}>${i18nString(UIStrings.adStatus)}</${
+        ReportView.ReportView.ReportKey.litTagName}>
+      <${ReportView.ReportView.ReportValue.litTagName}>
+         <${ExpandableList.ExpandableList.ExpandableList.litTagName} .data=${
+        {rows} as ExpandableList.ExpandableList.ExpandableListData}></${
+        ExpandableList.ExpandableList.ExpandableList.litTagName}></${ReportView.ReportView.ReportValue.litTagName}>
+      `;
   }
 
   private renderIsolationSection(): LitHtml.TemplateResult|{} {
@@ -752,8 +559,8 @@ export class FrameDetailsReportView extends HTMLElement {
       <${ReportView.ReportView.ReportKey.litTagName}>${i18nString(UIStrings.secureContext)}</${
         ReportView.ReportView.ReportKey.litTagName}>
       <${ReportView.ReportView.ReportValue.litTagName}>
-        ${this.frame.isSecureContext() ? i18nString(UIStrings.yes) : i18nString(UIStrings.no)}
-        ${this.maybeRenderSecureContextExplanation()}
+        ${this.frame.isSecureContext() ? i18nString(UIStrings.yes) : i18nString(UIStrings.no)}\xA0${
+        this.maybeRenderSecureContextExplanation()}
       </${ReportView.ReportView.ReportValue.litTagName}>
       <${ReportView.ReportView.ReportKey.litTagName}>${i18nString(UIStrings.crossoriginIsolated)}</${
         ReportView.ReportView.ReportKey.litTagName}>
@@ -769,9 +576,7 @@ export class FrameDetailsReportView extends HTMLElement {
   private maybeRenderSecureContextExplanation(): LitHtml.TemplateResult|{} {
     const explanation = this.getSecureContextExplanation();
     if (explanation) {
-      return LitHtml.html`
-        <span class="inline-comment">${explanation}</span>
-      `;
+      return LitHtml.html`<span class="inline-comment">${explanation}</span>`;
     }
     return LitHtml.nothing;
   }
@@ -894,8 +699,7 @@ export class FrameDetailsReportView extends HTMLElement {
           <${ReportView.ReportView.ReportKey.litTagName}>SharedArrayBuffers</${
             ReportView.ReportView.ReportKey.litTagName}>
           <${ReportView.ReportView.ReportValue.litTagName} title=${tooltipText}>
-            ${availabilityText}
-            ${renderHint(this.frame)}
+            ${availabilityText}\xA0${renderHint(this.frame)}
           </${ReportView.ReportView.ReportValue.litTagName}>
         `;
       }
@@ -914,8 +718,8 @@ export class FrameDetailsReportView extends HTMLElement {
         <${ReportView.ReportView.ReportKey.litTagName}>${i18nString(UIStrings.measureMemory)}</${
           ReportView.ReportView.ReportKey.litTagName}>
         <${ReportView.ReportView.ReportValue.litTagName}>
-          <span title=${tooltipText}>${availabilityText}</span>
-          <x-link class="link" href="https://web.dev/monitor-total-page-memory-usage/">${
+          <span title=${tooltipText}>${
+          availabilityText}</span>\xA0<x-link class="link" href="https://web.dev/monitor-total-page-memory-usage/">${
           i18nString(UIStrings.learnMore)}</x-link>
         </${ReportView.ReportView.ReportValue.litTagName}>
       `;

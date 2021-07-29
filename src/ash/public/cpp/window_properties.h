@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "ash/public/cpp/arc_resize_lock_type.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "ui/base/class_property.h"
 
@@ -30,6 +31,7 @@ class Rect;
 namespace ash {
 
 class WindowBackdrop;
+enum class ResizeShadowType;
 
 // Shell-specific window property keys for use by ash and its clients.
 
@@ -45,8 +47,8 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
     kArcPackageNameKey;
 
 // If true, the ARC window can not be resized freely.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kArcResizeLockKey;
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<ArcResizeLockType>* const
+    kArcResizeLockTypeKey;
 
 // A property key to specify whether the window should have backdrop and if
 // it has backdrop, the backdrop's mode and type. The backdrop is typically a
@@ -165,6 +167,10 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int32_t>* const
     kShelfItemTypeKey;
 
+// A property key to store the type of a window's resize shadow.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<ResizeShadowType>* const
+    kResizeShadowTypeKey;
+
 // A property key to store the system gesture exclusion region. From a point
 // inside the region, system gesture e.g. back gesture shouldn't be triggered.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkRegion*>* const
@@ -184,6 +190,12 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 // A property key to indicate pip window state.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kWindowPipTypeKey;
+
+// A property key which store the bounds of a pip window's resize handle in the
+// pip window's coordinates. This is used to track the usage of the resize
+// handle.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
+    kWindowPipResizeHandleBoundsKey;
 
 // Alphabetical sort.
 

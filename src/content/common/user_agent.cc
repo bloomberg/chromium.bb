@@ -6,13 +6,14 @@
 
 #include <stdint.h>
 
+#include "base/containers/contains.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "build/util/webkit_version.h"
+#include "build/util/chromium_git_revision.h"
 
 #if defined(OS_MAC)
 #include "base/mac/mac_util.h"
@@ -38,8 +39,8 @@ std::string GetUserAgentPlatform() {
 #elif defined(OS_ANDROID)
   return "Linux; ";
 #elif defined(OS_FUCHSIA)
-  // TODO(https://crbug.com/1010256): Sites get confused into serving mobile
-  // content if we report only "Fuchsia".
+  // TODO(https://crbug.com/1225812): Determine what to report for Fuchsia,
+  // considering both backwards compatibility and User-Agent Reduction.
   return "X11; ";
 #elif defined(OS_POSIX)
   return "Unknown; ";
@@ -48,15 +49,27 @@ std::string GetUserAgentPlatform() {
 
 }  // namespace
 
-std::string GetWebKitVersion() {
-  return base::StringPrintf("%d.%d (%s)",
-                            WEBKIT_VERSION_MAJOR,
-                            WEBKIT_VERSION_MINOR,
-                            WEBKIT_SVN_REVISION);
+std::string GetUnifiedPlatform() {
+#if defined(OS_ANDROID)
+  return frozen_user_agent_strings::kUnifiedPlatformAndroid;
+#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  return frozen_user_agent_strings::kUnifiedPlatformCrOS;
+#elif defined(OS_MAC)
+  return frozen_user_agent_strings::kUnifiedPlatformMacOS;
+#elif defined(OS_WIN)
+  return frozen_user_agent_strings::kUnifiedPlatformWindows;
+#else
+  return frozen_user_agent_strings::kUnifiedPlatformLinux;
+#endif
 }
 
-std::string GetWebKitRevision() {
-  return WEBKIT_SVN_REVISION;
+// Inaccurately named for historical reasons
+std::string GetWebKitVersion() {
+  return base::StringPrintf("537.36 (%s)", CHROMIUM_GIT_REVISION);
+}
+
+std::string GetChromiumGitRevision() {
+  return CHROMIUM_GIT_REVISION;
 }
 
 std::string BuildCpuInfo() {
@@ -114,11 +127,7 @@ std::string GetLowEntropyCpuArchitecture() {
     return "arm";
   }
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
-  // This extra cpu_info_str variable is required to make sure the compiler
-  // doesn't optimize the copy away and have the StringPiece point at the
-  // internal std::string, resulting in a memory violation.
-  std::string cpu_info_str = BuildCpuInfo();
-  base::StringPiece cpu_info = cpu_info_str;
+  std::string cpu_info = BuildCpuInfo();
   if (base::StartsWith(cpu_info, "arm") ||
       base::StartsWith(cpu_info, "aarch")) {
     return "arm";
@@ -129,6 +138,21 @@ std::string GetLowEntropyCpuArchitecture() {
   }
 #endif
   return std::string();
+}
+
+std::string GetLowEntropyCpuBitness() {
+#if defined(OS_WIN)
+  return (base::win::OSInfo::GetInstance()->GetArchitecture() ==
+          base::win::OSInfo::X86_ARCHITECTURE)
+             ? "32"
+             : "64";
+#elif defined(OS_MAC)
+  return "64";
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+  return base::Contains(BuildCpuInfo(), "64") ? "64" : "32";
+#else
+  return std::string();
+#endif
 }
 
 std::string GetOSVersion(IncludeAndroidBuildNumber include_android_build_number,
@@ -228,16 +252,23 @@ std::string BuildOSCpuInfoFromOSVersionAndCpuType(const std::string& os_version,
   return os_cpu;
 }
 
-std::string GetFrozenUserAgent(bool mobile, std::string major_version) {
+std::string GetReducedUserAgent(bool mobile, std::string major_version) {
   std::string user_agent;
 #if defined(OS_ANDROID)
-  user_agent = mobile ? frozen_user_agent_strings::kAndroidMobile
-                      : frozen_user_agent_strings::kAndroid;
+  std::string device_compat;
+  // Note: The extra space after Mobile is meaningful here, to avoid
+  // "MobileSafari", but unneeded for non-mobile Android devices.
+  device_compat = mobile ? "Mobile " : "";
+  user_agent = base::StringPrintf(frozen_user_agent_strings::kAndroid,
+                                  GetUnifiedPlatform().c_str(),
+                                  major_version.c_str(), device_compat.c_str());
 #else
-  user_agent = frozen_user_agent_strings::kDesktop;
+  user_agent =
+      base::StringPrintf(frozen_user_agent_strings::kDesktop,
+                         GetUnifiedPlatform().c_str(), major_version.c_str());
 #endif
 
-  return base::StringPrintf(user_agent.c_str(), major_version.c_str());
+  return user_agent;
 }
 
 std::string BuildUserAgentFromProduct(const std::string& product) {
@@ -308,15 +339,10 @@ std::string BuildUserAgentFromOSAndProduct(const std::string& os_info,
   // This is done to expose our product name in a manner that is maximally
   // compatible with Safari, we hope!!
   std::string user_agent;
-  base::StringAppendF(
-      &user_agent,
-      "Mozilla/5.0 (%s) AppleWebKit/%d.%d (KHTML, like Gecko) %s Safari/%d.%d",
-      os_info.c_str(),
-      WEBKIT_VERSION_MAJOR,
-      WEBKIT_VERSION_MINOR,
-      product.c_str(),
-      WEBKIT_VERSION_MAJOR,
-      WEBKIT_VERSION_MINOR);
+  base::StringAppendF(&user_agent,
+                      "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "%s Safari/537.36",
+                      os_info.c_str(), product.c_str());
   return user_agent;
 }
 

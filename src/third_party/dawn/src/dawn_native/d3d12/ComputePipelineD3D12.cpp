@@ -14,7 +14,7 @@
 
 #include "dawn_native/d3d12/ComputePipelineD3D12.h"
 
-#include "common/Assert.h"
+#include "dawn_native/CreatePipelineAsyncTask.h"
 #include "dawn_native/d3d12/D3D12Error.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
 #include "dawn_native/d3d12/PipelineLayoutD3D12.h"
@@ -35,22 +35,23 @@ namespace dawn_native { namespace d3d12 {
     MaybeError ComputePipeline::Initialize(const ComputePipelineDescriptor* descriptor) {
         Device* device = ToBackend(GetDevice());
         uint32_t compileFlags = 0;
-#if defined(_DEBUG)
-        // Enable better shader debugging with the graphics debugging tools.
-        compileFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
+
+        if (device->IsToggleEnabled(Toggle::EmitHLSLDebugSymbols)) {
+            compileFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+        }
+
         // SPRIV-cross does matrix multiplication expecting row major matrices
         compileFlags |= D3DCOMPILE_PACK_MATRIX_ROW_MAJOR;
 
-        ShaderModule* module = ToBackend(descriptor->computeStage.module);
+        ShaderModule* module = ToBackend(descriptor->compute.module);
 
         D3D12_COMPUTE_PIPELINE_STATE_DESC d3dDesc = {};
         d3dDesc.pRootSignature = ToBackend(GetLayout())->GetRootSignature();
 
         CompiledShader compiledShader;
-        DAWN_TRY_ASSIGN(compiledShader, module->Compile(descriptor->computeStage.entryPoint,
-                                                        SingleShaderStage::Compute,
-                                                        ToBackend(GetLayout()), compileFlags));
+        DAWN_TRY_ASSIGN(compiledShader,
+                        module->Compile(descriptor->compute.entryPoint, SingleShaderStage::Compute,
+                                        ToBackend(GetLayout()), compileFlags));
         d3dDesc.CS = compiledShader.GetD3D12ShaderBytecode();
         auto* d3d12Device = device->GetD3D12Device();
         DAWN_TRY(CheckHRESULT(
@@ -65,6 +66,18 @@ namespace dawn_native { namespace d3d12 {
 
     ID3D12PipelineState* ComputePipeline::GetPipelineState() const {
         return mPipelineState.Get();
+    }
+
+    void ComputePipeline::CreateAsync(Device* device,
+                                      const ComputePipelineDescriptor* descriptor,
+                                      size_t blueprintHash,
+                                      WGPUCreateComputePipelineAsyncCallback callback,
+                                      void* userdata) {
+        Ref<ComputePipeline> pipeline = AcquireRef(new ComputePipeline(device, descriptor));
+        std::unique_ptr<CreateComputePipelineAsyncTask> asyncTask =
+            std::make_unique<CreateComputePipelineAsyncTask>(pipeline, descriptor, blueprintHash,
+                                                             callback, userdata);
+        CreateComputePipelineAsyncTask::RunAsync(std::move(asyncTask));
     }
 
 }}  // namespace dawn_native::d3d12

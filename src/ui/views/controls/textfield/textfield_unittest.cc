@@ -12,10 +12,10 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
 #include "base/i18n/rtl.h"
 #include "base/pickle.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -45,6 +45,7 @@
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/render_text_test_api.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/textfield/textfield_model.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 #include "ui/views/focus/focus_manager.h"

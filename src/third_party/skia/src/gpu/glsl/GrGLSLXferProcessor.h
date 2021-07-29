@@ -34,7 +34,6 @@ public:
                  const char* inputCoverage,
                  const char* outputPrimary,
                  const char* outputSecondary,
-                 GrDstSampleType dstSampleType,
                  const SamplerHandle dstTextureSamplerHandle,
                  GrSurfaceOrigin dstTextureOrigin,
                  const GrSwizzle& writeSwizzle)
@@ -46,7 +45,6 @@ public:
                 , fInputCoverage(inputCoverage)
                 , fOutputPrimary(outputPrimary)
                 , fOutputSecondary(outputSecondary)
-                , fDstSampleType(dstSampleType)
                 , fDstTextureSamplerHandle(dstTextureSamplerHandle)
                 , fDstTextureOrigin(dstTextureOrigin)
                 , fWriteSwizzle(writeSwizzle) {}
@@ -58,7 +56,6 @@ public:
         const char* fInputCoverage;
         const char* fOutputPrimary;
         const char* fOutputSecondary;
-        GrDstSampleType fDstSampleType;
         const SamplerHandle fDstTextureSamplerHandle;
         GrSurfaceOrigin fDstTextureOrigin;
         GrSwizzle fWriteSwizzle;
@@ -76,8 +73,7 @@ public:
         to have an identical processor key as the one that created this GrGLSLXferProcessor. This
         function calls onSetData on the subclass of GrGLSLXferProcessor
      */
-    void setData(const GrGLSLProgramDataManager& pdm, const GrXferProcessor& xp,
-                 const GrTexture* dstTexture, const SkIPoint& dstTextureOffset);
+    void setData(const GrGLSLProgramDataManager& pdm, const GrXferProcessor& xp);
 
 protected:
     static void DefaultCoverageModulation(GrGLSLXPFragmentBuilder* fragBuilder,
@@ -118,9 +114,6 @@ private:
                                   const char* outColor,
                                   const char* outColorSecondary) const;
 
-    virtual void onSetData(const GrGLSLProgramDataManager&, const GrXferProcessor&) = 0;
-
-    GrGLSLProgramDataManager::UniformHandle fDstTopLeftUni;
-    GrGLSLProgramDataManager::UniformHandle fDstScaleUni;
+    virtual void onSetData(const GrGLSLProgramDataManager&, const GrXferProcessor&) {}
 };
 #endif

@@ -4,6 +4,7 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -72,7 +73,7 @@ void OverviewButtonTray::UpdateAfterLoginStatusChange() {
 }
 
 void OverviewButtonTray::SnapRippleToActivated() {
-  ink_drop()->GetInkDrop()->SnapToActivated();
+  views::InkDrop::Get(this)->GetInkDrop()->SnapToActivated();
 }
 
 void OverviewButtonTray::OnGestureEvent(ui::GestureEvent* event) {
@@ -130,7 +131,8 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
         }
       }
 
-      ink_drop()->AnimateToState(views::InkDropState::DEACTIVATED, nullptr);
+      views::InkDrop::Get(this)->AnimateToState(
+          views::InkDropState::DEACTIVATED, nullptr);
       wm::ActivateWindow(new_active_window);
       last_press_event_time_ = absl::nullopt;
       return true;
@@ -144,9 +146,9 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
                                : absl::make_optional(event.time_stamp());
 
   if (overview_controller->InOverviewSession())
-    overview_controller->EndOverview();
+    overview_controller->EndOverview(OverviewEndAction::kOverviewButton);
   else
-    overview_controller->StartOverview();
+    overview_controller->StartOverview(OverviewStartAction::kOverviewButton);
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
 
   // The return value doesn't matter here. OnOverviewModeStarting() and
@@ -191,10 +193,11 @@ void OverviewButtonTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
 }
 
 void OverviewButtonTray::UpdateIconVisibility() {
-  // The visibility of the OverviewButtonTray has diverged from
-  // OverviewController::CanSelect. The visibility of the button should
-  // not change during transient times in which CanSelect is false. Such as when
-  // a modal dialog is present.
+  if (base::FeatureList::IsEnabled(features::kOverviewButton)) {
+    SetVisiblePreferred(true);
+    return;
+  }
+
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
   bool active_session = session_controller->GetSessionState() ==

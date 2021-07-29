@@ -52,6 +52,9 @@ using unordered_set = robin_hood::unordered_set<Key, Hash, KeyEqual>;
 template <typename Key, typename T, typename Hash = robin_hood::hash<Key>, typename KeyEqual = std::equal_to<Key>>
 using unordered_map = robin_hood::unordered_map<Key, T, Hash, KeyEqual>;
 
+template <typename Key, typename T>
+using map_entry = robin_hood::pair<Key, T>;
+
 // robin_hood-compatible insert_iterator (std:: uses the wrong insert method)
 template <typename T>
 class insert_iterator : public std::iterator<std::output_iterator_tag, void, void, void, void> {
@@ -94,8 +97,22 @@ using unordered_set = std::unordered_set<Key, Hash, KeyEqual>;
 template <typename Key, typename T, typename Hash = std::hash<Key>, typename KeyEqual = std::equal_to<Key>>
 using unordered_map = std::unordered_map<Key, T, Hash, KeyEqual>;
 
+template <typename Key, typename T>
+using map_entry = std::pair<Key, T>;
+
 template <typename T>
 using insert_iterator = std::insert_iterator<T>;
+#endif
+
+#if __cplusplus < 201402L
+// Temporary workaround for c++11. Remove with std >= c++14.
+template<typename T, typename... Args>
+constexpr std::unique_ptr<T> make_unique(Args&&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+#else
+template <typename T>
+constexpr auto make_unique = std::make_unique<T>;
 #endif
 
 }  // namespace layer_data

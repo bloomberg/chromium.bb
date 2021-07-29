@@ -16,11 +16,6 @@ namespace features {
 const base::Feature kBiometricTouchToFill = {"BiometricTouchToFill",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables creating Affiliation Service and prefetching change password info for
-// requested sites.
-const base::Feature kChangePasswordAffiliationInfo = {
-    "ChangePasswordAffiliationInfo", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables submission detection for forms dynamically cleared but not removed
 // from the page.
 const base::Feature kDetectFormSubmissionOnFormClear = {
@@ -34,7 +29,7 @@ const base::Feature kDetectFormSubmissionOnFormClear = {
 
 // Enables the editing of passwords in Chrome settings.
 const base::Feature kEditPasswordsInSettings = {
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
     "EditPasswordsInSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 #else
     "EditPasswordsInSettings", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -139,14 +134,20 @@ const base::Feature kReparseServerPredictionsFollowingFormChange = {
 const base::Feature kSecondaryServerFieldPredictions = {
     "SecondaryServerFieldPredictions", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables syncing of compromised credentials.
-const base::Feature kSyncingCompromisedCredentials = {
-    "SyncingCompromisedCredentials", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables the addition of passwords in Chrome Settings.
+// TODO(crbug/1226008): Remove once it's launched.
+const base::Feature kSupportForAddPasswordsInSettings = {
+    "SupportForAddPasswordsInSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Treat heuritistics to find new password fields as reliable. This enables
 // password generation on more forms, but could lead to false positives.
 const base::Feature kTreatNewPasswordHeuristicsAsReliable = {
     "TreatNewPasswordHeuristicsAsReliable", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables use of Google Mobile Services for password storage. Chrome's local
+// database will be unused but kept in sync for local passwords.
+const base::Feature kUnifiedPasswordManagerAndroid{
+    "UnifiedPasswordManagerAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether we should use the new header images for the legacy save
 // password bubble.
@@ -160,13 +161,13 @@ const base::Feature kUseNewHeaderForSavePasswordWithAccountStoreBubble{
     "UseNewHeaderForSavePasswordWithAccountStoreBubble",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables use of Hash Affiliation fetcher for all requests.
-const base::Feature kUseOfHashAffiliationFetcher = {
-    "UseOfHashAffiliationFetcher", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables support of sending votes on username first flow.
+const base::Feature kUsernameFirstFlow = {"UsernameFirstFlow",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables support of filling and saving on username first flow.
-const base::Feature kUsernameFirstFlow = {"UsernameFirstFlow",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kUsernameFirstFlowFilling = {
+    "UsernameFirstFlowFilling", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Field trial identifier for password generation requirements.
 const char kGenerationRequirementsFieldTrial[] =

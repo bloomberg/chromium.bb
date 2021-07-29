@@ -546,18 +546,6 @@ static bool CheckHandshakeProperties(SSL *ssl, bool is_resume,
     }
   }
 
-  if (config->expect_token_binding_param != -1) {
-    if (!SSL_is_token_binding_negotiated(ssl)) {
-      fprintf(stderr, "no Token Binding negotiated\n");
-      return false;
-    }
-    if (SSL_get_negotiated_token_binding_param(ssl) !=
-        static_cast<uint8_t>(config->expect_token_binding_param)) {
-      fprintf(stderr, "Token Binding param mismatch\n");
-      return false;
-    }
-  }
-
   if (config->expect_extended_master_secret && !SSL_get_extms_support(ssl)) {
     fprintf(stderr, "No EMS for connection when expected\n");
     return false;
@@ -669,6 +657,12 @@ static bool CheckHandshakeProperties(SSL *ssl, bool is_resume,
       (config->expect_no_hrr && SSL_used_hello_retry_request(ssl))) {
     fprintf(stderr, "Got %sHRR, but wanted opposite.\n",
             SSL_used_hello_retry_request(ssl) ? "" : "no ");
+    return false;
+  }
+
+  if (config->expect_ech_accept != !!SSL_ech_accepted(ssl)) {
+    fprintf(stderr, "ECH was %saccepted, but wanted opposite.\n",
+            SSL_ech_accepted(ssl) ? "" : "not ");
     return false;
   }
 

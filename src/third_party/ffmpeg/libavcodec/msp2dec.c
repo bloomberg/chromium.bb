@@ -71,6 +71,7 @@ static int msp2_decode_frame(AVCodecContext *avctx,
         while (bytestream2_get_bytes_left(&gb) && x < width) {
             int size = bytestream2_get_byte(&gb);
             if (size) {
+                size = FFMIN(size, bytestream2_get_bytes_left(&gb));
                 memcpy(p->data[0] + y * p->linesize[0] + x, gb.buffer, FFMIN(size, width - x));
                 bytestream2_skip(&gb, size);
             } else {
@@ -92,7 +93,7 @@ static int msp2_decode_frame(AVCodecContext *avctx,
     return buf_size;
 }
 
-AVCodec ff_msp2_decoder = {
+const AVCodec ff_msp2_decoder = {
     .name           = "msp2",
     .long_name      = NULL_IF_CONFIG_SMALL("Microsoft Paint (MSP) version 2"),
     .type           = AVMEDIA_TYPE_VIDEO,

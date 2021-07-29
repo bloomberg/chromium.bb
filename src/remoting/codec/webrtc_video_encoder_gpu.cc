@@ -145,7 +145,9 @@ void WebrtcVideoEncoderGpu::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
     // TODO(zijiehe): Forward frame_rate from FrameParams.
     bitrate_filter_.SetBandwidthEstimateKbps(params.bitrate_kbps);
     video_encode_accelerator_->RequestEncodingParametersChange(
-        bitrate_filter_.GetTargetBitrateKbps() * 1000, params.fps);
+        media::Bitrate::ConstantBitrate(bitrate_filter_.GetTargetBitrateKbps() *
+                                        1000),
+        params.fps);
   }
   video_encode_accelerator_->Encode(video_frame, params.key_frame);
 }
@@ -234,7 +236,8 @@ void WebrtcVideoEncoderGpu::BeginInitialization() {
   // TODO(zijiehe): implement some logical way to set an initial bitrate.
   // Currently we set the bitrate to 8M bits / 1M bytes per frame, and 30 frames
   // per second.
-  uint32_t initial_bitrate = kTargetFrameRate * 1024 * 1024 * 8;
+  media::Bitrate initial_bitrate =
+      media::Bitrate::ConstantBitrate(kTargetFrameRate * 1024 * 1024 * 8);
 
   const media::VideoEncodeAccelerator::Config config(
       input_format, input_visible_size_, codec_profile_, initial_bitrate);

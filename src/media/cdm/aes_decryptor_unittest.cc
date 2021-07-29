@@ -11,10 +11,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/debug/leak_annotations.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
@@ -381,7 +381,8 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
 
   // Closes the session specified by |session_id|.
   void CloseSession(const std::string& session_id) {
-    EXPECT_CALL(cdm_client_, OnSessionClosed(session_id));
+    EXPECT_CALL(cdm_client_,
+                OnSessionClosed(session_id, CdmSessionClosedReason::kClose));
     cdm_->CloseSession(session_id, CreatePromise(RESOLVED));
   }
 

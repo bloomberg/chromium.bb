@@ -143,6 +143,8 @@ const _walkOrder = {
   'ObjectExpression': ['properties'],
   'ObjectPattern': ['properties'],
   'ParenthesizedExpression': ['expression'],
+  'PrivateIdentifier': [],
+  'PropertyDefinition': ['key', 'value'],
   'Program': ['body'],
   'Property': ['key', 'value'],
   'RestElement': ['argument'],

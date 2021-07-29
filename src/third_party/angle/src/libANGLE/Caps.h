@@ -285,6 +285,9 @@ struct Extensions
     // GL_EXT_texture_sRGB_R8
     bool sRGBR8EXT = false;
 
+    // GL_EXT_texture_sRGB_RG8
+    bool sRGBRG8EXT = false;
+
     // GL_ANGLE_depth_texture
     bool depthTextureANGLE = false;
 
@@ -566,7 +569,11 @@ struct Extensions
     bool textureRectangle = false;
 
     // GL_EXT_geometry_shader
-    bool geometryShader = false;
+    bool geometryShaderEXT = false;
+    // GL_OES_geometry_shader
+    bool geometryShaderOES = false;
+    // Any version of the geometry shader extension
+    bool geometryShaderAny() const { return (geometryShaderEXT || geometryShaderOES); }
 
     // GLES1 emulation: GLES1 extensions
     // GL_OES_point_size_array
@@ -734,6 +741,12 @@ struct Extensions
 
     // GL_EXT_primitive_bounding_box
     bool primitiveBoundingBoxEXT = false;
+
+    // GL_ANGLE_relaxed_vertex_attribute_type
+    bool relaxedVertexAttributeTypeANGLE = false;
+
+    // GL_ANGLE_yuv_internal_format
+    bool yuvInternalFormatANGLE = false;
 };
 
 // Pointer to a boolean memeber of the Extensions struct
@@ -1002,6 +1015,11 @@ struct Caps
     // ES 3.2 Table 20.41: Implementation Dependent Values (cont.)
     GLint maxTextureBufferSize         = 0;
     GLint textureBufferOffsetAlignment = 0;
+
+    // Direct-to-metal constants:
+    GLuint driverUniformsBindingIndex    = 0;
+    GLuint defaultUniformsBindingIndex   = 0;
+    GLuint UBOArgumentBufferBindingIndex = 0;
 };
 
 Caps GenerateMinimumCaps(const Version &clientVersion, const Extensions &extensions);

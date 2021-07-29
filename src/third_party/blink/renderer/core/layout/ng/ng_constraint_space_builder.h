@@ -143,23 +143,29 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       space_.bitfields_.is_fixed_inline_size = b;
   }
 
-  void SetIsFixedBlockSizeIndefinite(bool b) {
+  void SetIsInitialBlockSizeIndefinite(bool b) {
     if (LIKELY(is_in_parallel_flow_ || !force_orthogonal_writing_mode_root_))
-      space_.bitfields_.is_fixed_block_size_indefinite = b;
+      space_.bitfields_.is_initial_block_size_indefinite = b;
   }
 
-  void SetStretchInlineSizeIfAuto(bool b) {
-    if (LIKELY(is_in_parallel_flow_))
-      space_.bitfields_.stretch_inline_size_if_auto = b;
-    else
-      space_.bitfields_.stretch_block_size_if_auto = b;
+  void SetInlineAutoBehavior(NGAutoBehavior auto_behavior) {
+    if (LIKELY(is_in_parallel_flow_)) {
+      space_.bitfields_.inline_auto_behavior =
+          static_cast<unsigned>(auto_behavior);
+    } else {
+      space_.bitfields_.block_auto_behavior =
+          static_cast<unsigned>(auto_behavior);
+    }
   }
 
-  void SetStretchBlockSizeIfAuto(bool b) {
-    if (LIKELY(is_in_parallel_flow_))
-      space_.bitfields_.stretch_block_size_if_auto = b;
-    else
-      space_.bitfields_.stretch_inline_size_if_auto = b;
+  void SetBlockAutoBehavior(NGAutoBehavior auto_behavior) {
+    if (LIKELY(is_in_parallel_flow_)) {
+      space_.bitfields_.block_auto_behavior =
+          static_cast<unsigned>(auto_behavior);
+    } else {
+      space_.bitfields_.inline_auto_behavior =
+          static_cast<unsigned>(auto_behavior);
+    }
   }
 
   void SetIsPaintedAtomically(bool b) {
@@ -183,10 +189,16 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   void SetIsInColumnBfc() { space_.EnsureRareData()->is_in_column_bfc = true; }
 
-  // is_legacy_table_cell must always be assigned if is_table_cell is true.
   void SetIsTableCell(bool is_table_cell, bool is_legacy_table_cell) {
+#if DCHECK_IS_ON()
+    DCHECK(!is_table_cell_set_);
+    is_table_cell_set_ = true;
+#endif
     space_.bitfields_.is_table_cell = is_table_cell;
-    space_.bitfields_.is_legacy_table_cell = is_legacy_table_cell;
+    if (is_legacy_table_cell) {
+      DCHECK(is_table_cell);
+      space_.EnsureRareData()->is_legacy_table_cell = is_legacy_table_cell;
+    }
   }
 
   void SetIsRestrictedBlockSizeTableCell(bool b) {
@@ -358,9 +370,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     space_.bitfields_.is_table_cell_child = b;
   }
 
-  void SetIsMeasuringRestrictedBlockSizeTableCellChild() {
-    space_.bitfields_.is_measuring_restricted_block_size_table_cell_child =
-        true;
+  void SetIsRestrictedBlockSizeTableCellChild() {
+    space_.bitfields_.is_restricted_block_size_table_cell_child = true;
   }
 
   void SetExclusionSpace(const NGExclusionSpace& exclusion_space) {
@@ -402,7 +413,12 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   void SetIsLineClampContext(bool is_line_clamp_context) {
     DCHECK(!is_new_fc_);
-    space_.bitfields_.is_line_clamp_context = is_line_clamp_context;
+#if DCHECK_IS_ON()
+    DCHECK(!is_line_clamp_context_set_);
+    is_line_clamp_context_set_ = true;
+#endif
+    if (is_line_clamp_context)
+      space_.EnsureRareData()->is_line_clamp_context = true;
   }
 
   void SetLinesUntilClamp(const absl::optional<int>& clamp) {
@@ -453,15 +469,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return std::move(space_);
   }
 
-  static NGConstraintSpace CloneWithoutFragmentation(
-      const NGConstraintSpace& other) {
-    DCHECK(other.HasBlockFragmentation());
-    NGConstraintSpace copy = other;
-    DCHECK(copy.rare_data_);
-    copy.rare_data_->block_direction_fragmentation_type = kFragmentNone;
-    return copy;
-  }
-
  private:
   NGConstraintSpace space_;
 
@@ -485,6 +492,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_optimistic_bfc_block_offset_set_ = false;
   bool is_forced_bfc_block_offset_set_ = false;
   bool is_clearance_offset_set_ = false;
+  bool is_table_cell_set_ = false;
   bool is_table_cell_borders_set_ = false;
   bool is_table_cell_intrinsic_padding_set_ = false;
   bool is_table_cell_alignment_baseline_set_ = false;
@@ -495,6 +503,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_lines_until_clamp_set_ = false;
   bool is_table_row_data_set_ = false;
   bool is_table_section_data_set_ = false;
+  bool is_line_clamp_context_set_ = false;
 
   bool to_constraint_space_called_ = false;
 #endif
@@ -533,12 +542,12 @@ class CORE_EXPORT NGMinMaxConstraintSpaceBuilder final {
         {kIndefiniteSize, block_size});
   }
 
-  void SetStretchBlockSizeIfAuto(bool b) {
-    delegate_.SetStretchBlockSizeIfAuto(b);
+  void SetBlockAutoBehavior(NGAutoBehavior auto_behavior) {
+    delegate_.SetBlockAutoBehavior(auto_behavior);
   }
 
-  void SetIsFixedBlockSizeIndefinite(bool b) {
-    delegate_.SetIsFixedBlockSizeIndefinite(b);
+  void SetIsInitialBlockSizeIndefinite(bool b) {
+    delegate_.SetIsInitialBlockSizeIndefinite(b);
   }
 
   const NGConstraintSpace ToConstraintSpace() {

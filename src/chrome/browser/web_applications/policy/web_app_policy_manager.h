@@ -13,9 +13,10 @@
 #include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager_observer.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class PrefService;
@@ -51,7 +52,7 @@ class WebAppPolicyManager {
 
   void SetSubsystems(
       ExternallyManagedAppManager* externally_managed_app_manager,
-      AppRegistrar* app_registrar,
+      WebAppRegistrar* app_registrar,
       AppRegistryController* app_registry_controller,
       SystemWebAppManager* web_app_manager,
       OsIntegrationManager* os_integration_manager);
@@ -71,6 +72,9 @@ class WebAppPolicyManager {
 
   // Gets ids of web apps disabled by SystemFeaturesDisableList policy.
   const std::set<AppId>& GetDisabledWebAppsIds() const;
+
+  // Checks if web app is disabled by SystemFeaturesDisableList policy.
+  bool IsWebAppInDisabledList(const AppId& app_id) const;
 
   // Checks if UI mode of disabled web apps is hidden.
   bool IsDisabledAppsModeHidden() const;
@@ -124,7 +128,7 @@ class WebAppPolicyManager {
   // Used to install, uninstall, and update apps. Should outlive this class
   // (owned by WebAppProvider).
   ExternallyManagedAppManager* externally_managed_app_manager_ = nullptr;
-  AppRegistrar* app_registrar_ = nullptr;
+  WebAppRegistrar* app_registrar_ = nullptr;
   AppRegistryController* app_registry_controller_ = nullptr;
   SystemWebAppManager* web_app_manager_ = nullptr;
   OsIntegrationManager* os_integration_manager_ = nullptr;

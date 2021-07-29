@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -93,12 +94,8 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
   virtual Document& GetDocument() const = 0;
   virtual ExecutionContext* GetExecutionContext() const = 0;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   virtual V8HTMLOrSVGScriptElement* AsV8HTMLOrSVGScriptElement() = 0;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  virtual void SetScriptElementForBinding(
-      HTMLScriptElementOrSVGScriptElement&) = 0;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  virtual DOMNodeId GetDOMNodeId() = 0;
 
   virtual void DispatchLoadEvent() = 0;
   virtual void DispatchErrorEvent() = 0;

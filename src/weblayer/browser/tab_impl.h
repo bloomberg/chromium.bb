@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "cc/input/browser_controls_state.h"
 #include "components/find_in_page/find_result_observer.h"
+#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "weblayer/browser/i18n_util.h"
@@ -29,10 +30,6 @@
 namespace js_injection {
 class JsCommunicationHost;
 }
-
-namespace autofill {
-class AutofillProvider;
-}  // namespace autofill
 
 namespace blink {
 namespace web_pref {
@@ -239,8 +236,10 @@ class TabImpl : public Tab,
   // Executes |script| with a user gesture.
   void ExecuteScriptWithUserGestureForTests(const std::u16string& script);
 
+#if defined(OS_ANDROID)
   // Initializes the autofill system for tests.
   void InitializeAutofillForTests();
+#endif  // defined(OS_ANDROID)
 
  private:
   // content::WebContentsDelegate:
@@ -252,7 +251,7 @@ class TabImpl : public Tab,
                               content::InvalidateTypes changed_flags) override;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* web_contents) override;
-  content::ColorChooser* OpenColorChooser(
+  std::unique_ptr<content::ColorChooser> OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,
       const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions)
@@ -342,8 +341,6 @@ class TabImpl : public Tab,
 
   void UpdateRendererPrefs(bool should_sync_prefs);
 
-  void InitializeAutofillDriver();
-
   // Returns the FindTabHelper for the page, or null if none exists.
   find_in_page::FindTabHelper* GetFindTabHelper();
 
@@ -351,6 +348,7 @@ class TabImpl : public Tab,
       content::WebContents* web_contents);
 
 #if defined(OS_ANDROID)
+  void InitializeAutofillDriver();
   void SetBrowserControlsConstraint(ControlsVisibilityReason reason,
                                     cc::BrowserControlsState constraint);
 #endif

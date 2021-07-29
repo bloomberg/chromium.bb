@@ -16,6 +16,7 @@
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
@@ -249,8 +250,8 @@ TEST(CredentialsContainerTest,
 
   auto* user_options = PublicKeyCredentialUserEntity::Create();
   int dummy_buffer_source = 1;
-  auto dummy_buffer =
-      ArrayBufferOrArrayBufferView::FromArrayBuffer(DOMArrayBuffer::Create(
+  auto* dummy_buffer =
+      MakeGarbageCollected<V8BufferSource>(DOMArrayBuffer::Create(
           &dummy_buffer_source, sizeof(dummy_buffer_source)));
   user_options->setId(dummy_buffer);
   user_options->setIcon("invalid URL");

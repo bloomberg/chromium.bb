@@ -21,35 +21,26 @@ namespace {
 
 using HlslGeneratorImplTest = TestHelper;
 
+TEST_F(HlslGeneratorImplTest, ErrorIfSanitizerNotRun) {
+  auto program = std::make_unique<Program>(std::move(*this));
+  GeneratorImpl gen(program.get());
+  EXPECT_FALSE(gen.Generate());
+  EXPECT_EQ(
+      gen.error(),
+      "error: HLSL writer requires the transform::Hlsl sanitizer to have been "
+      "applied to the input program");
+}
+
 TEST_F(HlslGeneratorImplTest, Generate) {
   Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
        ast::DecorationList{});
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_EQ(result(), R"(void my_func() {
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(void my_func() {
 }
-
 )");
-}
-
-TEST_F(HlslGeneratorImplTest, InputStructName) {
-  GeneratorImpl& gen = Build();
-
-  ASSERT_EQ(gen.generate_name("func_main_in"), "func_main_in");
-}
-
-TEST_F(HlslGeneratorImplTest, InputStructName_ConflictWithExisting) {
-  Symbols().Register("func_main_out_1");
-  Symbols().Register("func_main_out_2");
-
-  GeneratorImpl& gen = Build();
-
-  ASSERT_EQ(gen.generate_name("func_main_out"), "func_main_out");
-  ASSERT_EQ(gen.generate_name("func_main_out"), "func_main_out_3");
-  ASSERT_EQ(gen.generate_name("func_main_out"), "func_main_out_4");
-  ASSERT_EQ(gen.generate_name("func_main_out"), "func_main_out_5");
 }
 
 struct HlslBuiltinData {
@@ -76,7 +67,6 @@ INSTANTIATE_TEST_SUITE_P(
         HlslBuiltinData{ast::Builtin::kVertexIndex, "SV_VertexID"},
         HlslBuiltinData{ast::Builtin::kInstanceIndex, "SV_InstanceID"},
         HlslBuiltinData{ast::Builtin::kFrontFacing, "SV_IsFrontFace"},
-        HlslBuiltinData{ast::Builtin::kFragCoord, "SV_Position"},
         HlslBuiltinData{ast::Builtin::kFragDepth, "SV_Depth"},
         HlslBuiltinData{ast::Builtin::kLocalInvocationId, "SV_GroupThreadID"},
         HlslBuiltinData{ast::Builtin::kLocalInvocationIndex, "SV_GroupIndex"},
@@ -84,9 +74,7 @@ INSTANTIATE_TEST_SUITE_P(
                         "SV_DispatchThreadID"},
         HlslBuiltinData{ast::Builtin::kWorkgroupId, "SV_GroupID"},
         HlslBuiltinData{ast::Builtin::kSampleIndex, "SV_SampleIndex"},
-        HlslBuiltinData{ast::Builtin::kSampleMask, "SV_Coverage"},
-        HlslBuiltinData{ast::Builtin::kSampleMaskIn, "SV_Coverage"},
-        HlslBuiltinData{ast::Builtin::kSampleMaskOut, "SV_Coverage"}));
+        HlslBuiltinData{ast::Builtin::kSampleMask, "SV_Coverage"}));
 
 }  // namespace
 }  // namespace hlsl

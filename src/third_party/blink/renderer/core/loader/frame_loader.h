@@ -36,13 +36,12 @@
 #include <memory>
 
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
-#include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
@@ -55,6 +54,7 @@
 #include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
+#include "third_party/blink/renderer/platform/loader/fetch/loader_freeze_mode.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -79,6 +79,8 @@ class CORE_EXPORT FrameLoader final {
 
  public:
   explicit FrameLoader(LocalFrame*);
+  FrameLoader(const FrameLoader&) = delete;
+  FrameLoader& operator=(const FrameLoader&) = delete;
   ~FrameLoader();
 
   void Init(std::unique_ptr<PolicyContainer> policy_container);
@@ -133,7 +135,7 @@ class CORE_EXPORT FrameLoader final {
 
   DocumentLoader* GetDocumentLoader() const { return document_loader_.Get(); }
 
-  void SetDefersLoading(WebURLLoader::DeferType defer);
+  void SetDefersLoading(LoaderFreezeMode mode);
 
   void DidExplicitOpen();
 
@@ -229,12 +231,7 @@ class CORE_EXPORT FrameLoader final {
 
  private:
   bool AllowRequestForThisFrame(const FrameLoadRequest&);
-  WebFrameLoadType DetermineFrameLoadType(const KURL& url,
-                                          const AtomicString& http_method,
-                                          bool has_origin_window,
-                                          bool is_client_reload,
-                                          const KURL& failing_url,
-                                          WebFrameLoadType);
+  WebFrameLoadType DetermineFrameLoadType(const KURL& url, WebFrameLoadType);
 
   bool ShouldPerformFragmentNavigation(bool is_form_submission,
                                        const String& http_method,
@@ -301,8 +298,6 @@ class CORE_EXPORT FrameLoader final {
   // The origins for which a legacy TLS version warning has been printed. The
   // size of this set is capped, after which no more warnings are printed.
   HashSet<String> tls_version_warning_origins_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameLoader);
 };
 
 }  // namespace blink

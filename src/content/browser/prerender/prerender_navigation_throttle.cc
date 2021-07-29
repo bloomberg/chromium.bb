@@ -14,6 +14,18 @@
 
 namespace content {
 
+namespace {
+
+// Returns true if a the response code is disallowed for pre-rendering (e.g 404,
+// etc), and false otherwise.
+// TODO(crbug.com/1167592): This should be eventually synced with the outcome
+// of https://github.com/jeremyroman/alternate-loading-modes/issues/30.
+bool IsDisallowedHttpResponseCode(int response_code) {
+  return response_code < 100 || response_code > 399;
+}
+
+}  // namespace
+
 PrerenderNavigationThrottle::~PrerenderNavigationThrottle() = default;
 
 // static
@@ -22,13 +34,12 @@ PrerenderNavigationThrottle::MaybeCreateThrottleFor(
     NavigationHandle* navigation_handle) {
   auto* navigation_request = NavigationRequest::From(navigation_handle);
   FrameTreeNode* frame_tree_node = navigation_request->frame_tree_node();
-  if (!blink::features::IsPrerender2Enabled() ||
-      !frame_tree_node->IsMainFrame() ||
-      !frame_tree_node->frame_tree()->is_prerendering()) {
-    return nullptr;
+  if (frame_tree_node->IsMainFrame() &&
+      frame_tree_node->frame_tree()->is_prerendering()) {
+    DCHECK(blink::features::IsPrerender2Enabled());
+    return base::WrapUnique(new PrerenderNavigationThrottle(navigation_handle));
   }
-
-  return base::WrapUnique(new PrerenderNavigationThrottle(navigation_handle));
+  return nullptr;
 }
 
 const char* PrerenderNavigationThrottle::GetNameForLogging() {
@@ -47,7 +58,28 @@ PrerenderNavigationThrottle::WillRedirectRequest() {
 
 PrerenderNavigationThrottle::PrerenderNavigationThrottle(
     NavigationHandle* navigation_handle)
-    : NavigationThrottle(navigation_handle) {}
+    : NavigationThrottle(navigation_handle) {
+  auto* navigation_request = NavigationRequest::From(navigation_handle);
+  FrameTreeNode* ftn = navigation_request->frame_tree_node();
+  PrerenderHostRegistry* prerender_host_registry =
+      ftn->current_frame_host()->delegate()->GetPrerenderHostRegistry();
+  int ftn_id = ftn->frame_tree_node_id();
+  PrerenderHost* prerender_host =
+      prerender_host_registry->FindNonReservedHostById(ftn_id);
+  DCHECK(prerender_host);
+
+  // This throttle is responsible for setting the initial navigation id on the
+  // PrerenderHost, since the PrerenderHost obtains the NavigationRequest,
+  // which has the ID, only after the navigation throttles run.
+  if (prerender_host->GetInitialNavigationId().has_value()) {
+    // If the host already has an initial navigation id, this throttle
+    // will later cancel the navigation in Will*Request(). Just do nothing
+    // until then.
+  } else {
+    prerender_host->SetInitialNavigationId(
+        navigation_handle->GetNavigationId());
+  }
+}
 
 NavigationThrottle::ThrottleCheckResult
 PrerenderNavigationThrottle::WillStartOrRedirectRequest(bool is_redirection) {
@@ -59,26 +91,23 @@ PrerenderNavigationThrottle::WillStartOrRedirectRequest(bool is_redirection) {
   DCHECK(frame_tree_node->IsMainFrame());
   DCHECK(frame_tree_node->frame_tree()->is_prerendering());
 
+  // Get the prerender host of the prerendering page. It might be a reserved
+  // host if activation already started.
   PrerenderHostRegistry* prerender_host_registry =
       frame_tree_node->current_frame_host()
           ->delegate()
           ->GetPrerenderHostRegistry();
+  PrerenderHost* prerender_host =
+      prerender_host_registry->FindNonReservedHostById(
+          frame_tree_node->frame_tree_node_id());
+  DCHECK(prerender_host);
 
-  // Disallow navigation from a prerendering page and cancel prerendering.
-  RenderFrameHostImpl* initiator_render_frame_host_impl =
-      navigation_request->GetInitiatorFrameToken().has_value()
-          ? RenderFrameHostImpl::FromFrameToken(
-                navigation_request->GetInitiatorProcessID(),
-                navigation_request->GetInitiatorFrameToken().value())
-          : nullptr;
-  if (initiator_render_frame_host_impl &&
-      initiator_render_frame_host_impl->frame_tree()->is_prerendering()) {
-    prerender_host_registry->AbandonHostAsync(
+  // Navigations after the initial prerendering navigation are disallowed.
+  if (*prerender_host->GetInitialNavigationId() !=
+      navigation_request->GetNavigationId()) {
+    prerender_host_registry->CancelHost(
         frame_tree_node->frame_tree_node_id(),
         PrerenderHost::FinalStatus::kMainFrameNavigation);
-    // TODO(https://crbug.com/1194414): Handle the case the prerendering page
-    // is reserved for activation, and AbandonHostAsync() could not do nothing
-    // here.
     return CANCEL;
   }
 
@@ -86,46 +115,56 @@ PrerenderNavigationThrottle::WillStartOrRedirectRequest(bool is_redirection) {
   // https://jeremyroman.github.io/alternate-loading-modes/#no-bad-navs
   GURL prerendering_url = navigation_handle()->GetURL();
   if (!prerendering_url.SchemeIsHTTPOrHTTPS()) {
-    prerender_host_registry->AbandonHostAsync(
+    prerender_host_registry->CancelHost(
         frame_tree_node->frame_tree_node_id(),
         is_redirection ? PrerenderHost::FinalStatus::kInvalidSchemeRedirect
                        : PrerenderHost::FinalStatus::kInvalidSchemeNavigation);
     return CANCEL;
   }
 
-  // Get the prerender host of the prerendering page.
-  const PrerenderHost* prerender_host =
-      prerender_host_registry->FindNonReservedHostById(
-          frame_tree_node->frame_tree_node_id());
-  if (!prerender_host) {
-    // If there is no host, we are already reserved for activation. Just let
-    // the navigation proceed, since cancelling it now might break the
-    // activation navigation. We also cannot defer because the activation
-    // machinery waits for the navigation to commit before activating.
-    // TODO(https://crbug.com/1198395): Somehow handle this, probably by
-    // deferring after support is added to activate while the main frame is
-    // still being navigated; or else cancelling prerendering.
-    DCHECK(prerender_host_registry->FindReservedHostById(
-        frame_tree_node->frame_tree_node_id()));
-    return PROCEED;
-  }
-
   // Cancel prerendering if this is cross-origin prerendering, cross-origin
   // redirection during prerendering, or cross-origin navigation from a
   // prerendered page.
+  // TODO(https://crbug.com/1176120): Fallback to NoStatePrefetch.
   url::Origin prerendering_origin = url::Origin::Create(prerendering_url);
   if (prerendering_origin != prerender_host->initiator_origin()) {
-    // Asynchronously abandon the prerender host so that the navigation request
-    // and the render frame tree indirectly owned by the prerender host can
-    // outlive the current callstack.
-    prerender_host_registry->AbandonHostAsync(
+    prerender_host_registry->CancelHost(
         frame_tree_node->frame_tree_node_id(),
         is_redirection ? PrerenderHost::FinalStatus::kCrossOriginRedirect
                        : PrerenderHost::FinalStatus::kCrossOriginNavigation);
-    // TODO(https://crbug.com/1176120): Fallback to NoStatePrefetch.
     return CANCEL;
   }
 
+  return PROCEED;
+}
+
+NavigationThrottle::ThrottleCheckResult
+PrerenderNavigationThrottle::WillProcessResponse() {
+  auto* navigation_request = NavigationRequest::From(navigation_handle());
+  absl::optional<PrerenderHost::FinalStatus> cancel_reason;
+
+  if (navigation_handle()->IsDownload()) {
+    // Disallow downloads during prerendering and cancel the prerender.
+    cancel_reason = PrerenderHost::FinalStatus::kDownload;
+  } else if (IsDisallowedHttpResponseCode(
+                 navigation_request->commit_params().http_response_code)) {
+    // There's no point in trying to prerender failed navigations.
+    cancel_reason = PrerenderHost::FinalStatus::kNavigationBadHttpStatus;
+  }
+
+  if (cancel_reason.has_value()) {
+    FrameTreeNode* frame_tree_node = navigation_request->frame_tree_node();
+    DCHECK(frame_tree_node->frame_tree()->is_prerendering());
+
+    PrerenderHostRegistry* prerender_host_registry =
+        frame_tree_node->current_frame_host()
+            ->delegate()
+            ->GetPrerenderHostRegistry();
+
+    prerender_host_registry->CancelHost(frame_tree_node->frame_tree_node_id(),
+                                        cancel_reason.value());
+    return CANCEL;
+  }
   return PROCEED;
 }
 

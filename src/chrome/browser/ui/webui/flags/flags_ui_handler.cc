@@ -14,11 +14,8 @@
 #include "components/version_info/channel.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/login/session/user_session_manager.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "components/account_id/account_id.h"
-#include "components/user_manager/user_manager.h"
+#include "chrome/browser/ash/settings/about_flags.h"
+#include "chrome/browser/profiles/profile.h"
 #endif
 
 FlagsUIHandler::FlagsUIHandler()
@@ -79,21 +76,22 @@ void FlagsUIHandler::HandleRequestExperimentalFeatures(
 void FlagsUIHandler::SendExperimentalFeatures() {
   base::DictionaryValue results;
 
-  std::unique_ptr<base::ListValue> supported_features(new base::ListValue);
-  std::unique_ptr<base::ListValue> unsupported_features(new base::ListValue);
+  base::Value::ListStorage supported_features;
+  base::Value::ListStorage unsupported_features;
 
   if (deprecated_features_only_) {
     about_flags::GetFlagFeatureEntriesForDeprecatedPage(
-        flags_storage_.get(), access_, supported_features.get(),
-        unsupported_features.get());
+        flags_storage_.get(), access_, supported_features,
+        unsupported_features);
   } else {
     about_flags::GetFlagFeatureEntries(flags_storage_.get(), access_,
-                                       supported_features.get(),
-                                       unsupported_features.get());
+                                       supported_features,
+                                       unsupported_features);
   }
 
-  results.Set(flags_ui::kSupportedFeatures, std::move(supported_features));
-  results.Set(flags_ui::kUnsupportedFeatures, std::move(unsupported_features));
+  results.SetKey(flags_ui::kSupportedFeatures, base::Value(supported_features));
+  results.SetKey(flags_ui::kUnsupportedFeatures,
+                 base::Value(unsupported_features));
   results.SetBoolean(flags_ui::kNeedsRestart,
                      about_flags::IsRestartNeededToCommitChanges());
   results.SetBoolean(flags_ui::kShowOwnerWarning,
@@ -161,18 +159,9 @@ void FlagsUIHandler::HandleRestartBrowser(const base::ListValue* args) {
   // On Chrome OS be less intrusive and restart inside the user session after
   // we apply the newly selected flags.
   VLOG(1) << "Restarting to apply per-session flags...";
-
-  // Adhere to policy-enforced command-line switch handling when applying
-  // modified flags.
-  auto flags = flags_storage_->GetFlags();
-  ash::UserSessionManager::ApplyUserPolicyToFlags(
-      Profile::FromWebUI(web_ui())->GetPrefs(), &flags);
-
-  AccountId account_id =
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
-  chromeos::SessionManagerClient::Get()->SetFeatureFlagsForUser(
-      cryptohome::CreateAccountIdentifierFromAccountId(account_id),
-      {flags.begin(), flags.end()});
+  ash::about_flags::FeatureFlagsUpdate(*flags_storage_,
+                                       Profile::FromWebUI(web_ui())->GetPrefs())
+      .UpdateSessionManager();
 #endif
   chrome::AttemptRestart();
 }

@@ -8,13 +8,14 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -35,18 +36,21 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.SysUtils;
+import org.chromium.base.jank_tracker.DummyJankTracker;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteControllerJni;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownEmbedder;
@@ -65,11 +69,13 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.metrics.OmniboxEventProtos.OmniboxEventProto.PageClassification;
+import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteResult;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.AndroidPermissionDelegate;
+import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.IntentCallback;
@@ -90,6 +96,8 @@ import java.util.concurrent.ExecutionException;
 public class VoiceRecognitionHandlerTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    @Rule
+    public JniMocker mJniMocker = new JniMocker();
 
     @Mock
     Intent mIntent;
@@ -103,13 +111,18 @@ public class VoiceRecognitionHandlerTest {
     Tab mTab;
     @Mock
     VoiceRecognitionHandler.Observer mObserver;
+    @Mock
+    AutocompleteController mController;
+    @Mock
+    AutocompleteController.Natives mControllerJniMock;
+    @Mock
+    AutocompleteMatch mMatch;
 
     private TestDataProvider mDataProvider;
     private TestDelegate mDelegate;
     private TestVoiceRecognitionHandler mHandler;
     private TestAndroidPermissionDelegate mPermissionDelegate;
     private TestWindowAndroid mWindowAndroid;
-    private ActivityLifecycleDispatcher mLifecycleDispatcher;
     private List<VoiceResult> mAutocompleteVoiceResults;
     private ObservableSupplierImpl<Profile> mProfileSupplier;
 
@@ -351,11 +364,6 @@ public class VoiceRecognitionHandlerTest {
         }
 
         @Override
-        public Profile getProfile() {
-            return null;
-        }
-
-        @Override
         public UrlBarData getUrlBarData() {
             return UrlBarData.EMPTY;
         }
@@ -415,8 +423,8 @@ public class VoiceRecognitionHandlerTest {
                 UrlBarEditingTextStateProvider urlBarEditingTextProvider) {
             // clang-format off
             super(parent, delegate, dropdownEmbedder, urlBarEditingTextProvider,
-                    mLifecycleDispatcher, () -> mModalDialogManager, null, null, mDataProvider,
-                    mProfileSupplier, (tab) -> {}, null, (url) -> false,
+                    () -> mModalDialogManager, null, null, mDataProvider,
+                    mProfileSupplier, (tab) -> {}, null, (url) -> false, new DummyJankTracker(),
                     (pixelSize, callback) -> {});
             // clang-format on
         }
@@ -484,8 +492,9 @@ public class VoiceRecognitionHandlerTest {
         private Intent mCancelableIntent;
         private IntentCallback mCallback;
 
-        public TestWindowAndroid(Context context) {
-            super(context);
+        public TestWindowAndroid(Activity activity) {
+            super(activity, /* listenToActivityState= */ true,
+                    IntentRequestTracker.createFromActivity(activity));
         }
 
         public void setCancelableIntentSuccess(boolean success) {
@@ -602,8 +611,12 @@ public class VoiceRecognitionHandlerTest {
     @Before
     public void setUp() throws InterruptedException, ExecutionException {
         MockitoAnnotations.initMocks(this);
+        mJniMocker.mock(AutocompleteControllerJni.TEST_HOOKS, mControllerJniMock);
+        doReturn(mController).when(mControllerJniMock).getForProfile(any());
+        doReturn(mMatch).when(mController).classify(any(), anyBoolean());
+        doReturn(new GURL("https://www.google.com/search?q=abc")).when(mMatch).getUrl();
+        doReturn(true).when(mMatch).isSearchSuggestion();
         mActivityTestRule.startMainActivityOnBlankPage();
-        mLifecycleDispatcher = mActivityTestRule.getActivity().getLifecycleDispatcher();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mWindowAndroid = new TestWindowAndroid(mActivityTestRule.getActivity());
@@ -1411,6 +1424,7 @@ public class VoiceRecognitionHandlerTest {
     @Test
     @SmallTest
     public void testParseResults_VoiceResponseURLConversion() {
+        doReturn(false).when(mMatch).isSearchSuggestion();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             String[] texts =
                     new String[] {"a", "www. b .co .uk", "engadget .com", "www.google.com"};

@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "ash/content/scanning/url_constants.h"
 #include "ash/grit/ash_scanning_app_resources.h"
+#include "ash/webui/scanning/url_constants.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -39,4 +39,27 @@ std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForScanningSystemWebApp() {
   info->open_as_window = true;
 
   return info;
+}
+
+ScanningSystemAppDelegate::ScanningSystemAppDelegate(Profile* profile)
+    : web_app::SystemWebAppDelegate(web_app::SystemAppType::SCANNING,
+                                    "Scanning",
+                                    GURL("chrome://scanning"),
+                                    profile) {}
+
+std::unique_ptr<WebApplicationInfo> ScanningSystemAppDelegate::GetWebAppInfo()
+    const {
+  return CreateWebAppInfoForScanningSystemWebApp();
+}
+
+bool ScanningSystemAppDelegate::ShouldShowInLauncher() const {
+  return false;
+}
+
+bool ScanningSystemAppDelegate::ShouldCaptureNavigations() const {
+  return true;
+}
+
+gfx::Size ScanningSystemAppDelegate::GetMinimumWindowSize() const {
+  return {600, 420};
 }

@@ -216,13 +216,8 @@ class Module {
   // Add FUNCTION to the module. FUNCTION's name must not be empty.
   // This module owns all Function objects added with this function:
   // destroying the module destroys them as well.
-  void AddFunction(Function* function);
-
-  // Add all the functions in [BEGIN,END) to the module.
-  // This module owns all Function objects added with this function:
-  // destroying the module destroys them as well.
-  void AddFunctions(vector<Function*>::iterator begin,
-                    vector<Function*>::iterator end);
+  // Return false if the function is duplicate and needs to be freed.
+  bool AddFunction(Function* function);
 
   // Add STACK_FRAME_ENTRY to the module.
   // This module owns all StackFrameEntry objects added with this

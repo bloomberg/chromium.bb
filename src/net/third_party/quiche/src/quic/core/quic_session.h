@@ -17,6 +17,8 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
+#include "quic/core/crypto/tls_connection.h"
 #include "quic/core/frames/quic_ack_frequency_frame.h"
 #include "quic/core/handshaker_delegate_interface.h"
 #include "quic/core/legacy_quic_stream_id_manager.h"
@@ -35,10 +37,11 @@
 #include "quic/core/session_notifier_interface.h"
 #include "quic/core/stream_delegate_interface.h"
 #include "quic/core/uber_quic_stream_id_manager.h"
-#include "quic/platform/api/quic_containers.h"
 #include "quic/platform/api/quic_export.h"
 #include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_mem_slice.h"
 #include "quic/platform/api/quic_socket_address.h"
+#include "common/quiche_linked_hash_map.h"
 
 namespace quic {
 
@@ -208,31 +211,39 @@ class QUIC_EXPORT_PRIVATE QuicSession
                                 const QuicSocketAddress& peer_address,
                                 const QuicReceivedPacket& packet);
 
-  // Called by application to send |message|. Data copy can be avoided if
-  // |message| is provided in reference counted memory.
-  // Please note, |message| provided in reference counted memory would be moved
-  // internally when message is successfully sent. Thereafter, it would be
-  // undefined behavior if callers try to access the slices through their own
-  // copy of the span object.
-  // Returns the message result which includes the message status and message ID
-  // (valid if the write succeeds). SendMessage flushes a message packet even it
-  // is not full. If the application wants to bundle other data in the same
-  // packet, please consider adding a packet flusher around the SendMessage
-  // and/or WritevData calls.
+  // Sends |message| as a QUIC DATAGRAM frame (QUIC MESSAGE frame in gQUIC).
+  // See <https://datatracker.ietf.org/doc/html/draft-ietf-quic-datagram> for
+  // more details.
   //
-  // OnMessageAcked and OnMessageLost are called when a particular message gets
-  // acked or lost.
+  // Returns a MessageResult struct which includes the status of the write
+  // operation and a message ID.  The message ID (not sent on the wire) can be
+  // used to track the message; OnMessageAcked and OnMessageLost are called when
+  // a specific message gets acked or lost.
+  //
+  // If the write operation is successful, all of the slices in |message| are
+  // consumed, leaving them empty.  If MESSAGE_STATUS_INTERNAL_ERROR is
+  // returned, the slices in question may or may not be consumed; it is no
+  // longer safe to access those.  For all other status codes, |message| is kept
+  // intact.
   //
   // Note that SendMessage will fail with status = MESSAGE_STATUS_BLOCKED
-  // if connection is congestion control blocked or underlying socket is write
-  // blocked. In this case the caller can retry sending message again when
+  // if the connection is congestion control blocked or the underlying socket is
+  // write blocked. In this case the caller can retry sending message again when
   // connection becomes available, for example after getting OnCanWrite()
   // callback.
-  MessageResult SendMessage(QuicMemSliceSpan message);
+  //
+  // SendMessage flushes the current packet even it is not full; if the
+  // application needs to bundle other data in the same packet, consider using
+  // QuicConnection::ScopedPacketFlusher around the relevant write operations.
+  MessageResult SendMessage(absl::Span<QuicMemSlice> message);
 
   // Same as above SendMessage, except caller can specify if the given |message|
   // should be flushed even if the underlying connection is deemed unwritable.
-  MessageResult SendMessage(QuicMemSliceSpan message, bool flush);
+  MessageResult SendMessage(absl::Span<QuicMemSlice> message, bool flush);
+
+  // Single-slice version of SendMessage().  Unlike the version above, this
+  // version always takes ownership of the slice.
+  MessageResult SendMessage(QuicMemSlice message);
 
   // Called when message with |message_id| gets acked.
   virtual void OnMessageAcked(QuicMessageId message_id,
@@ -619,6 +630,10 @@ class QUIC_EXPORT_PRIVATE QuicSession
            use_write_or_buffer_data_at_level_;
   }
 
+  bool permutes_tls_extensions() const { return permutes_tls_extensions_; }
+
+  virtual QuicSSLConfig GetSSLConfig() const { return QuicSSLConfig(); }
+
  protected:
   using StreamMap =
       absl::flat_hash_map<QuicStreamId, std::unique_ptr<QuicStream>>;
@@ -925,7 +940,8 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // TODO(fayang): switch to linked_hash_set when chromium supports it. The bool
   // is not used here.
   // List of streams with pending retransmissions.
-  QuicLinkedHashMap<QuicStreamId, bool> streams_with_pending_retransmission_;
+  quiche::QuicheLinkedHashMap<QuicStreamId, bool>
+      streams_with_pending_retransmission_;
 
   // Clean up closed_streams_ when this alarm fires.
   std::unique_ptr<QuicAlarm> closed_streams_clean_up_alarm_;
@@ -946,6 +962,9 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // This indicates a liveness testing is in progress, and push back the
   // creation of new outgoing bidirectional streams.
   bool liveness_testing_in_progress_;
+
+  // Whether BoringSSL randomizes the order of TLS extensions.
+  bool permutes_tls_extensions_ = false;
 
   const bool use_write_or_buffer_data_at_level_ =
       GetQuicReloadableFlag(quic_use_write_or_buffer_data_at_level);

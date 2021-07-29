@@ -269,13 +269,13 @@ crbug.com/665014 virtual/gpu-rasterization/images/cross-fade-svg-size-diff.html 
 crbug.com/665014 virtual/gpu-rasterization/images/cross-fade-svg-size.html [ Skip ]
 
 # Debug rendering difference only on Win Debug
-crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Skip ]
-crbug.com/552433 [ Win7 Debug ] svg/W3C-SVG-1.1/coords-units-02-b.svg [ Skip ]
-crbug.com/606302 [ Win7 Debug ] compositing/perpendicular-layer-sorting.html [ Skip ]
-crbug.com/606302 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Skip ]
-crbug.com/606302 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Skip ]
-crbug.com/702176 [ Win7 Debug ] fast/table/border-collapsing/001-vertical.html [ Skip ]
-crbug.com/702176 [ Win7 Debug ] fast/table/border-collapsing/001.html [ Skip ]
+crbug.com/484370 [ Debug Win ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Skip ]
+crbug.com/552433 [ Debug Win7 ] svg/W3C-SVG-1.1/coords-units-02-b.svg [ Skip ]
+crbug.com/606302 [ Debug Win7 ] compositing/perpendicular-layer-sorting.html [ Skip ]
+crbug.com/606302 [ Debug Win7 ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Skip ]
+crbug.com/606302 [ Debug Win7 ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Skip ]
+crbug.com/702176 [ Debug Win7 ] fast/table/border-collapsing/001-vertical.html [ Skip ]
+crbug.com/702176 [ Debug Win7 ] fast/table/border-collapsing/001.html [ Skip ]
 
 # Only Windows supports Symbol CMAP encoded fonts.
 crbug.com/627953 [ Linux ] virtual/text-antialias/symbol-cmap.html [ Skip ]
@@ -1064,7 +1064,7 @@ virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream
 http/tests/ManualTests/* [ Skip ]
 
 # These test produce invisible different pixels on Win7 Debug.
-[ Win7 Debug ] fast/table/backgr_border-table-column-group-collapsed-border.html [ Skip ]
+[ Debug Win7 ] fast/table/backgr_border-table-column-group-collapsed-border.html [ Skip ]
 
 # Fails in debug mode, because in debug mode we recompute visual rects after
 # changes to subpixel offsets of composited layers to detect under-invalidation
@@ -1532,6 +1532,8 @@ external/wpt/webstorage/storage_local-manual.html [ Skip ]
 external/wpt/webstorage/storage_session-manual.html [ Skip ]
 external/wpt/xhr/send-authentication-existing-session-manual.htm [ Skip ]
 external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Skip ]
+external/wpt/virtual-keyboard/virtual-keyboard-show-hide-manual.html [ Skip ]
+external/wpt/virtual-keyboard/virtual-keyboard-css-env-manual.html [ Skip ]
 
 # ==== Tests incompatible with the default WPT Origin Isolation start here ==VV
 # The section below lists web tests that are incompatible with the WPT Origin
@@ -1809,7 +1811,7 @@ crbug.com/630342 virtual/mse-1mb-buffers/http/tests/media/media-source/stream_me
 crbug.com/630342 http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-1mb-buffers.html [ Skip ]
 virtual/mse-1mb-buffers/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-1mb-buffers.html [ Pass ]
 
-# Remove from virtual tests when FreezeUserAgent is turned on by default.
+# Remove from virtual tests when ReduceUserAgent is turned on by default.
 crbug.com/955620 http/tests/navigation/frozen-useragent.html [ Skip ]
 virtual/passive-fingerprinting/http/tests/navigation/frozen-useragent.html [ Pass ]
 
@@ -1941,3 +1943,6 @@ crbug.com/687225 external/wpt/css/css-counter-styles/ethiopic-numeric/* [ Skip ]
 wpt_internal/document-transition/* [ Skip ]
 virtual/document-transition/wpt_internal/document-transition/* [ Pass ]
 
+# Clipboard custom format tests that is still in-progress.
+crbug.com/106449 clipboard/async-clipboard/async-custom-format-write-read.tentative.https.html [ Skip ]
+crbug.com/106449 clipboard/async-clipboard/async-custom-formats-write-read.tentative.https.html [ Skip ]

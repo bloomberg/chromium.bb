@@ -249,11 +249,12 @@ enum APIPermissionID {
   kPrintingMetrics = 223,
   kPrinting = 224,
   kCrashReportPrivate = 225,
-  kAutofillAssistantPrivate = 226,
+  kDeleted_AutofillAssistantPrivate = 226,
   kEnterpriseNetworkingAttributes = 227,
   kSearch = 228,
   kTabGroups = 229,
   kScripting = 230,
+  kWmDesksPrivate = 231,
 
   // Add new entries at the end of the enum and be sure to update the
   // "ExtensionPermission3" enum in tools/metrics/histograms/enums.xml

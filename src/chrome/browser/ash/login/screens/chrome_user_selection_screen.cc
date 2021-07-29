@@ -17,9 +17,9 @@
 #include "base/values.h"
 #include "chrome/browser/ash/login/ui/views/user_board_view.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "components/account_id/account_id.h"
@@ -125,13 +125,12 @@ void ChromeUserSelectionScreen::CheckForPublicSessionLocalePolicyChange(
   if (entry && entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
       entry->value() && entry->value()->GetAsList(&list)) {
     for (const auto& entry : list->GetList()) {
-      std::string locale;
-      if (!entry.GetAsString(&locale)) {
+      if (!entry.is_string()) {
         NOTREACHED();
         new_recommended_locales.clear();
         break;
       }
-      new_recommended_locales.push_back(locale);
+      new_recommended_locales.push_back(entry.GetString());
     }
   }
 

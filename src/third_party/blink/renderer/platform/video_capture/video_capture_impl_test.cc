@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/test/bind.h"
@@ -15,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "media/capture/mojom/video_capture.mojom-blink.h"
+#include "media/capture/mojom/video_capture_buffer.mojom-blink.h"
 #include "media/capture/mojom/video_capture_types.mojom-blink.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -58,6 +58,8 @@ class MockMojoVideoCaptureHost : public media::mojom::blink::VideoCaptureHost {
         .WillByDefault(InvokeWithoutArgs(
             this, &MockMojoVideoCaptureHost::increase_released_buffer_count));
   }
+  MockMojoVideoCaptureHost(const MockMojoVideoCaptureHost&) = delete;
+  MockMojoVideoCaptureHost& operator=(const MockMojoVideoCaptureHost&) = delete;
 
   // Start() can't be mocked directly due to move-only |observer|.
   void Start(const base::UnguessableToken& device_id,
@@ -113,8 +115,6 @@ class MockMojoVideoCaptureHost : public media::mojom::blink::VideoCaptureHost {
 
  private:
   int released_buffer_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockMojoVideoCaptureHost);
 };
 
 // This class encapsulates a VideoCaptureImpl under test and the necessary
@@ -175,6 +175,8 @@ class VideoCaptureImplTest : public ::testing::Test {
     video_capture_impl_->SetGpuMemoryBufferSupportForTesting(
         std::make_unique<FakeGpuMemoryBufferSupport>());
   }
+  VideoCaptureImplTest(const VideoCaptureImplTest&) = delete;
+  VideoCaptureImplTest& operator=(const VideoCaptureImplTest&) = delete;
 
  protected:
   // These four mocks are used to create callbacks for the different oeprations.
@@ -268,9 +270,6 @@ class VideoCaptureImplTest : public ::testing::Test {
   media::VideoCaptureParams params_small_;
   media::VideoCaptureParams params_large_;
   base::test::ScopedFeatureList feature_list_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VideoCaptureImplTest);
 };
 
 TEST_F(VideoCaptureImplTest, Simple) {

@@ -244,7 +244,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
 
   constructor() {
     super(true);
-    this.registerRequiredCSS('panels/webauthn/webauthnPane.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/webauthn/webauthnPane.css');
     this.contentElement.classList.add('webauthn-pane');
     this._enabled = false;
     this._activeAuthId = null;
@@ -255,7 +255,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         (Common.Settings.Settings.instance().createSetting('webauthnAuthenticators', []) as
          Common.Settings.Setting<AvailableAuthenticatorOptions[]>);
 
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+    const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
     if (mainTarget) {
       this._model = mainTarget.model(SDK.WebAuthnModel.WebAuthnModel);
     }
@@ -633,7 +633,8 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
 
     this._createAuthenticatorFields(section, authenticatorId, options);
 
-    const label = document.createElementWithClass('div', 'credentials-title');
+    const label = document.createElement('div');
+    label.classList.add('credentials-title');
     label.textContent = i18nString(UIStrings.credentials);
     section.appendChild(label);
 

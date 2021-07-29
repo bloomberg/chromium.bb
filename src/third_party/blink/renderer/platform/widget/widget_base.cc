@@ -13,6 +13,7 @@
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "cc/trees/ukm_manager.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
@@ -26,7 +27,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/common/switches.h"
-#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_context.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/widget/visual_properties.mojom-blink.h"
@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/platform/widget/input/widget_input_handler_manager.h"
 #include "third_party/blink/renderer/platform/widget/widget_base_client.h"
 #include "ui/base/ime/mojom/text_input_state.mojom-blink.h"
+#include "ui/display/screen_info.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/presentation_feedback.h"
 
@@ -104,19 +105,19 @@ ui::TextInputMode ConvertWebTextInputMode(blink::WebTextInputMode mode) {
   return static_cast<ui::TextInputMode>(mode);
 }
 
-unsigned OrientationTypeToAngle(mojom::blink::ScreenOrientation type) {
+unsigned OrientationTypeToAngle(display::mojom::blink::ScreenOrientation type) {
   unsigned angle;
   // FIXME(ostap): This relationship between orientationType and
   // orientationAngle is temporary. The test should be able to specify
   // the angle in addition to the orientation type.
   switch (type) {
-    case mojom::blink::ScreenOrientation::kLandscapePrimary:
+    case display::mojom::blink::ScreenOrientation::kLandscapePrimary:
       angle = 90;
       break;
-    case mojom::blink::ScreenOrientation::kLandscapeSecondary:
+    case display::mojom::blink::ScreenOrientation::kLandscapeSecondary:
       angle = 270;
       break;
-    case mojom::blink::ScreenOrientation::kPortraitSecondary:
+    case display::mojom::blink::ScreenOrientation::kPortraitSecondary:
       angle = 180;
       break;
     default:
@@ -175,7 +176,7 @@ WidgetBase::~WidgetBase() {
 void WidgetBase::InitializeCompositing(
     scheduler::WebAgentGroupScheduler& agent_group_scheduler,
     bool for_child_local_root_frame,
-    const ScreenInfos& screen_infos,
+    const display::ScreenInfos& screen_infos,
     const cc::LayerTreeSettings* settings,
     base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
         frame_widget_input_handler) {
@@ -192,7 +193,7 @@ void WidgetBase::InitializeCompositing(
 
   absl::optional<cc::LayerTreeSettings> default_settings;
   if (!settings) {
-    const ScreenInfo& screen_info = screen_infos.current();
+    const display::ScreenInfo& screen_info = screen_infos.current();
     default_settings = GenerateLayerTreeSettings(
         compositing_thread_scheduler, for_child_local_root_frame,
         screen_info.rect.size(), screen_info.device_scale_factor);
@@ -252,7 +253,7 @@ void WidgetBase::InitializeCompositing(
 void WidgetBase::InitializeNonCompositing() {
   DCHECK(!initialized_);
   // WidgetBase users implicitly expect one default ScreenInfo to exist.
-  screen_infos_ = ScreenInfos(ScreenInfo());
+  screen_infos_ = display::ScreenInfos(display::ScreenInfo());
   initialized_ = true;
 }
 
@@ -490,10 +491,11 @@ void WidgetBase::OnDeferMainFrameUpdatesChanged(bool defer) {
   widget_input_handler_manager_->OnDeferMainFrameUpdatesChanged(defer);
 }
 
-void WidgetBase::OnDeferCommitsChanged(bool defer) {
+void WidgetBase::OnDeferCommitsChanged(bool defer,
+                                       cc::PaintHoldingReason reason) {
   // The input handler wants to know about the commit status for metric purposes
   // and to enable/disable input.
-  widget_input_handler_manager_->OnDeferCommitsChanged(defer);
+  widget_input_handler_manager_->OnDeferCommitsChanged(defer, reason);
 }
 
 void WidgetBase::DidBeginMainFrame() {
@@ -820,6 +822,14 @@ void WidgetBase::UpdateTooltipUnderCursor(const String& tooltip_text,
                                           TextDirection dir) {
   widget_host_->UpdateTooltipUnderCursor(
       tooltip_text.IsEmpty() ? "" : tooltip_text, ToBaseTextDirection(dir));
+}
+
+void WidgetBase::UpdateTooltipFromKeyboard(const String& tooltip_text,
+                                           TextDirection dir,
+                                           const gfx::Rect& bounds) {
+  widget_host_->UpdateTooltipFromKeyboard(
+      tooltip_text.IsEmpty() ? "" : tooltip_text, ToBaseTextDirection(dir),
+      BlinkSpaceToEnclosedDIPs(bounds));
 }
 
 void WidgetBase::ShowVirtualKeyboard() {
@@ -1361,9 +1371,9 @@ void WidgetBase::RequestAnimationAfterDelayTimerFired(TimerBase*) {
 void WidgetBase::UpdateSurfaceAndScreenInfo(
     const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Rect& compositor_viewport_pixel_rect,
-    const ScreenInfos& screen_infos) {
-  ScreenInfos new_screen_infos = screen_infos;
-  ScreenInfo& new_screen_info = new_screen_infos.mutable_current();
+    const display::ScreenInfos& screen_infos) {
+  display::ScreenInfos new_screen_infos = screen_infos;
+  display::ScreenInfo& new_screen_info = new_screen_infos.mutable_current();
 
   // If there is a screen orientation override apply it.
   if (auto orientation_override = client_->ScreenOrientationOverride()) {
@@ -1374,12 +1384,13 @@ void WidgetBase::UpdateSurfaceAndScreenInfo(
 
   // RenderWidgetHostImpl::SynchronizeVisualProperties uses similar logic to
   // detect orientation changes on the display currently showing the widget.
-  const ScreenInfo& previous_screen_info = screen_infos_.current();
+  const display::ScreenInfo& previous_screen_info = screen_infos_.current();
   bool orientation_changed =
       previous_screen_info.orientation_angle !=
           new_screen_info.orientation_angle ||
       previous_screen_info.orientation_type != new_screen_info.orientation_type;
-  ScreenInfo previous_original_screen_info = client_->GetOriginalScreenInfo();
+  display::ScreenInfo previous_original_screen_info =
+      client_->GetOriginalScreenInfo();
 
   local_surface_id_from_parent_ = new_local_surface_id;
   screen_infos_ = new_screen_infos;
@@ -1403,14 +1414,15 @@ void WidgetBase::UpdateSurfaceAndScreenInfo(
   client_->DidUpdateSurfaceAndScreen(previous_original_screen_info);
 }
 
-void WidgetBase::UpdateScreenInfo(const ScreenInfos& new_screen_infos) {
+void WidgetBase::UpdateScreenInfo(
+    const display::ScreenInfos& new_screen_infos) {
   UpdateSurfaceAndScreenInfo(local_surface_id_from_parent_,
                              CompositorViewportRect(), new_screen_infos);
 }
 
 void WidgetBase::UpdateCompositorViewportAndScreenInfo(
     const gfx::Rect& compositor_viewport_pixel_rect,
-    const ScreenInfos& new_screen_infos) {
+    const display::ScreenInfos& new_screen_infos) {
   UpdateSurfaceAndScreenInfo(local_surface_id_from_parent_,
                              compositor_viewport_pixel_rect, new_screen_infos);
 }
@@ -1428,7 +1440,7 @@ void WidgetBase::UpdateSurfaceAndCompositorRect(
                              compositor_viewport_pixel_rect, screen_infos_);
 }
 
-const ScreenInfo& WidgetBase::GetScreenInfo() {
+const display::ScreenInfo& WidgetBase::GetScreenInfo() {
   return screen_infos_.current();
 }
 

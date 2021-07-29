@@ -37,6 +37,7 @@ class MockWebContentsObserver : public WebContentsObserver {
               RenderFrameDeleted,
               (RenderFrameHost* render_frame_host),
               (override));
+  MOCK_METHOD(void, PrimaryPageChanged, (Page & page), (override));
   MOCK_METHOD(void,
               RenderFrameHostChanged,
               (RenderFrameHost* old_host, RenderFrameHost* new_host),
@@ -336,8 +337,7 @@ class MockWebContentsObserver : public WebContentsObserver {
               (override));
   MOCK_METHOD(void,
               DidUpdateWebManifestURL,
-              (RenderFrameHost * target_frame,
-               const absl::optional<GURL>& manifest_url),
+              (RenderFrameHost * target_frame, const GURL& manifest_url),
               (override));
   MOCK_METHOD(void,
               OnInterfaceRequestFromFrame,

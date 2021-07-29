@@ -256,7 +256,7 @@ void NativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
   // Wait to set the bounds until we have a parent. That way we can know our
   // true state/bounds (the LayoutManager may enforce a particular
   // state/bounds).
-  if (IsMaximized())
+  if (IsMaximized() || IsMinimized())
     SetRestoreBounds(window_, window_bounds);
   else
     SetBounds(window_bounds);
@@ -456,6 +456,14 @@ void NativeWidgetAura::SetWindowIcons(const gfx::ImageSkia& window_icon,
   AssignIconToAuraWindow(window_, window_icon, app_icon);
 }
 
+const gfx::ImageSkia* NativeWidgetAura::GetWindowIcon() {
+  return window_->GetProperty(aura::client::kWindowIconKey);
+}
+
+const gfx::ImageSkia* NativeWidgetAura::GetWindowAppIcon() {
+  return window_->GetProperty(aura::client::kAppIconKey);
+}
+
 void NativeWidgetAura::InitModalType(ui::ModalType modal_type) {
   if (modal_type != ui::MODAL_TYPE_NONE)
     window_->SetProperty(aura::client::kModalKey, modal_type);
@@ -597,8 +605,11 @@ void NativeWidgetAura::Show(ui::WindowShowState show_state,
   if (!window_)
     return;
 
-  if (show_state == ui::SHOW_STATE_MAXIMIZED && !restore_bounds.IsEmpty())
+  if ((show_state == ui::SHOW_STATE_MAXIMIZED ||
+       show_state == ui::SHOW_STATE_MINIMIZED) &&
+      !restore_bounds.IsEmpty()) {
     SetRestoreBounds(window_, restore_bounds);
+  }
   if (show_state == ui::SHOW_STATE_MAXIMIZED ||
       show_state == ui::SHOW_STATE_FULLSCREEN) {
     window_->SetProperty(aura::client::kShowStateKey, show_state);
@@ -700,7 +711,7 @@ void NativeWidgetAura::Restore() {
     window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 }
 
-void NativeWidgetAura::SetFullscreen(bool fullscreen) {
+void NativeWidgetAura::SetFullscreen(bool fullscreen, bool delay) {
   if (!window_ || IsFullscreen() == fullscreen)
     return;  // Nothing to do.
 

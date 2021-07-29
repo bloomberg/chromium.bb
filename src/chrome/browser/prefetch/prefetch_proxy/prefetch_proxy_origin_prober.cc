@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/availability/availability_prober.h"
@@ -22,7 +21,9 @@
 #include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/public/mojom/tls_socket.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/origin.h"
 
 namespace {
@@ -222,13 +223,13 @@ class OriginProbeDelegate : public AvailabilityProber::Delegate {
 };
 
 CanaryCheckDelegate* GetCanaryCheckDelegate() {
-  static base::NoDestructor<CanaryCheckDelegate> delegate;
-  return delegate.get();
+  static CanaryCheckDelegate delegate;
+  return &delegate;
 }
 
 OriginProbeDelegate* GetOriginProbeDelegate() {
-  static base::NoDestructor<OriginProbeDelegate> delegate;
-  return delegate.get();
+  static OriginProbeDelegate delegate;
+  return &delegate;
 }
 
 // Allows probing to start after a delay so that browser start isn't slowed.

@@ -76,20 +76,30 @@ FrameTree::NodeIterator::~NodeIterator() = default;
 
 FrameTree::NodeIterator& FrameTree::NodeIterator::operator++() {
   if (current_node_ != root_of_subtree_to_skip_) {
+    // Reserve enough space in the queue to accommodate the nodes we're
+    // going to add, to avoid repeated resize calls.
+    queue_.reserve(queue_.size() + current_node_->child_count());
+
     for (size_t i = 0; i < current_node_->child_count(); ++i) {
       FrameTreeNode* child = current_node_->child_at(i);
       FrameTreeNode* inner_tree_main_ftn = GetInnerTreeMainFrameNode(child);
-      queue_.push((should_descend_into_inner_trees_ && inner_tree_main_ftn)
-                      ? inner_tree_main_ftn
-                      : child);
+      queue_.push_back((should_descend_into_inner_trees_ && inner_tree_main_ftn)
+                           ? inner_tree_main_ftn
+                           : child);
     }
 
     if (should_descend_into_inner_trees_) {
-      for (auto* unattached_node :
-           current_node_->current_frame_host()
-               ->delegate()
-               ->GetUnattachedOwnedNodes(current_node_->current_frame_host())) {
-        queue_.push(unattached_node);
+      auto unattached_nodes =
+          current_node_->current_frame_host()
+              ->delegate()
+              ->GetUnattachedOwnedNodes(current_node_->current_frame_host());
+
+      // Reserve enough space in the queue to accommodate the nodes we're
+      // going to add.
+      queue_.reserve(queue_.size() + unattached_nodes.size());
+
+      for (auto* unattached_node : unattached_nodes) {
+        queue_.push_back(unattached_node);
       }
     }
   }
@@ -110,7 +120,7 @@ bool FrameTree::NodeIterator::operator==(const NodeIterator& rhs) const {
 void FrameTree::NodeIterator::AdvanceNode() {
   if (!queue_.empty()) {
     current_node_ = queue_.front();
-    queue_.pop();
+    queue_.pop_front();
   } else {
     current_node_ = nullptr;
   }
@@ -123,8 +133,7 @@ FrameTree::NodeIterator::NodeIterator(
     : current_node_(nullptr),
       root_of_subtree_to_skip_(root_of_subtree_to_skip),
       should_descend_into_inner_trees_(should_descend_into_inner_trees),
-      queue_(base::circular_deque<FrameTreeNode*>(starting_nodes.begin(),
-                                                  starting_nodes.end())) {
+      queue_(starting_nodes.begin(), starting_nodes.end()) {
   AdvanceNode();
 }
 
@@ -163,12 +172,14 @@ FrameTree::FrameTree(
     RenderViewHostDelegate* render_view_delegate,
     RenderWidgetHostDelegate* render_widget_delegate,
     RenderFrameHostManager::Delegate* manager_delegate,
+    PageDelegate* page_delegate,
     Type type)
     : delegate_(delegate),
       render_frame_delegate_(render_frame_delegate),
       render_view_delegate_(render_view_delegate),
       render_widget_delegate_(render_widget_delegate),
       manager_delegate_(manager_delegate),
+      page_delegate_(page_delegate),
       navigator_(browser_context,
                  *this,
                  navigator_delegate,
@@ -183,7 +194,8 @@ FrameTree::FrameTree(
                               false,
                               base::UnguessableToken::Create(),
                               blink::mojom::FrameOwnerProperties(),
-                              blink::mojom::FrameOwnerElementType::kNone)),
+                              blink::mojom::FrameOwnerElementType::kNone,
+                              blink::FramePolicy())),
       focused_frame_tree_node_id_(FrameTreeNode::kFrameTreeNodeInvalidId),
       load_progress_(0.0),
       type_(type) {}
@@ -300,7 +312,7 @@ FrameTreeNode* FrameTree::AddFrame(
 
   std::unique_ptr<FrameTreeNode> new_node = base::WrapUnique(new FrameTreeNode(
       this, parent, scope, frame_name, frame_unique_name, is_created_by_script,
-      devtools_frame_token, frame_owner_properties, owner_type));
+      devtools_frame_token, frame_owner_properties, owner_type, frame_policy));
 
   // Set sandbox flags and container policy and make them effective immediately,
   // since initial sandbox flags and permissions policy should apply to the

@@ -31,8 +31,10 @@
 #include "ui/compositor/canvas_painter.h"
 #include "ui/compositor/layer.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/slide_out_controller.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -395,19 +397,13 @@ void MediaNotificationContainerImplView::OnColorsChanged(SkColor foreground,
   if (foreground_color_ != foreground) {
     foreground_color_ = foreground;
     UpdateDismissButtonIcon();
-    if (stop_cast_button_) {
-      stop_cast_button_->SetEnabledTextColors(foreground_color_);
-      stop_cast_button_->ink_drop()->SetBaseColor(foreground_color_);
-    }
+    UpdateStopCastButtonIcon();
   }
 
   if (background_color_ != background) {
     background_color_ = background;
     UpdateDismissButtonBackground();
-    if (stop_button_strip_) {
-      stop_button_strip_->SetBackground(
-          views::CreateSolidBackground(background_color_));
-    }
+    UpdateStopCastButtonBackground();
   }
   if (device_selector_view_)
     device_selector_view_->OnColorsChanged(foreground, background);
@@ -505,9 +501,8 @@ void MediaNotificationContainerImplView::AddStopCastButton(
       views::BoxLayout::MainAxisAlignment::kStart);
   stop_cast_button_strip_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
-  stop_button_strip_->SetBackground(
-      views::CreateSolidBackground(background_color_));
   stop_button_strip_->SetPreferredSize(kStopCastButtonStripSize);
+  UpdateStopCastButtonBackground();
 
   stop_cast_button_ =
       stop_button_strip_->AddChildView(std::make_unique<views::LabelButton>(
@@ -519,15 +514,14 @@ void MediaNotificationContainerImplView::AddStopCastButton(
   views::InstallRoundRectHighlightPathGenerator(
       stop_cast_button_, gfx::Insets(), kStopCastButtonStripSize.height() / 2);
 
-  stop_cast_button_->ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
-  stop_cast_button_->SetHasInkDropActionOnClick(true);
-  stop_cast_button_->ink_drop()->SetBaseColor(foreground_color_);
-  stop_cast_button_->SetEnabledTextColors(foreground_color_);
+  views::InkDrop::Get(stop_cast_button_)
+      ->SetMode(views::InkDropHost::InkDropMode::ON);
   stop_cast_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
   stop_cast_button_->SetBorder(views::CreatePaddedBorder(
       views::CreateRoundedRectBorder(1, kStopCastButtonStripSize.height() / 2,
                                      foreground_color_),
       kStopCastButtonBorderInsets));
+  UpdateStopCastButtonIcon();
 }
 
 void MediaNotificationContainerImplView::AddDeviceSelectorView(
@@ -569,6 +563,24 @@ void MediaNotificationContainerImplView::StopCasting(
   base::UmaHistogramEnumeration(
       media_message_center::MediaNotificationItem::kCastStartStopHistogramName,
       action);
+}
+
+void MediaNotificationContainerImplView::UpdateStopCastButtonIcon() {
+  if (!stop_cast_button_)
+    return;
+  stop_cast_button_->SetEnabledTextColors(foreground_color_);
+  views::InkDrop::Get(stop_cast_button_)->SetBaseColor(foreground_color_);
+  stop_cast_button_->SetBorder(views::CreatePaddedBorder(
+      views::CreateRoundedRectBorder(1, kStopCastButtonStripSize.height() / 2,
+                                     foreground_color_),
+      kStopCastButtonBorderInsets));
+}
+
+void MediaNotificationContainerImplView::UpdateStopCastButtonBackground() {
+  if (!stop_button_strip_)
+    return;
+  stop_button_strip_->SetBackground(
+      views::CreateSolidBackground(background_color_));
 }
 
 void MediaNotificationContainerImplView::UpdateDismissButtonIcon() {

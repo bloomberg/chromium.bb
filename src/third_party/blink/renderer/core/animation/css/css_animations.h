@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_ANIMATIONS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_ANIMATIONS_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_update.h"
 #include "third_party/blink/renderer/core/animation/css/css_transition_data.h"
@@ -57,6 +56,8 @@ class CORE_EXPORT CSSAnimations final {
 
  public:
   CSSAnimations();
+  CSSAnimations(const CSSAnimations&) = delete;
+  CSSAnimations& operator=(const CSSAnimations&) = delete;
 
   static const StylePropertyShorthand& PropertiesForTransitionAll();
   static bool IsAnimationAffectingProperty(const CSSProperty&);
@@ -91,10 +92,7 @@ class CORE_EXPORT CSSAnimations final {
       const AtomicString& animation_name,
       const AnimationEffect::EventDelegate* old_event_delegate);
 
-  // Specifies whether to process custom or standard CSS properties.
-  enum class PropertyPass { kCustom, kStandard };
   static void CalculateTransitionUpdate(CSSAnimationUpdate&,
-                                        PropertyPass,
                                         Element& animating_element,
                                         const ComputedStyle&);
 
@@ -173,9 +171,7 @@ class CORE_EXPORT CSSAnimations final {
 
   CSSAnimationUpdate pending_update_;
 
-  ActiveInterpolationsMap previous_active_interpolations_for_custom_animations_;
-  ActiveInterpolationsMap
-      previous_active_interpolations_for_standard_animations_;
+  ActiveInterpolationsMap previous_active_interpolations_for_animations_;
 
   struct TransitionUpdateState {
     STACK_ALLOCATED();
@@ -192,6 +188,12 @@ class CORE_EXPORT CSSAnimations final {
     const CSSTransitionData* transition_data;
   };
 
+  static void CalculateTransitionUpdateForProperty(
+      TransitionUpdateState&,
+      const CSSTransitionData::TransitionProperty&,
+      size_t transition_index,
+      const ComputedStyle&);
+
   static void CalculateTransitionUpdateForCustomProperty(
       TransitionUpdateState&,
       const CSSTransitionData::TransitionProperty&,
@@ -203,16 +205,20 @@ class CORE_EXPORT CSSAnimations final {
       size_t transition_index,
       const ComputedStyle&);
 
-  static void CalculateTransitionUpdateForProperty(TransitionUpdateState&,
-                                                   const PropertyHandle&,
-                                                   size_t transition_index);
+  static bool CanCalculateTransitionUpdateForProperty(
+      TransitionUpdateState& state,
+      const PropertyHandle& property);
+
+  static void CalculateTransitionUpdateForPropertyHandle(
+      TransitionUpdateState&,
+      const PropertyHandle&,
+      size_t transition_index);
 
   static void CalculateAnimationActiveInterpolations(
       CSSAnimationUpdate&,
       const Element& animating_element);
   static void CalculateTransitionActiveInterpolations(
       CSSAnimationUpdate&,
-      PropertyPass,
       const Element& animating_element);
 
   // The before-change style is defined as the computed values of all properties
@@ -289,8 +295,6 @@ class CORE_EXPORT CSSAnimations final {
     PropertyHandle property_;
     Timing::Phase previous_phase_;
   };
-
-  DISALLOW_COPY_AND_ASSIGN(CSSAnimations);
 };
 
 template <>

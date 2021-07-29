@@ -2,23 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {ProgressCenter} from '../../externs/background/progress_center.m.js';
-// #import {DriveDialogControllerInterface} from '../../externs/drive_dialog_controller.m.js';
-// #import {DriveSyncHandler} from '../../externs/background/drive_sync_handler.m.js';
-// #import {str, strf} from '../../common/js/util.m.js';
-// #import {fileOperationUtil} from './file_operation_util.m.js';
-// #import {AsyncUtil} from '../../common/js/async_util.m.js';
-// #import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.m.js';
-// #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
-// #import {launcher, LaunchType} from './launcher.m.js';
-// clang-format on
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+
+import {AsyncUtil} from '../../common/js/async_util.js';
+import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.js';
+import {str, strf} from '../../common/js/util.js';
+import {xfm} from '../../common/js/xfm.js';
+import {DriveSyncHandler} from '../../externs/background/drive_sync_handler.js';
+import {ProgressCenter} from '../../externs/background/progress_center.js';
+import {DriveDialogControllerInterface} from '../../externs/drive_dialog_controller.js';
+
+import {fileOperationUtil} from './file_operation_util.js';
+import {launcher, LaunchType} from './launcher.js';
 
 /**
  * Handler of the background page for the Drive sync events.
  * @implements {DriveSyncHandler}
  */
-/* #export */ class DriveSyncHandlerImpl extends cr.EventTarget {
+export class DriveSyncHandlerImpl extends EventTarget {
   /** @param {ProgressCenter} progressCenter */
   constructor(progressCenter) {
     super();
@@ -163,9 +164,9 @@
         this.onDriveSyncError_.bind(this));
     chrome.fileManagerPrivate.onDriveConfirmDialog.addListener(
         this.onDriveConfirmDialog_.bind(this));
-    chrome.notifications.onButtonClicked.addListener(
+    xfm.notifications.onButtonClicked.addListener(
         this.onNotificationButtonClicked_.bind(this));
-    chrome.notifications.onClosed.addListener(
+    xfm.notifications.onClosed.addListener(
         this.onNotificationClosed_.bind(this));
     chrome.fileManagerPrivate.onPreferencesChanged.addListener(
         this.onPreferencesChanged_.bind(this));
@@ -205,7 +206,7 @@
    * Shows a notification that Drive sync is disabled on cellular networks.
    */
   showDisabledMobileSyncNotification() {
-    chrome.notifications.create(
+    xfm.notifications.create(
         DriveSyncHandlerImpl.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_, {
           type: 'basic',
           title: chrome.runtime.getManifest().name,
@@ -226,6 +227,9 @@
    * @private
    */
   async onFileTransfersStatusReceived_(item, status) {
+    if (!this.isProcessableEvent(status)) {
+      return;
+    }
     switch (status.transferState) {
       case 'in_progress':
         await this.updateItem_(item, status);
@@ -307,12 +311,34 @@
   }
 
   /**
+   * Attempts to infer of the given event is processable by the drive sync
+   * handler. It uses fileUrl and window.isSwa flag to make a decision. It
+   * errs on the side of 'yes', when passing the judgement.
+   * @param {!Object} event
+   * @return {boolean} Whether or not the event should be processed.
+   */
+  isProcessableEvent(event) {
+    const fileUrl = event.fileUrl;
+    if (fileUrl) {
+      const match = 'filesystem:' +
+          (window.isSWA ?
+               'chrome://file-manager' :
+               'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj');
+      return fileUrl.startsWith(match);
+    }
+    return true;
+  }
+
+  /**
    * Handles drive's sync errors.
    * @param {chrome.fileManagerPrivate.DriveSyncErrorEvent} event Drive sync
    * error event.
    * @private
    */
   onDriveSyncError_(event) {
+    if (!this.isProcessableEvent(event)) {
+      return;
+    }
     const postError = name => {
       const item = new ProgressCenterItem();
       item.type = ProgressItemType.SYNC;
@@ -364,7 +390,7 @@
   addDialog(appId, dialog) {
     this.dialogs_.set(appId, dialog);
     if (this.savedDialogEvent_) {
-      chrome.notifications.clear(
+      xfm.notifications.clear(
           DriveSyncHandlerImpl.ENABLE_DOCS_OFFLINE_NOTIFICATION_ID_, () => {});
       dialog.showDialog(this.savedDialogEvent_);
       this.savedDialogEvent_ = null;
@@ -389,6 +415,9 @@
    * @private
    */
   async onDriveConfirmDialog_(event) {
+    if (!this.isProcessableEvent(event)) {
+      return;
+    }
     let appId = null;
     // When a file manager is launched, its dialog will be added to dialogs_, so
     // check it to see if there is already a window open.
@@ -402,7 +431,7 @@
           LaunchType.FOCUS_ANY_OR_CREATE));
     }
     if (!appId) {
-      chrome.notifications.create(
+      xfm.notifications.create(
           DriveSyncHandlerImpl.ENABLE_DOCS_OFFLINE_NOTIFICATION_ID_, {
             type: 'basic',
             title: chrome.runtime.getManifest().name,
@@ -436,11 +465,11 @@
   onNotificationButtonClicked_(notificationId, buttonIndex) {
     switch (notificationId) {
       case DriveSyncHandlerImpl.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_:
-        chrome.notifications.clear(notificationId, () => {});
+        xfm.notifications.clear(notificationId, () => {});
         chrome.fileManagerPrivate.setPreferences({cellularDisabled: false});
         break;
       case DriveSyncHandlerImpl.ENABLE_DOCS_OFFLINE_NOTIFICATION_ID_:
-        chrome.notifications.clear(notificationId, () => {});
+        xfm.notifications.clear(notificationId, () => {});
         this.savedDialogEvent_ = null;
         chrome.fileManagerPrivate.notifyDriveDialogResult(
             buttonIndex == 1 ?
@@ -509,7 +538,7 @@
             chrome.fileManagerPrivate.MountCompletedEventType.UNMOUNT &&
         event.volumeMetadata.volumeType ===
             chrome.fileManagerPrivate.VolumeType.DRIVE) {
-      chrome.notifications.clear(
+      xfm.notifications.clear(
           DriveSyncHandlerImpl.ENABLE_DOCS_OFFLINE_NOTIFICATION_ID_, () => {});
     }
   }

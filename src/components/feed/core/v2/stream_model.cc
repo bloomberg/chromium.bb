@@ -21,6 +21,7 @@
 
 namespace feed {
 namespace {
+using Context = StreamModel::Context;
 using UiUpdate = StreamModel::UiUpdate;
 using StoreUpdate = StreamModel::StoreUpdate;
 
@@ -51,6 +52,8 @@ void MergeSharedStateIds(const feedstore::StreamData& model_data,
 
 }  // namespace
 
+Context::Context() = default;
+Context::~Context() = default;
 UiUpdate::UiUpdate() = default;
 UiUpdate::~UiUpdate() = default;
 UiUpdate::UiUpdate(const UiUpdate&) = default;
@@ -60,7 +63,9 @@ StoreUpdate::~StoreUpdate() = default;
 StoreUpdate::StoreUpdate(StoreUpdate&&) = default;
 StoreUpdate& StoreUpdate::operator=(StoreUpdate&&) = default;
 
-StreamModel::StreamModel() = default;
+StreamModel::StreamModel(Context* context)
+    : content_map_(&(context->revision_generator)) {}
+
 StreamModel::~StreamModel() = default;
 
 void StreamModel::SetStoreObserver(StoreObserver* store_observer) {
@@ -85,6 +90,12 @@ const feedstore::Content* StreamModel::FindContent(
     ContentRevision revision) const {
   return GetFinalFeatureTree()->FindContent(revision);
 }
+
+feedwire::ContentId StreamModel::FindContentId(ContentRevision revision) const {
+  const feedstore::Content* content = FindContent(revision);
+  return content ? content->content_id() : feedwire::ContentId();
+}
+
 const std::string* StreamModel::FindSharedStateData(
     const std::string& id) const {
   auto iter = shared_states_.find(id);
@@ -255,6 +266,10 @@ void StreamModel::UpdateFlattenedTree() {
 
   for (Observer& observer : observers_)
     observer.OnUiUpdate(update);
+}
+
+bool StreamModel::HasVisibleContent() {
+  return !content_list_.empty();
 }
 
 stream_model::FeatureTree* StreamModel::GetFinalFeatureTree() {

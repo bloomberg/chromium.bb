@@ -15,10 +15,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
@@ -32,6 +32,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace {
@@ -86,7 +87,6 @@ bool SpellingServiceClient::RequestTextCheck(
   std::replace(text_copy.begin(), text_copy.end(), kRightSingleQuotationMark,
                kApostrophe);
 
-  std::string api_key = google_apis::GetAPIKey();
   std::string encoded_text = base::GetQuotedJSONString(text_copy);
 
   static const char kSpellingRequestRestBodyTemplate[] =

@@ -27,6 +27,7 @@
 #include "av1/common/entropymv.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/reconinter.h"  // av1_setup_dst_planes()
+#include "av1/common/reconintra.h"
 #include "av1/common/txb_common.h"
 #include "av1/encoder/aq_variance.h"
 #include "av1/encoder/av1_quantize.h"
@@ -53,6 +54,8 @@
 
 #define NCOUNT_INTRA_THRESH 8192
 #define NCOUNT_INTRA_FACTOR 3
+
+#define INVALID_FP_STATS_TO_PREDICT_FLAT_GOP -1
 
 static AOM_INLINE void output_stats(FIRSTPASS_STATS *stats,
                                     struct aom_codec_pkt_list *pktlist) {
@@ -121,9 +124,11 @@ void av1_accumulate_stats(FIRSTPASS_STATS *section,
   section->frame_avg_wavelet_energy += frame->frame_avg_wavelet_energy;
   section->coded_error += frame->coded_error;
   section->sr_coded_error += frame->sr_coded_error;
+  section->tr_coded_error += frame->tr_coded_error;
   section->pcnt_inter += frame->pcnt_inter;
   section->pcnt_motion += frame->pcnt_motion;
   section->pcnt_second_ref += frame->pcnt_second_ref;
+  section->pcnt_third_ref += frame->pcnt_third_ref;
   section->pcnt_neutral += frame->pcnt_neutral;
   section->intra_skip_pct += frame->intra_skip_pct;
   section->inactive_zone_rows += frame->inactive_zone_rows;
@@ -356,6 +361,86 @@ static double raw_motion_error_stdev(int *raw_motion_err_list,
   return raw_err_stdev;
 }
 
+static AOM_INLINE int do_third_ref_motion_search(const RateControlCfg *rc_cfg,
+                                                 const GFConfig *gf_cfg) {
+  return use_ml_model_to_decide_flat_gop(rc_cfg) && can_disable_altref(gf_cfg);
+}
+
+static AOM_INLINE int calc_wavelet_energy(const AV1EncoderConfig *oxcf) {
+  return (use_ml_model_to_decide_flat_gop(&oxcf->rc_cfg) &&
+          can_disable_altref(&oxcf->gf_cfg)) ||
+         (oxcf->q_cfg.deltaq_mode == DELTA_Q_PERCEPTUAL);
+}
+typedef struct intra_pred_block_pass1_args {
+  const SequenceHeader *seq_params;
+  MACROBLOCK *x;
+} intra_pred_block_pass1_args;
+
+static INLINE void copy_rect(uint8_t *dst, int dstride, const uint8_t *src,
+                             int sstride, int width, int height, int use_hbd) {
+#if CONFIG_AV1_HIGHBITDEPTH
+  if (use_hbd) {
+    aom_highbd_convolve_copy(CONVERT_TO_SHORTPTR(src), sstride,
+                             CONVERT_TO_SHORTPTR(dst), dstride, width, height);
+  } else {
+    aom_convolve_copy(src, sstride, dst, dstride, width, height);
+  }
+#else
+  (void)use_hbd;
+  aom_convolve_copy(src, sstride, dst, dstride, width, height);
+#endif
+}
+
+static void first_pass_intra_pred_and_calc_diff(int plane, int block,
+                                                int blk_row, int blk_col,
+                                                BLOCK_SIZE plane_bsize,
+                                                TX_SIZE tx_size, void *arg) {
+  (void)block;
+  struct intra_pred_block_pass1_args *const args = arg;
+  MACROBLOCK *const x = args->x;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MACROBLOCKD_PLANE *const pd = &xd->plane[plane];
+  MACROBLOCK_PLANE *const p = &x->plane[plane];
+  const int dst_stride = pd->dst.stride;
+  uint8_t *dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << MI_SIZE_LOG2];
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
+  const SequenceHeader *seq_params = args->seq_params;
+  const int src_stride = p->src.stride;
+  uint8_t *src = &p->src.buf[(blk_row * src_stride + blk_col) << MI_SIZE_LOG2];
+
+  av1_predict_intra_block(
+      xd, seq_params->sb_size, seq_params->enable_intra_edge_filter, pd->width,
+      pd->height, tx_size, mbmi->mode, 0, 0, FILTER_INTRA_MODES, src,
+      src_stride, dst, dst_stride, blk_col, blk_row, plane);
+
+  av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
+}
+
+static void first_pass_predict_intra_block_for_luma_plane(
+    const SequenceHeader *seq_params, MACROBLOCK *x, BLOCK_SIZE bsize) {
+  assert(bsize < BLOCK_SIZES_ALL);
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const int plane = AOM_PLANE_Y;
+  const MACROBLOCKD_PLANE *const pd = &xd->plane[plane];
+  const int ss_x = pd->subsampling_x;
+  const int ss_y = pd->subsampling_y;
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ss_x, ss_y);
+  const int dst_stride = pd->dst.stride;
+  uint8_t *dst = pd->dst.buf;
+  const MACROBLOCK_PLANE *const p = &x->plane[plane];
+  const int src_stride = p->src.stride;
+  const uint8_t *src = p->src.buf;
+
+  intra_pred_block_pass1_args args = { seq_params, x };
+  av1_foreach_transformed_block_in_plane(
+      xd, plane_bsize, plane, first_pass_intra_pred_and_calc_diff, &args);
+
+  // copy source data to recon buffer, as the recon buffer will be used as a
+  // reference frame subsequently.
+  copy_rect(dst, dst_stride, src, src_stride, block_size_wide[bsize],
+            block_size_high[bsize], seq_params->use_highbitdepth);
+}
+
 #define UL_INTRA_THRESH 50
 #define INVALID_ROW -1
 // Computes and returns the intra pred error of a block.
@@ -414,7 +499,10 @@ static int firstpass_intra_prediction(
   xd->mi[0]->mode = DC_PRED;
   xd->mi[0]->tx_size = TX_4X4;
 
-  av1_encode_intra_block_plane(cpi, x, bsize, 0, DRY_RUN_NORMAL, 0);
+  if (cpi->sf.fp_sf.disable_recon)
+    first_pass_predict_intra_block_for_luma_plane(seq_params, x, bsize);
+  else
+    av1_encode_intra_block_plane(cpi, x, bsize, 0, DRY_RUN_NORMAL, 0);
   int this_intra_error = aom_get_mb_ss(x->plane[0].src_diff);
   if (seq_params->use_highbitdepth) {
     switch (seq_params->bit_depth) {
@@ -480,16 +568,22 @@ static int firstpass_intra_prediction(
   // Accumulate the intra error.
   stats->intra_error += (int64_t)this_intra_error;
 
-  const int hbd = is_cur_buf_hbd(xd);
-  const int stride = x->plane[0].src.stride;
-  const int num_8x8_rows = block_size_high[fp_block_size] / 8;
-  const int num_8x8_cols = block_size_wide[fp_block_size] / 8;
-  const uint8_t *buf = x->plane[0].src.buf;
-  for (int r8 = 0; r8 < num_8x8_rows; ++r8) {
-    for (int c8 = 0; c8 < num_8x8_cols; ++c8) {
-      stats->frame_avg_wavelet_energy += av1_haar_ac_sad_8x8_uint8_input(
-          buf + c8 * 8 + r8 * 8 * stride, stride, hbd);
-    }
+  // Stats based on wavelet energy is used in the following cases :
+  // 1. ML model which predicts if a flat structure (golden-frame only structure
+  // without ALT-REF and Internal-ARFs) is better. This ML model is enabled in
+  // constant quality mode under certain conditions.
+  // 2. Delta qindex mode is set as DELTA_Q_PERCEPTUAL.
+  // Thus, wavelet energy calculation is enabled for the above cases.
+  if (calc_wavelet_energy(&cpi->oxcf)) {
+    const int hbd = is_cur_buf_hbd(xd);
+    const int stride = x->plane[0].src.stride;
+    const int num_8x8_rows = block_size_high[fp_block_size] / 8;
+    const int num_8x8_cols = block_size_wide[fp_block_size] / 8;
+    const uint8_t *buf = x->plane[0].src.buf;
+    stats->frame_avg_wavelet_energy += av1_haar_ac_sad_mxn_uint8_input(
+        buf, stride, hbd, num_8x8_rows, num_8x8_cols);
+  } else {
+    stats->frame_avg_wavelet_energy = INVALID_FP_STATS_TO_PREDICT_FLAT_GOP;
   }
 
   return this_intra_error;
@@ -682,14 +776,22 @@ static int firstpass_inter_prediction(
 
     // Motion search in 3rd reference frame.
     int alt_motion_error = motion_error;
-    if (alt_ref_frame != NULL) {
-      FULLPEL_MV tmp_mv = kZeroFullMv;
-      xd->plane[0].pre[0].buf = alt_ref_frame->y_buffer + alt_ref_frame_yoffset;
-      xd->plane[0].pre[0].stride = alt_ref_frame->y_stride;
-      alt_motion_error =
-          get_prediction_error_bitdepth(is_high_bitdepth, bitdepth, bsize,
-                                        &x->plane[0].src, &xd->plane[0].pre[0]);
-      first_pass_motion_search(cpi, x, &kZeroMv, &tmp_mv, &alt_motion_error);
+    // The ML model to predict if a flat structure (golden-frame only structure
+    // without ALT-REF and Internal-ARFs) is better requires stats based on
+    // motion search w.r.t 3rd reference frame in the first pass. As the ML
+    // model is enabled under certain conditions, motion search in 3rd reference
+    // frame is also enabled for those cases.
+    if (do_third_ref_motion_search(&cpi->oxcf.rc_cfg, &cpi->oxcf.gf_cfg)) {
+      if (alt_ref_frame != NULL) {
+        FULLPEL_MV tmp_mv = kZeroFullMv;
+        xd->plane[0].pre[0].buf =
+            alt_ref_frame->y_buffer + alt_ref_frame_yoffset;
+        xd->plane[0].pre[0].stride = alt_ref_frame->y_stride;
+        alt_motion_error = get_prediction_error_bitdepth(
+            is_high_bitdepth, bitdepth, bsize, &x->plane[0].src,
+            &xd->plane[0].pre[0]);
+        first_pass_motion_search(cpi, x, &kZeroMv, &tmp_mv, &alt_motion_error);
+      }
     }
     if (alt_motion_error < motion_error && alt_motion_error < gf_motion_error &&
         alt_motion_error < this_intra_error) {
@@ -743,10 +845,13 @@ static int firstpass_inter_prediction(
     xd->mi[0]->tx_size = TX_4X4;
     xd->mi[0]->ref_frame[0] = LAST_FRAME;
     xd->mi[0]->ref_frame[1] = NONE_FRAME;
-    av1_enc_build_inter_predictor(cm, xd, unit_row * unit_scale,
-                                  unit_col * unit_scale, NULL, bsize,
-                                  AOM_PLANE_Y, AOM_PLANE_Y);
-    av1_encode_sby_pass1(cpi, x, bsize);
+
+    if (cpi->sf.fp_sf.disable_recon == 0) {
+      av1_enc_build_inter_predictor(cm, xd, unit_row * unit_scale,
+                                    unit_col * unit_scale, NULL, bsize,
+                                    AOM_PLANE_Y, AOM_PLANE_Y);
+      av1_encode_sby_pass1(cpi, x, bsize);
+    }
     stats->sum_mvr += best_mv->row;
     stats->sum_mvr_abs += abs(best_mv->row);
     stats->sum_mvc += best_mv->col;
@@ -760,6 +865,27 @@ static int firstpass_inter_prediction(
   }
 
   return this_inter_error;
+}
+
+// Normalize the first pass stats.
+// Error / counters are normalized to each MB.
+// MVs are normalized to the width/height of the frame.
+static void normalize_firstpass_stats(FIRSTPASS_STATS *fps,
+                                      double num_mbs_16x16, double f_w,
+                                      double f_h) {
+  fps->coded_error /= num_mbs_16x16;
+  fps->sr_coded_error /= num_mbs_16x16;
+  fps->tr_coded_error /= num_mbs_16x16;
+  fps->intra_error /= num_mbs_16x16;
+  fps->frame_avg_wavelet_energy /= num_mbs_16x16;
+
+  fps->MVr /= f_h;
+  fps->mvr_abs /= f_h;
+  fps->MVc /= f_w;
+  fps->mvc_abs /= f_w;
+  fps->MVrv /= (f_h * f_h);
+  fps->MVcv /= (f_w * f_w);
+  fps->new_mv_count /= num_mbs_16x16;
 }
 
 // Updates the first pass stats of this frame.
@@ -851,6 +977,15 @@ static void update_firstpass_stats(AV1_COMP *cpi,
   // cpi->source_time_stamp.
   fps.duration = (double)ts_duration;
 
+  normalize_firstpass_stats(&fps, num_mbs_16X16, cm->width, cm->height);
+
+  // Invalidate the stats related to third ref motion search if not valid.
+  // This helps to print a warning in second pass encoding.
+  if (do_third_ref_motion_search(&cpi->oxcf.rc_cfg, &cpi->oxcf.gf_cfg) == 0) {
+    fps.pcnt_third_ref = INVALID_FP_STATS_TO_PREDICT_FLAT_GOP;
+    fps.tr_coded_error = INVALID_FP_STATS_TO_PREDICT_FLAT_GOP;
+  }
+
   // We will store the stats inside the persistent twopass struct (and NOT the
   // local variable 'fps'), and then cpi->output_pkt_list will point to it.
   *this_frame_stats = fps;
@@ -862,8 +997,9 @@ static void update_firstpass_stats(AV1_COMP *cpi,
   /*In the case of two pass, first pass uses it as a circular buffer,
    * when LAP is enabled it is used as a linear buffer*/
   twopass->stats_buf_ctx->stats_in_end++;
-  if ((cpi->oxcf.pass == 1) && (twopass->stats_buf_ctx->stats_in_end >=
-                                twopass->stats_buf_ctx->stats_in_buf_end)) {
+  if ((cpi->oxcf.pass == AOM_RC_FIRST_PASS) &&
+      (twopass->stats_buf_ctx->stats_in_end >=
+       twopass->stats_buf_ctx->stats_in_buf_end)) {
     twopass->stats_buf_ctx->stats_in_end =
         twopass->stats_buf_ctx->stats_in_start;
   }
@@ -1173,7 +1309,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
 
   // Unit size for the first pass encoding.
   const BLOCK_SIZE fp_block_size =
-      cpi->is_screen_content_type ? BLOCK_8X8 : BLOCK_16X16;
+      get_fp_block_size(cpi->is_screen_content_type);
+
   // Number of rows in the unit size.
   // Note mi_params->mb_rows and mi_params->mb_cols are in the unit of 16x16.
   const int unit_rows = get_unit_rows(fp_block_size, mi_params->mb_rows);

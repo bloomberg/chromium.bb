@@ -19,6 +19,7 @@
 #include "src/sksl/ir/SkSLBinaryExpression.h"
 #include "src/sksl/ir/SkSLBlock.h"
 #include "src/sksl/ir/SkSLConstructor.h"
+#include "src/sksl/ir/SkSLNop.h"
 #include "src/sksl/ir/SkSLPostfixExpression.h"
 #include "src/sksl/ir/SkSLPrefixExpression.h"
 #include "src/sksl/ir/SkSLSwitchStatement.h"
@@ -35,13 +36,14 @@ DSLWriter::DSLWriter(SkSL::Compiler* compiler, SkSL::ProgramKind kind,
                      const SkSL::ProgramSettings& settings, SkSL::ParsedModule module,
                      bool isModule)
     : fCompiler(compiler)
-    , fSettings(settings) {
+    , fSettings(settings)
+    , fIsModule(isModule) {
     fOldModifiersPool = fCompiler->fContext->fModifiersPool;
 
     fOldConfig = fCompiler->fContext->fConfig;
 
     if (!isModule) {
-        if (compiler->context().fCaps.useNodePools()) {
+        if (compiler->context().fCaps.useNodePools() && settings.fDSLUseMemoryPool) {
             fPool = Pool::Create();
             fPool->attachToThread();
         }
@@ -95,10 +97,10 @@ const SkSL::Modifiers* DSLWriter::Modifiers(const SkSL::Modifiers& modifiers) {
     return Context().fModifiersPool->add(modifiers);
 }
 
-const char* DSLWriter::Name(const char* name) {
+skstd::string_view DSLWriter::Name(skstd::string_view name) {
     if (ManglingEnabled()) {
         const String* s = SymbolTable()->takeOwnershipOfString(
-                Instance().fMangler.uniqueName(name, SymbolTable().get()));
+                Instance().fMangler.uniqueName(SkString(name).c_str(), SymbolTable().get()));
         return s->c_str();
     }
     return name;
@@ -121,7 +123,7 @@ void DSLWriter::EndFragmentProcessor() {
     IRGenerator().popSymbolTable();
 }
 
-GrGLSLUniformHandler::UniformHandle DSLWriter::VarUniformHandle(const DSLVar& var) {
+GrGLSLUniformHandler::UniformHandle DSLWriter::VarUniformHandle(const DSLGlobalVar& var) {
     return GrGLSLUniformHandler::UniformHandle(var.fUniformHandle);
 }
 #endif // !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
@@ -140,16 +142,8 @@ std::unique_ptr<SkSL::Expression> DSLWriter::Call(std::unique_ptr<SkSL::Expressi
     return IRGenerator().call(/*offset=*/-1, std::move(expr), std::move(arguments));
 }
 
-std::unique_ptr<SkSL::Expression> DSLWriter::Check(std::unique_ptr<SkSL::Expression> expr) {
-    if (DSLWriter::Compiler().errorCount()) {
-        DSLWriter::ReportError(DSLWriter::Compiler().errorText(/*showCount=*/false).c_str());
-        DSLWriter::Compiler().setErrorCount(0);
-    }
-    return expr;
-}
-
-DSLPossibleExpression DSLWriter::Coerce(std::unique_ptr<Expression> left, const SkSL::Type& type) {
-    return IRGenerator().coerce(std::move(left), type);
+DSLPossibleExpression DSLWriter::Coerce(std::unique_ptr<Expression> expr, const SkSL::Type& type) {
+    return IRGenerator().coerce(std::move(expr), type);
 }
 
 DSLPossibleExpression DSLWriter::Construct(const SkSL::Type& type,
@@ -158,6 +152,9 @@ DSLPossibleExpression DSLWriter::Construct(const SkSL::Type& type,
     args.reserve_back(rawArgs.size());
 
     for (DSLExpression& arg : rawArgs) {
+        if (!arg.valid()) {
+            return DSLPossibleExpression(nullptr);
+        }
         args.push_back(arg.release());
     }
     return SkSL::Constructor::Convert(Context(), /*offset=*/-1, type, std::move(args));
@@ -170,7 +167,7 @@ std::unique_ptr<SkSL::Expression> DSLWriter::ConvertBinary(std::unique_ptr<Expre
 }
 
 std::unique_ptr<SkSL::Expression> DSLWriter::ConvertField(std::unique_ptr<Expression> base,
-                                                          const char* name) {
+                                                          skstd::string_view name) {
     return FieldAccess::Convert(Context(), std::move(base), name);
 }
 
@@ -208,6 +205,7 @@ DSLPossibleStatement DSLWriter::ConvertSwitch(std::unique_ptr<Expression> value,
 }
 
 void DSLWriter::ReportError(const char* msg, PositionInfo* info) {
+    Instance().fEncounteredErrors = true;
     if (info && !info->file_name()) {
         info = nullptr;
     }
@@ -221,11 +219,11 @@ void DSLWriter::ReportError(const char* msg, PositionInfo* info) {
     }
 }
 
-const SkSL::Variable& DSLWriter::Var(DSLVar& var) {
+const SkSL::Variable* DSLWriter::Var(DSLVarBase& var) {
     if (!var.fVar) {
-        if (var.fStorage != SkSL::VariableStorage::kParameter) {
+        if (var.storage() != SkSL::VariableStorage::kParameter) {
             DSLWriter::IRGenerator().checkVarDeclaration(/*offset=*/-1, var.fModifiers.fModifiers,
-                                                         &var.fType.skslType(), var.fStorage);
+                                                         &var.fType.skslType(), var.storage());
         }
         std::unique_ptr<SkSL::Variable> skslvar = DSLWriter::IRGenerator().convertVar(
                                                                           /*offset=*/-1,
@@ -234,56 +232,51 @@ const SkSL::Variable& DSLWriter::Var(DSLVar& var) {
                                                                           var.fName,
                                                                           /*isArray=*/false,
                                                                           /*arraySize=*/nullptr,
-                                                                          var.fStorage);
-        var.fVar = skslvar.get();
+                                                                          var.storage());
+        SkSL::Variable* varPtr = skslvar.get();
         // We can't call VarDeclaration::Convert directly here, because the IRGenerator has special
-        // treatment for sk_FragColor and sk_RTHeight that we want to preserve in DSL.
+        // treatment for sk_FragColor that we want to preserve in DSL.
         var.fDeclaration = DSLWriter::IRGenerator().convertVarDeclaration(
-                                                                       std::move(skslvar),
-                                                                       var.fInitialValue.release());
+                                                                std::move(skslvar),
+                                                                var.fInitialValue.releaseIfValid());
+        if (var.fDeclaration) {
+            var.fVar = varPtr;
+        }
+        ReportErrors();
     }
-    return *var.fVar;
+    return var.fVar;
 }
 
-std::unique_ptr<SkSL::Variable> DSLWriter::ParameterVar(DSLVar& var) {
+std::unique_ptr<SkSL::Variable> DSLWriter::CreateParameterVar(DSLParameter& var) {
     // This should only be called on undeclared parameter variables, but we allow the creation to go
     // ahead regardless so we don't have to worry about null pointers potentially sneaking in and
     // breaking things. DSLFunction is responsible for reporting errors for invalid parameters.
     return DSLWriter::IRGenerator().convertVar(/*offset=*/-1, var.fModifiers.fModifiers,
                                                &var.fType.skslType(), var.fName, /*isArray=*/false,
-                                               /*arraySize=*/nullptr, var.fStorage);
+                                               /*arraySize=*/nullptr, var.storage());
 }
 
-std::unique_ptr<SkSL::Statement> DSLWriter::Declaration(DSLVar& var) {
+std::unique_ptr<SkSL::Statement> DSLWriter::Declaration(DSLVarBase& var) {
     Var(var);
+    if (!var.fDeclaration) {
+        // We should have already reported an error before ending up here, just clean up the
+        // initial value so it doesn't assert and return a nop.
+        var.fInitialValue.releaseIfValid();
+        return SkSL::Nop::Make();
+    }
     return std::move(var.fDeclaration);
 }
 
-void DSLWriter::MarkDeclared(DSLVar& var) {
+void DSLWriter::MarkDeclared(DSLVarBase& var) {
     SkASSERT(!var.fDeclared);
     var.fDeclared = true;
 }
 
-std::unique_ptr<SkSL::Program> DSLWriter::ReleaseProgram() {
-    DSLWriter& instance = Instance();
-    SkSL::IRGenerator& ir = IRGenerator();
-    IRGenerator::IRBundle bundle = ir.finish();
-    Pool* pool = Instance().fPool.get();
-    auto result = std::make_unique<SkSL::Program>(/*source=*/nullptr,
-                                                  std::move(instance.fConfig),
-                                                  Compiler().fContext,
-                                                  std::move(bundle.fElements),
-                                                  std::move(bundle.fSharedElements),
-                                                  std::move(instance.fModifiersPool),
-                                                  std::move(bundle.fSymbolTable),
-                                                  std::move(instance.fPool),
-                                                  bundle.fInputs);
-    if (pool) {
-        pool->detachFromThread();
+void DSLWriter::ReportErrors(PositionInfo pos) {
+    if (Compiler().errorCount()) {
+        ReportError(DSLWriter::Compiler().errorText(/*showCount=*/false).c_str(), &pos);
+        Compiler().setErrorCount(0);
     }
-    SkASSERT(ProgramElements().empty());
-    SkASSERT(!SymbolTable());
-    return result;
 }
 
 #if SKSL_USE_THREAD_LOCAL

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './i18n_setup.js';
+
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import './i18n_setup.js';
+import {dedupingMixin} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
   /**
    * @typedef {{
@@ -250,8 +252,11 @@ import './i18n_setup.js';
      *     URL parameters in a different order will still push to history.
      * @param {boolean=} opt_removeSearch Whether to strip the 'search' URL
      *     parameter during navigation. Defaults to false.
+     * @param {boolean=} opt_skipHistoryEntry Whether to skip pushing a new
+     * history entry for this navigation. Defaults to false.
      */
-    navigateTo(route, opt_dynamicParameters, opt_removeSearch) {
+    navigateTo(
+        route, opt_dynamicParameters, opt_removeSearch, opt_skipHistoryEntry) {
       // The ADVANCED route only serves as a parent of subpages, and should not
       // be possible to navigate to it directly.
       if (route === this.routes_.ADVANCED) {
@@ -264,6 +269,8 @@ import './i18n_setup.js';
       const oldSearchParam = this.getQueryParameters().get('search') || '';
       const newSearchParam = params.get('search') || '';
 
+      const skipHistoryEntry = opt_skipHistoryEntry || false;
+
       if (!removeSearch && oldSearchParam && !newSearchParam) {
         params.append('search', oldSearchParam);
       }
@@ -275,7 +282,11 @@ import './i18n_setup.js';
       }
 
       // History serializes the state, so we don't push the actual route object.
-      window.history.pushState(this.currentRoute.path, '', url);
+      if (skipHistoryEntry) {
+        window.history.replaceState(this.currentRoute.path, '', url);
+      } else {
+        window.history.pushState(this.currentRoute.path, '', url);
+      }
       this.setCurrentRoute(route, params, false);
     }
 
@@ -345,6 +356,46 @@ import './i18n_setup.js';
     }
   }
 
+  /**
+   * @polymer
+   * @mixinFunction
+   */
+  export const RouteObserverMixin = dedupingMixin(superClass => {
+    /**
+     * @polymer
+     * @mixinClass
+     */
+    class RouteObserverMixin extends superClass {
+      /** @override */
+      connectedCallback() {
+        super.connectedCallback();
+
+        routerInstance.addObserver(this);
+
+        // Emulating Polymer data bindings, the observer is called when the
+        // element starts observing the route.
+        this.currentRouteChanged(routerInstance.currentRoute, undefined);
+      }
+
+      /** @override */
+      disconnectedCallback() {
+        super.disconnectedCallback();
+
+        routerInstance.removeObserver(this);
+      }
+
+      /**
+       * @param {!Route} newRoute
+       * @param {!Route=} opt_oldRoute
+       */
+      currentRouteChanged(newRoute, opt_oldRoute) {
+        assertNotReached();
+      }
+    }
+
+    return RouteObserverMixin;
+  });
+
   /** @polymerBehavior */
   export const RouteObserverBehavior = {
     /** @override */
@@ -362,11 +413,22 @@ import './i18n_setup.js';
     },
 
     /**
-     * @param {!Route|undefined} opt_newRoute
-     * @param {!Route|undefined} opt_oldRoute
+     * @param {!Route} newRoute
+     * @param {!Route=} opt_oldRoute
      */
-    currentRouteChanged(opt_newRoute, opt_oldRoute) {
+    currentRouteChanged(newRoute, opt_oldRoute) {
       assertNotReached();
     },
   };
 
+  /** @interface */
+  export class RouteObserverBehaviorInterface {
+    /**
+     * @param {!Route} newRoute
+     * @param {!Route=} opt_oldRoute
+     */
+    currentRouteChanged(newRoute, opt_oldRoute) {}
+  }
+
+  /** @interface */
+  export const RouteObserverMixinInterface = RouteObserverBehaviorInterface;

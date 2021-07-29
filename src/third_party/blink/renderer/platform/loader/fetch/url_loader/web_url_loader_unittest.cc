@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/test/task_environment.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -40,6 +40,7 @@
 #include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_loader_freeze_mode.h"
 #include "third_party/blink/public/platform/web_request_peer.h"
 #include "third_party/blink/public/platform/web_resource_request_sender.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -66,6 +67,9 @@ const char kTestData[] = "blah!";
 class MockResourceRequestSender : public WebResourceRequestSender {
  public:
   MockResourceRequestSender() = default;
+  MockResourceRequestSender(const MockResourceRequestSender&) = delete;
+  MockResourceRequestSender& operator=(const MockResourceRequestSender&) =
+      delete;
   ~MockResourceRequestSender() override = default;
 
   // WebResourceRequestSender implementation:
@@ -120,10 +124,8 @@ class MockResourceRequestSender : public WebResourceRequestSender {
 
   bool canceled() { return canceled_; }
 
-  void SetDefersLoading(WebURLLoader::DeferType value) override {
-    defers_loading_ = (value != WebURLLoader::DeferType::kNotDeferred);
-  }
-  bool defers_loading() const { return defers_loading_; }
+  void Freeze(WebLoaderFreezeMode mode) override { freeze_mode_ = mode; }
+  WebLoaderFreezeMode freeze_mode() const { return freeze_mode_; }
 
   void set_sync_load_response(SyncLoadResponse&& sync_load_response) {
     sync_load_response_ = std::move(sync_load_response);
@@ -132,15 +134,15 @@ class MockResourceRequestSender : public WebResourceRequestSender {
  private:
   scoped_refptr<WebRequestPeer> peer_;
   bool canceled_ = false;
-  bool defers_loading_ = false;
+  WebLoaderFreezeMode freeze_mode_ = WebLoaderFreezeMode::kNone;
   SyncLoadResponse sync_load_response_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockResourceRequestSender);
 };
 
 class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
  public:
   FakeURLLoaderFactory() = default;
+  FakeURLLoaderFactory(const FakeURLLoaderFactory&) = delete;
+  FakeURLLoaderFactory& operator=(const FakeURLLoaderFactory&) = delete;
   ~FakeURLLoaderFactory() override = default;
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
@@ -157,9 +159,6 @@ class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
       override {
     NOTREACHED();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeURLLoaderFactory);
 };
 
 class TestWebURLLoaderClient : public WebURLLoaderClient {
@@ -184,6 +183,9 @@ class TestWebURLLoaderClient : public WebURLLoaderClient {
         did_receive_redirect_(false),
         did_receive_response_(false),
         did_finish_(false) {}
+
+  TestWebURLLoaderClient(const TestWebURLLoaderClient&) = delete;
+  TestWebURLLoaderClient& operator=(const TestWebURLLoaderClient&) = delete;
 
   ~TestWebURLLoaderClient() override {
     // During the deconstruction of the `loader_`, the request context will be
@@ -302,8 +304,6 @@ class TestWebURLLoaderClient : public WebURLLoaderClient {
   bool did_finish_;
   absl::optional<WebURLError> error_;
   WebURLResponse response_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWebURLLoaderClient);
 };
 
 class WebURLLoaderTest : public testing::Test {
@@ -470,10 +470,10 @@ TEST_F(WebURLLoaderTest, DeleteOnFail) {
 }
 
 TEST_F(WebURLLoaderTest, DefersLoadingBeforeStart) {
-  client()->loader()->SetDefersLoading(WebURLLoader::DeferType::kDeferred);
-  EXPECT_FALSE(sender()->defers_loading());
+  client()->loader()->Freeze(WebLoaderFreezeMode::kStrict);
+  EXPECT_EQ(sender()->freeze_mode(), WebLoaderFreezeMode::kNone);
   DoStartAsyncRequest();
-  EXPECT_TRUE(sender()->defers_loading());
+  EXPECT_EQ(sender()->freeze_mode(), WebLoaderFreezeMode::kStrict);
 }
 
 TEST_F(WebURLLoaderTest, ResponseIPEndpoint) {

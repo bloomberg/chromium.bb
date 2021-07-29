@@ -8,10 +8,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/cxx20_erase.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/audio_device_description.h"

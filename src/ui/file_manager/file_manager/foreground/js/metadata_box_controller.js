@@ -2,22 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {MetadataItem} from './metadata/metadata_item.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
-// #import {FileMetadataFormatter} from './ui/file_metadata_formatter.m.js';
-// #import {QuickViewModel} from './quick_view_model.m.js';
-// #import {MetadataModel} from './metadata/metadata_model.m.js';
-// #import {PathComponent} from './path_component.m.js';
-// #import {FileType} from '../../common/js/file_type.m.js';
-// #import {util} from '../../common/js/util.m.js';
-// #import {FilesQuickView} from '../elements/files_quick_view.m.js';
-// #import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+
+import {FileType} from '../../common/js/file_type.js';
+import {util} from '../../common/js/util.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
+import {FilesQuickView} from '../elements/files_quick_view.js';
+
+import {MetadataItem} from './metadata/metadata_item.js';
+import {MetadataModel} from './metadata/metadata_model.js';
+import {PathComponent} from './path_component.js';
+import {QuickViewModel} from './quick_view_model.js';
+import {FileMetadataFormatter} from './ui/file_metadata_formatter.js';
 
 /**
  * Controller of metadata box.
  * This should be initialized with |init| method.
  */
-/* #export */ class MetadataBoxController {
+export class MetadataBoxController {
   /**
    * @param {!MetadataModel} metadataModel
    * @param {!QuickViewModel} quickViewModel

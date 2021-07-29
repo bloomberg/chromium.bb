@@ -29,3 +29,23 @@ var CrComponentsCustomizeThemesTest =
 TEST_F('CrComponentsCustomizeThemesTest', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var CrComponentsMostVisitedTest = class extends CrComponentsMojoBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=cr_components/most_visited_test.js';
+  }
+};
+
+TEST_F('CrComponentsMostVisitedTest', 'General', function() {
+  runMochaSuite('General');
+});
+
+TEST_F('CrComponentsMostVisitedTest', 'Modification', function() {
+  runMochaSuite('Modification');
+});
+
+TEST_F('CrComponentsMostVisitedTest', 'Theming', function() {
+  runMochaSuite('Theming');
+});

@@ -691,6 +691,7 @@ void SurfaceAnimationManager::CopyAndInterpolateSharedElements(
     }
   }
 }
+
 // static
 bool SurfaceAnimationManager::FilterSharedElementQuads(
     base::flat_map<CompositorRenderPassId, RenderPassDrawData>*

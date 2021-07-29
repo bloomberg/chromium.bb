@@ -15,7 +15,7 @@
 #include "core/fxcodec/progressive_decoder.h"
 #include "core/fxcrt/maybe_owned.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "third_party/base/check.h"
@@ -135,7 +135,7 @@ void XFA_DrawImage(CFGAS_GEGraphics* pGS,
 
   CFX_RenderDevice* pRenderDevice = pGS->GetRenderDevice();
   CFX_RenderDevice::StateRestorer restorer(pRenderDevice);
-  CFX_PathData path;
+  CFX_Path path;
   path.AppendRect(rtImage.left, rtImage.bottom(), rtImage.right(), rtImage.top);
   pRenderDevice->SetClip_PathFill(&path, &matrix,
                                   CFX_FillRenderOptions::WindingOptions());
@@ -257,7 +257,7 @@ const CFX_RectF& CXFA_FFWidget::GetWidgetRect() const {
 
 const CFX_RectF& CXFA_FFWidget::RecacheWidgetRect() const {
   GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_RectCached);
-  m_WidgetRect = GetLayoutItem()->GetRect(false);
+  m_WidgetRect = GetLayoutItem()->GetAbsoluteRect();
   return m_WidgetRect;
 }
 
@@ -285,7 +285,8 @@ CFX_RectF CXFA_FFWidget::GetRectWithoutRotate() {
   return rtWidget;
 }
 
-void CXFA_FFWidget::ModifyStatus(uint32_t dwAdded, uint32_t dwRemoved) {
+void CXFA_FFWidget::ModifyStatus(XFA_WidgetStatusMask dwAdded,
+                                 XFA_WidgetStatusMask dwRemoved) {
   GetLayoutItem()->ClearStatusBits(dwRemoved);
   GetLayoutItem()->SetStatusBits(dwAdded);
 }
@@ -510,11 +511,11 @@ bool CXFA_FFWidget::Redo() {
 }
 
 Optional<WideString> CXFA_FFWidget::Copy() {
-  return {};
+  return pdfium::nullopt;
 }
 
 Optional<WideString> CXFA_FFWidget::Cut() {
-  return {};
+  return pdfium::nullopt;
 }
 
 bool CXFA_FFWidget::Paste(const WideString& wsPaste) {
@@ -637,7 +638,7 @@ CXFA_FFApp* CXFA_FFWidget::GetApp() {
   return GetDoc()->GetApp();
 }
 
-IXFA_AppProvider* CXFA_FFWidget::GetAppProvider() {
+CXFA_FFApp::CallbackIface* CXFA_FFWidget::GetAppProvider() {
   return GetApp()->GetAppProvider();
 }
 

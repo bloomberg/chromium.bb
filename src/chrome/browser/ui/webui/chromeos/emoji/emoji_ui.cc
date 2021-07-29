@@ -25,7 +25,7 @@
 #include <iostream>
 
 namespace {
-constexpr gfx::Size kDefaultWindowSize(340, 390);
+constexpr gfx::Size kDefaultWindowSize(372, 454);
 constexpr int kPaddingAroundCursor = 8;
 
 class EmojiiBubbleDialogView : public WebUIBubbleDialogView {
@@ -33,7 +33,9 @@ class EmojiiBubbleDialogView : public WebUIBubbleDialogView {
   EmojiiBubbleDialogView(
       std::unique_ptr<BubbleContentsWrapper> contents_wrapper)
       : WebUIBubbleDialogView(nullptr, contents_wrapper.get()),
-        contents_wrapper_(std::move(contents_wrapper)) {}
+        contents_wrapper_(std::move(contents_wrapper)) {
+    set_has_parent(false);
+  }
 
  private:
   std::unique_ptr<BubbleContentsWrapper> contents_wrapper_;
@@ -66,14 +68,26 @@ void EmojiUI::Show(Profile* profile) {
     ui::ShowTabletModeEmojiPanel();
     return;
   }
+
   ui::InputMethod* input_method =
       ui::IMEBridge::Get()->GetInputContextHandler()->GetInputMethod();
   ui::TextInputClient* input_client =
       input_method ? input_method->GetTextInputClient() : nullptr;
   const bool incognito_mode =
       input_client ? !input_client->ShouldDoLearning() : false;
-  const gfx::Rect caret_bounds =
+  gfx::Rect caret_bounds =
       input_client ? input_client->GetCaretBounds() : gfx::Rect();
+
+  // In general, try to show emoji picker near the text field. Some text clients
+  // (like docs) set the actual input field way off screen in y. Allow for
+  // slightly negative y, these will tend to be handled by adjust_if_offscreen,
+  // but that can't handle things way off the screen so clamp large negative
+  // values to zero to ensure picker is on screen.
+  // TODO(b/189041846): Change this to take into account screen size in a more
+  // general way.
+  if (caret_bounds.y() < -5000) {
+    caret_bounds.set_y(0);
+  }
 
   // This rect is used for positioning the emoji picker. It anchors either top
   // right / bottom left of the emoji picker window depending on where the text

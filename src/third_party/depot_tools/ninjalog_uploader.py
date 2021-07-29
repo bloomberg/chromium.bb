@@ -26,6 +26,7 @@ import subprocess
 import sys
 import time
 
+from third_party.six.moves import http_client
 from third_party.six.moves.urllib import error
 from third_party.six.moves.urllib import request
 
@@ -42,7 +43,7 @@ def IsGoogler(server):
   try:
     resp = request.urlopen('https://' + server + '/should-upload')
     return resp.read() == b'Success'
-  except error.URLError:
+  except (error.URLError, http_client.RemoteDisconnected):
     return False
 
 

@@ -13,7 +13,6 @@ namespace gfx {
 // Reflects CEA 861.G-2018, Sec.7.5.13, "HDR Static Metadata Data Block"
 // A value of 0.0 in any of the fields means that it's not indicated.
 struct COLOR_SPACE_EXPORT HDRStaticMetadata {
- public:
   // "Desired Content Max Luminance Data. This is the content’s absolute peak
   // luminance (in cd/m2) (likely only in a small area of the screen) that the
   // display prefers for optimal content rendering."
@@ -29,6 +28,7 @@ struct COLOR_SPACE_EXPORT HDRStaticMetadata {
   HDRStaticMetadata();
   HDRStaticMetadata(double max, double max_avg, double min);
   HDRStaticMetadata(const HDRStaticMetadata& rhs);
+  HDRStaticMetadata& operator=(const HDRStaticMetadata& rhs);
 
   bool operator==(const HDRStaticMetadata& rhs) const {
     return ((max == rhs.max) && (max_avg == rhs.max_avg) && (min == rhs.min));

@@ -22,14 +22,14 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.MathUtils;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.DummyUiChromeActivityTestCase;
 import org.chromium.components.browser_ui.widget.ClipDrawableProgressBar.ProgressBarObserver;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.TimeoutException;
@@ -39,7 +39,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-public class ToolbarProgressBarTest extends DummyUiActivityTestCase {
+public class ToolbarProgressBarTest extends DummyUiChromeActivityTestCase {
     private final CallbackHelper mProgressUpdateHelper = new CallbackHelper();
     private final CallbackHelper mProgressVisibilityHelper = new CallbackHelper();
     private ToolbarProgressBar mProgressBar;
@@ -63,7 +63,10 @@ public class ToolbarProgressBarTest extends DummyUiActivityTestCase {
         view.addView(anchor,
                 new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, heightPx * 2));
 
-        mProgressBar = new ToolbarProgressBar(getActivity(), heightPx, anchor, false, () -> false);
+        ObservableSupplierImpl<Boolean> isVisibleSupplier = new ObservableSupplierImpl<>();
+        isVisibleSupplier.set(true);
+        mProgressBar =
+                new ToolbarProgressBar(getActivity(), heightPx, anchor, false, isVisibleSupplier);
         @ColorInt
         int toolbarColor = ApiCompatibilityUtils.getColor(res, R.color.toolbar_background_primary);
         mProgressBar.setThemeColor(toolbarColor, false);

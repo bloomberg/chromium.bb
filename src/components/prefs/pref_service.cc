@@ -18,7 +18,6 @@
 #include "base/metrics/histogram.h"
 #include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -74,7 +73,7 @@ void CheckForNewPrefChangesInPrefStore(
   if (!pref_store)
     return;
   auto values = pref_store->GetValues();
-  for (const auto& item : values->DictItems()) {
+  for (auto item : values->DictItems()) {
     // If the key already presents, skip it as a store with higher precedence
     // already sets the entry.
     if (pref_changed_map->find(item.first) != pref_changed_map->end())
@@ -711,4 +710,9 @@ const base::Value* PrefService::GetPreferenceValueChecked(
   const base::Value* value = GetPreferenceValue(path);
   DCHECK(value) << "Trying to read an unregistered pref: " << path;
   return value;
+}
+
+void PrefService::CommitPendingWriteSynchronously() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  user_pref_store_->CommitPendingWriteSynchronously();
 }

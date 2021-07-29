@@ -1586,6 +1586,21 @@ void PostCallRecordCreateIndirectCommandsLayoutNV(
     VkResult                                    result) override;
 
 
+void PostCallRecordAcquireDrmDisplayEXT(
+    VkPhysicalDevice                            physicalDevice,
+    int32_t                                     drmFd,
+    VkDisplayKHR                                display,
+    VkResult                                    result) override;
+
+
+void PostCallRecordGetDrmDisplayEXT(
+    VkPhysicalDevice                            physicalDevice,
+    int32_t                                     drmFd,
+    uint32_t                                    connectorId,
+    VkDisplayKHR*                               display,
+    VkResult                                    result) override;
+
+
 void PostCallRecordCreatePrivateDataSlotEXT(
     VkDevice                                    device,
     const VkPrivateDataSlotCreateInfoEXT*       pCreateInfo,
@@ -1679,6 +1694,13 @@ void PostCallRecordGetSemaphoreZirconHandleFUCHSIA(
 
 
 #endif // VK_USE_PLATFORM_FUCHSIA
+
+void PostCallRecordGetMemoryRemoteAddressNV(
+    VkDevice                                    device,
+    const VkMemoryGetRemoteAddressInfoNV*       getMemoryRemoteAddressInfo,
+    VkRemoteAddressNV*                          pAddress,
+    VkResult                                    result) override;
+
 
 #ifdef VK_USE_PLATFORM_SCREEN_QNX
 
@@ -1838,6 +1860,7 @@ const layer_data::unordered_map<std::string, DeprecationData>  deprecated_extens
 const layer_data::unordered_map<std::string, std::string> special_use_extensions = {
     {"VK_AMD_buffer_marker", "devtools"},
     {"VK_AMD_shader_info", "devtools"},
+    {"VK_EXT_custom_border_color", "glemulation, d3demulation"},
     {"VK_EXT_debug_marker", "debugging"},
     {"VK_EXT_debug_report", "debugging"},
     {"VK_EXT_debug_utils", "debugging"},

@@ -15,6 +15,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/check.h"
 #include "base/containers/flat_set.h"
@@ -504,13 +505,38 @@ class HistoryService : public KeyedService {
       VisitID visit_id,
       const VisitContextAnnotations& visit_context_annotations);
 
-  // Get all `AnnotatedVisitRow`s and map them to `AnnotatedVisit`s.
+  // Gets a vector of reverse-chronological `AnnotatedVisit` instances based on
+  // `options`. Uses the same deduplication and visibility logic as
+  // `HistoryService::QueryHistory()`. Notably, this method EXCLUDES from the
+  // result any visits that lack context annotations. To make a continuation
+  // call, the last item's visit time can be used as the `end_time` constraint
+  // in the next page's `options`.
   using GetAnnotatedVisitsCallback =
       base::OnceCallback<void(std::vector<AnnotatedVisit>)>;
   base::CancelableTaskTracker::TaskId GetAnnotatedVisits(
-      int max_results,
+      const QueryOptions& options,
       GetAnnotatedVisitsCallback callback,
       base::CancelableTaskTracker* tracker) const;
+
+  // Get recent recent `Cluster`s and `AnnotatedVisit`s as a flat list without
+  // duplicates. Can include `AnnotatedVisit`s older than `minimum_time` if
+  // they're in a `Cluster` that's newer than `minimum_time`. This is used to
+  // (re)cluster; the recent visits are sent to the clustering model while the
+  // recent clusters are replaced when persisting the new clusters. Does not
+  // return duplicates if a visit is in multiple recent `Cluster`s. Order is
+  // undetermined.
+  base::CancelableTaskTracker::TaskId GetRecentClusterIdsAndAnnotatedVisits(
+      base::Time minimum_time,
+      int max_results,
+      base::OnceCallback<void(ClusterIdsAndAnnotatedVisitsResult)> callback,
+      base::CancelableTaskTracker* tracker);
+
+  // Get all `Cluster`s. This is used to query clusters either for the webui
+  // or the omnibox.
+  base::CancelableTaskTracker::TaskId GetClusters(
+      int max_results,
+      base::OnceCallback<void(std::vector<Cluster>)> callback,
+      base::CancelableTaskTracker* tracker);
 
   // Observers -----------------------------------------------------------------
 
@@ -668,8 +694,7 @@ class HistoryService : public KeyedService {
 
   // Notify all HistoryServiceObservers registered that URLs have been added or
   // modified. `changed_urls` contains the list of affects URLs.
-  void NotifyURLsModified(const URLRows& changed_urls,
-                          UrlsModifiedReason reason);
+  void NotifyURLsModified(const URLRows& changed_urls);
 
   // Notify all HistoryServiceObservers registered that URLs have been deleted.
   // `deletion_info` describes the urls that have been removed from history.

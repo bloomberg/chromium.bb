@@ -114,7 +114,9 @@ bool SubresourceRedirectObserver::IsHttpsImageCompressionApplied(
 SubresourceRedirectObserver::SubresourceRedirectObserver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      receivers_(web_contents, this) {
+      receivers_(web_contents,
+                 this,
+                 content::WebContentsFrameReceiverSetPassKey()) {
   DCHECK(ShouldEnablePublicImageHintsBasedCompression() ||
          ShouldEnableRobotsRulesFetching());
   if (ShouldEnablePublicImageHintsBasedCompression()) {
@@ -167,7 +169,10 @@ void SubresourceRedirectObserver::DidFinishNavigation(
       !navigation_handle->GetRenderFrameHost()) {
     return;
   }
-  if (!navigation_handle->IsInMainFrame() &&
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() &&
       !ShouldEnableRobotsRulesFetching()) {
     return;
   }
@@ -175,7 +180,10 @@ void SubresourceRedirectObserver::DidFinishNavigation(
     return;
 
   // Set to disable compression by default for the mainframe navigation.
-  if (navigation_handle->IsInMainFrame())
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (navigation_handle->IsInPrimaryMainFrame())
     is_mainframe_https_image_compression_applied_ = false;
 
   if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
@@ -193,8 +201,11 @@ void SubresourceRedirectObserver::DidFinishNavigation(
 
   // Handle login robots based compression mode.
   if (ShouldEnableRobotsRulesFetching()) {
+    // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+    // frames. This caller was converted automatically to the primary main frame
+    // to preserve its semantics. Follow up to confirm correctness.
     if (ShouldEnableLoginRobotsCheckedImageCompression() &&
-        navigation_handle->IsInMainFrame()) {
+        navigation_handle->IsInPrimaryMainFrame()) {
       is_mainframe_https_image_compression_applied_ =
           is_allowed_by_login_state_;
     }
@@ -223,13 +234,13 @@ void SubresourceRedirectObserver::DidFinishNavigation(
       base::BindOnce(
           &SubresourceRedirectObserver::OnResourceLoadingImageHintsReceived,
           weak_factory_.GetWeakPtr(),
-          content::GlobalFrameRoutingId(
+          content::GlobalRenderFrameHostId(
               render_frame_host->GetProcess()->GetID(),
               render_frame_host->GetRoutingID())));
 }
 
 void SubresourceRedirectObserver::OnResourceLoadingImageHintsReceived(
-    content::GlobalFrameRoutingId render_frame_host_routing_id,
+    content::GlobalRenderFrameHostId render_frame_host_routing_id,
     optimization_guide::OptimizationGuideDecision decision,
     const optimization_guide::OptimizationMetadata& optimization_metadata) {
   DCHECK(ShouldEnablePublicImageHintsBasedCompression());
@@ -317,7 +328,7 @@ bool SubresourceRedirectObserver::IsAllowedForCurrentLoginState(
   content::RenderFrameHost* parent_render_frame_host =
       navigation_handle->GetRenderFrameHost();
   while ((parent_render_frame_host = parent_render_frame_host->GetParent())) {
-    if (!parent_render_frame_host->IsCurrent())
+    if (!parent_render_frame_host->IsActive())
       continue;
     // Existence of ImageCompressionAppliedDocument for the parent render frame
     // indicates the parent is not logged-in and allowed fo subresource

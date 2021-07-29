@@ -233,6 +233,11 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.new_canvas_2d_api_enabled;
   }
 
+  static bool canvas_2d_layers_enabled(
+      const blink::web_pref::WebPreferences& r) {
+    return r.canvas_2d_layers_enabled;
+  }
+
   static bool antialiased_2d_canvas_disabled(
       const blink::web_pref::WebPreferences& r) {
     return r.antialiased_2d_canvas_disabled;
@@ -463,11 +468,6 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
   static bool user_gesture_required_for_presentation(
       const blink::web_pref::WebPreferences& r) {
     return r.user_gesture_required_for_presentation;
-  }
-
-  static uint32_t base_background_color(
-      const blink::web_pref::WebPreferences& r) {
-    return r.base_background_color;
   }
 
   static bool text_tracks_enabled(const blink::web_pref::WebPreferences& r) {
@@ -770,6 +770,11 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
   static bool webxr_immersive_ar_allowed(
       const blink::web_pref::WebPreferences& r) {
     return r.webxr_immersive_ar_allowed;
+  }
+
+  static const url::Origin& litepage_subresource_redirect_origin(
+      const blink::web_pref::WebPreferences& r) {
+    return r.litepage_subresource_redirect_origin;
   }
 
   static bool Read(blink::mojom::WebPreferencesDataView r,

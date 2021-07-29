@@ -40,7 +40,8 @@ import java.util.List;
 public class SearchResultExtractorProducerTest {
     private static final long FAKE_NATIVE_ADDRESS = 0x7489;
     private static final String TEST_QUERY = "Bar";
-    private static final int TEST_RESULT_TYPE = 1;
+    private static final int TEST_RESULT_TYPE = 0;
+    private static final String PROVIDER_NAME = "Google Search";
 
     private SearchResultExtractorProducer mSearchResultProducer;
     @Mock
@@ -91,11 +92,13 @@ public class SearchResultExtractorProducerTest {
         GURL url2 = JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_1);
         GURL url3 = JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_2);
         GURL url4 = JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_3);
+        GURL url5 = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
 
         mSearchResultProducer.onResultsAvailable(mTestUrl, TEST_QUERY, TEST_RESULT_TYPE,
-                new String[] {"Foo", "Bar"}, new boolean[] {false, true}, new int[] {1, 3},
-                new String[] {"Foo.com 1", "Bar.com 1", "Bar.com 2", "Bar.com 3"},
-                new GURL[] {url1, url2, url3, url4});
+                new String[] {"Foo", "Bar", "Baz"}, new boolean[] {true, false, false},
+                new int[] {1, 3, 1},
+                new String[] {"Foo.com 1", "Bar.com 1", "Bar.com 2", "Bar.com 3", "Baz.com 1"},
+                new GURL[] {url1, url2, url3, url4, url5});
 
         if (cancelled) {
             verify(mListenerMock, never()).onResult(any());
@@ -103,18 +106,19 @@ public class SearchResultExtractorProducerTest {
         }
 
         List<PageGroup> groups = new ArrayList<PageGroup>();
-        List<PageItem> results1 = new ArrayList<PageItem>();
-        results1.add(new PageItem(url1, "Foo.com 1"));
-        groups.add(new PageGroup("Foo", false, results1));
+        // results1 would be an ad group and is skipped.
         List<PageItem> results2 = new ArrayList<PageItem>();
         results2.add(new PageItem(url2, "Bar.com 1"));
         results2.add(new PageItem(url3, "Bar.com 2"));
         results2.add(new PageItem(url4, "Bar.com 3"));
-        groups.add(new PageGroup("Bar", true, results2));
+        groups.add(new PageGroup("Bar", false, results2));
+        List<PageItem> results3 = new ArrayList<PageItem>();
+        results3.add(new PageItem(url5, "Baz.com 1"));
+        groups.add(new PageGroup("Baz", false, results3));
 
         verify(mListenerMock, times(1))
                 .onResult(new ContinuousNavigationMetadata(
-                        mTestUrl, TEST_QUERY, TEST_RESULT_TYPE, groups));
+                        mTestUrl, TEST_QUERY, getProvider(), groups));
     }
 
     /**
@@ -123,6 +127,19 @@ public class SearchResultExtractorProducerTest {
     private void fetchResultsSuccessfully() {
         startFetching();
         finishFetching(false);
+    }
+
+    /**
+     * Creates {@link ContinuousNavigationMetadata.Provider} based on whether provider icon is
+     * displayed or not.
+     * @return the Provider object configured based on the criteria.
+     */
+    private ContinuousNavigationMetadata.Provider getProvider() {
+        String name = mSearchResultProducer.mUseProviderIcon ? null : PROVIDER_NAME;
+        int iconRes = mSearchResultProducer.mUseProviderIcon
+                ? SearchResultExtractorProducer.PROVIDER_ICON_RESOURCE
+                : 0;
+        return new ContinuousNavigationMetadata.Provider(TEST_RESULT_TYPE, name, iconRes);
     }
 
     /**
@@ -285,5 +302,15 @@ public class SearchResultExtractorProducerTest {
         finishFetching(true);
         verify(mListenerMock, times(1))
                 .onError(SearchResultExtractorClientStatus.NOT_ENOUGH_RESULTS);
+    }
+
+    /**
+     * Verify if the metadata provider is set correctly if no provider icon is set.
+     */
+    @Test
+    public void testNoProviderIcon() {
+        startFetching();
+        mSearchResultProducer.mUseProviderIcon = false;
+        finishFetching(false);
     }
 }

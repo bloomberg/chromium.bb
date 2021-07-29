@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <map>
 #include <random>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 
@@ -16,6 +17,7 @@
 #include "base/bind.h"
 #include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/environment.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -26,7 +28,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/kill.h"
@@ -72,6 +73,11 @@
 #if defined(OS_WIN)
 #include "base/strings/string_util_win.h"
 #include "base/win/windows_version.h"
+
+#include <windows.h>
+
+// To avoid conflicts with the macro from the Windows SDK...
+#undef GetCommandLine
 #endif
 
 #if defined(OS_FUCHSIA)

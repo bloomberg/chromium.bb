@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/test/test_message_loop.h"
 #include "base/time/time.h"
 #include "media/base/cdm_config.h"
@@ -215,8 +215,11 @@ class MojoCdmTest : public ::testing::Test {
 
       // MojoCdm expects the session to be closed, so invoke SessionClosedCB
       // to "close" it.
-      EXPECT_CALL(cdm_client_, OnSessionClosed(session_id));
-      remote_cdm_->CallSessionClosedCB(session_id);
+      EXPECT_CALL(
+          cdm_client_,
+          OnSessionClosed(session_id, CdmSessionClosedReason::kInternalError));
+      remote_cdm_->CallSessionClosedCB(session_id,
+                                       CdmSessionClosedReason::kInternalError);
       base::RunLoop().RunUntilIdle();
     }
   }
@@ -426,7 +429,9 @@ TEST_F(MojoCdmTest, CreateSession_Success) {
   CreateSessionAndExpect(session_id, SUCCESS);
 
   // Created session should always be closed!
-  EXPECT_CALL(cdm_client_, OnSessionClosed(session_id));
+  EXPECT_CALL(
+      cdm_client_,
+      OnSessionClosed(session_id, CdmSessionClosedReason::kInternalError));
 }
 
 TEST_F(MojoCdmTest, CreateSession_Failure) {

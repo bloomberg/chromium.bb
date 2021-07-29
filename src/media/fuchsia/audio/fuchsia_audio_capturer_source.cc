@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/bits.h"
+#include "base/cxx17_backports.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/location.h"
-#include "base/stl_util.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/audio_parameters.h"
@@ -83,7 +83,8 @@ void FuchsiaAudioCapturerSource::Initialize(const AudioParameters& params,
   // Allocate shared buffer.
   capture_buffer_size_ =
       params_.GetBytesPerBuffer(kSampleFormatF32) * kBufferPacketCapacity;
-  capture_buffer_size_ = base::bits::Align(capture_buffer_size_, ZX_PAGE_SIZE);
+  capture_buffer_size_ =
+      base::bits::AlignUp(capture_buffer_size_, ZX_PAGE_SIZE);
 
   zx::vmo buffer_vmo;
   zx_status_t status = zx::vmo::create(capture_buffer_size_, 0, &buffer_vmo);

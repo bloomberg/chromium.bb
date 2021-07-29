@@ -288,13 +288,12 @@ export class ActionManager {
     Navigator.byItem.suspendCurrentGroup();
 
     const response = this.actionNode_.performAction(action);
-    if (response === SAConstants.ActionResponse.CLOSE_MENU) {
-      ActionManager.exitAllMenus();
-      return;
-    }
 
     switch (response) {
-      case SAConstants.ActionResponse.EXIT_MENU:
+      case SAConstants.ActionResponse.CLOSE_MENU:
+        ActionManager.exitAllMenus();
+        return;
+      case SAConstants.ActionResponse.EXIT_SUBMENU:
         ActionManager.exitCurrentMenu();
         return;
       case SAConstants.ActionResponse.REMAIN_OPEN:
@@ -302,7 +301,7 @@ export class ActionManager {
         return;
       case SAConstants.ActionResponse.RELOAD_MENU:
         ActionManager.refreshMenuUnconditionally();
-        break;
+        return;
       case SAConstants.ActionResponse.OPEN_TEXT_NAVIGATION_MENU:
         if (SwitchAccess.instance.improvedTextInputEnabled()) {
           this.menuStack_.push(SAConstants.MenuType.TEXT_NAVIGATION);

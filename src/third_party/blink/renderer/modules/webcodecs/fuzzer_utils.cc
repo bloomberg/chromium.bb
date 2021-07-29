@@ -7,9 +7,11 @@
 #include <string>
 
 #include "media/base/limits.h"
+#include "media/base/sample_format.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_data_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_chunk_init.h"
@@ -56,8 +58,7 @@ VideoDecoderConfig* MakeVideoDecoderConfig(
   config->setCodec(proto.codec().c_str());
   DOMArrayBuffer* data_copy = DOMArrayBuffer::Create(
       proto.description().data(), proto.description().size());
-  config->setDescription(
-      ArrayBufferOrArrayBufferView::FromArrayBuffer(data_copy));
+  config->setDescription(MakeGarbageCollected<V8BufferSource>(data_copy));
   return config;
 }
 
@@ -70,8 +71,7 @@ AudioDecoderConfig* MakeAudioDecoderConfig(
 
   DOMArrayBuffer* data_copy = DOMArrayBuffer::Create(
       proto.description().data(), proto.description().size());
-  config->setDescription(
-      ArrayBufferOrArrayBufferView::FromArrayBuffer(data_copy));
+  config->setDescription(MakeGarbageCollected<V8BufferSource>(data_copy));
 
   return config;
 }
@@ -124,10 +124,50 @@ String ToChunkType(wc_fuzzer::EncodedChunkType type) {
   }
 }
 
+String ToAudioSampleFormat(wc_fuzzer::AudioSampleFormat format) {
+  switch (format) {
+    case wc_fuzzer::AudioSampleFormat::U8:
+      return "u8";
+    case wc_fuzzer::AudioSampleFormat::S16:
+      return "s16";
+    case wc_fuzzer::AudioSampleFormat::S32:
+      return "s32";
+    case wc_fuzzer::AudioSampleFormat::F32:
+      return "f32";
+    case wc_fuzzer::AudioSampleFormat::U8_PLANAR:
+      return "u8-planar";
+    case wc_fuzzer::AudioSampleFormat::S16_PLANAR:
+      return "s16-planar";
+    case wc_fuzzer::AudioSampleFormat::S32_PLANAR:
+      return "s32-planar";
+    case wc_fuzzer::AudioSampleFormat::F32_PLANAR:
+      return "f32-planar";
+  }
+}
+
+int SampleFormatToSampleSize(V8AudioSampleFormat format) {
+  using FormatEnum = V8AudioSampleFormat::Enum;
+
+  switch (format.AsEnum()) {
+    case FormatEnum::kU8:
+    case FormatEnum::kU8Planar:
+      return 1;
+
+    case FormatEnum::kS16:
+    case FormatEnum::kS16Planar:
+      return 2;
+
+    case FormatEnum::kS32:
+    case FormatEnum::kS32Planar:
+    case FormatEnum::kF32:
+    case FormatEnum::kF32Planar:
+      return 4;
+  }
+}
+
 EncodedVideoChunk* MakeEncodedVideoChunk(
     const wc_fuzzer::EncodedVideoChunk& proto) {
-  ArrayBufferOrArrayBufferView data;
-  data.SetArrayBuffer(
+  auto* data = MakeGarbageCollected<V8BufferSource>(
       DOMArrayBuffer::Create(proto.data().data(), proto.data().size()));
 
   auto* init = EncodedVideoChunkInit::Create();
@@ -140,8 +180,7 @@ EncodedVideoChunk* MakeEncodedVideoChunk(
 
 EncodedAudioChunk* MakeEncodedAudioChunk(
     const wc_fuzzer::EncodedAudioChunk& proto) {
-  ArrayBufferOrArrayBufferView data;
-  data.SetArrayBuffer(
+  auto* data = MakeGarbageCollected<V8BufferSource>(
       DOMArrayBuffer::Create(proto.data().data(), proto.data().size()));
 
   auto* init = EncodedAudioChunkInit::Create();
@@ -189,12 +228,7 @@ VideoFrame* MakeVideoFrame(ScriptState* script_state,
   video_frame_init->setTimestamp(proto.timestamp());
   video_frame_init->setDuration(proto.duration());
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   auto* source = MakeGarbageCollected<V8CanvasImageSource>(image_bitmap);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  CanvasImageSourceUnion source;
-  source.SetImageBitmap(image_bitmap);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   return VideoFrame::Create(script_state, source, video_frame_init,
                             IGNORE_EXCEPTION_FOR_TESTING);
@@ -202,27 +236,41 @@ VideoFrame* MakeVideoFrame(ScriptState* script_state,
 
 AudioData* MakeAudioData(ScriptState* script_state,
                          const wc_fuzzer::AudioDataInit& proto) {
-  if (proto.channels().size() > media::limits::kMaxChannels)
+  if (!proto.channels().size() ||
+      proto.channels().size() > media::limits::kMaxChannels)
     return nullptr;
 
-  if (proto.length() > media::limits::kMaxSamplesPerPacket)
+  if (!proto.length() || proto.length() > media::limits::kMaxSamplesPerPacket)
     return nullptr;
 
-  auto bus = AudioBus::Create(proto.channels().size(), proto.length());
-  if (!bus)
-    return nullptr;
+  V8AudioSampleFormat format =
+      V8AudioSampleFormat::Create(ToAudioSampleFormat(proto.format())).value();
+
+  int size_per_sample = SampleFormatToSampleSize(format);
+  int number_of_samples = proto.channels().size() * proto.length();
+
+  auto* buffer = DOMArrayBuffer::Create(number_of_samples, size_per_sample);
+
+  memset(buffer->Data(), 0, number_of_samples * size_per_sample);
+
   for (int i = 0; i < proto.channels().size(); i++) {
-    size_t max_size = proto.length() * sizeof(float);
-    memset(bus->Channel(i)->MutableData(), 0, max_size);
+    size_t max_plane_size = proto.length() * size_per_sample;
 
     auto* data = proto.channels().Get(i).data();
-    auto size = std::min(proto.channels().Get(i).size(), max_size);
-    memcpy(bus->Channel(i)->MutableData(), data, size);
+    auto size = std::min(proto.channels().Get(i).size(), max_plane_size);
+
+    void* plane_start =
+        reinterpret_cast<uint8_t*>(buffer->Data()) + i * max_plane_size;
+    memcpy(plane_start, data, size);
   }
 
   auto* init = AudioDataInit::Create();
   init->setTimestamp(proto.timestamp());
-  init->setBuffer(AudioBuffer::CreateFromAudioBus(bus.get()));
+  init->setNumberOfFrames(proto.length());
+  init->setNumberOfChannels(proto.channels().size());
+  init->setSampleRate(proto.sample_rate());
+  init->setFormat(format);
+  init->setData(MakeGarbageCollected<V8BufferSource>(buffer));
 
   return AudioData::Create(init, IGNORE_EXCEPTION_FOR_TESTING);
 }

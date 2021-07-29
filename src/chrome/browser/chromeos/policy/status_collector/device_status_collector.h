@@ -211,8 +211,8 @@ class DeviceStatusCollector : public StatusCollector,
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  AffiliatedSessionService* GetAffiliatedSessionServiceForTesting() {
-    return &affiliated_session_service_;
+  ManagedSessionService* GetManagedSessionServiceForTesting() {
+    return &managed_session_service_;
   }
 
   // How often to poll to see if the user is idle.
@@ -283,9 +283,9 @@ class DeviceStatusCollector : public StatusCollector,
       enterprise_management::DeviceStatusReportRequest* status);
   bool GetRunningKioskApp(
       enterprise_management::DeviceStatusReportRequest* status);
-  bool GetGraphicsStatus(scoped_refptr<DeviceStatusCollectorState>
+  void GetGraphicsStatus(scoped_refptr<DeviceStatusCollectorState>
                              state);  // Queues async queries!
-  bool GetCrashReportInfo(scoped_refptr<DeviceStatusCollectorState>
+  void GetCrashReportInfo(scoped_refptr<DeviceStatusCollectorState>
                               state);  // Queues async queries!
 
   // Helpers for the various portions of SESSION STATUS. Return true if they
@@ -480,7 +480,7 @@ class DeviceStatusCollector : public StatusCollector,
   base::CallbackListSubscription app_info_subscription_;
   base::CallbackListSubscription stats_reporting_pref_subscription_;
 
-  AffiliatedSessionService affiliated_session_service_;
+  ManagedSessionService managed_session_service_;
 
   AppInfoGenerator app_info_generator_;
 

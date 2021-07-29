@@ -37,7 +37,8 @@ Registry CreateRegistryForTesting(const std::string& base_url, int num_apps) {
 
   for (int i = 0; i < num_apps; ++i) {
     const auto url = base_url + base::NumberToString(i);
-    const AppId app_id = GenerateAppIdFromURL(GURL(url));
+    const AppId app_id =
+        GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(url));
 
     auto web_app = std::make_unique<WebApp>(app_id);
     web_app->AddSource(Source::kSync);
@@ -134,7 +135,8 @@ class WebAppRegistrarTest : public WebAppTest {
   std::unique_ptr<WebApp> CreateWebAppWithSource(const std::string& url,
                                                  Source::Type source) {
     const GURL start_url(url);
-    const AppId app_id = GenerateAppIdFromURL(start_url);
+    const AppId app_id =
+        GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
 
     auto web_app = std::make_unique<WebApp>(app_id);
 
@@ -172,14 +174,15 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   EXPECT_FALSE(registrar().GetAppById(AppId()));
 
   const GURL start_url = GURL("https://example.com/path");
-  const AppId app_id = GenerateAppIdFromURL(start_url);
+  const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
   const std::string name = "Name";
   const std::string description = "Description";
   const GURL scope = GURL("https://example.com/scope");
   const absl::optional<SkColor> theme_color = 0xAABBCCDD;
 
   const GURL start_url2 = GURL("https://example.com/path2");
-  const AppId app_id2 = GenerateAppIdFromURL(start_url2);
+  const AppId app_id2 =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, start_url2);
 
   auto web_app = std::make_unique<WebApp>(app_id);
   auto web_app2 = std::make_unique<WebApp>(app_id2);
@@ -386,7 +389,7 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   controller().Init();
 
   const GURL start_url = GURL("https://example.com/path");
-  const AppId app_id = GenerateAppIdFromURL(start_url);
+  const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
   const std::string name = "Name";
   const std::string description = "Description";
   const absl::optional<SkColor> theme_color = 0xAABBCCDD;
@@ -466,9 +469,12 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
   const GURL app2_scope("https://example.com/app-two");
   const GURL app3_scope("https://not-example.com/app");
 
-  const AppId app1_id = GenerateAppIdFromURL(app1_scope);
-  const AppId app2_id = GenerateAppIdFromURL(app2_scope);
-  const AppId app3_id = GenerateAppIdFromURL(app3_scope);
+  const AppId app1_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, app1_scope);
+  const AppId app2_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, app2_scope);
+  const AppId app3_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, app3_scope);
 
   std::vector<AppId> in_scope = registrar().FindAppsInScope(origin_scope);
   EXPECT_EQ(0u, in_scope.size());
@@ -527,9 +533,12 @@ TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
   const GURL app2_scope("https://example.com/app-two");
   const GURL app3_scope("https://not-example.com/app");
 
-  const AppId app1_id = GenerateAppIdFromURL(app1_scope);
-  const AppId app2_id = GenerateAppIdFromURL(app2_scope);
-  const AppId app3_id = GenerateAppIdFromURL(app3_scope);
+  const AppId app1_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, app1_scope);
+  const AppId app2_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, app2_scope);
+  const AppId app3_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, app3_scope);
 
   auto app1 = CreateWebApp(app1_scope.spec());
   app1->SetScope(app1_scope);
@@ -581,9 +590,12 @@ TEST_F(WebAppRegistrarTest, CanFindShortcutWithUrlInScope) {
   const GURL app2_launch("https://example.com/app-two/launch");
   const GURL app3_launch("https://not-example.com/app/launch");
 
-  const AppId app1_id = GenerateAppIdFromURL(app1_launch);
-  const AppId app2_id = GenerateAppIdFromURL(app2_launch);
-  const AppId app3_id = GenerateAppIdFromURL(app3_launch);
+  const AppId app1_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, app1_launch);
+  const AppId app2_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, app2_launch);
+  const AppId app3_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, app3_launch);
 
   // Implicit scope "https://example.com/app/"
   auto app1 = CreateWebApp(app1_launch.spec());
@@ -624,7 +636,8 @@ TEST_F(WebAppRegistrarTest, FindPwaOverShortcut) {
 
   const GURL app2_scope("https://example.com/app");
   const GURL app2_page("https://example.com/app/specific/page2");
-  const AppId app2_id = GenerateAppIdFromURL(app2_scope);
+  const AppId app2_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, app2_scope);
 
   const GURL app3_launch("https://example.com/app/specific/launch3");
 
@@ -745,7 +758,7 @@ TEST_F(WebAppRegistrarTest, CopyOnWrite) {
   controller().Init();
 
   const GURL start_url("https://example.com");
-  const AppId app_id = GenerateAppIdFromURL(start_url);
+  const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
   const WebApp* app = nullptr;
   {
     auto new_app = CreateWebApp(start_url.spec());
@@ -913,6 +926,22 @@ TEST_F(WebAppRegistrarTest, RunOnOsLoginModes) {
   sync_bridge().SetAppRunOnOsLoginMode(app_id, RunOnOsLoginMode::kMinimized);
   EXPECT_EQ(RunOnOsLoginMode::kMinimized,
             registrar().GetAppRunOnOsLoginMode(app_id));
+}
+
+TEST_F(WebAppRegistrarTest, WindowControlsOverlay) {
+  controller().Init();
+
+  auto web_app = CreateWebApp("https://example.com/path");
+  const AppId app_id = web_app->app_id();
+  RegisterApp(std::move(web_app));
+
+  EXPECT_EQ(false, registrar().GetWindowControlsOverlayEnabled(app_id));
+
+  sync_bridge().SetAppWindowControlsOverlayEnabled(app_id, true);
+  EXPECT_EQ(true, registrar().GetWindowControlsOverlayEnabled(app_id));
+
+  sync_bridge().SetAppWindowControlsOverlayEnabled(app_id, false);
+  EXPECT_EQ(false, registrar().GetWindowControlsOverlayEnabled(app_id));
 }
 
 }  // namespace web_app

@@ -46,7 +46,6 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kSecurityAndSignInSubpagePath,
       chromeos::settings::mojom::kFingerprintSubpagePath,
       chromeos::settings::mojom::kManageOtherPeopleSubpagePath,
-      chromeos::settings::mojom::kKerberosAccountsSubpagePath,
 
       // Device section.
       chromeos::settings::mojom::kDeviceSectionPath,
@@ -62,6 +61,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kPersonalizationSectionPath,
       chromeos::settings::mojom::kChangePictureSubpagePath,
       chromeos::settings::mojom::kAmbientModeSubpagePath,
+      chromeos::settings::mojom::kDarkModeSubpagePath,
 
       // Search and Assistant section.
       chromeos::settings::mojom::kSearchAndAssistantSectionPath,
@@ -74,7 +74,6 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kAppDetailsSubpagePath,
       chromeos::settings::mojom::kGooglePlayStoreSubpagePath,
       chromeos::settings::mojom::kPluginVmSharedPathsSubpagePath,
-      chromeos::settings::mojom::kOnStartupSubpagePath,
 
       // Crostini section.
       chromeos::settings::mojom::kCrostiniSectionPath,

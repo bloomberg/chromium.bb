@@ -51,7 +51,9 @@ file_manager_private::DriveConfirmDialogType ConvertDialogReasonType(
 
 }  // namespace
 
-DriveFsEventRouter::DriveFsEventRouter() = default;
+DriveFsEventRouter::DriveFsEventRouter(
+    SystemNotificationManager* notification_manager)
+    : notification_manager_(notification_manager) {}
 DriveFsEventRouter::~DriveFsEventRouter() = default;
 
 DriveFsEventRouter::SyncingStatusState::SyncingStatusState() = default;
@@ -71,8 +73,8 @@ void DriveFsEventRouter::OnUnmounted() {
   pin_status.transfer_state = file_manager_private::TRANSFER_STATE_FAILED;
   pin_status.hide_when_zero_jobs = true;
 
-  DispatchOnFileTransfersUpdatedEvent(sync_status);
-  DispatchOnPinTransfersUpdatedEvent(pin_status);
+  BroadcastOnFileTransfersUpdatedEvent(sync_status);
+  BroadcastOnPinTransfersUpdatedEvent(pin_status);
 
   dialog_callback_.Reset();
 }
@@ -145,7 +147,7 @@ void DriveFsEventRouter::OnSyncingStatusUpdate(
       file_manager_private::OnFileTransfersUpdated::kEventName);
 
   if (sync_status.total == 0) {
-    DispatchOnFileTransfersUpdatedEvent(sync_status);
+    BroadcastOnFileTransfersUpdatedEvent(sync_status);
   } else {
     for (const auto* item : sync_events) {
       sync_status.transfer_state = ConvertItemEventState(item->state);
@@ -153,14 +155,13 @@ void DriveFsEventRouter::OnSyncingStatusUpdate(
       for (const auto& listener_url : urls) {
         sync_status.file_url =
             ConvertDrivePathToFileSystemUrl(path, listener_url).spec();
-        DispatchOnFileTransfersUpdatedEventToExtension(listener_url.host(),
-                                                       sync_status);
+        BroadcastOnFileTransfersUpdatedEvent(sync_status);
       }
     }
   }
 
   if (pin_status.total == 0) {
-    DispatchOnPinTransfersUpdatedEvent(pin_status);
+    BroadcastOnPinTransfersUpdatedEvent(pin_status);
   } else {
     for (const auto* item : pin_events) {
       pin_status.transfer_state = ConvertItemEventState(item->state);
@@ -168,8 +169,7 @@ void DriveFsEventRouter::OnSyncingStatusUpdate(
       for (const auto& listener_url : urls) {
         pin_status.file_url =
             ConvertDrivePathToFileSystemUrl(path, listener_url).spec();
-        DispatchOnPinTransfersUpdatedEventToExtension(listener_url.host(),
-                                                      pin_status);
+        BroadcastOnPinTransfersUpdatedEvent(pin_status);
       }
     }
   }
@@ -212,8 +212,7 @@ void DriveFsEventRouter::OnFilesChanged(
                     CHANGE_TYPE_ADD_OR_UPDATE);
     }
     for (auto& event : events) {
-      DispatchOnDirectoryChangedEventToExtension(listener_url.host(),
-                                                 event.first, event.second);
+      BroadcastOnDirectoryChangedEvent(event.first, event.second);
     }
   }
 }
@@ -232,11 +231,9 @@ void DriveFsEventRouter::OnError(const drivefs::mojom::DriveError& error) {
            file_manager_private::OnDriveSyncError::kEventName)) {
     event.file_url =
         ConvertDrivePathToFileSystemUrl(error.path, listener_url).spec();
-    DispatchEventToExtension(
-        listener_url.host(),
-        extensions::events::FILE_MANAGER_PRIVATE_ON_DRIVE_SYNC_ERROR,
-        file_manager_private::OnDriveSyncError::kEventName,
-        file_manager_private::OnDriveSyncError::Create(event));
+    BroadcastEvent(extensions::events::FILE_MANAGER_PRIVATE_ON_DRIVE_SYNC_ERROR,
+                   file_manager_private::OnDriveSyncError::kEventName,
+                   file_manager_private::OnDriveSyncError::Create(event));
   }
 }
 
@@ -260,8 +257,7 @@ void DriveFsEventRouter::DisplayConfirmDialog(
   for (const auto& listener_url : urls) {
     event.file_url =
         ConvertDrivePathToFileSystemUrl(reason.path, listener_url).spec();
-    DispatchEventToExtension(
-        listener_url.host(),
+    BroadcastEvent(
         extensions::events::FILE_MANAGER_PRIVATE_ON_DRIVE_CONFIRM_DIALOG,
         file_manager_private::OnDriveConfirmDialog::kEventName,
         file_manager_private::OnDriveConfirmDialog::Create(event));
@@ -274,54 +270,31 @@ void DriveFsEventRouter::OnDialogResult(drivefs::mojom::DialogResult result) {
   }
 }
 
-void DriveFsEventRouter::DispatchOnFileTransfersUpdatedEvent(
+void DriveFsEventRouter::BroadcastOnFileTransfersUpdatedEvent(
     const extensions::api::file_manager_private::FileTransferStatus& status) {
-  for (const auto& listener_url : GetEventListenerURLs(
-           file_manager_private::OnFileTransfersUpdated::kEventName)) {
-    DispatchOnFileTransfersUpdatedEventToExtension(listener_url.host(), status);
-  }
-}
-
-void DriveFsEventRouter::DispatchOnFileTransfersUpdatedEventToExtension(
-    const std::string& extension_id,
-    const extensions::api::file_manager_private::FileTransferStatus& status) {
-  DispatchEventToExtension(
-      extension_id,
+  BroadcastEvent(
       extensions::events::FILE_MANAGER_PRIVATE_ON_FILE_TRANSFERS_UPDATED,
       file_manager_private::OnFileTransfersUpdated::kEventName,
       file_manager_private::OnFileTransfersUpdated::Create(status));
 }
 
-void DriveFsEventRouter::DispatchOnPinTransfersUpdatedEvent(
+void DriveFsEventRouter::BroadcastOnPinTransfersUpdatedEvent(
     const extensions::api::file_manager_private::FileTransferStatus& status) {
-  for (const auto& listener_url : GetEventListenerURLs(
-           file_manager_private::OnPinTransfersUpdated::kEventName)) {
-    DispatchOnPinTransfersUpdatedEventToExtension(listener_url.host(), status);
-  }
-}
-
-void DriveFsEventRouter::DispatchOnPinTransfersUpdatedEventToExtension(
-    const std::string& extension_id,
-    const extensions::api::file_manager_private::FileTransferStatus& status) {
-  DispatchEventToExtension(
-      extension_id,
+  BroadcastEvent(
       extensions::events::FILE_MANAGER_PRIVATE_ON_PIN_TRANSFERS_UPDATED,
       file_manager_private::OnPinTransfersUpdated::kEventName,
       file_manager_private::OnPinTransfersUpdated::Create(status));
 }
 
-void DriveFsEventRouter::DispatchOnDirectoryChangedEventToExtension(
-    const std::string& extension_id,
+void DriveFsEventRouter::BroadcastOnDirectoryChangedEvent(
     const base::FilePath& directory,
     const extensions::api::file_manager_private::FileWatchEvent& event) {
   if (!IsPathWatched(directory)) {
     return;
   }
-  DispatchEventToExtension(
-      extension_id,
-      extensions::events::FILE_MANAGER_PRIVATE_ON_DIRECTORY_CHANGED,
-      file_manager_private::OnDirectoryChanged::kEventName,
-      file_manager_private::OnDirectoryChanged::Create(event));
+  BroadcastEvent(extensions::events::FILE_MANAGER_PRIVATE_ON_DIRECTORY_CHANGED,
+                 file_manager_private::OnDirectoryChanged::kEventName,
+                 file_manager_private::OnDirectoryChanged::Create(event));
 }
 
 }  // namespace file_manager

@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "sql/transaction.h"
 
 // Current version number.  Note: when changing the current version number,
@@ -99,7 +98,9 @@ sql::InitStatus WebDatabase::Init(const base::FilePath& db_name) {
   // Clobber really old databases.
   static_assert(kDeprecatedVersionNumber < kCurrentVersionNumber,
                 "Deprecation version must be less than current");
-  sql::MetaTable::RazeIfDeprecated(&db_, kDeprecatedVersionNumber);
+  sql::MetaTable::RazeIfIncompatible(
+      &db_, /*lowest_supported_version=*/kDeprecatedVersionNumber + 1,
+      kCurrentVersionNumber);
 
   // Scope initialization in a transaction so we can't be partially
   // initialized.

@@ -4,11 +4,13 @@
 
 #include "components/arc/session/arc_vm_client_adapter.h"
 
+#include <inttypes.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <time.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <deque>
 #include <set>
 #include <utility>
@@ -162,7 +164,7 @@ std::vector<std::string> GenerateUpgradeProps(
                          upgrade_params.is_demo_session),
       base::StringPrintf(
           "%s.supervision.transition=%d", prefix.c_str(),
-          static_cast<int>(upgrade_params.supervision_transition)),
+          static_cast<int>(upgrade_params.management_transition)),
       base::StringPrintf("%s.serialno=%s", prefix.c_str(),
                          serial_number.c_str()),
   };
@@ -203,20 +205,27 @@ std::vector<std::string> GenerateKernelCmdline(
   }
 
   std::vector<std::string> result = {
+      // Note: Do not change the value "bertha". This string is checked in
+      // platform2/metrics/process_meter.cc to detect ARCVM's crosvm processes,
+      // for example.
       "androidboot.hardware=bertha",
+
       "androidboot.container=1",
       base::StringPrintf("androidboot.native_bridge=%s", native_bridge.c_str()),
       base::StringPrintf("androidboot.dev_mode=%d", is_dev_mode),
       base::StringPrintf("androidboot.disable_runas=%d", !is_dev_mode),
       base::StringPrintf("androidboot.host_is_in_vm=%d", is_host_on_vm),
-      base::StringPrintf("androidboot.debuggable=%d",
-                         file_system_status.is_android_debuggable()),
       base::StringPrintf("androidboot.lcd_density=%d",
                          start_params.lcd_density),
       base::StringPrintf("androidboot.arc_file_picker=%d",
                          start_params.arc_file_picker_experiment),
       base::StringPrintf("androidboot.arc_custom_tabs=%d",
                          start_params.arc_custom_tabs_experiment),
+      base::StringPrintf("androidboot.image_copy_paste_compat=%d",
+                         start_params.enable_image_copy_paste_compat),
+      base::StringPrintf(
+          "androidboot.keyboard_shortcut_helper_integration=%d",
+          start_params.enable_keyboard_shortcut_helper_integration),
       base::StringPrintf("androidboot.disable_system_default_app=%d",
                          start_params.arc_disable_system_default_app),
       "androidboot.chromeos_channel=" + channel,
@@ -371,6 +380,29 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
 
   // Add hugepages.
   request.set_use_hugepages(IsArcVmUseHugePages());
+
+  // Specify VM Memory.
+  if (base::FeatureList::IsEnabled(kVmMemorySize)) {
+    base::SystemMemoryInfoKB info;
+    if (base::GetSystemMemoryInfo(&info)) {
+      const int ram_mib = info.total / 1024;
+      const int shift_mib = kVmMemorySizeShiftMiB.Get();
+      const int max_mib = kVmMemorySizeMaxMiB.Get();
+      const int vm_ram_mib = std::min(max_mib, ram_mib + shift_mib);
+      constexpr int kVmRamMinMib = 2048;
+      if (vm_ram_mib > kVmRamMinMib) {
+        request.set_memory_mib(vm_ram_mib);
+      } else {
+        VLOG(1) << "VmMemorySize is enabled, but computed size is "
+                << "min(" << ram_mib << " + " << shift_mib << "," << max_mib
+                << ") == " << vm_ram_mib << "MiB, less than " << kVmRamMinMib
+                << " MiB safe minium.";
+      }
+    } else {
+      VLOG(1) << "VmMemorySize is enabled, but GetSystemMemoryInfo failed.";
+    }
+  }
+
   return request;
 }
 
@@ -437,10 +469,14 @@ bool IsArcVmBootNotificationServerListening() {
 // |kArcVmBootNotificationServerSocketPath|. This function can only be called
 // with base::MayBlock().
 bool SendUpgradePropsToArcVmBootNotificationServer(
+    int64_t cid,
     const UpgradeParams& params,
     const std::string& serial_number) {
-  std::string props = base::JoinString(
-      GenerateUpgradeProps(params, serial_number, "ro.boot"), "\n");
+  std::string props = base::StringPrintf(
+      "CID=%" PRId64 "\n%s", cid,
+      base::JoinString(GenerateUpgradeProps(params, serial_number, "ro.boot"),
+                       "\n")
+          .c_str());
 
   base::ScopedFD fd = ConnectToArcVmBootNotificationServer();
   if (!fd.is_valid())
@@ -922,7 +958,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&SendUpgradePropsToArcVmBootNotificationServer,
-                       std::move(params), serial_number_),
+                       current_cid_, std::move(params), serial_number_),
         base::BindOnce(&ArcVmClientAdapter::OnUpgradePropsSent,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }

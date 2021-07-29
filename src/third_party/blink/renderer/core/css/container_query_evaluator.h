@@ -14,11 +14,23 @@
 namespace blink {
 
 class ContainerQuery;
+class Element;
+class StyleRecalcContext;
 
 class CORE_EXPORT ContainerQueryEvaluator final
     : public GarbageCollected<ContainerQueryEvaluator> {
  public:
-  ContainerQueryEvaluator(PhysicalSize, PhysicalAxes contained_axes);
+  static Element* FindContainer(const StyleRecalcContext& context,
+                                const AtomicString& container_name);
+
+  // Creates an evaluator with no containment, hence all queries evaluated
+  // against it will fail.
+  ContainerQueryEvaluator() = default;
+
+  // Used by container relative units (qi, qb, etc).
+  double Width() const;
+  double Height() const;
+  void SetReferencedByUnit() { referenced_by_unit_ = true; }
 
   bool Eval(const ContainerQuery&) const;
 
@@ -33,31 +45,39 @@ class CORE_EXPORT ContainerQueryEvaluator final
     return result;
   }
 
+  enum class Change {
+    // The update has no effect on the evaluation of queries associated with
+    // this evaluator, and therefore we do not need to perform style recalc of
+    // any elements which depend on this evaluator.
+    kNone,
+    // The update can only affect elements for which this container is the
+    // nearest container. In other words, we do not need to recalculate style
+    // for elements in nested containers.
+    kNearestContainer,
+    // The update can affect elements within this container, and also in
+    // descendant containers.
+    kDescendantContainers,
+  };
+
   // Update the size/axis information of the evaluator.
   //
-  // A return value of 'false' means that the update has no effect on the
-  // evaluation of queries associated with this evaluator, and therefore we do
-  // not need to perform style recalc of any elements which depend on this
-  // evaluator.
-  //
-  // A return value of 'true' means that the update *may* have an effect, and
-  // therefore elements that depends on this evaluator need style recalc.
-  //
-  // Dependent queries are cleared when 'true' is returned (and left unchanged
-  // otherwise).
-  bool ContainerChanged(PhysicalSize, PhysicalAxes contained_axes);
+  // Dependent queries are cleared when kUnnamed/kNamed is returned (and left
+  // unchanged otherwise).
+  Change ContainerChanged(PhysicalSize, PhysicalAxes contained_axes);
 
   void Trace(Visitor*) const;
 
  private:
   void SetData(PhysicalSize, PhysicalAxes contained_axes);
-  bool ResultsChanged() const;
+  void ClearResults();
+  Change ComputeChange() const;
 
   // TODO(crbug.com/1145970): Don't lean on MediaQueryEvaluator.
   Member<MediaQueryEvaluator> media_query_evaluator_;
   PhysicalSize size_;
   PhysicalAxes contained_axes_;
   HeapHashMap<Member<const ContainerQuery>, bool> results_;
+  bool referenced_by_unit_ = false;
 };
 
 }  // namespace blink

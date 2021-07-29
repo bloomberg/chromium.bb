@@ -103,7 +103,7 @@ public:
                                       const GrAppliedClip*,
                                       GrClampType) override;
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
         if (fProgramInfo) {
             fProgramInfo->visitFPProxies(func);
         } else {
@@ -124,12 +124,13 @@ private:
     void onCreateProgramInfo(const GrCaps*,
                              SkArenaAlloc*,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&&,
-                             const GrXferProcessor::DstProxyView&,
+                             const GrDstProxyView&,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override;
 
-    void onPrepareDraws(Target*) override;
+    void onPrepareDraws(GrMeshDrawTarget*) override;
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
 
     SkRect         fDrawRect;
@@ -183,8 +184,9 @@ TestRectOp::TestRectOp(const GrCaps* caps,
 void TestRectOp::onCreateProgramInfo(const GrCaps* caps,
                                      SkArenaAlloc* arena,
                                      const GrSurfaceProxyView& writeView,
+                                     bool usesMSAASurface,
                                      GrAppliedClip&& appliedClip,
-                                     const GrXferProcessor::DstProxyView& dstProxyView,
+                                     const GrDstProxyView& dstProxyView,
                                      GrXferBarrierFlags renderPassXferBarriers,
                                      GrLoadOp colorLoadOp) {
     fProgramInfo = GrSimpleMeshDrawOpHelper::CreateProgramInfo(caps,
@@ -200,7 +202,7 @@ void TestRectOp::onCreateProgramInfo(const GrCaps* caps,
                                                                GrPipeline::InputFlags::kNone);
 }
 
-void TestRectOp::onPrepareDraws(Target* target) {
+void TestRectOp::onPrepareDraws(GrMeshDrawTarget* target) {
     QuadHelper helper(target, fGP.vertexStride(), 1);
     GrVertexWriter writer{helper.vertices()};
     auto pos = GrVertexWriter::TriStripFromRect(fDrawRect);

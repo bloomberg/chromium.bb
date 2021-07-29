@@ -21,13 +21,9 @@ generate_grd("build_grdp") {
   grd_prefix = "cr_components"
   out_grd = "$target_gen_dir/${grd_prefix}_resources.grdp"
   deps = [ ":preprocess" ]
-  input_files_base_dir = rebase_path(".", "//")
-  input_files = [
-    "customize_themes/colorize.svg",
-    "customize_themes/brush.svg",
-  ]
   if (is_chromeos_ash) {
-    input_files += [
+    input_files_base_dir = rebase_path(".", "//")
+    input_files = [
       "chromeos/multidevice_setup/all_set_1x.svg",
       "chromeos/multidevice_setup/all_set_2x.svg",
       "chromeos/multidevice_setup/start_setup_icon_1x.png",
@@ -47,6 +43,7 @@ generate_grd("build_grdp") {
       "chromeos/network/cellular_off.svg",
       "chromeos/network/cellular_locked.svg",
       "chromeos/network/ethernet.svg",
+      "chromeos/network/globe_badge.svg",
       "chromeos/network/vpn.svg",
       "chromeos/network/wifi_0_with_x.svg",
       "chromeos/network/wifi_0.svg",
@@ -93,24 +90,18 @@ preprocess_if_expr("preprocess_src") {
   in_folder = "./"
   out_folder = "$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_src_manifest"
-  in_files = [ "customize_themes/browser_proxy.js" ]
-
-  if (use_nss_certs) {
-    in_files += [
-      "certificate_manager/certificate_manager_types.js",
-      "certificate_manager/certificate_provisioning_browser_proxy.js",
-      "certificate_manager/certificates_browser_proxy.js",
-    ]
-  }
+  in_files = [
+    "most_visited/browser_proxy.js",
+    "most_visited/window_proxy.js",
+  ]
 }
 
 preprocess_if_expr("preprocess_mojom") {
-  deps =
-      [ "//ui/webui/resources/cr_components/customize_themes:mojom_webui_js" ]
+  deps = [ "//ui/webui/resources/cr_components/most_visited:mojom_webui_js" ]
   in_folder = "$root_gen_dir/mojom-webui/ui/webui/resources/cr_components"
   out_folder = "$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_mojom_manifest"
-  in_files = [ "customize_themes/customize_themes.mojom-webui.js" ]
+  in_files = [ "most_visited/most_visited.mojom-webui.js" ]
 }
 
 preprocess_if_expr("preprocess_generated") {
@@ -119,30 +110,12 @@ preprocess_if_expr("preprocess_generated") {
   out_folder = "$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_gen_manifest"
   in_files = [
-    "customize_themes/customize_themes.js",
-    "customize_themes/theme_icon.js",
+    "most_visited/most_visited.mojom-lite.js",
+    "most_visited/most_visited.js",
     "managed_dialog/managed_dialog.js",
     "managed_footnote/managed_footnote.js",
     "omnibox/cr_autocomplete_match_list.js",
   ]
-
-  if (use_nss_certs) {
-    in_files += [
-      "certificate_manager/ca_trust_edit_dialog.js",
-      "certificate_manager/certificate_delete_confirmation_dialog.js",
-      "certificate_manager/certificate_entry.js",
-      "certificate_manager/certificate_list.js",
-      "certificate_manager/certificate_manager.js",
-      "certificate_manager/certificate_password_decryption_dialog.js",
-      "certificate_manager/certificate_password_encryption_dialog.js",
-      "certificate_manager/certificate_provisioning_details_dialog.js",
-      "certificate_manager/certificate_provisioning_entry.js",
-      "certificate_manager/certificate_provisioning_list.js",
-      "certificate_manager/certificates_error_dialog.js",
-      "certificate_manager/certificate_shared_css.js",
-      "certificate_manager/certificate_subentry.js",
-    ]
-  }
 
   if (is_chromeos_ash) {
     in_files += [
@@ -224,6 +197,7 @@ preprocess_if_expr("preprocess_generated") {
       "chromeos/quick_unlock/setup_pin_keyboard.m.js",
       "chromeos/smb_shares/add_smb_share_dialog.m.js",
       "chromeos/smb_shares/smb_browser_proxy.m.js",
+      "chromeos/traffic_counters/traffic_counters.js",
     ]
   }
 }
@@ -395,10 +369,9 @@ if (is_chromeos_ash) {
 
 group("closure_compile") {
   deps = [
-    "certificate_manager:closure_compile_module",
-    "customize_themes:closure_compile",
     "managed_dialog:closure_compile",
     "managed_footnote:closure_compile",
+    "most_visited:closure_compile",
     "omnibox:closure_compile",
   ]
 
@@ -409,12 +382,13 @@ group("closure_compile") {
 
 group("polymer3_elements") {
   public_deps = [
-    "certificate_manager:web_components",
     "customize_themes:web_components",
     "managed_dialog:web_components",
     "managed_footnote:web_components",
+    "most_visited:web_components",
     "omnibox:web_components",
   ]
+
   if (is_chromeos_ash) {
     public_deps += [ "chromeos:polymer3_elements" ]
   }

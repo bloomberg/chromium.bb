@@ -24,12 +24,14 @@
 #include "ui/views/accessibility/ax_virtual_view.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
@@ -88,12 +90,12 @@ void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
   // When using focus rings are visible we should hide the separator instantly
   // when the IconLabelBubbleView is focused. Otherwise we should follow the
   // inkdrop.
-  if (owner_->focus_ring() && owner_->HasFocus()) {
+  if (views::FocusRing::Get(owner_) && owner_->HasFocus()) {
     layer()->SetOpacity(0.0f);
     return;
   }
 
-  views::InkDrop* ink_drop = owner_->ink_drop()->GetInkDrop();
+  views::InkDrop* const ink_drop = views::InkDrop::Get(owner_)->GetInkDrop();
   DCHECK(ink_drop);
 
   // If an inkdrop highlight or ripple is animating in or visible, the
@@ -145,22 +147,22 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list,
 
   separator_view_->SetVisible(ShouldShowSeparator());
 
-  ink_drop()->SetVisibleOpacity(
+  views::InkDrop::Get(this)->SetVisibleOpacity(
       GetOmniboxStateOpacity(OmniboxPartState::SELECTED));
-  ink_drop()->SetHighlightOpacity(
+  views::InkDrop::Get(this)->SetHighlightOpacity(
       GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
 
-  ink_drop()->SetCreateInkDropCallback(base::BindRepeating(
+  views::InkDrop::Get(this)->SetCreateInkDropCallback(base::BindRepeating(
       [](IconLabelBubbleView* host) {
         std::unique_ptr<views::InkDrop> ink_drop =
             views::InkDrop::CreateInkDropForFloodFillRipple(
-                host->ink_drop(), /*highlight_on_hover=*/true,
-                /*highlight_on_focus=*/!host->focus_ring());
+                views::InkDrop::Get(host), /*highlight_on_hover=*/true,
+                /*highlight_on_focus=*/!views::FocusRing::Get(host));
         ink_drop->AddObserver(host);
         return ink_drop;
       },
       this));
-  ink_drop()->SetBaseColorCallback(base::BindRepeating(
+  views::InkDrop::Get(this)->SetBaseColorCallback(base::BindRepeating(
       [](IconLabelBubbleView* host) {
         return host->delegate_->GetIconLabelBubbleInkDropColor();
       },
@@ -319,9 +321,9 @@ void IconLabelBubbleView::Layout() {
   separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
                              separator_height);
 
-  if (focus_ring()) {
-    focus_ring()->Layout();
-    focus_ring()->SchedulePaint();
+  if (views::FocusRing::Get(this)) {
+    views::FocusRing::Get(this)->Layout();
+    views::FocusRing::Get(this)->SchedulePaint();
   }
 }
 
@@ -379,8 +381,9 @@ void IconLabelBubbleView::AnimationEnded(const gfx::Animation* animation) {
     PreferredSizeChanged();
   }
 
-  ink_drop()->GetInkDrop()->SetShowHighlightOnHover(true);
-  ink_drop()->GetInkDrop()->SetShowHighlightOnFocus(!focus_ring());
+  views::InkDrop::Get(this)->GetInkDrop()->SetShowHighlightOnHover(true);
+  views::InkDrop::Get(this)->GetInkDrop()->SetShowHighlightOnFocus(
+      !views::FocusRing::Get(this));
 }
 
 void IconLabelBubbleView::AnimationProgressed(const gfx::Animation* animation) {
@@ -454,7 +457,7 @@ int IconLabelBubbleView::GetEndPaddingWithSeparator() const {
 }
 
 void IconLabelBubbleView::SetUpForAnimation() {
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   label()->SetElideBehavior(gfx::NO_ELIDE);
   label()->SetVisible(false);
@@ -549,14 +552,14 @@ double IconLabelBubbleView::GetAnimationValue() const {
 
 void IconLabelBubbleView::ShowAnimation() {
   slide_animation_.Show();
-  ink_drop()->GetInkDrop()->SetShowHighlightOnHover(false);
-  ink_drop()->GetInkDrop()->SetShowHighlightOnFocus(false);
+  views::InkDrop::Get(this)->GetInkDrop()->SetShowHighlightOnHover(false);
+  views::InkDrop::Get(this)->GetInkDrop()->SetShowHighlightOnFocus(false);
 }
 
 void IconLabelBubbleView::HideAnimation() {
   slide_animation_.Hide();
-  ink_drop()->GetInkDrop()->SetShowHighlightOnHover(false);
-  ink_drop()->GetInkDrop()->SetShowHighlightOnFocus(false);
+  views::InkDrop::Get(this)->GetInkDrop()->SetShowHighlightOnHover(false);
+  views::InkDrop::Get(this)->GetInkDrop()->SetShowHighlightOnFocus(false);
 }
 
 SkPath IconLabelBubbleView::GetHighlightPath() const {

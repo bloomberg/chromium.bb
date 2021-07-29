@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/constants/devicetype.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -13,7 +14,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 // TODO(b/174811949): Hide behind ChromeOS build flag.
 #include "chrome/browser/ash/web_applications/chrome_camera_app_ui_constants.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -33,6 +34,26 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
+
+namespace {
+
+std::string DeviceTypeToString(chromeos::DeviceType device_type) {
+  switch (device_type) {
+    case chromeos::DeviceType::kChromebase:
+      return "chromebase";
+    case chromeos::DeviceType::kChromebit:
+      return "chromebit";
+    case chromeos::DeviceType::kChromebook:
+      return "chromebook";
+    case chromeos::DeviceType::kChromebox:
+      return "chromebox";
+    case chromeos::DeviceType::kUnknown:
+    default:
+      return "unknown";
+  }
+}
+
+}  // namespace
 
 // static
 void ChromeCameraAppUIDelegate::CameraAppDialog::ShowIntent(
@@ -83,6 +104,8 @@ bool ChromeCameraAppUIDelegate::CameraAppDialog::CheckMediaAccessPermission(
 ChromeCameraAppUIDelegate::ChromeCameraAppUIDelegate(content::WebUI* web_ui)
     : web_ui_(web_ui) {}
 
+ChromeCameraAppUIDelegate::~ChromeCameraAppUIDelegate() = default;
+
 void ChromeCameraAppUIDelegate::SetLaunchDirectory() {
   Profile* profile = Profile::FromWebUI(web_ui_);
   content::WebContents* web_contents = web_ui_->GetWebContents();
@@ -104,6 +127,8 @@ void ChromeCameraAppUIDelegate::PopulateLoadTimeData(
     content::WebUIDataSource* source) {
   // Add strings that can be pulled in.
   source->AddString("board_name", base::SysInfo::GetLsbReleaseBoard());
+  source->AddString("device_type",
+                    DeviceTypeToString(chromeos::GetDeviceType()));
 }
 
 bool ChromeCameraAppUIDelegate::IsMetricsAndCrashReportingEnabled() {
@@ -163,6 +188,37 @@ std::string ChromeCameraAppUIDelegate::GetFilePathInArcByName(
   return arc_url_out.spec();
 }
 
+void ChromeCameraAppUIDelegate::OpenDevToolsWindow(
+    content::WebContents* web_contents) {
+  DevToolsWindow::OpenDevToolsWindow(web_contents,
+                                     DevToolsToggleAction::NoOp());
+}
+
+void ChromeCameraAppUIDelegate::MonitorFileDeletion(
+    const std::string& name,
+    base::OnceCallback<void(FileMonitorResult)> callback) {
+  auto file_path = GetFilePathByName(name);
+  if (file_path.empty()) {
+    LOG(ERROR) << "Unexpected file name: " << name;
+    std::move(callback).Run(FileMonitorResult::ERROR);
+    return;
+  }
+
+  // Cancel the previous monitor callback if it hasn't been notified.
+  if (!cur_file_monitor_callback_.is_null()) {
+    std::move(cur_file_monitor_callback_).Run(FileMonitorResult::CANCELED);
+  }
+
+  cur_file_monitor_callback_ = std::move(callback);
+  file_watcher_.reset(new base::FilePathWatcher);
+  if (!file_watcher_->Watch(
+          file_path, base::FilePathWatcher::Type::kNonRecursive,
+          base::BindRepeating(&ChromeCameraAppUIDelegate::OnFileDeletion,
+                              base::Unretained(this)))) {
+    std::move(cur_file_monitor_callback_).Run(FileMonitorResult::ERROR);
+  }
+}
+
 base::FilePath ChromeCameraAppUIDelegate::GetFilePathByName(
     const std::string& name) {
   // Check to avoid directory traversal attack.
@@ -177,8 +233,15 @@ base::FilePath ChromeCameraAppUIDelegate::GetFilePathByName(
       .Append(name_component);
 }
 
-void ChromeCameraAppUIDelegate::OpenDevToolsWindow(
-    content::WebContents* web_contents) {
-  DevToolsWindow::OpenDevToolsWindow(web_contents,
-                                     DevToolsToggleAction::NoOp());
+void ChromeCameraAppUIDelegate::OnFileDeletion(const base::FilePath& path,
+                                               bool error) {
+  if (cur_file_monitor_callback_.is_null()) {
+    return;
+  }
+
+  if (error) {
+    std::move(cur_file_monitor_callback_).Run(FileMonitorResult::ERROR);
+    return;
+  }
+  std::move(cur_file_monitor_callback_).Run(FileMonitorResult::DELETED);
 }

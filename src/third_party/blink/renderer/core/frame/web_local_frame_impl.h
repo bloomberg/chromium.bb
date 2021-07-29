@@ -70,6 +70,7 @@ namespace blink {
 class ChromePrintContext;
 struct ContextMenuData;
 class FindInPage;
+class HTMLFencedFrameElement;
 class HTMLPortalElement;
 class IntSize;
 class LocalFrameClientImpl;
@@ -170,6 +171,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   v8::Local<v8::Context> MainWorldScriptContext() const override;
   int32_t GetScriptContextWorldId(
       v8::Local<v8::Context> script_context) const override;
+  v8::Local<v8::Context> GetScriptContextFromWorldId(
+      v8::Isolate* isolate,
+      int world_id) const override;
   void RequestExecuteScriptAndReturnValue(const WebScriptSource&,
                                           bool user_gesture,
                                           WebScriptExecutionCallback*) override;
@@ -406,6 +410,8 @@ class CORE_EXPORT WebLocalFrameImpl final
       mojo::PendingAssociatedReceiver<mojom::blink::Portal>,
       mojo::PendingAssociatedRemote<mojom::blink::PortalClient>);
   RemoteFrame* AdoptPortal(HTMLPortalElement*);
+
+  RemoteFrame* CreateFencedFrame(HTMLFencedFrameElement*);
 
   void DidChangeContentsSize(const IntSize&);
 

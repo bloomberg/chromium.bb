@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -78,9 +78,9 @@ void GuestOsHandler::HandleGetGuestOsSharedPathsDisplayText(
   CHECK_EQ(2U, args->GetSize());
   std::string callback_id = args->GetList()[0].GetString();
 
-  base::ListValue texts;
+  base::Value texts(base::Value::Type::LIST);
   for (const auto& path : args->GetList()[1].GetList()) {
-    texts.AppendString(file_manager::util::GetPathDisplayTextForSettings(
+    texts.Append(file_manager::util::GetPathDisplayTextForSettings(
         profile_, path.GetString()));
   }
   ResolveJavascriptCallback(base::Value(callback_id), texts);

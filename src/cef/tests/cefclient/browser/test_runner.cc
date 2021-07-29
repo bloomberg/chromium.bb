@@ -4,11 +4,12 @@
 
 #include "tests/cefclient/browser/test_runner.h"
 
+#include <algorithm>
 #include <map>
 #include <set>
 #include <sstream>
 
-#include "include/base/cef_bind.h"
+#include "include/base/cef_callback.h"
 #include "include/cef_parser.h"
 #include "include/cef_task.h"
 #include "include/cef_trace.h"
@@ -78,7 +79,7 @@ void RunGetSourceTest(CefRefPtr<CefBrowser> browser) {
   class Visitor : public CefStringVisitor {
    public:
     explicit Visitor(CefRefPtr<CefBrowser> browser) : browser_(browser) {}
-    virtual void Visit(const CefString& string) OVERRIDE {
+    virtual void Visit(const CefString& string) override {
       std::string source = StringReplace(string, "<", "&lt;");
       source = StringReplace(source, ">", "&gt;");
       std::stringstream ss;
@@ -99,7 +100,7 @@ void RunGetTextTest(CefRefPtr<CefBrowser> browser) {
   class Visitor : public CefStringVisitor {
    public:
     explicit Visitor(CefRefPtr<CefBrowser> browser) : browser_(browser) {}
-    virtual void Visit(const CefString& string) OVERRIDE {
+    virtual void Visit(const CefString& string) override {
       std::string text = StringReplace(string, "<", "&lt;");
       text = StringReplace(text, ">", "&gt;");
       std::stringstream ss;
@@ -152,10 +153,11 @@ void RunRequestTest(CefRefPtr<CefBrowser> browser) {
 }
 
 void RunNewWindowTest(CefRefPtr<CefBrowser> browser) {
-  RootWindowConfig config;
-  config.with_controls = true;
-  config.with_osr = browser->GetHost()->IsWindowRenderingDisabled();
-  MainContext::Get()->GetRootWindowManager()->CreateRootWindow(config);
+  auto config = std::make_unique<RootWindowConfig>();
+  config->with_controls = true;
+  config->with_osr = browser->GetHost()->IsWindowRenderingDisabled();
+  MainContext::Get()->GetRootWindowManager()->CreateRootWindow(
+      std::move(config));
 }
 
 void RunPopupWindowTest(CefRefPtr<CefBrowser> browser) {
@@ -181,7 +183,7 @@ void RunPluginInfoTest(CefRefPtr<CefBrowser> browser) {
 
     virtual bool Visit(CefRefPtr<CefWebPluginInfo> info,
                        int count,
-                       int total) OVERRIDE {
+                       int total) override {
       html_ += "\n<br/><br/>Name: " + info->GetName().ToString() +
                "\n<br/>Description: " + info->GetDescription().ToString() +
                "\n<br/>Version: " + info->GetVersion().ToString() +
@@ -201,7 +203,7 @@ void RunPluginInfoTest(CefRefPtr<CefBrowser> browser) {
 void ModifyZoom(CefRefPtr<CefBrowser> browser, double delta) {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&ModifyZoom, browser, delta));
+    CefPostTask(TID_UI, base::BindOnce(&ModifyZoom, browser, delta));
     return;
   }
 
@@ -223,7 +225,7 @@ class PromptHandler : public CefMessageRouterBrowserSide::Handler {
                        int64 query_id,
                        const CefString& request,
                        bool persistent,
-                       CefRefPtr<Callback> callback) OVERRIDE {
+                       CefRefPtr<Callback> callback) override {
     // Parse |request| which takes the form "Prompt.[type]:[value]".
     const std::string& request_str = request;
     if (request_str.find(kPrompt) != 0)
@@ -264,7 +266,7 @@ class PromptHandler : public CefMessageRouterBrowserSide::Handler {
 
   void SetDSF(CefRefPtr<CefBrowser> browser, float dsf) {
     MainMessageLoop::Get()->PostClosure(
-        base::Bind(&PromptHandler::SetDSFOnMainThread, browser, dsf));
+        base::BindOnce(&PromptHandler::SetDSFOnMainThread, browser, dsf));
   }
 
   static void SetDSFOnMainThread(CefRefPtr<CefBrowser> browser, float dsf) {
@@ -291,7 +293,7 @@ void Prompt(CefRefPtr<CefBrowser> browser,
 void PromptFPS(CefRefPtr<CefBrowser> browser) {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&PromptFPS, browser));
+    CefPostTask(TID_UI, base::BindOnce(&PromptFPS, browser));
     return;
   }
 
@@ -305,7 +307,7 @@ void PromptFPS(CefRefPtr<CefBrowser> browser) {
 void PromptDSF(CefRefPtr<CefBrowser> browser) {
   if (!MainMessageLoop::Get()->RunsTasksOnCurrentThread()) {
     // Execute on the main thread.
-    MainMessageLoop::Get()->PostClosure(base::Bind(&PromptDSF, browser));
+    MainMessageLoop::Get()->PostClosure(base::BindOnce(&PromptDSF, browser));
     return;
   }
 
@@ -320,7 +322,7 @@ void PromptDSF(CefRefPtr<CefBrowser> browser) {
 void BeginTracing() {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&BeginTracing));
+    CefPostTask(TID_UI, base::BindOnce(&BeginTracing));
     return;
   }
 
@@ -330,7 +332,7 @@ void BeginTracing() {
 void EndTracing(CefRefPtr<CefBrowser> browser) {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&EndTracing, browser));
+    CefPostTask(TID_UI, base::BindOnce(&EndTracing, browser));
     return;
   }
 
@@ -359,7 +361,7 @@ void EndTracing(CefRefPtr<CefBrowser> browser) {
 
     void OnFileDialogDismissed(
         int selected_accept_filter,
-        const std::vector<CefString>& file_paths) OVERRIDE {
+        const std::vector<CefString>& file_paths) override {
       if (!file_paths.empty()) {
         // File selected. Results in a call to OnEndTracingComplete.
         CefEndTracing(file_paths.front(), this);
@@ -369,7 +371,7 @@ void EndTracing(CefRefPtr<CefBrowser> browser) {
       }
     }
 
-    void OnEndTracingComplete(const CefString& tracing_file) OVERRIDE {
+    void OnEndTracingComplete(const CefString& tracing_file) override {
       Alert(browser_,
             "File \"" + tracing_file.ToString() + "\" saved successfully.");
     }
@@ -386,7 +388,7 @@ void EndTracing(CefRefPtr<CefBrowser> browser) {
 void PrintToPDF(CefRefPtr<CefBrowser> browser) {
   if (!CefCurrentlyOn(TID_UI)) {
     // Execute on the UI thread.
-    CefPostTask(TID_UI, base::Bind(&PrintToPDF, browser));
+    CefPostTask(TID_UI, base::BindOnce(&PrintToPDF, browser));
     return;
   }
 
@@ -417,7 +419,7 @@ void PrintToPDF(CefRefPtr<CefBrowser> browser) {
 
     void OnFileDialogDismissed(
         int selected_accept_filter,
-        const std::vector<CefString>& file_paths) OVERRIDE {
+        const std::vector<CefString>& file_paths) override {
       if (!file_paths.empty()) {
         CefPdfPrintSettings settings;
 
@@ -431,7 +433,7 @@ void PrintToPDF(CefRefPtr<CefBrowser> browser) {
       }
     }
 
-    void OnPdfPrintFinished(const CefString& path, bool ok) OVERRIDE {
+    void OnPdfPrintFinished(const CefString& path, bool ok) override {
       Alert(browser_, "File \"" + path.ToString() + "\" " +
                           (ok ? "saved successfully." : "failed to save."));
     }
@@ -461,7 +463,7 @@ class RequestDumpResourceProvider : public CefResourceManager::Provider {
     DCHECK(!url.empty());
   }
 
-  bool OnRequest(scoped_refptr<CefResourceManager::Request> request) OVERRIDE {
+  bool OnRequest(scoped_refptr<CefResourceManager::Request> request) override {
     CEF_REQUIRE_IO_THREAD();
 
     const std::string& url = request->url();
@@ -495,7 +497,7 @@ class StringResourceProvider : public CefResourceManager::Provider {
     DCHECK(!pages.empty());
   }
 
-  bool OnRequest(scoped_refptr<CefResourceManager::Request> request) OVERRIDE {
+  bool OnRequest(scoped_refptr<CefResourceManager::Request> request) override {
     CEF_REQUIRE_IO_THREAD();
 
     const std::string& url = request->url();
@@ -799,15 +801,15 @@ void SetupResourceManager(CefRefPtr<CefResourceManager> resource_manager,
                           StringResourceMap* string_resource_map) {
   if (!CefCurrentlyOn(TID_IO)) {
     // Execute on the browser IO thread.
-    CefPostTask(TID_IO, base::Bind(SetupResourceManager, resource_manager,
-                                   string_resource_map));
+    CefPostTask(TID_IO, base::BindOnce(SetupResourceManager, resource_manager,
+                                       string_resource_map));
     return;
   }
 
   const std::string& test_origin = kTestOrigin;
 
   // Add the URL filter.
-  resource_manager->SetUrlFilter(base::Bind(RequestUrlFilter));
+  resource_manager->SetUrlFilter(base::BindRepeating(RequestUrlFilter));
 
   // Add provider for resource dumps.
   resource_manager->AddProvider(

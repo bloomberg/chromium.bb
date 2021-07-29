@@ -100,7 +100,7 @@ export class SoftContextMenu {
     this._glassPane = new GlassPane();
     this._glassPane.setPointerEventsBehavior(
         this._parentMenu ? PointerEventsBehavior.PierceGlassPane : PointerEventsBehavior.BlockedByGlassPane);
-    this._glassPane.registerRequiredCSS('ui/legacy/softContextMenu.css', {enableLegacyPatching: false});
+    this._glassPane.registerRequiredCSS('ui/legacy/softContextMenu.css');
     this._glassPane.setContentAnchorBox(anchorBox);
     this._glassPane.setSizeBehavior(SizeBehavior.MeasureContent);
     this._glassPane.setMarginBehavior(MarginBehavior.NoMargin);
@@ -178,7 +178,7 @@ export class SoftContextMenu {
       return this._createSubMenu(item);
     }
 
-    const menuItemElement = (document.createElement('div') as HTMLElement);
+    const menuItemElement = document.createElement('div');
     menuItemElement.classList.add('soft-context-menu-item');
     menuItemElement.tabIndex = -1;
     ARIAUtils.markAsMenuItem(menuItemElement);
@@ -223,12 +223,12 @@ export class SoftContextMenu {
     if (item.type === 'checkbox') {
       const checkedState = item.checked ? i18nString(UIStrings.checked) : i18nString(UIStrings.unchecked);
       if (item.shortcut) {
-        accessibleName = i18nString(UIStrings.sSS, {PH1: item.label, PH2: item.shortcut, PH3: checkedState});
+        accessibleName = i18nString(UIStrings.sSS, {PH1: String(item.label), PH2: item.shortcut, PH3: checkedState});
       } else {
-        accessibleName = i18nString(UIStrings.sS, {PH1: item.label, PH2: checkedState});
+        accessibleName = i18nString(UIStrings.sS, {PH1: String(item.label), PH2: checkedState});
       }
     } else if (item.shortcut) {
-      accessibleName = i18nString(UIStrings.sS, {PH1: item.label, PH2: item.shortcut});
+      accessibleName = i18nString(UIStrings.sS, {PH1: String(item.label), PH2: item.shortcut});
     }
     ARIAUtils.setAccessibleName(menuItemElement, accessibleName);
 
@@ -237,7 +237,7 @@ export class SoftContextMenu {
   }
 
   _createSubMenu(item: SoftContextMenuDescriptor): HTMLElement {
-    const menuItemElement = (document.createElement('div') as HTMLElement);
+    const menuItemElement = document.createElement('div');
     menuItemElement.classList.add('soft-context-menu-item');
     menuItemElement.tabIndex = -1;
     ARIAUtils.markAsMenuItemSubMenu(menuItemElement);
@@ -279,7 +279,7 @@ export class SoftContextMenu {
   }
 
   _createSeparator(): HTMLElement {
-    const separatorElement = (document.createElement('div') as HTMLElement);
+    const separatorElement = document.createElement('div');
     separatorElement.classList.add('soft-context-menu-separator');
     this.detailsForElementMap.set(separatorElement, {
       subItems: undefined,

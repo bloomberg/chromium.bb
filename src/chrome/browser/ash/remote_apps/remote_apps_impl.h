@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_types.h"
 #include "chromeos/components/remote_apps/mojom/remote_apps.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -20,19 +19,19 @@
 
 namespace content {
 class RenderFrameHost;
-}
+}  // namespace content
 
 namespace extensions {
 class Extension;
-}
+}  // namespace extensions
 
-namespace chromeos {
+namespace ash {
 
 class RemoteAppsManager;
 
 // Forwards calls to RemoteAppsManager via mojo. Also keeps track of apps added
 // by the extension for |OnAppLaunched()|.
-class RemoteAppsImpl : public remote_apps::mojom::RemoteApps {
+class RemoteAppsImpl : public chromeos::remote_apps::mojom::RemoteApps {
  public:
   static bool IsAllowed(content::RenderFrameHost* render_frame_host,
                         const extensions::Extension* extension);
@@ -45,8 +44,9 @@ class RemoteAppsImpl : public remote_apps::mojom::RemoteApps {
   ~RemoteAppsImpl() override;
 
   void Bind(
-      mojo::PendingReceiver<remote_apps::mojom::RemoteApps> pending_remote_apps,
-      mojo::PendingRemote<remote_apps::mojom::RemoteAppLaunchObserver>
+      mojo::PendingReceiver<chromeos::remote_apps::mojom::RemoteApps>
+          pending_remote_apps,
+      mojo::PendingRemote<chromeos::remote_apps::mojom::RemoteAppLaunchObserver>
           pending_observer);
 
   // remote_apps::mojom::RemoteApps:
@@ -68,12 +68,12 @@ class RemoteAppsImpl : public remote_apps::mojom::RemoteApps {
 
   RemoteAppsManager* manager_ = nullptr;
   std::set<std::string> app_ids_;
-  mojo::ReceiverSet<remote_apps::mojom::RemoteApps> receivers_;
-  mojo::RemoteSet<remote_apps::mojom::RemoteAppLaunchObserver>
+  mojo::ReceiverSet<chromeos::remote_apps::mojom::RemoteApps> receivers_;
+  mojo::RemoteSet<chromeos::remote_apps::mojom::RemoteAppLaunchObserver>
       app_launch_observers_;
   base::WeakPtrFactory<RemoteAppsImpl> weak_factory_{this};
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_REMOTE_APPS_REMOTE_APPS_IMPL_H_

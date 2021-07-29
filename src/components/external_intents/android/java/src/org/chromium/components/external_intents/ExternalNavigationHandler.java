@@ -23,6 +23,7 @@ import android.os.SystemClock;
 import android.provider.Browser;
 import android.provider.Telephony;
 import android.text.TextUtils;
+import android.util.AndroidRuntimeException;
 import android.util.Pair;
 import android.view.WindowManager.BadTokenException;
 import android.webkit.MimeTypeMap;
@@ -950,6 +951,15 @@ public class ExternalNavigationHandler {
         Context context = mDelegate.getContext();
         if (!canLaunchIncognitoIntent(intent, context)) return false;
 
+        if (mDelegate.hasCustomLeavingIncognitoDialog()) {
+            mDelegate.presentLeavingIncognitoModalDialog(shouldLaunch -> {
+                onUserDecidedWhetherToLaunchIncognitoIntent(
+                        shouldLaunch.booleanValue(), params, intent, fallbackUrl, proxy);
+            });
+
+            return true;
+        }
+
         try {
             AlertDialog dialog =
                     showLeavingIncognitoAlert(context, params, intent, fallbackUrl, proxy);
@@ -973,7 +983,6 @@ public class ExternalNavigationHandler {
     protected AlertDialog showLeavingIncognitoAlert(final Context context,
             final ExternalNavigationParams params, final Intent intent, final GURL fallbackUrl,
             final boolean proxy) {
-        boolean closeTab = params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent();
         return new AlertDialog.Builder(context, R.style.Theme_Chromium_AlertDialog)
                 .setTitle(R.string.external_app_leave_incognito_warning_title)
                 .setMessage(R.string.external_app_leave_incognito_warning)
@@ -981,34 +990,47 @@ public class ExternalNavigationHandler {
                         new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                try {
-                                    startActivity(intent, proxy, mDelegate);
-                                    if (mDelegate.canCloseTabOnIncognitoIntentLaunch()
-                                            && closeTab) {
-                                        mDelegate.closeTab();
-                                    }
-                                } catch (ActivityNotFoundException e) {
-                                    // The activity that we thought was going to handle the intent
-                                    // no longer exists, so catch the exception and assume Chrome
-                                    // can handle it.
-                                    handleFallbackUrl(params, intent, fallbackUrl, false);
-                                }
+                                onUserDecidedWhetherToLaunchIncognitoIntent(
+                                        /*shouldLaunch=*/true, params, intent, fallbackUrl, proxy);
                             }
                         })
                 .setNegativeButton(R.string.external_app_leave_incognito_stay,
                         new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                handleFallbackUrl(params, intent, fallbackUrl, false);
+                                onUserDecidedWhetherToLaunchIncognitoIntent(
+                                        /*shouldLaunch=*/false, params, intent, fallbackUrl, proxy);
                             }
                         })
                 .setOnCancelListener(new OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
-                        handleFallbackUrl(params, intent, fallbackUrl, false);
+                        onUserDecidedWhetherToLaunchIncognitoIntent(
+                                /*shouldLaunch=*/false, params, intent, fallbackUrl, proxy);
                     }
                 })
                 .show();
+    }
+
+    private void onUserDecidedWhetherToLaunchIncognitoIntent(final boolean shouldLaunch,
+            final ExternalNavigationParams params, final Intent intent, final GURL fallbackUrl,
+            final boolean proxy) {
+        boolean closeTab = params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent();
+        if (shouldLaunch) {
+            try {
+                startActivity(intent, proxy, mDelegate);
+                if (mDelegate.canCloseTabOnIncognitoIntentLaunch() && closeTab) {
+                    mDelegate.closeTab();
+                }
+            } catch (ActivityNotFoundException e) {
+                // The activity that we thought was going to handle the intent
+                // no longer exists, so catch the exception and assume Chrome
+                // can handle it.
+                handleFallbackUrl(params, intent, fallbackUrl, false);
+            }
+        } else {
+            handleFallbackUrl(params, intent, fallbackUrl, false);
+        }
     }
 
     /**
@@ -1633,6 +1655,11 @@ public class ExternalNavigationHandler {
             // https://crbug.com/808494: Handle the URL internally if dispatching to another
             // application fails with a SecurityException. This happens due to malformed manifests
             // in another app.
+            return false;
+        } catch (AndroidRuntimeException e) {
+            // https://crbug.com/1226177: Most likely cause of this exception is Android failing to
+            // start the app that we previously detected could handle the Intent.
+            Log.e(TAG, "Could not start Activity for intent " + intent.toString(), e);
             return false;
         } catch (RuntimeException e) {
             IntentUtils.logTransactionTooLargeOrRethrow(e, intent);

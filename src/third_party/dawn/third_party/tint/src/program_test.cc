@@ -53,7 +53,7 @@ TEST_F(ProgramTest, IDsAreUnique) {
 }
 
 TEST_F(ProgramTest, Assert_GlobalVariable) {
-  Global("var", ty.f32(), ast::StorageClass::kInput);
+  Global("var", ty.f32(), ast::StorageClass::kPrivate);
 
   Program program(std::move(*this));
   EXPECT_TRUE(program.IsValid());
@@ -68,11 +68,11 @@ TEST_F(ProgramTest, Assert_NullGlobalVariable) {
       "internal compiler error");
 }
 
-TEST_F(ProgramTest, Assert_NullConstructedType) {
+TEST_F(ProgramTest, Assert_NullTypeDecl) {
   EXPECT_FATAL_FAILURE(
       {
         ProgramBuilder b;
-        b.AST().AddConstructedType(nullptr);
+        b.AST().AddTypeDecl(nullptr);
       },
       "internal compiler error");
 }
@@ -87,7 +87,7 @@ TEST_F(ProgramTest, Assert_Null_Function) {
 }
 
 TEST_F(ProgramTest, DiagnosticsMove) {
-  Diagnostics().add_error("an error message");
+  Diagnostics().add_error(diag::System::Program, "an error message");
 
   Program program_a(std::move(*this));
   EXPECT_FALSE(program_a.IsValid());

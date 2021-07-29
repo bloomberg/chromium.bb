@@ -23,7 +23,6 @@
 
 #include <algorithm>
 
-#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
@@ -42,6 +41,7 @@
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "ui/display/screen_info.h"
 
 namespace blink {
 
@@ -323,6 +323,16 @@ bool ChromeClient::Print(LocalFrame* frame) {
         mojom::ConsoleMessageLevel::kError,
         "Ignored call to 'print()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
+    return false;
+  }
+
+  // print() returns quietly during prerendering.
+  // https://jeremyroman.github.io/alternate-loading-modes/#patch-modals
+  if (frame->GetDocument()->IsPrerendering()) {
+    frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kJavaScript,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "Ignored call to 'print()' during prerendering."));
     return false;
   }
 

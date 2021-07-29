@@ -27,6 +27,7 @@
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/test/policy_builder.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
@@ -198,12 +199,11 @@ class LoginApitest : public LoginScreenApitestBase {
   }
 
   // Also checks that session is locked.
-  void LockScreen() { screen_locker_tester_.Lock(); }
+  void LockScreen() { ScreenLockerTester().Lock(); }
 
  private:
   chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
   base::DictionaryValue config_;
-  ScreenLockerTester screen_locker_tester_;
 };
 
 IN_PROC_BROWSER_TEST_F(LoginApitest, LaunchManagedGuestSession) {

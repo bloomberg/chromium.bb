@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/input/passthrough_touch_event_queue.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom.h"
@@ -87,8 +88,8 @@ class InputRouter {
   virtual void SetForceEnableZoom(bool enabled) = 0;
 
   // Create and bind a new host channel.
-  virtual mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost>
-  BindNewHost() = 0;
+  virtual mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> BindNewHost(
+      scoped_refptr<base::SequencedTaskRunner> task_runner) = 0;
 
   // Used to stop an active fling if such exists.
   virtual void StopFling() = 0;

@@ -47,7 +47,6 @@ class ArcImeBridge {
         const std::u16string& text_in_range,
         const gfx::Range& selection_range,
         bool is_screen_coordinates) = 0;
-    virtual bool ShouldEnableKeyEventForwarding() = 0;
     virtual void SendKeyEvent(std::unique_ptr<ui::KeyEvent> key_event,
                               KeyEventDoneCallback callback) = 0;
   };
@@ -57,7 +56,8 @@ class ArcImeBridge {
       const ui::CompositionText& composition) = 0;
   virtual void SendConfirmCompositionText() = 0;
   virtual void SendSelectionRange(const gfx::Range& selection_range) = 0;
-  virtual void SendInsertText(const std::u16string& text) = 0;
+  virtual void SendInsertText(const std::u16string& text,
+                              int new_cursor_position) = 0;
   virtual void SendExtendSelectionAndDelete(size_t before, size_t after) = 0;
   virtual void SendOnKeyboardAppearanceChanging(const gfx::Rect& new_bounds,
                                                 bool is_available) = 0;

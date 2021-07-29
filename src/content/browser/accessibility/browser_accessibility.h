@@ -93,8 +93,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // PDF.
   bool IsPlatformDocument() const;
 
-  bool IsIgnored() const;
-
   bool IsIgnoredForTextNavigation() const;
 
   bool IsLineBreakObject() const;
@@ -126,6 +124,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   virtual BrowserAccessibility* PlatformGetNextSibling() const;
   virtual BrowserAccessibility* PlatformGetPreviousSibling() const;
 
+  // Iterator over platform children.
   class CONTENT_EXPORT PlatformChildIterator : public ChildIterator {
    public:
     PlatformChildIterator(const BrowserAccessibility* parent,
@@ -155,6 +154,26 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
         platform_iterator;
   };
 
+  // C++ range implementation for platform children, see PlatformChildren().
+  class PlatformChildrenRange {
+   public:
+    explicit PlatformChildrenRange(const BrowserAccessibility* parent)
+        : parent_(parent) {}
+    PlatformChildrenRange(const PlatformChildrenRange&) = default;
+
+    PlatformChildIterator begin() { return parent_->PlatformChildrenBegin(); }
+    PlatformChildIterator end() { return parent_->PlatformChildrenEnd(); }
+
+   private:
+    const BrowserAccessibility* const parent_;
+  };
+
+  // Returns a range for platform children which can be used in range-based for
+  // loops, for example, for (const auto& child : PlatformChildren()) {}.
+  PlatformChildrenRange PlatformChildren() const {
+    return PlatformChildrenRange(this);
+  }
+
   PlatformChildIterator PlatformChildrenBegin() const;
   PlatformChildIterator PlatformChildrenEnd() const;
   // Return a pointer to the first ancestor that is a selection container
@@ -183,6 +202,62 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   BrowserAccessibility* InternalDeepestFirstChild() const;
   // Returns nullptr if there are no children.
   BrowserAccessibility* InternalDeepestLastChild() const;
+
+  // Range implementation for all children traversal see AllChildren().
+  class AllChildrenRange final {
+   public:
+    explicit AllChildrenRange(const BrowserAccessibility* parent)
+        : parent_(parent),
+          child_tree_root_(parent->PlatformGetRootOfChildTree()) {}
+    AllChildrenRange(const AllChildrenRange&) = default;
+
+    class Iterator final
+        : public std::iterator<std::input_iterator_tag, BrowserAccessibility*> {
+     public:
+      Iterator(const BrowserAccessibility* parent,
+               const BrowserAccessibility* child_tree_root,
+               unsigned int index = 0U)
+          : parent_(parent), child_tree_root_(child_tree_root), index_(index) {}
+      Iterator(const Iterator&) = default;
+      ~Iterator() = default;
+
+      Iterator& operator++() {
+        ++index_;
+        return *this;
+      }
+      Iterator operator++(int) {
+        Iterator tmp(*this);
+        operator++();
+        return tmp;
+      }
+      bool operator==(const Iterator& rhs) const {
+        return parent_ == rhs.parent_ && index_ == rhs.index_;
+      }
+      bool operator!=(const Iterator& rhs) const { return !operator==(rhs); }
+      const BrowserAccessibility* operator*();
+
+     private:
+      const BrowserAccessibility* const parent_;
+      const BrowserAccessibility* const child_tree_root_;
+      unsigned int index_;
+    };
+
+    Iterator begin() { return {parent_, child_tree_root_}; }
+    Iterator end() {
+      unsigned int count =
+          child_tree_root_ ? 1U : parent_->node()->children().size();
+      return {parent_, child_tree_root_, count};
+    }
+
+   private:
+    const BrowserAccessibility* const parent_;
+    const BrowserAccessibility* const child_tree_root_;
+  };
+
+  // Returns a range for all children including ignored children, which can be
+  // used in range-based for loops, for example,
+  // for (const auto& child : AllChildren()) {}.
+  AllChildrenRange AllChildren() const { return AllChildrenRange(this); }
 
   // Derivative utils for AXPlatformNodeDelegate::GetBoundsRect
   gfx::Rect GetClippedScreenBoundsRect(
@@ -278,69 +353,14 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   ui::AXNodeID GetId() const;
   gfx::RectF GetLocation() const;
-  ax::mojom::Role GetRole() const;
-  int32_t GetState() const;
+  ax::mojom::State GetState() const;
 
   typedef base::StringPairs HtmlAttributes;
   const HtmlAttributes& GetHtmlAttributes() const;
 
-  // Accessing accessibility attributes:
-  //
-  // There are dozens of possible attributes for an accessibility node,
-  // but only a few tend to apply to any one object, so we store them
-  // in sparse arrays of <attribute id, attribute value> pairs, organized
-  // by type (bool, int, float, string, int list).
-  //
-  // There are three accessors for each type of attribute: one that returns
-  // true if the attribute is present and false if not, one that takes a
-  // pointer argument and returns true if the attribute is present (if you
-  // need to distinguish between the default value and a missing attribute),
-  // and another that returns the default value for that type if the
-  // attribute is not present. In addition, strings can be returned as
-  // either std::string or std::u16string, for convenience.
-
-  bool HasBoolAttribute(ax::mojom::BoolAttribute attr) const;
-  bool GetBoolAttribute(ax::mojom::BoolAttribute attr) const;
-  bool GetBoolAttribute(ax::mojom::BoolAttribute attr, bool* value) const;
-
-  bool HasFloatAttribute(ax::mojom::FloatAttribute attr) const;
-  float GetFloatAttribute(ax::mojom::FloatAttribute attr) const;
-  bool GetFloatAttribute(ax::mojom::FloatAttribute attr, float* value) const;
-
+  // TODO(nektar): Move this method to AXNode.
   bool HasInheritedStringAttribute(ax::mojom::StringAttribute attribute) const;
-  const std::string& GetInheritedStringAttribute(
-      ax::mojom::StringAttribute attribute) const;
-  std::u16string GetInheritedString16Attribute(
-      ax::mojom::StringAttribute attribute) const;
-
-  bool HasIntAttribute(ax::mojom::IntAttribute attribute) const;
-  int GetIntAttribute(ax::mojom::IntAttribute attribute) const;
-  bool GetIntAttribute(ax::mojom::IntAttribute attribute, int* value) const;
-
-  bool HasStringAttribute(ax::mojom::StringAttribute attribute) const;
-  const std::string& GetStringAttribute(
-      ax::mojom::StringAttribute attribute) const;
-  bool GetStringAttribute(ax::mojom::StringAttribute attribute,
-                          std::string* value) const;
-
-  std::u16string GetString16Attribute(
-      ax::mojom::StringAttribute attribute) const;
-  bool GetString16Attribute(ax::mojom::StringAttribute attribute,
-                            std::u16string* value) const;
-
-  bool HasIntListAttribute(ax::mojom::IntListAttribute attribute) const;
-  const std::vector<int32_t>& GetIntListAttribute(
-      ax::mojom::IntListAttribute attribute) const;
-  bool GetIntListAttribute(ax::mojom::IntListAttribute attribute,
-                           std::vector<int32_t>* value) const;
-
-  // Retrieve the value of a html attribute from the attribute map and
-  // returns true if found.
-  bool GetHtmlAttribute(const char* attr, std::string* value) const;
-  bool GetHtmlAttribute(const char* attr, std::u16string* value) const;
-
   // Returns true if the bit corresponding to the given enum is 1.
-  bool HasState(ax::mojom::State state_enum) const;
   bool HasAction(ax::mojom::Action action_enum) const;
 
   // True if this is a web area, and its grandparent is a presentational iframe.
@@ -367,15 +387,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // implement this functionality.
   std::string GetLiveRegionText() const;
 
-  // Creates a text position rooted at this object. Does not convert to a
-  // leaf text position - see CreatePositionForSelectionAt, below. |offset|
-  // could only be a character offset, either in the object's inner text
-  // (Android and Mac), or in the object's hypertext (Linux ATK and Windows
-  // IA2).
-  AXPosition CreatePositionAt(int offset,
-                              ax::mojom::TextAffinity affinity =
-                                  ax::mojom::TextAffinity::kDownstream) const;
-
   // |offset| could only be a character offset. Depending on the platform, the
   // character offset could be either in the object's inner text (Android and
   // Mac), or an offset in the object's hypertext (Linux ATK and Windows IA2).
@@ -388,12 +399,62 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   std::u16string GetNameAsString16() const;
 
-  // AXPlatformNodeDelegate.
+  // `AXPlatformNodeDelegate` implementation.
   std::u16string GetAuthorUniqueId() const override;
   const ui::AXNodeData& GetData() const override;
   const ui::AXTreeData& GetTreeData() const override;
+  ax::mojom::Role GetRole() const override;
+  bool HasBoolAttribute(ax::mojom::BoolAttribute attribute) const override;
+  bool GetBoolAttribute(ax::mojom::BoolAttribute attribute) const override;
+  bool GetBoolAttribute(ax::mojom::BoolAttribute attribute,
+                        bool* value) const override;
+  bool HasFloatAttribute(ax::mojom::FloatAttribute attribute) const override;
+  float GetFloatAttribute(ax::mojom::FloatAttribute attribute) const override;
+  bool GetFloatAttribute(ax::mojom::FloatAttribute attribute,
+                         float* value) const override;
+  bool HasIntAttribute(ax::mojom::IntAttribute attribute) const override;
+  int GetIntAttribute(ax::mojom::IntAttribute attribute) const override;
+  bool GetIntAttribute(ax::mojom::IntAttribute attribute,
+                       int* value) const override;
+  bool HasStringAttribute(ax::mojom::StringAttribute attribute) const override;
+  const std::string& GetStringAttribute(
+      ax::mojom::StringAttribute attribute) const override;
+  bool GetStringAttribute(ax::mojom::StringAttribute attribute,
+                          std::string* value) const override;
+  std::u16string GetString16Attribute(
+      ax::mojom::StringAttribute attribute) const override;
+  bool GetString16Attribute(ax::mojom::StringAttribute attribute,
+                            std::u16string* value) const override;
+  const std::string& GetInheritedStringAttribute(
+      ax::mojom::StringAttribute attribute) const override;
+  std::u16string GetInheritedString16Attribute(
+      ax::mojom::StringAttribute attribute) const override;
+  bool HasIntListAttribute(
+      ax::mojom::IntListAttribute attribute) const override;
+  const std::vector<int32_t>& GetIntListAttribute(
+      ax::mojom::IntListAttribute attribute) const override;
+  bool GetIntListAttribute(ax::mojom::IntListAttribute attribute,
+                           std::vector<int32_t>* value) const override;
+  bool HasStringListAttribute(
+      ax::mojom::StringListAttribute attribute) const override;
+  const std::vector<std::string>& GetStringListAttribute(
+      ax::mojom::StringListAttribute attribute) const override;
+  bool GetStringListAttribute(ax::mojom::StringListAttribute attribute,
+                              std::vector<std::string>* value) const override;
+  bool GetHtmlAttribute(const char* attribute,
+                        std::string* value) const override;
+  bool GetHtmlAttribute(const char* attribute,
+                        std::u16string* value) const override;
+  bool HasState(ax::mojom::State state) const override;
   const ui::AXTree::Selection GetUnignoredSelection() const override;
-  AXPosition CreateTextPositionAt(int offset) const override;
+  AXPosition CreatePositionAt(
+      int offset,
+      ax::mojom::TextAffinity affinity =
+          ax::mojom::TextAffinity::kDownstream) const override;
+  AXPosition CreateTextPositionAt(
+      int offset,
+      ax::mojom::TextAffinity affinity =
+          ax::mojom::TextAffinity::kDownstream) const override;
   gfx::NativeViewAccessible GetNSWindow() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::NativeViewAccessible GetParent() override;
@@ -404,11 +465,11 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetLastChild() override;
   gfx::NativeViewAccessible GetNextSibling() override;
   gfx::NativeViewAccessible GetPreviousSibling() override;
-
   bool IsChildOfLeaf() const override;
   bool IsDescendantOfAtomicTextField() const override;
   bool IsLeaf() const override;
   bool IsFocused() const override;
+  bool IsIgnored() const override;
   bool IsInvisibleOrIgnored() const override;
   bool IsToplevelBrowserWindow() override;
   gfx::NativeViewAccessible GetLowestPlatformAncestor() const override;
@@ -612,8 +673,10 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // If the node has a child tree, get the root node.
   BrowserAccessibility* PlatformGetRootOfChildTree() const;
 
+#if DCHECK_IS_ON()
   // Determines whether this object is valid.
   bool IsValid() const;
+#endif
 
   // Given a set of map of spelling text attributes and a start offset, merge
   // them into the given map of existing text attributes. Merges the given

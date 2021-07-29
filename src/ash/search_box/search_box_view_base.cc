@@ -22,6 +22,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/border.h"
@@ -93,10 +94,10 @@ class SearchBoxImageButton : public views::ImageButton {
 
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
-    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+    views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
     // InkDropState will reset after clicking.
     SetHasInkDropActionOnClick(true);
-    ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+    views::InkDrop::Get(this)->SetCreateHighlightCallback(base::BindRepeating(
         [](Button* host) {
           constexpr SkColor ripple_color =
               SkColorSetA(gfx::kGoogleGrey900, 0x12);
@@ -106,7 +107,7 @@ class SearchBoxImageButton : public views::ImageButton {
           return highlight;
         },
         this));
-    ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+    views::InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
         [](SearchBoxImageButton* host)
             -> std::unique_ptr<views::InkDropRipple> {
           const gfx::Point center = host->GetLocalBounds().CenterPoint();
@@ -119,7 +120,7 @@ class SearchBoxImageButton : public views::ImageButton {
 
           return std::make_unique<views::FloodFillInkDropRipple>(
               host->size(), host->GetLocalBounds().InsetsFrom(bounds),
-              host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+              views::InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
               ripple_color, 1.0f);
         },
         this));
@@ -232,9 +233,6 @@ SearchBoxViewBase::SearchBoxViewBase(SearchBoxViewDelegate* delegate)
     : delegate_(delegate),
       content_container_(new views::View),
       search_box_(new SearchBoxTextfield(this)) {
-  // Focus should be able to move from search box to items in app list view.
-  SetFocusTraversesOut(true);
-
   DCHECK(delegate_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(content_container_);
@@ -291,7 +289,7 @@ SearchBoxViewBase::SearchBoxViewBase(SearchBoxViewDelegate* delegate)
   content_container_->AddChildView(assistant_button_);
 
   close_button_ = new SearchBoxImageButton(base::BindRepeating(
-      &SearchBoxViewBase::ClearSearch, base::Unretained(this)));
+      &SearchBoxViewDelegate::CloseButtonPressed, base::Unretained(delegate_)));
   content_container_->AddChildView(close_button_);
 }
 
@@ -397,6 +395,10 @@ const char* SearchBoxViewBase::GetClassName() const {
   return "SearchBoxView";
 }
 
+void SearchBoxViewBase::OnKeyEvent(ui::KeyEvent* event) {
+  delegate_->OnSearchBoxKeyEvent(event);
+}
+
 void SearchBoxViewBase::OnGestureEvent(ui::GestureEvent* event) {
   HandleSearchBoxEvent(event);
 }
@@ -407,13 +409,6 @@ void SearchBoxViewBase::OnMouseEvent(ui::MouseEvent* event) {
 
 void SearchBoxViewBase::NotifyGestureEvent() {
   search_box_->DestroyTouchSelection();
-}
-
-ax::mojom::Role SearchBoxViewBase::GetAccessibleWindowRole() {
-  // Default role of root view is ax::mojom::Role::kWindow which traps ChromeVox
-  // focus within the root view. Assign ax::mojom::Role::kGroup here to allow
-  // the focus to move from elements in search box to app list view.
-  return ax::mojom::Role::kGroup;
 }
 
 void SearchBoxViewBase::OnSearchBoxFocusedChanged() {

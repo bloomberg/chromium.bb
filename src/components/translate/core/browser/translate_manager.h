@@ -49,6 +49,8 @@ struct TranslateInitDetails;
 
 extern const base::Feature kOverrideLanguagePrefsForHrefTranslate;
 extern const base::Feature kOverrideSitePrefsForHrefTranslate;
+extern const base::Feature kOverrideUnsupportedPageLanguageForHrefTranslate;
+extern const base::Feature kOverrideSimilarLanguagesForHrefTranslate;
 extern const char kForceAutoTranslateKey[];
 
 // The TranslateManager class is responsible for showing an info-bar when a page
@@ -131,16 +133,17 @@ class TranslateManager {
   // Maybe initiates translation when Autofill Assistant has finished.
   void OnAutofillAssistantFinished();
 
-  // Initiate a manually triggered translation process for the current page.
-  // Collect source and target languages, and show translation UI. If
-  // |auto_translate| is true the page gets translated to the target language.
-  void InitiateManualTranslation(bool auto_translate = false,
-                                 bool triggered_from_menu = false);
+  // Show the translation UI. If |auto_translate| is true the page gets
+  // translated to the target language.
+  void ShowTranslateUI(bool auto_translate = false,
+                       bool triggered_from_menu = false);
 
   // Returns true iff the current page could be manually translated.
   // Logging should only be performed when this method is called to show the
   // translate menu item.
   bool CanManuallyTranslate(bool menuLogging = false);
+
+  bool IsMimeTypeSupported(const std::string& mime_type);
 
   // Shows the after translate or error infobar depending on the details.
   void PageTranslated(const std::string& source_lang,
@@ -218,8 +221,9 @@ class TranslateManager {
   // and logs the event appropriately.
   bool ShouldOverrideMatchesPreviousLanguageDecision();
 
-  // Returns true if the BubbleUI should be suppressed.
-  bool ShouldSuppressBubbleUI();
+  // Returns true if the BubbleUI should be suppressed, where |target_language|
+  // is the target language that would be shown in the UI.
+  bool ShouldSuppressBubbleUI(const std::string& target_language);
 
   // Sets target language.
   void SetPredefinedTargetLanguage(const std::string& language_code);

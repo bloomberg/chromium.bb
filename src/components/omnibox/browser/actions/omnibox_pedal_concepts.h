@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file is tool-generated using pedal_processor.  Do not edit.
+// DO NOT EDIT. This file is tool-generated using pedal_processor.
 
 #ifndef COMPONENTS_OMNIBOX_BROWSER_ACTIONS_OMNIBOX_PEDAL_CONCEPTS_H_
 #define COMPONENTS_OMNIBOX_BROWSER_ACTIONS_OMNIBOX_PEDAL_CONCEPTS_H_
@@ -10,7 +10,7 @@
 // This value is generated during Pedal concept data processing, and written
 // to all data files as well as the source code here to ensure synchrony.
 // The runtime loaded data must match this version exactly or it won't load.
-constexpr int OMNIBOX_PEDAL_CONCEPTS_DATA_VERSION = 15865521;
+constexpr int OMNIBOX_PEDAL_CONCEPTS_DATA_VERSION = 15940346;
 
 // Unique identifiers for Pedals, used to bind loaded data to implementations.
 // Also used in the Omnibox.SuggestionUsed.Pedal histogram. Do not remove or
@@ -43,6 +43,10 @@ enum class OmniboxPedalId {
   MANAGE_GOOGLE_ACCOUNT = 22,
   CLEAR_YOUTUBE_HISTORY = 23,
   CHANGE_GOOGLE_PASSWORD = 24,
+  INCOGNITO_CLEAR_BROWSING_DATA = 25,
+  CLOSE_INCOGNITO_WINDOWS = 26,
+  PLAY_CHROME_DINO_GAME = 27,
+  // DO NOT EDIT. See comment at top.
 
   // Last value, used to track the upper bounds when recording type histograms.
   // This intentionally does not have an assigned value to ensure that it's

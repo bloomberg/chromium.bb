@@ -212,7 +212,7 @@ TEST(UserAgentUtilsTest, UserAgentStringOrdering) {
 
 TEST(UserAgentUtilsTest, UserAgentStringFrozen) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(blink::features::kFreezeUserAgent);
+  scoped_feature_list.InitAndEnableFeature(blink::features::kReduceUserAgent);
 
 #if defined(OS_ANDROID)
   // Verify the correct user agent is returned when the UseMobileUserAgent
@@ -227,9 +227,12 @@ TEST(UserAgentUtilsTest, UserAgentStringFrozen) {
   ASSERT_FALSE(command_line->HasSwitch(switches::kUseMobileUserAgent));
   {
     std::string buffer = GetUserAgent();
-    EXPECT_EQ(buffer, base::StringPrintf(
-                          content::frozen_user_agent_strings::kAndroid,
-                          version_info::GetMajorVersionNumber().c_str()));
+    std::string device_compat = "";
+    EXPECT_EQ(buffer,
+              base::StringPrintf(content::frozen_user_agent_strings::kAndroid,
+                                 content::GetUnifiedPlatform().c_str(),
+                                 version_info::GetMajorVersionNumber().c_str(),
+                                 device_compat.c_str()));
   }
 
   // Verify the mobile user agent string is returned when using a mobile user
@@ -238,15 +241,19 @@ TEST(UserAgentUtilsTest, UserAgentStringFrozen) {
   ASSERT_TRUE(command_line->HasSwitch(switches::kUseMobileUserAgent));
   {
     std::string buffer = GetUserAgent();
-    EXPECT_EQ(buffer, base::StringPrintf(
-                          content::frozen_user_agent_strings::kAndroidMobile,
-                          version_info::GetMajorVersionNumber().c_str()));
+    std::string device_compat = "Mobile ";
+    EXPECT_EQ(buffer,
+              base::StringPrintf(content::frozen_user_agent_strings::kAndroid,
+                                 content::GetUnifiedPlatform().c_str(),
+                                 version_info::GetMajorVersionNumber().c_str(),
+                                 device_compat.c_str()));
   }
 #else
   {
     std::string buffer = GetUserAgent();
     EXPECT_EQ(buffer, base::StringPrintf(
                           content::frozen_user_agent_strings::kDesktop,
+                          content::GetUnifiedPlatform().c_str(),
                           version_info::GetMajorVersionNumber().c_str()));
   }
 #endif
@@ -282,9 +289,11 @@ TEST(UserAgentUtilsTest, UserAgentMetadata) {
   EXPECT_TRUE(contains_product_brand_version);
 
   EXPECT_EQ(metadata.full_version, version_info::GetVersionNumber());
+
+  int32_t major, minor, bugfix = 0;
+  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
   EXPECT_EQ(metadata.platform_version,
-            content::GetOSVersion(content::IncludeAndroidBuildNumber::Exclude,
-                                  content::IncludeAndroidModel::Exclude));
+            base::StringPrintf("%d.%d.%d", major, minor, bugfix));
   // This makes sure no extra information is added to the platform version.
   EXPECT_EQ(metadata.platform_version.find(";"), std::string::npos);
   // TODO(crbug.com/1103047): This can be removed/re-refactored once we use
@@ -296,6 +305,7 @@ TEST(UserAgentUtilsTest, UserAgentMetadata) {
 #endif
   EXPECT_EQ(metadata.architecture, content::GetLowEntropyCpuArchitecture());
   EXPECT_EQ(metadata.model, content::BuildModelInfo());
+  EXPECT_EQ(metadata.bitness, content::GetLowEntropyCpuBitness());
 }
 
 TEST(UserAgentUtilsTest, GenerateBrandVersionList) {

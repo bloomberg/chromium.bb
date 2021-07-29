@@ -76,6 +76,7 @@ class PasswordManagerDriver;
 class PasswordManagerMetricsRecorder;
 class HttpAuthManager;
 class PasswordRequirementsService;
+class PasswordReuseManager;
 class PasswordStore;
 struct PasswordForm;
 
@@ -168,10 +169,6 @@ class PasswordManagerClient {
       std::vector<std::unique_ptr<PasswordForm>> local_forms,
       const url::Origin& origin,
       CredentialsCallback callback) = 0;
-
-  // Indicates if re-auth with the device is needed before filling passwords.
-  // Currently only used by iOS.
-  virtual bool RequiresReauthToFill();
 
   // Instructs the client to show the Touch To Fill UI.
   virtual void ShowTouchToFill(PasswordManagerDriver* driver);
@@ -267,6 +264,9 @@ class PasswordManagerClient {
 
   // Returns the account PasswordStore associated with this instance.
   virtual PasswordStore* GetAccountPasswordStore() const = 0;
+
+  // Returns the PasswordReuseManager associated with this instance.
+  virtual PasswordReuseManager* GetPasswordReuseManager() const = 0;
 
   // Reports whether and how passwords are synced in the embedder. The default
   // implementation always returns kNotSyncing.

@@ -31,13 +31,18 @@ TEST_F(HlslGeneratorImplTest_Call, EmitExpression_Call_WithoutParams) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
-  EXPECT_EQ(result(), "my_func()");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, call)) << gen.error();
+  EXPECT_EQ(out.str(), "my_func()");
 }
 
 TEST_F(HlslGeneratorImplTest_Call, EmitExpression_Call_WithParams) {
-  Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
-       ast::DecorationList{});
+  Func("my_func",
+       {
+           Param(Sym(), ty.f32()),
+           Param(Sym(), ty.f32()),
+       },
+       ty.void_(), ast::StatementList{}, ast::DecorationList{});
   Global("param1", ty.f32(), ast::StorageClass::kPrivate);
   Global("param2", ty.f32(), ast::StorageClass::kPrivate);
 
@@ -46,13 +51,18 @@ TEST_F(HlslGeneratorImplTest_Call, EmitExpression_Call_WithParams) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
-  EXPECT_EQ(result(), "my_func(param1, param2)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, call)) << gen.error();
+  EXPECT_EQ(out.str(), "my_func(param1, param2)");
 }
 
 TEST_F(HlslGeneratorImplTest_Call, EmitStatement_Call) {
-  Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
-       ast::DecorationList{});
+  Func("my_func",
+       {
+           Param(Sym(), ty.f32()),
+           Param(Sym(), ty.f32()),
+       },
+       ty.void_(), ast::StatementList{}, ast::DecorationList{});
   Global("param1", ty.f32(), ast::StorageClass::kPrivate);
   Global("param2", ty.f32(), ast::StorageClass::kPrivate);
 
@@ -62,8 +72,8 @@ TEST_F(HlslGeneratorImplTest_Call, EmitStatement_Call) {
   GeneratorImpl& gen = Build();
 
   gen.increment_indent();
-  ASSERT_TRUE(gen.EmitStatement(out, call)) << gen.error();
-  EXPECT_EQ(result(), "  my_func(param1, param2);\n");
+  ASSERT_TRUE(gen.EmitStatement(call)) << gen.error();
+  EXPECT_EQ(gen.result(), "  my_func(param1, param2);\n");
 }
 
 }  // namespace

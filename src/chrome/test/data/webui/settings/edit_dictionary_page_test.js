@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {isChromeOS, isWindows} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {LanguagesBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {CrSettingsPrefs} from 'chrome://settings/settings.js';
@@ -37,24 +36,6 @@ suite('settings-edit-dictionary-page', function() {
         value: ['en-US'],
       }
     ];
-    if (isChromeOS) {
-      fakePrefs.push({
-        key: 'settings.language.preferred_languages',
-        type: chrome.settingsPrivate.PrefType.STRING,
-        value: 'en-US,sw',
-      });
-      fakePrefs.push({
-        key: 'settings.language.preload_engines',
-        type: chrome.settingsPrivate.PrefType.STRING,
-        value: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng,' +
-            '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng',
-      });
-      fakePrefs.push({
-        key: 'settings.language.enabled_extension_imes',
-        type: chrome.settingsPrivate.PrefType.STRING,
-        value: '',
-      });
-    }
     return fakePrefs;
   }
 
@@ -127,12 +108,12 @@ suite('settings-edit-dictionary-page', function() {
           flush();
 
           assertFalse(editDictPage.$.noWordsLabel.hidden);
-          assertFalse(!!editDictPage.$$('#list'));
+          assertFalse(!!editDictPage.shadowRoot.querySelector('#list'));
         });
   });
 
   test('spellcheck edit dictionary page list has words', function() {
-    const addWordButton = editDictPage.$$('#addWord');
+    const addWordButton = editDictPage.shadowRoot.querySelector('#addWord');
     editDictPage.$.newWord.value = 'valid word';
     addWordButton.click();
     editDictPage.$.newWord.value = 'valid word2';
@@ -140,21 +121,24 @@ suite('settings-edit-dictionary-page', function() {
     flush();
 
     assertTrue(editDictPage.$.noWordsLabel.hidden);
-    assertTrue(!!editDictPage.$$('#list'));
-    assertEquals(2, editDictPage.$$('#list').items.length);
+    assertTrue(!!editDictPage.shadowRoot.querySelector('#list'));
+    assertEquals(
+        2, editDictPage.shadowRoot.querySelector('#list').items.length);
   });
 
   test('spellcheck edit dictionary page remove is in tab order', function() {
-    const addWordButton = editDictPage.$$('#addWord');
+    const addWordButton = editDictPage.shadowRoot.querySelector('#addWord');
     editDictPage.$.newWord.value = 'valid word';
     addWordButton.click();
     flush();
 
     assertTrue(editDictPage.$.noWordsLabel.hidden);
-    assertTrue(!!editDictPage.$$('#list'));
-    assertEquals(1, editDictPage.$$('#list').items.length);
+    assertTrue(!!editDictPage.shadowRoot.querySelector('#list'));
+    assertEquals(
+        1, editDictPage.shadowRoot.querySelector('#list').items.length);
 
-    const removeWordButton = editDictPage.$$('cr-icon-button');
+    const removeWordButton =
+        editDictPage.shadowRoot.querySelector('cr-icon-button');
     // Button should be reachable in the tab order.
     assertEquals('0', removeWordButton.getAttribute('tabindex'));
     removeWordButton.click();
@@ -167,9 +151,11 @@ suite('settings-edit-dictionary-page', function() {
     flush();
 
     assertTrue(editDictPage.$.noWordsLabel.hidden);
-    assertTrue(!!editDictPage.$$('#list'));
-    assertEquals(1, editDictPage.$$('#list').items.length);
-    const newRemoveWordButton = editDictPage.$$('cr-icon-button');
+    assertTrue(!!editDictPage.shadowRoot.querySelector('#list'));
+    assertEquals(
+        1, editDictPage.shadowRoot.querySelector('#list').items.length);
+    const newRemoveWordButton =
+        editDictPage.shadowRoot.querySelector('cr-icon-button');
     // Button should be reachable in the tab order.
     assertEquals('0', newRemoveWordButton.getAttribute('tabindex'));
   });

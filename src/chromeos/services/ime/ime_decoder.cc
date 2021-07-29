@@ -13,6 +13,9 @@ namespace chromeos {
 namespace ime {
 
 namespace {
+
+absl::optional<ImeDecoder::EntryPoints> g_fake_decoder_entry_points_for_testing;
+
 const char kCrosImeDecoderLib[] = "libimedecoder.so";
 
 // TODO(b/161491092): Add test image path based on value of
@@ -55,6 +58,13 @@ bool IsEntryPointsLoaded(ImeDecoder::EntryPoints entry) {
 }  // namespace
 
 ImeDecoder::ImeDecoder() : status_(Status::kUninitialized) {
+  if (g_fake_decoder_entry_points_for_testing) {
+    entry_points_ = *g_fake_decoder_entry_points_for_testing;
+    status_ = Status::kSuccess;
+    entry_points_.is_ready = true;
+    return;
+  }
+
   base::FilePath path = GetImeDecoderLibPath();
 
   if (!base::PathExists(path)) {
@@ -83,6 +93,12 @@ ImeDecoder::ImeDecoder() : status_(Status::kUninitialized) {
       library.GetFunctionPointer("ImeDecoderProcess"));
   entry_points_.close = reinterpret_cast<ImeDecoderCloseFn>(
       library.GetFunctionPointer("ImeDecoderClose"));
+  entry_points_.connect_to_input_method =
+      reinterpret_cast<ConnectToInputMethodFn>(
+          library.GetFunctionPointer("ConnectToInputMethod"));
+  entry_points_.is_input_method_connected =
+      reinterpret_cast<IsInputMethodConnectedFn>(
+          library.GetFunctionPointer("IsInputMethodConnected"));
   if (!IsEntryPointsLoaded(entry_points_)) {
     status_ = Status::kFunctionMissing;
     return;
@@ -117,6 +133,11 @@ ImeDecoder::Status ImeDecoder::GetStatus() const {
 ImeDecoder::EntryPoints ImeDecoder::GetEntryPoints() {
   DCHECK(status_ == Status::kSuccess);
   return entry_points_;
+}
+
+void FakeDecoderEntryPointsForTesting(  // IN-TEST
+    const ImeDecoder::EntryPoints& decoder_entry_points) {
+  g_fake_decoder_entry_points_for_testing = decoder_entry_points;
 }
 
 }  // namespace ime
