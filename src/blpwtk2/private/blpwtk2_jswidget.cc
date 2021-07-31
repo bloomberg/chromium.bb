@@ -34,11 +34,11 @@
 
 namespace blpwtk2 {
 
-static v8::Handle<v8::Object> ToV8(v8::Isolate* isolate, const blink::WebRect& rc)
+static v8::Handle<v8::Object> ToV8(v8::Isolate* isolate, v8::Local<v8::Context> context, const blink::WebRect& rc)
 {
     // TODO: make a template for this
+    v8::EscapableHandleScope ehScope(isolate);
     v8::Handle<v8::Object> result = v8::Object::New(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
     v8::Maybe<bool> maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "x").ToLocalChecked(), v8::Integer::New(isolate, rc.x));
     maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "y").ToLocalChecked(), v8::Integer::New(isolate, rc.y));
     maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "width").ToLocalChecked(), v8::Integer::New(isolate, rc.width));
@@ -46,7 +46,7 @@ static v8::Handle<v8::Object> ToV8(v8::Isolate* isolate, const blink::WebRect& r
 
     if (!maybe.IsJust() || !maybe.FromJust())
       LOG(WARNING) << "Failed to set x, y, width, height in jswidget ToV8().";
-    return result;
+    return ehScope.Escape(result);
 }
 
 JsWidget::JsWidget(blink::WebLocalFrame* frame)
@@ -114,15 +114,15 @@ void JsWidget::UpdateGeometry(
       // blink::ScriptForbiddenScope::AllowUserAgentScript to allow script.
       blink::ScriptForbiddenScope::AllowUserAgentScript alllow_script;
       v8::Maybe<bool> maybe = detailObj->Set(context, v8::String::NewFromUtf8(isolate, "windowRect").ToLocalChecked(),
-                     ToV8(isolate, windowRect));
+                     ToV8(isolate, context, windowRect));
       maybe = detailObj->Set(context, v8::String::NewFromUtf8(isolate, "clipRect").ToLocalChecked(),
-                     ToV8(isolate, clipRect));
+                     ToV8(isolate, context, clipRect));
       maybe = detailObj->Set(context, v8::String::NewFromUtf8(isolate, "unobscuredRect").ToLocalChecked(),
-                     ToV8(isolate, unobscuredRect));
+                     ToV8(isolate, context, unobscuredRect));
       maybe = detailObj->Set(context, v8::String::NewFromUtf8(isolate, "isVisible").ToLocalChecked(),
                      v8::Boolean::New(isolate, isVisible));
       maybe = detailObj->Set(context, v8::String::NewFromUtf8(isolate, "frameRect").ToLocalChecked(),
-                     ToV8(isolate, windowRect));
+                     ToV8(isolate, context, windowRect));
       if (!maybe.IsJust() || !maybe.FromJust())
           LOG(WARNING) << "Failed to set geometry value for jswidget.";
     }
