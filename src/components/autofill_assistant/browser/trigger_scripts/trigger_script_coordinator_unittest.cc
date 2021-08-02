@@ -36,6 +36,7 @@ using ::testing::ElementsAreArray;
 using ::testing::Eq;
 using ::testing::NiceMock;
 using ::testing::Return;
+using ::testing::UnorderedElementsAre;
 using ::testing::UnorderedElementsAreArray;
 
 std::unique_ptr<base::test::ScopedFeatureList> CreateScopedFeatureList(
@@ -1144,8 +1145,24 @@ TEST_F(TriggerScriptCoordinatorTest, BackendCanOverrideScriptParameters) {
           TriggerContext::Options()),
       mock_callback_.Get());
   EXPECT_THAT(coordinator_->GetTriggerContext().GetScriptParameters().ToProto(),
-              ElementsAre(std::make_pair("name_1", "new_value_1"),
-                          std::make_pair("name_2", "new_value_2")));
+              UnorderedElementsAre(std::make_pair("name_1", "new_value_1"),
+                                   std::make_pair("name_2", "new_value_2"),
+                                   std::make_pair("name_3", "value_3")));
+}
+
+TEST_F(TriggerScriptCoordinatorTest, StoppingTwiceDoesNotCrash) {
+  EXPECT_CALL(*mock_request_sender_, OnSendRequest(GURL(kFakeServerUrl), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_FORBIDDEN, ""));
+  EXPECT_CALL(*mock_ui_delegate_, Detach).Times(1);
+  EXPECT_CALL(*mock_ui_delegate_, HideTriggerScript).Times(0);
+  coordinator_->Start(GURL(kFakeDeepLink), std::make_unique<TriggerContext>(),
+                      mock_callback_.Get());
+
+  // Stopping coordinator after it was already stopped by a failed request.
+  coordinator_->Stop(
+      Metrics::TriggerScriptFinishedState::CCT_TO_TAB_NOT_SUPPORTED);
+
+  // Nothing crashed.
 }
 
 }  // namespace autofill_assistant

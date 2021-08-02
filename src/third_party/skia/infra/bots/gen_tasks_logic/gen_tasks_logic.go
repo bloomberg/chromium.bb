@@ -285,6 +285,16 @@ type Config struct {
 	SwarmDimensions func(parts map[string]string) []string `json:"-"`
 }
 
+// JobInfo is the type of each entry in the jobs.json file.
+type JobInfo struct {
+	// The name of the job.
+	Name string `json:"name"`
+
+	// The optinal CQ config of this job. If the CQ config is missing then the
+	// job will not be added to the CQ of this branch.
+	CQConfig *specs.CommitQueueJobConfig `json:"cq_config,omitempty"`
+}
+
 // LoadConfig loads the Config from a cfg.json file which is the sibling of the
 // calling gen_tasks.go file.
 func LoadConfig() *Config {
@@ -340,8 +350,14 @@ func GenTasks(cfg *Config) {
 	relpathTargetDir := getThisDirName()
 	relpathBaseDir := getCallingDirName()
 
-	var jobs []string
-	LoadJson(filepath.Join(relpathBaseDir, "jobs.json"), &jobs)
+	// Parse jobs.json.
+	var jobsWithInfo []*JobInfo
+	LoadJson(filepath.Join(relpathBaseDir, "jobs.json"), &jobsWithInfo)
+	// Create a slice with only job names.
+	jobs := []string{}
+	for _, j := range jobsWithInfo {
+		jobs = append(jobs, j.Name)
+	}
 
 	if cfg == nil {
 		cfg = new(Config)
@@ -372,10 +388,15 @@ func GenTasks(cfg *Config) {
 		jobNameSchema:   schema,
 		jobs:            jobs,
 	}
-	for _, name := range jobs {
-		jb := newJobBuilder(builder, name)
+	for _, j := range jobsWithInfo {
+		jb := newJobBuilder(builder, j.Name)
 		jb.genTasksForJob()
 		jb.finish()
+
+		// Add the CQ spec if it is a CQ job.
+		if j.CQConfig != nil {
+			b.MustAddCQJob(j.Name, j.CQConfig)
+		}
 	}
 
 	// Create CasSpecs.
@@ -558,7 +579,12 @@ func (b *taskBuilder) kitchenTaskNoBundle(recipe string, outputDir string) {
 	if outputDir != OUTPUT_NONE {
 		b.output(outputDir)
 	}
-	python := "cipd_bin_packages/vpython${EXECUTABLE_SUFFIX}"
+	python := "cipd_bin_packages/vpython3${EXECUTABLE_SUFFIX}"
+	if b.role("Test", "Perf") && b.matchOs("Win7") && b.matchModel("Golo") {
+		// TODO(borenet): Win7 machines in the Golo seem to be missing a
+		// necessary DLL to make python3 work.
+		python = "cipd_bin_packages/vpython"
+	}
 	b.cmd(python, "-u", "skia/infra/bots/run_recipe.py", "${ISOLATED_OUTDIR}", recipe, b.getRecipeProps(), b.cfg.Project)
 	// Most recipes want this isolate; they can override if necessary.
 	b.cas(CAS_RUN_RECIPE)
@@ -1568,12 +1594,7 @@ func (b *jobBuilder) dm() {
 		b.addTask(uploadName, func(b *taskBuilder) {
 			b.recipeProp("gs_bucket", b.cfg.GsBucketGm)
 			b.recipeProps(EXTRA_PROPS)
-			// TODO(borenet): I'm not sure why the upload task is
-			// using the Test task name, but I've done this
-			// to maintain existing behavior.
-			b.Name = depName
 			b.kitchenTask("upload_dm_results", OUTPUT_NONE)
-			b.Name = uploadName
 			b.serviceAccount(b.cfg.ServiceAccountUploadGM)
 			b.linuxGceDimensions(MACHINE_TYPE_SMALL)
 			b.cipd(specs.CIPD_PKGS_GSUTIL...)

@@ -51,20 +51,6 @@ DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR |
 nongit_dir = os.path.join(ROOT_DIR, 'nongit')
 
 
-def find_python27():
-  for path in os.environ['PATH'].split(os.pathsep):
-    for fname in ['python.exe', 'python2.exe', 'python2.7.exe']:
-      candidate = os.path.join(path, fname)
-      if not os.path.isfile(candidate):
-        continue
-      p = subprocess.run(
-          [candidate, '--version'], capture_output=True, check=True,
-          encoding='utf-8')
-      if p.stdout.startswith('Python 2.7') or p.stderr.startswith('Python 2.7'):
-        return candidate
-  return None
-
-
 def start_thread(target):
   thread = threading.Thread(target=target)
   thread.start()
@@ -288,7 +274,7 @@ def get_toolchain_if_necessary(from_commit, to_commit):
   json_data_file = os.path.join(ROOT_DIR, 'src', 'build', 'win_toolchain.json')
   subprocess.run(
       [
-        find_python27(),
+        sys.executable,
         os.path.join(ROOT_DIR, 'src', 'third_party', 'depot_tools',
                      'win_toolchain', 'get_toolchain_if_necessary.py'),
         '--output-json', json_data_file,

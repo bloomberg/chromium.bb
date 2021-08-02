@@ -106,6 +106,10 @@ void TriggerScriptCoordinator::OnGetTriggerScripts(
     return;
   }
   if (script_parameters.has_value()) {
+    // Note that we need to merge the new script parameters with the old set
+    // (the new values have precedence). This is because not all parameters were
+    // sent to the backend in the first place due to privacy considerations.
+    (*script_parameters)->MergeWith(trigger_context_->GetScriptParameters());
     trigger_context_->SetScriptParameters(std::move(*script_parameters));
   }
   trigger_condition_check_interval_ =
@@ -267,6 +271,9 @@ void TriggerScriptCoordinator::OnTriggerScriptShown(bool success) {
 }
 
 void TriggerScriptCoordinator::Stop(Metrics::TriggerScriptFinishedState state) {
+  if (!callback_ || !trigger_context_) {
+    return;
+  }
   VLOG(2) << "Stopping with status " << state;
   TriggerScriptProto::TriggerUIType trigger_ui_type =
       GetTriggerUiTypeForVisibleScript();
@@ -544,6 +551,8 @@ void TriggerScriptCoordinator::RunCallback(
     TriggerScriptProto::TriggerUIType trigger_ui_type,
     Metrics::TriggerScriptFinishedState state,
     const absl::optional<TriggerScriptProto>& trigger_script) {
+  DCHECK(callback_);
+  DCHECK(trigger_context_);
   if (!finished_state_recorded_) {
     finished_state_recorded_ = true;
     Metrics::RecordTriggerScriptFinished(ukm_recorder_, ukm_source_id_,
