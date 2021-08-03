@@ -1,0 +1,8 @@
+sources:
+  "88.0.4324.206_bb7101":
+    url: [
+      "https://buildcache.sotr.dev.bloomberg.com/devkits/blpwtk2/88.0.4324.206_bb7101.7z",
+      "https://s3.dev.obdc.bcs.bloomberg.com/devkits/blpwtk2/88.0.4324.206_bb7101.7z",
+      "https://s3.dev.rrdc.bcs.bloomberg.com/devkits/blpwtk2/88.0.4324.206_bb7101.7z",
+    ]
+    sha256: "DF8AB8E5E9DB794580486AA5BDA2C7C71301BE4A1F1253A13B705C12C9F42C92"
