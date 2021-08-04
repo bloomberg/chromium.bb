@@ -37,7 +37,7 @@ namespace blpwtk2 {
 static v8::Handle<v8::Object> ToV8(v8::Isolate* isolate, v8::Local<v8::Context> context, const blink::WebRect& rc)
 {
     // TODO: make a template for this
-    v8::EscapableHandleScope ehScope(isolate);
+    // Since the caller UpdateGeometry has a HandleScope, it is ok to not declare another HandleScope here for optimization.
     v8::Handle<v8::Object> result = v8::Object::New(isolate);
     v8::Maybe<bool> maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "x").ToLocalChecked(), v8::Integer::New(isolate, rc.x));
     maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "y").ToLocalChecked(), v8::Integer::New(isolate, rc.y));
@@ -46,7 +46,7 @@ static v8::Handle<v8::Object> ToV8(v8::Isolate* isolate, v8::Local<v8::Context> 
 
     if (!maybe.IsJust() || !maybe.FromJust())
       LOG(WARNING) << "Failed to set x, y, width, height in jswidget ToV8().";
-    return ehScope.Escape(result);
+    return result;
 }
 
 JsWidget::JsWidget(blink::WebLocalFrame* frame)
