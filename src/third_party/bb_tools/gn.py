@@ -131,6 +131,7 @@ def get_chromium_version():
 
 
 def get_config(is_component_mode, is_debug_mode, cpu, defines):
+  chromium_version = get_chromium_version()
   initial_config = {
     # Disable PGO by default because it requires profiling data.  When
     # profiling data is added to .nongit files, then remove this setting.
@@ -141,7 +142,8 @@ def get_config(is_component_mode, is_debug_mode, cpu, defines):
     'ffmpeg_branding': 'Chrome',
 
     # Apply the content shell version.
-    'content_shell_version': get_chromium_version(),
+    'content_shell_version': chromium_version,
+    'content_shell_major_version': chromium_version.split('.')[0],
   }
   gn_env_config = name_value_list_to_dict(shlex_env('GN_DEFINES'))
   cmdline_config = name_value_list_to_dict(defines)
@@ -215,8 +217,11 @@ example_text = ('''EXAMPLES
     To generate all build directories with default options:
       {prog}
 
-    To generate release build directories only:
+    To generate release build directories only, either:
       {prog} --no-debug
+    or:
+      {prog} --release-only
+    (both are equivalent)
 
     To generate official build directories:
       {prog} -D is_official_build=true
@@ -250,6 +255,18 @@ parser.add_argument('--x86', action=argparse.BooleanOptionalAction,
                     default=True, help='Generate x86 config')
 parser.add_argument('--x64', action=argparse.BooleanOptionalAction,
                     default=True, help='Generate x64 config')
+parser.add_argument('--shared-only', action='store_false', dest='static',
+                    help='Equivalent to --no-static')
+parser.add_argument('--static-only', action='store_false', dest='shared',
+                    help='Equivalent to --no-shared')
+parser.add_argument('--debug-only', action='store_false', dest='release',
+                    help='Equivalent to --no-release')
+parser.add_argument('--release-only', action='store_false', dest='debug',
+                    help='Equivalent to --no-debug')
+parser.add_argument('--x86-only', action='store_false', dest='x64',
+                    help='Equivalent to --no-x64')
+parser.add_argument('--x64-only', action='store_false', dest='x86',
+                    help='Equivalent to --no-x86')
 parser.add_argument('-D', '--define', action='append', default=[],
                     help='Define GN var=value')
 parser.add_argument('--vs-projects', action='append', default=[],
