@@ -517,6 +517,7 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="4411535500181276704">មុខងារស្រាល</translation>
 <translation id="4415276339145661267">គ្រប់គ្រង​គណនី Google របស់​អ្នក</translation>
 <translation id="4427306783828095590">ការការពារ​ដែលប្រសើរជាងមុនធ្វើសកម្មភាពសកម្មជាងមុន ដើម្បីទប់ស្កាត់ការដាក់នុយ និងកម្មវិធីគ្រោះថ្នាក់</translation>
+<translation id="4450672886426705087">លទ្ធផលស្វែងរក​ពី Google។</translation>
 <translation id="4452411734226507615">បិទ​ផ្ទាំង <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">បានបន្ថែមចំណាំទៅ <ph name="FOLDER_NAME" /></translation>
 <translation id="4472118726404937099">ដើម្បី​ធ្វើ​សមកាលកម្ម និងកំណត់​ផ្ទាល់​ខ្លួន​នៅលើ​ឧបករណ៍នានា សូមចូលគណនី និង​បើក​សមកាលកម្ម</translation>
@@ -599,6 +600,7 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="4881695831933465202">បើក</translation>
 <translation id="488187801263602086">ប្តូរ​ឈ្មោះ​ឯកសារ</translation>
 <translation id="4885273946141277891">លេខមិនគាំទ្ររបស់ Chrome instances។</translation>
+<translation id="4905269543817054577">ប្រវត្តិ​មិនត្រូវបាន​រក្សាទុក​នៅក្នុងមុខងារ​ឯកជនទេ</translation>
 <translation id="4908869848243824489">Discover by Google</translation>
 <translation id="4910889077668685004">កម្មវិធី​បង់ប្រាក់</translation>
 <translation id="4913161338056004800">កំណត់​ស្ថិតិ​ឡើងវិញ</translation>
@@ -634,6 +636,7 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="5123685120097942451">ផ្ទាំង​អនាមិក</translation>
 <translation id="5132942445612118989">ធ្វើសម​កាល​កម្មពាក្យសម្ងាត់ ប្រវត្តិ និងអ្វីៗ​ជាច្រើនទៀត​នៅលើ​ឧបករណ៍​ទាំងអស់​របស់អ្នក</translation>
 <translation id="5139940364318403933">ស្វែងយល់​ពីរបៀប​ប្រើកម្មវិធី Google ថាស</translation>
+<translation id="5142281402488957685">ដើម្បីមើល​អត្ថបទ​ថ្មីៗ សូមទាញចុះ​ក្រោម ដើម្បី​ផ្ទុកឡើងវិញ</translation>
 <translation id="5152843274749979095">មិន​មាន​ការ​ដំឡើង​កម្មវិធី​ដែលស្គាល់ទេ</translation>
 <translation id="5161254044473106830">ត្រូវមានចំណងជើង</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{ការទាញយក 1 បាន​បរាជ័យ។}other{ការទាញយក # បាន​បរាជ័យ។}}</translation>
@@ -654,6 +657,7 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="5222676887888702881">ចាកចេញ</translation>
 <translation id="5227554086496586518">ចុច​ដើម្បី​មើល​លទ្ធផល​ស្វែងរក</translation>
 <translation id="5233638681132016545">ផ្ទាំងថ្មី</translation>
+<translation id="5246093389635966745">កែផ្លូវកាត់​របារឧបករណ៍</translation>
 <translation id="5250483651202458397">រូបថត​អេក្រង់។ ចុចដើម្បីបិទ។</translation>
 <translation id="5262378156578470238">អ្នកនឹង​មើលឃើញ​ការជូនដំណឹង នៅពេលដែល​ការទាញយកនេះ​ចាប់ផ្ដើមនៅថ្ងៃទី <ph name="DATE" />។</translation>
 <translation id="526421993248218238">មិនអាចផ្ទុកទំព័រនេះបានទេ</translation>
@@ -1008,12 +1012,12 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="7454641608352164238">ទំហំផ្ទុក​មិនគ្រប់គ្រាន់​ទេ</translation>
 <translation id="7475192538862203634">ប្រសិនបើអ្នកឃើញវាជាប្រចាំ សូមសាកល្បង<ph name="BEGIN_LINK" />ការផ្តល់យោបល់<ph name="END_LINK" />ទាំងនេះ។</translation>
 <translation id="7475688122056506577">រកមិន​ឃើញកាត SD ទេ។ ឯកសារ​មួយចំនួន​របស់អ្នក​អាចកំពុង​បាត់បង់។</translation>
-<translation id="7476384249953022816">ដើម្បី​សម្អាតប្រវត្តិ​រុករក​តាមអ៊ីនធឺណិត​នៃមុខងារឯកជន​ចេញពី​ឧបករណ៍​របស់អ្នក សូមបិទ​ផ្ទាំងទាំងអស់</translation>
 <translation id="7479104141328977413">ការគ្រប់គ្រង​ផ្ទាំង</translation>
 <translation id="7481312909269577407">ទៅមុខ</translation>
 <translation id="7481864133709957613">ដើម្បី​ស្វែងរកពីទំព័រនេះ សូម​ចុច​ពាក្យ​ឱ្យជាប់​ជំនួសឱ្យ​ការចុច​ពាក្យទាំងនោះ</translation>
 <translation id="7482656565088326534">ផ្ទាំងមើលសាកល្បង</translation>
 <translation id="7484997419527351112">Discover - បានបិទ</translation>
+<translation id="7485033510383818941">ដើម្បីផ្ទុក​ខ្លឹមសារព័ត៌មាន​ឡើងវិញ សូមទាញ​ទំព័រចុះ</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (បានធ្វើបច្ចុប្បន្នភាព <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">ទិន្នន័យ​ដែលសន្សំបាន</translation>
 <translation id="7498271377022651285">សូមរង់ចាំ...</translation>
@@ -1043,6 +1047,7 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="7630202231528827509">URL ក្រុមហ៊ុនផ្ដល់សេវា</translation>
 <translation id="7638584964844754484">ឃ្លាសម្ងាត់មិនត្រឹមត្រូវ</translation>
 <translation id="7641339528570811325">សម្អាត​ទិន្នន័យ​រុករក​…</translation>
+<translation id="764170292089748542">Chrome មិនរក្សាទុក​ប្រវត្តិរុករក​តាមអ៊ីនធឺណិត​របស់អ្នក​ទេ នៅពេលអ្នក​ជ្រើសរើស​រុករក​ជាលក្ខណៈ​ឯកជន​។ អ្នក​នៅតែអាចប្រើ​ចំណាំ ដើម្បីចូលប្រើ​គេហទំព័រ​ដែលអ្នកចូលចិត្ត​បានដដែល​។</translation>
 <translation id="7646772052135772216">សមកាល​កម្ម​ពាក្យសម្ងាត់​មិន​ដំណើរការ​ទេ</translation>
 <translation id="7655900163790317559">កំពុង​បើក​ប៊្លូធូស…</translation>
 <translation id="7658239707568436148">បដិសេធ</translation>
@@ -1278,7 +1283,6 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="9070377983101773829">ចាប់ផ្តើមស្វែងរកដោយសម្លេង</translation>
 <translation id="9074336505530349563">ដើម្បីទទួលបានខ្លឹមសារស្របតាមបុគ្គលដែលណែនាំដោយ Google សូមបើកសមកាលកម្ម</translation>
 <translation id="9074739597929991885">ប៊្លូធូស</translation>
-<translation id="9081543426177426948">គេហទំព័រ​ដែលអ្នកចូលមើល​មិនត្រូវបាន​រក្សាទុក​នៅក្នុងមុខងារ​ឯកជនទេ</translation>
 <translation id="9086302186042011942">កំពុងធ្វើសមកម្ម</translation>
 <translation id="9086455579313502267">មិនអាចចូលប្រើបណ្តាញ</translation>
 <translation id="9100505651305367705">ផ្តល់​ការបង្ហាញ​អត្ថបទ​ក្នុង​ទិដ្ឋភាព​សាមញ្ញ នៅពេលដែល​អាច​ប្រើបាន</translation>

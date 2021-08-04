@@ -16,7 +16,6 @@
 <translation id="1056775291175587022">沒有網絡</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />：<ph name="RESOLUTION" /></translation>
 <translation id="1073899992769346247">請更換電池或充電</translation>
-<translation id="1077253978657569125">我們想作出改善！</translation>
 <translation id="108486256082349153">流動裝置：<ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426"><ph name="GIVEN_NAME" />，午安：</translation>
 <translation id="109942774857561566">我好悶</translation>
@@ -485,6 +484,7 @@
 <translation id="4696813013609194136">使用家長存取碼解鎖裝置</translation>
 <translation id="4702647871202761252">已停用私隱保護畫面</translation>
 <translation id="4705716602320768426">提供意見</translation>
+<translation id="4730258224256997107">協助改善此功能！</translation>
 <translation id="4731797938093519117">家長存取</translation>
 <translation id="4734965478015604180">橫向</translation>
 <translation id="4735498845456076464">「<ph name="LAUNCHER_KEY_NAME" />鍵 + 數字鍵」的鍵盤快速鍵已變更。如要使用功能鍵，請按下<ph name="LAUNCHER_KEY_NAME" />鍵 + 最上排的任一按鍵。</translation>
@@ -693,6 +693,7 @@
 <translation id="6482559668224714696">全螢幕放大鏡</translation>
 <translation id="6490471652906364588">USB-C 裝置 (右側連接埠)</translation>
 <translation id="649452524636452238">智能卡 PIN</translation>
+<translation id="6500818810472529210">查看「Google 搜尋」中的結果</translation>
 <translation id="6501401484702599040">正在將畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
 <translation id="6520517963145875092">選取要擷取的視窗</translation>
 <translation id="652139407789908527">進行此更新時，螢幕顯示空白畫面的時間可能會比平時更長 (最多一分鐘)。請勿在更新期間按下開關按鈕。</translation>

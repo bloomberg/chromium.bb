@@ -2356,7 +2356,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Jika ditentukan, akan menambahkan parameter kueri yang disebut 'membatasi' ke URL yang digunakan untuk mengambil sumber Variasi. Nilai parameter akan menjadi nilai yang ditentukan dalam kebijakan ini.
 
       Jika tidak ditentukan, tidak akan memodifikasi URL sumber Variasi.</translation>
-<translation id="3863409707075047163">Versi SSL minimum diaktifkan</translation>
+<translation id="3863409707075047163">Versi SSL minimum yang diaktifkan</translation>
 <translation id="3864129983143201415">Konfigurasi bahasa yang diizinkan dalam sesi pengguna</translation>
 <translation id="3866249974567520381">Deskripsi</translation>
 <translation id="386723261607812952">Menetapkan jenis kaca pembesar layar di layar login</translation>
@@ -2989,7 +2989,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika ukuran halaman tidak tersedia pada printer yang dipilih pengguna, kebijakan ini diabaikan.</translation>
 <translation id="4790588245699320140">Mengizinkan Asisten Google mengakses konteks layar</translation>
-<translation id="4802744647065138872">Membatasi jumlah snapshot data pengguna yang disimpan untuk digunakan ketika terjadi rollback darurat.</translation>
+<translation id="4802744647065138872">Membatasi jumlah ringkasan data pengguna yang disimpan untuk digunakan ketika terjadi rollback darurat.</translation>
 <translation id="4802905909524200151">Mengonfigurasi perilaku update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Selalu reboot saat pengguna logout.</translation>
 <translation id="4807950475297505572">Pengguna yang paling jarang digunakan dihapus sampai terdapat cukup ruang kosong</translation>
@@ -4334,7 +4334,7 @@ Jika disetel ke Salah (False), <ph name="PRODUCT_NAME" /> tidak akan menggunakan
        Menyetel kebijakan ke Aktif memungkinkan Anda menentukan server proxy yang digunakan oleh Chrome dan mencegah pengguna mengubah setelan proxy. Chrome dan aplikasi ARC akan mengabaikan semua opsi terkait proxy yang ditentukan dari command line. Kebijakan ini hanya berlaku jika kebijakan <ph name="PROXY_SETTINGS_POLICY_NAME" /> tidak ditentukan.
 
        Opsi lain akan diabaikan jika Anda memilih:
-         * <ph name="PROXY_MODE_ENUM_DIRECT" /> = Jangan pernah menggunakan server proxy dan selalu hubungkan secara langsung 
+         * <ph name="PROXY_MODE_ENUM_DIRECT" /> = Jangan pernah gunakan server proxy dan selalu hubungkan secara langsung 
          * <ph name="PROXY_MODE_ENUM_SYSTEM" /> = Gunakan setelan proxy sistem
          * <ph name="PROXY_MODE_ENUM_AUTO_DETECT" /> = Deteksi otomatis server proxy
 

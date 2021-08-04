@@ -175,6 +175,11 @@ SearchPermissionsService::SearchPermissionsService(Profile* profile)
 bool SearchPermissionsService::IsPermissionControlledByDSE(
     ContentSettingsType type,
     const url::Origin& requesting_origin) {
+  if (base::FeatureList::IsEnabled(
+          permissions::features::kRevertDSEAutomaticPermissions)) {
+    return false;
+  }
+
   if (type != ContentSettingsType::GEOLOCATION &&
       type != ContentSettingsType::NOTIFICATIONS) {
     return false;
@@ -192,10 +197,17 @@ bool SearchPermissionsService::IsPermissionControlledByDSE(
 void SearchPermissionsService::ResetDSEPermission(ContentSettingsType type) {
   url::Origin dse_origin = delegate_->GetDSEOrigin();
   GURL dse_url = dse_origin.GetURL();
-  DCHECK(dse_url.is_empty() || IsPermissionControlledByDSE(type, dse_origin));
+  bool auto_grant_enabled = !base::FeatureList::IsEnabled(
+      permissions::features::kRevertDSEAutomaticPermissions);
 
-  if (!dse_url.is_empty())
-    SetContentSetting(dse_url, type, CONTENT_SETTING_ALLOW);
+  DCHECK(dse_url.is_empty() || IsPermissionControlledByDSE(type, dse_origin) ||
+         !auto_grant_enabled);
+
+  if (!dse_url.is_empty()) {
+    SetContentSetting(
+        dse_url, type,
+        auto_grant_enabled ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_DEFAULT);
+  }
 }
 
 void SearchPermissionsService::ResetDSEPermissions() {

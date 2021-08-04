@@ -517,6 +517,7 @@ Essa tecnologia ainda está em desenvolvimento ativo e está disponível apenas 
 <translation id="4411535500181276704">Modo Lite</translation>
 <translation id="4415276339145661267">Gerenciar sua Conta do Google</translation>
 <translation id="4427306783828095590">A Proteção reforçada é mais eficiente no combate a golpes de phishing e malware</translation>
+<translation id="4450672886426705087">Resultados da pesquisa do Google.</translation>
 <translation id="4452411734226507615">Fechar guia <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Adicionado como favorito em <ph name="FOLDER_NAME" /></translation>
 <translation id="4472118726404937099">Para sincronizar e personalizar vários dispositivos, faça login e ative a sincronização</translation>
@@ -600,6 +601,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="488187801263602086">Renomear arquivo</translation>
 <translation id="4885273946141277891">Número de instâncias do Google Chrome não suportado.</translation>
+<translation id="4905269543817054577">O histórico não é salvo na navegação anônima</translation>
 <translation id="4908869848243824489">Discover do Google</translation>
 <translation id="4910889077668685004">Apps de pagamento</translation>
 <translation id="4913161338056004800">Redefinir estatísticas</translation>
@@ -635,6 +637,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5123685120097942451">Guia anônima</translation>
 <translation id="5132942445612118989">Sincronize suas senhas, seu histórico e muito mais em todos os dispositivos</translation>
 <translation id="5139940364318403933">Saber como usar o Google Drive</translation>
+<translation id="5142281402488957685">Puxe para baixo para atualizar e ver novas matérias</translation>
 <translation id="5152843274749979095">Nenhum app compatível instalado</translation>
 <translation id="5161254044473106830">O título é obrigatório</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Falha em 1 download.}one{Falha em # download.}other{Falha em # downloads.}}</translation>
@@ -655,6 +658,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5222676887888702881">Sair</translation>
 <translation id="5227554086496586518">Toque para ver os resultados da pesquisa</translation>
 <translation id="5233638681132016545">Nova guia</translation>
+<translation id="5246093389635966745">Editar atalho da barra de ferramentas</translation>
 <translation id="5250483651202458397">Captura de tela. Toque para fechar.</translation>
 <translation id="5262378156578470238">Você receberá uma notificação quando o download começar, em <ph name="DATE" />.</translation>
 <translation id="526421993248218238">Não foi possível carregar a página</translation>
@@ -1009,12 +1013,12 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7454641608352164238">Espaço insuficiente</translation>
 <translation id="7475192538862203634">Se estiver vendo isso com frequência, tente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Cartão SD não encontrado. Alguns arquivos podem estar faltando.</translation>
-<translation id="7476384249953022816">Para limpar o histórico de navegação anônima do seu dispositivo, feche todas as guias</translation>
 <translation id="7479104141328977413">Gerenciamento de guias</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="7481864133709957613">Para pesquisar nesta página, toque nas palavras e as mantenha pressionadas em vez de apenas tocar nelas</translation>
 <translation id="7482656565088326534">Guia "Visualizar"</translation>
 <translation id="7484997419527351112">Discover (desativado)</translation>
+<translation id="7485033510383818941">Para atualizar o conteúdo do feed, puxe a página para baixo</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizada <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">de dados economizados</translation>
 <translation id="7498271377022651285">Aguarde...</translation>
@@ -1044,6 +1048,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7630202231528827509">URL do provedor</translation>
 <translation id="7638584964844754484">Senha incorreta</translation>
 <translation id="7641339528570811325">Limpar dados de navegação…</translation>
+<translation id="764170292089748542">O Chrome não salva seu histórico de navegação quando você decide navegar com privacidade. Você ainda pode usar os favoritos para acessar os sites de que mais gosta.</translation>
 <translation id="7646772052135772216">A sincronização de senha não está funcionando</translation>
 <translation id="7655900163790317559">Ativando o Bluetooth…</translation>
 <translation id="7658239707568436148">Cancelar</translation>
@@ -1279,7 +1284,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="9070377983101773829">Iniciar pesquisa por voz</translation>
 <translation id="9074336505530349563">Para receber conteúdo personalizado sugerido pelo Google, ative a sincronização</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
-<translation id="9081543426177426948">Os sites que você acessa não são salvos no modo de navegação anônima</translation>
 <translation id="9086302186042011942">Sincronizando</translation>
 <translation id="9086455579313502267">Não foi possível acessar a rede</translation>
 <translation id="9100505651305367705">Oferecer para mostrar artigos em uma versão simplificada, quando compatível.</translation>

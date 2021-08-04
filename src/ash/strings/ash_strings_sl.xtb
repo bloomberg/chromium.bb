@@ -16,7 +16,6 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="1056775291175587022">Ni omrežij</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="1073899992769346247">Zamenjajte ali napolnite baterijo.</translation>
-<translation id="1077253978657569125">To želimo izboljšati!</translation>
 <translation id="108486256082349153">Mobilna naprava: <ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426">Dober dan, <ph name="GIVEN_NAME" />,</translation>
 <translation id="109942774857561566">Dolgočasim se</translation>
@@ -485,6 +484,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="4696813013609194136">Odklepanje naprave s kodo starša</translation>
 <translation id="4702647871202761252">Zaslon za zasebnost je izklopljen</translation>
 <translation id="4705716602320768426">Pošiljanje povratnih informacij</translation>
+<translation id="4730258224256997107">Pomagajte nam izboljšati to!</translation>
 <translation id="4731797938093519117">Starševski dostop</translation>
 <translation id="4734965478015604180">Vodoravno</translation>
 <translation id="4735498845456076464">Bližnjica na tipkovnici <ph name="LAUNCHER_KEY_NAME" /> + številka je spremenjena. Če želite uporabljati funkcijske tipke, pritisnite tipko za <ph name="LAUNCHER_KEY_NAME" /> in tipko v vrhnji vrstici.</translation>
@@ -694,6 +694,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="6482559668224714696">Celozaslonska lupa</translation>
 <translation id="6490471652906364588">Naprava USB-C (desna vrata)</translation>
 <translation id="649452524636452238">PIN za pametno kartico</translation>
+<translation id="6500818810472529210">Ogled rezultatov v Iskanju Google</translation>
 <translation id="6501401484702599040">Predvajanje zaslona v napravi <ph name="RECEIVER_NAME" /></translation>
 <translation id="6520517963145875092">Izberite okno za posnetek</translation>
 <translation id="652139407789908527">Zaslon bo imel med to posodobitvijo prazen zaslon dlje kot običajno (največ eno minuto). Med posodabljanjem ne pritisnite gumba za vklop.</translation>

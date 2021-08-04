@@ -157,6 +157,7 @@
 <translation id="1164891049599601209">Entré sur un site trompeur</translation>
 <translation id="1165039591588034296">Erreur</translation>
 <translation id="1166212789817575481">Fermer les onglets à la droite</translation>
+<translation id="1166583374608765787">Revoir la mise à jour du nom</translation>
 <translation id="1168020859489941584">Ouverture dans <ph name="TIME_REMAINING" />...</translation>
 <translation id="1170288591054440704">Demander une autorisation quand un site veut utiliser des polices installées sur votre appareil</translation>
 <translation id="1171135284592304528">Mettre en surbrillance l'élément sélectionné par le clavier lorsqu'il est modifié</translation>
@@ -311,6 +312,7 @@
 <translation id="1336902454946927954">Votre clé de sécurité est verrouillée parce que votre empreinte digitale n'a pas été reconnue. Pour la déverrouiller, entrez votre NIP.</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> souhaite ouvrir cette application.</translation>
 <translation id="1338950911836659113">Suppression en cours…</translation>
+<translation id="1339009753652684748">Accédez à votre Assistant lorsque vous dites « Ok Google ». Pour économiser la pile, sélectionnez « Activé (recommandé) ». Votre Assistant répondra seulement lorsque votre appareil sera branché ou en recharge.</translation>
 <translation id="13392265090583506">Accessibilité</translation>
 <translation id="1340527397989195812">Sauvegarder les fichiers médiatiques de l’appareil en utilisant l’application Fichiers.</translation>
 <translation id="1341988552785875222">Le fond d'écran actuel est défini par « <ph name="APP_NAME" /> ». Il vous faudra peut-être désinstaller « <ph name="APP_NAME" /> » avant de sélectionner un autre fond d'écran.</translation>
@@ -324,6 +326,7 @@
 <translation id="1354045473509304750">Continuer d'autoriser <ph name="HOST" /> à utiliser et à déplacer votre caméra</translation>
 <translation id="1355088139103479645">Supprimer toutes les données?</translation>
 <translation id="1355466263109342573">Le plugiciel <ph name="PLUGIN_NAME" /> est bloqué</translation>
+<translation id="1356178530321889280">Faites un clic droit et sélectionnez « Rechercher une partie de la page avec Lentille Google » pour faire une recherche dans n'importe quelle partie du site afin d'en apprendre plus sur le contenu visuel que vous voyez lorsque vous naviguez et magasinez sur le Web.</translation>
 <translation id="1358741672408003399">Orthographe et grammaire</translation>
 <translation id="1359923111303110318">Votre appareil peut être déverrouillé avec Smart Lock. Appuyez sur Entrée pour le déverrouiller.</translation>
 <translation id="1361164813881551742">Ajouter manuellement</translation>
@@ -425,6 +428,7 @@ Les signets, l'historique et les mots de passe enregistrés ne seront pas touch�
 <translation id="146000042969587795">Ce cadre a été bloqué, car il contient des éléments non sécurisés.</translation>
 <translation id="146219525117638703">État ONC</translation>
 <translation id="146220085323579959">Aucune connexion à Internet. Veuillez vérifier votre connexion, puis réessayer.</translation>
+<translation id="1462850958694534228">Vérifier la mise à jour de l'icône</translation>
 <translation id="1463112138205428654"><ph name="FILE_NAME" /> a été bloqué par la protection avancée.</translation>
 <translation id="1464044141348608623">Ne pas autoriser les sites à savoir quand vous utilisez activement votre appareil</translation>
 <translation id="1464258312790801189">Vos comptes</translation>
@@ -443,6 +447,7 @@ Les signets, l'historique et les mots de passe enregistrés ne seront pas touch�
 <translation id="1477446329585670721"><ph name="DOMAIN" /> vous demande de laisser votre carte à puce insérée.</translation>
 <translation id="1478340334823509079">Détails : <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">L'installation n'est pas activée</translation>
+<translation id="1480571698637441426">Pour obtenir des réponses personnalisées à vos questions, autorisez l'Assistant à accéder à une capture de votre écran. Celle-ci peut contenir des renseignements sur les chansons ou les vidéos en cours de lecture.</translation>
 <translation id="1481537595330271162">Erreur lors du redimensionnement du disque</translation>
 <translation id="1482626744466814421">Ajouter cet onglet aux favoris</translation>
 <translation id="1483272013430662157">Les applications Web peuvent demander l'autorisation d'ouvrir certains types de fichiers</translation>
@@ -527,6 +532,7 @@ Les signets, l'historique et les mots de passe enregistrés ne seront pas touch�
 <translation id="156793199942386351">La touche « <ph name="CURRENTKEY" /> » est déjà attribuée à l'action « <ph name="ACTION" /> ». Appuyez sur n'importe quelle touche pour <ph name="RESPONSE" />.</translation>
 <translation id="1567993339577891801">Console JavaScript</translation>
 <translation id="1568323446248056064">Ouvrir les paramètres d'affichage de l'appareil</translation>
+<translation id="1571738973904005196">Afficher l'onglet : <ph name="TAB_ORIGIN" /></translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (invité)</translation>
 <translation id="1572266655485775982">Wi-Fi activé</translation>
 <translation id="1572876035008611720">Entrez votre adresse de courriel</translation>
@@ -670,7 +676,6 @@ Les signets, l'historique et les mots de passe enregistrés ne seront pas touch�
 <translation id="1706625117072057435">Niveaux de zoom</translation>
 <translation id="1708338024780164500">(Inactive)</translation>
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (ID : <ph name="ID_PH" />)</translation>
-<translation id="1708860176443612387">Navigateur expérimental! Il risque de perdre des données ou de compromettre votre sécurité ou la confidentialité de vos données. Veuillez signaler tout problème en sélectionnant Aide &gt; « Signaler un problème… ».</translation>
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Résolution native)</translation>
 <translation id="1709217939274742847">Choisissez un ticket à utiliser pour l'authentification. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="1709972045049031556">Impossible de partager</translation>
@@ -834,7 +839,6 @@ Les signets, l'historique et les mots de passe enregistrés ne seront pas touch�
 <translation id="1865769994591826607">Connections sur un même site seulement</translation>
 <translation id="186612162884103683">« <ph name="EXTENSION" /> » dispose d'un droit d'accès en lecture et en écriture aux images, aux vidéos et aux fichiers audio figurant dans les dossiers sélectionnés.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> est prêt à terminer l'installation.</translation>
-<translation id="1868193363684582383">« Ok Google »</translation>
 <translation id="1868553836791672080">La vérification des mots de passe n'est pas offerte dans Chromium</translation>
 <translation id="1869433484041798909">Bouton de favori</translation>
 <translation id="1871098866036088250">Ouvrir dans le navigateur Chrome</translation>
@@ -1115,7 +1119,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2163937499206714165">Activer le mode sombre</translation>
 <translation id="2164131635608782358"><ph name="FIRST_SWITCH" />, <ph name="SECOND_SWITCH" />, <ph name="THIRD_SWITCH" /> et 1 autre commutateur</translation>
 <translation id="2165177462441582039">Sélectionnez la durée d'affichage de l'élément en surbrillance</translation>
-<translation id="2165421703844373933">Accédez à l'Assistant Google lorsque vous dites « Ok Google ». Pour économiser la pile, sélectionnez « Activé (recommandé) ». Votre Assistant répondra seulement votre lorsque votre appareil sera branché ou en recharge.</translation>
 <translation id="2166369534954157698">Voici à quoi ressemblera votre texte.</translation>
 <translation id="2167276631610992935">JavaScript</translation>
 <translation id="2169062631698640254">Se connecter quand même</translation>
@@ -1246,6 +1249,15 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="23030561267973084">« <ph name="EXTENSION_NAME" /> » a demandé des autorisations supplémentaires.</translation>
 <translation id="23055578400314116">Sélectionnez un nom d'utilisateur</translation>
 <translation id="2307462900900812319">Configurer le réseau</translation>
+<translation id="2307553512430195144">Si vous êtes d'accord, l'Assistant Google attendra en mode Veille que le mot clé « Ok Google » soit employé et il utilisera la fonctionnalité Voice Match pour vérifier que c'est bien <ph name="SUPERVISED_USER_NAME" /> qui parle.
+    <ph name="BR" />
+    La fonctionnalité Voice Match aide l'Assistant Google à reconnaître la voix de <ph name="SUPERVISED_USER_NAME" /> sur votre <ph name="DEVICE_TYPE" /> et à la distinguer de celle des autres.
+    <ph name="BR" />
+    L'Assistant utilise des extraits de la voix de votre enfant pour créer un modèle vocal unique, qui n'est stocké que sur ses appareils. Le modèle vocal de votre enfant peut être envoyé temporairement à Google pour mieux reconnaître sa voix.
+    <ph name="BR" />
+    Si vous décidez plus tard que la fonctionnalité Voice Match ne convient pas à votre enfant, retirez-la simplement dans les paramètres de l'Assistant. Pour afficher ou supprimer les extraits audio enregistrés par votre enfant lors de la configuration de la fonctionnalité Voice Match, accédez à l'adresse <ph name="VOICE_MATCH_SETTINGS_URL" /> à partir du compte de votre enfant.
+    <ph name="BR" />
+    <ph name="FOOTER_MESSAGE" /></translation>
 <translation id="230927227160767054">Cette page veut installer un gestionnaire de services.</translation>
 <translation id="2309620859903500144">L'accès à vos capteurs de mouvement et de luminosité a été bloqué pour ce site.</translation>
 <translation id="2312219318583366810">URL de la page</translation>
@@ -1375,6 +1387,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2450849356604136918">Aucun affichage actif</translation>
 <translation id="2451298179137331965">2x</translation>
 <translation id="245322989586167203">Les sites se connectent généralement aux ports série pour utiliser les fonctionnalités de transfert de données, comme la configuration de votre réseau</translation>
+<translation id="2453706416476934374">Pour obtenir des réponses personnalisées lorsque <ph name="SUPERVISED_USER_NAME" /> pose des questions, laissez l'Assistant accéder à des captures d'écran sur l'écran de <ph name="SUPERVISED_USER_NAME" />. Celle-ci peut contenir des renseignements sur les chansons ou les vidéos en cours de lecture.</translation>
 <translation id="2453860139492968684">Terminer</translation>
 <translation id="2454247629720664989">Mot clé</translation>
 <translation id="2454264884354864965">La caméra est désactivée</translation>
@@ -1597,9 +1610,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2691385045260836588">Modèle</translation>
 <translation id="2691440343905273290">Modifier les paramètres d'entrée</translation>
 <translation id="2693176596243495071">Oups. Une erreur inconnue s'est produite. Veuillez réessayer plus tard ou communiquer avec votre administrateur si le problème persiste.</translation>
-<translation id="2693640212062142966">Voice Match aide votre Assistant Google à reconnaître votre voix sur votre <ph name="DEVICE_TYPE" /> et à vous distinguer des autres. Pour économiser la batterie, la fonctionnalité « Ok Google » n'est activée que lorsque votre appareil est connecté à une source d'alimentation. Pour apporter des modifications, accédez au menu Paramètres.
-    <ph name="BR" />
-    <ph name="BEGIN_BOLD" />Gardez à l'esprit :<ph name="END_BOLD" /> Une voix similaire ou un enregistrement pourrait aussi être en mesure d'accéder à vos résultats personnalisés. Vous pouvez retirer l'autorisation de Voice Match plus tard en la désactivant dans les paramètres de l'Assistant.</translation>
 <translation id="2699911226086014512">Échec du déverrouillage par NIP. Code <ph name="RETRIES" />.</translation>
 <translation id="2701330563083355633">Partagé à partir de l'appareil suivant : <ph name="DEVICE_NAME" /></translation>
 <translation id="2701737434167469065">Connexion : <ph name="EMAIL" /></translation>
@@ -2087,6 +2097,7 @@ et sur Ctrl+Alt+diminuer la luminosité pour effectuer un zoom arrière.</transl
 <translation id="32101887417650595">Impossible de se connecter à l'imprimante</translation>
 <translation id="321084946921799184">Jaune et blanc</translation>
 <translation id="321356136776075234">Unité organisationnelle d'appareil (p. ex., OU = Chromebook, DC = exemple, DC = com)</translation>
+<translation id="3214531106883826119"><ph name="BEGIN_BOLD" />Remarque :<ph name="END_BOLD" /> Une personne ayant une voix semblable à la sienne ou disposant d'un enregistrement de celle-ci pourrait accéder aux résultats personnalisés de <ph name="SUPERVISED_USER_NAME" />.</translation>
 <translation id="3216825226035747725">Les administrateurs de G Suite for Education déterminent à quels services Google leurs utilisateurs peuvent accéder lorsqu'ils sont connectés à un compte G Suite for Education. Cela peut comprendre des fonctionnalités ou des services auxquels votre enfant ne pouvait pas accéder à l'aide de ce compte supervisé. Les administrateurs scolaires doivent fournir ou obtenir le consentement pour que les utilisateurs mineurs puissent utiliser les services.</translation>
 <translation id="3217843140356091325">Créer un raccourci?</translation>
 <translation id="321799795901478485">Zip Archiver</translation>
@@ -2264,6 +2275,7 @@ et sur Ctrl+Alt+diminuer la luminosité pour effectuer un zoom arrière.</transl
 <translation id="3417836307470882032">Format 24 h</translation>
 <translation id="3420501302812554910">La clé de sécurité interne doit être réinitialisée</translation>
 <translation id="3421387094817716717">Clé publique à courbe elliptique</translation>
+<translation id="3421672904902642628"><ph name="BEGIN_BOLD" />Remarque :<ph name="END_BOLD" /> Une personne ayant une voix semblable à la vôtre ou disposant d'un enregistrement de celle-ci pourrait aussi accéder à vos résultats personnalisés ou à votre Assistant.</translation>
 <translation id="3422291238483866753">Demander une autorisation lorsqu'un site veut créer une carte 3D de votre environnement ou faire le suivi de la position de l'appareil photo (recommandé)</translation>
 <translation id="3423463006624419153">Sur votre « <ph name="PHONE_NAME_1" /> » et votre « <ph name="PHONE_NAME_2" /> » :</translation>
 <translation id="3423858849633684918">Veuillez relancer <ph name="PRODUCT_NAME" /></translation>
@@ -2487,7 +2499,6 @@ et sur Ctrl+Alt+diminuer la luminosité pour effectuer un zoom arrière.</transl
 <translation id="3649505501900178324">Mise à jour à effectuer</translation>
 <translation id="3650753875413052677">Erreur d'inscription</translation>
 <translation id="3650845953328929506">Téléversement du journal en attente.</translation>
-<translation id="365089839707261811">Examiner les mises à jour du nom</translation>
 <translation id="3650952250015018111">Autoriser « <ph name="APP_NAME" /> » à accéder à l'appareil suivant :</translation>
 <translation id="3651488188562686558">Se déconnectera du Wi-Fi</translation>
 <translation id="3652817283076144888">Initialisation en cours…</translation>
@@ -2979,7 +2990,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4154664944169082762">Empreintes</translation>
 <translation id="4157869833395312646">Chiffrement par portes de serveur Microsoft</translation>
 <translation id="4158364720893025815">Succès</translation>
-<translation id="4159163871835771155">Pour obtenir des réponses personnalisées lorsque <ph name="SUPERVISED_USER_NAME" /> pose des questions, laissez l'Assistant utiliser les renseignements sur l'écran de <ph name="SUPERVISED_USER_NAME" />. Il peut s'agir de renseignements sur les chansons ou les vidéos en cours de lecture.</translation>
 <translation id="4159681666905192102">Ce compte est destiné aux enfants. Il est géré par <ph name="CUSTODIAN_EMAIL" /> et <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Clavier inconnu</translation>
 <translation id="4167686856635546851">Les sites utilisent généralement JavaScript pour proposer des fonctionnalités interactives, comme des jeux vidéo ou des formulaires Web</translation>
@@ -3617,7 +3627,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4884987973312178454">6x</translation>
 <translation id="4887424188275796356">Ouvrir avec le lecteur système</translation>
 <translation id="488785315393301722">Afficher les détails</translation>
-<translation id="4889792122460431731">Pour recevoir des réponses personnalisées à vos questions, autorisez votre Assistant à utiliser les renseignements à l'écran. Il peut s'agir de renseignements sur les chansons ou les vidéos en cours de lecture.</translation>
 <translation id="4890773143211625964">Afficher les options d'imprimante avancées</translation>
 <translation id="4891089016822695758">Forum bêta</translation>
 <translation id="4892229439761351791">Le site peut utiliser le Bluetooth</translation>
@@ -3832,7 +3841,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5130080518784460891">Eten</translation>
 <translation id="5130675701626084557">Impossible de télécharger le profil. Veuillez réessayer plus tard ou communiquer avec votre fournisseur de services pour obtenir de l'aide.</translation>
 <translation id="5131591206283983824">Paramètres de déplacement tactile</translation>
-<translation id="5135085122826131075">Accédez à l'Assistant Google lorsque vous dites « Ok Google ».</translation>
 <translation id="5135533361271311778">Impossible de créer le favori.</translation>
 <translation id="5136343472380336530">Assurez-vous que les deux appareils sont déverrouillés, à proximité l'un de l'autre, et que le Bluetooth est activé. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="5137501176474113045">Supprimer cet élément</translation>
@@ -4250,7 +4258,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5585912436068747822">Échec du formatage</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Chargement des applications en cours…</translation>
-<translation id="5590265327628802792">Il semble que <ph name="SUPERVISED_USER_NAME" /> ait déjà configuré l'Assistant Google sur un autre appareil. En activant la fonctionnalité contexte à l'écran, <ph name="SUPERVISED_USER_NAME" /> peut tirer encore plus parti de l'Assistant.</translation>
 <translation id="5592595402373377407">Données insuffisantes pour l'instant.</translation>
 <translation id="5595485650161345191">Modifier l'adresse</translation>
 <translation id="5596627076506792578">Autres options</translation>
@@ -4657,6 +4664,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6059652578941944813">Hiérarchie des certificats</translation>
 <translation id="6059925163896151826">Appareils USB</translation>
 <translation id="6061882183774845124">Envoyer le lien à vos appareils</translation>
+<translation id="6063847492705284550"><ph name="BEGIN_BOLD" />Remarque :<ph name="END_BOLD" /> Une personne ayant une voix semblable à la sienne ou disposant d'un enregistrement de celle-ci pourrait accéder aux résultats personnalisés de <ph name="SUPERVISED_USER_NAME" />. Pour économiser la pile, dans les paramètres de l'Assistant de <ph name="SUPERVISED_USER_NAME" />, vous pouvez sélectionner d'activer « Ok Google » uniquement lorsque cet appareil est connecté à une source d'alimentation.</translation>
 <translation id="6064217302520318294">Verrouillage de l'écran</translation>
 <translation id="6065289257230303064">Attributs du répertoire de l'objet du certificat</translation>
 <translation id="6066794465984119824">Le hachage de l'image n'est pas défini</translation>
@@ -4877,9 +4885,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6294759976468837022">Vitesse du balayage automatique</translation>
 <translation id="6295158916970320988">Tous les sites</translation>
 <translation id="6295855836753816081">Enregistrement en cours...</translation>
-<translation id="6298800237463568825">Voice Match aide votre Assistant Google à reconnaître votre voix sur votre <ph name="DEVICE_TYPE" /> et à vous distinguer des autres.
-    <ph name="BR" />
-    <ph name="BEGIN_BOLD" />Gardez à l'esprit :<ph name="END_BOLD" /> Une voix similaire ou un enregistrement pourrait aussi être en mesure d'accéder à vos résultats personnalisés. Vous pouvez retirer l'autorisation de Voice Match plus tard en la désactivant dans les paramètres de l'Assistant.</translation>
 <translation id="6298962879096096191">Utilisez Google Play pour installer des applications Android</translation>
 <translation id="6300177430812514606">Non autorisés à terminer l'envoi ou la réception de données</translation>
 <translation id="630065524203833229">&amp;Quitter</translation>
@@ -4934,6 +4939,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6345878117466430440">Marquer comme lu</translation>
 <translation id="6349101878882523185">Installer <ph name="APP_NAME" /></translation>
 <translation id="6354918092619878358">Courbe elliptique SECG secp256r1 (aussi appelée ANSI X9.62 prime256v1, NIST P-256)</translation>
+<translation id="6355789186038748882">Navigateur expérimental (qualité de version alpha)! Certaines fonctionnalités sont manquantes ou incomplètes. Signalez tout problème en sélectionnant Aide &gt; « Signaler un problème… ».</translation>
 <translation id="635609604405270300">Laissez l'appareil allumé</translation>
 <translation id="63566973648609420">Seule une personne connaissant votre phrase de passe peut lire vos données chiffrées. Google ne reçoit pas la phrase de passe et ne la stocke pas. Si vous l'oubliez ou souhaitez modifier ce paramètre, vous devrez <ph name="BEGIN_LINK" />réinitialiser la synchronisation<ph name="END_LINK" />.</translation>
 <translation id="6358884629796491903">Dragon</translation>
@@ -4999,6 +5005,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6434309073475700221">Supprimer</translation>
 <translation id="6434325376267409267">Votre appareil doit être mis à jour avant que vous puissiez utiliser <ph name="APP_NAME" />.</translation>
 <translation id="6436164536244065364">Afficher dans la boutique Chrome Web Store</translation>
+<translation id="6436610005579237680">Pour recevoir des réponses plus personnalisées, autorisez l'Assistant Google à utiliser une capture de votre écran actuel quand vous posez des questions. Votre Assistant peut aussi se servir des renseignements sur les chansons ou les vidéos en cours de lecture.</translation>
 <translation id="6438234780621650381">Réinitialiser les paramètres</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> - Lecture audio</translation>
 <translation id="6442187272350399447">Impressionnant</translation>
@@ -5135,6 +5142,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6582274660680936615">Vous naviguez en tant qu'invité</translation>
 <translation id="6584878029876017575">Signature permanente Microsoft</translation>
 <translation id="6586099239452884121">Navigation comme invité</translation>
+<translation id="6586213706115310390">Accédez à votre Assistant lorsque vous dites « Ok Google ».</translation>
 <translation id="6586451623538375658">Inverser les boutons de la souris</translation>
 <translation id="6586604979641883411">Un minimum de <ph name="REQUIRED_SPACE" /> d'espace est requis pour effectuer la mise à niveau de Linux. Veuillez libérer de l'espace sur votre appareil et réessayer.</translation>
 <translation id="6588043302623806746">Utiliser un DNS sécurisé</translation>
@@ -5154,6 +5162,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6602937173026466876">Accès à vos imprimantes</translation>
 <translation id="6602956230557165253">Utilisez les touches fléchées gauche et droite pour naviguer.</translation>
 <translation id="6605847144724004692">Pas encore évaluée par les utilisateurs.</translation>
+<translation id="6606671997164410857">Vous semblez déjà avoir configuré l'Assistant Google sur un autre appareil. Pour profiter encore plus de votre Assistant, activez la fonctionnalité Contexte à l'écran sur cet appareil.</translation>
 <translation id="6607831829715835317">Autres outi&amp;ls</translation>
 <translation id="6607890859198268021">L'adresse <ph name="USER_EMAIL" /> est déjà gérée par <ph name="DOMAIN" />. Pour utiliser les contrôles parentaux avec un autre compte Google, déconnectez-vous après la configuration, puis sélectionnez « Ajouter une personne » à l'écran de connexion.</translation>
 <translation id="6609478180749378879">Les données de connexion seront stockées sur cet appareil lorsque vous quitterez le mode de navigation privée. Vous pourrez vous reconnecter à ce site Web avec votre appareil plus tard.</translation>
@@ -5333,6 +5342,13 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6808039367995747522">Pour continuer, insérez et touchez votre clé de sécurité</translation>
 <translation id="6808193438228982088">Renard</translation>
 <translation id="6809470175540814047">Ouvrir dans une &amp;fenêtre de navigation privée</translation>
+<translation id="6809656734323672573">Si vous êtes d'accord, l'Assistant Google attendra en mode Veille que le mot clé « Ok Google » soit employé et il utilisera la fonctionnalité Voice Match pour vérifier que c'est bien vous qui parlez.
+    <ph name="BR" />
+    La fonctionnalité Voice Match permet à votre Assistant de vous reconnaître et de vous différencier des autres. L'Assistant utilise des extraits de votre voix pour créer un modèle vocal unique, qui est seulement stocké sur votre appareil. Votre modèle vocal pourrait être envoyé temporairement à Google pour améliorer la reconnaissance de votre voix.
+    <ph name="BR" />
+    Si vous décidez plus tard que la fonctionnalité Voice Match ne vous convient pas, vous n'avez qu'à la retirer dans les paramètres de l'Assistant. Pour afficher ou supprimer les extraits audio que vous avez enregistrés lors de la configuration de la fonctionnalité Voice Match, accédez à l'adresse <ph name="VOICE_MATCH_SETTINGS_URL" />.
+    <ph name="BR" />
+    <ph name="FOOTER_MESSAGE" /></translation>
 <translation id="6810613314571580006">Connexion automatique à des sites Web à l'aide d'authentifiants enregistrés. Lorsque la fonctionnalité est désactivée, une confirmation vous est demandée avant chaque connexion à un site Web.</translation>
 <translation id="6810768462515084623">Erreur! Votre mot de passe semble avoir expiré. Veuillez le renouveler sur un autre appareil et réessayer.</translation>
 <translation id="6811034713472274749">La page est prête pour consultation</translation>
@@ -5663,7 +5679,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7171559745792467651">Installez des applications de vos autres appareils</translation>
 <translation id="7172470549472604877">{NUM_TABS,plural, =1{Ajouter un onglet au nouveau groupe}one{Ajouter un onglet au nouveau groupe}other{Ajouter des onglets au nouveau groupe}}</translation>
 <translation id="7173114856073700355">Ouvrir les paramètres</translation>
-<translation id="7173336557300642430">Pour recevoir des réponses plus personnalisées, autorisez votre Assistant Google à utiliser les renseignements à l'écran quand vous posez des questions. Votre Assistant peut aussi se servir des renseignements sur les chansons ou les vidéos en cours de lecture.</translation>
 <translation id="7174199383876220879">Nouveau! Commandez votre musique, vos vidéos et plus encore.</translation>
 <translation id="7175037578838465313">Configurer <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Chargé de :</translation>
@@ -5694,13 +5709,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Quitter la page}one{Quitter la page}other{Quitter les pages}}</translation>
 <translation id="7207457272187520234">Envoyer les données d'utilisation et de diagnostic. Actuellement, cet appareil envoie automatiquement à Google des données de diagnostic, de l'appareil et d'utilisation des applications. Cela nous permettra d'assurer la stabilité du système et des applications, et d'apporter d'autres améliorations. Certaines données collectées contribueront également à améliorer les applications Google et aideront nos partenaires, comme les développeurs Android. Ce paramètre est appliqué par le propriétaire du compte. Si le paramètre relatif aux autres activités sur le Web et dans les applications est activé, ces données peuvent être enregistrées dans votre compte Google.</translation>
 <translation id="7207631048330366454">Rechercher dans les applications</translation>
-<translation id="7210488993538120146">La fonctionnalité Voice Match aide l'Assistant Google à identifier la voix de <ph name="SUPERVISED_USER_NAME" /> sur votre <ph name="DEVICE_TYPE" /> et à la distinguer des autres.
-    <ph name="BR" />
-    L'Assistant utilise des extraits de la voix de votre enfant pour créer un modèle vocal unique, qui n'est stocké que sur ses appareils. Le modèle vocal de votre enfant peut être envoyé temporairement à Google pour mieux identifier sa voix.
-    <ph name="BR" />
-    Si vous décidez plus tard que la fonctionnalité Voice Match ne convient pas à votre enfant, supprimez-la simplement dans Paramètres de l'Assistant. Pour afficher ou supprimer les extraits audio enregistrés par votre enfant lors de la configuration de Voice Match, accédez à l'adresse g.co/assistant/match à partir du compte de votre enfant.
-    <ph name="BR" />
-    <ph name="BEGIN_BOLD" />Remarque :<ph name="END_BOLD" /> Une voix similaire ou un enregistrement pourrait être en mesure d'accéder aux résultats personnalisés de <ph name="SUPERVISED_USER_NAME" />. Pour économiser la batterie, la fonctionnalité « Ok Google » n'est activée que lorsque cet appareil est connecté à une source d'alimentation.</translation>
 <translation id="7210499381659830293">Imprimantes d'extension</translation>
 <translation id="7211783048245131419">Aucun commutateur n'a été attribué</translation>
 <translation id="7212097698621322584">Entrez votre NIP actuel pour le modifier. Si vous ne connaissez pas votre NIP, vous devrez réinitialiser la clé de sécurité, puis créer un nouveau NIP.</translation>
@@ -5912,7 +5920,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7434969625063495310">Impossible d'ajouter le serveur d'impression. Veuillez vérifier la configuration du serveur, puis réessayer.</translation>
 <translation id="7436921188514130341">Oups… Une erreur s'est produite lors du changement de nom.</translation>
 <translation id="7438495332316988804">Vous trouverez le navigateur standard en entrant « Chrome » dans le lanceur.</translation>
-<translation id="7439446972050308922">Vos préférences enregistrées seront prêtes sur tout appareil Chrome OS lorsque vous vous connectez à votre compte Google. Vous pouvez choisir les éléments à synchroniser dans les paramètres.</translation>
 <translation id="7439519621174723623">Pour continuer, donnez un nom à l'appareil</translation>
 <translation id="7441736921018636843">Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" /> afin de supprimer votre phrase de passe de synchronisation</translation>
 <translation id="7441830548568730290">Autres utilisateurs</translation>
@@ -5979,6 +5986,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7507930499305566459">Certificat du répondeur d'état</translation>
 <translation id="7509097596023256288">Configuration de la gestion en cours…</translation>
 <translation id="7509246181739783082">Vérifier votre identité</translation>
+<translation id="7509539379068593709">Désinstaller l'application</translation>
 <translation id="7511415964832680006">Lorsque cette fonctionnalité est activée, les sites peuvent utiliser les techniques de préservation de la confidentialité présentées ici pour fournir leur contenu et leurs services. Celles-ci comprennent des solutions de rechange au suivi intersites. D'autres essais pourront être ajoutés au fil du temps.</translation>
 <translation id="7513029293694390567">Connexion automatique à des sites Web à l'aide d'authentifiants enregistrés. Si cette fonctionnalité est désactivée, une confirmation vous est demandée avant chaque connexion à un site Web.</translation>
 <translation id="7514239104543605883">Copier vers votre appareil</translation>
@@ -6123,7 +6131,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7652954539215530680">Créer un NIP</translation>
 <translation id="7654941827281939388">Ce compte est déjà utilisé sur cet ordinateur.</translation>
 <translation id="7655411746932645568">Les sites peuvent demander à se connecter à des ports série</translation>
-<translation id="7657218410916651670"><ph name="BEGIN_LINK_GOOGLE" />D'autres formes d'activités<ph name="END_LINK_GOOGLE" /> peuvent être enregistrées dans votre compte Google Account lorsque vous êtes connecté. Vous pouvez les supprimer à tout moment.</translation>
+<translation id="7657218410916651670"><ph name="BEGIN_LINK_GOOGLE" />D'autres formes d'activités<ph name="END_LINK_GOOGLE" /> peuvent être enregistrées dans votre compte Google lorsque vous êtes connecté. Vous pouvez les supprimer à tout moment.</translation>
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7659154729610375585">Quitter le mode de navigation privée quand même?</translation>
 <translation id="7659297516559011665">Les mots de passe sur cet appareil seulement</translation>
@@ -6165,6 +6173,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7690853182226561458">Ajouter un &amp;dossier...</translation>
 <translation id="7691073721729883399">Impossible de monter le cryptohome pour l'application de kiosque.</translation>
 <translation id="7691077781194517083">Impossible de réinitialiser cette clé de sécurité. Erreur <ph name="ERROR_CODE" />.</translation>
+<translation id="7691163173018300413">« Ok Google »</translation>
 <translation id="7691698019618282776">Mise à niveau de Crostini</translation>
 <translation id="7696063401938172191">Sur votre « <ph name="PHONE_NAME" /> » :</translation>
 <translation id="7697166915480294040">Les renseignements sont masqués quand vous partagez votre écran</translation>
@@ -6204,7 +6213,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7730449930968088409">Effectuer une saisie d'écran</translation>
 <translation id="7730683939467795481">Cette page a été modifiée par l'extension « <ph name="EXTENSION_NAME" /> »</translation>
 <translation id="7734486794139738745">J'utilise un seul commutateur</translation>
-<translation id="7734541938181328224">Examiner les mises à jours de l'icône</translation>
 <translation id="7737115349420013392">Association avec « <ph name="DEVICE_NAME" /> » en cours…</translation>
 <translation id="7737846262459425222">Vous pouvez modifier cette option en tout temps dans Paramètres &gt; Assistant Google &gt; Contexte à l'écran.</translation>
 <translation id="7737948071472253612">Non autorisés à utiliser votre caméra</translation>
@@ -6278,6 +6286,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7804072833593604762">Onglet fermé</translation>
 <translation id="7805768142964895445">État</translation>
 <translation id="7807067443225230855">Recherche et Assistant Google</translation>
+<translation id="7807117920154132308">Il semble que <ph name="SUPERVISED_USER_NAME" /> ait déjà configuré l'Assistant Google sur un autre appareil. En activant la fonctionnalité Contexte à l'écran sur cet appareil, <ph name="SUPERVISED_USER_NAME" /> peut tirer encore plus parti de l'Assistant.</translation>
 <translation id="7807711621188256451">Toujours autoriser <ph name="HOST" /> à accéder à votre caméra</translation>
 <translation id="7810202088502699111">Des fenêtres contextuelles ont été bloquées sur cette page.</translation>
 <translation id="781167124805380294">Diffuser <ph name="FILE_NAME" /></translation>
@@ -6332,6 +6341,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7847212883280406910">Appuyez sur Ctrl + Alt + S pour passer à <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="7849264908733290972">Ouvrir l'&amp;image dans un nouvel onglet</translation>
 <translation id="784934925303690534">Intervalle de temps</translation>
+<translation id="7851021205959621355"><ph name="BEGIN_BOLD" />Remarque :<ph name="END_BOLD" /> Une personne ayant une voix semblable à la vôtre ou disposant d'un enregistrement de celle-ci pourrait aussi accéder à vos résultats personnalisés ou à votre Assistant. Pour économiser la pile, dans les paramètres de votre Assistant, vous pouvez sélectionner d'activer « Ok Google » uniquement lorsque cet appareil est connecté à une source d'alimentation.</translation>
 <translation id="7851457902707056880">La connexion a été restreinte au compte du propriétaire uniquement. Veuillez redémarrer et utiliser ce compte pour vous connecter. L'appareil redémarrera automatiquement dans 30 secondes.</translation>
 <translation id="7851716364080026749">Toujours bloquer l'accès à la caméra et au microphone</translation>
 <translation id="7851720427268294554">Analyseur IPP</translation>
@@ -6827,6 +6837,7 @@ Appuyez sur un commutateur attribué pour retirer l'attribution</translation>
 <translation id="8373652277231415614">Répertoires partagés de Crostini</translation>
 <translation id="8376137163494131156">Dites-nous ce qui se passe avec la technologie Google Cast.</translation>
 <translation id="8376384591331888629">Y compris les témoins tiers sur ce site</translation>
+<translation id="8376451933628734023">Si cette application Web essaie de se faire passer pour une autre, désinstallez-la.</translation>
 <translation id="8378714024927312812">Géré par votre organisation</translation>
 <translation id="8379878387931047019">Cet appareil ne prend pas en charge le type de clé de sécurité demandé par ce site Web</translation>
 <translation id="8379991678458444070">Revenez ici rapidement en ajoutant cet onglet aux favoris</translation>
@@ -6909,7 +6920,6 @@ Appuyez sur un commutateur attribué pour retirer l'attribution</translation>
 <translation id="8480869669560681089">Appareil inconnu de <ph name="VENDOR_NAME" /></translation>
 <translation id="8481187309597259238">Confirmer l'autorisation USB</translation>
 <translation id="8481980314595922412">Les fonctionnalités d'essai sont activées</translation>
-<translation id="8482860770919360244">Vous semblez déjà avoir configuré l'Assistant Google sur un autre appareil. Pour en profiter encore plus, activez le contexte à l'écran.</translation>
 <translation id="848666842773560761">Une application tente d'accéder à la caméra. Désactivez le commutateur de confidentialité de la caméra pour autoriser l'accès.</translation>
 <translation id="8487678622945914333">Zoom avant</translation>
 <translation id="8489156414266187072">Les suggestions personnelles s'affichent seulement sur votre compte</translation>
@@ -6974,7 +6984,6 @@ Appuyez sur un commutateur attribué pour retirer l'attribution</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Tentative d'installation d'une version antérieure de l'application.</translation>
 <translation id="8569682776816196752">Aucune destination trouvée</translation>
-<translation id="857074314439694500">Cette application Web essaie de se faire passer une application différente, désinstallez-la.</translation>
 <translation id="8571213806525832805">Quatre dernières semaines</translation>
 <translation id="8571687764447439720">Ajouter un ticket Kerberos</translation>
 <translation id="8574990355410201600">Toujours autoriser le son sur <ph name="HOST" /></translation>
@@ -7130,7 +7139,7 @@ Appuyez sur un commutateur attribué pour retirer l'attribution</translation>
 <translation id="8725178340343806893">Favoris ou signets</translation>
 <translation id="8726206820263995930">Une erreur est survenue lors de la récupération des paramètres des politiques sur le serveur : <ph name="CLIENT_ERROR" />.</translation>
 <translation id="8727154974495727220">Une fois votre <ph name="DEVICE_TYPE" /> configuré, appuyez sur le bouton Assistant, ou dites « Ok Google » pour obtenir de l'aide à tout moment. Pour effectuer des modifications, ouvrez les paramètres de l'Assistant Google.</translation>
-<translation id="8729133765463465108">Utiliser la caméra pour numériser le code QR</translation>
+<translation id="8729133765463465108">Utiliser l'appareil photo pour numériser le code QR</translation>
 <translation id="8730621377337864115">Terminé</translation>
 <translation id="8731629443331803108"><ph name="SITE_NAME" /> veut : <ph name="PERMISSION" /></translation>
 <translation id="8731787661154643562">Numéro de port</translation>
@@ -7567,6 +7576,7 @@ Vous pouvez attribuer cette même action à plusieurs commutateurs</translation>
       <ph name="LIST_ITEM" />Exécutez l'utilitaire Chrome Connectivity Diagnostics
     <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Incrustation d'image</translation>
+<translation id="9166813363879986425">Votre activité et vos préférences enregistrées seront prêtes sur tout appareil Chrome OS lorsque vous vous connectez à votre compte Google. Vous pouvez choisir les éléments à synchroniser dans les paramètres.</translation>
 <translation id="9167063903968449027">Afficher la liste de lecture</translation>
 <translation id="9167450455589251456">Ce profil n'est pas pris en charge</translation>
 <translation id="9168436347345867845">Plus tard</translation>

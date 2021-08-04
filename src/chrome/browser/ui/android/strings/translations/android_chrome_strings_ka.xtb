@@ -517,6 +517,7 @@
 <translation id="4411535500181276704">Lite რეჟიმი</translation>
 <translation id="4415276339145661267">თქვენი Google ანგარიშის მართვა</translation>
 <translation id="4427306783828095590">გაძლიერებული დაცვა გთავაზობთ ფიშინგისა და მავნე პროგრამებისგან დაცვის მეტ საშუალებას</translation>
+<translation id="4450672886426705087">ძიების შედეგები Google-იდან.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> ჩანართის დახურვა</translation>
 <translation id="4452548195519783679">სანიშნე შენახულია „<ph name="FOLDER_NAME" />“-ში</translation>
 <translation id="4472118726404937099">თქვენი ყველა მოწყობილობის სინქრონიზაციისთვისა და პერსონალიზებისთვის შედით სისტემაში და ჩართეთ სინქრონიზაცია</translation>
@@ -599,6 +600,7 @@
 <translation id="4881695831933465202">გახსნა</translation>
 <translation id="488187801263602086">ფაილის გადარქმევა</translation>
 <translation id="4885273946141277891">Chrome-ის ეგზემპლარების მხარდაუჭერელი რაოდენობა.</translation>
+<translation id="4905269543817054577">ისტორია არ ინახება ინკოგნიტო რეჟიმში</translation>
 <translation id="4908869848243824489">Discover by Google</translation>
 <translation id="4910889077668685004">გადახდის აპები</translation>
 <translation id="4913161338056004800">სტატისტიკის გადაყენება</translation>
@@ -634,6 +636,7 @@
 <translation id="5123685120097942451">ინკოგნიტო ჩანართი</translation>
 <translation id="5132942445612118989">მოახდინეთ თქვენი პაროლების, ისტორიისა და სხვა კონტენტის სინქრონიზაცია თქვენს ყველა მოწყობილობაზე</translation>
 <translation id="5139940364318403933">ისწავლეთ Google Drive-ის გამოყენება</translation>
+<translation id="5142281402488957685">ახალი ამბების გასაცნობად ჩამოსწიეთ განახლებისთვის</translation>
 <translation id="5152843274749979095">მხარდაჭერილი აპები დაინსტალირებული არ არის</translation>
 <translation id="5161254044473106830">საჭიროა სათაური</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 ჩამოტვირთვა ვერ მოხერხდა.}other{# ჩამოტვირთვა ვერ მოხერხდა.}}</translation>
@@ -654,6 +657,7 @@
 <translation id="5222676887888702881">გამოსვლა</translation>
 <translation id="5227554086496586518">შეეხეთ ძიების შედეგების სანახავად</translation>
 <translation id="5233638681132016545">ახალი ჩანართი</translation>
+<translation id="5246093389635966745">ხელსაწყოთა ზოლის მალსახმობის რედაქტირება</translation>
 <translation id="5250483651202458397">ეკრანის ანაბეჭდი. შეეხეთ დასახურად.</translation>
 <translation id="5262378156578470238"><ph name="DATE" />-ს ჩამოტვირთვის დაწყების შესახებ შეტყობინებას მიიღებთ.</translation>
 <translation id="526421993248218238">ამ გვერდის ჩატვირთვა ვერ მოხერხდა</translation>
@@ -1008,12 +1012,12 @@ Privacy Sandbox-ის საცდელი ვერსიები კვლ�
 <translation id="7454641608352164238">მეხსიერება არასაკმარისია</translation>
 <translation id="7475192538862203634">თუ ამას ხშირად ხედავთ, გაეცანით ამ <ph name="BEGIN_LINK" />რჩევებს<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD ბარათი ვერ მოიძებნა. შეიძლება აკლდეს ზოგიერთი ფაილი.</translation>
-<translation id="7476384249953022816">თქვენი მოწყობილობიდან ინკოგნიტო რეჟიმში დათვალიერების ისტორია რომ წაშალოთ, დახურეთ ყველა ჩანართი</translation>
 <translation id="7479104141328977413">ჩანართების მართვა</translation>
 <translation id="7481312909269577407">გადამისამართება</translation>
 <translation id="7481864133709957613">ამ გვერდიდან ძიებისთვის ხანგრძლივად შეეხეთ სიტყვებს მათზე შეხების ნაცვლად</translation>
 <translation id="7482656565088326534">გადახედვის ჩანართი</translation>
 <translation id="7484997419527351112">Discover — გამორთული</translation>
+<translation id="7485033510383818941">არხის კონტენტი რომ განაახლოთ, ჩამოსწიეთ გვერდი</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (განახლებულია <ph name="TIME_SINCE_UPDATE" /> )</translation>
 <translation id="7494974237137038751">დაზოგილია</translation>
 <translation id="7498271377022651285">გთხოვთ, დაელოდოთ…</translation>
@@ -1043,6 +1047,7 @@ Privacy Sandbox-ის საცდელი ვერსიები კვლ�
 <translation id="7630202231528827509">მიუთითეთ URL</translation>
 <translation id="7638584964844754484">საიდუმლო ფრაზა არასწორია</translation>
 <translation id="7641339528570811325">დათვალიერების მონაცემების გასუფთავება…</translation>
+<translation id="764170292089748542">Chrome არ ინახავს თქვენს დათვალიერების ისტორიას, როცა აკეთებთ კონფიდენციალურად დათვალიერების არჩევანს. თქვენ მაინც შეძლებთ სანიშნეების გამოყენებას რჩეულ ვესაიტებზე წვდომისთვის.</translation>
 <translation id="7646772052135772216">პაროლების სინქრონიზაცია არ მუშაობს</translation>
 <translation id="7655900163790317559">მიმდინარეობს Bluetooth-ის ჩართვა…</translation>
 <translation id="7658239707568436148">გაუქმება</translation>
@@ -1278,7 +1283,6 @@ Privacy Sandbox-ის საცდელი ვერსიები კვლ�
 <translation id="9070377983101773829">ხმოვანი ძიების დაწყება</translation>
 <translation id="9074336505530349563">Google-ის მიერ შემოთავაზებულ, პერსონალიზებულ კონტენტზე წვდომისთვის შედით სისტემაში და ჩართეთ სინქრონიზაცია</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
-<translation id="9081543426177426948">თქვენ მიერ მონახულებული საიტები არ ინახება ინკოგნიტო რეჟიმში</translation>
 <translation id="9086302186042011942">სინქრონიზაცია</translation>
 <translation id="9086455579313502267">შეუძლებელია ქსელში შესვლა</translation>
 <translation id="9100505651305367705">სტატიების გამარტივებული ხედში ჩვენების შემოთავაზება (თუ მხარდაჭერილია)</translation>

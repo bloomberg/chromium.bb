@@ -16,7 +16,6 @@
 <translation id="1056775291175587022">Нема мрежи</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="1073899992769346247">Заменете ја или наполнете ја батеријата</translation>
-<translation id="1077253978657569125">Сакаме да го подобриме ова!</translation>
 <translation id="108486256082349153">Мобилен уред: <ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426">Добар ден <ph name="GIVEN_NAME" />,</translation>
 <translation id="109942774857561566">Досадно ми е</translation>
@@ -486,6 +485,7 @@
 <translation id="4696813013609194136">Отклучете го уредот со код на родител</translation>
 <translation id="4702647871202761252">Исклучен е екранот за приватност</translation>
 <translation id="4705716602320768426">Испратете повратни информации</translation>
+<translation id="4730258224256997107">Помогнете ни да го подобриме ова!</translation>
 <translation id="4731797938093519117">Пристап за родители</translation>
 <translation id="4734965478015604180">Хоризонтално</translation>
 <translation id="4735498845456076464">Кратенката од тастатура <ph name="LAUNCHER_KEY_NAME" /> + Број се промени. За да ги користите копчињата за функции, притиснете го копчето <ph name="LAUNCHER_KEY_NAME" /> + Копче од горниот ред.</translation>
@@ -695,6 +695,7 @@
 <translation id="6482559668224714696">Лупа за цел екран</translation>
 <translation id="6490471652906364588">USB-Ц уред (десна порта)</translation>
 <translation id="649452524636452238">PIN-код на паметна картичка</translation>
+<translation id="6500818810472529210">Види го резултатот во „Пребарување на Google“</translation>
 <translation id="6501401484702599040">Екранот се емитува на <ph name="RECEIVER_NAME" /></translation>
 <translation id="6520517963145875092">Изберете прозорец за да сликате</translation>
 <translation id="652139407789908527">Вашиот екран ќе остане затемнет подолго од вообичаено (до една минута) при ова ажурирање. Не притискајте го копчето за вклучување додека ажурирањето е во тек.</translation>

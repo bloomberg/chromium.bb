@@ -1763,6 +1763,16 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="NEON support"/>
 </enum>
 
+<enum name="AndroidComponentLoaderLoadStatus">
+  <int value="0" label="Component loaded"/>
+  <int value="1" label="Failed to connect to ComponentsProviderService"/>
+  <int value="2" label="Remote service exception"/>
+  <int value="3" label="ComponentsProviderService returned an error"/>
+  <int value="4" label="Missing manifest"/>
+  <int value="5" label="Malformed manifest"/>
+  <int value="6" label="Invalid version field in the manifest"/>
+</enum>
+
 <enum name="AndroidDefaultBrowserPromoOutcomeType">
   <obsolete>
     Removed Mar 2021; experiment is done and the data isn't useful.
@@ -3445,6 +3455,16 @@ Unknown properties are collapsed to zero. -->
       label="selected downloading the page, and then selected all downloads"/>
   <int value="3"
       label="selected all downloads, and then selected downloading the page"/>
+</enum>
+
+<enum name="AppPackageNameAllowlistParseStatus">
+  <int value="0" label="Allowlist is loaded successfully"/>
+  <int value="1" label="Used allowlist from cache"/>
+  <int value="2" label="Manifest is missing fileds"/>
+  <int value="3" label="Allowlist is expired"/>
+  <int value="4" label="Allowlist file is missing"/>
+  <int value="5" label="IO error"/>
+  <int value="6" label="Allowlist bloomfilter is malformatted"/>
 </enum>
 
 <enum name="AppPackageNameLoggingRuleStatus">
@@ -81598,6 +81618,9 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Throttled client side"/>
   <int value="3" label="Attempting registration with newly generated keys"/>
   <int value="4" label="Attempting registration with preexisting keys"/>
+  <int value="5"
+      label="Attempting registration while having persistent authentication
+             error"/>
 </enum>
 
 <enum name="TrustedVaultFetchKeysAttempt">

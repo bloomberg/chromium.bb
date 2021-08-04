@@ -16,7 +16,6 @@ Here are some things that you can try to get started.</translation>
 <translation id="1056775291175587022">No networks</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="1073899992769346247">Replace or recharge the battery</translation>
-<translation id="1077253978657569125">We want to improve this!</translation>
 <translation id="108486256082349153">Mobile: <ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426">Good afternoon <ph name="GIVEN_NAME" />,</translation>
 <translation id="109942774857561566">I'm bored</translation>
@@ -485,6 +484,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="4696813013609194136">Unlock device with parent code</translation>
 <translation id="4702647871202761252">Privacy screen is off</translation>
 <translation id="4705716602320768426">File feedback</translation>
+<translation id="4730258224256997107">Help us improve this!</translation>
 <translation id="4731797938093519117">Parent access</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="4735498845456076464">The <ph name="LAUNCHER_KEY_NAME" /> + number keyboard shortcut has changed. To use function keys, press the <ph name="LAUNCHER_KEY_NAME" /> key + a key on the top row.</translation>
@@ -694,6 +694,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="6482559668224714696">Full-screen magnifier</translation>
 <translation id="6490471652906364588">USB-C device (right port)</translation>
 <translation id="649452524636452238">Smart card PIN</translation>
+<translation id="6500818810472529210">See result in Google Search</translation>
 <translation id="6501401484702599040">Casting screen to <ph name="RECEIVER_NAME" /></translation>
 <translation id="6520517963145875092">Select a window to capture</translation>
 <translation id="652139407789908527">Your screen will go blank for longer than usual (up to a minute) during this update. Please don't press the power button while the update is in progress.</translation>

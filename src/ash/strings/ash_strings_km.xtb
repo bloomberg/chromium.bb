@@ -16,7 +16,6 @@
 <translation id="1056775291175587022">មិនមានបណ្ដាញទេ</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />៖ <ph name="RESOLUTION" /></translation>
 <translation id="1073899992769346247">ប្ដូរ ឬសាកថ្ម​ឡើងវិញ</translation>
-<translation id="1077253978657569125">យើងចង់កែលម្អចំណុចនេះ!</translation>
 <translation id="108486256082349153">បណ្ដាញទូរសព្ទចល័ត៖ <ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426">ទិវា​សួស្ដី <ph name="GIVEN_NAME" /></translation>
 <translation id="109942774857561566">ខ្ញុំ​ធុញ</translation>
@@ -485,6 +484,7 @@
 <translation id="4696813013609194136">ដោះ​សោ​ឧបករណ៍​ដោយ​ប្រើ​កូដ​សម្រាប់​មាតា​បិតា</translation>
 <translation id="4702647871202761252">អេក្រង់​ឯកជនភាព​ត្រូវបានបិទ</translation>
 <translation id="4705716602320768426">ដាក់បញ្ជូនមតិកែលម្អ</translation>
+<translation id="4730258224256997107">ជួយយើង​កែលម្អ​ចំណុចនេះ!</translation>
 <translation id="4731797938093519117">សិទ្ធិចូលប្រើប្រាស់​សម្រាប់មាតាបិតា</translation>
 <translation id="4734965478015604180">ផ្ដេក​</translation>
 <translation id="4735498845456076464">បានប្ដូរ​ផ្លូវកាត់ក្ដារចុចលេខ + <ph name="LAUNCHER_KEY_NAME" />។ ដើម្បីប្រើគ្រាប់ចុចមុខងារ សូមចុចគ្រាប់ចុច <ph name="LAUNCHER_KEY_NAME" /> + គ្រាប់ចុចនៅជួរខាងលើ។</translation>
@@ -694,6 +694,7 @@
 <translation id="6482559668224714696">កែវ​ពង្រីក​ពេញ​អេក្រង់</translation>
 <translation id="6490471652906364588">ឧបករណ៍ USB-C (រន្ធខាងស្តាំ)</translation>
 <translation id="649452524636452238">កូដ PIN របស់​កាត​ឆ្លាតវៃ</translation>
+<translation id="6500818810472529210">មើលលទ្ធផលនៅក្នុង​កម្មវិធីស្វែងរកនៅលើ Google</translation>
 <translation id="6501401484702599040">កំពុងខាសអេក្រង់ទៅ <ph name="RECEIVER_NAME" /></translation>
 <translation id="6520517963145875092">ជ្រើសរើសវិនដូណាមួយ ដើម្បីថត</translation>
 <translation id="652139407789908527">អេក្រង់របស់អ្នក​នឹងមិន​បង្ហាញអ្វីទាំងអស់យូរជាងធម្មតា (រហូតដល់​មួយនាទី) អំឡុងពេល​ដំឡើងកំណែនេះ។ សូមកុំចុច​ប៊ូតុងថាមពល នៅពេល​កំពុងដំឡើងកំណែ​។</translation>

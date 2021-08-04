@@ -16,7 +16,6 @@
 <translation id="1056775291175587022">אין רשתות</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="1073899992769346247">צריך להחליף את הסוללה או לטעון אותה</translation>
-<translation id="1077253978657569125">אנחנו רוצים לשפר את התכונה הזו!</translation>
 <translation id="108486256082349153">סלולרי: <ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426">אחה"צ טובים <ph name="GIVEN_NAME" />,</translation>
 <translation id="109942774857561566">משעמם לי</translation>
@@ -485,6 +484,7 @@
 <translation id="4696813013609194136">ביטול נעילת המכשיר באמצעות קוד הורה</translation>
 <translation id="4702647871202761252">מסך הפרטיות כבוי</translation>
 <translation id="4705716602320768426">מילוי משוב</translation>
+<translation id="4730258224256997107">רוצה לעזור לנו לשפר את התוצאה הזו?</translation>
 <translation id="4731797938093519117">גישת הורים</translation>
 <translation id="4734965478015604180">אופקי</translation>
 <translation id="4735498845456076464">מקשי הקיצור <ph name="LAUNCHER_KEY_NAME" /> + ספרה הוחלפו. כדי לדמות את הפעולה של מקשי הפונקציה, יש להקיש על המקש <ph name="LAUNCHER_KEY_NAME" /> + מקש כלשהו בשורה העליונה של המקלדת.</translation>
@@ -694,6 +694,7 @@
 <translation id="6482559668224714696">זכוכית מגדלת במסך מלא</translation>
 <translation id="6490471652906364588">‏מכשיר עם יציאת USB-C (יציאה ימנית)</translation>
 <translation id="649452524636452238">קוד האימות של הכרטיס החכם</translation>
+<translation id="6500818810472529210">‏לתוצאות בחיפוש Google</translation>
 <translation id="6501401484702599040">העברת המסך אל <ph name="RECEIVER_NAME" /> מתבצעת</translation>
 <translation id="6520517963145875092">יש לבחור חלון לצילום</translation>
 <translation id="652139407789908527">במהלך העדכון, ייתכן שהתצוגה במסך תופסק לפרק זמן ארוך מהרגיל (עד דקה). אין ללחוץ על לחצן ההפעלה עד להשלמת העדכון.</translation>

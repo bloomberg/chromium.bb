@@ -1284,7 +1284,7 @@
     "message": "Changes to quality criteria for PWAs using Trusted Web Activity"
   },
   "models/issues_manager/WasmCrossOriginModuleSharingIssue.ts | linkTitle": {
-    "message": "Wasm cross-origin module sharing deprecation"
+    "message": "Restricting Wasm module sharing to same-origin"
   },
   "models/logs/logs-meta.ts | clear": {
     "message": "clear"
@@ -10758,7 +10758,7 @@
     "message": "Click to show issue in the issues tab"
   },
   "ui/components/issue_counter/IssueLinkIcon.ts | clickToShowIssueWithTitle": {
-    "message": "Click to open the issue tab and show issue '{title}'"
+    "message": "Click to open the issue tab and show issue: {title}"
   },
   "ui/components/issue_counter/IssueLinkIcon.ts | issueUnavailable": {
     "message": "Issue unavailable at this time"
