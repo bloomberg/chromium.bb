@@ -97,6 +97,7 @@ WebViewImpl::WebViewImpl(WebViewDelegate          *delegate,
     , d_isReadyForDelete(false)
     , d_wasDestroyed(false)
     , d_isDeletingSoon(false)
+    , d_isTakingKeyboardFocus(false)
     , d_ncHitTestEnabled(false)
     , d_ncHitTestPendingAck(false)
     , d_lastNCHitTestResult(HTCLIENT)
@@ -432,7 +433,11 @@ void WebViewImpl::takeKeyboardFocus()
     DCHECK(Statics::isInBrowserMainThread());
     DCHECK(!d_wasDestroyed);
     if (d_widget) {
+        base::AutoReset<bool> isTakingKeyboardFocus(&d_isTakingKeyboardFocus, true);
         d_widget->focus();
+        if (d_delegate) {
+            d_delegate->focused(this);
+        }
     }
 }
 
@@ -972,8 +977,11 @@ void WebViewImpl::OnWebContentsFocused(content::RenderWidgetHost*)
 {
     DCHECK(Statics::isInBrowserMainThread());
     if (d_wasDestroyed) return;
-    if (d_delegate)
-        d_delegate->focused(this);
+    if (d_delegate) {
+        if (!d_isTakingKeyboardFocus) {
+            d_delegate->focused(this);
+        }
+    }
 }
 
 void WebViewImpl::OnWebContentsLostFocus(content::RenderWidgetHost*)
