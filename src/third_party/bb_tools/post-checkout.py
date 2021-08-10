@@ -296,16 +296,27 @@ def get_toolchain_if_necessary(from_commit, to_commit):
   latest_version_found = None
   latest_version_number_found = 0
   for version in os.listdir(toolchain_dir):
-    version_number = int(re.search('^\d+', version).group())
+    if not os.path.isdir(os.path.join(toolchain_dir, version)):
+      print('Ignoring toolchain: %s (not a directory)' % version)
+      sys.stdout.flush()
+      continue
+    try:
+      version_number = int(re.search('^\d+', version).group())
+    except AttributeError:
+      print('Ignoring toolchain: %s (not a number)' % version)
+      sys.stdout.flush()
+      continue
     if (version_number > current_major_version or
         version_number < latest_version_number_found):
       continue
     latest_version_found = version
     latest_version_number_found = version_number
   if latest_version_found is None:
-    return
+    raise Exception('Toolchain not found!')
   toolchain_base_url = os.path.normpath(
       os.path.join(toolchain_dir, latest_version_found))
+  print('Using toolchain: %s' % toolchain_base_url)
+  sys.stdout.flush()
   env = {k:v for k,v in os.environ.items()}
   env['DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL'] = toolchain_base_url
   toolchain_hash = [os.path.splitext(x)[0]
