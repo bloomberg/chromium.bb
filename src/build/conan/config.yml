@@ -1,3 +1,6 @@
 versions:
     "88.0.4324.206_bb7101":
       folder: "all"
+profiles:
+  - vs2019_32_staticCRT_Debug
+  - vs2019_32_staticCRT_RelWithDebInfo
