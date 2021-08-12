@@ -1942,7 +1942,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsReattachAfterCrashTest,
   RunTestWithPanel("network");
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsTest, AutoAttachToWindowOpen) {
+// Very flaky on Linux only.  http://crbug.com/1216219
+#if defined(OS_LINUX)
+#define MAYBE_AutoAttachToWindowOpen DISABLED_AutoAttachToWindowOpen
+#else
+#define MAYBE_AutoAttachToWindowOpen AutoAttachToWindowOpen
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsTest, MAYBE_AutoAttachToWindowOpen) {
   OpenDevToolsWindow(kWindowOpenTestPage, false);
   DevToolsWindowTesting::Get(window_)->SetOpenNewWindowForPopups(true);
   DevToolsWindowCreationObserver observer;
@@ -2044,6 +2050,10 @@ class RemoteDebuggingTest : public extensions::ExtensionApiTest {
 #endif
 IN_PROC_BROWSER_TEST_F(RemoteDebuggingTest, MAYBE_RemoteDebugger) {
   ASSERT_TRUE(RunExtensionTest("target_list")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(RemoteDebuggingTest, DiscoveryPage) {
+  ASSERT_TRUE(RunExtensionTest("discovery_page")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsTest, PolicyDisallowed) {

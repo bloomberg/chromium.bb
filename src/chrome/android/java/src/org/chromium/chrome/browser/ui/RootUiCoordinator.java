@@ -515,7 +515,7 @@ public class RootUiCoordinator
             mMessageDispatcher = MessagesFactory.createMessageDispatcher(container,
                     mMessageContainerCoordinator::getMessageMaxTranslation,
                     new ChromeMessageAutodismissDurationProvider(),
-                    mWindowAndroid::startAnimationOverContent);
+                    mWindowAndroid::startAnimationOverContent, mActivity.getWindowAndroid());
             mMessageQueueMediator = new ChromeMessageQueueMediator(mBrowserControlsManager,
                     mMessageContainerCoordinator, mActivityTabProvider,
                     mLayoutStateProviderOneShotSupplier, mActivity.getModalDialogManagerSupplier(),
@@ -733,7 +733,7 @@ public class RootUiCoordinator
             AdaptiveToolbarButtonController adaptiveToolbarButtonController =
                     new AdaptiveToolbarButtonController(mActivity, new SettingsLauncherImpl(),
                             mActivity.getLifecycleDispatcher(),
-                            new AdaptiveButtonActionMenuCoordinator(),
+                            new AdaptiveButtonActionMenuCoordinator(), mActivity.getWindowAndroid(),
                             SharedPreferencesManager.getInstance());
             adaptiveToolbarButtonController.addButtonVariant(
                     AdaptiveToolbarButtonVariant.NEW_TAB, newTabButtonController);

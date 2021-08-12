@@ -44,7 +44,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1792647875738159689">స్కానింగ్ రద్దు అవుతోంది</translation>
-<translation id="1851218745569890714">వీడియో సమావేశం నిర్వహించడం</translation>
+<translation id="1851218745569890714">వీడియో మీటింగ్‌ నిర్వహించడం</translation>
 <translation id="1887850431809612466">హార్డ్‌వేర్ పునర్విమర్శ</translation>
 <translation id="1905710495812624430">అనుమతించిన గరిష్ట ప్రయత్నాలు మించిపోయారు.</translation>
 <translation id="1908234395526491708">UDP రిక్వెస్ట్ వైఫల్యాలు</translation>
@@ -98,7 +98,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="315116470104423982">మొబైల్ డేటా</translation>
 <translation id="315738237743207937">క్యాప్టివ్ పోర్టల్ గుర్తించబడింది</translation>
-<translation id="3188257591659621405">నా ఫైల్‌లు</translation>
+<translation id="3188257591659621405">నా ఫైళ్లు</translation>
 <translation id="3199982728237701504">డాక్యుమెంట్ ఫీడర్ (రెండు వైపులా)</translation>
 <translation id="3226405216343213872">స్కానర్‌ల కోసం వెతుకుతోంది</translation>
 <translation id="3246869037381808805">1 రోజుకు పైగా ఉన్న ప్రింట్ టాస్క్‌లు తీసివేయబడతాయి</translation>
@@ -128,6 +128,7 @@
 <translation id="38114475217616659">చరిత్ర మొత్తాన్ని క్లియర్ చేయి</translation>
 <translation id="3820172043799983114">PIN చెల్లదు.</translation>
 <translation id="3838338534323494292">కొత్త పాస్‌వర్డ్</translation>
+<translation id="3858860766373142691">పేరు</translation>
 <translation id="3865414814144988605">రిజల్యూషన్</translation>
 <translation id="387301095347517405">మీ బ్యాటరీ పూర్తిగా ఛార్జ్ అయిన పర్యాయాల సంఖ్య</translation>
 <translation id="3941014780699102620">హోస్ట్‌ను పరిష్కరించడంలో విఫలమైంది</translation>
@@ -222,7 +223,6 @@
 <translation id="5317780077021120954">సేవ్ చేయి</translation>
 <translation id="5318334351163689047">TCP రిక్వెస్ట్ వైఫల్యాలు</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
-<translation id="5327248766486351172">పేరు</translation>
 <translation id="5332948983412042822">ఇప్పుడే ఒక కొత్త దానిని ఎంచుకోండి</translation>
 <translation id="5333530671332546086">పోర్టల్ స్థితి తెలియదు</translation>
 <translation id="5372659122375744710">WiFi నెట్‌వర్క్ సురక్షితంగా లేదు</translation>
@@ -250,13 +250,13 @@
 <translation id="5866840822086176774">చాలా బలంగా ఉంది</translation>
 <translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
 <translation id="5916084858004523819">నిషేధించబడింది</translation>
-<translation id="5921506667911082617">{COUNT,plural, =1{మీ ఫైల్ విజయవంతంగా స్కాన్ చేయబడి, <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />కు సేవ్ చేయబడింది.}other{మీ ఫైల్‌లు విజయవంతంగా స్కాన్ చేయబడి, <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />కు సేవ్ చేయబడ్డాయి.}}</translation>
+<translation id="5921506667911082617">{COUNT,plural, =1{మీ ఫైల్ విజయవంతంగా స్కాన్ చేయబడి, <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />కు సేవ్ చేయబడింది.}other{మీ ఫైళ్లు విజయవంతంగా స్కాన్ చేయబడి, <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />కు సేవ్ చేయబడ్డాయి.}}</translation>
 <translation id="5931523347251946569">ఫైల్ కనుగొనబడలేదు</translation>
 <translation id="5972388717451707488">ఇంజిన్‌ను అప్‌డేట్ చేయండి</translation>
 <translation id="6037291330010597344">స్కానర్ డాక్యుమెంట్ ఫీడర్ ఖాలీగా ఉంది. డాక్యుమెంట్‌లను జోడించి, మళ్లీ ట్రై చేయండి.</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
 <translation id="6040852767465482106">అనామక ఐడెంటిటీ</translation>
-<translation id="604124094241169006">స్వయంచాలకంగా</translation>
+<translation id="604124094241169006">ఆటోమేటిక్‌గా</translation>
 <translation id="6048107060512778456">విఫలమైంది - కాగితం జామ్ అయింది</translation>
 <translation id="6050189528197190982">బూడిద రంగు ప్రమాణం</translation>
 <translation id="6058625436358447366">దీనిని ముగించడానికి, మీ పాత, కొత్త పాస్‌వర్డ్‌లను నమోదు చేయండి</translation>

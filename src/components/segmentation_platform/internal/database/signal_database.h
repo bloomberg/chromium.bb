@@ -24,7 +24,7 @@ namespace segmentation_platform {
 class SignalDatabase {
  public:
   using SuccessCallback = base::OnceCallback<void(bool)>;
-  using Sample = std::pair<base::Time, absl::optional<int32_t>>;
+  using Sample = std::pair<base::Time, int32_t>;
   using SamplesCallback = base::OnceCallback<void(std::vector<Sample>)>;
 
   virtual ~SignalDatabase() = default;
@@ -37,7 +37,6 @@ class SignalDatabase {
   virtual void WriteSample(proto::SignalType signal_type,
                            uint64_t name_hash,
                            absl::optional<int32_t> value,
-                           base::Time timestamp,
                            SuccessCallback callback) = 0;
 
   // Called to get signals collected between any two timestamps. The samples are

@@ -16,7 +16,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -64,6 +63,7 @@ import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.tasks.tab_management.PriceMessageService.PriceTabData;
 import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator.TabListMode;
+import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider.TabFavicon;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherMediator.PriceWelcomeMessageController;
 import org.chromium.chrome.tab_ui.R;
@@ -451,7 +451,7 @@ class TabListMediator {
             if (mModel.indexFromId(tab.getId()) == TabModel.INVALID_TAB_INDEX) return;
             mModel.get(mModel.indexFromId(tab.getId()))
                     .model.set(TabProperties.FAVICON,
-                            mTabListFaviconProvider.getDefaultFaviconDrawable(tab.isIncognito()));
+                            mTabListFaviconProvider.getDefaultFavicon(tab.isIncognito()));
         }
 
         @Override
@@ -1234,24 +1234,7 @@ class TabListMediator {
                     TabProperties.PAGE_INFO_ICON_DRAWABLE_ID, mSearchChipIconDrawableId);
         }
 
-        if (mMode == TabListMode.GRID && pseudoTab.hasRealTab() && !pseudoTab.isIncognito()) {
-            if (PriceTrackingUtilities.isTrackPricesOnTabsEnabled()
-                    && isUngroupedTab(pseudoTab.getId())) {
-                mModel.get(index).model.set(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER,
-                        new ShoppingPersistedTabDataFetcher(
-                                pseudoTab.getTab(), mPriceWelcomeMessageController));
-            } else {
-                mModel.get(index).model.set(
-                        TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER, null);
-            }
-            if (StoreTrackingUtilities.isStoreHoursOnTabsEnabled()) {
-                mModel.get(index).model.set(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER,
-                        new StorePersistedTabDataFetcher(pseudoTab.getTab()));
-            }
-        } else {
-            mModel.get(index).model.set(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER, null);
-            mModel.get(index).model.set(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER, null);
-        }
+        setupPersistedTabDataFetcherForTab(pseudoTab, index);
 
         updateFaviconForTab(pseudoTab, null);
         boolean forceUpdate = isSelected && !quickMode;
@@ -1453,8 +1436,7 @@ class TabListMediator {
                         .with(TabProperties.URL_DOMAIN,
                                 isRealTab ? getDomainForTab(pseudoTab.getTab()) : null)
                         .with(TabProperties.FAVICON,
-                                mTabListFaviconProvider.getDefaultFaviconDrawable(
-                                        pseudoTab.isIncognito()))
+                                mTabListFaviconProvider.getDefaultFavicon(pseudoTab.isIncognito()))
                         .with(TabProperties.IS_SELECTED, isSelected)
                         .with(TabProperties.IPH_PROVIDER, showIPH ? mIphProvider : null)
                         .with(CARD_ALPHA, 1f)
@@ -1520,6 +1502,8 @@ class TabListMediator {
         } else {
             mModel.add(index, new SimpleRecyclerViewAdapter.ListItem(mUiType, tabInfo));
         }
+
+        setupPersistedTabDataFetcherForTab(pseudoTab, index);
 
         updateFaviconForTab(pseudoTab, null);
 
@@ -1668,19 +1652,40 @@ class TabListMediator {
         return mModel.indexFromId(tabId);
     }
 
+    private void setupPersistedTabDataFetcherForTab(PseudoTab pseudoTab, int index) {
+        if (mMode == TabListMode.GRID && pseudoTab.hasRealTab() && !pseudoTab.isIncognito()) {
+            if (PriceTrackingUtilities.isTrackPricesOnTabsEnabled()
+                    && isUngroupedTab(pseudoTab.getId())) {
+                mModel.get(index).model.set(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER,
+                        new ShoppingPersistedTabDataFetcher(
+                                pseudoTab.getTab(), mPriceWelcomeMessageController));
+            } else {
+                mModel.get(index).model.set(
+                        TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER, null);
+            }
+            if (StoreTrackingUtilities.isStoreHoursOnTabsEnabled()) {
+                mModel.get(index).model.set(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER,
+                        new StorePersistedTabDataFetcher(pseudoTab.getTab()));
+            }
+        } else {
+            mModel.get(index).model.set(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER, null);
+            mModel.get(index).model.set(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER, null);
+        }
+    }
+
     @VisibleForTesting
     void updateFaviconForTab(PseudoTab pseudoTab, @Nullable Bitmap icon) {
         int modelIndex = mModel.indexFromId(pseudoTab.getId());
         if (modelIndex == Tab.INVALID_TAB_ID) return;
         List<Tab> relatedTabList = getRelatedTabsForId(pseudoTab.getId());
 
-        Callback<Drawable> faviconCallback = drawable -> {
-            assert drawable != null;
+        Callback<TabListFaviconProvider.TabFavicon> faviconCallback = favicon -> {
+            assert favicon != null;
             // Need to re-get the index because the original index can be stale when callback is
             // triggered.
             int index = mModel.indexFromId(pseudoTab.getId());
-            if (index != TabModel.INVALID_TAB_INDEX && drawable != null) {
-                mModel.get(index).model.set(TabProperties.FAVICON, drawable);
+            if (index != TabModel.INVALID_TAB_INDEX && favicon != null) {
+                mModel.get(index).model.set(TabProperties.FAVICON, favicon);
             }
         };
 
@@ -1711,8 +1716,8 @@ class TabListMediator {
 
         // If there is an available icon, we fetch favicon synchronously; otherwise asynchronously.
         if (icon != null) {
-            Drawable drawable = mTabListFaviconProvider.getFaviconForUrlSync(icon);
-            mModel.get(modelIndex).model.set(TabProperties.FAVICON, drawable);
+            TabFavicon favicon = mTabListFaviconProvider.getFaviconFromBitmap(icon);
+            mModel.get(modelIndex).model.set(TabProperties.FAVICON, favicon);
             return;
         }
 

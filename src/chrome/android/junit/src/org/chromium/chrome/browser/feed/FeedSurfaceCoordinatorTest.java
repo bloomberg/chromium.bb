@@ -351,7 +351,9 @@ public class FeedSurfaceCoordinatorTest {
                 null, mSectionHeaderView, false, new TestSurfaceDelegate(), mPageNavigationDelegate,
                 mProfileMock, false, mBottomSheetController, mShareDelegateSupplier, null,
                 NewTabPageLaunchOrigin.UNKNOWN, mPrivacyPreferencesManager,
-                new FeedLaunchReliabilityLoggingState(SURFACE_TYPE, SURFACE_CREATION_TIME_NS),
-                null);
+                ()
+                        -> { return null; },
+                new FeedLaunchReliabilityLoggingState(SURFACE_TYPE, SURFACE_CREATION_TIME_NS), null,
+                false);
     }
 }

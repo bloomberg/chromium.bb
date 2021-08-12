@@ -104,8 +104,13 @@ void av1_init_warp_params(InterPredParams *inter_pred_params,
 
   if (av1_allow_warp(mi, warp_types, &xd->global_motion[mi->ref_frame[ref]], 0,
                      inter_pred_params->scale_factors,
-                     &inter_pred_params->warp_params))
+                     &inter_pred_params->warp_params)) {
+#if CONFIG_REALTIME_ONLY
+    aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_FEATURE,
+                       "Warped motion is disabled in realtime only build.");
+#endif
     inter_pred_params->mode = WARP_PRED;
+  }
 }
 
 void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
@@ -154,6 +159,9 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
         inter_pred_params->subsampling_y, &inter_pred_params->conv_params);
   }
 #endif
+  else {
+    assert(0 && "Unsupported inter_pred_params->mode");
+  }
 }
 
 static const uint8_t wedge_master_oblique_odd[MASK_MASTER_SIZE] = {

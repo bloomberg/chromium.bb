@@ -1917,7 +1917,8 @@ const FeatureEntry::FeatureParam kCommercePriceTracking_PriceAlerts[] = {
 const FeatureEntry::FeatureParam
     kCommercePriceTracking_PriceAlerts_WithOptimizationGuide[] = {
         {"enable_price_tracking", "true"},
-        {"price_tracking_with_optimization_guide", "true"}};
+        {"price_tracking_with_optimization_guide", "true"},
+        {"enable_persisted_tab_data_maintenance", "true"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TabGroupAutoCreation[] =
     {{"enable_tab_group_auto_creation", "false"}};
@@ -3461,7 +3462,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAdaptiveButtonInTopToolbarCustomizationDescription,
      kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
-         chrome::android::kAdaptiveButtonInTopToolbarCustomization,
+         chrome::android::kAdaptiveButtonInTopToolbarCustomizationV2,
          kAdaptiveButtonInTopToolbarCustomizationVariations,
          "OptionalToolbarButtonCustomization")},
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
@@ -7094,7 +7095,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContinuousSearchDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kContinuousSearch,
                                     kContinuousSearchFeatureVariations,
-                                    "ContinuousSearchVariations")},
+                                    "ContinuousSearchNavigation")},
 
     {"enable-experimental-accessibility-labels",
      flag_descriptions::kExperimentalAccessibilityLabelsName,

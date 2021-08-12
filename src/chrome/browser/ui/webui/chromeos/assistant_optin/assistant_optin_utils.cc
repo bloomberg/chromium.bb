@@ -15,6 +15,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/services/assistant/public/proto/activity_control_settings_common.pb.h"
 #include "components/arc/arc_prefs.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/prefs/pref_service.h"
@@ -23,6 +24,9 @@
 #include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+
+using AssistantActivityControlConsent =
+    sync_pb::UserConsentTypes::AssistantActivityControlConsent;
 
 namespace {
 
@@ -231,9 +235,11 @@ base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
   return dictionary;
 }
 
-void RecordActivityControlConsent(Profile* profile,
-                                  std::string ui_audit_key,
-                                  bool opted_in) {
+void RecordActivityControlConsent(
+    Profile* profile,
+    std::string ui_audit_key,
+    bool opted_in,
+    AssistantActivityControlConsent::SettingType setting_type) {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   // This function doesn't care about browser sync consent.
   DCHECK(identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin));
@@ -245,6 +251,7 @@ void RecordActivityControlConsent(Profile* profile,
   consent.set_ui_audit_key(ui_audit_key);
   consent.set_status(opted_in ? UserConsentTypes::GIVEN
                               : UserConsentTypes::NOT_GIVEN);
+  consent.set_setting_type(setting_type);
 
   ConsentAuditorFactory::GetForProfile(profile)
       ->RecordAssistantActivityControlConsent(account_id, consent);
@@ -254,12 +261,37 @@ bool IsHotwordDspAvailable() {
   return chromeos::CrasAudioHandler::Get()->HasHotwordDevice();
 }
 
-bool IsVoiceMatchEnforcedOff(const PrefService* prefs) {
-  // If the hotword preference is managed to always disabled, then we should not
-  // show Voice Match flow.
-  return prefs->IsManagedPreference(
-             assistant::prefs::kAssistantHotwordEnabled) &&
-         !prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled);
+bool IsVoiceMatchEnforcedOff(const PrefService* prefs,
+                             bool is_oobe_in_progress) {
+  // If the hotword preference is managed to always disabled Voice Match flow is
+  // hidden.
+  if (prefs->IsManagedPreference(assistant::prefs::kAssistantHotwordEnabled) &&
+      !prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled)) {
+    return true;
+  }
+  // If Voice Match is disabled by policy during OOBE, then Voice Match flow is
+  // hidden.
+  if (is_oobe_in_progress &&
+      !prefs->GetBoolean(
+          assistant::prefs::kAssistantVoiceMatchEnabledDuringOobe)) {
+    return true;
+  }
+  return false;
+}
+
+AssistantActivityControlConsent::SettingType
+GetActivityControlConsentSettingType(const SettingZippyList& setting_zippy) {
+  if (setting_zippy.size() > 1) {
+    return AssistantActivityControlConsent::ALL;
+  }
+  auto setting_id = setting_zippy[0].setting_set_id();
+  if (setting_id == assistant::SettingSetId::DA) {
+    return AssistantActivityControlConsent::DEVICE_APPS;
+  }
+  if (setting_id == assistant::SettingSetId::WAA) {
+    return AssistantActivityControlConsent::WEB_AND_APP_ACTIVITY;
+  }
+  return AssistantActivityControlConsent::SETTING_TYPE_UNSPECIFIED;
 }
 
 }  // namespace chromeos

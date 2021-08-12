@@ -17,10 +17,13 @@
 #include "base/callback_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
+#include "base/time/time.h"
+#include "base/trace_event/typed_macros.h"
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
 #include "components/segmentation_platform/internal/database/signal_database.h"
 #include "components/segmentation_platform/internal/database/signal_storage_config.h"
 #include "components/segmentation_platform/internal/proto/types.pb.h"
+#include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/public/config.h"
 
 namespace {
@@ -42,8 +45,10 @@ std::set<SignalIdentifier> CollectAllSignalIdentifiers(
     const auto& metadata = segment_info.model_metadata();
     for (int i = 0; i < metadata.features_size(); i++) {
       const auto& feature = metadata.features(i);
-      if (feature.has_name_hash() && feature.has_type())
+      if (feature.name_hash() != 0 &&
+          feature.type() != proto::SignalType::UNKNOWN_SIGNAL_TYPE) {
         signal_ids.insert(std::make_pair(feature.name_hash(), feature.type()));
+      }
     }
   }
   return signal_ids;
@@ -106,6 +111,7 @@ void DatabaseMaintenanceImpl::OnSegmentInfoCallback(
         segment_infos) {
   std::set<SignalIdentifier> signal_ids =
       CollectAllSignalIdentifiers(segment_infos);
+  stats::RecordMaintenanceSignalIdentifierCount(signal_ids.size());
 
   auto all_tasks = GetAllTasks(signal_ids);
   auto first_task = LinkTasks(std::move(all_tasks));
@@ -180,6 +186,7 @@ void DatabaseMaintenanceImpl::CleanupSignalStorageProcessNext(
 void DatabaseMaintenanceImpl::CleanupSignalStorageDone(
     base::OnceClosure next_action,
     std::vector<CleanupItem> cleaned_up_signals) {
+  stats::RecordMaintenanceCleanupSignalSuccessCount(cleaned_up_signals.size());
   signal_storage_config_->UpdateSignalsForCleanup(cleaned_up_signals);
   std::move(next_action).Run();
 }
@@ -209,7 +216,7 @@ void DatabaseMaintenanceImpl::RecordCompactionResult(
     proto::SignalType signal_type,
     uint64_t name_hash,
     bool success) {
-  // TODO(nyquist): Add metrics for this.
+  stats::RecordMaintenanceCompactionResult(signal_type, success);
 }
 
 void DatabaseMaintenanceImpl::CompactSamplesDone(

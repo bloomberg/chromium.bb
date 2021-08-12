@@ -24,7 +24,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import argparse
+import hashlib
 import json
+import multiprocessing
 import os
 import queue
 import re
@@ -34,7 +36,6 @@ import subprocess
 import sys
 import tempfile
 import threading
-import traceback
 import uuid
 
 
@@ -140,25 +141,33 @@ def catfile_writefile(stdout, path, chunk_size=4096):
     raise Exception('Unexpected line: %s (for %s)' % (first_line, path))
   size = int(size.decode('utf-8'))
   remaining = size
+  m = hashlib.sha1()
   with open(path, 'wb') as f:
     while remaining > 0:
       buf = stdout.read(min(chunk_size, remaining))
+      m.update(buf)
       remaining -= len(buf)
       f.write(buf)
   char = stdout.read(1)
   if char != b'\n':
     raise Exception('Expected terminating LF, got: %s' % char)
+  return m.digest()
+
+
+def hash_path(path, chunk_size=4096):
+  m = hashlib.sha1()
+  with open(path, 'rb') as f:
+    chunk = f.read(chunk_size)
+    while chunk:
+      m.update(chunk)
+      chunk = f.read(chunk_size)
+  return m.digest()
 
 
 def handle_catfile_output(stdout, path, metadata):
-  root_path = os.path.join(ROOT_DIR, path)
-  if os.path.exists(root_path):
-    rm_force(root_path)
-  os.makedirs(os.path.dirname(root_path), exist_ok=True)
-  mode = metadata.get('mode', DEFAULT_MODE)
-  filetype = metadata.get('type', None)
-  if '7z' == filetype:
-    with tempfile.TemporaryDirectory() as tempdir:
+  with tempfile.TemporaryDirectory() as tempdir:
+    filetype = metadata.get('type', None)
+    if '7z' == filetype:
       compressed_path = os.path.join(tempdir, uuid.uuid4().hex + '.7z')
       catfile_writefile(stdout, compressed_path)
       p = subprocess.run(
@@ -172,19 +181,32 @@ def handle_catfile_output(stdout, path, metadata):
           cwd=tempdir)
       if 0 != p.returncode:
         raise Exception('Failed: %s' % p)
-      decompressed_path = [
+      temp_path = [
           os.path.join(tempdir, x)
           for x in os.listdir(tempdir)
           if x != os.path.basename(compressed_path)][0]
-      shutil.move(decompressed_path, root_path)
-    os.utime(root_path)
-  else:
-    catfile_writefile(stdout, root_path)
-  os.chmod(root_path, mode)
+      os.utime(temp_path)
+      temp_hash = None
+    else:
+      temp_path = os.path.join(tempdir, uuid.uuid4().hex)
+      temp_hash = catfile_writefile(stdout, temp_path)
+
+    mode = metadata.get('mode', DEFAULT_MODE)
+    dest_path = os.path.join(ROOT_DIR, path)
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+    if os.path.exists(dest_path):
+      if temp_hash is None:
+        temp_hash = hash_path(temp_path)
+      if hash_path(dest_path) == temp_hash:
+        os.chmod(dest_path, mode)
+        return False
+      rm_force(dest_path)
+    shutil.move(temp_path, dest_path)
+    os.chmod(dest_path, mode)
+    return True
 
 
-def restore_changed_files(nongit_repo, nongit_branch, changed_files):
-  ensure_nongit_dir(args.nongit_repo, to_manifest['branch'])
+def restore_changed_files(input_queue, done_queue):
   p_catfile = subprocess.Popen(
       [
         'git',
@@ -195,40 +217,58 @@ def restore_changed_files(nongit_repo, nongit_branch, changed_files):
       stdout=subprocess.PIPE,
       cwd=nongit_dir)
 
-  catfile_queue = queue.Queue()
-  def read_catfile_output():
-    try:
-      total = len(changed_files)
-      print('Checking out %d files from nongit repo:' % total)
-      sys.stdout.flush()
-      done = 0
-      prev_stars = 0
-      sys.stdout.write('  [' + '.' * 40 + ']')
-      sys.stdout.flush()
-      while True:
-        item = catfile_queue.get()
-        if not item:
-          break
-        handle_catfile_output(p_catfile.stdout, *item)
-        done += 1
-        stars = int((done * 40) / total)
-        if stars != prev_stars:
-          sys.stdout.write('\r  [' + '*' * stars + '.' * (40-stars) + ']')
-          sys.stdout.flush()
-      print('')
-      sys.stdout.flush()
-    except Exception:
-      traceback.print_exc()
-      os._exit(1)
-
-  read_catfile_thread = start_thread(read_catfile_output)
-  for path, metadata in changed_files.items():
-    catfile_queue.put((path, metadata))
+  while True:
+    input_tuple = input_queue.get()
+    if input_tuple is None:
+      break
+    path, metadata = input_tuple
     line = '%s\n' % metadata['sha']
     p_catfile.stdin.write(line.encode('utf-8'))
-  catfile_queue.put(None)
+    p_catfile.stdin.flush()
+    done_queue.put(handle_catfile_output(p_catfile.stdout, path, metadata))
   p_catfile.stdin.close()
-  read_catfile_thread.join()
+
+
+def handle_all_changed_files(changed_files):
+  total = len(changed_files)
+  print('Checking out %d files from nongit repo:' % total)
+  sys.stdout.flush()
+  written = 0
+  done = 0
+  prev_stars = 0
+  sys.stdout.write('  [' + '.' * 40 + ']')
+  sys.stdout.flush()
+  input_queue = queue.Queue()
+  done_queue = queue.Queue()
+  cpu_count = multiprocessing.cpu_count()
+  num_workers = 1 if total < 100 * cpu_count else cpu_count
+  worker_threads = []
+
+  for input_tuple in changed_files:
+    input_queue.put(input_tuple)
+  for i in range(num_workers):
+    input_queue.put(None)
+
+  for i in range(num_workers):
+    worker_threads.append(
+        start_thread(lambda: restore_changed_files(input_queue, done_queue)))
+
+  while done != total:
+    did_write = done_queue.get()
+    done += 1
+    if did_write:
+      written += 1
+    stars = int((done * 40) / total)
+    if stars != prev_stars:
+      sys.stdout.write('\r  [' + '*' * stars + '.' * (40-stars) + ']')
+      sys.stdout.flush()
+  print('')
+  if written != total:
+    print('%d files were changed.' % written)
+  sys.stdout.flush()
+
+  for t in worker_threads:
+    t.join()
 
 
 def get_toolchain_if_necessary(from_commit, to_commit):
@@ -256,16 +296,27 @@ def get_toolchain_if_necessary(from_commit, to_commit):
   latest_version_found = None
   latest_version_number_found = 0
   for version in os.listdir(toolchain_dir):
-    version_number = int(re.search('^\d+', version).group())
+    if not os.path.isdir(os.path.join(toolchain_dir, version)):
+      print('Ignoring toolchain: %s (not a directory)' % version)
+      sys.stdout.flush()
+      continue
+    try:
+      version_number = int(re.search('^\d+', version).group())
+    except AttributeError:
+      print('Ignoring toolchain: %s (not a number)' % version)
+      sys.stdout.flush()
+      continue
     if (version_number > current_major_version or
         version_number < latest_version_number_found):
       continue
     latest_version_found = version
     latest_version_number_found = version_number
   if latest_version_found is None:
-    return
+    raise Exception('Toolchain not found!')
   toolchain_base_url = os.path.normpath(
       os.path.join(toolchain_dir, latest_version_found))
+  print('Using toolchain: %s' % toolchain_base_url)
+  sys.stdout.flush()
   env = {k:v for k,v in os.environ.items()}
   env['DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL'] = toolchain_base_url
   toolchain_hash = [os.path.splitext(x)[0]
@@ -285,38 +336,54 @@ def get_toolchain_if_necessary(from_commit, to_commit):
       cwd=os.path.join(ROOT_DIR, 'src'))
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--from-commit', help='From commit')
-parser.add_argument('--to-commit', default='HEAD', help='To commit')
-parser.add_argument('--nongit-repo', help='Nongit repo')
-args = parser.parse_args(sys.argv[1:])
+def main(argv):
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--from-commit', help='From commit')
+  parser.add_argument('--to-commit', default='HEAD', help='To commit')
+  parser.add_argument('--nongit-repo', help='Nongit repo')
+  parser.add_argument('--clean', action='store_true', help='Clean files')
+  args = parser.parse_args(argv[1:])
 
-from_files = {}
-if args.from_commit:
-  from_manifest = load_nongit_manifest(args.from_commit)
-  from_files = load_file_metadata(from_manifest) if from_manifest else {}
+  from_files = {}
+  if args.from_commit:
+    from_manifest = load_nongit_manifest(args.from_commit)
+    from_files = load_file_metadata(from_manifest) if from_manifest else {}
 
-to_manifest = load_nongit_manifest(args.to_commit)
-if to_manifest is None:
-  raise Exception('Failed to load .nongit manifest')
-to_files = load_file_metadata(to_manifest)
+  to_manifest = load_nongit_manifest(args.to_commit)
+  if to_manifest is None:
+    raise Exception('Failed to load .nongit manifest')
+  to_files = load_file_metadata(to_manifest)
 
-# Delete files that no longer exist.
-for path, metadata in from_files.items():
-  if path not in to_files:
-    root_path = os.path.join(ROOT_DIR, path)
-    if os.path.isfile(root_path):
-      rm_clean_dirs(root_path)
+  # Delete files that no longer exist.
+  for path, metadata in from_files.items():
+    if path not in to_files:
+      root_path = os.path.join(ROOT_DIR, path)
+      if os.path.isfile(root_path):
+        rm_clean_dirs(root_path)
 
-changed_files = {
-    path: metadata
-    for path, metadata in to_files.items()
-    if (path not in from_files or
-        from_files[path]['sha'] != metadata['sha'] or
-        not os.path.exists(os.path.join(ROOT_DIR, path)))
-}
+  if args.clean:
+    count = 0
+    for path, metadata in to_files.items():
+      root_path = os.path.join(ROOT_DIR, path)
+      if os.path.isfile(root_path):
+        count += 1
+        rm_clean_dirs(root_path)
+    print('Cleaned %d files' % count)
+    return 0
 
-if changed_files:
-  restore_changed_files(args.nongit_repo, to_manifest['branch'], changed_files)
+  changed_files = [
+      (path, metadata)
+      for path, metadata in to_files.items()
+      if (path not in from_files or
+          from_files[path]['sha'] != metadata['sha'] or
+          not os.path.exists(os.path.join(ROOT_DIR, path)))
+  ]
 
-get_toolchain_if_necessary(args.from_commit, args.to_commit)
+  if changed_files:
+    ensure_nongit_dir(args.nongit_repo, to_manifest['branch'])
+    handle_all_changed_files(changed_files)
+
+  get_toolchain_if_necessary(args.from_commit, args.to_commit)
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv))

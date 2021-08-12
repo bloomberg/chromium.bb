@@ -9649,6 +9649,22 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOS.ReadingList.MessagesPromptToggle.Off">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
+  <description>
+    The user toggled the Reading List Messages prompt setting to off. iOS only.
+  </description>
+</action>
+
+<action name="IOS.ReadingList.MessagesPromptToggle.On">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
+  <description>
+    The user toggled the Reading List Messages prompt setting to on. iOS only.
+  </description>
+</action>
+
 <action name="IOS.SearchEngines.RecentlyViewed.Delete">
   <owner>sczs@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
@@ -13421,6 +13437,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Mobile.AdaptiveToolbarButton.SettingsPage.Opened">
+  <owner>shaktisahu@chromium.org</owner>
+  <owner>chrome-segmentation-platform@chromium.org</owner>
+  <description>
+    Recorded when the adaptive toolbar settings page is opened.
+  </description>
+</action>
+
 <action name="Mobile.OmniboxContextMenu.SearchCopiedImage">
   <owner>rkgibson@google.com</owner>
   <owner>stkhapugin@google.com</owner>
@@ -13573,7 +13597,15 @@ should be able to be added at any place in this file.
 <action name="MobileAdaptiveMenuCustomize">
   <owner>chrome-segmentation-platform@google.com</owner>
   <description>
-    Adaptive button action menu opening the adaptive button preferences.
+    User selected Edit Shortcut option from the adaptive toolbar button action
+    menu thereby opening the toolbar shortcut preference page.
+  </description>
+</action>
+
+<action name="MobileAdaptiveMenuShown">
+  <owner>chrome-segmentation-platform@google.com</owner>
+  <description>
+    User long pressed the adaptive toolbar button and the action menu was shown.
   </description>
 </action>
 
@@ -22935,6 +22967,69 @@ should be able to be added at any place in this file.
   <description>
     The top row was horizontally scrolled. Recorded only once per open share
     sheet.
+  </description>
+</action>
+
+<action name="SharingHubDesktop.CastSelected">
+  <owner>jeffreycohen@chromium.org</owner>
+  <owner>kristipark@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The cast feature was selected in the desktop sharing hub.
+  </description>
+</action>
+
+<action name="SharingHubDesktop.CopyURLSelected">
+  <owner>jeffreycohen@chromium.org</owner>
+  <owner>kristipark@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The QR code feature was selected in the desktop sharing hub.
+  </description>
+</action>
+
+<action name="SharingHubDesktop.QRCodeSelected">
+  <owner>jeffreycohen@chromium.org</owner>
+  <owner>kristipark@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The QR code feature was selected in the desktop sharing hub.
+  </description>
+</action>
+
+<action name="SharingHubDesktop.SavePageSelected">
+  <owner>jeffreycohen@chromium.org</owner>
+  <owner>kristipark@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The Save page feature was selected in the desktop sharing hub.
+  </description>
+</action>
+
+<action name="SharingHubDesktop.ScreenshotSelected">
+  <owner>jeffreycohen@chromium.org</owner>
+  <owner>kristipark@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The screenshot feature was selected in the desktop sharing hub.
+  </description>
+</action>
+
+<action name="SharingHubDesktop.SendTabToSelfSelected">
+  <owner>jeffreycohen@chromium.org</owner>
+  <owner>kristipark@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The send tab to self feature was selected in the desktop sharing hub.
+  </description>
+</action>
+
+<action name="SharingHubDesktop.ThirdPartyAppSelected">
+  <owner>jeffreycohen@chromium.org</owner>
+  <owner>kristipark@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    A third party option was selected in the desktop sharing hub.
   </description>
 </action>
 

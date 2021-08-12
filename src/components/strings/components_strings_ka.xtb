@@ -804,6 +804,7 @@
 <translation id="3793574014653384240">ახლახან დაფიქსირებული ავარიული გათიშვების ნომრები და გამომწვევი მიზეზები</translation>
 <translation id="3797522431967816232">Prc3 (კონვერტი)</translation>
 <translation id="3799805948399000906">შრიფტი მოთხოვნილია</translation>
+<translation id="380329542618494757">სახელი</translation>
 <translation id="3807366285948165054">სურათის წანაცვლება X ღერძზე</translation>
 <translation id="3807873520724684969">დაიბლოკა საზიანო კონტენტი.</translation>
 <translation id="3810973564298564668">მართვა</translation>
@@ -818,6 +819,7 @@
 <translation id="3848487483475744267"><ph name="CREATE_GOOGLE_DOC_FOCUSED_FRIENDLY_MATCH_TEXT" />, ახალი Google Doc-ის სწრაფად შესაქმნელად დააჭირეთ კლავიშს Tab, შემდეგ კი Enter-ს</translation>
 <translation id="385051799172605136">უკან</translation>
 <translation id="3858027520442213535">განახლების თარიღი და დრო</translation>
+<translation id="3858860766373142691">სახელი</translation>
 <translation id="3881478300875776315">ნაკლები ხაზის ჩვენება</translation>
 <translation id="3884278016824448484">კონფლიქტური მოწყობილობის იდენტიფიკატორი</translation>
 <translation id="3885155851504623709">სამოქალაქო ოლქი</translation>
@@ -1007,7 +1009,7 @@
 <translation id="4506176782989081258">შეცდომა დამოწმებისას: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">სისტემის ადმინისტრატორთან დაკავშირება</translation>
 <translation id="450710068430902550">ადმინისტრატორთან გაზიარება</translation>
-<translation id="4508814173490746936">Touch ID-ის გამოყენება ვერ მოხერხდა</translation>
+<translation id="4508814173490746936">Touch ID-ს გამოყენება ვერ მოხერხდა</translation>
 <translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, ამ გვერდის Google Translate-ით სათარგმნად დააჭირეთ კლავიშს Tab, შემდეგ კი Enter-ს</translation>
 <translation id="4510487217173779431">Chou4 (კონვერტი)</translation>
 <translation id="4515275063822566619">ბარათებისა და მისამართების შესახებ ინფორმაცია მიღებულია Chrome-იდან და თქვენი Google ანგარიშიდან (<ph name="ACCOUNT_EMAIL" />). მათი მართვა შეგიძლიათ <ph name="BEGIN_LINK" />პარამეტრებში<ph name="END_LINK" />.</translation>
@@ -1245,7 +1247,6 @@
 <translation id="5317780077021120954">შენახვა</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> / <ph name="NUM_MATCHES" />-დან</translation>
 <translation id="5324080437450482387">საკონტაქტო ინფორმაციის არჩევა</translation>
-<translation id="5327248766486351172">სახელი</translation>
 <translation id="5329858041417644019">თქვენი ბრაუზერი არ არის მართული</translation>
 <translation id="5332219387342487447">მიწოდების მეთოდი</translation>
 <translation id="5333022057423422993">თქვენ მიერ ახლახან გამოყენებული პაროლი Chrome-მა გაჟონილ მონაცემებში იპოვა. თქვენი ანგარიშების დაცვის მიზნით, გირჩევთ, შეამოწმოთ თქვენი შენახული პაროლები.</translation>
@@ -2245,7 +2246,7 @@
 <translation id="9035022520814077154">უსაფრთხოების შეცდომა</translation>
 <translation id="9038649477754266430">გვერდების უფრო სწრაფად ჩატვირთვის მიზნით პროგნოზირების სერვისის გამოყენება</translation>
 <translation id="9039213469156557790">გარდა ამისა, ეს გვერდი შეიცავს სხვა არაუსაფრთხო რესურსებს. ამ რესურსების დათვალიერება გადაცემისას სხვა პირებს შეუძლიათ, ხოლო თავდამსხმელს მათი მოდიფიკაცია გვერდის მუშაობის შეცვლის მიზნით შეუძლია.</translation>
-<translation id="9044359186343685026">Touch ID-ის გამოყენება</translation>
+<translation id="9044359186343685026">Touch ID-ს გამოყენება</translation>
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> — <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">თქვენ სცადეთ <ph name="DOMAIN" />-თან დაკავშირება, მაგრამ სერვერმა წარმოადგინა არასწორი სერტიფიკატი.</translation>
 <translation id="9050666287014529139">საიდუმლო ფრაზა</translation>

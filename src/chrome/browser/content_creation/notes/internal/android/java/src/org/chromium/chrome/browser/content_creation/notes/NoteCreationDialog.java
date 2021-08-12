@@ -97,17 +97,15 @@ public class NoteCreationDialog extends DialogFragment {
         // There is a corner case where this function can be triggered by toggling the battery saver
         // state, resulting in all the variables being reset. The only way out is to destroy this
         // dialog to bring the user back to the web page.
-        if (getNoteViewAt(0) == null) {
+        if (mTitle == null) {
             onDestroyView();
             return;
         }
 
-        // Re-calculate the left/right paddings for first/last items.
-        setPadding(true, false, getNoteViewAt(0));
-
+        // Force recycler view to redraw to recalculate the left/right paddings for first/last
+        // items.
         RecyclerView noteCarousel = mContentView.findViewById(R.id.note_carousel);
-        int lastIndex = noteCarousel.getAdapter().getItemCount() - 1;
-        if (getNoteViewAt(lastIndex) != null) setPadding(false, true, getNoteViewAt(lastIndex));
+        noteCarousel.getAdapter().notifyDataSetChanged();
         centerCurrentNote();
     }
 
@@ -258,12 +256,20 @@ public class NoteCreationDialog extends DialogFragment {
     private void focus(int index) {
         ++mNbTemplateSwitches;
         View noteView = getNoteViewAt(index);
+
+        // When scrolling fast the view might be already recycled. See crbug.com/1238306
+        if (noteView == null) return;
+
         noteView.setElevation(
                 getActivity().getResources().getDimension(R.dimen.focused_note_elevation));
     }
 
     private void unFocus(int index) {
         View noteView = getNoteViewAt(index);
+
+        // When scrolling fast the view might be already recycled. See crbug.com/1238306
+        if (noteView == null) return;
+
         noteView.setElevation(0);
     }
 

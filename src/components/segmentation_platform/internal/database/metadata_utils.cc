@@ -4,9 +4,12 @@
 
 #include "components/segmentation_platform/internal/database/metadata_utils.h"
 
+#include "base/metrics/metrics_hashes.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
+#include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/internal/database/signal_key.h"
+#include "components/segmentation_platform/internal/proto/aggregation.pb.h"
 #include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
 #include "components/segmentation_platform/internal/proto/types.pb.h"
@@ -40,11 +43,13 @@ uint64_t GetExpectedTensorLength(const proto::Feature& feature) {
 }  // namespace
 
 ValidationResult ValidateSegmentInfo(const proto::SegmentInfo& segment_info) {
-  if (!segment_info.has_segment_id())
-    return ValidationResult::SEGMENT_ID_NOT_FOUND;
+  if (segment_info.segment_id() ==
+      optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN) {
+    return ValidationResult::kSegmentIDNotFound;
+  }
 
   if (!segment_info.has_model_metadata())
-    return ValidationResult::METADATA_NOT_FOUND;
+    return ValidationResult::kMetadataNotFound;
 
   return ValidateMetadata(segment_info.model_metadata());
 }
@@ -52,64 +57,69 @@ ValidationResult ValidateSegmentInfo(const proto::SegmentInfo& segment_info) {
 ValidationResult ValidateMetadata(
     const proto::SegmentationModelMetadata& model_metadata) {
   if (model_metadata.time_unit() == proto::TimeUnit::UNKNOWN_TIME_UNIT)
-    return ValidationResult::TIME_UNIT_INVALID;
+    return ValidationResult::kTimeUnitInvald;
 
-  return ValidationResult::VALIDATION_SUCCESS;
+  return ValidationResult::kValidationSuccess;
 }
 
 ValidationResult ValidateMetadataFeature(const proto::Feature& feature) {
-  auto signal_type = GetSignalTypeForFeature(feature);
-  if (signal_type == proto::SignalType::UNKNOWN_SIGNAL_TYPE) {
-    return ValidationResult::SIGNAL_TYPE_INVALID;
+  if (feature.type() == proto::SignalType::UNKNOWN_SIGNAL_TYPE)
+    return ValidationResult::kSignalTypeInvalid;
+
+  if ((feature.type() == proto::SignalType::HISTOGRAM_ENUM ||
+       feature.type() == proto::SignalType::HISTOGRAM_VALUE) &&
+      feature.name().empty()) {
+    return ValidationResult::kFeatureNameNotFound;
   }
 
-  if ((signal_type == proto::SignalType::HISTOGRAM_ENUM ||
-       signal_type == proto::SignalType::HISTOGRAM_VALUE) &&
-      !feature.has_name()) {
-    return ValidationResult::FEATURE_NAME_NOT_FOUND;
+  if (feature.name_hash() == 0)
+    return ValidationResult::kFeatureNameHashNotFound;
+
+  if (!feature.name().empty() &&
+      base::HashMetricName(feature.name()) != feature.name_hash()) {
+    return ValidationResult::kFeatureNameHashDoesNotMatchName;
   }
 
-  if (!GetNameHashForFeature(feature).has_value())
-    return ValidationResult::FEATURE_NAME_HASH_NOT_FOUND;
-
-  if (!feature.has_aggregation())
-    return ValidationResult::FEATURE_AGGREGATION_NOT_FOUND;
-
-  if (!feature.has_bucket_count())
-    return ValidationResult::FEATURE_BUCKET_COUNT_NOT_FOUND;
-
-  if (!feature.has_tensor_length())
-    return ValidationResult::FEATURE_TENSOR_LENGTH_NOT_FOUND;
+  if (feature.aggregation() == proto::Aggregation::UNKNOWN)
+    return ValidationResult::kFeatureAggregationNotFound;
 
   if (GetExpectedTensorLength(feature) != feature.tensor_length())
-    return ValidationResult::FEATURE_TENSOR_LENGTH_INVALID;
+    return ValidationResult::kFeatureTensorLengthInvalid;
 
-  return ValidationResult::VALIDATION_SUCCESS;
+  return ValidationResult::kValidationSuccess;
 }
 
 ValidationResult ValidateMetadataAndFeatures(
     const proto::SegmentationModelMetadata& model_metadata) {
   auto metadata_result = ValidateMetadata(model_metadata);
-  if (metadata_result != ValidationResult::VALIDATION_SUCCESS)
+  if (metadata_result != ValidationResult::kValidationSuccess)
     return metadata_result;
 
   for (int i = 0; i < model_metadata.features_size(); ++i) {
     auto feature = model_metadata.features(i);
     auto feature_result = ValidateMetadataFeature(feature);
-    if (feature_result != ValidationResult::VALIDATION_SUCCESS)
+    if (feature_result != ValidationResult::kValidationSuccess)
       return feature_result;
   }
 
-  return ValidationResult::VALIDATION_SUCCESS;
+  return ValidationResult::kValidationSuccess;
 }
 
-ValidationResult ValidateSegementInfoMetadataAndFeatures(
+ValidationResult ValidateSegmentInfoMetadataAndFeatures(
     const proto::SegmentInfo& segment_info) {
   auto segment_info_result = ValidateSegmentInfo(segment_info);
-  if (segment_info_result != ValidationResult::VALIDATION_SUCCESS)
+  if (segment_info_result != ValidationResult::kValidationSuccess)
     return segment_info_result;
 
   return ValidateMetadataAndFeatures(segment_info.model_metadata());
+}
+
+void SetFeatureNameHashesFromName(
+    proto::SegmentationModelMetadata* model_metadata) {
+  for (int i = 0; i < model_metadata->features_size(); ++i) {
+    proto::Feature* feature = model_metadata->mutable_features(i);
+    feature->set_name_hash(base::HashMetricName(feature->name()));
+  }
 }
 
 bool HasExpiredOrUnavailableResult(const proto::SegmentInfo& segment_info) {
@@ -120,7 +130,6 @@ bool HasExpiredOrUnavailableResult(const proto::SegmentInfo& segment_info) {
       base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromMicroseconds(
           segment_info.prediction_result().timestamp_us()));
 
-  DCHECK(segment_info.has_model_metadata());
   base::TimeDelta result_ttl =
       segment_info.model_metadata().result_time_to_live() *
       GetTimeUnit(segment_info.model_metadata());
@@ -132,7 +141,6 @@ bool HasFreshResults(const proto::SegmentInfo& segment_info) {
   if (!segment_info.has_prediction_result())
     return false;
 
-  DCHECK(segment_info.has_model_metadata());
   const proto::SegmentationModelMetadata& metadata =
       segment_info.model_metadata();
 
@@ -147,7 +155,6 @@ bool HasFreshResults(const proto::SegmentInfo& segment_info) {
 
 base::TimeDelta GetTimeUnit(
     const proto::SegmentationModelMetadata& model_metadata) {
-  DCHECK(model_metadata.has_time_unit());
   proto::TimeUnit time_unit = model_metadata.time_unit();
   switch (time_unit) {
     case proto::TimeUnit::YEAR:
@@ -170,20 +177,6 @@ base::TimeDelta GetTimeUnit(
       NOTREACHED();
       return base::TimeDelta();
   }
-}
-
-absl::optional<uint64_t> GetNameHashForFeature(const proto::Feature& feature) {
-  if (!feature.has_name_hash())
-    return absl::nullopt;
-
-  return feature.name_hash();
-}
-
-proto::SignalType GetSignalTypeForFeature(const proto::Feature& feature) {
-  if (!feature.has_type())
-    return proto::SignalType::UNKNOWN_SIGNAL_TYPE;
-
-  return feature.type();
 }
 
 SignalKey::Kind SignalTypeToSignalKind(proto::SignalType signal_type) {

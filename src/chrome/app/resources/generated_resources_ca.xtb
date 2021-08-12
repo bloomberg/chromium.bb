@@ -1629,7 +1629,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2715751256863167692">Amb aquesta actualització es restableix el dispositiu Chromebook i se suprimeixen les dades d'usuari actuals.</translation>
 <translation id="271639966356700691">Prem Ctrl+Alt+augmenta la brillantor per ampliar
 i Ctrl+Alt+disminueix la brillantor per reduir.</translation>
-<translation id="2716986496990888774">El teu pare o la teva mare gestiona aquesta opció de configuració.</translation>
+<translation id="2716986496990888774">El teu pare o mare gestiona aquesta opció de configuració.</translation>
 <translation id="2718395828230677721">Llum nocturna</translation>
 <translation id="2718998670920917754">El programari antivirus ha detectat un virus.</translation>
 <translation id="2719936478972253983">S'han bloquejat les galetes següents</translation>
@@ -2094,7 +2094,7 @@ i Ctrl+Alt+disminueix la brillantor per reduir.</translation>
 <translation id="32101887417650595">No es pot connectar amb la impressora</translation>
 <translation id="321084946921799184">Groc i blanc</translation>
 <translation id="321356136776075234">UO del dispositiu (per exemple, UO = dispositius Chromebook, CD = example, CD = com)</translation>
-<translation id="3214531106883826119"><ph name="BEGIN_BOLD" />Nota<ph name="END_BOLD" />: és possible que algú amb una veu similar a la de <ph name="SUPERVISED_USER_NAME" /> o amb una gravació pugui accedir als seus resultats personals.</translation>
+<translation id="3214531106883826119"><ph name="BEGIN_BOLD" />Nota<ph name="END_BOLD" />: és possible que una veu similar a la de <ph name="SUPERVISED_USER_NAME" /> o una gravació puguin accedir als seus resultats personals.</translation>
 <translation id="3216825226035747725">Els administradors de G Suite for Education determinen a quins serveis de Google poden accedir els usuaris mentre tenen la sessió iniciada en un compte d'aquest producte. Això pot incloure algunes funcions o serveis a què el teu fill no podia accedir anteriorment utilitzant aquest compte supervisat. Els administradors dels centres educatius han de proporcionar o obtenir consentiment perquè els usuaris menors d'edat puguin utilitzar els serveis.</translation>
 <translation id="3217843140356091325">Vols crear una drecera?</translation>
 <translation id="321799795901478485">ZIP Archiver</translation>
@@ -2646,6 +2646,7 @@ i Ctrl+Alt+disminueix la brillantor per reduir.</translation>
 <translation id="3799128412641261490">Configuració d'accés amb interruptors</translation>
 <translation id="3799903419983101749">Continua des d'on ho vas deixar. Pots definir que les aplicacions es restaurin automàticament a Configuració.</translation>
 <translation id="3800806661949714323">Mostra-ho tot (opció recomanada)</translation>
+<translation id="380329542618494757">Nom</translation>
 <translation id="3803345858388753269">Qualitat del vídeo</translation>
 <translation id="380408572480438692">L'activació de la recollida de dades de rendiment ajudarà Google a millorar el sistema amb el temps. No s'enviarà cap dada fins que no empleneu un informe de suggeriments (Alt-Maj-I) i les dades de rendiment. Podeu tornar a aquesta pantalla per desactivar la recopilació en qualsevol moment.</translation>
 <translation id="3807249107536149332"><ph name="EXTENSION_NAME" /> (amb identificador d'extensió "<ph name="EXTENSION_ID" />") no es permet a les pantalles d'inici de sessió.</translation>
@@ -2707,6 +2708,7 @@ i Ctrl+Alt+disminueix la brillantor per reduir.</translation>
 <translation id="3856096718352044181">Verifica que aquest és un proveïdor vàlid o torna-ho a provar més tard</translation>
 <translation id="3856800405688283469">Selecciona la zona horària</translation>
 <translation id="3857807444929313943">Aixeca el dit i toca de nou</translation>
+<translation id="3858860766373142691">Nom</translation>
 <translation id="3861638017150647085">El nom d'usuari "<ph name="USERNAME" />" no està disponible</translation>
 <translation id="3861977424605124250">Mostra a l'inici</translation>
 <translation id="386239283124269513">&amp;Restaura el grup</translation>
@@ -3175,7 +3177,7 @@ i Ctrl+Alt+disminueix la brillantor per reduir.</translation>
 <translation id="4402755511846832236">Bloqueja els llocs web perquè no sàpiguen quan estàs utilitzant aquest dispositiu de manera activa</translation>
 <translation id="4403775189117163360">Tria una altra carpeta</translation>
 <translation id="4404136731284211429">Torna a analitzar</translation>
-<translation id="4404843640767531781">El teu pare o la teva mare ha bloquejat <ph name="APP_NAME" />. Demana-li permís per utilitzar aquesta aplicació.</translation>
+<translation id="4404843640767531781">El teu pare o mare ha bloquejat <ph name="APP_NAME" />. Demana-li permís per utilitzar aquesta aplicació.</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg i *.png</translation>
 <translation id="440653823335387109">PÀGINES QUE HAS LLEGIT</translation>
 <translation id="4406883609789734330">Subtítols instantanis</translation>
@@ -3859,7 +3861,7 @@ i Ctrl+Alt+disminueix la brillantor per reduir.</translation>
 <translation id="5154702632169343078">Assumpte</translation>
 <translation id="5157635116769074044">Fixa aquesta pàgina a la pantalla d'inici...</translation>
 <translation id="5159094275429367735">Configura Crostini</translation>
-<translation id="5159419673777902220">El teu pare o la teva mare han desactivat els permisos d'extensions</translation>
+<translation id="5159419673777902220">El teu pare o mare han desactivat els permisos d'extensions</translation>
 <translation id="5160634252433617617">Teclat físic</translation>
 <translation id="5160857336552977725">Inicieu la sessió al vostre dispositiu (<ph name="DEVICE_TYPE" />)</translation>
 <translation id="5161251470972801814">Dispositius USB fabricats per <ph name="VENDOR_NAME" /></translation>
@@ -4012,7 +4014,6 @@ i Ctrl+Alt+disminueix la brillantor per reduir.</translation>
 <translation id="532247166573571973">És possible que no es pugui accedir al servidor. Torneu-ho a provar més tard.</translation>
 <translation id="5324300749339591280">Llista d'aplicacions</translation>
 <translation id="5324780743567488672">Estableix la zona horària automàticament en funció de la meva ubicació</translation>
-<translation id="5327248766486351172">Nom</translation>
 <translation id="5327570636534774768">Aquest dispositiu està marcat perquè el gestioni un altre domini. Dona'l de baixa d'aquest domini abans de configurar el mode de demostració.</translation>
 <translation id="5327912693242073631">Les funcions que necessitin enviar notificacions no funcionaran</translation>
 <translation id="532943162177641444">Toca la notificació que veuràs al telèfon <ph name="PHONE_NAME" /> per configurar el punt d'accés mòbil que pot utilitzar aquest dispositiu.</translation>
@@ -4662,7 +4663,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6059652578941944813">Jerarquia del certificat</translation>
 <translation id="6059925163896151826">Dispositius USB</translation>
 <translation id="6061882183774845124">Envia l'enllaç als teus dispositius</translation>
-<translation id="6063847492705284550"><ph name="BEGIN_BOLD" />Nota<ph name="END_BOLD" />: és possible que algú amb una veu similar a la de <ph name="SUPERVISED_USER_NAME" /> o amb una gravació pugui accedir als seus resultats personals. Per estalviar bateria, pots seleccionar a la configuració de l'Assistent de <ph name="SUPERVISED_USER_NAME" /> que l'opció "Hey Google" només estigui activada quan aquest dispositiu estigui connectat a una font d'alimentació.</translation>
+<translation id="6063847492705284550"><ph name="BEGIN_BOLD" />Nota<ph name="END_BOLD" />: És possible que una veu similar a la de <ph name="SUPERVISED_USER_NAME" /> o una gravació puguin accedir als seus resultats personals. Per estalviar bateria, pots seleccionar a la configuració de l'Assistent de <ph name="SUPERVISED_USER_NAME" /> que l'opció "Hey Google" només estigui activada quan aquest dispositiu estigui connectat a una font d'alimentació.</translation>
 <translation id="6064217302520318294">Bloqueig de pantalla</translation>
 <translation id="6065289257230303064">Atributs del directori del subjecte del certificat</translation>
 <translation id="6066794465984119824">La funció resum de la imatge no està definida</translation>
@@ -5303,7 +5304,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6771503742377376720">És una entitat emissora de certificats</translation>
 <translation id="6775163072363532304">Els dispositius disponibles es mostraran aquí.</translation>
 <translation id="6777817260680419853">S'ha bloquejat la redirecció</translation>
-<translation id="6778737459546443941">El teu pare o la teva mare encara no ho han aprovat</translation>
+<translation id="6778737459546443941">El teu pare o mare encara no ho han aprovat</translation>
 <translation id="6779447100905857289">els teus carretons</translation>
 <translation id="677965093459947883">Molt petita</translation>
 <translation id="6781005693196527806">&amp;Gestiona els motors de cerca...</translation>
@@ -6226,7 +6227,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7753735457098489144">Ha fallat la instal·lació perquè falta espai d'emmagatzematge. Per alliberar espai, suprimeix fitxers de l'emmagatzematge del dispositiu.</translation>
 <translation id="7754347746598978109">Sense permís per utilitzar JavaScript</translation>
 <translation id="7754704193130578113">Pregunta on es desarà cada fitxer abans de baixar-lo</translation>
-<translation id="7755287808199759310">El teu pare o la teva mare et poden desbloquejar el lloc</translation>
+<translation id="7755287808199759310">El teu pare o mare et poden desbloquejar el lloc</translation>
 <translation id="7757592200364144203">Canvia el nom del dispositiu</translation>
 <translation id="7757787379047923882">Text compartit des del dispositiu <ph name="DEVICE_NAME" /></translation>
 <translation id="7758143121000533418">Family Link</translation>
@@ -7590,7 +7591,7 @@ Obtén informació sobre les dades que Google recull i sobre el motiu pel qual h
 <translation id="917510707618656279">Pregunta'm quan un lloc web vulgui accedir a dispositius Bluetooth</translation>
 <translation id="9176476835295860688">Envia dades d'ús i de diagnòstic. En aquests moments aquest dispositiu envia automàticament a Google dades de diagnòstic, del dispositiu i d'ús d'aplicacions. Aquestes dades ajudaran a millorar l'estabilitat del sistema i de les aplicacions, entre altres característiques. Una part de les dades agregades també serà útil per a les aplicacions i per als partners de Google, com ara els desenvolupadors d'Android. El propietari ha aplicat aquesta <ph name="BEGIN_LINK1" />opció de configuració<ph name="END_LINK1" />. Si tens activada l'opció Activitat al web i en aplicacions addicional, és possible que aquestes dades es desin al teu Compte de Google. <ph name="BEGIN_LINK2" />Més informació<ph name="END_LINK2" /></translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" />: hi ha un dispositiu Bluetooth connectat</translation>
-<translation id="9176817945195089764"><ph name="DOMAIN" /> no és una organització vàlida. Contacta amb l'administrador. Si ets un administrador, pots configurar la teva organització en visitar: g.co/ChromeEnterpriseAccount.</translation>
+<translation id="9176817945195089764"><ph name="DOMAIN" /> no és una organització vàlida. Contacta amb l'administrador. Si ets administrador, pots configurar la teva organització a g.co/ChromeEnterpriseAccount.</translation>
 <translation id="9179524979050048593">Nom d'usuari a la pantalla d'inici de sessió</translation>
 <translation id="9180281769944411366">Aquest procés pot tardar uns quants minuts. S'està iniciant el contenidor de Linux.</translation>
 <translation id="9180380851667544951">El lloc web pot compartir la pantalla</translation>
