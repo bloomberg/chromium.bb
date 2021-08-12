@@ -128,6 +128,7 @@
 <translation id="38114475217616659">Xóa toàn bộ lịch sử</translation>
 <translation id="3820172043799983114">Mã PIN không hợp lệ.</translation>
 <translation id="3838338534323494292">Mật khẩu mới</translation>
+<translation id="3858860766373142691">Tên</translation>
 <translation id="3865414814144988605">Độ phân giải</translation>
 <translation id="387301095347517405">Số lần pin của bạn được sạc đầy</translation>
 <translation id="3941014780699102620">Không phân giải được máy chủ</translation>
@@ -223,7 +224,6 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="5318334351163689047">Không gửi được yêu cầu TCP</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
-<translation id="5327248766486351172">Tên</translation>
 <translation id="5332948983412042822">Chọn ngay một mật khẩu mới</translation>
 <translation id="5333530671332546086">Trạng thái cổng không xác định</translation>
 <translation id="5372659122375744710">Mạng Wi-Fi không bảo mật</translation>
@@ -387,6 +387,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="8498220429738806196">Bộ đếm lưu lượng truy cập</translation>
 <translation id="8503813439785031346">Tên người dùng</translation>
 <translation id="8503836310948963452">Còn một vài phút nữa thôi…</translation>
+<translation id="8521021929829989041">Sử dụng làm thiết bị cá nhân</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8575298406870537639">Nhà mạng của bạn có thể yêu cầu bạn bật tùy chọn này để kết nối với mạng của họ. Hãy liên hệ với nhà mạng để biết thông tin chi tiết.</translation>
 <translation id="8576249514688522074">Chưa khởi chạy</translation>

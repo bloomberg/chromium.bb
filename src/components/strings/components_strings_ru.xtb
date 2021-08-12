@@ -406,7 +406,6 @@
 <translation id="2359347814217202136">{NUM_DAYS,plural, =0{Меньше чем через 1 день}=1{Через 1 день}one{Через {NUM_DAYS} день}few{Через {NUM_DAYS} дня}many{Через {NUM_DAYS} дней}other{Через {NUM_DAYS} дня}}</translation>
 <translation id="2359629602545592467">Несколько</translation>
 <translation id="2359808026110333948">Продолжить</translation>
-<translation id="2359961752320758691">Применен номер виртуальной карты.</translation>
 <translation id="236340516568226369">Меню изменения размера</translation>
 <translation id="2367567093518048410">Уровень</translation>
 <translation id="2372464001869762664">После подтверждения реквизиты карты из аккаунта Google будут переданы этому сайту. CVC-код можно найти в данных счета Plex.</translation>
@@ -804,6 +803,7 @@
 <translation id="3793574014653384240">Количество недавних сбоев и их причины</translation>
 <translation id="3797522431967816232">Prc3 (конверт)</translation>
 <translation id="3799805948399000906">Шрифт запрошен</translation>
+<translation id="380329542618494757">Имя</translation>
 <translation id="3807366285948165054">Смещение изображения по оси X</translation>
 <translation id="3807873520724684969">Заблокирован опасный контент</translation>
 <translation id="3810973564298564668">Настроить</translation>
@@ -818,6 +818,7 @@
 <translation id="3848487483475744267"><ph name="CREATE_GOOGLE_DOC_FOCUSED_FRIENDLY_MATCH_TEXT" />. Чтобы быстро создать документ Google, нажмите Tab, а затем Ввод.</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Обновить дату и время</translation>
+<translation id="3858860766373142691">Название</translation>
 <translation id="3881478300875776315">Показать меньше строк</translation>
 <translation id="3884278016824448484">Конфликт идентификаторов устройств</translation>
 <translation id="3885155851504623709">Округ</translation>
@@ -862,6 +863,7 @@
 <translation id="4067947977115446013">Введите действительный адрес</translation>
 <translation id="4072193657607981494">Загрузка правил</translation>
 <translation id="4072486802667267160">При обработке заказа произошла ошибка. Повторите попытку.</translation>
+<translation id="4073797364926776829">Посмотреть карту</translation>
 <translation id="4075732493274867456">Клиент и сервер поддерживают разные версии протокола SSL или набора шифров.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">Конфигурация прокси-сервера предусматривает использование URL PAC-скриптов вместо фиксированных прокси-серверов.</translation>
@@ -988,6 +990,7 @@
 <translation id="443121186588148776">Последовательный порт</translation>
 <translation id="4432688616882109544">Ваш сертификат отклонен сайтом <ph name="HOST_NAME" /> или не был выдан.</translation>
 <translation id="4432792777822557199">Страницы на этом языке (<ph name="SOURCE_LANGUAGE" />) будут автоматически переводиться на <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="4433642172056592619">Игнорируется, так как пользователь не связан с управлением этой машиной или она не находится под управлением.</translation>
 <translation id="4434045419905280838">Всплывающие окна и переадресация</translation>
 <translation id="4435702339979719576">Открытка</translation>
 <translation id="443673843213245140">Прокси-сервер отключен, но при этом его конфигурация задана явным образом.</translation>
@@ -1243,7 +1246,6 @@
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> из <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Выбрать контактные данные</translation>
-<translation id="5327248766486351172">Имя</translation>
 <translation id="5329858041417644019">Этот браузер не управляется администратором</translation>
 <translation id="5332219387342487447">Способ доставки</translation>
 <translation id="5333022057423422993">Пароль, который вы только что использовали, был раскрыт в результате утечки данных. Чтобы защитить свои аккаунты, проверьте надежность сохраненных паролей.</translation>
@@ -1358,6 +1360,7 @@
 <translation id="5759751709240058861">Использование и перемещение вашей камеры.</translation>
 <translation id="5763042198335101085">Укажите действительный адрес электронной почты.</translation>
 <translation id="5765072501007116331">Выберите адрес, чтобы посмотреть способы и условия доставки.</translation>
+<translation id="57689295674415555">Номер виртуальной карты не указан?</translation>
 <translation id="5776313857861697733">Приоритет</translation>
 <translation id="5778550464785688721">Полный контроль над MIDI-устройствами</translation>
 <translation id="5781136890105823427">Эксперимент включен</translation>
@@ -1459,7 +1462,6 @@
 <translation id="6113594885686374546">Кнопка "Продолжить поиск в истории". Нажмите Ввод, чтобы посмотреть похожие запросы в истории Chrome.</translation>
 <translation id="6116338172782435947">Просмотр текста и изображений, скопированных в буфер обмена</translation>
 <translation id="6120179357481664955">Запомнить идентификатор UPI?</translation>
-<translation id="6123290840358279103">Посмотреть виртуальную карту</translation>
 <translation id="6124432979022149706">Коннекторы Chrome Enterprise</translation>
 <translation id="6146055958333702838">Проверьте соединение кабелей, перезагрузите маршрутизаторы, модемы и другие
     сетевые устройства.</translation>

@@ -159,6 +159,7 @@
 <translation id="1164891049599601209">Käytetty petollisella sivustolla</translation>
 <translation id="1165039591588034296">Virhe</translation>
 <translation id="1166212789817575481">Sulje oikealla olevat välilehdet</translation>
+<translation id="1166583374608765787">Katso nimen muutos</translation>
 <translation id="1168020859489941584">Avautuu ajassa <ph name="TIME_REMAINING" />...</translation>
 <translation id="1170288591054440704">Pyydä lupaa, kun sivusto haluaa käyttää laitteelle asennettuja fontteja</translation>
 <translation id="1171135284592304528">Korosta tekstin syöttökohde, kun se muuttuu</translation>
@@ -312,6 +313,7 @@
 <translation id="1336902454946927954">Suojausavaimesi on lukittu, koska sormenjälkeäsi ei voitu tunnistaa. Avaa lukitus lisäämällä PIN-koodisi.</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> haluaa avata tämän sovelluksen.</translation>
 <translation id="1338950911836659113">Poistetaan…</translation>
+<translation id="1339009753652684748">Käytä Assistantia sanomalla "Ok Google". Jos haluat säästää virtaa, valitse Käytössä (suositus). Assistant vastaa vain, jos laite on kytketty virtalähteeseen tai laturiin.</translation>
 <translation id="13392265090583506">A11y</translation>
 <translation id="1340527397989195812">Varmuuskopioi mediatiedostot laitteelta Tiedostot-sovelluksen avulla.</translation>
 <translation id="1341988552785875222"><ph name="APP_NAME" /> asetti nykyisen taustakuvan. Saatat joutua poistamaan sovelluksen <ph name="APP_NAME" /> ennen kuin voit valita uuden taustakuvan.</translation>
@@ -325,6 +327,7 @@
 <translation id="1354045473509304750">Hyväksy edelleen, että <ph name="HOST" /> voi käyttää ja liikuttaa kameraasi</translation>
 <translation id="1355088139103479645">Poistetaanko kaikki data?</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> on estetty</translation>
+<translation id="1356178530321889280">Hae miltä tahansa sivuston alueelta klikkaamalla kakkospainikkeella ja valitsemalla "Hae sivun osasta Google Lensillä". Näin saat lisätietoja kuvasisällöstä, jota näet selatessasi ja shoppaillessasi internetissä.</translation>
 <translation id="1358741672408003399">Oikeinkirjoitus ja kielioppi</translation>
 <translation id="1359923111303110318">Voit avata laitteen Smart Lockilla. Avaa painamalla Enter.</translation>
 <translation id="1361164813881551742">Lisää manuaalisesti</translation>
@@ -427,6 +430,7 @@
 <translation id="146000042969587795">Kehys estettiin, koska se sisältää suojaamatonta sisältöä.</translation>
 <translation id="146219525117638703">ONC-tila</translation>
 <translation id="146220085323579959">Internetyhteys katkaistu. Tarkista internetyhteytesi ja yritä uudelleen.</translation>
+<translation id="1462850958694534228">Katso kuvakkeen muutos</translation>
 <translation id="1463112138205428654">Lisäsuojaus esti tiedoston (<ph name="FILE_NAME" />).</translation>
 <translation id="1464044141348608623">Älä salli sivustojen tietää, milloin käytät laitetta aktiivisesti</translation>
 <translation id="1464258312790801189">Tilisi</translation>
@@ -445,6 +449,7 @@
 <translation id="1477446329585670721"><ph name="DOMAIN" /> ei salli älykortin poistamista.</translation>
 <translation id="1478340334823509079">Lisätiedot: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Asentaminen ei ole käytössä.</translation>
+<translation id="1480571698637441426">Jos haluat saada räätälöityjä vastauksia kysymyksiin, anna Assistantin käyttää näytön kuvakaappausta. Tämä saattaa sisältää tietoja toistettavista kappaleista tai videoista.</translation>
 <translation id="1481537595330271162">Virhe levyn koon muuttamisessa</translation>
 <translation id="1482626744466814421">Lisää tämä välilehti kirjanmerkiksi…</translation>
 <translation id="1483272013430662157">Verkkosovellukset voivat pyytää lupaa avata tietyntyyppisiä tiedostoja</translation>
@@ -529,6 +534,7 @@
 <translation id="156793199942386351"><ph name="CURRENTKEY" /> liittyy jo toimintoon (<ph name="ACTION" />). <ph name="RESPONSE" /> painamalla mitä tahansa näppäintä.</translation>
 <translation id="1567993339577891801">JavaScript-konsoli</translation>
 <translation id="1568323446248056064">Avaa näytön laiteasetukset</translation>
+<translation id="1571738973904005196">Näytä välilehti <ph name="TAB_ORIGIN" /></translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (vieras)</translation>
 <translation id="1572266655485775982">Wi-Fi käyttöön</translation>
 <translation id="1572876035008611720">Anna sähköpostiosoitteesi.</translation>
@@ -679,7 +685,6 @@
 <translation id="1706625117072057435">Zoomaustasot</translation>
 <translation id="1708338024780164500">(Ei-aktiivinen)</translation>
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (tunnus: <ph name="ID_PH" />)</translation>
-<translation id="1708860176443612387">Kokeellinen selain. Dataa saatetaan menettää tai yksityisyys tai turvallisuus voivat vaarantua. Ilmoita ongelmista kohdassa Ohje &gt; "Ilmoita ongelmasta…".</translation>
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (natiivitarkkuus)</translation>
 <translation id="1709217939274742847">Valitse todennukseen käytettävä tukipyyntö. <ph name="LINK_BEGIN" />Lue lisää<ph name="LINK_END" /></translation>
 <translation id="1709972045049031556">Jakaminen ei onnistu</translation>
@@ -844,7 +849,6 @@
 <translation id="1865769994591826607">Vain samalle sivustolle muodostetut yhteydet</translation>
 <translation id="186612162884103683"><ph name="EXTENSION" /> voi lukea ja kirjoittaa kuva-, video- ja äänitiedostoja valituissa sijainneissa.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> on valmis suorittamaan asennuksen loppuun.</translation>
-<translation id="1868193363684582383">Ok Google</translation>
 <translation id="1868553836791672080">Salasanojen tarkistus ei ole saatavilla Chromiumissa</translation>
 <translation id="1869433484041798909">Kirjanmerkkipainike</translation>
 <translation id="1871098866036088250">Avaa Chrome-selaimessa</translation>
@@ -1125,7 +1129,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2163937499206714165">Ota tumma tila käyttöön</translation>
 <translation id="2164131635608782358"><ph name="FIRST_SWITCH" />, <ph name="SECOND_SWITCH" />, <ph name="THIRD_SWITCH" /> ja 1 muu kytkin</translation>
 <translation id="2165177462441582039">Valitse, kuinka kauan kutakin kohdetta pidetään korostettuna</translation>
-<translation id="2165421703844373933">Käytä Assistantia sanomalla Ok Google. Jos haluat säästää virtaa, valitse Käytössä (suositus). Assistant vastaa vain, jos laite on kytketty virtalähteeseen tai laturiin.</translation>
 <translation id="2166369534954157698">Charles Darwin jammaili Åken hevixylofonilla Qatarin yöpub Zeligissä.</translation>
 <translation id="2167276631610992935">JavaScript</translation>
 <translation id="2169062631698640254">Kirjaudu silti sisään</translation>
@@ -1259,6 +1262,15 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="23030561267973084"><ph name="EXTENSION_NAME" /> on pyytänyt lisäoikeuksia.</translation>
 <translation id="23055578400314116">Valitse käyttäjänimi</translation>
 <translation id="2307462900900812319">Määritä verkko</translation>
+<translation id="2307553512430195144">Jos hyväksyt tämän, Google Assistant odottaa lepotilassa, kunnes se kuulee sanat "Ok Google" ja tunnistaa Voice Matchilla puhujaksi käyttäjän <ph name="SUPERVISED_USER_NAME" />.
+    <ph name="BR" />
+    Voice Matchin avulla Google Assistant voi tunnistaa käyttäjän (<ph name="SUPERVISED_USER_NAME" />) äänen laitteellasi (<ph name="DEVICE_TYPE" />) ja erottaa hänet muista.
+    <ph name="BR" />
+    Assistant luo tallenteista yksilöllisen äänimallin, joka tallennetaan vain lapsen laitteille. Lapsen äänimalli voidaan lähettää väliaikaisesti Googlelle, jotta hänen äänensä voidaan tunnistaa tarkemmin
+    <ph name="BR" />
+    Jos lapsi haluaa myöhemmin lopettaa Voice Matchin käytön, voi sen helposti poistaa sen Assistantin asetuksista. Jos haluat tarkastella tai poistaa lapsen Voice Matchin käyttöönoton aikana tallentamia ääniklippejä, siirry osoitteeseen <ph name="VOICE_MATCH_SETTINGS_URL" />.
+    <ph name="BR" />
+    <ph name="FOOTER_MESSAGE" /></translation>
 <translation id="230927227160767054">Sivu haluaa asentaa palvelukäsittelijän.</translation>
 <translation id="2309620859903500144">Tältä sivustolta on estetty liikkeen- tai valontunnistimien käyttö.</translation>
 <translation id="2312219318583366810">Sivun URL-osoite</translation>
@@ -1388,6 +1400,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2450849356604136918">Ei aktiivisia näkymiä</translation>
 <translation id="2451298179137331965">2x</translation>
 <translation id="245322989586167203">Sivustot yhdistävät yleensä sarjaportteihin datansiirto-ominaisuuksia, esimerkiksi verkon luomista, varten</translation>
+<translation id="2453706416476934374">Jos <ph name="SUPERVISED_USER_NAME" /> haluaa saada räätälöityjä vastauksia kysymyksiin, anna Assistantin käyttää käyttäjän (<ph name="SUPERVISED_USER_NAME" />) näytön kuvakaappausta. Tämä saattaa sisältää tietoja toistettavista kappaleista tai videoista.</translation>
 <translation id="2453860139492968684">Valmis</translation>
 <translation id="2454247629720664989">Avainsana</translation>
 <translation id="2454264884354864965">Kamera on poissa päältä</translation>
@@ -1609,9 +1622,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2691385045260836588">Malli</translation>
 <translation id="2691440343905273290">Muuta syöttöasetuksia</translation>
 <translation id="2693176596243495071">Hups, tapahtui tuntematon virhe. Yritä myöhemmin uudelleen tai ota yhteyttä järjestelmänvalvojaan, jos ongelma ei ratkea.</translation>
-<translation id="2693640212062142966">Voice Match auttaa Google Assistantia tunnistamaan äänesi, kun käytössäsi on <ph name="DEVICE_TYPE" />, ja erottamaan sinut muista. Virran säästämiseksi Ok Google on päällä vain, kun laitteesi on yhdistetty virtalähteeseen. Voit tehdä muutoksia avaamalla Asetukset.
-    <ph name="BR" />
-    <ph name="BEGIN_BOLD" />Muista:<ph name="END_BOLD" /> Henkilökohtaisten hakutulostesi käyttö voi olla mahdollista myös, jos ääntäsi on nauhoitettu tai jonkun toisen ääni muistuttaa omaasi Voit poistaa Voice Matchin käyttöoikeuden myöhemmin poistamalla sen käytöstä Assistantin asetuksissa.</translation>
 <translation id="2699911226086014512">PIN-toiminto epäonnistui (koodi: <ph name="RETRIES" />).</translation>
 <translation id="2701330563083355633">Jaettu: <ph name="DEVICE_NAME" /></translation>
 <translation id="2701737434167469065">Kirjaudu sisään, <ph name="EMAIL" /></translation>
@@ -2099,6 +2109,7 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="32101887417650595">Ei yhteyttä tulostimeen</translation>
 <translation id="321084946921799184">Keltainen ja valkoinen</translation>
 <translation id="321356136776075234">Laitteen organisaatioyksikkö eli OU (esim. OU=Chromebookit,DC=esimerkki,DC=com)</translation>
+<translation id="3214531106883826119"><ph name="BEGIN_BOLD" />Huom.<ph name="END_BOLD" /> Käyttäjän (<ph name="SUPERVISED_USER_NAME" />) henkilökohtaisiin tuloksiin voi olla mahdollista päästä käsiksi myös, jos hänen ääntään on nauhoitettu tai jonkun toisen ääni muistuttaa hänen ääntään.</translation>
 <translation id="3216825226035747725">G Suite for Educationissa järjestelmänvalvojat päättävät, mihin Googlen palveluihin käyttäjät pääsevät G Suite for Education ‑tilillään. Mukana voi olla ominaisuuksia tai palveluja, joita lapsi ei aiemmin päässyt käyttämään valvotulla tilillään. Koulun henkilökunnan on saatava suostumus palvelujen käyttöön, jos käyttäjä on alaikäinen.</translation>
 <translation id="3217843140356091325">Luodaanko pikakuvake?</translation>
 <translation id="321799795901478485">Zip Archiver</translation>
@@ -2276,6 +2287,7 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="3417836307470882032">24 tunnin kello</translation>
 <translation id="3420501302812554910">Sisäinen suojausavain on nollattava</translation>
 <translation id="3421387094817716717">Julkinen avain: elliptinen käyrä</translation>
+<translation id="3421672904902642628"><ph name="BEGIN_BOLD" />Huom.<ph name="END_BOLD" /> Samanlaisella äänellä tai äänitteellä saattaa päästä henkilökohtaisiin tuloksiisi tai Assistantiisi.</translation>
 <translation id="3422291238483866753">Kysy aina, kun sivusto pyytää lupaa luoda 3D-kartan ympäristöstäsi tai seurata kameran asentoa (suositus)</translation>
 <translation id="3423463006624419153"><ph name="PHONE_NAME_1" /> ja <ph name="PHONE_NAME_2" />:</translation>
 <translation id="3423858849633684918">Käynnistä <ph name="PRODUCT_NAME" /> uudelleen</translation>
@@ -2499,7 +2511,6 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="3649505501900178324">Päivitys myöhässä</translation>
 <translation id="3650753875413052677">Rekisteröintivirhe</translation>
 <translation id="3650845953328929506">Lokin päivitys odottaa.</translation>
-<translation id="365089839707261811">Katso nimen muutokset</translation>
 <translation id="3650952250015018111">Anna sovellukselle "<ph name="APP_NAME" />" seuraava käyttöoikeus:</translation>
 <translation id="3651488188562686558">Katkaise Wi-Fi-yhteys</translation>
 <translation id="3652817283076144888">Alustetaan</translation>
@@ -2650,6 +2661,7 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="3799128412641261490">Kytkimen käytön asetukset</translation>
 <translation id="3799903419983101749">Jatka siitä, mihin jäit. Voit valita asetuksista, että sovellukset palautetaan automaattisesti.</translation>
 <translation id="3800806661949714323">Näytä kaikki (suositus)</translation>
+<translation id="380329542618494757">Nimi</translation>
 <translation id="3803345858388753269">Videon laatu</translation>
 <translation id="380408572480438692">Ottamalla tehokkuustietojen keräämisen käyttöön autat Googlea parantamaan järjestelmää ajan myötä. Tietoja lähetetään vasta luodessasi palauteraportin (Alt-Shift-I) ja lisätessäsi siihen tehokkuustiedot. Voit poistaa tietojen keräämisen käytöstä milloin tahansa palaamalla tähän ruutuun.</translation>
 <translation id="3807249107536149332">Laajennusta <ph name="EXTENSION_NAME" /> (<ph name="EXTENSION_ID" />) ei sallita kirjautumisnäytöllä.</translation>
@@ -2711,6 +2723,7 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="3856096718352044181">Varmista, että tämä on kelvollinen palveluntarjoaja, tai yritä myöhemmin uudelleen</translation>
 <translation id="3856800405688283469">Valitse aikavyöhyke</translation>
 <translation id="3857807444929313943">Nosta sormi ja kosketa uudelleen</translation>
+<translation id="3858860766373142691">Nimi</translation>
 <translation id="3861638017150647085">Käyttäjänimi <ph name="USERNAME" /> ei ole käytettävissä</translation>
 <translation id="3861977424605124250">Näytä käynnistettäessä</translation>
 <translation id="386239283124269513">&amp;Palauta ryhmä</translation>
@@ -2988,7 +3001,6 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="4154664944169082762">Tunnistetiedostot</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4158364720893025815">Hyväksytty</translation>
-<translation id="4159163871835771155">Jos <ph name="SUPERVISED_USER_NAME" /> haluaa saada yksilöllisiä vastauksia kysymyksiin, anna Assistantin käyttää käyttäjän (<ph name="SUPERVISED_USER_NAME" />) näytöllä olevia tietoja, esimerkiksi tietoja toistettavista kappaleista tai videoista.</translation>
 <translation id="4159681666905192102">Tämä on lapsen tili, jota hallinnoivat <ph name="CUSTODIAN_EMAIL" /> ja <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Tuntematon näppäimistö</translation>
 <translation id="4167686856635546851">Sivustot käyttävät JavaScriptiä yleensä videopelien, verkkolomakkeiden tai muiden interaktiivisten ominaisuuksien näyttämiseen</translation>
@@ -3627,7 +3639,6 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="4884987973312178454">6x</translation>
 <translation id="4887424188275796356">Avaa järjestelmän oletussovelluksessa</translation>
 <translation id="488785315393301722">Näytä tiedot</translation>
-<translation id="4889792122460431731">Jos haluat saada yksilöllisiä vastauksia kysymyksiin, anna Assistantin käyttää näytölläsi olevia tietoja, esimerkiksi tietoja toistettavista kappaleista tai videoista.</translation>
 <translation id="4890773143211625964">Näytä tulostimen lisäasetukset</translation>
 <translation id="4891089016822695758">Beta-keskusteluryhmä</translation>
 <translation id="4892229439761351791">Sivusto voi käyttää Bluetoothia</translation>
@@ -3842,7 +3853,6 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="5130080518784460891">Eten</translation>
 <translation id="5130675701626084557">Profiilia ei voitu ladata. Yritä uudelleen tai pyydä apua operaattorilta.</translation>
 <translation id="5131591206283983824">Kosketuslevyn napauttamalla vetäminen</translation>
-<translation id="5135085122826131075">Käytä Assistantia sanomalla Ok Google.</translation>
 <translation id="5135533361271311778">Kirjanmerkin luominen epäonnistui.</translation>
 <translation id="5136343472380336530">Varmista, että kumpikaan laite ei ole lukittuna, että ne ovat lähekkäin ja että Bluetooth on päällä. <ph name="LINK_BEGIN" />Lue lisää<ph name="LINK_END" /></translation>
 <translation id="5137501176474113045">Poista tämä kohde</translation>
@@ -4017,7 +4027,6 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="532247166573571973">Palvelimeen ei ehkä saada yhteyttä. Yritä uudelleen.</translation>
 <translation id="5324300749339591280">Sovellusluettelo</translation>
 <translation id="5324780743567488672">Aseta aikavyöhyke automaattisesti käyttämällä sijaintiasi.</translation>
-<translation id="5327248766486351172">Nimi</translation>
 <translation id="5327570636534774768">Laite on merkitty toisen verkkotunnuksen ylläpitämäksi. Poista siltä toisen verkkotunnuksen oikeudet ennen esittelytilan määrittämistä.</translation>
 <translation id="5327912693242073631">Ilmoituksia edellyttävät ominaisuudet eivät enää toimi</translation>
 <translation id="532943162177641444">Avaa <ph name="PHONE_NAME" /> ja kosketa siinä näkyvää ilmoitusta, niin mobiili-hotspot määritetään tämän laitteen käyttöön.</translation>
@@ -4260,7 +4269,6 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="5585912436068747822">Alustaminen epäonnistui</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Ladataan sovelluksia…</translation>
-<translation id="5590265327628802792">Näyttää siltä, että <ph name="SUPERVISED_USER_NAME" /> on jo ottanut Google Assistantin käyttöön toisella laitteella. <ph name="SUPERVISED_USER_NAME" /> voi saada Assistantista vieläkin enemmän irti, jos hän laittaa näytökontekstin päälle.</translation>
 <translation id="5592595402373377407">Tietoja ei ole vielä saatavilla tarpeeksi.</translation>
 <translation id="5595485650161345191">Osoitteen muokkaus</translation>
 <translation id="5596627076506792578">Lisäasetukset</translation>
@@ -4667,6 +4675,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6059652578941944813">Varmennehierarkia</translation>
 <translation id="6059925163896151826">USB-laitteet</translation>
 <translation id="6061882183774845124">Lähetä linkki laitteillesi</translation>
+<translation id="6063847492705284550"><ph name="BEGIN_BOLD" />Huom.<ph name="END_BOLD" /> Käyttäjän (<ph name="SUPERVISED_USER_NAME" />) henkilökohtaisiin tuloksiin voi olla mahdollista päästä käsiksi myös, jos hänen ääntään on nauhoitettu tai jonkun toisen ääni muistuttaa hänen ääntään. Jos haluat säästää virtaa, muuta käyttäjän <ph name="SUPERVISED_USER_NAME" /> Assistantin asetuksia niin, että "Ok Google" on käytössä vain, kun laite on kytketty virtalähteeseen.</translation>
 <translation id="6064217302520318294">Näytön lukitus</translation>
 <translation id="6065289257230303064">Varmenteen kohdehakemiston attribuutit</translation>
 <translation id="6066794465984119824">Tiivistettyä kuvaa ei ole määritetty</translation>
@@ -4887,9 +4896,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6294759976468837022">Automaattisen skannauksen nopeus</translation>
 <translation id="6295158916970320988">Kaikki sivustot</translation>
 <translation id="6295855836753816081">Tallennetaan…</translation>
-<translation id="6298800237463568825">Voice Match auttaa Google Assistantia tunnistamaan äänesi, kun käytössäsi on <ph name="DEVICE_TYPE" />, ja erottamaan sinut muista.
-    <ph name="BR" />
-    <ph name="BEGIN_BOLD" />Muista:<ph name="END_BOLD" /> Henkilökohtaisten hakutulostesi käyttö voi olla mahdollista myös, jos ääntäsi on nauhoitettu tai jonkun toisen ääni muistuttaa omaasi Voit poistaa Voice Matchin käyttöoikeuden myöhemmin poistamalla sen käytöstä Assistantin asetuksissa.</translation>
 <translation id="6298962879096096191">Asenna Android-sovelluksia Google Playn avulla</translation>
 <translation id="6300177430812514606">Tietojen lähetyksen tai vastaanoton viimeistely kielletty</translation>
 <translation id="630065524203833229">Poist&amp;u</translation>
@@ -4944,6 +4950,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6345878117466430440">Merkitse luetuksi</translation>
 <translation id="6349101878882523185">Asenna <ph name="APP_NAME" /></translation>
 <translation id="6354918092619878358">SECG elliptinen käyrä secp256r1 (eli ANSI X9.62 prime256v1, NIST P-256)</translation>
+<translation id="6355789186038748882">Kokeellinen (alfa-tasoinen) selain! Jotkin ominaisuudet puuttuvat tai eivät ole valmiita. Ilmoita ongelmista kohdassa Ohje &gt; "Ilmoita ongelmasta…".</translation>
 <translation id="635609604405270300">Pidä laite päällä</translation>
 <translation id="63566973648609420">Salattuja tietojasi voi lukea vain tunnuslauseesi avulla. Tunnuslausetta ei lähetetä Googlelle eikä Google tallenna sitä. Jos unohdat tunnuslauseesi tai haluat muokata tätä asetusta, <ph name="BEGIN_LINK" />synkronointi on nollattava<ph name="END_LINK" />.</translation>
 <translation id="6358884629796491903">Lohikäärme</translation>
@@ -5009,6 +5016,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6434309073475700221">Hylkää</translation>
 <translation id="6434325376267409267">Sinun on päivitettävä laitteesi ennen kuin voit käyttää <ph name="APP_NAME" />:ää.</translation>
 <translation id="6436164536244065364">Näytä Web Storessa</translation>
+<translation id="6436610005579237680">Jos haluat sinulle räätälöityjä vastauksia, anna Google Assistantin käyttää näytön kuvakaappausta, kun kysyt jotain. Assistant voi myös käyttää tietoja toistettavista kappaleista tai videoista.</translation>
 <translation id="6438234780621650381">Asetusten palauttaminen</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> – toistaa ääntä</translation>
 <translation id="6442187272350399447">Hymiöinen</translation>
@@ -5145,6 +5153,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6582274660680936615">Selaat vieraana</translation>
 <translation id="6584878029876017575">Microsoftin elinikäinen allekirjoitus</translation>
 <translation id="6586099239452884121">Vierailijakäyttö</translation>
+<translation id="6586213706115310390">Käytä Assistantia sanomalla "Ok Google".</translation>
 <translation id="6586451623538375658">Vaihda hiiren ykköspainiketta</translation>
 <translation id="6586604979641883411">Linuxin päivittämiseen tarvitaan vähintään <ph name="REQUIRED_SPACE" /> vapaata levytilaa. Vapauta laitteelta tilaa ja yritä uudelleen.</translation>
 <translation id="6588043302623806746">Käytä suojattua DNS:ää</translation>
@@ -5164,6 +5173,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6602937173026466876">käyttää tulostimia</translation>
 <translation id="6602956230557165253">Siirry vasemmalla ja oikealla nuolinäppäimellä.</translation>
 <translation id="6605847144724004692">Ei vielä käyttäjien arvioita</translation>
+<translation id="6606671997164410857">Näyttää siltä, että olet jo ottanut Google Assistantin käyttöön toisella laitteella. Assistantista on vielä enemmän hyötyä, jos laitat näyttökontekstin päälle.</translation>
 <translation id="6607831829715835317">&amp;Lisää työkaluja</translation>
 <translation id="6607890859198268021">Tiliä (<ph name="USER_EMAIL" />) hallinnoi jo <ph name="DOMAIN" />. Jos haluat käyttää lapsilukkoa eri Google-tilillä, kirjaudu ulos käyttöönoton jälkeen, ja valitse sitten kirjautumisnäytöltä Lisää henkilö.</translation>
 <translation id="6609478180749378879">Kirjautumisdata pysyy tällä laitteella incognito-tilan sulkemisen jälkeen. Voit myöhemmin kirjautua tälle sivustolle uudelleen laitteellasi.</translation>
@@ -5343,6 +5353,13 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6808039367995747522">Aseta suojausavain ja kosketa sitä, niin voit jatkaa</translation>
 <translation id="6808193438228982088">Kettu</translation>
 <translation id="6809470175540814047">Avaa incognito-ikkunassa</translation>
+<translation id="6809656734323672573">Jos hyväksyt tämän, Google Assistant odottaa lepotilassa, kunnes se kuulee sanat "Ok Google" ja tunnistaa Voice Matchilla puhujaksi sinut.
+    <ph name="BR" />
+    Voice Matchin avulla Assistant osaa tunnistaa sinut ja erottaa sinut muista. Assistant luo tallenteista yksilöllisen äänimallin, joka tallennetaan vain laitteellesi. Äänimalli voidaan lähettää tilapäisesti Googlelle jotta äänesi voidaan tunnistaa paremmin.
+    <ph name="BR" />
+    Jos haluat myöhemmin lopettaa Voice Matchin käytön, poista se Assistantin asetuksista. Jos haluat tarkastella tai poistaa Voice Matchin käyttöönoton aikana tallentamiasi ääniklippejä, siirry osoitteeseen <ph name="VOICE_MATCH_SETTINGS_URL" />.
+    <ph name="BR" />
+    <ph name="FOOTER_MESSAGE" /></translation>
 <translation id="6810613314571580006">Kirjaudu automaattisesti verkkosivustoille käyttämällä tallennettuja kirjautumistietoja. Jos tämä toiminto ei ole käytössä, sinua pyydetään vahvistamaan kirjautuminen aina, kun kirjaudut sivustolle.</translation>
 <translation id="6810768462515084623">Hups, salasanasi on ilmeisesti vanhentunut. Vaihda se toisella koneella ja yritä uudelleen.</translation>
 <translation id="6811034713472274749">Sivu on valmis näytettäväksi</translation>
@@ -5673,7 +5690,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7171559745792467651">Asenna muilla laitteilla käyttämiäsi sovelluksia</translation>
 <translation id="7172470549472604877">{NUM_TABS,plural, =1{Lisää välilehti uuteen ryhmään}other{Lisää välilehtiä uuteen ryhmään}}</translation>
 <translation id="7173114856073700355">Avaa asetukset</translation>
-<translation id="7173336557300642430">Jos haluat sinulle yksilöllisempia vastauksia, anna Google Assistantin käyttää näytölläsi olevia tietoja, kun kysyt jotain. Assistant voi myös käyttää tietoja toistettavista kappaleista tai videoista.</translation>
 <translation id="7174199383876220879">Uutta! Ohjaa musiikkia, videoita ja muuta</translation>
 <translation id="7175037578838465313">Määritä <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Ladattu kohteesta:</translation>
@@ -5704,13 +5720,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Sulje sivu}other{Sulje sivut}}</translation>
 <translation id="7207457272187520234">Lähetä käyttö- ja diagnostiikkadataa. Laite lähettää tällä hetkellä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Datan avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Omistaja on ottanut tämän asetuksen käyttöön. Jos olet laittanut päälle muun verkko- ja sovellustoiminnan asetuksen, tätä dataa voidaan tallentaa Google-tilillesi.</translation>
 <translation id="7207631048330366454">Hae sovelluksia</translation>
-<translation id="7210488993538120146">Voice Matchin avulla Google Assistant voi tunnistaa lapsen (<ph name="SUPERVISED_USER_NAME" />) äänen laitteellasi (<ph name="DEVICE_TYPE" />) ja erottaa sen muista.
-    <ph name="BR" />
-    Assistant luo tallenteista yksilöllisen äänimallin, joka tallennetaan vain lapsen laitteille. Lapsen äänimalli voidaan lähettää väliaikaisesti Googlelle, jotta hänen äänensä voidaan tunnistaa tarkemmin
-    <ph name="BR" />
-    Jos lapsi haluaa myöhemmin lopettaa Voice Matchin käytön, hän voi helposti poistaa sen Assistantin asetuksista. Jos haluat nähdä tai poistaa Voice Matchin käyttöönoton aikana lapsen tallentamia ääniklippejä, siirry osoitteeseen g.co/assistant/match.
-    <ph name="BR" />
-    <ph name="BEGIN_BOLD" />Muista:<ph name="END_BOLD" /> Lapsen (<ph name="SUPERVISED_USER_NAME" />) henkilökohtaisten tulosten käyttö voi olla mahdollista myös, jos hänen ääntään on nauhoitettu tai jonkun toisen ääni muistuttaa hänen ääntään. Virran säästämiseksi Ok Google on päällä vain, kun laite on yhdistetty virtalähteeseen.</translation>
 <translation id="7210499381659830293">Laajennustulostimet</translation>
 <translation id="7211783048245131419">Kytkimiä ei ole vielä määritetty</translation>
 <translation id="7212097698621322584">Lisää nykyinen PIN-koodisi muuttaaksesi sen. Jos et tiedä PIN-koodiasi, sinun on nollattava suojausavaimesi ja luotava uusi PIN-koodi.</translation>
@@ -5922,7 +5931,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7434969625063495310">Tulostuspalvelinta ei voitu asentaa. Tarkista palvelimen asetukset ja yritä uudelleen.</translation>
 <translation id="7436921188514130341">Harmin paikka! Uudelleennimeämisen aikana tapahtui virhe.</translation>
 <translation id="7438495332316988804">Vakioselain löytyy kirjoittamalla Käynnistysohjelmaan "Chrome".</translation>
-<translation id="7439446972050308922">Tallentamasi asetukset ovat valmiina millä tahansa Chrome-käyttöjärjestelmän laitteella, kun kirjaudut sisään Google-tilillesi. Voit valita synkronoitavan sisällön asetuksissa.</translation>
 <translation id="7439519621174723623">Jatka lisäämällä laitteen nimi</translation>
 <translation id="7441736921018636843">Jos haluat muuttaa tätä, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" /> poistaaksesi synkronoinnin tunnuslauseen</translation>
 <translation id="7441830548568730290">Muut käyttäjät</translation>
@@ -5989,6 +5997,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7507930499305566459">Tilavastausvarmenne</translation>
 <translation id="7509097596023256288">Otetaan hallinointia käyttöön</translation>
 <translation id="7509246181739783082">Vahvista henkilöllisyys</translation>
+<translation id="7509539379068593709">Poista sovellus</translation>
 <translation id="7511415964832680006">Kun se on päällä, sivustot voivat käyttää täällä näkyvää yksityisyyttä suojaavaa tekniikkaa sisällön ja palveluiden tarjoamiseen. Saatavilla on esimerkiksi vaihtoehtoja sivustojen väliselle seurannalle. Muita kokeiluja voidaan lisätä ajan myötä.</translation>
 <translation id="7513029293694390567">Kirjaudu automaattisesti verkkosivustoille käyttämällä tallennettuja kirjautumistietoja. Jos toiminto ei ole käytössä, sinua pyydetään vahvistamaan kirjautuminen aina, kun kirjaudut sivustolle.</translation>
 <translation id="7514239104543605883">Kopioi laitteelle</translation>
@@ -6175,6 +6184,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7690853182226561458">Lisää kansio...</translation>
 <translation id="7691073721729883399">Kioskisovelluksen cryptohomea ei voitu ottaa käyttöön.</translation>
 <translation id="7691077781194517083">Tätä suojausavainta ei voi nollata. Virhe: <ph name="ERROR_CODE" /></translation>
+<translation id="7691163173018300413">"Ok Google"</translation>
 <translation id="7691698019618282776">Crostini-päivitys</translation>
 <translation id="7696063401938172191"><ph name="PHONE_NAME" />:</translation>
 <translation id="7697166915480294040">Tiedot on piilotettu näytön jakamisen ajaksi</translation>
@@ -6214,7 +6224,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7730449930968088409">Ota ruutukaappaus</translation>
 <translation id="7730683939467795481">Laajennus <ph name="EXTENSION_NAME" /> muutti tätä sivua</translation>
 <translation id="7734486794139738745">Minulla on vain yksi kytkin käytössä</translation>
-<translation id="7734541938181328224">Katso kuvakkeen muutokset</translation>
 <translation id="7737115349420013392"><ph name="DEVICE_NAME" /> lisätään laitepariksi…</translation>
 <translation id="7737846262459425222">Voit muuttaa tätä koska tahansa valitsemalla Asetukset &gt; Google Assistant &gt; Näyttökonteksti.</translation>
 <translation id="7737948071472253612">Kameran käyttö kielletty</translation>
@@ -6287,6 +6296,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7804072833593604762">Välilehti suljettu</translation>
 <translation id="7805768142964895445">Tila</translation>
 <translation id="7807067443225230855">Haku ja Assistant</translation>
+<translation id="7807117920154132308">Näyttää siltä, että <ph name="SUPERVISED_USER_NAME" /> on jo ottanut Google Assistantin käyttöön toisella laitteella. <ph name="SUPERVISED_USER_NAME" /> voi saada Assistantista vieläkin enemmän irti, jos hän laittaa näyttökontekstin päälle tällä laitteella.</translation>
 <translation id="7807711621188256451">Anna aina sivuston <ph name="HOST" /> käyttää kameraasi</translation>
 <translation id="7810202088502699111">Ponnahdusikkunat estettiin tällä sivulla.</translation>
 <translation id="781167124805380294">Suoratoista <ph name="FILE_NAME" /></translation>
@@ -6341,6 +6351,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7847212883280406910">Valitse <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> painamalla Ctrl + Alt + S</translation>
 <translation id="7849264908733290972">Avaa kuva uudessa väl&amp;ilehdessä</translation>
 <translation id="784934925303690534">Aikaväli</translation>
+<translation id="7851021205959621355"><ph name="BEGIN_BOLD" />Huom.<ph name="END_BOLD" /> Samanlaisella äänellä tai äänitteellä saattaa päästä henkilökohtaisiin tuloksiisi tai Assistantiisi. Jos haluat säästää virtaa, muuta Assistantin asetuksia niin, että "Ok Google" on käytössä vain, kun laite on kytkettynä virtalähteeseen.</translation>
 <translation id="7851457902707056880">Kirjautuminen on sallittu vain omistajatilillä. Käynnistä tietokone uudelleen ja kirjaudu omistajatilillä. Tietokone käynnistetään uudelleen 30 sekunnin kuluttua.</translation>
 <translation id="7851716364080026749">Estä kameran ja mikrofonin käyttö aina</translation>
 <translation id="7851720427268294554">IPP-jäsentäjä</translation>
@@ -6837,6 +6848,7 @@ Paina määritettyä kytkintä poistaaksesi määrityksen</translation>
 <translation id="8373652277231415614">Crostinin jaetut hakemistot</translation>
 <translation id="8376137163494131156">Kerro meille, mitä Google Castin kanssa tapahtuu</translation>
 <translation id="8376384591331888629">Mukaan lukien kolmannen osapuolen evästeet tällä sivustolla</translation>
+<translation id="8376451933628734023">Jos tämä verkkosovellus yrittää huijata sinua luulemaan, että se on jokin toinen sovellus, poista se.</translation>
 <translation id="8378714024927312812">Organisaatiosi ylläpitämä</translation>
 <translation id="8379878387931047019">Tämä laite ei tue tämän sivuston pyytämää suojausavaintyyppiä</translation>
 <translation id="8379991678458444070">Lisää välilehti kirjanmerkiksi, niin voit palata tähän nopeasti</translation>
@@ -6919,7 +6931,6 @@ Paina määritettyä kytkintä poistaaksesi määrityksen</translation>
 <translation id="8480869669560681089">Tuntematon laite toimittajalta <ph name="VENDOR_NAME" /></translation>
 <translation id="8481187309597259238">Vahvista USB:n käyttöoikeus</translation>
 <translation id="8481980314595922412">Kokeiluominaisuudet ovat käytössä</translation>
-<translation id="8482860770919360244">Näyttää siltä, että olet jo ottanut Google Assistantin käyttöön toisella laitteella. Assistantista on vielä enemmän hyötyä, kun laitat näyttökontekstin päälle.</translation>
 <translation id="848666842773560761">Sovellus yrittää käyttää kameraa. Salli kameran käyttö laittamalla sen yksityisyysvalinta pois päältä.</translation>
 <translation id="8487678622945914333">Lähennä</translation>
 <translation id="8489156414266187072">Henkilökohtaisia ehdotuksia näytetään vain sinun tililläsi</translation>
@@ -6984,7 +6995,6 @@ Paina määritettyä kytkintä poistaaksesi määrityksen</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Sovelluksesta on jo asennettu uudempi versio.</translation>
 <translation id="8569682776816196752">Kohteita ei löytynyt</translation>
-<translation id="857074314439694500">Jos tämä verkkosovellus yrittää huijata sinua luulemaan, että se on jokin toinen sovellus, poista se.</translation>
 <translation id="8571213806525832805">Viimeiset neljä viikkoa</translation>
 <translation id="8571687764447439720">Lisää Kerberos-tukipyyntö</translation>
 <translation id="8574990355410201600"><ph name="HOST" /> saa aina toistaa ääntä</translation>
@@ -7576,6 +7586,7 @@ Voit määrittää tälle toiminnolle useita kytkimiä</translation>
       <ph name="LIST_ITEM" />Chromen yhteysdiagnostiikkaa.
     <ph name="END_LIST" /></translation>
 <translation id="916607977885256133">Kuva kuvassa</translation>
+<translation id="9166813363879986425">Tallentamasi asetukset ja toiminta ovat valmiina millä tahansa Chrome-käyttöjärjestelmän laitteella, kun kirjaudut sisään Google-tilillesi. Voit valita synkronoitavan sisällön asetuksissa.</translation>
 <translation id="9167063903968449027">Näytä lukulista</translation>
 <translation id="9167450455589251456">Profiilia ei tueta</translation>
 <translation id="9168436347345867845">Myöhemmin</translation>

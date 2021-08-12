@@ -410,7 +410,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="2359347814217202136">{NUM_DAYS,plural, =0{Dalam masa kurang daripada sehari}=1{Dalam masa sehari}other{Dalam masa {NUM_DAYS} hari}}</translation>
 <translation id="2359629602545592467">Berbilang</translation>
 <translation id="2359808026110333948">Teruskan</translation>
-<translation id="2359961752320758691">Nombor kad maya anda digunakan.</translation>
 <translation id="236340516568226369">Ubah saiz menu togol</translation>
 <translation id="2367567093518048410">Tahap</translation>
 <translation id="2372464001869762664">Selepas anda membuat pengesahan, butiran kad daripada Akaun Google anda akan dikongsi dengan laman ini. Cari nombor CVC dalam butiran Akaun Plex anda.</translation>
@@ -810,6 +809,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="3793574014653384240">Bilangan dan punca ranap sistem yang berlaku baru-baru ini</translation>
 <translation id="3797522431967816232">Prc3 (Sampul Surat)</translation>
 <translation id="3799805948399000906">Fon diminta</translation>
+<translation id="380329542618494757">Nama</translation>
 <translation id="3807366285948165054">Anjakan X imej</translation>
 <translation id="3807873520724684969">Kandungan berbahaya disekat.</translation>
 <translation id="3810973564298564668">Urus</translation>
@@ -824,6 +824,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="3848487483475744267"><ph name="CREATE_GOOGLE_DOC_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan kekunci Tab kemudian Enter untuk membuat Google Docs baharu dengan pantas</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3858027520442213535">Kemas kini tarikh dan masa</translation>
+<translation id="3858860766373142691">Nama</translation>
 <translation id="3881478300875776315">Tunjukkan kurang baris</translation>
 <translation id="3884278016824448484">Pengecam peranti bercanggah</translation>
 <translation id="3885155851504623709">Mukim</translation>
@@ -869,6 +870,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="4067947977115446013">Tambahkan Alamat yang Sah</translation>
 <translation id="4072193657607981494">Memuatkan dasar</translation>
 <translation id="4072486802667267160">Ralat berlaku semasa memproses pesanan anda. Sila cuba lagi.</translation>
+<translation id="4073797364926776829">Lihat kad</translation>
 <translation id="4075732493274867456">Pelanggan dan pelayan tidak menyokong versi protokol SSL atau set sifer biasa.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">Konfigurasi proksi ditetapkan kepada penggunaaan URL skrip .pac, bukannya pelayan proksi tetap.</translation>
@@ -999,6 +1001,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="443121186588148776">Port siri</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> tidak menerima sijil log masuk anda atau sijil log masuk mungkin tidak diberikan.</translation>
 <translation id="4432792777822557199">Halaman dalam <ph name="SOURCE_LANGUAGE" /> akan diterjemahkan kepada <ph name="TARGET_LANGUAGE" /> bermula dari sekarang</translation>
+<translation id="4433642172056592619">Diabaikan kerana pengguna tidak bergabung dengan pengurusan mesin atau mesin tidak diurus.</translation>
 <translation id="4434045419905280838">Tetingkap timbul dan ubah hala</translation>
 <translation id="4435702339979719576">Poskad)</translation>
 <translation id="443673843213245140">Penggunaan proksi dilumpuhkan tetapi konfigurasi proksi yang jelas dinyatakan.</translation>
@@ -1254,7 +1257,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> daripada <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Pilih Maklumat Hubungan</translation>
-<translation id="5327248766486351172">Nama</translation>
 <translation id="5329858041417644019">Penyemak imbas anda tidak diurus</translation>
 <translation id="5332219387342487447">Kaedah Penghantaran</translation>
 <translation id="5333022057423422993">Chrome menemukan kata laluan yang baru sahaja anda gunakan dalam pelanggaran data. Untuk melindungi akaun anda, kami mengesyorkan agar anda menyemak kata laluan anda yang disimpan.</translation>
@@ -1369,6 +1371,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="5759751709240058861">Gunakan &amp; alihkan kamera anda</translation>
 <translation id="5763042198335101085">Masukkan alamat e-mel yang sah</translation>
 <translation id="5765072501007116331">Pilih alamat untuk melihat kaedah dan syarat penghantaran</translation>
+<translation id="57689295674415555">Nombor kad maya tidak diisikan?</translation>
 <translation id="5776313857861697733">Keutamaan</translation>
 <translation id="5778550464785688721">Kawalan penuh peranti MIDI</translation>
 <translation id="5781136890105823427">Percubaan didayakan</translation>
@@ -1470,7 +1473,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="6113594885686374546">Butang sambung semula perjalanan, tekan Enter untuk menyambung semula perjalanan dan melihat aktiviti yang berkaitan dalam sejarah Chrome anda</translation>
 <translation id="6116338172782435947">Lihat teks dan imej yang disalin ke papan keratan</translation>
 <translation id="6120179357481664955">Ingat ID UPI anda?</translation>
-<translation id="6123290840358279103">Lihat kad maya</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
 <translation id="6146055958333702838">Periksa mana-mana kabel dan but semula mana-mana penghala, modem atau peranti
     rangkaian lain yang mungkin anda gunakan.</translation>

@@ -4,6 +4,7 @@
 
 #include "components/segmentation_platform/internal/database/metadata_utils.h"
 
+#include "base/metrics/metrics_hashes.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/internal/proto/aggregation.pb.h"
 #include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
@@ -18,79 +19,85 @@ class MetadataUtilsTest : public testing::Test {
 
 TEST_F(MetadataUtilsTest, SegmentInfoValidation) {
   proto::SegmentInfo segment_info;
-  EXPECT_EQ(metadata_utils::ValidationResult::SEGMENT_ID_NOT_FOUND,
+  EXPECT_EQ(metadata_utils::ValidationResult::kSegmentIDNotFound,
             metadata_utils::ValidateSegmentInfo(segment_info));
 
   segment_info.set_segment_id(optimization_guide::proto::OptimizationTarget::
                                   OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB);
-  EXPECT_EQ(metadata_utils::ValidationResult::METADATA_NOT_FOUND,
+  EXPECT_EQ(metadata_utils::ValidationResult::kMetadataNotFound,
             metadata_utils::ValidateSegmentInfo(segment_info));
 
   // The rest of this test verifies that at least some metadata is verified.
   segment_info.mutable_model_metadata()->set_time_unit(
       proto::UNKNOWN_TIME_UNIT);
-  EXPECT_EQ(metadata_utils::ValidationResult::TIME_UNIT_INVALID,
+  EXPECT_EQ(metadata_utils::ValidationResult::kTimeUnitInvald,
             metadata_utils::ValidateSegmentInfo(segment_info));
 
   segment_info.mutable_model_metadata()->set_time_unit(proto::DAY);
-  EXPECT_EQ(metadata_utils::ValidationResult::VALIDATION_SUCCESS,
+  EXPECT_EQ(metadata_utils::ValidationResult::kValidationSuccess,
             metadata_utils::ValidateSegmentInfo(segment_info));
 }
 
-TEST_F(MetadataUtilsTest, DefaultMetadataIsValid) {
+TEST_F(MetadataUtilsTest, DefaultMetadataIsInvalid) {
   proto::SegmentationModelMetadata empty;
 
-  EXPECT_EQ(metadata_utils::ValidationResult::VALIDATION_SUCCESS,
+  EXPECT_EQ(metadata_utils::ValidationResult::kTimeUnitInvald,
             metadata_utils::ValidateMetadata(empty));
 }
 
 TEST_F(MetadataUtilsTest, MetadataValidation) {
   proto::SegmentationModelMetadata metadata;
   metadata.set_time_unit(proto::UNKNOWN_TIME_UNIT);
-  EXPECT_EQ(metadata_utils::ValidationResult::TIME_UNIT_INVALID,
+  EXPECT_EQ(metadata_utils::ValidationResult::kTimeUnitInvald,
             metadata_utils::ValidateMetadata(metadata));
 
   metadata.set_time_unit(proto::DAY);
-  EXPECT_EQ(metadata_utils::ValidationResult::VALIDATION_SUCCESS,
+  EXPECT_EQ(metadata_utils::ValidationResult::kValidationSuccess,
             metadata_utils::ValidateMetadata(metadata));
 }
 
 TEST_F(MetadataUtilsTest, MetadataFeatureValidation) {
   proto::Feature feature;
-  EXPECT_EQ(metadata_utils::ValidationResult::SIGNAL_TYPE_INVALID,
+  EXPECT_EQ(metadata_utils::ValidationResult::kSignalTypeInvalid,
             metadata_utils::ValidateMetadataFeature(feature));
 
   feature.set_type(proto::SignalType::UNKNOWN_SIGNAL_TYPE);
-  EXPECT_EQ(metadata_utils::ValidationResult::SIGNAL_TYPE_INVALID,
+  EXPECT_EQ(metadata_utils::ValidationResult::kSignalTypeInvalid,
             metadata_utils::ValidateMetadataFeature(feature));
 
   // name not required for USER_ACTION.
   feature.set_type(proto::SignalType::USER_ACTION);
-  EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_NAME_HASH_NOT_FOUND,
+  EXPECT_EQ(metadata_utils::ValidationResult::kFeatureNameHashNotFound,
             metadata_utils::ValidateMetadataFeature(feature));
 
   feature.set_type(proto::SignalType::HISTOGRAM_ENUM);
-  EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_NAME_NOT_FOUND,
+  EXPECT_EQ(metadata_utils::ValidationResult::kFeatureNameNotFound,
             metadata_utils::ValidateMetadataFeature(feature));
 
   feature.set_type(proto::SignalType::HISTOGRAM_VALUE);
-  EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_NAME_NOT_FOUND,
+  EXPECT_EQ(metadata_utils::ValidationResult::kFeatureNameNotFound,
             metadata_utils::ValidateMetadataFeature(feature));
 
   feature.set_name("test name");
-  EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_NAME_HASH_NOT_FOUND,
+  EXPECT_EQ(metadata_utils::ValidationResult::kFeatureNameHashNotFound,
             metadata_utils::ValidateMetadataFeature(feature));
 
-  feature.set_name_hash(123);
-  EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_AGGREGATION_NOT_FOUND,
+  feature.set_name_hash(base::HashMetricName("not the correct name"));
+  EXPECT_EQ(metadata_utils::ValidationResult::kFeatureNameHashDoesNotMatchName,
+            metadata_utils::ValidateMetadataFeature(feature));
+
+  feature.set_name_hash(base::HashMetricName("test name"));
+  EXPECT_EQ(metadata_utils::ValidationResult::kFeatureAggregationNotFound,
             metadata_utils::ValidateMetadataFeature(feature));
 
   feature.set_aggregation(proto::Aggregation::COUNT);
-  EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_BUCKET_COUNT_NOT_FOUND,
+  // No bucket_count or tensor_length is valid.
+  EXPECT_EQ(metadata_utils::ValidationResult::kValidationSuccess,
             metadata_utils::ValidateMetadataFeature(feature));
 
   feature.set_bucket_count(456);
-  EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_TENSOR_LENGTH_NOT_FOUND,
+  // Aggregation=COUNT requires tensor length = 1.
+  EXPECT_EQ(metadata_utils::ValidationResult::kFeatureTensorLengthInvalid,
             metadata_utils::ValidateMetadataFeature(feature));
 
   std::vector<proto::Aggregation> tensor_length_1 = {
@@ -117,21 +124,21 @@ TEST_F(MetadataUtilsTest, MetadataFeatureValidation) {
     // 0.
     feature.set_bucket_count(0);
     feature.set_tensor_length(1);
-    EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_TENSOR_LENGTH_INVALID,
+    EXPECT_EQ(metadata_utils::ValidationResult::kFeatureTensorLengthInvalid,
               metadata_utils::ValidateMetadataFeature(feature));
     feature.set_tensor_length(0);
-    EXPECT_EQ(metadata_utils::ValidationResult::VALIDATION_SUCCESS,
+    EXPECT_EQ(metadata_utils::ValidationResult::kValidationSuccess,
               metadata_utils::ValidateMetadataFeature(feature));
 
     // Tensor length should otherwise always be 1 for this aggregation type.
     feature.set_bucket_count(456);
     feature.set_tensor_length(10);
-    EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_TENSOR_LENGTH_INVALID,
+    EXPECT_EQ(metadata_utils::ValidationResult::kFeatureTensorLengthInvalid,
               metadata_utils::ValidateMetadataFeature(feature));
 
     feature.set_bucket_count(456);
     feature.set_tensor_length(1);
-    EXPECT_EQ(metadata_utils::ValidationResult::VALIDATION_SUCCESS,
+    EXPECT_EQ(metadata_utils::ValidationResult::kValidationSuccess,
               metadata_utils::ValidateMetadataFeature(feature));
   }
 
@@ -142,22 +149,22 @@ TEST_F(MetadataUtilsTest, MetadataFeatureValidation) {
     // 0.
     feature.set_bucket_count(0);
     feature.set_tensor_length(1);
-    EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_TENSOR_LENGTH_INVALID,
+    EXPECT_EQ(metadata_utils::ValidationResult::kFeatureTensorLengthInvalid,
               metadata_utils::ValidateMetadataFeature(feature));
     feature.set_tensor_length(0);
-    EXPECT_EQ(metadata_utils::ValidationResult::VALIDATION_SUCCESS,
+    EXPECT_EQ(metadata_utils::ValidationResult::kValidationSuccess,
               metadata_utils::ValidateMetadataFeature(feature));
 
     // Tensor length should otherwise always be equal to bucket_count for this
     // aggregation type.
     feature.set_bucket_count(456);
     feature.set_tensor_length(1);
-    EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_TENSOR_LENGTH_INVALID,
+    EXPECT_EQ(metadata_utils::ValidationResult::kFeatureTensorLengthInvalid,
               metadata_utils::ValidateMetadataFeature(feature));
 
     feature.set_bucket_count(456);
     feature.set_tensor_length(456);
-    EXPECT_EQ(metadata_utils::ValidationResult::VALIDATION_SUCCESS,
+    EXPECT_EQ(metadata_utils::ValidationResult::kValidationSuccess,
               metadata_utils::ValidateMetadataFeature(feature));
   }
 }
@@ -165,79 +172,156 @@ TEST_F(MetadataUtilsTest, MetadataFeatureValidation) {
 TEST_F(MetadataUtilsTest, ValidateMetadataAndFeatures) {
   proto::SegmentationModelMetadata metadata;
   metadata.set_time_unit(proto::UNKNOWN_TIME_UNIT);
-  EXPECT_EQ(metadata_utils::ValidationResult::TIME_UNIT_INVALID,
+  EXPECT_EQ(metadata_utils::ValidationResult::kTimeUnitInvald,
             metadata_utils::ValidateMetadataAndFeatures(metadata));
 
   metadata.set_time_unit(proto::DAY);
-  EXPECT_EQ(metadata_utils::ValidationResult::VALIDATION_SUCCESS,
+  EXPECT_EQ(metadata_utils::ValidationResult::kValidationSuccess,
             metadata_utils::ValidateMetadataAndFeatures(metadata));
 
   // Verify adding a single features adds new requirements.
   auto* feature1 = metadata.add_features();
-  EXPECT_EQ(metadata_utils::ValidationResult::SIGNAL_TYPE_INVALID,
+  EXPECT_EQ(metadata_utils::ValidationResult::kSignalTypeInvalid,
             metadata_utils::ValidateMetadataAndFeatures(metadata));
 
   // Fully flesh out an example feature and verify validation starts working
   // again.
   feature1->set_type(proto::SignalType::USER_ACTION);
-  feature1->set_name_hash(42);
+  feature1->set_name_hash(base::HashMetricName("some user action"));
   feature1->set_aggregation(proto::Aggregation::COUNT);
   feature1->set_bucket_count(1);
   feature1->set_tensor_length(1);
-  EXPECT_EQ(metadata_utils::ValidationResult::VALIDATION_SUCCESS,
+  EXPECT_EQ(metadata_utils::ValidationResult::kValidationSuccess,
             metadata_utils::ValidateMetadataAndFeatures(metadata));
 
   // Verify adding another feature adds new requirements again.
   auto* feature2 = metadata.add_features();
-  EXPECT_EQ(metadata_utils::ValidationResult::SIGNAL_TYPE_INVALID,
+  EXPECT_EQ(metadata_utils::ValidationResult::kSignalTypeInvalid,
             metadata_utils::ValidateMetadataAndFeatures(metadata));
 
   // Fully flesh out the second feature and verify validation starts working
   // again.
   feature2->set_type(proto::SignalType::HISTOGRAM_VALUE);
-  feature2->set_name("42");
-  feature2->set_name_hash(42);
+  feature2->set_name("some histogram");
+  feature2->set_name_hash(base::HashMetricName("some histogram"));
   feature2->set_aggregation(proto::Aggregation::BUCKETED_COUNT);
   feature2->set_bucket_count(2);
   feature2->set_tensor_length(2);
-  EXPECT_EQ(metadata_utils::ValidationResult::VALIDATION_SUCCESS,
+  EXPECT_EQ(metadata_utils::ValidationResult::kValidationSuccess,
             metadata_utils::ValidateMetadataAndFeatures(metadata));
 }
 
 TEST_F(MetadataUtilsTest, ValidateSegementInfoMetadataAndFeatures) {
   proto::SegmentInfo segment_info;
   EXPECT_EQ(
-      metadata_utils::ValidationResult::SEGMENT_ID_NOT_FOUND,
-      metadata_utils::ValidateSegementInfoMetadataAndFeatures(segment_info));
+      metadata_utils::ValidationResult::kSegmentIDNotFound,
+      metadata_utils::ValidateSegmentInfoMetadataAndFeatures(segment_info));
 
   segment_info.set_segment_id(optimization_guide::proto::OptimizationTarget::
                                   OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB);
   EXPECT_EQ(
-      metadata_utils::ValidationResult::METADATA_NOT_FOUND,
-      metadata_utils::ValidateSegementInfoMetadataAndFeatures(segment_info));
+      metadata_utils::ValidationResult::kMetadataNotFound,
+      metadata_utils::ValidateSegmentInfoMetadataAndFeatures(segment_info));
 
   auto* metadata = segment_info.mutable_model_metadata();
   metadata->set_time_unit(proto::DAY);
   EXPECT_EQ(
-      metadata_utils::ValidationResult::VALIDATION_SUCCESS,
-      metadata_utils::ValidateSegementInfoMetadataAndFeatures(segment_info));
+      metadata_utils::ValidationResult::kValidationSuccess,
+      metadata_utils::ValidateSegmentInfoMetadataAndFeatures(segment_info));
 
   // Verify adding a single features adds new requirements.
   auto* feature1 = metadata->add_features();
   EXPECT_EQ(
-      metadata_utils::ValidationResult::SIGNAL_TYPE_INVALID,
-      metadata_utils::ValidateSegementInfoMetadataAndFeatures(segment_info));
+      metadata_utils::ValidationResult::kSignalTypeInvalid,
+      metadata_utils::ValidateSegmentInfoMetadataAndFeatures(segment_info));
 
   // Fully flesh out an example feature and verify validation starts working
   // again.
   feature1->set_type(proto::SignalType::USER_ACTION);
-  feature1->set_name_hash(42);
+  feature1->set_name_hash(base::HashMetricName("some user action"));
   feature1->set_aggregation(proto::Aggregation::COUNT);
   feature1->set_bucket_count(1);
   feature1->set_tensor_length(1);
   EXPECT_EQ(
-      metadata_utils::ValidationResult::VALIDATION_SUCCESS,
-      metadata_utils::ValidateSegementInfoMetadataAndFeatures(segment_info));
+      metadata_utils::ValidationResult::kValidationSuccess,
+      metadata_utils::ValidateSegmentInfoMetadataAndFeatures(segment_info));
+}
+
+TEST_F(MetadataUtilsTest, SetFeatureNameHashesFromName) {
+  // No crashes should happen if there are no features.
+  proto::SegmentationModelMetadata empty;
+  metadata_utils::SetFeatureNameHashesFromName(&empty);
+
+  // Ensure that the name hash is overwritten.
+  proto::SegmentationModelMetadata one_feature_both_set;
+  auto* feature1 = one_feature_both_set.add_features();
+  feature1->set_name("both set");
+  feature1->set_name_hash(base::HashMetricName("both set"));
+  metadata_utils::SetFeatureNameHashesFromName(&one_feature_both_set);
+  EXPECT_EQ(1, one_feature_both_set.features_size());
+  EXPECT_EQ("both set", one_feature_both_set.features(0).name());
+  EXPECT_EQ(base::HashMetricName("both set"),
+            one_feature_both_set.features(0).name_hash());
+
+  // Ensure that the name hash is overwritten if it is incorrect.
+  proto::SegmentationModelMetadata one_feature_both_set_hash_incorrect;
+  auto* feature2 = one_feature_both_set_hash_incorrect.add_features();
+  feature2->set_name("both set");
+  feature2->set_name_hash(base::HashMetricName("INCORRECT NAME HASH"));
+  metadata_utils::SetFeatureNameHashesFromName(
+      &one_feature_both_set_hash_incorrect);
+  EXPECT_EQ(1, one_feature_both_set_hash_incorrect.features_size());
+  EXPECT_EQ("both set", one_feature_both_set_hash_incorrect.features(0).name());
+  EXPECT_EQ(base::HashMetricName("both set"),
+            one_feature_both_set_hash_incorrect.features(0).name_hash());
+
+  // Ensure that the name hash is set from the name.
+  proto::SegmentationModelMetadata one_feature_name_set;
+  auto* feature3 = one_feature_name_set.add_features();
+  feature3->set_name("only name set");
+  metadata_utils::SetFeatureNameHashesFromName(&one_feature_name_set);
+  EXPECT_EQ(1, one_feature_name_set.features_size());
+  EXPECT_EQ("only name set", one_feature_name_set.features(0).name());
+  EXPECT_EQ(base::HashMetricName("only name set"),
+            one_feature_name_set.features(0).name_hash());
+
+  // Name hash should be overwritten with the hash of the empty string in the
+  // case of only the name hash having been set.
+  proto::SegmentationModelMetadata one_feature_name_hash_set;
+  auto* feature4 = one_feature_name_hash_set.add_features();
+  feature4->set_name_hash(base::HashMetricName("only name hash set"));
+  metadata_utils::SetFeatureNameHashesFromName(&one_feature_name_hash_set);
+  EXPECT_EQ(1, one_feature_name_hash_set.features_size());
+  EXPECT_EQ("", one_feature_name_hash_set.features(0).name());
+  EXPECT_EQ(base::HashMetricName(""),
+            one_feature_name_hash_set.features(0).name_hash());
+
+  // When neither name nor name hash is set, we should still overwrite the name
+  // hash with the hash of the empty string.
+  proto::SegmentationModelMetadata one_feature_nothing_set;
+  // Add feature and set a different field to ensure it is added.
+  auto* feature5 = one_feature_nothing_set.add_features();
+  feature5->set_type(proto::SignalType::USER_ACTION);
+  metadata_utils::SetFeatureNameHashesFromName(&one_feature_nothing_set);
+  EXPECT_EQ(1, one_feature_nothing_set.features_size());
+  EXPECT_EQ("", one_feature_nothing_set.features(0).name());
+  EXPECT_EQ(base::HashMetricName(""),
+            one_feature_nothing_set.features(0).name_hash());
+
+  // Ensure that the name hash is set for all features.
+  proto::SegmentationModelMetadata multiple_features;
+  auto* multifeature1 = multiple_features.add_features();
+  multifeature1->set_name("first multi");
+  auto* multifeature2 = multiple_features.add_features();
+  multifeature2->set_name("second multi");
+  metadata_utils::SetFeatureNameHashesFromName(&multiple_features);
+  EXPECT_EQ(2, multiple_features.features_size());
+  EXPECT_EQ("first multi", multiple_features.features(0).name());
+  EXPECT_EQ(base::HashMetricName("first multi"),
+            multiple_features.features(0).name_hash());
+  EXPECT_EQ("second multi", multiple_features.features(1).name());
+  EXPECT_EQ(base::HashMetricName("second multi"),
+            multiple_features.features(1).name_hash());
 }
 
 TEST_F(MetadataUtilsTest, HasFreshResults) {
@@ -315,37 +399,6 @@ TEST_F(MetadataUtilsTest, GetTimeUnit) {
   metadata.set_time_unit(proto::TimeUnit::YEAR);
   EXPECT_EQ(base::TimeDelta::FromDays(365),
             metadata_utils::GetTimeUnit(metadata));
-}
-
-TEST_F(MetadataUtilsTest, GetNameHashForFeature) {
-  proto::Feature feature;
-  EXPECT_FALSE(metadata_utils::GetNameHashForFeature(feature).has_value());
-  feature.set_name_hash(42);
-  auto name_hash = metadata_utils::GetNameHashForFeature(feature);
-  EXPECT_TRUE(name_hash.has_value());
-  EXPECT_EQ(42u, name_hash.value());
-}
-
-TEST_F(MetadataUtilsTest, GetSignalTypeForFeature) {
-  proto::Feature feature;
-  EXPECT_EQ(proto::SignalType::UNKNOWN_SIGNAL_TYPE,
-            metadata_utils::GetSignalTypeForFeature(feature));
-
-  feature.set_type(proto::SignalType::UNKNOWN_SIGNAL_TYPE);
-  EXPECT_EQ(proto::SignalType::UNKNOWN_SIGNAL_TYPE,
-            metadata_utils::GetSignalTypeForFeature(feature));
-
-  feature.set_type(proto::SignalType::USER_ACTION);
-  EXPECT_EQ(proto::SignalType::USER_ACTION,
-            metadata_utils::GetSignalTypeForFeature(feature));
-
-  feature.set_type(proto::SignalType::HISTOGRAM_ENUM);
-  EXPECT_EQ(proto::SignalType::HISTOGRAM_ENUM,
-            metadata_utils::GetSignalTypeForFeature(feature));
-
-  feature.set_type(proto::SignalType::HISTOGRAM_VALUE);
-  EXPECT_EQ(proto::SignalType::HISTOGRAM_VALUE,
-            metadata_utils::GetSignalTypeForFeature(feature));
 }
 
 TEST_F(MetadataUtilsTest, SignalTypeToSignalKind) {

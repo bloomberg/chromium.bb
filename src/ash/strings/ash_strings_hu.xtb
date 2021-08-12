@@ -16,7 +16,6 @@
 <translation id="1056775291175587022">Nincs hálózat</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="1073899992769346247">Cserélje ki vagy töltse fel az akkumulátort</translation>
-<translation id="1077253978657569125">Szeretnénk ezen javítani!</translation>
 <translation id="108486256082349153">Mobil: <ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426">Jó napot, <ph name="GIVEN_NAME" />!</translation>
 <translation id="109942774857561566">Unatkozom</translation>
@@ -486,6 +485,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4696813013609194136">Zárolás feloldása szülői kóddal</translation>
 <translation id="4702647871202761252">Az adatvédelmi képernyő ki van kapcsolva</translation>
 <translation id="4705716602320768426">Visszajelzés küldése</translation>
+<translation id="4730258224256997107">Segítsen nekünk ennek fejlesztésében!</translation>
 <translation id="4731797938093519117">Szülői hozzáférés</translation>
 <translation id="4734965478015604180">Vízszintes</translation>
 <translation id="4735498845456076464">A(z) <ph name="LAUNCHER_KEY_NAME" /> + szám billentyűparancs módosult. A funkcióbillentyűk használatához nyomja le a következő billentyűparancsot: <ph name="LAUNCHER_KEY_NAME" /> + a kívánt billentyű a felső soron.</translation>
@@ -695,6 +695,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6482559668224714696">Teljes képernyős nagyító</translation>
 <translation id="6490471652906364588">C típusú USB-vel kompatibilis eszköz (jobb oldali port)</translation>
 <translation id="649452524636452238">Az intelligens kártya PIN-kódja</translation>
+<translation id="6500818810472529210">Az eredmény megtekintése a Google Keresőben</translation>
 <translation id="6501401484702599040">Képernyő átküldése ide: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6520517963145875092">Jelöljön ki egy ablakot a rögzítéshez</translation>
 <translation id="652139407789908527">A frissítés során a képernyő a megszokottnál hosszabb időre (akár egy percre is) elsötétedik. Kérjük, ne nyomja meg a bekapcsológombot, amíg a frissítés folyamatban van.</translation>

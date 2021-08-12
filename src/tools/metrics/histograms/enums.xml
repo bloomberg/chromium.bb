@@ -1278,6 +1278,32 @@ Unknown properties are collapsed to zero. -->
   <int value="4" label="Voice"/>
 </enum>
 
+<enum name="AdaptiveToolbarRadioButtonState">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Auto with new tab"/>
+  <int value="2" label="Auto with share"/>
+  <int value="3" label="Auto with voice"/>
+  <int value="4" label="New tab"/>
+  <int value="5" label="Share"/>
+  <int value="6" label="Voice"/>
+</enum>
+
+<enum name="AdaptiveToolbarSegmentSwitch">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="None to new tab"/>
+  <int value="2" label="None to share"/>
+  <int value="3" label="None to voice"/>
+  <int value="4" label="New tab to none"/>
+  <int value="5" label="Share to none"/>
+  <int value="6" label="Voice to none"/>
+  <int value="7" label="New tab to share"/>
+  <int value="8" label="New tab to voice"/>
+  <int value="9" label="Share to new tab"/>
+  <int value="10" label="Share to voice"/>
+  <int value="11" label="Voice to new tab"/>
+  <int value="12" label="Voice to share"/>
+</enum>
+
 <enum name="AdbSideloadingPromptEvent">
   <int value="0" label="Prompt shown"/>
   <int value="1" label="Prompt skipped"/>
@@ -1761,6 +1787,16 @@ Unknown properties are collapsed to zero. -->
 <enum name="AndroidArmFpu">
   <int value="0" label="No NEON support"/>
   <int value="1" label="NEON support"/>
+</enum>
+
+<enum name="AndroidComponentLoaderLoadStatus">
+  <int value="0" label="Component loaded"/>
+  <int value="1" label="Failed to connect to ComponentsProviderService"/>
+  <int value="2" label="Remote service exception"/>
+  <int value="3" label="ComponentsProviderService returned an error"/>
+  <int value="4" label="Missing manifest"/>
+  <int value="5" label="Malformed manifest"/>
+  <int value="6" label="Invalid version field in the manifest"/>
 </enum>
 
 <enum name="AndroidDefaultBrowserPromoOutcomeType">
@@ -3447,6 +3483,16 @@ Unknown properties are collapsed to zero. -->
       label="selected all downloads, and then selected downloading the page"/>
 </enum>
 
+<enum name="AppPackageNameAllowlistParseStatus">
+  <int value="0" label="Allowlist is loaded successfully"/>
+  <int value="1" label="Used allowlist from cache"/>
+  <int value="2" label="Manifest is missing fileds"/>
+  <int value="3" label="Allowlist is expired"/>
+  <int value="4" label="Allowlist file is missing"/>
+  <int value="5" label="IO error"/>
+  <int value="6" label="Allowlist bloomfilter is malformatted"/>
+</enum>
+
 <enum name="AppPackageNameLoggingRuleStatus">
   <int value="0" label="Not loaded and no cache"/>
   <int value="1" label="Not loaded and using cached"/>
@@ -5069,6 +5115,16 @@ others/histograms.xml -->
   <int value="26" label="CLIPBOARD_TEXT"/>
   <int value="27" label="CLIPBOARD_IMAGE"/>
   <int value="28" label="TILE_SUGGESTION"/>
+</enum>
+
+<enum name="AutoDSEPermissionRevertTransition">
+  <int value="0" label="NO_DECISION_ASK"/>
+  <int value="1" label="PRESERVE_ALLOW"/>
+  <int value="2" label="CONFLICT_ASK"/>
+  <int value="3" label="PRESERVE_BLOCK_ASK"/>
+  <int value="4" label="PRESERVE_BLOCK_ALLOW"/>
+  <int value="5" label="PRESERVE_BLOCK_BLOCK"/>
+  <int value="6" label="INVALID_END_STATE"/>
 </enum>
 
 <enum name="AutofillAddressProfileImportCountrySpecificFieldRequirement">
@@ -25922,6 +25978,7 @@ Called by update_document_policy_enum.py.-->
   <int value="875" label="ReportDeviceNetworkConfiguration"/>
   <int value="876" label="ReportDeviceNetworkStatus"/>
   <int value="877" label="DataLeakPreventionClipboardCheckSizeLimit"/>
+  <int value="885" label="AssistantVoiceMatchEnabledDuringOobe"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -44305,6 +44362,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="BO"/>
 </enum>
 
+<enum name="LacrosLaunchMode">
+  <int value="0" label="Only Ash browser"/>
+  <int value="1" label="Ash and Lacros browser available"/>
+  <int value="2" label="Lacros browser is primary"/>
+  <int value="3" label="Only Lacros browser"/>
+</enum>
+
 <enum name="LanguageCode">
   <summary>ISO 639 Language Codes.</summary>
   <int value="24929" label="Afar"/>
@@ -46864,8 +46928,6 @@ from previous Chrome versions.
   <int value="-1631329950" label="ssl-version-max"/>
   <int value="-1630419335" label="enable-download-notification"/>
   <int value="-1630332314" label="CellularForbidAttachApn:enabled"/>
-  <int value="-1629518055"
-      label="AdaptiveButtonInTopToolbarCustomization:enabled"/>
   <int value="-1626110605" label="WebBundles:disabled"/>
   <int value="-1625881240" label="FullscreenExitUI:disabled"/>
   <int value="-1625777277"
@@ -49427,8 +49489,6 @@ from previous Chrome versions.
   <int value="458410433" label="disable-views-rect-based-targeting"/>
   <int value="460136092" label="MidiManagerAndroid:disabled"/>
   <int value="460475728" label="wake-on-wifi-packet"/>
-  <int value="461306840"
-      label="AdaptiveButtonInTopToolbarCustomization:disabled"/>
   <int value="461641589" label="WebAppWindowControlsOverlay:disabled"/>
   <int value="463582989" label="CompositorThreadedScrollbarScrolling:disabled"/>
   <int value="464226051" label="CrOSComponent:enabled"/>
@@ -49679,6 +49739,8 @@ from previous Chrome versions.
   <int value="654879464" label="WalletRequiresFirstSyncSetupComplete:enabled"/>
   <int value="656864700" label="FillOnAccountSelectHttp:disabled"/>
   <int value="657832926" label="SwipeToMoveCursor:enabled"/>
+  <int value="659051425"
+      label="AdaptiveButtonInTopToolbarCustomizationV2:disabled"/>
   <int value="659086147" label="OverlayScrollbarFlashWhenMouseEnter:enabled"/>
   <int value="659871291"
       label="ClearCrossSiteCrossBrowsingContextGroupWindowName:enabled"/>
@@ -50067,6 +50129,8 @@ from previous Chrome versions.
   <int value="1003081697" label="DesktopPWAsUnifiedInstall:enabled"/>
   <int value="1003612981"
       label="AutofillAutoTriggerManualFallbackForCards:enabled"/>
+  <int value="1004263091"
+      label="AdaptiveButtonInTopToolbarCustomizationV2:enabled"/>
   <int value="1004593833" label="LevelDBPerformRewrite:enabled"/>
   <int value="1004909189"
       label="ContentSuggestionsThumbnailDominantColor:disabled"/>
@@ -53271,7 +53335,6 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="Valid match"/>
   <int value="1" label="Invalid match"/>
   <int value="2" label="Index Out of Bounds"/>
-  <int value="3" label="Native match dead"/>
 </enum>
 
 <enum name="MayLaunchUrlType">
@@ -69178,6 +69241,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Increment"/>
 </enum>
 
+<enum name="RefineActionUsage">
+  <int value="0" label="Not used"/>
+  <int value="1" label="Used on Search Suggestion in zero-prefix context"/>
+  <int value="2" label="Used on Search Suggestion in non-zero-prefix context"/>
+  <int value="3" label="Used on Search Suggestion in both contexts"/>
+</enum>
+
 <enum name="RefreshTrigger">
   <int value="0" label="NTP shown"/>
   <int value="1" label="Foregrounded"/>
@@ -72682,6 +72752,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="FAILED_BAD_SELECTOR"/>
 </enum>
 
+<enum name="ScrollAndClickStatus">
+  <int value="0" label="NO_SCROLL_NO_CLICK"/>
+  <int value="1" label="NO_SCROLL_CLICKED"/>
+  <int value="2" label="SCROLLED_NO_CLICK"/>
+  <int value="3" label="SCROLLED_CLICKED"/>
+</enum>
+
 <enum name="ScrollingThreadStatus">
   <int value="0" label="SCROLLING_ON_COMPOSITOR"/>
   <int value="1" label="SCROLLING_ON_COMPOSITOR_BLOCKED_ON_MAIN"/>
@@ -73176,6 +73253,32 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="Secure with policy-installed certificate"/>
   <int value="5" label="Dangerous"/>
   <int value="6" label="Warning"/>
+</enum>
+
+<enum name="SegmentationPlatformModelExecutionStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="ExecutionError"/>
+  <int value="2" label="InvalidMetadata"/>
+</enum>
+
+<enum name="SegmentationPlatformSegmentationModel">
+  <int value="0" label="Unknown"/>
+  <int value="4" label="NewTab"/>
+  <int value="5" label="Share"/>
+  <int value="6" label="Voice"/>
+</enum>
+
+<enum name="SegmentationPlatformValidationResult">
+  <int value="0" label="ValidationSuccess"/>
+  <int value="1" label="SegmentIDNotFound"/>
+  <int value="2" label="MetadataNotFound"/>
+  <int value="3" label="TimeUnitInvald"/>
+  <int value="4" label="SignalTypeInvalid"/>
+  <int value="5" label="FeatureNameNotFound"/>
+  <int value="6" label="FeatureNameHashNotFound"/>
+  <int value="7" label="FeatureAggregationNotFound"/>
+  <int value="8" label="FeatureTensorLengthInvalid"/>
+  <int value="9" label="FeatureNameHashDoesNotMatchName"/>
 </enum>
 
 <enum name="SelectedNewTabCreationOption">
@@ -74279,6 +74382,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="ANDROID_SHARE_SHEET"/>
   <int value="1" label="CHROME_SHARE_SHEET"/>
   <int value="2" label="DIRECT_SHARE"/>
+</enum>
+
+<enum name="ShareTargetUpdateResult">
+  <int value="1" label="SUCCESS"/>
+  <int value="2" label="FAILED_EMPTY"/>
+  <int value="3" label="FAILED_PROTO_PARSE"/>
+  <int value="4" label="FAILED_VERSION_CHECK"/>
+  <int value="5" label="SKIPPED_VERSION_CHECK_EQUAL"/>
 </enum>
 
 <enum name="SharingActionSource">
@@ -81598,6 +81709,9 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Throttled client side"/>
   <int value="3" label="Attempting registration with newly generated keys"/>
   <int value="4" label="Attempting registration with preexisting keys"/>
+  <int value="5"
+      label="Attempting registration while having persistent authentication
+             error"/>
 </enum>
 
 <enum name="TrustedVaultFetchKeysAttempt">
@@ -89460,6 +89574,12 @@ Called by update_scheduler_enums.py.-->
     User is not participating in an experiment that enables RemoteNoURL
     suggestions on the NTP.
   </int>
+</enum>
+
+<enum name="ZipFileCreator.Result">
+  <int value="0" label="Success"/>
+  <int value="1" label="Cancelled"/>
+  <int value="2" label="Error"/>
 </enum>
 
 </enums>

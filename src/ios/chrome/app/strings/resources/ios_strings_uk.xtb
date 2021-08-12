@@ -8,7 +8,7 @@
 <translation id="1047726139967079566">Додати цю сторінку до закладок...</translation>
 <translation id="1049743911850919806">Анонімний перегляд</translation>
 <translation id="105093091697134113">Паролі облікових записів нижче було розкрито через порушення безпеки даних третьої сторони або введено на оманливому сайті. Негайно змініть їх, щоб захистити свої облікові записи.</translation>
-<translation id="105214722824962652">Ви не вийдете з облікового запису Google. <ph name="BEGIN_LINK" />Дані про інші дії<ph name="END_LINK" /> можуть зберігатися в обліковому записі Google, коли ви входите в нього. Ви можете будь-коли видалити їх.
+<translation id="105214722824962652">Ви не вийдете з облікового запису Google. Коли ви входите в обліковий запис Google, у ньому можуть зберігатися <ph name="BEGIN_LINK" />дані про інші дії<ph name="END_LINK" />. Ви можете будь-коли видалити їх.
 
         
 Ваша пошукова система – <ph name="DSE_NAME" />. Перегляньте її вказівки щодо того, як видалити історію пошуку (якщо вона є).</translation>
@@ -208,7 +208,7 @@
 <translation id="298306318844797842">Додати спосіб оплати…</translation>
 <translation id="2989805286512600854">Відкрити в новій вкладці</translation>
 <translation id="3037605927509011580">От халепа!</translation>
-<translation id="3076846064362030967">Ви не вийдете з облікового запису Google. <ph name="BEGIN_LINK" />Дані про інші дії<ph name="END_LINK" /> можуть зберігатися в обліковому записі Google, коли ви входите в нього. Ви можете будь-коли видалити їх.
+<translation id="3076846064362030967">Ви не вийдете з облікового запису Google. Коли ви входите в обліковий запис Google, у ньому можуть зберігатися <ph name="BEGIN_LINK" />дані про інші дії<ph name="END_LINK" />. Ви можете будь-коли видалити їх.
 
 
 Перегляньте вказівки пошукової системи щодо того, як видалити історію пошуку (якщо вона є).</translation>
@@ -288,8 +288,10 @@
 <translation id="3779810277399252432">Немає з’єднання з Інтернетом</translation>
 <translation id="3783017676699494206">Зберегти зображення</translation>
 <translation id="3789841737615482174">Установити</translation>
+<translation id="380329542618494757">Повне ім’я</translation>
 <translation id="3803696231112616155">Пропонувати переклад для цього сайту</translation>
 <translation id="385051799172605136">Назад</translation>
+<translation id="3858860766373142691">Назва</translation>
 <translation id="3892144330757387737">Тут відображатиметься ваша історія</translation>
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3913386780052199712">Ви ввійшли в Chrome</translation>
@@ -427,7 +429,6 @@
 <translation id="5295239312320826323">Вилучити обліковий запис <ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">Показати</translation>
 <translation id="5317780077021120954">Зберегти</translation>
-<translation id="5327248766486351172">Ім’я</translation>
 <translation id="5339316356165661760">Увімкнути синхронізацію</translation>
 <translation id="5360976571138293719">Інші налаштування конфіденційності, безпеки та збору даних доступні в розділі <ph name="BEGIN_LINK" />Сервіси Google<ph name="END_LINK" />.</translation>
 <translation id="5388358297987318779">Відкрити зображення</translation>
@@ -475,6 +476,7 @@
 <translation id="5846482154967366008">Пошукова система</translation>
 <translation id="5854790677617711513">Понад 30 днів тому</translation>
 <translation id="5857090052475505287">Нова папка</translation>
+<translation id="5857675236236529683">Тут розміщено ваш список читання</translation>
 <translation id="5857770089550859117">Введіть парольну фразу, щоб почати синхронізацію.</translation>
 <translation id="5860033963881614850">Вимк.</translation>
 <translation id="5869029295770560994">OK</translation>
@@ -723,7 +725,7 @@
 <translation id="802154636333426148">Не вдалося завантажити</translation>
 <translation id="8023878949384262191">Розгортає розділ.</translation>
 <translation id="8027581147000338959">Відкрити в новому вікні</translation>
-<translation id="804225253087497565"><ph name="BEGIN_LINK" />Історія пошуку<ph name="END_LINK" /> та <ph name="BEGIN_LINK" />дані про інші дії<ph name="END_LINK" /> можуть зберігатися в обліковому записі Google, коли ви входите в нього. Ви можете будь-коли видалити їх.</translation>
+<translation id="804225253087497565">Коли ви входите в обліковий запис Google, у ньому можуть зберігатись <ph name="BEGIN_LINK" />Історія пошуку<ph name="END_LINK" /> та <ph name="BEGIN_LINK" />дані про інші дії<ph name="END_LINK" />. Ви можете будь-коли видалити їх.</translation>
 <translation id="804427445359061970">Тут відображатимуться вкладки, які ви відкрили на інших пристроях</translation>
 <translation id="8059533439631660104">Згортає розділ.</translation>
 <translation id="8065292699993359127">Відкривати URL-адреси в Chrome в анонімному режимі</translation>

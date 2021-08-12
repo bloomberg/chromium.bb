@@ -128,10 +128,12 @@
 <translation id="38114475217616659">محو السجلّ بأكمله</translation>
 <translation id="3820172043799983114">رقم التعريف الشخصي غير صالح.</translation>
 <translation id="3838338534323494292">كلمة المرور الجديدة</translation>
+<translation id="3858860766373142691">الاسم</translation>
 <translation id="3865414814144988605">درجة الدقة</translation>
 <translation id="387301095347517405">عدد المرات التي تم فيها شحن بطاريتك بالكامل</translation>
 <translation id="3941014780699102620">تعذّرت مطابقة المضيف.</translation>
 <translation id="3942420633017001071">بيانات التشخيص</translation>
+<translation id="3966286471246132217">للحصول على نتائج أكثر دقة، عليك إغلاق كل التطبيقات إلى أن يكتمل الاختبار.</translation>
 <translation id="3967822245660637423">اكتمل التنزيل</translation>
 <translation id="397105322502079400">جارٍ الحساب...</translation>
 <translation id="39823212440917567">ستتم إزالة طلبات الطباعة التي مرَّ عليها أكثر من <ph name="NUMBER_OF_DAYS" /> يوم.</translation>
@@ -144,6 +146,7 @@
 <translation id="4176463684765177261">غير مفعّل</translation>
 <translation id="4227825898293920515">تنتهي صلاحية كلمة المرور في <ph name="TIME" /></translation>
 <translation id="4238516577297848345">ما من مهام قيد الطباعة.</translation>
+<translation id="4244962993387259361">يجب توفّر مساحة قدرها 500 ميغابايت على الأقل لتشغيل اختبار الذاكرة. لإخلاء بعض المساحة، انتقِل إلى الإعدادات &gt; إدارة مساحة التخزين.</translation>
 <translation id="4289540628985791613">نظرة عامة</translation>
 <translation id="4297501883039923494">توقّفت الطابعة - خطأ غير معروف</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> صورة</translation>
@@ -221,7 +224,6 @@
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5318334351163689047">‏تعذَّر طلب بروتوكول TCP.</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />، <ph name="PRINTER_NAME" />، <ph name="CREATION_TIME" />، <ph name="COMPLETION_STATUS" /></translation>
-<translation id="5327248766486351172">الاسم</translation>
 <translation id="5332948983412042822">اختيار كلمة مرور جديدة الآن</translation>
 <translation id="5333530671332546086">حالة المدخل غير معروفة.</translation>
 <translation id="5372659122375744710">‏شبكة Wi-Fi غير آمنة.</translation>
@@ -385,6 +387,7 @@
 <translation id="8498220429738806196">عدّادات حركة بيانات الشبكة</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="8503836310948963452">يُرجى الانتظار بضع دقائق فقط…</translation>
+<translation id="8521021929829989041">الاستخدام كجهاز شخصي</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8575298406870537639">قد يتطلّب مشغّل شبكة الجوّال تفعيل هذا الخيار للاتصال بالشبكة التابعة له. يُرجى التواصل مع مشغّل شبكة الجوّال للاطّلاع على التفاصيل.</translation>
 <translation id="8576249514688522074">غير مهيأة</translation>

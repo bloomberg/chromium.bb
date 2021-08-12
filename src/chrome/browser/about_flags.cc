@@ -1917,7 +1917,8 @@ const FeatureEntry::FeatureParam kCommercePriceTracking_PriceAlerts[] = {
 const FeatureEntry::FeatureParam
     kCommercePriceTracking_PriceAlerts_WithOptimizationGuide[] = {
         {"enable_price_tracking", "true"},
-        {"price_tracking_with_optimization_guide", "true"}};
+        {"price_tracking_with_optimization_guide", "true"},
+        {"enable_persisted_tab_data_maintenance", "true"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TabGroupAutoCreation[] =
     {{"enable_tab_group_auto_creation", "false"}};
@@ -1951,7 +1952,8 @@ const FeatureEntry::FeatureVariation kCommercePriceTrackingAndroidVariations[] =
 };
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
-    {"start_surface_variation", "single"}};
+    {"start_surface_variation", "single"},
+    {"show_tabs_in_mru_order", "true"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceFinale[] = {
     {"start_surface_variation", "single"},
@@ -1959,6 +1961,7 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceFinale[] = {
     {"home_button_on_grid_tab_switcher", "true"},
     {"new_home_surface_from_home_button", "hide_tab_switcher_only"},
     {"hide_switch_when_no_incognito_tabs", "true"},
+    {"show_tabs_in_mru_order", "true"},
     {"enable_tab_groups_continuation", "true"}};
 
 const FeatureEntry::FeatureParam
@@ -1969,6 +1972,7 @@ const FeatureEntry::FeatureParam
         {"home_button_on_grid_tab_switcher", "true"},
         {"new_home_surface_from_home_button", "hide_mv_tiles_and_tab_switcher"},
         {"hide_switch_when_no_incognito_tabs", "true"},
+        {"show_tabs_in_mru_order", "true"},
         {"enable_tab_groups_continuation", "true"}};
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2[] = {
@@ -3458,7 +3462,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAdaptiveButtonInTopToolbarCustomizationDescription,
      kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
-         chrome::android::kAdaptiveButtonInTopToolbarCustomization,
+         chrome::android::kAdaptiveButtonInTopToolbarCustomizationV2,
          kAdaptiveButtonInTopToolbarCustomizationVariations,
          "OptionalToolbarButtonCustomization")},
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
@@ -7091,7 +7095,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContinuousSearchDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kContinuousSearch,
                                     kContinuousSearchFeatureVariations,
-                                    "ContinuousSearchVariations")},
+                                    "ContinuousSearchNavigation")},
 
     {"enable-experimental-accessibility-labels",
      flag_descriptions::kExperimentalAccessibilityLabelsName,

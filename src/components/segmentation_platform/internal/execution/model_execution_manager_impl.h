@@ -77,6 +77,7 @@ class ModelExecutionManagerImpl : public ModelExecutionManager {
                            InitializationFlow);
   struct ExecutionState;
   struct FeatureState;
+  struct ModelExecutionTraceEvent;
 
   // Callback method for when the SegmentInfo (segment metadata) has been
   // loaded.
@@ -109,7 +110,7 @@ class ModelExecutionManagerImpl : public ModelExecutionManager {
 
   // Helper function for synchronously invoking the callback with the given
   // result and status.
-  void RunModelExecutionCallback(ModelExecutionCallback callback,
+  void RunModelExecutionCallback(std::unique_ptr<ExecutionState> state,
                                  float result,
                                  ModelExecutionStatus status);
 

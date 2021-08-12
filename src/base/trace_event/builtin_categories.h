@@ -139,6 +139,7 @@
   X("RLZ")                                                               \
   X("safe_browsing")                                                     \
   X("screenlock_monitor")                                                \
+  X("segmentation_platform")                                             \
   X("sequence_manager")                                                  \
   X("service_manager")                                                   \
   X("ServiceWorker")                                                     \

@@ -40,6 +40,7 @@ import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.NavigationState;
+import org.chromium.weblayer.NewTabCallback;
 import org.chromium.weblayer.Page;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
@@ -73,6 +74,8 @@ public class NavigationTest {
     private static final String URL2 = "data:text,bar";
     private static final String URL3 = "data:text,baz";
     private static final String URL4 = "data:text,bat";
+    private static final String ENGLISH_PAGE = "english_page.html";
+    private static final String FRENCH_PAGE = "french_page.html";
     private static final String STREAM_URL = "https://doesntreallyexist123.com/bar";
     private static final String STREAM_HTML = "<html>foobar</html>";
     private static final String STREAM_INNER_BODY = "foobar";
@@ -89,6 +92,17 @@ public class NavigationTest {
     private class IntentInterceptor implements InstrumentationActivity.IntentInterceptor {
         @Override
         public void interceptIntent(Intent intent, int requestCode, Bundle options) {}
+    }
+
+    private <E extends Throwable> void assertThrows(Class<E> exceptionType, Runnable runnable) {
+        Throwable actualException = null;
+        try {
+            runnable.run();
+        } catch (Throwable e) {
+            actualException = e;
+        }
+        assertNotNull("Exception not thrown", actualException);
+        assertEquals(exceptionType, actualException.getClass());
     }
 
     private class Callback extends NavigationCallback {
@@ -296,6 +310,25 @@ public class NavigationTest {
             }
         }
 
+        public class PageLanguageDeterminedCallbackHelper extends CallbackHelper {
+            private Page mPage;
+            private String mLanguage;
+
+            public void notifyCalled(Page page, String language) {
+                mPage = page;
+                mLanguage = language;
+                notifyCalled();
+            }
+
+            public Page getPage() {
+                return mPage;
+            }
+
+            public String getLanguage() {
+                return mLanguage;
+            }
+        }
+
         public NavigationCallbackHelper onStartedCallback = new NavigationCallbackHelper();
         public NavigationCallbackHelper onRedirectedCallback = new NavigationCallbackHelper();
         public NavigationCallbackHelper onCompletedCallback = new NavigationCallbackHelper();
@@ -311,6 +344,8 @@ public class NavigationTest {
                 new LargestContentfulPaintCallbackHelper();
         public UriCallbackHelper onOldPageNoLongerRenderedCallback = new UriCallbackHelper();
         public PageCallbackHelper onPageDestroyedCallback = new PageCallbackHelper();
+        public PageLanguageDeterminedCallbackHelper onPageLanguageDeterminedCallback =
+                new PageLanguageDeterminedCallbackHelper();
 
         @Override
         public void onNavigationStarted(Navigation navigation) {
@@ -371,6 +406,11 @@ public class NavigationTest {
         @Override
         public void onPageDestroyed(Page page) {
             onPageDestroyedCallback.notifyCalled(page);
+        }
+
+        @Override
+        public void onPageLanguageDetermined(Page page, String language) {
+            onPageLanguageDeterminedCallback.notifyCalled(page, language);
         }
     }
 
@@ -609,6 +649,43 @@ public class NavigationTest {
 
         mCallback.onRedirectedCallback.assertCalledWith(
                 curRedirectedCount, Arrays.asList(Uri.parse(url), Uri.parse(finalUrl)));
+    }
+
+    @MinWebLayerVersion(93)
+    @Test
+    @SmallTest
+    public void testGetPageInOnNavigationCompletedForIncompleteNavigation() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+
+        // Setup a callback for when the navigation in a new tab completes.
+        CallbackHelper callbackHelper = new CallbackHelper();
+        NewTabCallback newTabCallback = new NewTabCallback() {
+            @Override
+            public void onNewTab(Tab tab, int mode) {
+                NavigationController navigationController = tab.getNavigationController();
+                navigationController.registerNavigationCallback(new NavigationCallback() {
+                    @Override
+                    public void onNavigationCompleted(Navigation navigation) {
+                        // We're looking for a completed but not committed navigation.
+                        assertEquals(NavigationState.WAITING_RESPONSE, navigation.getState());
+                        // Calling getPage() should throw an exception if the state is not COMPLETE.
+                        assertThrows(IllegalStateException.class, () -> { navigation.getPage(); });
+                        navigationController.unregisterNavigationCallback(this);
+                        callbackHelper.notifyCalled();
+                    }
+                });
+            }
+        };
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { activity.getBrowser().getActiveTab().setNewTabCallback(newTabCallback); });
+
+        // Open a new tab by clicking on the document.
+        mActivityTestRule.executeScriptSync(
+                "document.onclick = () => window.open();", true /* useSeparateIsolate */);
+        EventUtils.simulateTouchCenterOfView(activity.getWindow().getDecorView());
+
+        // Expect no browser crash. Regression test for crbug.com/1233480.
+        callbackHelper.waitForFirst();
     }
 
     @Test
@@ -1550,5 +1627,45 @@ public class NavigationTest {
 
         navigateAndWaitForCompletion(URL3, () -> navigationController.goToIndex(2));
         assertEquals(2, mCallback.onCompletedCallback.getNavigationEntryOffset());
+    }
+
+    @MinWebLayerVersion(93)
+    @Test
+    @SmallTest
+    public void testOnPageLanguageDetermined() throws Exception {
+        TestWebServer testServer = TestWebServer.start();
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
+        setNavigationCallback(activity);
+
+        int curLanguageDeterminedCount = mCallback.onPageLanguageDeterminedCallback.getCallCount();
+
+        // Navigate to a page in English.
+        String url = mActivityTestRule.getTestDataURL(ENGLISH_PAGE);
+        mActivityTestRule.navigateAndWait(url);
+
+        Page committedPage = mCallback.onCompletedCallback.getPage();
+        assertNotNull(committedPage);
+
+        // Verify that the language determined callback is fired as expected.
+        mCallback.onPageLanguageDeterminedCallback.waitForCallback(curLanguageDeterminedCount);
+
+        assertEquals(committedPage, mCallback.onPageLanguageDeterminedCallback.getPage());
+        assertEquals("en", mCallback.onPageLanguageDeterminedCallback.getLanguage());
+
+        // Now navigate to a page in French.
+        committedPage = null;
+        curLanguageDeterminedCount = mCallback.onPageLanguageDeterminedCallback.getCallCount();
+
+        url = mActivityTestRule.getTestDataURL(FRENCH_PAGE);
+        mActivityTestRule.navigateAndWait(url);
+
+        committedPage = mCallback.onCompletedCallback.getPage();
+        assertNotNull(committedPage);
+
+        // Verify that the language determined callback is fired as expected.
+        mCallback.onPageLanguageDeterminedCallback.waitForCallback(curLanguageDeterminedCount);
+
+        assertEquals(committedPage, mCallback.onPageLanguageDeterminedCallback.getPage());
+        assertEquals("fr", mCallback.onPageLanguageDeterminedCallback.getLanguage());
     }
 }

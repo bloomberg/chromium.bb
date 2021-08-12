@@ -114,6 +114,7 @@
     <dimen name="compositor_tab_title_favicon_size">16dp</dimen>
     <!-- Slop value for allowing slight misses on the compositor button. -->
     <dimen name="compositor_button_slop">10dp</dimen>
+    <dimen name="compositor_background_tab_elevation">@dimen/default_elevation_4</dimen>
 
     <!-- First Run Experience dimensions -->
     <dimen name="fre_content_margin">24dp</dimen>
@@ -175,6 +176,7 @@
     <dimen name="ntp_logo_height">100dp</dimen>
     <dimen name="ntp_logo_margin_top">26dp</dimen>
     <dimen name="duet_ntp_logo_top_margin">-16dp</dimen>
+    <dimen name="ntp_promo_bottom_margin">16dp</dimen>
     <dimen name="ntp_search_box_height">48dp</dimen>
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
     <dimen name="experimental_explore_sites_radius">8dp</dimen>

@@ -409,7 +409,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2359347814217202136">{NUM_DAYS,plural, =0{En menos dun día}=1{Nun día}other{En {NUM_DAYS} días}}</translation>
 <translation id="2359629602545592467">Varias divisas</translation>
 <translation id="2359808026110333948">Continuar</translation>
-<translation id="2359961752320758691">Completouse o teu número de tarxeta virtual.</translation>
 <translation id="236340516568226369">Menú dos botóns do cambio de tamaño</translation>
 <translation id="2367567093518048410">Nivel</translation>
 <translation id="2372464001869762664">Unha vez que confirmes os datos, os detalles da tarxeta da túa Conta de Google compartiranse con este sitio. Busca o CVC entre os datos da túa conta de Plex.</translation>
@@ -557,7 +556,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2941952326391522266">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque o seu certificado de seguranza é de <ph name="DOMAIN2" />. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
 <translation id="2943895734390379394">Momento da carga:</translation>
 <translation id="2948083400971632585">Podes desactivar os proxies configurados para unha conexión desde a páxina de configuración.</translation>
-<translation id="2949183777371959169">Ignorouse porque o dispositivo non está inscrito con Chrome Browser Cloud Management.</translation>
+<translation id="2949183777371959169">Ignorouse porque o dispositivo non está inscrito en Chrome Browser Cloud Management.</translation>
 <translation id="2951588413176968965">A miña caixa de correo</translation>
 <translation id="295526156371527179">Advertencia: Esta política non se combinou como un dicionario do xeito especificado na política porque non é un dicionario.</translation>
 <translation id="2955913368246107853">Pecha a barra de busca</translation>
@@ -808,6 +807,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3793574014653384240">Número de fallos ocorridos recentemente e as súas causas</translation>
 <translation id="3797522431967816232">Prc3 (sobre)</translation>
 <translation id="3799805948399000906">Solicitouse a fonte</translation>
+<translation id="380329542618494757">Nome</translation>
 <translation id="3807366285948165054">Desprazamento da imaxe no eixe X</translation>
 <translation id="3807873520724684969">Bloqueouse o contido daniño.</translation>
 <translation id="3810973564298564668">Xestionar</translation>
@@ -822,6 +822,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3848487483475744267"><ph name="CREATE_GOOGLE_DOC_FOCUSED_FRIENDLY_MATCH_TEXT" />. Preme Tabulador e, a continuación, Introducir para crear rapidamente un novo documento de Google</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3858027520442213535">Actualizar data e hora</translation>
+<translation id="3858860766373142691">Nome</translation>
 <translation id="3881478300875776315">Mostrar menos liñas</translation>
 <translation id="3884278016824448484">Identificador de dispositivos en conflito</translation>
 <translation id="3885155851504623709">Parroquia</translation>
@@ -867,6 +868,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4067947977115446013">Engade un enderezo válido</translation>
 <translation id="4072193657607981494">Cargando políticas</translation>
 <translation id="4072486802667267160">Produciuse un erro ao procesar a túa solicitude. Téntao de novo.</translation>
+<translation id="4073797364926776829">Ver tarxeta</translation>
 <translation id="4075732493274867456">O cliente e o servidor non admiten unha versión do protocolo SSL ou o paquete de cifraxe comúns.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">A configuración do proxy está establecida para utilizar un URL de script .pac, non servidores proxy fixos.</translation>
@@ -997,6 +999,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="443121186588148776">Porto en serie</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> non aceptou o teu certificado de inicio de sesión ou ben este non se proporcionou.</translation>
 <translation id="4432792777822557199">As páxinas en <ph name="SOURCE_LANGUAGE" /> traduciranse ao <ph name="TARGET_LANGUAGE" /> a partir de agora</translation>
+<translation id="4433642172056592619">Ignorouse porque o usuario non está vinculado á xestión de dispositivos ou porque o dispositivo non está xestionado.</translation>
 <translation id="4434045419905280838">Ventás emerxentes e redireccións</translation>
 <translation id="4435702339979719576">Postal)</translation>
 <translation id="443673843213245140">O uso dun proxy está desactivado, pero especifícase unha configuración de proxy explícita.</translation>
@@ -1252,7 +1255,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5317780077021120954">Gardar</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> de <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Escoller información de contacto</translation>
-<translation id="5327248766486351172">Nome</translation>
 <translation id="5329858041417644019">O teu navegador non está xestionado</translation>
 <translation id="5332219387342487447">Método de envío</translation>
 <translation id="5333022057423422993">Chrome atopou o contrasinal que acabas de utilizar entre os datos dunha violación da seguranza dos datos. Para protexer as túas contas, recomendámosche que revises os contrasinais que tes gardados.</translation>
@@ -1367,6 +1369,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5759751709240058861">Utilizar e mover a túa cámara</translation>
 <translation id="5763042198335101085">Introduce un enderezo de correo electrónico válido</translation>
 <translation id="5765072501007116331">Para consultar os requisitos e métodos de entrega, selecciona un enderezo</translation>
+<translation id="57689295674415555">Non se autocompletou o número da tarxeta virtual?</translation>
 <translation id="5776313857861697733">Prioridade</translation>
 <translation id="5778550464785688721">Control total de dispositivos MIDI</translation>
 <translation id="5781136890105823427">O experimento está activado</translation>
@@ -1468,7 +1471,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="6113594885686374546">Botón Retomar percorrido; para retomar o percorrido e ver a actividade relevante do teu historial de Chrome, preme Introducir</translation>
 <translation id="6116338172782435947">Ver o texto e as imaxes que se copian no portapapeis</translation>
 <translation id="6120179357481664955">Queres lembrar o teu código da UPI?</translation>
-<translation id="6123290840358279103">Ver tarxeta virtual</translation>
 <translation id="6124432979022149706">Conectores de Chrome Enterprise</translation>
 <translation id="6146055958333702838">Comproba os cables e reinicia os routers, módems e demais dispositivos
     de rede que utilices.</translation>

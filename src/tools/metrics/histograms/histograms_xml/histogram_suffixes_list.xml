@@ -2697,6 +2697,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="CloudPrint.UrlFetcherUploadSize"/>
 </histogram_suffixes>
 
+<histogram_suffixes
+    name="ComponentUpdater.AndroidComponentLoader.ComponentName" separator=".">
+  <owner>hazems@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <owner>src/components/component_updater/android/OWNERS</owner>
+  <suffix name="OriginTrials" label=""/>
+  <suffix name="TrustTokenKeyCommitments" label=""/>
+  <suffix name="WebViewAppsPackageNamesAllowlist" label=""/>
+  <affected-histogram
+      name="ComponentUpdater.AndroidComponentLoader.LoadStatus"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="CompositingLCDTextDisabledCountSuffixes"
     separator=".">
   <obsolete>
@@ -8157,6 +8169,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="IPH_ReadingListEntryPoint"
       label="In product help to educate users to click the star icon to add a
              tab to reading list."/>
+  <suffix name="IPH_ReadingListMessages"
+      label="In product help for the Reading List entry point in iOS tools
+             menu.."/>
   <suffix name="IPH_ReadLaterAppMenuBookmarks"
       label="In product help for read later app menu.."/>
   <suffix name="IPH_ReadLaterAppMenuBookmarkThisPage"
@@ -9589,6 +9604,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="Recorded for Save Password Messages."/>
   <suffix name="InfobarTypePasswordUpdate"
       label="Recorded for Update Password Messages."/>
+  <suffix name="InfobarTypeReadingList"
+      label="Recorded for Reading List Messages."/>
   <suffix name="InfobarTypeSaveCard" label="Recorded for Save Card Messages."/>
   <suffix name="InfobarTypeTranslate" label="Recorded for Translate Messages."/>
   <affected-histogram name="Mobile.Messages.Badge.Tapped"/>

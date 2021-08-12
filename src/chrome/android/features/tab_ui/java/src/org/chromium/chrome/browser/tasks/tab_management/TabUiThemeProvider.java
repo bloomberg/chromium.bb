@@ -29,20 +29,23 @@ import org.chromium.chrome.tab_ui.R;
 public class TabUiThemeProvider {
     private static final String TAG = "TabUiThemeProvider";
     /**
-     * Returns the {@link ColorStateList} to use for the tab grid card view background based on
-     * incognito mode.
+     * Returns the color to use for the tab grid card view background based on incognito mode.
      *
      * @param context {@link Context} used to retrieve color.
      * @param isIncognito Whether the color is used for incognito mode.
      * @param isSelected Whether the tab is currently selected.
-     * @return The {@link ColorStateList} for tab grid card view background.
+     * @return The {@link ColorInt} for tab grid card view background.
      */
-    public static ColorStateList getCardViewTintList(
+    @ColorInt
+    public static int getCardViewBackgroundColor(
             Context context, boolean isIncognito, boolean isSelected) {
         if (!themeRefactorEnabled()) {
-            return AppCompatResources.getColorStateList(context,
-                    isIncognito ? R.color.tab_grid_card_view_tint_color_incognito
-                                : R.color.tab_grid_card_view_tint_color);
+            // Use #getColorStateList to take advantage of reading resource with attributes.
+            return AppCompatResources
+                    .getColorStateList(context,
+                            isIncognito ? R.color.tab_grid_card_view_tint_color_incognito
+                                        : R.color.tab_grid_card_view_tint_color)
+                    .getDefaultColor();
         }
 
         if (isIncognito) {
@@ -50,7 +53,7 @@ public class TabUiThemeProvider {
             @ColorRes
             int colorRes = isSelected ? R.color.incognito_tab_bg_selected_color
                                       : R.color.incognito_tab_bg_color;
-            return AppCompatResources.getColorStateList(context, colorRes);
+            return ContextCompat.getColor(context, colorRes);
         } else {
             float tabElevation = context.getResources().getDimension(R.dimen.tab_bg_elevation);
             @ColorInt
@@ -58,7 +61,7 @@ public class TabUiThemeProvider {
                     ? MaterialColors.getColor(context, R.attr.colorPrimary, TAG)
                     : new ElevationOverlayProvider(context)
                               .compositeOverlayWithThemeSurfaceColorIfNeeded(tabElevation);
-            return ColorStateList.valueOf(colorInt);
+            return colorInt;
         }
     }
 
@@ -315,6 +318,24 @@ public class TabUiThemeProvider {
     }
 
     /**
+     * Returns the tint color for Chrome owned favicon based on the incognito mode or selected.
+     *
+     * @param context {@link Context} used to retrieve color.
+     * @param isIncognito Whether the color is used for incognito mode.
+     * @param isTabSelected Whether the tab is currently selected.
+     * @return The tint color for Chrome owned favicon.
+     */
+    @ColorInt
+    public static int getChromeOwnedFaviconTintColor(
+            Context context, boolean isIncognito, boolean isTabSelected) {
+        if (!themeRefactorEnabled()) {
+            return ApiCompatibilityUtils.getColor(context.getResources(),
+                    isIncognito ? R.color.default_icon_color_light : R.color.default_icon_color);
+        }
+        return getTitleTextColor(context, isIncognito, isTabSelected);
+    }
+
+    /**
      * Returns the {@link ColorStateList} for background view when a tab grid card is hovered by
      * another card based on the incognito mode.
      *
@@ -492,8 +513,7 @@ public class TabUiThemeProvider {
      * @return The background resource id for message card view.
      */
     public static int getMessageCardBackgroundResourceId(boolean isIncognito) {
-        return isIncognito ? R.drawable.message_card_background_with_inset_incognito
-                           : R.drawable.message_card_background_with_inset;
+        return isIncognito ? R.drawable.incognito_card_bg : R.drawable.card_with_corners_background;
     }
 
     /**
@@ -580,5 +600,14 @@ public class TabUiThemeProvider {
     /** Return if theme refactor is enabled. **/
     static boolean themeRefactorEnabled() {
         return CachedFeatureFlags.isEnabled(ChromeFeatureList.THEME_REFACTOR_ANDROID);
+    }
+
+    /**
+     * Return the size represented by dimension for margin around message cards.
+     * @param context {@link Context} to retrieve dimension.
+     * @return The margin around message cards in float number.
+     */
+    public static float getMessageCardMarginDimension(Context context) {
+        return context.getResources().getDimension(R.dimen.tab_list_selected_inset);
     }
 }

@@ -13,12 +13,15 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
+#include "base/trace_event/typed_macros.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/segmentation_platform/internal/database/metadata_utils.h"
 #include "components/segmentation_platform/internal/database/signal_database.h"
 #include "components/segmentation_platform/internal/database/signal_key.h"
 #include "components/segmentation_platform/internal/proto/signal.pb.h"
+#include "components/segmentation_platform/internal/stats.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace segmentation_platform {
@@ -45,8 +48,9 @@ bool FilterKeyBasedOnRange(proto::SignalType signal_type,
 
 }  // namespace
 
-SignalDatabaseImpl::SignalDatabaseImpl(std::unique_ptr<SignalProtoDb> database)
-    : database_(std::move(database)) {}
+SignalDatabaseImpl::SignalDatabaseImpl(std::unique_ptr<SignalProtoDb> database,
+                                       base::Clock* clock)
+    : database_(std::move(database)), clock_(clock) {}
 
 SignalDatabaseImpl::~SignalDatabaseImpl() = default;
 
@@ -60,13 +64,18 @@ void SignalDatabaseImpl::Initialize(SuccessCallback callback) {
 void SignalDatabaseImpl::WriteSample(proto::SignalType signal_type,
                                      uint64_t name_hash,
                                      absl::optional<int32_t> value,
-                                     base::Time timestamp,
                                      SuccessCallback callback) {
   DCHECK(initialized_);
+  base::Time timestamp = clock_->Now();
   SignalKey key(metadata_utils::SignalTypeToSignalKind(signal_type), name_hash,
                 timestamp, timestamp);
 
   proto::SignalData signal_data;
+  // If there is another sample with the same signal key, collate both into a
+  // single DB entry.
+  if (recently_added_signals_.find(key) != recently_added_signals_.end())
+    signal_data = recently_added_signals_[key];
+
   proto::Sample* sample = signal_data.add_samples();
   if (value.has_value())
     sample->set_value(value.value());
@@ -76,6 +85,8 @@ void SignalDatabaseImpl::WriteSample(proto::SignalType signal_type,
   base::TimeDelta midnight_delta = timestamp - timestamp.UTCMidnight();
   sample->set_time_sec_delta(midnight_delta.InSeconds());
 
+  recently_added_signals_[key] = signal_data;
+
   // Write as a new db entry.
   auto entries_to_save = std::make_unique<
       std::vector<std::pair<std::string, proto::SignalData>>>();
@@ -84,6 +95,7 @@ void SignalDatabaseImpl::WriteSample(proto::SignalType signal_type,
       std::make_pair(key.ToBinary(), std::move(signal_data)));
   database_->UpdateEntries(std::move(entries_to_save),
                            std::move(keys_to_delete), std::move(callback));
+  CleanupStaleCachedEntries(timestamp);
 }
 
 void SignalDatabaseImpl::GetSamples(proto::SignalType signal_type,
@@ -91,6 +103,7 @@ void SignalDatabaseImpl::GetSamples(proto::SignalType signal_type,
                                     base::Time start_time,
                                     base::Time end_time,
                                     SamplesCallback callback) {
+  TRACE_EVENT("segmentation_platform", "SignalDatabaseImpl::GetSamples");
   DCHECK(initialized_);
   SignalKey dummy_key(metadata_utils::SignalTypeToSignalKind(signal_type),
                       name_hash, base::Time(), base::Time());
@@ -110,12 +123,17 @@ void SignalDatabaseImpl::OnGetSamples(
     base::Time end_time,
     bool success,
     std::unique_ptr<std::map<std::string, proto::SignalData>> entries) {
+  TRACE_EVENT("segmentation_platform", "SignalDatabaseImpl::OnGetSamples");
   std::vector<Sample> out;
   if (!success || !entries) {
+    stats::RecordSignalDatabaseGetSamplesResult(/* success = */ false);
     std::move(callback).Run(out);
     return;
   }
+  stats::RecordSignalDatabaseGetSamplesResult(/* success = */ true);
 
+  stats::RecordSignalDatabaseGetSamplesDatabaseEntryCount(
+      entries.get()->size());
   for (const auto& pair : *entries.get()) {
     SignalKey key;
     SignalKey::FromBinary(pair.first, &key);
@@ -130,12 +148,11 @@ void SignalDatabaseImpl::OnGetSamples(
       if (timestamp < start_time || timestamp > end_time)
         continue;
 
-      out.emplace_back(std::make_pair(
-          timestamp, sample.has_value() ? absl::make_optional(sample.value())
-                                        : absl::nullopt));
+      out.emplace_back(std::make_pair(timestamp, sample.value()));
     }
   }
 
+  stats::RecordSignalDatabaseGetSamplesSampleCount(out.size());
   std::move(callback).Run(out);
 }
 
@@ -143,6 +160,7 @@ void SignalDatabaseImpl::DeleteSamples(proto::SignalType signal_type,
                                        uint64_t name_hash,
                                        base::Time end_time,
                                        SuccessCallback callback) {
+  TRACE_EVENT("segmentation_platform", "SignalDatabaseImpl::DeleteSamples");
   DCHECK(initialized_);
   SignalKey dummy_key(metadata_utils::SignalTypeToSignalKind(signal_type),
                       name_hash, base::Time(), base::Time());
@@ -159,6 +177,8 @@ void SignalDatabaseImpl::OnGetSamplesForDeletion(
     SuccessCallback callback,
     bool success,
     std::unique_ptr<std::map<std::string, proto::SignalData>> entries) {
+  TRACE_EVENT("segmentation_platform",
+              "SignalDatabaseImpl::OnGetSamplesForDeletion");
   if (!success || !entries) {
     std::move(callback).Run(success);
     return;
@@ -182,6 +202,8 @@ void SignalDatabaseImpl::CompactSamplesForDay(proto::SignalType signal_type,
                                               uint64_t name_hash,
                                               base::Time day_start_time,
                                               SuccessCallback callback) {
+  TRACE_EVENT("segmentation_platform",
+              "SignalDatabaseImpl::CompactSamplesForDay");
   DCHECK(initialized_);
   // Compact the signals between 00:00:00AM to 23:59:59PM.
   day_start_time = day_start_time.UTCMidnight();
@@ -202,6 +224,8 @@ void SignalDatabaseImpl::OnGetSamplesForCompaction(
     std::string compact_key,
     bool success,
     std::unique_ptr<std::map<std::string, proto::SignalData>> entries) {
+  TRACE_EVENT("segmentation_platform",
+              "SignalDatabaseImpl::OnGetSamplesForCompaction");
   if (!success || !entries || entries->empty()) {
     std::move(callback).Run(success);
     return;
@@ -236,6 +260,18 @@ void SignalDatabaseImpl::OnDatabaseInitialized(
     leveldb_proto::Enums::InitStatus status) {
   initialized_ = status == leveldb_proto::Enums::InitStatus::kOK;
   std::move(callback).Run(status == leveldb_proto::Enums::InitStatus::kOK);
+}
+
+void SignalDatabaseImpl::CleanupStaleCachedEntries(
+    base::Time current_timestamp) {
+  base::Time prev_second = current_timestamp - base::TimeDelta::FromSeconds(1);
+  std::vector<SignalKey> keys_to_delete;
+  for (const auto& entry : recently_added_signals_) {
+    if (entry.first.range_end() < prev_second)
+      keys_to_delete.emplace_back(entry.first);
+  }
+  for (const auto& cache_key : keys_to_delete)
+    recently_added_signals_.erase(cache_key);
 }
 
 }  // namespace segmentation_platform

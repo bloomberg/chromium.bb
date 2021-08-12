@@ -16,7 +16,6 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1056775291175587022">Tarmoq topilmadi</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="1073899992769346247">Batareyani almashtiring yoki quvvatlang</translation>
-<translation id="1077253978657569125">Buni yaxshilashni istaymiz!</translation>
 <translation id="108486256082349153">Uyali manzili: <ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426">Xayrli kun, <ph name="GIVEN_NAME" /></translation>
 <translation id="109942774857561566">Men zerikdim</translation>
@@ -485,6 +484,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="4696813013609194136">Ota-ona kodi bilan qurilmani qulfdan chiqarish</translation>
 <translation id="4702647871202761252">Maxfiylik ekrani yoniq emas</translation>
 <translation id="4705716602320768426">Fikr-mulohaza yuborish</translation>
+<translation id="4730258224256997107">Buni takomillashtirishga yordam bering!</translation>
 <translation id="4731797938093519117">Ota-ona kirishi</translation>
 <translation id="4734965478015604180">Gorizontal</translation>
 <translation id="4735498845456076464"><ph name="LAUNCHER_KEY_NAME" /> + Raqam tezkor tugmasi oʻzgardi. Funksiya tugmalaridan foydalanish uchun <ph name="LAUNCHER_KEY_NAME" /> tugmasi + yuqori qatordagi kalitni bosing.</translation>
@@ -694,6 +694,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="6482559668224714696">Butun ekran rejimidagi lupa</translation>
 <translation id="6490471652906364588">USB-C qurilma (o‘ng port)</translation>
 <translation id="649452524636452238">Smart kartaning PIN kodi</translation>
+<translation id="6500818810472529210">Google Qidiruv natijalarini oching</translation>
 <translation id="6501401484702599040">Ekran “<ph name="RECEIVER_NAME" />” qurilmasiga translatsiya qilinmoqda</translation>
 <translation id="6520517963145875092">Suratga olish uchun oynani tanlang</translation>
 <translation id="652139407789908527">Ekran bu safar yangilanish vaqtida odatdagidan uzoqroq yonmay turishi mumkin. Yangilanish vaqtida quvvat tugmasini bosmay turing.</translation>

@@ -304,6 +304,35 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ(result, "called someMethod(arg1,arg2,arg3,arg4)");
 }
 
+// Tests that IPC messages that are dropped (because they are sent before
+// RenderFrameCreated) do not prevent later IPC messages from being sent after
+// the RenderFrame is created. See https://crbug.com/1154852.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       MessagesBeforeAndAfterRenderFrameCreated) {
+  // Start with a WebContents that hasn't created its main RenderFrame.
+  WebContents* web_contents = shell()->web_contents();
+  ASSERT_FALSE(web_contents->GetMainFrame()->IsRenderFrameCreated());
+
+  // An attempt to run script via GetAssociatedLocalFrame will do nothing before
+  // the RenderFrame is created, since the message sent to the renderer will get
+  // dropped. In https://crbug.com/1154852, this causes future messages sent via
+  // GetAssociatedLocalFrame to also be dropped.
+  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(u"'foo'",
+                                                          base::NullCallback());
+
+  // Navigating will create the RenderFrame.
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  ASSERT_TRUE(web_contents->GetMainFrame()->IsRenderFrameCreated());
+
+  // Future attempts to run script via GetAssociatedLocalFrame should succeed.
+  // This timed out before the fix, since the message was dropped and no value
+  // was retrieved.
+  base::Value result =
+      ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "'foo'");
+  EXPECT_EQ("foo", result.GetString());
+}
+
 // Test that when creating a new window, the main frame is correctly focused.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, IsFocused_AtLoad) {
   EXPECT_TRUE(
@@ -5366,6 +5395,39 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSubframeReuseBrowserTest,
   ASSERT_FALSE(static_cast<RenderProcessHostImpl*>(
                    content::RenderProcessHost::FromID(subframe_process_id))
                    ->IsProcessShutdownDelayedForTesting());
+}
+
+// Test that multiple subframe-shutdown delays from the same source can be in
+// effect, and that cancelling one delay does not cancel the others.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSubframeReuseBrowserTest,
+                       MultipleDelays) {
+  // This test exercises a scenario that's only possible with
+  // --site-per-process.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  // Create a test RenderProcessHostImpl.
+  ASSERT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "a.com", "/cross_site_iframe_factory.html?a")));
+  RenderFrameHostImpl* rfh = root_frame_host();
+  RenderProcessHostImpl* process =
+      static_cast<RenderProcessHostImpl*>(rfh->GetProcess());
+  EXPECT_FALSE(process->IsProcessShutdownDelayedForTesting());
+
+  // Delay process shutdown twice from the same site info.
+  const SiteInfo site_info = rfh->GetSiteInstance()->GetSiteInfo();
+  const base::TimeDelta delay = base::TimeDelta::FromSeconds(5);
+  process->DelayProcessShutdown(delay, base::TimeDelta(), site_info);
+  EXPECT_TRUE(process->IsProcessShutdownDelayedForTesting());
+  process->DelayProcessShutdown(delay, base::TimeDelta(), site_info);
+  EXPECT_TRUE(process->IsProcessShutdownDelayedForTesting());
+
+  // When one delay is cancelled, the other should remain in effect.
+  process->CancelProcessShutdownDelay(site_info);
+  EXPECT_TRUE(process->IsProcessShutdownDelayedForTesting());
+  process->CancelProcessShutdownDelay(site_info);
+  EXPECT_FALSE(process->IsProcessShutdownDelayedForTesting());
 }
 
 // Tests that RenderFrameHost::ForEachRenderFrameHost visits the correct frames

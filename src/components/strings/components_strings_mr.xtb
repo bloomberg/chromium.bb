@@ -410,7 +410,6 @@
 <translation id="2359347814217202136">{NUM_DAYS,plural, =0{In less than a day}=1{एका दिवसामध्ये}other{{NUM_DAYS} दिवसांमध्ये}}</translation>
 <translation id="2359629602545592467">अनेक</translation>
 <translation id="2359808026110333948">सुरू ठेवा</translation>
-<translation id="2359961752320758691">तुमचा व्हर्च्युअल कार्ड नंबर वापरला आहे.</translation>
 <translation id="236340516568226369">आकार बदलण्याच्या टॉगलचा मेनू</translation>
 <translation id="2367567093518048410">दर्जा</translation>
 <translation id="2372464001869762664">तुम्ही कंफर्म केल्यानंतर, तुमच्या Google खात्यामधील कार्ड तपशील या साइटसोबत शेअर केले जातील. तुमच्या Plex खाते तपशीलांमध्ये CVC शोधा.</translation>
@@ -808,6 +807,7 @@
 <translation id="3793574014653384240">अलीकडे झालेल्या क्रॅशची संख्या आणि कारणे</translation>
 <translation id="3797522431967816232">Prc3 (Envelope)</translation>
 <translation id="3799805948399000906">फॉन्टची विनंती केली</translation>
+<translation id="380329542618494757">नाव</translation>
 <translation id="3807366285948165054">इमेज X शिफ्ट</translation>
 <translation id="3807873520724684969">हानिकारक आशय ब्लॉक केला गेला.</translation>
 <translation id="3810973564298564668">व्यवस्थापित करा</translation>
@@ -822,6 +822,7 @@
 <translation id="3848487483475744267"><ph name="CREATE_GOOGLE_DOC_FOCUSED_FRIENDLY_MATCH_TEXT" />, नवीन Google दस्तऐवज झटपट तयार करण्यासाठी टॅब आणि त्यानंतर एंटर दाबा</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="3858027520442213535">तारीख आणि वेळ अपडेट करा</translation>
+<translation id="3858860766373142691">नाव</translation>
 <translation id="3881478300875776315">कमी रेषा दाखवा</translation>
 <translation id="3884278016824448484">संघर्ष करणारा डिव्हाइस अभिज्ञापक</translation>
 <translation id="3885155851504623709">परगणा</translation>
@@ -867,6 +868,7 @@
 <translation id="4067947977115446013">वैध पत्ता जोडा</translation>
 <translation id="4072193657607981494">धोरणे लोड करत आहे</translation>
 <translation id="4072486802667267160">तुमच्या मागणीवर प्रक्रिया करताना एरर आली, कृपया पुन्हा प्रयत्न करा.</translation>
+<translation id="4073797364926776829">कार्ड पहा</translation>
 <translation id="4075732493274867456">क्लायंट आणि सर्व्हर एक सामान्य SSL प्रोटोकॉल आवृत्ती किंवा सायफर संचाला सपोर्ट करीत नाही.</translation>
 <translation id="4075941231477579656">टच आयडी</translation>
 <translation id="4079302484614802869">प्रॉक्सी कॉंफिगरेशन .pac स्क्रिप्ट URL वापरण्‍यास सेट करण्‍यात आले आहे, निश्चित प्रॉक्सी सर्व्हर नव्हे.</translation>
@@ -997,6 +999,7 @@
 <translation id="443121186588148776">सिरीअल पोर्ट</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> ने तुमचे लॉग इन सर्टिफिकेट स्वीकारले नाही किंवा कदाचित दिले गेले नसावे.</translation>
 <translation id="4432792777822557199">आतापासून पेज <ph name="SOURCE_LANGUAGE" />मधून <ph name="TARGET_LANGUAGE" />मध्ये भाषांतरित केली जातील</translation>
+<translation id="4433642172056592619">दुर्लक्ष केले कारण मशीनच्या व्यवस्थापनाशी वापरकर्ता संलग्न नाही किंवा मशीन व्यवस्थापित केलेले नाही.</translation>
 <translation id="4434045419905280838">पॉप-अप आणि रीडिरेक्ट</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">प्रॉक्सीचा वापर अक्षम करण्‍यात आला आहे पण एक सुस्पष्‍ट प्रॉक्सी कॉन्‍फिगरेशन निर्दिष्‍ट करण्‍यात आले आहे.</translation>
@@ -1246,13 +1249,12 @@
 <translation id="5306593769196050043">दोन्ही पत्रके</translation>
 <translation id="5307166000025436103">ओके</translation>
 <translation id="5308380583665731573">कनेक्‍ट करा</translation>
-<translation id="5308689395849655368">क्रॅश अहवाल अक्षम केला गेला आहे.</translation>
+<translation id="5308689395849655368">क्रॅश अहवाल बंद केला आहे.</translation>
 <translation id="5314967030527622926">बुकलेट मेकर</translation>
 <translation id="5316812925700871227">घड्याळाच्या विरुद्ध दिशेने फिरवा</translation>
 <translation id="5317780077021120954">सेव्ह करा</translation>
 <translation id="5323105697514565458"><ph name="NUM_MATCHES" /> पैकी <ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /></translation>
 <translation id="5324080437450482387">संपर्क माहिती निवडा</translation>
-<translation id="5327248766486351172">नाव</translation>
 <translation id="5329858041417644019">तुमचे ब्राउझर व्यवस्थापित केलेले नाही</translation>
 <translation id="5332219387342487447">पाठविण्‍याची पद्धत</translation>
 <translation id="5333022057423422993">Chrome ला तुम्ही नुकताच डेटा भंगामध्ये वापरलेला पासवर्ड आढळळा आहे. तुमची खाती सुरक्षित करण्यासाठी, आम्ही तुमचे सेव्ह केलेले पासवर्ड तपासण्याची शिफारस करतो.</translation>
@@ -1367,6 +1369,7 @@
 <translation id="5759751709240058861">तुमचा कॅमेरा वापरा आणि हलवा</translation>
 <translation id="5763042198335101085">वैध ईमेल ॲड्रेस एंटर करा</translation>
 <translation id="5765072501007116331">वितरण पद्धती आणि आवश्यकता पाहण्यासाठी, एक पत्ता निवडा</translation>
+<translation id="57689295674415555">व्हर्च्युअल कार्ड नंबर भरला नाही का?</translation>
 <translation id="5776313857861697733">प्राधान्य</translation>
 <translation id="5778550464785688721">MIDI डिव्हाइसेस पूर्ण नियंत्रण</translation>
 <translation id="5781136890105823427">प्रयोग सुरू केला आहे</translation>
@@ -1468,7 +1471,6 @@
 <translation id="6113594885686374546">शोध पुन्हा सुरू करा बटण, तुमच्या Chrome इतिहासामध्ये संबंधित अ‍ॅक्टिव्हिटी पाहण्यासाठी आणि शोध पुन्हा सुरू करण्यासाठी एंटर दाबा</translation>
 <translation id="6116338172782435947">क्लिपबोर्डवर कॉपी केलेला मजकूर आणि इमेज पहा</translation>
 <translation id="6120179357481664955">तुमचा UPI आयडी लक्षात ठेवायचा आहे का?</translation>
-<translation id="6123290840358279103">व्हर्च्युअल कार्ड पहा</translation>
 <translation id="6124432979022149706">Chrome एंटरप्राइझ कनेक्टर</translation>
 <translation id="6146055958333702838">कोणत्याही केबल तपासा आणि कोणतेही राउटर, मोडेम किंवा तुम्ही
 वापरत असलेले

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.toolbar.adaptive.settings;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.RadioGroup;
 
 import androidx.annotation.NonNull;
@@ -15,9 +16,11 @@ import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.toolbar.R;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarStatePredictor;
+import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarStats;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionLayout;
 
@@ -32,8 +35,8 @@ public class RadioButtonGroupAdaptiveToolbarPreference
     private @NonNull RadioButtonWithDescription mShareButton;
     private @NonNull RadioButtonWithDescription mVoiceSearchButton;
     private @AdaptiveToolbarButtonVariant int mSelected;
-    private final AdaptiveToolbarStatePredictor mStatePredictor =
-            new AdaptiveToolbarStatePredictor();
+    private @Nullable AdaptiveToolbarStatePredictor mStatePredictor;
+    private boolean mCanUseVoiceSearch = true;
 
     public RadioButtonGroupAdaptiveToolbarPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -54,23 +57,42 @@ public class RadioButtonGroupAdaptiveToolbarPreference
         mShareButton = (RadioButtonWithDescription) holder.findViewById(R.id.adaptive_option_share);
         mVoiceSearchButton =
                 (RadioButtonWithDescription) holder.findViewById(R.id.adaptive_option_voice_search);
+        updateVoiceButtonVisibility();
 
+        initializeRadioButtonSelection();
+        RecordUserAction.record("Mobile.AdaptiveToolbarButton.SettingsPage.Opened");
+    }
+
+    /**
+     * Sets the state predictor for the preference, which provides data about the predicted "best"
+     * choice for the button. This must be done post-construction since the preference is
+     * XML-inflated.
+     */
+    public void setStatePredictor(AdaptiveToolbarStatePredictor statePredictor) {
+        assert mStatePredictor == null;
+        mStatePredictor = statePredictor;
         initializeRadioButtonSelection();
     }
 
     private void initializeRadioButtonSelection() {
+        if (mStatePredictor == null || mGroup == null) return;
         mStatePredictor.recomputeUiState(uiState -> {
             mSelected = uiState.preferenceSelection;
+            assert mSelected != AdaptiveToolbarButtonVariant.VOICE
+                    || mCanUseVoiceSearch : "voice search selected when not available";
             RadioButtonWithDescription selectedButton = getButton(mSelected);
             if (selectedButton != null) selectedButton.setChecked(true);
             mAutoButton.setDescriptionText(getContext().getString(
                     R.string.adaptive_toolbar_button_preference_based_on_your_usage_description,
                     getButtonString(uiState.autoButtonCaption)));
         });
+        AdaptiveToolbarStats.recordRadioButtonStateAsync(mStatePredictor, /*onStartup=*/true);
     }
 
     @Override
     public void onCheckedChanged(RadioGroup group, int checkedId) {
+        @AdaptiveToolbarButtonVariant
+        int previousSelection = mSelected;
         if (mAutoButton.isChecked()) {
             mSelected = AdaptiveToolbarButtonVariant.AUTO;
         } else if (mNewTabButton.isChecked()) {
@@ -83,6 +105,9 @@ public class RadioButtonGroupAdaptiveToolbarPreference
             assert false : "No matching setting found.";
         }
         callChangeListener(mSelected);
+        if (previousSelection != mSelected && mStatePredictor != null) {
+            AdaptiveToolbarStats.recordRadioButtonStateAsync(mStatePredictor, /*onStartup=*/false);
+        }
     }
 
     /**
@@ -128,5 +153,18 @@ public class RadioButtonGroupAdaptiveToolbarPreference
                 assert false : "Unknown variant " + variant;
         }
         return stringRes == -1 ? "" : getContext().getString(stringRes);
+    }
+
+    /*package*/ void setCanUseVoiceSearch(boolean canUseVoiceSearch) {
+        mCanUseVoiceSearch = canUseVoiceSearch;
+        updateVoiceButtonVisibility();
+    }
+
+    private void updateVoiceButtonVisibility() {
+        if (mVoiceSearchButton == null) return;
+        mVoiceSearchButton.setVisibility(mCanUseVoiceSearch ? View.VISIBLE : View.GONE);
+        if (mVoiceSearchButton.isChecked() && !mCanUseVoiceSearch) {
+            mAutoButton.setChecked(true);
+        }
     }
 }

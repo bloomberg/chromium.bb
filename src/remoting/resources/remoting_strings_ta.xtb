@@ -56,12 +56,13 @@
 <translation id="369442766917958684">ஆஃப்லைன்.</translation>
 <translation id="3695446226812920698">எப்படி என அறிக</translation>
 <translation id="3776024066357219166">உங்கள் Chrome தொலைநிலை டெஸ்க்டாப் அமர்வு முடிந்தது.</translation>
+<translation id="3858860766373142691">பெயர்</translation>
 <translation id="3897092660631435901">மெனு</translation>
 <translation id="3905196214175737742">தவறான ஹோஸ்ட் உரிமையாளர் டொமைன்.</translation>
 <translation id="3931191050278863510">ஹோஸ்ட் நிறுத்தப்பட்டது.</translation>
 <translation id="3950820424414687140">உள்நுழைக</translation>
 <translation id="405887016757208221">தொலைநிலைக் கம்ப்யூட்டரால் அமர்வைத் தொடங்க முடியவில்லை. சிக்கல் நீடித்தால் ஹோஸ்ட்டை மீண்டும் உள்ளமைக்க முயலவும்.</translation>
-<translation id="4060747889721220580">கோப்பைப் பதிவிறக்குக</translation>
+<translation id="4060747889721220580">ஃபைலைப் பதிவிறக்குக</translation>
 <translation id="4126409073460786861">அமைவு முடிந்ததும், இந்தப் பக்கத்தைப் புதுப்பிக்கவும். அதன் பின்னர், உங்கள் சாதனத்தைத் தேர்வுசெய்து, பின் எண்ணை உள்ளிட்டு, கம்ப்யூட்டரை அணுகலாம்</translation>
 <translation id="4145029455188493639">உள்நுழைந்துள்ள முகவரி: <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">தேவையான சில உறுப்புகள் காணவில்லை. மென்பொருளின் சமீபத்திய பதிப்பை நிறுவியுள்ளீர்கள் என்பதை உறுதிசெய்து, மீண்டும் முயற்சிக்கவும்.</translation>
@@ -97,7 +98,6 @@
 <translation id="5222676887888702881">வெளியேறு</translation>
 <translation id="5234764350956374838">நிராகரி</translation>
 <translation id="5308380583665731573">இணை</translation>
-<translation id="5327248766486351172">பெயர்</translation>
 <translation id="533625276787323658">இணைப்பதற்கு எதுவுமில்லை</translation>
 <translation id="5397086374758643919">Chrome தொலைநிலை டெஸ்க்டாப் ஹோஸ்ட் நிறுவல்நீக்கி</translation>
 <translation id="5419418238395129586">கடைசியாக ஆன்லைனில் இருந்தது: <ph name="DATE" /></translation>

@@ -128,6 +128,7 @@
 <translation id="38114475217616659">清除所有打印记录</translation>
 <translation id="3820172043799983114">PIN 码无效。</translation>
 <translation id="3838338534323494292">新密码</translation>
+<translation id="3858860766373142691">名称</translation>
 <translation id="3865414814144988605">分辨率</translation>
 <translation id="387301095347517405">您的电池已经历的完整充电循环次数</translation>
 <translation id="3941014780699102620">未能解析主机</translation>
@@ -145,7 +146,7 @@
 <translation id="4176463684765177261">已停用</translation>
 <translation id="4227825898293920515">密码将于 <ph name="TIME" />后到期</translation>
 <translation id="4238516577297848345">没有正在进行的打印任务</translation>
-<translation id="4244962993387259361">您需有至少 500 MB 的可用空间才能运行内存测试。若要释放空间，请依次转到“设置”&gt;“存储空间管理”。</translation>
+<translation id="4244962993387259361">您需要有至少 500 MB 的可用空间才能运行内存测试。若要释放空间，请依次转到“设置”&gt;“存储空间管理”。</translation>
 <translation id="4289540628985791613">概述</translation>
 <translation id="4297501883039923494">已停止 - 未知错误</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> 张图片</translation>
@@ -223,7 +224,6 @@
 <translation id="5317780077021120954">保存</translation>
 <translation id="5318334351163689047">TCP 请求失败</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />，<ph name="PRINTER_NAME" />，<ph name="CREATION_TIME" />，<ph name="COMPLETION_STATUS" /></translation>
-<translation id="5327248766486351172">名称</translation>
 <translation id="5332948983412042822">请立即设置一个新密码</translation>
 <translation id="5333530671332546086">门户状态不明</translation>
 <translation id="5372659122375744710">Wi-Fi 网络不安全</translation>
@@ -387,6 +387,7 @@
 <translation id="8498220429738806196">流量计数器</translation>
 <translation id="8503813439785031346">用户名</translation>
 <translation id="8503836310948963452">只需再等几分钟…</translation>
+<translation id="8521021929829989041">用作个人设备</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8575298406870537639">您的运营商可能会要求您启用此选项以连接到其网络。如需了解详情，请联系您的运营商。</translation>
 <translation id="8576249514688522074">未初始化</translation>

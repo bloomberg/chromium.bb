@@ -406,7 +406,6 @@
 <translation id="2359347814217202136">{NUM_DAYS,plural, =0{ในเวลาไม่ถึง 1 วัน}=1{ใน 1 วัน}other{ใน {NUM_DAYS} วัน}}</translation>
 <translation id="2359629602545592467">หลายรายการ</translation>
 <translation id="2359808026110333948">ต่อไป</translation>
-<translation id="2359961752320758691">ใช้หมายเลขบัตรเสมือนของคุณแล้ว</translation>
 <translation id="236340516568226369">เมนูสำหรับสลับการปรับขนาด</translation>
 <translation id="2367567093518048410">ระดับ</translation>
 <translation id="2372464001869762664">เมื่อยืนยันแล้ว ระบบจะแชร์รายละเอียดของบัตรจากบัญชี Google กับเว็บไซต์นี้ ดู CVC ได้ในรายละเอียดของบัญชี Plex</translation>
@@ -804,6 +803,7 @@
 <translation id="3793574014653384240">จำนวนและสาเหตุของการขัดข้องที่เกิดขึ้นเมื่อเร็วๆ นี้</translation>
 <translation id="3797522431967816232">Prc3 (ซองจดหมาย)</translation>
 <translation id="3799805948399000906">ขอแบบอักษรแล้ว</translation>
+<translation id="380329542618494757">ชื่อ</translation>
 <translation id="3807366285948165054">เปลี่ยนตำแหน่งรูปภาพตามแกน X</translation>
 <translation id="3807873520724684969">บล็อกเนื้อหาอันตรายแล้ว</translation>
 <translation id="3810973564298564668">จัดการ</translation>
@@ -818,6 +818,7 @@
 <translation id="3848487483475744267"><ph name="CREATE_GOOGLE_DOC_FOCUSED_FRIENDLY_MATCH_TEXT" /> กด Tab ตามด้วย Enter เพื่อสร้างเอกสารใหม่ใน Google เอกสารอย่างรวดเร็ว</translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3858027520442213535">อัปเดตวันที่และเวลา</translation>
+<translation id="3858860766373142691">ชื่อ</translation>
 <translation id="3881478300875776315">แสดงบรรทัดน้อยลง</translation>
 <translation id="3884278016824448484">ตัวชี้อุปกรณ์ขัดแย้งกัน</translation>
 <translation id="3885155851504623709">Parish</translation>
@@ -862,6 +863,7 @@
 <translation id="4067947977115446013">เพิ่มที่อยู่ที่ถูกต้อง</translation>
 <translation id="4072193657607981494">กำลังโหลดนโยบาย</translation>
 <translation id="4072486802667267160">เกิดข้อผิดพลาดในการประมวลผลคำสั่งซื้อของคุณ โปรดลองอีกครั้ง</translation>
+<translation id="4073797364926776829">ดูบัตร</translation>
 <translation id="4075732493274867456">ไคลเอ็นต์และเซิร์ฟเวอร์ไม่รองรับโปรโตคอล SSL เวอร์ชันทั่วไปหรือชุดการเข้ารหัส</translation>
 <translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">การกำหนดค่าพร็อกซีมีการตั้งค่าให้ใช้ URL สคริปต์ .pac ไม่ใช่พร็อกซีเซิร์ฟเวอร์แบบคงที่</translation>
@@ -869,7 +871,7 @@
 <translation id="4084120443451129199">โหมดการค้นหา กด Enter เพื่อค้นหา <ph name="KEYWORD_SUFFIX" /></translation>
 <translation id="4087296516249690906">ปุ่มสร้างกิจกรรม กด Enter เพื่อสร้างกิจกรรมใหม่ใน Google ปฏิทินอย่างรวดเร็ว</translation>
 <translation id="4088981014127559358">เปลี่ยนตำแหน่งรูปภาพด้าน 1 ตามแกน Y</translation>
-<translation id="4098354747657067197">เว็บไซต์ข้างหน้ามีการหลอกลวง</translation>
+<translation id="4098354747657067197">เว็บไซต์ที่กำลังจะเข้าชมไม่ปลอดภัย</translation>
 <translation id="4101413244023615925">ข้อความและกราฟิก</translation>
 <translation id="4103249731201008433">หมายเลขซีเรียลของอุปกรณ์ไม่ถูกต้อง</translation>
 <translation id="4106133539597032659">ปุ่มสร้างเว็บไซต์ กด Enter เพื่อสร้างเว็บไซต์ใหม่ใน Google Sites อย่างรวดเร็ว</translation>
@@ -988,6 +990,7 @@
 <translation id="443121186588148776">พอร์ตอนุกรม</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> ไม่ยอมรับใบรับรองการเข้าสู่ระบบหรือไม่ได้ให้ใบรับรองไว้</translation>
 <translation id="4432792777822557199">จากนี้ไประบบจะแปลหน้าภาษา<ph name="SOURCE_LANGUAGE" />เป็นภาษา<ph name="TARGET_LANGUAGE" /></translation>
+<translation id="4433642172056592619">ละเว้นเนื่องจากผู้ใช้ไม่ได้เชื่อมโยงกับการจัดการเครื่อง หรือเครื่องไม่มีการจัดการ</translation>
 <translation id="4434045419905280838">ป๊อปอัปและการเปลี่ยนเส้นทาง</translation>
 <translation id="4435702339979719576">โปสการ์ด)</translation>
 <translation id="443673843213245140">การใช้พร็อกซีถูกปิดใช้งาน แต่มีการระบุการกำหนดค่าพร็อกซีอย่างชัดเจน</translation>
@@ -1243,7 +1246,6 @@
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" /> <ph name="MATCH_POSITION" /> จาก <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">เลือกข้อมูลติดต่อ</translation>
-<translation id="5327248766486351172">ชื่อ</translation>
 <translation id="5329858041417644019">เบราว์เซอร์ของคุณไม่มีการจัดการ</translation>
 <translation id="5332219387342487447">วิธีการจัดส่ง</translation>
 <translation id="5333022057423422993">Chrome พบว่ารหัสผ่านที่คุณเพิ่งใช้รั่วไหลในการละเมิดข้อมูลครั้งหนึ่ง เราขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้เพื่อรักษาความปลอดภัยของบัญชี</translation>
@@ -1358,6 +1360,7 @@
 <translation id="5759751709240058861">ใช้และเคลื่อนย้ายกล้องของคุณ</translation>
 <translation id="5763042198335101085">ป้อนที่อยู่อีเมลที่ถูกต้อง</translation>
 <translation id="5765072501007116331">หากต้องการดูวิธีการนำส่งสินค้าและข้อกำหนด โปรดเลือกที่อยู่</translation>
+<translation id="57689295674415555">ไม่กรอกหมายเลขบัตรเสมือนใช่ไหม</translation>
 <translation id="5776313857861697733">ลำดับความสำคัญ</translation>
 <translation id="5778550464785688721">การควบคุมอุปกรณ์ MIDI เต็มรูปแบบ</translation>
 <translation id="5781136890105823427">เปิดใช้การทดสอบอยู่</translation>
@@ -1459,7 +1462,6 @@
 <translation id="6113594885686374546">ปุ่มดำเนินการสำรวจต่อ กด Enter เพื่อดำเนินการสำรวจต่อและดูกิจกรรมที่เกี่ยวข้องในประวัติการเข้าชมใน Chrome</translation>
 <translation id="6116338172782435947">ดูข้อความและรูปภาพที่คัดลอกไปที่คลิปบอร์ด</translation>
 <translation id="6120179357481664955">จำรหัส UPI ไหม</translation>
-<translation id="6123290840358279103">ดูบัตรเสมือน</translation>
 <translation id="6124432979022149706">เครื่องมือเชื่อมต่อ Chrome Enterprise</translation>
 <translation id="6146055958333702838">ตรวจสายเคเบิลและรีบูตเราเตอร์ โมเด็ม หรืออุปกรณ์เครือข่ายอื่น
     ที่คุณอาจใช้งานอยู่</translation>

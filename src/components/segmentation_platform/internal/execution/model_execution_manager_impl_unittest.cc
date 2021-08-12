@@ -72,7 +72,7 @@ class MockSegmentInfoDatabase : public test::TestSegmentInfoDatabase {
   MOCK_METHOD(void,
               SaveSegmentResult,
               (OptimizationTarget segment_id,
-               proto::PredictionResult* result,
+               absl::optional<proto::PredictionResult> result,
                SuccessCallback callback),
               (override));
 };
@@ -213,18 +213,18 @@ class ModelExecutionManagerTest : public testing::Test {
 TEST_F(ModelExecutionManagerTest, HandlerNotRegistered) {
   CreateModelExecutionManager({}, base::DoNothing());
   EXPECT_DCHECK_DEATH(
-      ExecuteModel(std::make_pair(0, ModelExecutionStatus::EXECUTION_ERROR)));
+      ExecuteModel(std::make_pair(0, ModelExecutionStatus::kExecutionError)));
 }
 
 TEST_F(ModelExecutionManagerTest, MetadataTests) {
   auto segment_id =
       OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB;
   CreateModelExecutionManager({segment_id}, base::DoNothing());
-  ExecuteModel(std::make_pair(0, ModelExecutionStatus::INVALID_METADATA));
+  ExecuteModel(std::make_pair(0, ModelExecutionStatus::kInvalidMetadata));
 
   segment_database_->SetBucketDuration(segment_id, 14,
                                        proto::TimeUnit::UNKNOWN_TIME_UNIT);
-  ExecuteModel(std::make_pair(0, ModelExecutionStatus::INVALID_METADATA));
+  ExecuteModel(std::make_pair(0, ModelExecutionStatus::kInvalidMetadata));
 }
 
 TEST_F(ModelExecutionManagerTest, SingleUserAction) {
@@ -247,9 +247,9 @@ TEST_F(ModelExecutionManagerTest, SingleUserAction) {
   // When the particular user action is looked up with the correct start time,
   // end time, and aggregation type, return 3 samples.
   std::vector<Sample> samples{
-      {clock_.Now(), absl::nullopt},
-      {clock_.Now(), absl::nullopt},
-      {clock_.Now(), absl::nullopt},
+      {clock_.Now(), 0},
+      {clock_.Now(), 0},
+      {clock_.Now(), 0},
   };
   EXPECT_CALL(*signal_database_,
               GetSamples(proto::SignalType::USER_ACTION,
@@ -270,7 +270,7 @@ TEST_F(ModelExecutionManagerTest, SingleUserAction) {
               ExecuteModelWithInput(_, std::vector<float>{3}))
       .WillOnce(RunOnceCallback<0>(absl::make_optional(0.8)));
 
-  ExecuteModel(std::make_pair(0.8, ModelExecutionStatus::SUCCESS));
+  ExecuteModel(std::make_pair(0.8, ModelExecutionStatus::kSuccess));
 }
 
 TEST_F(ModelExecutionManagerTest, ModelNotReady) {
@@ -284,7 +284,7 @@ TEST_F(ModelExecutionManagerTest, ModelNotReady) {
   EXPECT_CALL(FindHandler(segment_id), ModelAvailable())
       .WillRepeatedly(Return(false));
 
-  ExecuteModel(std::make_pair(0, ModelExecutionStatus::EXECUTION_ERROR));
+  ExecuteModel(std::make_pair(0, ModelExecutionStatus::kExecutionError));
 }
 
 TEST_F(ModelExecutionManagerTest, MultipleFeatures) {
@@ -309,9 +309,9 @@ TEST_F(ModelExecutionManagerTest, MultipleFeatures) {
 
   // First feature should be the user action.
   std::vector<Sample> user_action_samples{
-      {clock_.Now(), absl::nullopt},
-      {clock_.Now(), absl::nullopt},
-      {clock_.Now(), absl::nullopt},
+      {clock_.Now(), 0},
+      {clock_.Now(), 0},
+      {clock_.Now(), 0},
   };
   EXPECT_CALL(*signal_database_,
               GetSamples(proto::SignalType::USER_ACTION,
@@ -365,7 +365,7 @@ TEST_F(ModelExecutionManagerTest, MultipleFeatures) {
               ExecuteModelWithInput(_, std::vector<float>{3, 6, 4}))
       .WillOnce(RunOnceCallback<0>(absl::make_optional(0.8)));
 
-  ExecuteModel(std::make_pair(0.8, ModelExecutionStatus::SUCCESS));
+  ExecuteModel(std::make_pair(0.8, ModelExecutionStatus::kSuccess));
 }
 
 TEST_F(ModelExecutionManagerTest, SkipCollectionOnlyFeatures) {
@@ -397,9 +397,9 @@ TEST_F(ModelExecutionManagerTest, SkipCollectionOnlyFeatures) {
 
   // The first feature in use should be the very first feature.
   std::vector<Sample> user_action_samples{
-      {clock_.Now(), absl::nullopt},
-      {clock_.Now(), absl::nullopt},
-      {clock_.Now(), absl::nullopt},
+      {clock_.Now(), 0},
+      {clock_.Now(), 0},
+      {clock_.Now(), 0},
   };
   EXPECT_CALL(*signal_database_,
               GetSamples(proto::SignalType::USER_ACTION,
@@ -436,7 +436,7 @@ TEST_F(ModelExecutionManagerTest, SkipCollectionOnlyFeatures) {
               ExecuteModelWithInput(_, std::vector<float>{3, 6}))
       .WillOnce(RunOnceCallback<0>(absl::make_optional(0.8)));
 
-  ExecuteModel(std::make_pair(0.8, ModelExecutionStatus::SUCCESS));
+  ExecuteModel(std::make_pair(0.8, ModelExecutionStatus::kSuccess));
 }
 
 TEST_F(ModelExecutionManagerTest, FilteredEnumSamples) {
@@ -488,7 +488,7 @@ TEST_F(ModelExecutionManagerTest, FilteredEnumSamples) {
               ExecuteModelWithInput(_, std::vector<float>{2}))
       .WillOnce(RunOnceCallback<0>(absl::make_optional(0.8)));
 
-  ExecuteModel(std::make_pair(0.8, ModelExecutionStatus::SUCCESS));
+  ExecuteModel(std::make_pair(0.8, ModelExecutionStatus::kSuccess));
 }
 
 TEST_F(ModelExecutionManagerTest, MultipleFeaturesWithMultipleBuckets) {
@@ -514,14 +514,14 @@ TEST_F(ModelExecutionManagerTest, MultipleFeaturesWithMultipleBuckets) {
   // First feature should be the user action. The timestamp is set to three
   // different buckets.
   std::vector<Sample> user_action_samples{
-      {clock_.Now(), absl::nullopt},
-      {clock_.Now() - kOneSecond, absl::nullopt},
-      {clock_.Now() - bucket_duration, absl::nullopt},
-      {clock_.Now() - bucket_duration - kOneSecond, absl::nullopt},
-      {clock_.Now() - bucket_duration - kTwoSeconds, absl::nullopt},
-      {clock_.Now() - bucket_duration * 2, absl::nullopt},
-      {clock_.Now() - bucket_duration * 2 - kOneSecond, absl::nullopt},
-      {clock_.Now() - bucket_duration * 2 - kTwoSeconds, absl::nullopt},
+      {clock_.Now(), 0},
+      {clock_.Now() - kOneSecond, 0},
+      {clock_.Now() - bucket_duration, 0},
+      {clock_.Now() - bucket_duration - kOneSecond, 0},
+      {clock_.Now() - bucket_duration - kTwoSeconds, 0},
+      {clock_.Now() - bucket_duration * 2, 0},
+      {clock_.Now() - bucket_duration * 2 - kOneSecond, 0},
+      {clock_.Now() - bucket_duration * 2 - kTwoSeconds, 0},
   };
   EXPECT_CALL(*signal_database_,
               GetSamples(proto::SignalType::USER_ACTION,
@@ -567,7 +567,7 @@ TEST_F(ModelExecutionManagerTest, MultipleFeaturesWithMultipleBuckets) {
               ExecuteModelWithInput(_, std::vector<float>{1, 2, 3, 4, 5, 6, 7}))
       .WillOnce(RunOnceCallback<0>(absl::make_optional(0.8)));
 
-  ExecuteModel(std::make_pair(0.8, ModelExecutionStatus::SUCCESS));
+  ExecuteModel(std::make_pair(0.8, ModelExecutionStatus::kSuccess));
 }
 
 TEST_F(ModelExecutionManagerTest, OnSegmentationModelUpdatedInvalidMetadata) {
@@ -606,6 +606,7 @@ TEST_F(ModelExecutionManagerTest, OnSegmentationModelUpdatedNoOldMetadata) {
   proto::SegmentInfo segment_info;
   proto::SegmentationModelMetadata metadata;
   metadata.set_bucket_duration(42u);
+  metadata.set_time_unit(proto::TimeUnit::DAY);
   EXPECT_CALL(callback, Run(_)).WillOnce(SaveArg<0>(&segment_info));
   model_handlers_callbacks_[segment_id].Run(segment_id, metadata);
 
@@ -669,7 +670,7 @@ TEST_F(ModelExecutionManagerTest,
   auto* feature = metadata.add_features();
   feature->set_type(proto::SignalType::HISTOGRAM_VALUE);
   feature->set_name("other");
-  feature->set_name_hash(123);
+  // Intentionally not set the name hash, as it should be set automatically.
   feature->set_aggregation(proto::Aggregation::BUCKETED_SUM);
   feature->set_bucket_count(3);
   feature->set_tensor_length(3);
@@ -685,6 +686,9 @@ TEST_F(ModelExecutionManagerTest,
   EXPECT_EQ(proto::SignalType::HISTOGRAM_VALUE,
             segment_info.model_metadata().features(0).type());
   EXPECT_EQ("other", segment_info.model_metadata().features(0).name());
+  // The name_hash should have been set automatically.
+  EXPECT_EQ(base::HashMetricName("other"),
+            segment_info.model_metadata().features(0).name_hash());
   EXPECT_EQ(proto::Aggregation::BUCKETED_SUM,
             segment_info.model_metadata().features(0).aggregation());
   EXPECT_EQ(2, segment_info.prediction_result().result());
@@ -707,6 +711,8 @@ TEST_F(ModelExecutionManagerTest,
             segment_info_from_db_2->model_metadata().features(0).type());
   EXPECT_EQ("other",
             segment_info_from_db_2->model_metadata().features(0).name());
+  EXPECT_EQ(base::HashMetricName("other"),
+            segment_info_from_db_2->model_metadata().features(0).name_hash());
   EXPECT_EQ(proto::Aggregation::BUCKETED_SUM,
             segment_info_from_db_2->model_metadata().features(0).aggregation());
   // We shuold have kept the prediction result.

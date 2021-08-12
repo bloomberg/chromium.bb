@@ -438,6 +438,7 @@
 <translation id="3819178904835489326">已删除 <ph name="NUMBER_OF_DOWNLOADS" /> 项下载内容</translation>
 <translation id="3845098929839618392">在无痕式标签页中打开</translation>
 <translation id="3856096718352044181">请检查并确保这是一个有效的提供商，或者稍后重试</translation>
+<translation id="3858860766373142691">名称</translation>
 <translation id="3861633093716975811">热门视频</translation>
 <translation id="3892148308691398805">复制文字</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
@@ -517,6 +518,7 @@
 <translation id="4411535500181276704">精简模式</translation>
 <translation id="4415276339145661267">管理您的 Google 帐号</translation>
 <translation id="4427306783828095590">“增强型保护”选项在防范网上诱骗和恶意软件方面更高一筹</translation>
+<translation id="4450672886426705087">来自 Google 的搜索结果。</translation>
 <translation id="4452411734226507615">关闭“<ph name="TAB_TITLE" />”标签页</translation>
 <translation id="4452548195519783679">已将书签添加到“<ph name="FOLDER_NAME" />”</translation>
 <translation id="4472118726404937099">要在您的所有设备上保持同步并获享个性化体验，请登录您的帐号并开启同步功能</translation>
@@ -599,6 +601,7 @@
 <translation id="4881695831933465202">打开</translation>
 <translation id="488187801263602086">重命名文件</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
+<translation id="4905269543817054577">在无痕模式下，系统不会保存历史记录</translation>
 <translation id="4908869848243824489">Google 探索</translation>
 <translation id="4910889077668685004">付款应用</translation>
 <translation id="4913161338056004800">重置统计信息</translation>
@@ -616,7 +619,7 @@
 <translation id="4971735654804503942">为您提供更快速主动的保护措施，免受危险网站、下载内容或扩展程序的威胁。系统会在密码遭泄露时向您发出警告。您需要向 Google 发送浏览数据。</translation>
 <translation id="497421865427891073">前进</translation>
 <translation id="4988210275050210843">正在下载文件 (<ph name="MEGABYTES" />)。</translation>
-<translation id="4988526792673242964">网页</translation>
+<translation id="4988526792673242964">页面</translation>
 <translation id="5001388021414335527">点击此处关注此网站</translation>
 <translation id="5004416275253351869">Google 活动控件</translation>
 <translation id="5005498671520578047">复制密码</translation>
@@ -634,6 +637,7 @@
 <translation id="5123685120097942451">无痕式标签页</translation>
 <translation id="5132942445612118989">将您的密码、历史记录等信息同步到所有设备上</translation>
 <translation id="5139940364318403933">了解如何使用 Google 云端硬盘</translation>
+<translation id="5142281402488957685">若要获取新报道，请下拉页面进行刷新</translation>
 <translation id="5152843274749979095">尚未安装任何支持的应用</translation>
 <translation id="5161254044473106830">必须提供标题</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 项下载失败。}other{# 项下载失败。}}</translation>
@@ -654,6 +658,7 @@
 <translation id="5222676887888702881">退出</translation>
 <translation id="5227554086496586518">点按即可查看搜索结果</translation>
 <translation id="5233638681132016545">打开新的标签页</translation>
+<translation id="5246093389635966745">修改工具栏快捷方式</translation>
 <translation id="5250483651202458397">屏幕截图。点按即可关闭。</translation>
 <translation id="5262378156578470238">待系统于 <ph name="DATE" />开始执行这项下载操作时，您会收到通知。</translation>
 <translation id="526421993248218238">无法加载此页面</translation>
@@ -664,7 +669,6 @@
 <translation id="5317780077021120954">保存</translation>
 <translation id="5319359161174645648">Google 推荐使用 Chrome</translation>
 <translation id="5324858694974489420">家长设置</translation>
-<translation id="5327248766486351172">名称</translation>
 <translation id="5342314432463739672">权限请求</translation>
 <translation id="5355191726083956201">已开启增强型保护</translation>
 <translation id="5357811892247919462">收到了标签页</translation>
@@ -1008,12 +1012,12 @@ Privacy Sandbox 试用版功能尚处于积极开发阶段，目前只能在部�
 <translation id="7454641608352164238">空间不足</translation>
 <translation id="7475192538862203634">如果您频繁遇到此问题，请尝试按这些<ph name="BEGIN_LINK" />建议<ph name="END_LINK" />操作。</translation>
 <translation id="7475688122056506577">找不到 SD 卡。您的某些文件可能会丢失。</translation>
-<translation id="7476384249953022816">如需清除您设备中的无痕浏览记录，请关闭所有标签页</translation>
 <translation id="7479104141328977413">标签页管理</translation>
 <translation id="7481312909269577407">前进</translation>
 <translation id="7481864133709957613">若要从此页面中执行搜索，请轻触并按住（而非点按）相关字词</translation>
 <translation id="7482656565088326534">预览标签页</translation>
 <translation id="7484997419527351112">探索 - 已关闭</translation>
+<translation id="7485033510383818941">若要刷新 Feed 内容，请下拉页面</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />（上次更新时间：<ph name="TIME_SINCE_UPDATE" />）</translation>
 <translation id="7494974237137038751">已节省的流量</translation>
 <translation id="7498271377022651285">请稍候…</translation>
@@ -1043,6 +1047,7 @@ Privacy Sandbox 试用版功能尚处于积极开发阶段，目前只能在部�
 <translation id="7630202231528827509">提供商网址</translation>
 <translation id="7638584964844754484">密码不正确</translation>
 <translation id="7641339528570811325">清除浏览数据…</translation>
+<translation id="764170292089748542">如果您选择私密地浏览网页，Chrome 不会保存您的浏览记录。您仍能使用书签访问自己收藏的网站。</translation>
 <translation id="7646772052135772216">无法同步密码</translation>
 <translation id="7655900163790317559">正在开启蓝牙…</translation>
 <translation id="7658239707568436148">取消</translation>
@@ -1278,7 +1283,6 @@ Privacy Sandbox 试用版功能尚处于积极开发阶段，目前只能在部�
 <translation id="9070377983101773829">开始语音搜索</translation>
 <translation id="9074336505530349563">要获取 Google 推荐的个性化内容，请登录您的帐号并开启同步功能</translation>
 <translation id="9074739597929991885">蓝牙</translation>
-<translation id="9081543426177426948">在无痕模式下，系统不会保存您访问过的网站</translation>
 <translation id="9086302186042011942">正在同步</translation>
 <translation id="9086455579313502267">无法访问网络</translation>
 <translation id="9100505651305367705">询问是否使用简化版视图显示支持这一功能的文章</translation>

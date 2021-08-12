@@ -16,7 +16,6 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1056775291175587022">Nuk ka rrjete</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="1073899992769346247">Zëvendëso ose kariko baterinë</translation>
-<translation id="1077253978657569125">Ne duam ta përmirësojmë këtë!</translation>
 <translation id="108486256082349153">Celulare: <ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426">Mirëdita <ph name="GIVEN_NAME" />,</translation>
 <translation id="109942774857561566">Jam i mërzitur</translation>
@@ -485,6 +484,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="4696813013609194136">Shkyç pajisjen me kodin e prindit</translation>
 <translation id="4702647871202761252">Ekrani i privatësisë është joaktiv</translation>
 <translation id="4705716602320768426">Dërgo komente</translation>
+<translation id="4730258224256997107">Na ndihmo ta përmirësojmë këtë!</translation>
 <translation id="4731797938093519117">Qasja e prindit</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="4735498845456076464">Shkurtorja e tastierës për <ph name="LAUNCHER_KEY_NAME" /> + Numri është ndryshuar. Për të përdorur tastet e funksioneve, shtyp tastin <ph name="LAUNCHER_KEY_NAME" /> + një tast në rreshtin e sipërm.</translation>
@@ -694,6 +694,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="6482559668224714696">Zmadhuesi në ekran të plotë</translation>
 <translation id="6490471652906364588">Pajisja USB-C (porta djathtas)</translation>
 <translation id="649452524636452238">Kodi PIN i kartës smart</translation>
+<translation id="6500818810472529210">Shikoje rezultatin te "Kërko në Google"</translation>
 <translation id="6501401484702599040">Po transmeton ekranin te <ph name="RECEIVER_NAME" /></translation>
 <translation id="6520517963145875092">Zgjidh një dritare për të regjistruar</translation>
 <translation id="652139407789908527">Ekrani yt do të jetë bosh për një kohë më të gjatë se zakonisht (deri në një minutë) gjatë këtij përditësimi. Mos e shtyp butonin e energjisë kur përditësimi është në vazhdim.</translation>

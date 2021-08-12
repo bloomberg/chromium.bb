@@ -11,12 +11,9 @@
     <color name="text_highlight_color">@color/highlight_color_on_dark_text</color>
 
     <!-- Toolbar colors -->
-    <color name="toolbar_background_primary">
-        @color/default_bg_color_elev_3
-    </color>
-    <color name="toolbar_background_primary_dark">
-        @color/default_bg_color_dark_elev_3
-    </color>
+    <!-- Same as ?attr/colorSurface. -->
+    <color name="toolbar_background_primary">@color/default_bg_color</color>
+    <color name="toolbar_background_primary_dark">@color/default_bg_color_dark</color>
 
     <!-- Infobar colors -->
     <color name="infobar_icon_drawable_color">@color/default_icon_color_blue</color>
@@ -33,5 +30,6 @@
 
     <!-- Navigation bar colors -->
     <color name="bottom_system_nav_color">@color/toolbar_background_primary</color>
-    <color name="bottom_system_nav_divider_color">@color/hairline_stroke_color</color>
+    <color name="bottom_system_nav_divider_color">@color/divider_line_bg_color</color>
+    <color name="bottom_system_nav_divider_color_light">@color/divider_line_bg_color_light</color>
 </resources>

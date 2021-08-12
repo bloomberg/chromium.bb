@@ -16,7 +16,6 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="1056775291175587022">Inga nätverk</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="1073899992769346247">Byt eller ladda batteriet</translation>
-<translation id="1077253978657569125">Vi vill förbättra detta!</translation>
 <translation id="108486256082349153">Mobil: <ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426">Hej <ph name="GIVEN_NAME" />!</translation>
 <translation id="109942774857561566">Jag har tråkigt</translation>
@@ -485,6 +484,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="4696813013609194136">Lås upp enheten med föräldrakod</translation>
 <translation id="4702647871202761252">Sekretesskärmen är inaktiverad</translation>
 <translation id="4705716602320768426">Skicka feedback</translation>
+<translation id="4730258224256997107">Hjälp oss att förbättra detta.</translation>
 <translation id="4731797938093519117">Föräldraåtkomst</translation>
 <translation id="4734965478015604180">Horisontell</translation>
 <translation id="4735498845456076464">Kortkommandot <ph name="LAUNCHER_KEY_NAME" /> + siffra har ändrats. Nu används <ph name="LAUNCHER_KEY_NAME" />-tangenten + en tangent i översta raden som funktionstangenter.</translation>
@@ -694,6 +694,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="6482559668224714696">Helskärmsförstoring</translation>
 <translation id="6490471652906364588">USB-C-enhet (höger port)</translation>
 <translation id="649452524636452238">Pinkod till smartkort</translation>
+<translation id="6500818810472529210">Visa resultat på Google Sök</translation>
 <translation id="6501401484702599040">Skärmen castas till <ph name="RECEIVER_NAME" /></translation>
 <translation id="6520517963145875092">Välj ett fönster att ta en bild av</translation>
 <translation id="652139407789908527">Det är tomt på skärmen längre än vanligt (i upp till en minut) under den här uppdateringen. Tryck inte på strömbrytaren medan uppdateringen pågår.</translation>

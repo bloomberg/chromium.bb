@@ -288,8 +288,10 @@ Realiza los siguientes pasos:</translation>
 <translation id="3779810277399252432">Sin conexión a Internet</translation>
 <translation id="3783017676699494206">Guardar imagen</translation>
 <translation id="3789841737615482174">Instalar</translation>
+<translation id="380329542618494757">Nombre</translation>
 <translation id="3803696231112616155">Ofrecer traducir este sitio</translation>
 <translation id="385051799172605136">Atrás</translation>
+<translation id="3858860766373142691">Nombre</translation>
 <translation id="3892144330757387737">Aquí encontrarás tu historial</translation>
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3913386780052199712">Accediste a Chrome.</translation>
@@ -427,7 +429,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5295239312320826323">¿Quieres quitar la cuenta <ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
-<translation id="5327248766486351172">Nombre</translation>
 <translation id="5339316356165661760">Activar la sincronización</translation>
 <translation id="5360976571138293719">Para ver más opciones de configuración relacionadas con la privacidad, seguridad y recopilación de datos, visita <ph name="BEGIN_LINK" />Servicios de Google<ph name="END_LINK" />.</translation>
 <translation id="5388358297987318779">Abrir imagen</translation>
@@ -475,6 +476,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5846482154967366008">Motor de búsqueda</translation>
 <translation id="5854790677617711513">Hace más de 30 días</translation>
 <translation id="5857090052475505287">Nueva carpeta</translation>
+<translation id="5857675236236529683">Cuando todo esté listo, consulta tu lista de lectura aquí.</translation>
 <translation id="5857770089550859117">Se requiere la frase de contraseña para comenzar la sincronización.</translation>
 <translation id="5860033963881614850">Desactivado</translation>
 <translation id="5869029295770560994">Entendido</translation>

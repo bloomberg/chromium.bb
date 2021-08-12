@@ -8,6 +8,7 @@
 #include "chrome/browser/sharesheet/sharesheet_types.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/views/view_tracker.h"
+#include "ui/views/widget/widget.h"
 
 class Profile;
 
@@ -57,7 +58,9 @@ class SharingHubBubbleController
   // Handles when the user clicks on a Sharing Hub action. If this is a first
   // party action, executes the appropriate browser command. If this is a third
   // party action, navigates to an external webpage.
-  virtual void OnActionSelected(int command_id, bool is_first_party);
+  virtual void OnActionSelected(int command_id,
+                                bool is_first_party,
+                                std::string feature_name_for_metrics);
   // Handler for when the bubble is closed.
   void OnBubbleClosed();
 
@@ -73,7 +76,7 @@ class SharingHubBubbleController
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void ShowSharesheet(views::Button* highlighted_button);
   void OnShareDelivered(sharesheet::SharesheetResult result);
-  void OnSharesheetClosed();
+  void OnSharesheetClosed(views::Widget::ClosedReason reason);
 
   views::ViewTracker highlighted_button_tracker_;
 #endif

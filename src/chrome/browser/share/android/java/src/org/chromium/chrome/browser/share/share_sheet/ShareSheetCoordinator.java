@@ -50,6 +50,8 @@ import org.chromium.ui.base.WindowAndroid.ActivityStateObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -163,6 +165,9 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
         mChromeShareExtras = chromeShareExtras;
         mActivity = params.getWindow().getActivity().get();
         if (mActivity == null) return;
+
+        // Current tab information is necessary to create the first party options.
+        if (!mExcludeFirstParty && (mTabProvider == null || mTabProvider.get() == null)) return;
 
         if (mWindowAndroid == null) {
             mWindowAndroid = params.getWindow();
@@ -355,6 +360,13 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, callback.bind(models));
     }
 
+    class ResolveInfoPackageNameComparator implements Comparator<ResolveInfo> {
+        @Override
+        public int compare(ResolveInfo a, ResolveInfo b) {
+            return a.activityInfo.packageName.compareTo(b.activityInfo.packageName);
+        }
+    };
+
     private void createThirdPartyPropertyModelsFromUsageRanking(Activity activity,
             ShareParams params, Set<Integer> contentTypes, boolean saveLastUsed,
             Callback<List<PropertyModel>> callback) {
@@ -374,6 +386,12 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
 
         List<String> availableActivities = new ArrayList<String>();
         Map<String, PropertyModel> models = new HashMap<String, PropertyModel>();
+
+        // Sort the resolve infos by package name: on the backend, we store them by activity name,
+        // but there's no particular reason activity names would be unique, and when we get them
+        // from the system they're in arbitrary order. Here we sort them by package name (which *is*
+        // unique) so that the user always gets a consistent option in a given slot.
+        Collections.sort(availableResolveInfos, new ResolveInfoPackageNameComparator());
 
         for (ResolveInfo r : availableResolveInfos) {
             availableActivities.add(r.activityInfo.name);

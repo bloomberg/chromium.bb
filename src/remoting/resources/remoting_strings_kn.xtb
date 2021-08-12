@@ -56,6 +56,7 @@
 <translation id="369442766917958684">ಆಫ್‌ಲೈನ್.</translation>
 <translation id="3695446226812920698">ಹೇಗೆ ಎಂಬುದನ್ನು ತಿಳಿದುಕೊಳ್ಳಿ</translation>
 <translation id="3776024066357219166">ನಿಮ್ಮ Chrome ರಿಮೋಟ್ ಡೆಸ್ಕ್‌ಟಾಪ್ ಅವಧಿಯು ಕೊನೆಗೊಂಡಿದೆ.</translation>
+<translation id="3858860766373142691">ಹೆಸರು</translation>
 <translation id="3897092660631435901">ಮೆನು</translation>
 <translation id="3905196214175737742">ಅಮಾನ್ಯ ಹೋಸ್ಟ್ ಮಾಲೀಕರ ಡೊಮೇನ್.</translation>
 <translation id="3931191050278863510">ಹೋಸ್ಟ್ ನಿಲ್ಲಿಸಲಾಗಿದೆ.</translation>
@@ -75,7 +76,7 @@
 <translation id="443560535555262820">ಪ್ರವೇಶಿಸುವಿಕೆ ಆದ್ಯತೆಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="4450893287417543264">ಮತ್ತೊಮ್ಮೆ ತೋರಿಸಬೇಡಿ</translation>
 <translation id="4512952200932940229">ಹಕ್ಕುಸ್ವಾಮ್ಯ 2021 Chromium ಲೇಖಕರು. ಎಲ್ಲಾ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.</translation>
-<translation id="4513946894732546136">Feedback</translation>
+<translation id="4513946894732546136">ಪ್ರತಿಕ್ರಿಯೆ</translation>
 <translation id="4563926062592110512">ಕ್ಲೈಂಟ್ ಸಂಪರ್ಕ ರದ್ದುಮಾಡಲಾಗಿದೆ: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4635770493235256822">ರಿಮೋಟ್ ಸಾಧನಗಳು</translation>
 <translation id="4660011489602794167">ಕೀಬೋರ್ಡ್ ತೋರಿಸಿ</translation>
@@ -97,7 +98,6 @@
 <translation id="5222676887888702881">ಸೈನ್ ಔಟ್</translation>
 <translation id="5234764350956374838">ವಜಾಗೊಳಿಸಿ</translation>
 <translation id="5308380583665731573">ಸಂಪರ್ಕಿಸು</translation>
-<translation id="5327248766486351172">ಹೆಸರು</translation>
 <translation id="533625276787323658">ಸಂಪರ್ಕಿಸಲು ಏನೂ ಇಲ್ಲ</translation>
 <translation id="5397086374758643919">Chrome ರಿಮೋಟ್ ಡೆಸ್ಕ್‌ಟಾಪ್ ಹೋಸ್ಟ್ ಅಸ್ಥಾಪಕ</translation>
 <translation id="5419418238395129586">ಕೊನೆಯದಾಗಿ ಆನ್‌ಲೈನ್: <ph name="DATE" /></translation>

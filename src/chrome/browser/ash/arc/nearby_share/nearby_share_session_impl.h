@@ -16,6 +16,7 @@
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/views/widget/widget.h"
 
 namespace webshare {
 class PrepareDirectoryTask;
@@ -43,7 +44,7 @@ class NearbyShareSessionImpl : public mojom::NearbyShareSessionHost,
   ~NearbyShareSessionImpl() override;
 
   // Called when Nearby Share is closed.
-  void OnNearbyShareClosed();
+  void OnNearbyShareClosed(views::Widget::ClosedReason reason);
 
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* const window) override;
@@ -82,6 +83,10 @@ class NearbyShareSessionImpl : public mojom::NearbyShareSessionHost,
   // Nearby Share bubble.
   void OnSessionDisconnected();
 
+  // Called when shared files are no longer used by Nearby Share and can be
+  // cleaned up along with the share session.
+  void OnCleanupSession();
+
   // Android activity's task ID
   int32_t task_id_;
 
@@ -106,6 +111,9 @@ class NearbyShareSessionImpl : public mojom::NearbyShareSessionHost,
   // Timer used to wait for the ARC window to be asynchronously initialized and
   // visible.
   base::OneShotTimer window_initialization_timer_;
+
+  // Sequenced task runner for executing backend file IO cleanup tasks.
+  const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   // Observes the ARC window.
   base::ScopedObservation<aura::Window, aura::WindowObserver>

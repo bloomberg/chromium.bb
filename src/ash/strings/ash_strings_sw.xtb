@@ -16,7 +16,6 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="1056775291175587022">Hamna mitandao</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="1073899992769346247">Badilisha betri au uichaji</translation>
-<translation id="1077253978657569125">Tungependa kuboresha kipengele hiki!</translation>
 <translation id="108486256082349153">Simu ya Mkononi: <ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426">Habari za mchana <ph name="GIVEN_NAME" />,</translation>
 <translation id="109942774857561566">Nahitaji kuchangamshwa</translation>
@@ -485,6 +484,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="4696813013609194136">Fungua kifaa ukitumia msimbo wa mzazi</translation>
 <translation id="4702647871202761252">Skrini ya faragha imezimwa</translation>
 <translation id="4705716602320768426">Tuma maoni</translation>
+<translation id="4730258224256997107">Tusaidie kuboresha kipengele hiki!</translation>
 <translation id="4731797938093519117">Idhini ya mzazi</translation>
 <translation id="4734965478015604180">Kimlalo</translation>
 <translation id="4735498845456076464">Mikato ya kibodi ya <ph name="LAUNCHER_KEY_NAME" /> + Nambari imebadilika. Ili utumie vitufe vya kukokotoa, bonyeza kitufe cha <ph name="LAUNCHER_KEY_NAME" /> pamoja na kitufe kwenye safu mlalo ya juu.</translation>
@@ -694,6 +694,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="6482559668224714696">Kikuzaji cha skrini nzima</translation>
 <translation id="6490471652906364588">Kifaa cha USB-C (mlango wa kulia)</translation>
 <translation id="649452524636452238">PIN ya kadi mahiri</translation>
+<translation id="6500818810472529210">Angalia matokeo katika huduma ya Tafuta na Google</translation>
 <translation id="6501401484702599040">Inatuma skrini kwenye <ph name="RECEIVER_NAME" /></translation>
 <translation id="6520517963145875092">Chagua dirisha ili unase</translation>
 <translation id="652139407789908527">Skrini yako itazima kwa muda mrefu kuliko kawaida (hadi dakika moja) wakati wa sasisho hili. Tafadhali usibonyeze kitufe cha kuwasha/kuzima wakati sasisho linaendelea.</translation>

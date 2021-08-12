@@ -288,8 +288,10 @@
 <translation id="3779810277399252432">Нема интернет везе.</translation>
 <translation id="3783017676699494206">Сачувај слику</translation>
 <translation id="3789841737615482174">Инсталирај</translation>
+<translation id="380329542618494757">Име</translation>
 <translation id="3803696231112616155">Понуди превод овог сајта</translation>
 <translation id="385051799172605136">Назад</translation>
+<translation id="3858860766373142691">Назив</translation>
 <translation id="3892144330757387737">Овде ћете пронаћи историју</translation>
 <translation id="3897092660631435901">Мени</translation>
 <translation id="3913386780052199712">Пријављен/а у Chrome</translation>
@@ -427,7 +429,6 @@
 <translation id="5295239312320826323">Желите да уклоните налог <ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">Прикажи</translation>
 <translation id="5317780077021120954">Сачувај</translation>
-<translation id="5327248766486351172">Назив</translation>
 <translation id="5339316356165661760">Укључи синхронизацију</translation>
 <translation id="5360976571138293719">Више подешавања у вези са приватношћу, безбедношћу и прикупљањем података потражите у одељку <ph name="BEGIN_LINK" />Google услуге<ph name="END_LINK" />.</translation>
 <translation id="5388358297987318779">Отвори слику</translation>
@@ -475,6 +476,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="5846482154967366008">Претраживач</translation>
 <translation id="5854790677617711513">Старије од 30 дана</translation>
 <translation id="5857090052475505287">Нови директоријум</translation>
+<translation id="5857675236236529683">Када будете спремни, овде пронађите листу за читање</translation>
 <translation id="5857770089550859117">За почетак синхронизације потребна је приступна фраза.</translation>
 <translation id="5860033963881614850">Искључено</translation>
 <translation id="5869029295770560994">Важи</translation>

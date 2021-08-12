@@ -438,6 +438,7 @@ Təhlükəsiz Sandbox hələ də aktiv inkişaf etdirilir və seçilmiş bölgə
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> endirmə silindi</translation>
 <translation id="3845098929839618392">Anonim tabda açın</translation>
 <translation id="3856096718352044181">Bunun etibarlı təminatçı olduğunu doğrulayın, ya da daha sonra təkrar cəhd edin</translation>
+<translation id="3858860766373142691">Ad</translation>
 <translation id="3861633093716975811">Populyar videolar</translation>
 <translation id="3892148308691398805">Mətni kopyalayın</translation>
 <translation id="3894427358181296146">Qovluq əlavə edin</translation>
@@ -517,6 +518,7 @@ Təhlükəsiz Sandbox hələ də aktiv inkişaf etdirilir və seçilmiş bölgə
 <translation id="4411535500181276704">Layt rejimi</translation>
 <translation id="4415276339145661267">Google Hesabını idarə edin</translation>
 <translation id="4427306783828095590">Təkmil qoruma ilə fişinq və zərərli proqramların bloklanması üçün daha çox iş görülür</translation>
+<translation id="4450672886426705087">Google'dan nəticələri axtarın.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> tabını bağlayın</translation>
 <translation id="4452548195519783679"><ph name="FOLDER_NAME" /> qovluğuna əlfəcinləndi</translation>
 <translation id="4472118726404937099">Cihazlar üzrə sinxronizasiya etmək və fərdiləşdirmək üçün daxil olub sinxronizasiyanı aktiv edin</translation>
@@ -599,6 +601,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="4881695831933465202">Açın</translation>
 <translation id="488187801263602086">Faylın adını dəyişin</translation>
 <translation id="4885273946141277891">Dəstəklənməyən Chrome nümunələrinin sayı.</translation>
+<translation id="4905269543817054577">Tarixçə Anonim rejimdə yadda saxlanılmır</translation>
 <translation id="4908869848243824489">Google Təkliflər</translation>
 <translation id="4910889077668685004">Ödəniş tətbiqləri</translation>
 <translation id="4913161338056004800">Statistikanı sıfırlayın</translation>
@@ -634,6 +637,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5123685120097942451">Aanonim tab</translation>
 <translation id="5132942445612118989">Bütün cihazlarda parol, tarixçə və s. sinxronizasiya edin</translation>
 <translation id="5139940364318403933">Google Diskdən istifadə etməyi öyrənin</translation>
+<translation id="5142281402488957685">Yeni hekayələr üçün aşağı çəkərək yeniləyin</translation>
 <translation id="5152843274749979095">Heç bir dəstəklənən tətbiq quraşdırılmayıb</translation>
 <translation id="5161254044473106830">Başlıq tələb olunur</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 endirmə alınmadı.}other{# endirmə alınmadı.}}</translation>
@@ -654,6 +658,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5222676887888702881">Hesabdan çıxın</translation>
 <translation id="5227554086496586518">Axtarış nəticələrini görmək üçün toxunun</translation>
 <translation id="5233638681132016545">Yeni panel</translation>
+<translation id="5246093389635966745">Alətlər panelinin redaktəsi qısayolu</translation>
 <translation id="5250483651202458397">Skrinşot. Bağlamaq üçün toxunun.</translation>
 <translation id="5262378156578470238">Bu endirmə <ph name="DATE" /> tarixində başlayanda bildiriş görəcəksiniz.</translation>
 <translation id="526421993248218238">Bu səhifəni yükləmək mümkün deyil</translation>
@@ -664,7 +669,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5317780077021120954">Yadda saxlayın</translation>
 <translation id="5319359161174645648">Google, Chrome'u tövsiyə edir</translation>
 <translation id="5324858694974489420">Valideyn Ayarları</translation>
-<translation id="5327248766486351172">Ad</translation>
 <translation id="5342314432463739672">İcazə sorğuları</translation>
 <translation id="5355191726083956201">Qabaqcıl Qoruma aktivdir</translation>
 <translation id="5357811892247919462">Tab qəbul edildi</translation>
@@ -1006,12 +1010,12 @@ Məxfilik Sendboksu sınaqları hələ də aktiv hazırlanma mərhələsindədir
 <translation id="7454641608352164238">Yetərincə yer yoxdur</translation>
 <translation id="7475192538862203634">Bunu tez-tez görürsünüzsə, bu <ph name="BEGIN_LINK" />təklifləri<ph name="END_LINK" /> nəzərdən keçirin.</translation>
 <translation id="7475688122056506577">SD kart tapılmadı. Bəzi fayllar əskik ola bilər.</translation>
-<translation id="7476384249953022816">Cihazınızdan Anonim brauzer tarixçəsini təmizləmək üçün bütün tabları bağlayın</translation>
 <translation id="7479104141328977413">Tab idarəetməsi</translation>
 <translation id="7481312909269577407">İrəli</translation>
 <translation id="7481864133709957613">Bu səhifədən axtarış etmək üçün sözlərin üzərinə toxunmaq əvəzinə onlara toxunub saxlayın</translation>
 <translation id="7482656565088326534">Önbaxış tabı</translation>
 <translation id="7484997419527351112">"Təkliflər" - deaktivdir</translation>
+<translation id="7485033510383818941">Lent məzmununu yeniləmək üçün səhifəni aşağı çəkin</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Güncəlləşib <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">yadda saxlanmış data</translation>
 <translation id="7498271377022651285">Xahiş edirik gözləyin ...</translation>
@@ -1041,6 +1045,7 @@ Məxfilik Sendboksu sınaqları hələ də aktiv hazırlanma mərhələsindədir
 <translation id="7630202231528827509">Provayder URL-i</translation>
 <translation id="7638584964844754484">Yanlış parol</translation>
 <translation id="7641339528570811325">Brauzinq datasını təmizləyin...</translation>
+<translation id="764170292089748542">Məxfi baxmağı seçdiyiniz zaman Chrome brauzer tarixçənizi saxlamır. Sevdiyiniz saytlara giriş üçün hələ də əlfəcinlərdən istifadə edə bilərsiniz.</translation>
 <translation id="7646772052135772216">Parol sinxronizasiyası işləmir</translation>
 <translation id="7655900163790317559">Bluetooth aktiv edilir…</translation>
 <translation id="7658239707568436148">Ləğv edin</translation>
@@ -1276,7 +1281,6 @@ Məxfilik Sendboksu sınaqları hələ də aktiv hazırlanma mərhələsindədir
 <translation id="9070377983101773829">Səsli axtarışa başlayın</translation>
 <translation id="9074336505530349563">Google tərəfindən təklif olunan fərdiləşdirilmiş kontenti əldə etmək üçün daxil olun və sinxronizasiyanı aktiv edin.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
-<translation id="9081543426177426948">Anonim rejimdə daxil olduğunuz saytlar yadda saxlanılmır</translation>
 <translation id="9086302186042011942">Sinxronizasiya edilir</translation>
 <translation id="9086455579313502267">Şəbəkəyə qoşulmaq olmur</translation>
 <translation id="9100505651305367705">Dəstəklənən zaman sadələşdirilmiş görünüşdə məqalələr göstərməyi təklif edin</translation>

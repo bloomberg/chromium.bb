@@ -288,8 +288,10 @@
 <translation id="3779810277399252432">ഇന്റർനെറ്റ് കണക്ഷനില്ല.</translation>
 <translation id="3783017676699494206">ചിത്രം സംരക്ഷിക്കുക</translation>
 <translation id="3789841737615482174">ഇന്‍സ്റ്റാൾ ചെയ്യുക</translation>
+<translation id="380329542618494757">പേര്</translation>
 <translation id="3803696231112616155">ഈ സൈറ്റ് വിവർത്തനം ചെയ്യാനുള്ള അനുമതി</translation>
 <translation id="385051799172605136">പിന്നോട്ട്</translation>
+<translation id="3858860766373142691">പേര്</translation>
 <translation id="3892144330757387737">നിങ്ങളുടെ ചരിത്രം ഇവിടെ കാണാം</translation>
 <translation id="3897092660631435901">മെനു</translation>
 <translation id="3913386780052199712">Chrome-ൽ സൈൻ ഇൻ ചെയ്‌തു</translation>
@@ -427,7 +429,6 @@
 <translation id="5295239312320826323"><ph name="USER_EMAIL" /> എന്ന അക്കൗണ്ട് നീക്കം ചെയ്യണോ?</translation>
 <translation id="5300589172476337783">കാണിക്കുക</translation>
 <translation id="5317780077021120954">സംരക്ഷിക്കുക</translation>
-<translation id="5327248766486351172">പേര്</translation>
 <translation id="5339316356165661760">സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
 <translation id="5360976571138293719">സ്വകാര്യത, സുരക്ഷ, ഡാറ്റാ ശേഖരണം എന്നിവയുമായി ബന്ധപ്പെട്ട കൂടുതൽ ക്രമീകരണത്തിന്, <ph name="BEGIN_LINK" />Google സേവനങ്ങൾ<ph name="END_LINK" /> കാണുക.</translation>
 <translation id="5388358297987318779">ചിത്രം തുറക്കുക</translation>
@@ -475,6 +476,7 @@
 <translation id="5846482154967366008">തിരയൽ യന്ത്രം</translation>
 <translation id="5854790677617711513">30 ദിവസത്തിൽ കൂടുതൽ പഴക്കമുള്ളത്</translation>
 <translation id="5857090052475505287">പുതിയ ഫോള്‍ഡര്‍</translation>
+<translation id="5857675236236529683">തയ്യാറാകുമ്പോൾ, നിങ്ങളുടെ വായിക്കാനുള്ളവയുടെ ലിസ്‌റ്റ് ഇവിടെ കണ്ടെത്തുക</translation>
 <translation id="5857770089550859117">സമന്വയിപ്പിക്കൽ തുടങ്ങുന്നതിന്, പാസ്‌ഫ്രെയ്‌സ് ആവശ്യമാണ്.</translation>
 <translation id="5860033963881614850">ഓഫാക്കുക</translation>
 <translation id="5869029295770560994">മനസ്സിലായി</translation>

@@ -410,7 +410,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="2359347814217202136">{NUM_DAYS,plural, =0{Om mindre än ett dygn}=1{Om ett dygn}other{Om {NUM_DAYS} dygn}}</translation>
 <translation id="2359629602545592467">Flera</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
-<translation id="2359961752320758691">Ditt virtuella kortnummer tillämpas.</translation>
 <translation id="236340516568226369">Ändra storlek på menyn för att aktivera och inaktivera</translation>
 <translation id="2367567093518048410">Nivå</translation>
 <translation id="2372464001869762664">När du bekräftar delas kortuppgifter från ditt Google-konto med webbplatsen. Du hittar CVC-koden i Plex-kontouppgifterna.</translation>
@@ -809,6 +808,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="3793574014653384240">Antal och orsaker till krascher som har skett nyligen</translation>
 <translation id="3797522431967816232">Prc3 (kuvert)</translation>
 <translation id="3799805948399000906">Teckensnitt begärt</translation>
+<translation id="380329542618494757">Namn</translation>
 <translation id="3807366285948165054">Bild X – byte</translation>
 <translation id="3807873520724684969">Skadligt innehåll har blockerats.</translation>
 <translation id="3810973564298564668">Hantera</translation>
@@ -823,6 +823,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="3848487483475744267"><ph name="CREATE_GOOGLE_DOC_FOCUSED_FRIENDLY_MATCH_TEXT" />: tryck på Tabb och sedan på Retur om du snabbt vill skapa ett nytt Google-dokument</translation>
 <translation id="385051799172605136">Föregående</translation>
 <translation id="3858027520442213535">Uppdatera datum och tid</translation>
+<translation id="3858860766373142691">Namn</translation>
 <translation id="3881478300875776315">Visa färre rader</translation>
 <translation id="3884278016824448484">Motstridiga enhetsidentifierare</translation>
 <translation id="3885155851504623709">Församling</translation>
@@ -868,6 +869,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="4067947977115446013">Lägg till giltig adress</translation>
 <translation id="4072193657607981494">Policyer läses in</translation>
 <translation id="4072486802667267160">Det gick inte att behandla beställningen. Försök igen.</translation>
+<translation id="4073797364926776829">Visa kort</translation>
 <translation id="4075732493274867456">Klienten och servern har inte stöd för en gemensam SSL-protokollversion eller chiffersvit.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">Proxykonfigurationen är inställd på att använda en webbadress med PAC-skript, inte fasta proxyservrar.</translation>
@@ -998,6 +1000,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="443121186588148776">Serieport</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> godkände inte inloggningscertifikatet eller så har inget inloggningscertifikat angetts.</translation>
 <translation id="4432792777822557199">Sidor på <ph name="SOURCE_LANGUAGE" /> översätts till <ph name="TARGET_LANGUAGE" /> från och med nu</translation>
+<translation id="4433642172056592619">Ignoreras eftersom användaren inte är kopplad till datorhanteringen, eller så är det inte en hanterad dator.</translation>
 <translation id="4434045419905280838">Popup-fönster och omdirigeringar</translation>
 <translation id="4435702339979719576">vykort)</translation>
 <translation id="443673843213245140">Användning av proxy är inaktiverad men en explicit proxykonfiguration har angetts.</translation>
@@ -1253,7 +1256,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> av <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Välj kontaktuppgifter</translation>
-<translation id="5327248766486351172">Namn</translation>
 <translation id="5329858041417644019">Din webbläsare är inte hanterad</translation>
 <translation id="5332219387342487447">Fraktmetod</translation>
 <translation id="5333022057423422993">Chrome upptäckte att lösenordet som du precis använde har läckt ut vid ett dataintrång. Vi rekommenderar att du kontrollerar dina sparade lösenord för att skydda dina konton.</translation>
@@ -1368,6 +1370,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="5759751709240058861">Använda och röra din kamera</translation>
 <translation id="5763042198335101085">Ange en giltig e-postadress</translation>
 <translation id="5765072501007116331">Välj en adress för att visa leveranssätt och krav</translation>
+<translation id="57689295674415555">Har det virtuella kortnumret inte fyllts i?</translation>
 <translation id="5776313857861697733">Prioritet</translation>
 <translation id="5778550464785688721">MIDI-enheter – fullständig kontroll</translation>
 <translation id="5781136890105823427">Ett experiment har aktiverats</translation>
@@ -1469,7 +1472,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="6113594885686374546">Knappen Återuppta sökning, tryck på Retur om du vill återuppta sökningen och se relevant aktivitet i Chrome-historiken</translation>
 <translation id="6116338172782435947">Tillgång till text och bilder som kopierats till Urklipp</translation>
 <translation id="6120179357481664955">Vill du spara UPI-id?</translation>
-<translation id="6123290840358279103">Visa virtuellt kort</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
 <translation id="6146055958333702838">Kontrollera kablar och starta om routrar, modem och andra nätverksenheter
     som används.</translation>

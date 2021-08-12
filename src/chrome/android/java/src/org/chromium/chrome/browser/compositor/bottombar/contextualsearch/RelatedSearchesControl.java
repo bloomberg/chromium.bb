@@ -11,6 +11,9 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.OnScrollListener;
 
 import org.chromium.base.MathUtils;
 import org.chromium.base.ObserverList;
@@ -101,6 +104,9 @@ public class RelatedSearchesControl {
     /** Which chip is selected (if any) */
     private int mSelectedChip = NO_SELECTED_CHIP;
 
+    /** Whether the carousel is scrolled. */
+    private boolean mScrolled;
+
     /**
      * @param panel             The panel.
      * @param panelSectionHost  A reference to the host of this panel section for notifications.
@@ -139,7 +145,21 @@ public class RelatedSearchesControl {
      * @return The View height in pixels.
      */
     public float getHeightPx() {
-        return mIsVisible ? mHeightPx : 0f;
+        return !mIsVisible || mControlView == null ? 0f : mHeightPx;
+    }
+
+    /**
+     * Returns the amount of padding that is redundant between the Related Searches carousel that is
+     * shown in the Bar with the content above it. The content above has its own padding that
+     * provides a space between it and the bottom of the Bar. So when the Bar grows to include the
+     * Related Searches (which has its own padding above and below) there is redundant padding.
+     * @return The amount of overlap of padding values that can be removed (in pixels).
+     */
+    public float getRedundantPadding() {
+        return !mIsVisible || mControlView == null
+                ? 0f
+                : mContext.getResources().getDimension(
+                        R.dimen.related_searches_in_bar_redundant_padding);
     }
 
     /** Returns the ID of the view, or {@code INVALID_VIEW_ID} if there's no view. */
@@ -303,8 +323,15 @@ public class RelatedSearchesControl {
             RelatedSearchesUma.logNumberOfSuggestionsClicked(mChipsSelected);
             if (mDidShowAnySuggestions) RelatedSearchesUma.logCtr(mChipsSelected > 0);
         }
-        if (mControlView != null) mControlView.destroy();
-        mControlView = null;
+
+        if (mControlView != null) {
+            if (mDidShowAnySuggestions) {
+                RelatedSearchesUma.logCarouselScrolled(mScrolled);
+                RelatedSearchesUma.logCarouselScrollAndClickStatus(mScrolled, mChipsSelected > 0);
+            }
+            mControlView.destroy();
+            mControlView = null;
+        }
     }
 
     /** Invalidates the view. */
@@ -441,21 +468,13 @@ public class RelatedSearchesControl {
      */
     private void onSuggestionClicked(int suggestionIndex) {
         mPanelSectionHost.onSuggestionClicked(suggestionIndex);
-
-        // TODO(donnd): add logging of clicks for the In-Bar control.
-        // Currently the server only produces selection-relevant data for regular TTS queries.
-        // When the server returns Related Searches for the selection we need to update this
-        // logging. See https://crbug.com/1222805.
-        if (mIsInBarControl) return;
-
+        // TODO(donnd): add infrastructure to check if the suggestion is an RS before logging.
         RelatedSearchesUma.logSelectedCarouselIndex(suggestionIndex);
-        // TODO(donnd): check the computation once we're showing the default query. That will
-        // not need to be logged using the call below since it's not an RS suggestion.
-        // See https://crbug.com/1216593.
         RelatedSearchesUma.logSelectedSuggestionIndex(
                 suggestionIndex + (mDisplayDefaultQuery ? 0 : 1));
         mChipsSelected++;
-        ContextualSearchUma.logAllSearches(/* isRelatedSearches */ true);
+        boolean isRelatedSearchesSuggestion = suggestionIndex > 0 || !mDisplayDefaultQuery;
+        ContextualSearchUma.logAllSearches(isRelatedSearchesSuggestion);
     }
 
     /** The position of the first Related Searches suggestion in the carousel UI. */
@@ -569,6 +588,14 @@ public class RelatedSearchesControl {
             // Setup Chips handling
             mChipsProvider = new RelatedSearchesChipsProvider();
             mChipsCoordinator = new ChipsCoordinator(context, mChipsProvider);
+
+            RecyclerView recyclerView = (RecyclerView) mChipsCoordinator.getView();
+            recyclerView.addOnScrollListener(new OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                    if (newState == RecyclerView.SCROLL_STATE_DRAGGING) mScrolled = true;
+                }
+            });
         }
 
         /** Returns the view for this control. */
@@ -597,6 +624,15 @@ public class RelatedSearchesControl {
             if (parent != null) parent.removeView(coordinatorView);
             relatedSearchesViewGroup.addView(coordinatorView);
             invalidate(false);
+
+            // Log carousel visible item position
+            RecyclerView recyclerView = (RecyclerView) mChipsCoordinator.getView();
+            LinearLayoutManager layoutManager =
+                    (LinearLayoutManager) recyclerView.getLayoutManager();
+            int lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
+            if (lastVisibleItemPosition != RecyclerView.NO_POSITION) {
+                RelatedSearchesUma.logCarouselLastVisibleItemPosition(lastVisibleItemPosition);
+            }
         }
 
         /** Un-selects any currently selected chip. */

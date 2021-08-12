@@ -1722,19 +1722,12 @@ TEST_F(DesksTest, ConsecutiveDailyVisitsMetric) {
   base::HistogramTester histogram_tester;
   base::SimpleTestClock test_clock;
 
-  auto create_new_desk_with_mocked_time =
-      [](DesksController* desks_controller, base::SimpleTestClock* test_clock) {
-        NewDesk();
-        DesksTestApi::OverrideDeskClock(desks_controller->desks().back().get(),
-                                        test_clock);
-      };
-
   // Set the time to 00:00:00 local time the next day, override the current
   // desk's clock and reset its visited metrics.
   test_clock.SetNow(base::Time::Now().LocalMidnight());
   test_clock.Advance(base::TimeDelta::FromHours(1));
   auto* active_desk = desks_controller->active_desk();
-  DesksTestApi::OverrideDeskClock(const_cast<Desk*>(active_desk), &test_clock);
+  desks_restore_util::OverrideClockForTesting(&test_clock);
   DesksTestApi::ResetDeskVisitedMetrics(const_cast<Desk*>(active_desk));
   EXPECT_EQ(
       0u,
@@ -1742,7 +1735,7 @@ TEST_F(DesksTest, ConsecutiveDailyVisitsMetric) {
 
   // Create a new desk and don't visit it.
   active_desk = desks_controller->active_desk();
-  create_new_desk_with_mocked_time(desks_controller, &test_clock);
+  NewDesk();
   ASSERT_EQ(active_desk, desks_controller->active_desk());
 
   // Fast forward by two days then remove the active desk. This should record an
@@ -1759,7 +1752,7 @@ TEST_F(DesksTest, ConsecutiveDailyVisitsMetric) {
   // Create a new desk and remove the active desk. This should record an entry
   // for one day since we visited the active desk before removing it.
   active_desk = desks_controller->active_desk();
-  create_new_desk_with_mocked_time(desks_controller, &test_clock);
+  NewDesk();
   RemoveDesk(active_desk);
   histogram_tester.ExpectBucketCount(kConsecutiveDailyVisitsHistogram, 1, 1);
   EXPECT_EQ(
@@ -1769,7 +1762,7 @@ TEST_F(DesksTest, ConsecutiveDailyVisitsMetric) {
   // Create a new desk and switch to it. Then fast forward two days and revisit
   // the previous desk. Since it's been more than one day since the last visit,
   // a one day entry should be recorded for the previous desk.
-  create_new_desk_with_mocked_time(desks_controller, &test_clock);
+  NewDesk();
   ActivateDesk(desks_controller->GetNextDesk());
   test_clock.Advance(base::TimeDelta::FromDays(2));
   ActivateDesk(desks_controller->GetPreviousDesk());
@@ -1784,9 +1777,10 @@ TEST_F(DesksTest, ConsecutiveDailyVisitsMetric) {
   test_clock.Advance(base::TimeDelta::FromDays(-2));
   ActivateDesk(desks_controller->GetNextDesk());
   active_desk = desks_controller->active_desk();
-  const int current_date = active_desk->GetDaysFromLocalEpoch();
+  const int current_date = desks_restore_util::GetDaysFromLocalEpoch();
   EXPECT_EQ(current_date, active_desk->first_day_visited());
   EXPECT_EQ(current_date, active_desk->last_day_visited());
+  desks_restore_util::OverrideClockForTesting(nullptr);
 }
 
 // Tests that the new desk button's state and color are as expected.
@@ -5631,6 +5625,41 @@ TEST_F(DesksTest, NameNudgesTabletMode) {
   EXPECT_EQ(std::u16string(), desk_name_view->GetText());
 }
 
+// Tests the time period to set perf `kUserHasUsedDesksRecently`.
+TEST_F(DesksTest, PrimaryUserHasUsedDesksRecently) {
+  base::SimpleTestClock test_clock;
+  base::Time time;
+  auto* desks_controller = DesksController::Get();
+  // `kUserHasUsedDesksRecently` should not be set before 07/27/2021.
+  ASSERT_TRUE(base::Time::FromString("Mon, 26 Jul 2021 23:59:59", &time));
+  test_clock.SetNow(time);
+  desks_restore_util::OverrideClockForTesting(&test_clock);
+  NewDesk();
+  RemoveDesk(desks_controller->desks().back().get());
+  EXPECT_FALSE(desks_restore_util::HasPrimaryUserUsedDesksRecently());
+
+  // `kUserHasUsedDesksRecently` should not be set in 09/07/2021 and after.
+  ASSERT_TRUE(base::Time::FromString("Tue, 7 Sep 2021 00:00:01", &time));
+  test_clock.SetNow(time);
+
+  NewDesk();
+  RemoveDesk(desks_controller->desks().back().get());
+  EXPECT_FALSE(desks_restore_util::HasPrimaryUserUsedDesksRecently());
+
+  // `kUserHasUsedDesksRecently` should be set during [07/27/2021, 09/07/2021).
+  ASSERT_TRUE(base::Time::FromString("Tue, 27 Jul 2021 00:00:01", &time));
+  test_clock.SetNow(time);
+
+  NewDesk();
+  RemoveDesk(desks_controller->desks().back().get());
+  EXPECT_TRUE(desks_restore_util::HasPrimaryUserUsedDesksRecently());
+
+  // `kUserHasUsedDesksRecently` should be kept as true after setting.
+  test_clock.Advance(base::TimeDelta::FromDays(50));
+  EXPECT_TRUE(desks_restore_util::HasPrimaryUserUsedDesksRecently());
+  desks_restore_util::OverrideClockForTesting(nullptr);
+}
+
 // A test class that uses a mock time test environment.
 class DesksMockTimeTest : public DesksTest {
  public:
@@ -5742,11 +5771,25 @@ TEST_F(DesksMockTimeTest, WeeklyActiveDesks) {
                                      number_of_one_bucket_entries + 1);
 }
 
-class PersistentDesksBarTest : public AshTestBase {
+class PersistentDesksBarTest : public DesksTest {
  public:
-  PersistentDesksBarTest() {
+  void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kBentoBar);
+    DesksTest::SetUp();
+
+    // Initializing pref `kUserHasUsedDesksRecently` to be true for the tests.
+    base::SimpleTestClock test_clock;
+    base::Time time;
+    auto* desks_controller = DesksController::Get();
+    ASSERT_TRUE(base::Time::FromString("Tue, 27 Jul 2021 00:00:01", &time));
+    test_clock.SetNow(time);
+    desks_restore_util::OverrideClockForTesting(&test_clock);
+    NewDesk();
+    RemoveDesk(desks_controller->desks().back().get());
+    desks_restore_util::OverrideClockForTesting(nullptr);
+    EXPECT_TRUE(desks_restore_util::HasPrimaryUserUsedDesksRecently());
   }
+  PersistentDesksBarTest() = default;
   PersistentDesksBarTest(const PersistentDesksBarTest&) = delete;
   PersistentDesksBarTest& operator=(const PersistentDesksBarTest&) = delete;
   ~PersistentDesksBarTest() override = default;
@@ -6171,6 +6214,54 @@ TEST_F(PersistentDesksBarTest, NoPersistentDesksBarWithFullscreenedWindow) {
   EXPECT_TRUE(GetBarWidget());
   EXPECT_TRUE(IsWidgetVisible());
   EXPECT_EQ(bounds, GetBarWidget()->GetWindowBoundsInScreen());
+}
+
+TEST_F(PersistentDesksBarTest, DisplayMetricsChanged) {
+  UpdateDisplay("800x600,400x500");
+  NewDesk();
+  EXPECT_TRUE(GetBarWidget());
+  EXPECT_EQ(GetBarWidget()->GetWindowBoundsInScreen().width(),
+            GetPrimaryDisplay().bounds().width());
+
+  // The bar should be recreated in the new primary display and with the same
+  // width as it.
+  const display::Display old_primary_display = GetPrimaryDisplay();
+  SwapPrimaryDisplay();
+  const display::Display new_primary_display = GetPrimaryDisplay();
+  ASSERT_NE(old_primary_display.id(), new_primary_display.id());
+  ASSERT_NE(old_primary_display.bounds().width(),
+            new_primary_display.bounds().width());
+  EXPECT_TRUE(GetBarWidget());
+  EXPECT_EQ(GetBarWidget()->GetWindowBoundsInScreen().width(),
+            new_primary_display.bounds().width());
+
+  // The bar should be recreated on display rotation to adapt the new display
+  // bounds.
+  SwapPrimaryDisplay();
+  const int display_width_before_rotate = GetPrimaryDisplay().bounds().width();
+  EXPECT_EQ(display_width_before_rotate,
+            GetBarWidget()->GetWindowBoundsInScreen().width());
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kPortraitSecondary);
+  const int display_width_after_rotate = GetPrimaryDisplay().bounds().width();
+  ASSERT_NE(display_width_before_rotate, display_width_after_rotate);
+  EXPECT_EQ(display_width_after_rotate,
+            GetBarWidget()->GetWindowBoundsInScreen().width());
+
+  // Scale up the display, the bar should have the same width as the display
+  // after scale up.
+  const int display_width_before_scale_up = display_width_after_rotate;
+  SendKey(ui::VKEY_OEM_MINUS, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  const int display_width_after_scale_up = GetPrimaryDisplay().bounds().width();
+  EXPECT_LE(display_width_before_scale_up, display_width_after_scale_up);
+  EXPECT_EQ(display_width_after_scale_up,
+            GetBarWidget()->GetWindowBoundsInScreen().width());
 }
 
 // TODO(afakhry): Add more tests:

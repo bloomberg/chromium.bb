@@ -27,6 +27,8 @@ NSString* const kFirstRunSecondaryActionAccessibilityIdentifier =
     @"kFirstRunSecondaryActionAccessibilityIdentifier";
 NSString* const kFirstRunTertiaryActionAccessibilityIdentifier =
     @"kFirstRunTertiaryActionAccessibilityIdentifier";
+NSString* const kFirstRunScrollViewAccessibilityIdentifier =
+    @"kFirstRunScrollViewAccessibilityIdentifier";
 
 namespace {
 
@@ -54,6 +56,11 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
 @property(nonatomic, strong) UIButton* tertiaryActionButton;
 
 @property(nonatomic, assign) BOOL didReachBottom;
+
+// YES if the primary button content can be updated (e.g., change the text
+// label string) which corresponds to the moment where the layout reflects the
+// latest updates.
+@property(nonatomic, assign) BOOL canUpdatePrimaryButton;
 
 @end
 
@@ -106,9 +113,6 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
   if (!self.tertiaryActionString) {
     actionStackViewTopMargin = -kDefaultMargin;
   }
-
-  CGFloat bannerMultiplier =
-      self.isTallBanner ? kTallBannerMultiplier : kDefaultBannerMultiplier;
 
   CGFloat extraBottomMargin =
       (self.secondaryActionString || self.tertiaryActionString)
@@ -164,8 +168,6 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
         constraintEqualToAnchor:self.scrollContentView.topAnchor],
     [self.imageView.centerXAnchor
         constraintEqualToAnchor:self.view.centerXAnchor],
-    [self.imageView.heightAnchor constraintEqualToAnchor:self.view.heightAnchor
-                                              multiplier:bannerMultiplier],
 
     // Labels contraints. Attach them to the top of the scroll content view, and
     // center them horizontally.
@@ -231,74 +233,77 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
   actionBottomConstraint.active = YES;
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+  self.canUpdatePrimaryButton = NO;
+}
+
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
+
+  // Rescale image here as on iPad the view height isn't correctly set during
+  // -viewDidLoad.
+  self.imageView.image = [self scaleSourceImage:self.bannerImage
+                                   currentImage:self.imageView.image
+                                         toSize:[self computeBannerImageSize]];
 
   // Reset |didReachBottom| to make sure that its value is correctly updated
   // to reflect the scrolling state when the view reappears and is refreshed
   // (e.g., when getting back from a full screen view that was hidding this
   // view controller underneath).
-  self.didReachBottom = NO;
+  //
+  // Set |didReachBottom| to YES when |scrollToEndMandatory| is NO, since the
+  // screen can already be considered as fully scrolled when scrolling to the
+  // end isn't mandatory.
+  self.didReachBottom = !self.scrollToEndMandatory;
 
   // Only add the scroll view delegate after all the view layouts are fully
   // done.
   dispatch_async(dispatch_get_main_queue(), ^{
     self.scrollView.delegate = self;
+    self.canUpdatePrimaryButton = YES;
 
     // At this point, the scroll view has computed its content height. If
-    // scrolling to the end is mandatory, and the entire content is already
-    // fully visible, set |didReachBottom|. Otherwise, replace the primary
-    // button's label with the read more label.
-    if (self.scrollToEndMandatory) {
+    // scrolling to the end is needed, and the entire content is already
+    // fully visible (scrolled), set |didReachBottom| to YES. Otherwise, replace
+    // the primary button's label with the read more label to indicate that more
+    // scrolling is required.
+    if (!self.didReachBottom) {
       if ([self isScrolledToBottom]) {
         self.didReachBottom = YES;
       } else {
-        NSDictionary* textAttributes = @{
-          NSForegroundColorAttributeName :
-              [UIColor colorNamed:kSolidButtonTextColor],
-          NSFontAttributeName :
-              [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
-        };
-
-        NSMutableAttributedString* attributedString =
-            [[NSMutableAttributedString alloc]
-                initWithString:l10n_util::GetNSString(
-                                   IDS_IOS_FIRST_RUN_SCREEN_READ_MORE)
-                    attributes:textAttributes];
-
-        // Use |ceilf()| when calculating the icon's bounds to ensure the
-        // button's content height does not shrink by fractional points, as the
-        // attributed string's actual height is slightly smaller than the
-        // assigned height.
-        NSTextAttachment* attachment = [[NSTextAttachment alloc] init];
-        attachment.image = [[UIImage imageNamed:@"read_more_arrow"]
-            imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        CGFloat height = ceilf(attributedString.size.height);
-        CGFloat capHeight =
-            ceilf([UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
-                      .capHeight);
-        CGFloat horizontalOffset =
-            base::i18n::IsRTL() ? -1.f * kMoreArrowMargin : kMoreArrowMargin;
-        CGFloat verticalOffset = (capHeight - height) / 2.f;
-        attachment.bounds =
-            CGRectMake(horizontalOffset, verticalOffset, height, height);
-        [attributedString
-            appendAttributedString:
-                [NSAttributedString attributedStringWithAttachment:attachment]];
-
-        // Make the title change without animation, as the UIButton's default
-        // animation when using setTitle:forState: doesn't handle adding a
-        // UIImage well (the old title gets abruptly pushed to the side as it's
-        // fading out to make room for the new image, which looks awkward).
-        __weak FirstRunScreenViewController* weakSelf = self;
-        [UIView performWithoutAnimation:^{
-          [weakSelf.primaryActionButton
-              setAttributedTitle:attributedString
-                        forState:UIControlStateNormal];
-          [weakSelf.primaryActionButton layoutIfNeeded];
-        }];
+        [self setReadMoreText];
       }
     }
+  });
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:
+           (id<UIViewControllerTransitionCoordinator>)coordinator {
+  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+  // Update the primary button once the layout changes take effect to have the
+  // right measurements to evaluate the scroll position.
+  void (^transition)(id<UIViewControllerTransitionCoordinatorContext>) =
+      ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        [self updatePrimaryButtonIfReachedBottom];
+      };
+  [coordinator animateAlongsideTransition:transition completion:nil];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+
+  // Reset the title font and the learn more text to make sure that they are
+  // properly scaled. Nothing will be done for the Read More text if the
+  // bottom is reached.
+  [self setTitleFont:self.titleLabel];
+  [self setReadMoreText];
+
+  // Update the primary button once the layout changes take effect to have the
+  // right measurements to evaluate the scroll position.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [self updatePrimaryButtonIfReachedBottom];
   });
 }
 
@@ -322,23 +327,59 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
   if (!_scrollView) {
     _scrollView = [[UIScrollView alloc] init];
     _scrollView.translatesAutoresizingMaskIntoConstraints = NO;
+    _scrollView.accessibilityIdentifier =
+        kFirstRunScrollViewAccessibilityIdentifier;
   }
   return _scrollView;
 }
 
 - (UIImageView*)imageView {
   if (!_imageView) {
-    _imageView = [[UIImageView alloc] initWithImage:self.bannerImage];
-    _imageView.contentMode = UIViewContentModeScaleAspectFill;
+    _imageView = [[UIImageView alloc]
+        initWithImage:[self scaleSourceImage:self.bannerImage
+                                currentImage:nil
+                                      toSize:[self computeBannerImageSize]]];
+    _imageView.clipsToBounds = YES;
     _imageView.translatesAutoresizingMaskIntoConstraints = NO;
   }
   return _imageView;
+}
+
+// Computes banner's image size.
+- (CGSize)computeBannerImageSize {
+  CGFloat bannerMultiplier =
+      self.isTallBanner ? kTallBannerMultiplier : kDefaultBannerMultiplier;
+
+  CGFloat destinationHeight =
+      roundf(self.view.bounds.size.height * bannerMultiplier);
+  CGFloat destinationWidth =
+      roundf(self.bannerImage.size.width / self.bannerImage.size.height *
+             destinationHeight);
+  CGSize newSize = CGSizeMake(destinationWidth, destinationHeight);
+  return newSize;
+}
+
+// Returns a new UIImage which is |sourceImage| resized to |newSize|. Returns
+// |currentImage| if it is already at the correct size.
+- (UIImage*)scaleSourceImage:(UIImage*)sourceImage
+                currentImage:(UIImage*)currentImage
+                      toSize:(CGSize)newSize {
+  if (CGSizeEqualToSize(newSize, currentImage.size)) {
+    return currentImage;
+  }
+
+  UIGraphicsBeginImageContextWithOptions(newSize, NO, 0.0);
+  [sourceImage drawInRect:CGRectMake(0, 0, newSize.width, newSize.height)];
+  UIImage* newImage = UIGraphicsGetImageFromCurrentImageContext();
+  UIGraphicsEndImageContext();
+  return newImage;
 }
 
 - (UILabel*)titleLabel {
   if (!_titleLabel) {
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.numberOfLines = 0;
+    [self setTitleFont:_titleLabel];
     UIFontDescriptor* descriptor = [UIFontDescriptor
         preferredFontDescriptorWithTextStyle:UIFontTextStyleLargeTitle];
     UIFont* font = [UIFont systemFontOfSize:descriptor.pointSize
@@ -354,6 +395,16 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
     _titleLabel.accessibilityIdentifier = kFirstRunTitleAccessibilityIdentifier;
   }
   return _titleLabel;
+}
+
+- (void)setTitleFont:(UILabel*)titleLabel {
+  UIFontDescriptor* descriptor = [UIFontDescriptor
+      preferredFontDescriptorWithTextStyle:UIFontTextStyleLargeTitle];
+  UIFont* font = [UIFont systemFontOfSize:descriptor.pointSize
+                                   weight:UIFontWeightBold];
+  UIFontMetrics* fontMetrics =
+      [UIFontMetrics metricsForTextStyle:UIFontTextStyleLargeTitle];
+  titleLabel.font = [fontMetrics scaledFontForFont:font];
 }
 
 - (UILabel*)subtitleLabel {
@@ -390,8 +441,7 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
     UIColor* titleColor = [UIColor colorNamed:kSolidButtonTextColor];
     [_primaryActionButton setTitleColor:titleColor
                                forState:UIControlStateNormal];
-    _primaryActionButton.titleLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    [self setPrimaryActionButtonFont:_primaryActionButton];
     _primaryActionButton.layer.cornerRadius = kPrimaryButtonCornerRadius;
     _primaryActionButton.translatesAutoresizingMaskIntoConstraints = NO;
 
@@ -418,6 +468,69 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
                    forControlEvents:UIControlEventTouchUpInside];
   }
   return _primaryActionButton;
+}
+
+- (void)setPrimaryActionButtonFont:(UIButton*)button {
+  button.titleLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+}
+
+// Sets or resets the "Read More" text label when the bottom hasn't been
+// reached yet and scrolling to the end is mandatory.
+- (void)setReadMoreText {
+  if (!self.scrollToEndMandatory) {
+    return;
+  }
+
+  if (self.didReachBottom) {
+    return;
+  }
+
+  if (!self.canUpdatePrimaryButton) {
+    return;
+  }
+
+  NSDictionary* textAttributes = @{
+    NSForegroundColorAttributeName : [UIColor colorNamed:kSolidButtonTextColor],
+    NSFontAttributeName :
+        [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+  };
+
+  NSMutableAttributedString* attributedString =
+      [[NSMutableAttributedString alloc]
+          initWithString:l10n_util::GetNSString(
+                             IDS_IOS_FIRST_RUN_SCREEN_READ_MORE)
+              attributes:textAttributes];
+
+  // Use |ceilf()| when calculating the icon's bounds to ensure the
+  // button's content height does not shrink by fractional points, as the
+  // attributed string's actual height is slightly smaller than the
+  // assigned height.
+  NSTextAttachment* attachment = [[NSTextAttachment alloc] init];
+  attachment.image = [[UIImage imageNamed:@"read_more_arrow"]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  CGFloat height = ceilf(attributedString.size.height);
+  CGFloat capHeight = ceilf(
+      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].capHeight);
+  CGFloat horizontalOffset =
+      base::i18n::IsRTL() ? -1.f * kMoreArrowMargin : kMoreArrowMargin;
+  CGFloat verticalOffset = (capHeight - height) / 2.f;
+  attachment.bounds =
+      CGRectMake(horizontalOffset, verticalOffset, height, height);
+  [attributedString
+      appendAttributedString:[NSAttributedString
+                                 attributedStringWithAttachment:attachment]];
+
+  // Make the title change without animation, as the UIButton's default
+  // animation when using setTitle:forState: doesn't handle adding a
+  // UIImage well (the old title gets abruptly pushed to the side as it's
+  // fading out to make room for the new image, which looks awkward).
+  __weak FirstRunScreenViewController* weakSelf = self;
+  [UIView performWithoutAnimation:^{
+    [weakSelf.primaryActionButton setAttributedTitle:attributedString
+                                            forState:UIControlStateNormal];
+    [weakSelf.primaryActionButton layoutIfNeeded];
+  }];
 }
 
 - (UIButton*)secondaryActionButton {
@@ -490,6 +603,10 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
 // if the scroll view had already been scrolled to the end previously, this
 // method has no effect.
 - (void)updatePrimaryButtonIfReachedBottom {
+  if (!self.canUpdatePrimaryButton) {
+    return;
+  }
+
   if (self.scrollToEndMandatory && !self.didReachBottom &&
       [self isScrolledToBottom]) {
     self.didReachBottom = YES;
@@ -497,6 +614,8 @@ constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
                                         forState:UIControlStateNormal];
     [self.primaryActionButton setTitle:self.primaryActionString
                               forState:UIControlStateNormal];
+    // Reset the font to make sure it is properly scaled.
+    [self setPrimaryActionButtonFont:self.primaryActionButton];
   }
 }
 

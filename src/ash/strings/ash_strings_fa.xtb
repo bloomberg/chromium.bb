@@ -16,7 +16,6 @@
 <translation id="1056775291175587022">شبکه‌ای وجود ندارد</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />:‏ <ph name="RESOLUTION" /></translation>
 <translation id="1073899992769346247">باتری را تعویض یا مجدداً شارژ کنید</translation>
-<translation id="1077253978657569125">می‌خواهیم این را بهبود ببخشیم!</translation>
 <translation id="108486256082349153">دستگاه تلفن همراه: <ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426">بعدازظهر به‌خیر <ph name="GIVEN_NAME" />،</translation>
 <translation id="109942774857561566">‏I’m bored (حوصله‌ام سر رفته)</translation>
@@ -419,7 +418,7 @@
 <translation id="4269883910223712419">سرپرست این دستگاه می‌تواند:</translation>
 <translation id="4274537685965975248">میان‌بر صفحه‌کلید «مهار + دگرساز + جهت‌نمای پایین» تغییر کرده است. برای استفاده از کلید «پایان»، کلید «<ph name="LAUNCHER_KEY_NAME" /> + جهت‌نمای راست» را فشار دهید.</translation>
 <translation id="4279490309300973883">بازتاب می‌شود</translation>
-<translation id="4285498937028063278">لغو پین</translation>
+<translation id="4285498937028063278">برداشتن سنجاق</translation>
 <translation id="429402653707266969">تغییر مکان نوار ابزار</translation>
 <translation id="4294319844246081198">صبح‌به‌خیر <ph name="GIVEN_NAME" />،</translation>
 <translation id="4296136865091727875">پاک کردن همه <ph name="COUNT" /> اعلان</translation>
@@ -485,6 +484,7 @@
 <translation id="4696813013609194136">باز کردن قفل دستگاه با کد والدین</translation>
 <translation id="4702647871202761252">صفحه حریم‌خصوصی خاموش است</translation>
 <translation id="4705716602320768426">ثبت بازخورد</translation>
+<translation id="4730258224256997107">کمک کنید این مورد را بهبود ببخشیم!</translation>
 <translation id="4731797938093519117">دسترسی ولی</translation>
 <translation id="4734965478015604180">افقی</translation>
 <translation id="4735498845456076464">میان‌بر صفحه‌کلید «<ph name="LAUNCHER_KEY_NAME" /> + عدد» تغییر کرده است. برای استفاده از کلیدهای عملکرد، کلید <ph name="LAUNCHER_KEY_NAME" /> + یکی از کلیدهای ردیف بالا را فشار دهید.</translation>
@@ -694,6 +694,7 @@
 <translation id="6482559668224714696">ذره‌بین تمام‌صفحه</translation>
 <translation id="6490471652906364588">‏دستگاه USB-C (درگاه سمت راست)</translation>
 <translation id="649452524636452238">پین کارت هوشمند</translation>
+<translation id="6500818810472529210">‏دیدن نتیجه در «جستجوی Google»</translation>
 <translation id="6501401484702599040">ارسال محتوای صفحه به <ph name="RECEIVER_NAME" /></translation>
 <translation id="6520517963145875092">پنجره‌ای را برای گرفتن عکس انتخاب کنید</translation>
 <translation id="652139407789908527">درطول این به‌روزرسانی، صفحه‌نمایش شما طولانی‌تر از معمول (حداکثر یک دقیقه) خالی می‌شود. لطفاً درحین انجام به‌روزرسانی، دکمه روشن/خاموش را فشار ندهید.</translation>

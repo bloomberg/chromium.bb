@@ -410,7 +410,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2359347814217202136">{NUM_DAYS,plural, =0{Dans moins de 1 jour}=1{Dans 1 jour}one{Dans {NUM_DAYS} jour}other{Dans {NUM_DAYS} jours}}</translation>
 <translation id="2359629602545592467">Plusieurs</translation>
 <translation id="2359808026110333948">Continuer</translation>
-<translation id="2359961752320758691">Votre numéro de carte virtuelle a été utilisé.</translation>
 <translation id="236340516568226369">Menu d'activation/de désactivation du redimensionnement</translation>
 <translation id="2367567093518048410">Niveau</translation>
 <translation id="2372464001869762664">Une fois la validation effectuée, les informations relatives à la carte de votre compte Google seront partagées avec ce site. Recherchez le code CVC dans les informations de votre compte Plex.</translation>
@@ -809,6 +808,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="3793574014653384240">Nombre et causes des plantages survenus récemment</translation>
 <translation id="3797522431967816232">Prc3 (enveloppe)</translation>
 <translation id="3799805948399000906">Police demandée</translation>
+<translation id="380329542618494757">Nom</translation>
 <translation id="3807366285948165054">Décalage X de l'image</translation>
 <translation id="3807873520724684969">Contenu malveillant bloqué.</translation>
 <translation id="3810973564298564668">Gérer</translation>
@@ -823,6 +823,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="3848487483475744267"><ph name="CREATE_GOOGLE_DOC_FOCUSED_FRIENDLY_MATCH_TEXT" />, appuyez sur Tabulation, puis sur Entrée pour créer rapidement un document Google Docs</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3858027520442213535">Mettre à jour la date et l'heure</translation>
+<translation id="3858860766373142691">Nom</translation>
 <translation id="3881478300875776315">Afficher moins de lignes</translation>
 <translation id="3884278016824448484">Identifiant de l'appareil en conflit.</translation>
 <translation id="3885155851504623709">Paroisse</translation>
@@ -868,6 +869,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="4067947977115446013">Ajouter une adresse valide</translation>
 <translation id="4072193657607981494">Chargement des règles…</translation>
 <translation id="4072486802667267160">Une erreur s'est produite lors du traitement de votre commande. Veuillez réessayer.</translation>
+<translation id="4073797364926776829">Afficher la carte</translation>
 <translation id="4075732493274867456">Le client et le serveur ne sont pas compatibles avec une version de protocole ou une méthode de chiffrement SSL commune.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">La configuration du proxy est définie pour utiliser une URL de script .pac, et non pas des serveurs proxy déterminés.</translation>
@@ -998,6 +1000,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="443121186588148776">Port de série</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> n'a pas accepté votre certificat de connexion, ou vous ne l'avez pas fourni.</translation>
 <translation id="4432792777822557199">Les pages en <ph name="SOURCE_LANGUAGE" /> seront désormais traduites en <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="4433642172056592619">Ignorée, car l'utilisateur n'est pas affilié à la gestion de la machine ou celle-ci n'est pas gérée.</translation>
 <translation id="4434045419905280838">Pop-up et redirections</translation>
 <translation id="4435702339979719576">Carte postale)</translation>
 <translation id="443673843213245140">L'utilisation d'un proxy est désactivée, mais une configuration de proxy explicite est spécifiée.</translation>
@@ -1253,7 +1256,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> sur <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Sélectionner les coordonnées</translation>
-<translation id="5327248766486351172">Nom</translation>
 <translation id="5329858041417644019">Votre navigateur n'est pas géré</translation>
 <translation id="5332219387342487447">Mode de livraison</translation>
 <translation id="5333022057423422993">Chrome a trouvé le mot de passe que vous venez d'utiliser lors d'une violation de données. Pour la sécurité de vos comptes, nous vous recommandons de vérifier immédiatement vos mots de passe enregistrés.</translation>
@@ -1368,6 +1370,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5759751709240058861">Utiliser et bouger la caméra</translation>
 <translation id="5763042198335101085">Saisissez une adresse e-mail valide</translation>
 <translation id="5765072501007116331">Sélectionnez une adresse pour consulter les modes et conditions de livraison disponibles</translation>
+<translation id="57689295674415555">Le numéro de carte virtuelle n'est pas renseigné ?</translation>
 <translation id="5776313857861697733">Priorité</translation>
 <translation id="5778550464785688721">Contrôle total des appareils MIDI</translation>
 <translation id="5781136890105823427">Test activé</translation>
@@ -1469,7 +1472,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="6113594885686374546">Bouton "Reprendre les recherches", appuyez sur Entrée pour reprendre vos recherches et voir les activités pertinentes dans votre historique Chrome</translation>
 <translation id="6116338172782435947">Voir le texte et les images copiés dans le presse-papiers</translation>
 <translation id="6120179357481664955">Souhaitez-vous mémoriser votre ID UPI ?</translation>
-<translation id="6123290840358279103">Afficher la carte virtuelle</translation>
 <translation id="6124432979022149706">Connecteurs Chrome Enterprise</translation>
 <translation id="6146055958333702838">Vérifiez les câbles et redémarrez votre routeur, votre modem
     ou tout autre périphérique réseau utilisé.</translation>

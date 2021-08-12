@@ -438,6 +438,7 @@
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> 件のダウンロードを削除しました</translation>
 <translation id="3845098929839618392">シークレット タブで開く</translation>
 <translation id="3856096718352044181">有効なプロバイダであることを確認するか、しばらくしてからもう一度お試しください</translation>
+<translation id="3858860766373142691">名前</translation>
 <translation id="3861633093716975811">人気の動画</translation>
 <translation id="3892148308691398805">テキストをコピー</translation>
 <translation id="3894427358181296146">フォルダの追加</translation>
@@ -517,6 +518,7 @@
 <translation id="4411535500181276704">ライトモード</translation>
 <translation id="4415276339145661267">Google アカウントの管理</translation>
 <translation id="4427306783828095590">保護強化機能により、フィッシングを防ぎ、不正なソフトウェアをより強力にブロックします</translation>
+<translation id="4450672886426705087">Google 検索結果。</translation>
 <translation id="4452411734226507615">「<ph name="TAB_TITLE" />」タブを閉じます</translation>
 <translation id="4452548195519783679">「<ph name="FOLDER_NAME" />」にブックマークしました</translation>
 <translation id="4472118726404937099">複数のデバイスで独自の設定を同期して共有するには、ログインして同期を有効にします</translation>
@@ -599,6 +601,7 @@
 <translation id="4881695831933465202">開く</translation>
 <translation id="488187801263602086">ファイル名を変更してください</translation>
 <translation id="4885273946141277891">Chrome のインスタンス数の上限を超えています。</translation>
+<translation id="4905269543817054577">シークレット モードでは履歴は保存されません</translation>
 <translation id="4908869848243824489">Discover by Google</translation>
 <translation id="4910889077668685004">お支払いアプリ</translation>
 <translation id="4913161338056004800">統計情報をリセット</translation>
@@ -634,6 +637,7 @@
 <translation id="5123685120097942451">シークレット タブ</translation>
 <translation id="5132942445612118989">すべてのデバイスでパスワード、履歴、その他の設定を同期する</translation>
 <translation id="5139940364318403933">Google ドライブの使い方を見る</translation>
+<translation id="5142281402488957685">新しい記事を表示するには、下にスワイプして更新します</translation>
 <translation id="5152843274749979095">サポートされているアプリがインストールされていません</translation>
 <translation id="5161254044473106830">タイトルが必要です</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 件のダウンロードが失敗しました。}other{# 件のダウンロードが失敗しました。}}</translation>
@@ -654,6 +658,7 @@
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="5227554086496586518">タップして検索結果を見る</translation>
 <translation id="5233638681132016545">新しいタブ</translation>
+<translation id="5246093389635966745">ツールバー ショートカットの編集</translation>
 <translation id="5250483651202458397">スクリーンショット。タップすると閉じます。</translation>
 <translation id="5262378156578470238"><ph name="DATE" /> にこのダウンロードが開始されると通知が表示されます。</translation>
 <translation id="526421993248218238">ページを読み込めません</translation>
@@ -664,7 +669,6 @@
 <translation id="5317780077021120954">保存</translation>
 <translation id="5319359161174645648">Google は Chrome を推奨しています</translation>
 <translation id="5324858694974489420">保護者設定</translation>
-<translation id="5327248766486351172">名前</translation>
 <translation id="5342314432463739672">権限のリクエスト</translation>
 <translation id="5355191726083956201">保護強化機能がオンになっています</translation>
 <translation id="5357811892247919462">タブが共有されました</translation>
@@ -1008,12 +1012,12 @@
 <translation id="7454641608352164238">空き容量が不足しています</translation>
 <translation id="7475192538862203634">このメッセージが繰り返し表示される場合は、こちらの<ph name="BEGIN_LINK" />ヒント<ph name="END_LINK" />をお試しください。</translation>
 <translation id="7475688122056506577">SD カードが見つかりません。一部のファイルが欠落している可能性があります。</translation>
-<translation id="7476384249953022816">シークレット モードでの閲覧履歴をデバイスから消去するには、すべてのタブを閉じます</translation>
 <translation id="7479104141328977413">タブの管理</translation>
 <translation id="7481312909269577407">進む</translation>
 <translation id="7481864133709957613">このページで検索するには、単語をタップではなく長押しします</translation>
 <translation id="7482656565088326534">[プレビュー] タブ</translation>
 <translation id="7484997419527351112">Discover - オフ</translation>
+<translation id="7485033510383818941">フィード コンテンツを更新するには、ページを下にプルダウンします</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />（<ph name="TIME_SINCE_UPDATE" />に更新）</translation>
 <translation id="7494974237137038751">データ削減量</translation>
 <translation id="7498271377022651285">お待ちください…</translation>
@@ -1043,6 +1047,7 @@
 <translation id="7630202231528827509">プロバイダの URL</translation>
 <translation id="7638584964844754484">パスフレーズが正しくありません</translation>
 <translation id="7641339528570811325">閲覧履歴データを削除…</translation>
+<translation id="764170292089748542">シークレット モードで閲覧する場合、Chrome に閲覧履歴は保存されません。ブックマークを使って、お気に入りのサイトにアクセスすることはできます。</translation>
 <translation id="7646772052135772216">パスワード同期が機能していません</translation>
 <translation id="7655900163790317559">Bluetooth をオンにしています…</translation>
 <translation id="7658239707568436148">キャンセル</translation>
@@ -1278,7 +1283,6 @@
 <translation id="9070377983101773829">音声検索を開始</translation>
 <translation id="9074336505530349563">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、ログインして同期を有効にします</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
-<translation id="9081543426177426948">シークレット モードでは、アクセスしたサイトは保存されません</translation>
 <translation id="9086302186042011942">同期しています</translation>
 <translation id="9086455579313502267">ネットワークにアクセスできません</translation>
 <translation id="9100505651305367705">記事の簡易表示がサポートされている場合、簡易表示を提案します</translation>

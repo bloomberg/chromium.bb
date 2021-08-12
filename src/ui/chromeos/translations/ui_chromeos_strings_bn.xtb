@@ -321,6 +321,7 @@
 <translation id="383652340667548381">সার্বিয়</translation>
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="3855472144336161447">জার্মান নিও ২</translation>
+<translation id="3858860766373142691">নাম</translation>
 <translation id="386548886866354912"><ph name="EXTENSION_NAME" /> দিয়ে প্যাক করুন</translation>
 <translation id="3866249974567520381">বর্ণনা</translation>
 <translation id="3899991606604168269">ফরাসি (কানাডা) ভাষায় মাল্টিলিঙ্গুয়াল কীবোর্ড</translation>
@@ -491,7 +492,6 @@
 <translation id="5317780077021120954">সেভ করুন</translation>
 <translation id="5318819489018851358">Linux-এর সাথে শেয়ার করুন</translation>
 <translation id="5323213332664049067">লাতিন আমেরিকান</translation>
-<translation id="5327248766486351172">নাম</translation>
 <translation id="5330145655348521461">এই ফাইলগুলি একটি আলাদা ডেস্কটপে খোলা রয়েছে৷ এটিকে দেখতে <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />)-এ সরান৷</translation>
 <translation id="5330512191124428349">তথ্য পান</translation>
 <translation id="5335458522276292100"><ph name="FILE_COUNT" /> এর <ph name="BEGIN_LINK" />Google ড্রাইভ<ph name="END_LINK" /> এ ব্যাক-আপ নেওয়া হচ্ছে</translation>

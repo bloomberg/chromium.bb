@@ -16,7 +16,6 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1056775291175587022">Ingen netværk</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="1073899992769346247">Udskift eller genoplad batteriet</translation>
-<translation id="1077253978657569125">Vi vil gerne forbedre dette</translation>
 <translation id="108486256082349153">Mobil: <ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426">Goddag, <ph name="GIVEN_NAME" /></translation>
 <translation id="109942774857561566">Jeg keder mig</translation>
@@ -387,7 +386,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="3977512764614765090">Batteriet er på <ph name="PERCENTAGE" /> % og oplader.</translation>
 <translation id="3995138139523574647">USB-C-enhed (porten bagpå i højre side)</translation>
 <translation id="40062176907008878">Håndskrift</translation>
-<translation id="4017989525502048489">Laserpegepind</translation>
+<translation id="4017989525502048489">Lasermarkør</translation>
 <translation id="4021716437419160885">Rul ned</translation>
 <translation id="4028481283645788203">Der kræves en adgangskode som ekstra sikkerhed</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
@@ -430,7 +429,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="4322742403972824594">Tastaturgenvejen Ctrl+Alt+pil op er blevet ændret. Hvis du vil bruge Home-tasten, skal du trykke på tasten <ph name="LAUNCHER_KEY_NAME" />+venstrepil.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4333628967105022692">Lacros understøttes ikke, når flere brugere er logget ind.</translation>
-<translation id="4338109981321384717">Forstørrelsesglas</translation>
+<translation id="4338109981321384717">Lup</translation>
 <translation id="4351433414020964307">Assistenten indlæses...</translation>
 <translation id="4356930093361201197">tilstanden Høj kontrast</translation>
 <translation id="4371348193907997655">Cast-indstillinger</translation>
@@ -485,6 +484,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="4696813013609194136">Lås enheden op med forældrekode</translation>
 <translation id="4702647871202761252">Privatlivsskærmen er slået fra</translation>
 <translation id="4705716602320768426">Giv feedback</translation>
+<translation id="4730258224256997107">Hjælp os med at forbedre dette</translation>
 <translation id="4731797938093519117">Forældreadgang</translation>
 <translation id="4734965478015604180">Vandret</translation>
 <translation id="4735498845456076464">Tastaturgenvejen <ph name="LAUNCHER_KEY_NAME" />+numerisk tast er blevet ændret. Hvis du vil bruge funktionstaster, skal du trykke på tasten <ph name="LAUNCHER_KEY_NAME" />+en tast i øverste række.</translation>
@@ -694,6 +694,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="6482559668224714696">Forstørrelse af fuld skærm</translation>
 <translation id="6490471652906364588">USB-C-enhed (højre port)</translation>
 <translation id="649452524636452238">Pinkode til chipkort</translation>
+<translation id="6500818810472529210">Se resultatet i Google Søgning</translation>
 <translation id="6501401484702599040">Caster skærmen til <ph name="RECEIVER_NAME" /></translation>
 <translation id="6520517963145875092">Vælg et vindue, der skal tages billede af</translation>
 <translation id="652139407789908527">Din skærm vil være tom i længere tid end normalt (i op til et minut) under denne opdatering. Undlad at trykke på afbryderknappen, mens opdateringen er i gang.</translation>
@@ -859,7 +860,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="7749640678855296659">Din mikrofon er i øjeblikket slået fra</translation>
 <translation id="776344839111254542">Klik for at se opdateringsoplysninger</translation>
 <translation id="7780159184141939021">Roter skærm</translation>
-<translation id="7796353162336583443">Tryk på knappen for styluspen på hylden for at skrive en note, tage et screenshot eller bruge Google Assistent, laserpegepinden eller luppen.</translation>
+<translation id="7796353162336583443">Tryk på knappen for styluspen på hylden for at skrive en note, tage et screenshot eller bruge Google Assistent, lasermarkøren eller luppen.</translation>
 <translation id="7798302898096527229">Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> og <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Stærkt signal</translation>
