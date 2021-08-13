@@ -95,6 +95,7 @@ class WebViewImpl final : public WebView,
     bool d_isReadyForDelete;  // when the underlying WebContents can be deleted
     bool d_wasDestroyed;      // if destroy() has been called
     bool d_isDeletingSoon;    // when DeleteSoon has been called
+    bool d_isTakingKeyboardFocus;
     NativeRegion d_ncHitTestRegion = NULL;
     bool d_ncHitTestEnabled;
     bool d_ncHitTestPendingAck;
