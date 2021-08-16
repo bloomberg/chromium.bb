@@ -35,7 +35,7 @@ def _read_plist(p):
     return {'LSMinimumSystemVersion': '10.19.7'}
 
 
-def _write_plist(d, p):
+def _write_plist(d, p, f):
     _write_plist.contents = d
 
 
@@ -47,7 +47,7 @@ def _last_written_plist():
 
 
 def _run_command_output_lipo(b):
-    return 'x86_64,arm64'
+    return b'x86_64,arm64'
 
 
 def _read_file(p):
@@ -335,7 +335,7 @@ brand code is 'MOO'
 framework dir is 'App Product.app/Contents/Frameworks/Product Framework.framework'"""
         )
 
-    @mock.patch('signing.pipeline.plistlib.writePlist', _write_plist)
+    @mock.patch('signing.pipeline.commands.write_plist', _write_plist)
     def test_component_property_path(self, **kwargs):
         manager = mock.Mock()
         for attr in kwargs:

@@ -15,16 +15,20 @@
 namespace segmentation_platform {
 namespace metadata_utils {
 
-enum ValidationResult {
-  VALIDATION_SUCCESS = 0,
-  SEGMENT_ID_NOT_FOUND = 1,
-  METADATA_NOT_FOUND = 2,
-  TIME_UNIT_INVALID = 3,
-  SIGNAL_TYPE_INVALID = 4,
-  FEATURE_NAME_NOT_FOUND = 5,
-  FEATURE_NAME_HASH_NOT_FOUND = 6,
-  FEATURE_AGGREGATION_NOT_FOUND = 7,
-  FEATURE_TENSOR_LENGTH_INVALID = 8,
+// Keep up to date with SegmentationPlatformValidationResult in
+// //tools/metrics/histograms/enums.xml.
+enum class ValidationResult {
+  kValidationSuccess = 0,
+  kSegmentIDNotFound = 1,
+  kMetadataNotFound = 2,
+  kTimeUnitInvald = 3,
+  kSignalTypeInvalid = 4,
+  kFeatureNameNotFound = 5,
+  kFeatureNameHashNotFound = 6,
+  kFeatureAggregationNotFound = 7,
+  kFeatureTensorLengthInvalid = 8,
+  kFeatureNameHashDoesNotMatchName = 9,
+  kMaxValue = kFeatureNameHashDoesNotMatchName,
 };
 
 // Whether the given SegmentInfo and its metadata is valid to be used for the
@@ -49,6 +53,11 @@ ValidationResult ValidateMetadataAndFeatures(
 // used for the current segmentation platform.
 ValidationResult ValidateSegmentInfoMetadataAndFeatures(
     const proto::SegmentInfo& segment_info);
+
+// For all features in the given metadata, updates the feature name hash based
+// on the feature name. Note: This mutates the metadata that is passed in.
+void SetFeatureNameHashesFromName(
+    proto::SegmentationModelMetadata* model_metadata);
 
 // Whether a segment has expired results or no result. Called to determine
 // whether the model should be rerun.

@@ -3,14 +3,14 @@
 # found in the LICENSE file.
 
 load("//lib/branches.star", "branches")
-load("//lib/builders.star", "cpu", "goma", "os", "xcode")
+load("//lib/builders.star", "cpu", "goma", "os", "sheriff_rotations", "xcode")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//console-header.star", "HEADER")
 load("//project.star", "settings")
 
 def main_console_if_on_branch():
-    return branches.value(for_branches = "main")
+    return "main" if not settings.is_main else None
 
 ci.defaults.set(
     bucket = "ci",
@@ -22,7 +22,7 @@ ci.defaults.set(
     execution_timeout = 3 * time.hour,
     os = os.LINUX_DEFAULT,
     pool = "luci.chromium.ci",
-    project_trigger_overrides = branches.value(for_branches = {"chromium": settings.project}),
+    project_trigger_overrides = {"chromium": settings.project} if not settings.is_main else None,
     service_account = "chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com",
     swarming_tags = ["vpython:native-python-wrapper"],
     triggered_by = ["chromium-gitiles-trigger"],
@@ -877,10 +877,7 @@ ci.android_builder(
         short_name = "M",
     ),
     cq_mirrors_console_view = "mirrors",
-    execution_timeout = branches.value(
-        for_main = 3 * time.hour,
-        for_branches = 4 * time.hour,
-    ),
+    execution_timeout = 3 * time.hour if settings.is_main else 4 * time.hour,
     main_console_view = main_console_if_on_branch(),
     tree_closing = True,
     os = os.LINUX_BIONIC_REMOVE,
@@ -1983,6 +1980,7 @@ ci.cipd_builder(
     ),
     executable = "recipe:android/androidx_packager",
     schedule = "0 7,14,22 * * * *",
+    sheriff_rotations = sheriff_rotations.ANDROID,
     triggered_by = [],
 )
 
@@ -5526,9 +5524,8 @@ ci.mac_builder(
 # TODO(estaab) When promoting out of FYI, make tree_closing True and make
 # branch_selector branches.STANDARD_RELEASES, then remove the entry for this
 # builder from //generators/scheduler-noop-jobs.star
-ci.thin_tester(
+ci.mac_thin_tester(
     name = "mac-arm64-rel-tests",
-    builder_group = "chromium.fyi",
     console_view_entry = consoles.console_view_entry(
         category = "mac",
         short_name = "a64",
@@ -5537,10 +5534,9 @@ ci.thin_tester(
     triggered_by = ["ci/mac-arm64-rel"],
 )
 
-ci.thin_tester(
+ci.mac_thin_tester(
     name = "Mac10.11 Tests",
     branch_selector = branches.STANDARD_MILESTONE,
-    builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "release",
         short_name = "11",
@@ -5550,10 +5546,9 @@ ci.thin_tester(
     triggered_by = ["ci/Mac Builder"],
 )
 
-ci.thin_tester(
+ci.mac_thin_tester(
     name = "Mac10.12 Tests",
     branch_selector = branches.STANDARD_MILESTONE,
-    builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "release",
         short_name = "12",
@@ -5563,10 +5558,9 @@ ci.thin_tester(
     triggered_by = ["ci/Mac Builder"],
 )
 
-ci.thin_tester(
+ci.mac_thin_tester(
     name = "Mac10.13 Tests",
     branch_selector = branches.STANDARD_MILESTONE,
-    builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "release",
         short_name = "13",
@@ -5576,10 +5570,9 @@ ci.thin_tester(
     triggered_by = ["ci/Mac Builder"],
 )
 
-ci.thin_tester(
+ci.mac_thin_tester(
     name = "Mac10.14 Tests",
     branch_selector = branches.STANDARD_MILESTONE,
-    builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "release",
         short_name = "14",
@@ -5589,10 +5582,9 @@ ci.thin_tester(
     triggered_by = ["ci/Mac Builder"],
 )
 
-ci.thin_tester(
+ci.mac_thin_tester(
     name = "Mac10.15 Tests",
     branch_selector = branches.STANDARD_MILESTONE,
-    builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "release",
         short_name = "15",
@@ -5602,12 +5594,11 @@ ci.thin_tester(
     triggered_by = ["ci/Mac Builder"],
 )
 
-ci.thin_tester(
+ci.mac_thin_tester(
     name = "Mac11 Tests",
     # TODO(crbug.com/1206401): Reenable on the branches when we have
     # sufficient capacity.
     # branch_selector = branches.STANDARD_MILESTONE,
-    builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "mac",
         short_name = "11",
@@ -5616,10 +5607,9 @@ ci.thin_tester(
     triggered_by = ["ci/Mac Builder"],
 )
 
-ci.thin_tester(
+ci.mac_thin_tester(
     name = "Mac10.15 Tests (dbg)",
     branch_selector = branches.STANDARD_MILESTONE,
-    builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "debug",
         short_name = "15",
@@ -5920,6 +5910,7 @@ ci.memory_builder(
         short_name = "asn",
     ),
     main_console_view = "main",
+    sheriff_rotations = sheriff_rotations.ANDROID,
     tree_closing = False,
 )
 

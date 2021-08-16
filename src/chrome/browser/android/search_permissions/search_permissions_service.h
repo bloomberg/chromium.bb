@@ -120,7 +120,8 @@ class SearchPermissionsService : public KeyedService {
   ContentSetting RestoreOldSettingAndReturnPrevious(
       const GURL& dse_origin,
       ContentSettingsType type,
-      ContentSetting setting_to_restore);
+      ContentSetting setting_to_restore,
+      bool preserve_block_setting);
 
   // Helper function for OnDSEChanged which transitions the DSE setting for a
   // specific permission. It returns the content setting to be restored later
@@ -147,6 +148,17 @@ class SearchPermissionsService : public KeyedService {
   void SetContentSetting(const GURL& origin,
                          ContentSettingsType type,
                          ContentSetting setting);
+
+  // Record how the content setting transitions when DSE permissions autogrant
+  // is disabled via feature.
+  void RecordAutoDSEPermissionReverted(ContentSettingsType permission_type,
+                                       ContentSetting backed_up_setting,
+                                       ContentSetting effective_setting,
+                                       const GURL& origin);
+
+  // Record the content settings for notifications and geolocation on the DSE
+  // origin. Called at initialization or when the DSE origin changes.
+  void RecordEffectiveDSEOriginPermissions();
 
   void SetSearchEngineDelegateForTest(
       std::unique_ptr<SearchEngineDelegate> delegate);

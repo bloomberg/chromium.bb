@@ -9,7 +9,7 @@
 <translation id="1185134272377778587">Chromium గురించి</translation>
 <translation id="1315551408014407711">మీ కొత్త Chromium ప్రొఫైల్‍ను సెట్ అప్ చేయండి</translation>
 <translation id="1396446129537741364">Chromium పాస్‌వర్డ్‌లను చూపడానికి ప్రయత్నిస్తోంది.</translation>
-<translation id="1414495520565016063">మీరు Chromiumకు సైన్ ఇన్ చేసారు!</translation>
+<translation id="1414495520565016063">మీరు Chromiumకు సైన్ ఇన్ చేశారు!</translation>
 <translation id="151962892725702025">మీ డొమైన్ కోసం సింక్‌ అందుబాటులో లేనందున, Chromium OS, మీ డేటాను సింక్ చేయ‌లేక‌పోయింది.</translation>
 <translation id="1524282610922162960">Chromium ట్యాబ్‌ను షేర్ చేయండి</translation>
 <translation id="1553461853655228091">మీ పరిసరాల 3D మ్యాప్‌ను సృష్టించడానికి Chromiumకు మీ కెమెరాను యాక్సెస్ చేసే అనుమతి కావాలి</translation>
@@ -35,7 +35,7 @@
 <translation id="2483889755041906834">Chromiumలో</translation>
 <translation id="2485422356828889247">అన్ఇన్‌స్టాల్ చేయి</translation>
 <translation id="2535480412977113886">మీ ఖాతా సైన్-ఇన్ వివరాల గడువు ముగిసినందున Chromium OS మీ డేటాను సింక్ చేయలేకపోయింది.</translation>
-<translation id="2560420686485554789">ఫైల్‌లను డౌన్‌లోడ్ చేయడానికి Chromiumకు నిల్వ యాక్సెస్ అవసరం</translation>
+<translation id="2560420686485554789">ఫైళ్లను డౌన్‌లోడ్ చేయడానికి Chromiumకు నిల్వ యాక్సెస్ అవసరం</translation>
 <translation id="2572494885440352020">Chromium సహాయకం</translation>
 <translation id="2577788541081224677">మీ అన్ని పరికరాలలో మీ Chromium సంబంధిత అంశాలను యాక్సెస్ చేయడానికి, సైన్ ఇన్ చేయడం ద్వారా సింక్‌ను ఆన్ చేయండి.</translation>
 <translation id="2580426763510374355">Chromium OSను ఇన్‌స్టాల్ చేయి</translation>
@@ -67,7 +67,7 @@
 <translation id="3258596308407688501">Chromium దీని డేటా డైరెక్టరీని చదవలేదు మరియు దీనిలో రాయ‌లేదు: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="3283186697780795848">Chromium వెర్షన్ <ph name="PRODUCT_VERSION" /> ఇన్‌స్టాల్ చేయబడింది</translation>
 <translation id="328888136576916638">Google API కీలు లేవు. Chromium కార్యాచరణలో కొంత భాగం నిలిపివేయబడుతుంది.</translation>
-<translation id="3296368748942286671">Chromium మూసివేయబడినప్పుడు నేపథ్య అనువర్తనాలను అమలు చేయడాన్ని కొనసాగించు</translation>
+<translation id="3296368748942286671">Chromium మూసివేయబడినప్పుడు నేపథ్య యాప్‌లను అమలు చేయడాన్ని కొనసాగించు</translation>
 <translation id="331951419404882060">సైన్ ఇన్ చేయడంలో ఎర్రర్ ఏర్పడినందున Chromium OS మీ డేటాను సింక్ చేయలేకపోయింది.</translation>
 <translation id="3350761136195634146">ఈ ఖాతాతో ఇప్పటికే ఒక Chromium ప్రొఫైల్ ఉంది</translation>
 <translation id="3406848076815591792">ప్రస్తుతం ఉన్న Chromium ప్రొఫైల్‌కు స్విచ్ చేయాలా?</translation>
@@ -107,12 +107,12 @@
 <translation id="452711251841752011">Chromiumకు స్వాగతం; కొత్త బ్రౌజర్ విండో తెరవబడింది</translation>
 <translation id="4544142686420020088">Chromium అప్‌డేట్ అవ్వలేదు, ఏదో తప్పు జరిగింది. <ph name="BEGIN_LINK" />Chromium అప్‌డేట్ సమస్యలు, విఫలమైన అప్‌డేట్‌లను పరిష్కరించండి.<ph name="END_LINK" /></translation>
 <translation id="454579500955453258">కొత్త Chromium ప్రొఫైల్‌లో కొనసాగించాలా?</translation>
-<translation id="4567424176335768812">మీరు <ph name="USER_EMAIL_ADDRESS" />గా సైన్ ఇన్ చేసారు. ఇప్పుడు మీరు సైన్ ఇన్ చేసిన అన్ని పరికరాల్లో మీ బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌లను యాక్సెస్ చేయవచ్చు.</translation>
+<translation id="4567424176335768812">మీరు <ph name="USER_EMAIL_ADDRESS" />గా సైన్ ఇన్ చేశారు. ఇప్పుడు మీరు సైన్ ఇన్ చేసిన అన్ని పరికరాల్లో మీ బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌లను యాక్సెస్ చేయవచ్చు.</translation>
 <translation id="459535195905078186">Chromium యాప్‌లు</translation>
 <translation id="4665829708273112819">హెచ్చరిక: Chromium మీ బ్రౌజింగ్ హిస్టరీను రికార్డ్ చేయకుండా ఎక్స్‌టెన్ష‌న్‌లను నివారించలేదు. ఈ ఎక్స్‌టెన్ష‌న్‌ను అజ్ఞాత మోడ్‌లో డిజేబుల్ చేయడానికి, ఈ ఆప్షన్‌ను రద్దు చేయండి.</translation>
 <translation id="4677944499843243528">ఈ ప్రొఫైల్‌ను మరొక కంప్యూటర్ (<ph name="HOST_NAME" />)లో మరో Chromium ప్రాసెస్ (<ph name="PROCESS_ID" />) ఉపయోగిస్తున్నట్లు కనిపిస్తోంది. Chromium ప్రొఫైల్‌ను లాక్ చేసినందున అది పాడవదు. ఈ ప్రొఫైల్‌ను వేరే ప్రాసెస్‌లు ఏవీ ఉపయోగించడం లేదని మీకు ఖచ్చితంగా తెలిస్తే, ప్రొఫైల్‌ను అన్‌లాక్ చేసి Chromiumను మళ్లీ ప్రారంభించవచ్చు.</translation>
 <translation id="469338717132742108">Chromium OS గురించి సహాయాన్ని పొందండి</translation>
-<translation id="4708774505295300557">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" /> లాగా Chromiumకు సైన్ ఇన్ చేశారు. దయచేసి మీ సమాచారాన్ని విడిగా ఉంచేందుకు కొత్త Chromium వినియోగదారును సృష్టించండి.</translation>
+<translation id="4708774505295300557">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" /> లాగా Chromiumకు సైన్ ఇన్ చేశారు. దయచేసి మీ సమాచారాన్ని విడిగా ఉంచేందుకు కొత్త Chromium వినియోగదారును క్రియేట్ చేయండి.</translation>
 <translation id="4746050847053251315">ఏదేమైనా Chromiumని మూసివేయాలా?</translation>
 <translation id="4748217263233248895">Chromiumకి సంబంధించిన ప్రత్యేక భద్రతా అప్‌డేట్ వర్తింపజేయబడింది. ఇప్పుడే పునఃప్రారంభించండి, మేము మీ ట్యాబ్‌లను పునరుద్ధరిస్తాము.</translation>
 <translation id="4750035648288509542">దాదాపుగా తాజాగా ఉంది! అప్‌డేట్ చేయడాన్ని పూర్తి చేయడానికి Chromiumను మళ్లీ ప్రారంభించండి. అజ్ఞాత విండోలు మళ్లీ తెరవబడవు.</translation>
@@ -136,7 +136,7 @@
 <translation id="5479196819031988440">Chromium OS ఈ పేజీని తెరవలేదు.</translation>
 <translation id="5480860683791598150">ఈ సైట్‌తో మీ స్థానాన్ని షేర్ చేయడానికి Chromiumకు మీ స్థాన యాక్సెస్ అవసరం</translation>
 <translation id="5481338274774984070">మీరు ఈ ఫైల్‌ను డౌన్‌లోడ్ చేయవద్దు లేదా తెరవద్దని Chromium సిఫార్సు చేస్తుంది.</translation>
-<translation id="549669000822060376">దయచేసి Chromium తాజా సిస్టమ్ నవీకరణలను ఇన్‌స్టాల్ చేస్తున్నప్పుడు వేచి ఉండండి.</translation>
+<translation id="549669000822060376">దయచేసి Chromium తాజా సిస్టమ్ అప్‌డేట్‌లను ఇన్‌స్టాల్ చేస్తున్నప్పుడు వేచి ఉండండి.</translation>
 <translation id="5496810170689441661">పాస్‌వర్డ్‌లను ఎడిట్ చేయడానికి Chromium ప్రయత్నిస్తోంది. దీన్ని అనుమతించడానికి మీ Windows పాస్‌వర్డ్‌ను టైప్ చేయండి.</translation>
 <translation id="5527463683072221100">Chromiumలో PDFలను తెరవండి</translation>
 <translation id="5623402015214259806">{0,plural, =0{ఒక Chromium అప్‌డేట్ అందుబాటులో ఉంది}=1{ఒక Chromium అప్‌డేట్ అందుబాటులో ఉంది}other{ఒక Chromium అప్‌డేట్ # రోజులుగా అందుబాటులో ఉంది}}</translation>
@@ -183,7 +183,7 @@
 <translation id="6570579332384693436">అక్షరక్రమ లోపాలను పరిష్కరించడానికి, మీరు వచన ఫీల్డ్‌లలో టైప్ చేసే వచనాన్ని, Chromium Googleకి పంపుతుంది</translation>
 <translation id="6598877126913850652">Chromium నోటిఫికేషన్ సెట్టింగ్‌లకు వెళ్లు</translation>
 <translation id="6613594504749178791">మీ మార్పులు మీరు Chromiumని మరుసటిసారి ప్రారంభించినప్పుడు ప్రభావాన్ని చూపుతాయి.</translation>
-<translation id="6676384891291319759">ఇంటర్నెట్‌ను ఆక్సెస్ చెయ్యండి</translation>
+<translation id="6676384891291319759">ఇంటర్నెట్‌ను ఆక్సెస్ చేయండి</translation>
 <translation id="6717134281241384636">మీ ప్రొఫైల్, కొత్త Chromium వెర్షన్‌కు చెందినది కాబట్టి, దీనిని ఉపయోగించడం సాధ్యపడదు.
 
 కొన్ని ఫీచర్‌లు అందుబాటులో ఉండకపోవచ్చు. దయచేసి వేరొక ప్రొఫైల్ డైరెక్టరీని పేర్కొనండి లేదా Chromium యొక్క కొత్త వెర్షన్‌ను ఉపయోగించండి.</translation>
@@ -211,7 +211,7 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">కొత్త విండో</translation>
 <translation id="734373864078049451">మీ వెబ్, బుక్‌మార్క్‌లు మరియు ఇతర Chromium అంశాలు ఇక్కడ చూపబడతాయి.</translation>
-<translation id="7349591376906416160"><ph name="TARGET_URL_HOSTNAME" />ను యాక్సెస్ చేయడం కోసం <ph name="ALTERNATIVE_BROWSER_NAME" />ను తెరిచే విధంగా Chromiumను మీ సిస్టమ్ నిర్వాహకుడు కాన్ఫిగర్ చేసారు.</translation>
+<translation id="7349591376906416160"><ph name="TARGET_URL_HOSTNAME" />ను యాక్సెస్ చేయడం కోసం <ph name="ALTERNATIVE_BROWSER_NAME" />ను తెరిచే విధంగా Chromiumను మీ సిస్టమ్ నిర్వాహకుడు కాన్ఫిగర్ చేశారు.</translation>
 <translation id="7448255348454382571">Chromium OSని మళ్లీ ప్రారంభించండి</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">ఈ సైట్ కోసం మీ కెమెరాను యాక్సెస్ చేయడానికి Chromiumకు అనుమతి అవసరం</translation>
