@@ -88,7 +88,7 @@
 <translation id="1550523713251050646">మరిన్ని ఎంపికల కోసం క్లిక్ చేయండి</translation>
 <translation id="1555130319947370107">నీలం</translation>
 <translation id="1570871743947603115">బ్లూటూత్‌ను టోగుల్ చేయండి. <ph name="STATE_TEXT" /></translation>
-<translation id="1589090746204042747">ఈ సెషన్‌లో మీ మొత్తం కార్యకలాపాన్ని యాక్సెస్ చేయండి</translation>
+<translation id="1589090746204042747">ఈ సెషన్‌లో మీ మొత్తం యాక్టివిటీని యాక్సెస్ చేయండి</translation>
 <translation id="1611993646327628135">ఆన్</translation>
 <translation id="1615402009686901181">గోప్యమైన కంటెంట్ కనిపించినప్పుడు, అడ్మినిస్ట్రేటర్ పాలసీ స్క్రీన్ క్యాప్చర్‌ను డిజేబుల్ చేస్తుంది</translation>
 <translation id="1632985212731562677">సెట్టింగ్‌లు &gt; యాక్సెసిబిలిటీలో స్విచ్ యాక్సెస్‌ను డిజేబుల్ చేయవచ్చు.</translation>
@@ -97,7 +97,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> మిగిలి ఉంది</translation>
 <translation id="1677507110654891115"><ph name="FEATURE_NAME" /> కనెక్ట్ కాలేదు.</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> టైమర్ · <ph name="LABEL" /></translation>
-<translation id="1698760176351776263">IPv6 చిరునామా: <ph name="ADDRESS" /></translation>
+<translation id="1698760176351776263">IPv6 అడ్రస్‌: <ph name="ADDRESS" /></translation>
 <translation id="1708345662127501511">డెస్క్: <ph name="DESK_NAME" /></translation>
 <translation id="1709762881904163296">నెట్‌వర్క్ సెట్టింగ్‌లు</translation>
 <translation id="1719094688023114093">లైవ్ క్యాప్షన్ ఆన్ చేయబడింది.</translation>
@@ -122,7 +122,7 @@
 <translation id="1885785240814121742">వేలిముద్రతో అన్‌లాక్ చేయండి</translation>
 <translation id="1888656773939766144"><ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz)ను <ph name="DISPLAY_NAME" /> సపోర్ట్ చేయదు. రిజల్యూషన్ <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />)కు మార్చబడింది. మార్పులను అలాగే ఉంచడానికి 'నిర్ధారించు'ను క్లిక్ చేయండి. మునుపటి సెట్టింగ్‌లు <ph name="TIMEOUT_SECONDS" />లో రీస్టోర్ చేయబడతాయి.</translation>
 <translation id="1919743966458266018">టాస్క్ మేనేజర్‌ను తెరిచే షార్ట్‌కట్ మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కు బదులుగా <ph name="NEW_SHORTCUT" />ను ఉపయోగించండి.</translation>
-<translation id="1923539912171292317">స్వయంచాలక క్లిక్‌లు</translation>
+<translation id="1923539912171292317">ఆటోమేటిక్‌ క్లిక్‌లు</translation>
 <translation id="1928739107511554905">అప్‌డేట్‌ను పొందడానికి, కీబోర్డ్‌ను అలానే జోడించి ఉంచి మీ Chromebookను పునఃప్రారంభించడం కోసం టచ్‌స్క్రీన్‌ను ఉపయోగించండి.</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1954252331066828794">స్క్రీన్ రికార్డింగ్ పూర్తయింది</translation>
@@ -138,7 +138,7 @@
 <translation id="1993072747612765854">తాజా <ph name="SYSTEM_APP_NAME" /> అప్‌డేట్ గురించి మరింత తెలుసుకోండి</translation>
 <translation id="1998100899771863792">ప్రస్తుత డెస్క్</translation>
 <translation id="1999628559811343244">నెట్‌వర్క్ ప్యాకెట్ క్యాప్చర్ ప్రారంభమైంది</translation>
-<translation id="2016340657076538683">సందేశాన్ని టైప్ చేయండి</translation>
+<translation id="2016340657076538683">మెసేజ్‌ను టైప్ చేయండి</translation>
 <translation id="2018630726571919839">ఒక జోక్ చెప్పు</translation>
 <translation id="2021864487439853900">అన్‌లాక్ కోసం క్లిక్ చేయండి</translation>
 <translation id="2047639699071423250">ముఖ్య ఐడియాను జోడించు</translation>
@@ -235,7 +235,7 @@
 <translation id="2841907151129139818">టాబ్లెట్ మోడ్‌కు స్విచ్ చేయబడింది</translation>
 <translation id="2844169650293029770">USB-C పరికరం (ఎడమవైపు ముందు పోర్ట్)</translation>
 <translation id="2865888419503095837">నెట్‌వర్క్ సమాచారం</translation>
-<translation id="2872961005593481000">షట్ డౌన్ చెయ్యండి</translation>
+<translation id="2872961005593481000">షట్ డౌన్ చేయండి</translation>
 <translation id="2878884018241093801">ఇటీవలి అంశాలు ఏవీ లేవు</translation>
 <translation id="2903844815300039659"><ph name="NAME" />కి కనెక్ట్ చేయబడింది, <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">స్క్రీన్ క్యాప్చర్‌లు</translation>
@@ -274,7 +274,7 @@
 <translation id="315116470104423982">మొబైల్ డేటా</translation>
 <translation id="3151786313568798007">దృగ్విన్యాసం</translation>
 <translation id="3153444934357957346">బహుళ సైన్-ఇన్‌లో గరిష్టంగా <ph name="MULTI_PROFILE_USER_LIMIT" /> ఖాతాలు మాత్రమే ఉండవచ్చు.</translation>
-<translation id="3154351730702813399">పరికర నిర్వాహకుడు మీ బ్రౌజింగ్ కార్యకలాపాన్ని పర్యవేక్షించవచ్చు.</translation>
+<translation id="3154351730702813399">పరికర నిర్వాహకుడు మీ బ్రౌజింగ్ యాక్టివిటీని పర్యవేక్షించవచ్చు.</translation>
 <translation id="3181441307743005334">రీస్టార్ట్ చేయడానికి కొంత సమయం పట్టవచ్చు</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{పరికరానికి కనెక్ట్ చేయబడింది}other{# పరికరాలకు కనెక్ట్ చేయబడింది}}</translation>
 <translation id="320207200541803018">టైమర్‌ని సెట్ చేయండి</translation>
@@ -306,7 +306,7 @@
 <translation id="3413817803639110246">ఇప్పటికీ చూడటానికి ఏమీ లేవు</translation>
 <translation id="3428447136709161042"><ph name="NETWORK_NAME" /> నుండి డిస్‌కనెక్ట్ చేయి</translation>
 <translation id="3430396595145920809">వెనుకకు వెళ్లడానికి కుడి వైపు నుండి స్వైప్ చేయండి</translation>
-<translation id="343571671045587506">రిమైండర్‌ను సవరించండి</translation>
+<translation id="343571671045587506">రిమైండర్‌ను ఎడిట్ చేయండి</translation>
 <translation id="3435967511775410570">వేలిముద్ర గుర్తించబడింది</translation>
 <translation id="3441920967307853524"><ph name="RECEIVED_BYTES" />/<ph name="TOTAL_BYTES" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> నిమి</translation>
@@ -655,7 +655,7 @@
 <translation id="6059276912018042191">ఇటీవలి Chrome ట్యాబ్‌లు</translation>
 <translation id="6062360702481658777">మీరు <ph name="LOGOUT_TIME_LEFT" />లో ఆటోమేటిక్‌గా సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="6073451960410192870">రికార్డ్ చేయడం ఆపివేయి</translation>
-<translation id="607652042414456612">మీ కంప్యూటర్ సమీప బ్లూటూత్ పరికరాల్లో కనుగొనబడుతుంది మరియు చిరునామా <ph name="ADDRESS" />తో "<ph name="NAME" />" లాగా కనిపిస్తుంది</translation>
+<translation id="607652042414456612">మీ కంప్యూటర్ సమీప బ్లూటూత్ పరికరాల్లో కనుగొనబడుతుంది మరియు అడ్రస్‌ <ph name="ADDRESS" />తో "<ph name="NAME" />" లాగా కనిపిస్తుంది</translation>
 <translation id="6094290315941448991">గోప్యమైన కంటెంట్ కనిపించినప్పుడు, అడ్మినిస్ట్రేటర్ పాలసీ స్క్రీన్ రికార్డింగ్‌ను డిజేబుల్ చేస్తుంది</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="612734058257491180">అతిథి సెషన్‌లో Google అసిస్టెంట్ పని చేయదు.</translation>
@@ -789,7 +789,7 @@
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. ఒక అప్‌డేట్‌ను వర్తింపజేయడానికి ఈ Chromebookను రీస్టార్ట్ చేయాలి. దీనికి 1 నిమిషం వరకు పట్టవచ్చు.</translation>
 <translation id="7256634071279256947">వెనుకవైపు మైక్రోఫోన్</translation>
 <translation id="726276584504105859">విభజన స్క్రీన్‌ను ఉపయోగించడానికి ఇక్కడికి లాగండి</translation>
-<translation id="7262906531272962081">రిమైండర్‌ను సృష్టించండి</translation>
+<translation id="7262906531272962081">రిమైండర్‌ను క్రియేట్ చేయండి</translation>
 <translation id="7279434993080105272"><ph name="COLOR_PARAMETER" /> మార్కర్ రంగు</translation>
 <translation id="7302889331339392448">లైవ్ క్యాప్షన్ ఆఫ్ చేయబడింది.</translation>
 <translation id="7303365578352795231">మరొక పరికరంలో సమాధానం ఇవ్వబడుతోంది.</translation>
@@ -828,7 +828,7 @@
 <translation id="7509246181739783082">మీ గుర్తింపును వెరిఫై చేయండి</translation>
 <translation id="7513622367902644023">స్క్రీన్‌షాట్ మోడ్ ఎంచుకోబడింది</translation>
 <translation id="7526573455193969409">నెట్‌వ‌ర్క్‌పై ప‌ర్య‌వేక్ష‌ణ ఉండ‌వ‌చ్చు</translation>
-<translation id="7536035074519304529">IP చిరునామా: <ph name="ADDRESS" /></translation>
+<translation id="7536035074519304529">IP అడ్రస్‌: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">నిద్రపోయే సమయం</translation>
 <translation id="7551643184018910560">అరకు పిన్ చేయండి</translation>
 <translation id="7561982940498449837">మెనూను మూసివేయి</translation>
@@ -930,7 +930,7 @@
 <translation id="8308637677604853869">మునుపటి మెనూ</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8345019317483336363"><ph name="WINDOW_TITLE" /> విండో ఎంచుకోబడింది</translation>
-<translation id="8351131234907093545">గమనికను సృష్టించండి</translation>
+<translation id="8351131234907093545">గమనికను క్రియేట్ చేయండి</translation>
 <translation id="8371779926711439835">ఒక అక్షరం ముందుకు</translation>
 <translation id="8371991222807690464">గెస్ట్ మోడ్‌లో పెరిఫెరల్ పనితీరు పరిమితంగా ఉండవచ్చు</translation>
 <translation id="8375916635258623388">ఈ <ph name="DEVICE_NAME" /> మరియు మీ ఫోన్‌ ఆటోమెటిక్‌గా కనెక్ట్ చేయబడతాయి</translation>
@@ -972,7 +972,7 @@
 <translation id="8653151467777939995">నోటిఫికేషన్ సెట్టింగ్‌లను చూపుతుంది. నోటిఫికేషన్‌లు ఆన్ చేయబడి ఉన్నాయి</translation>
 <translation id="8660331759611631213">71 వర్గమూలం</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" /></translation>
-<translation id="8664753092453405566">నెట్‌వర్క్ జాబితాను చూపుతుంది. <ph name="STATE_TEXT" /></translation>
+<translation id="8664753092453405566">నెట్‌వర్క్ లిస్ట్‌ను చూపుతుంది. <ph name="STATE_TEXT" /></translation>
 <translation id="8668052347555487755">రంగు మోడ్</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">తక్కువ-పవర్ గల ఛార్జర్ కనెక్ట్ చేయబడింది</translation>

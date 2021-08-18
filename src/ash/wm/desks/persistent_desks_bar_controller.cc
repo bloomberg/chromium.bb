@@ -132,6 +132,13 @@ void PersistentDesksBarController::OnDeskSwitchAnimationLaunching() {}
 
 void PersistentDesksBarController::OnDeskSwitchAnimationFinished() {}
 
+void PersistentDesksBarController::OnDeskNameChanged(
+    const Desk* desk,
+    const std::u16string& new_name) {
+  if (persistent_desks_bar_view_)
+    persistent_desks_bar_view_->RefreshDeskButtons();
+}
+
 void PersistentDesksBarController::OnTabletModeStarted() {
   DestroyBarWidget();
 }

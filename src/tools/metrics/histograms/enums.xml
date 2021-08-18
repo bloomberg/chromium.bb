@@ -4271,7 +4271,11 @@ others/histograms.xml -->
   <int value="1" label="ACCEPTED-VIA-SETTINGS"/>
   <int value="2" label="REJECTED-VIA-BUTTON"/>
   <int value="3" label="REJECTED-VIA-SETTINGS"/>
-  <int value="4" label="REJECTED-VIA-DISMISS"/>
+  <int value="4" label="REJECTED-VIA-DISMISS-DEPRECATED"/>
+  <int value="5" label="REJECTED-VIA-BACK-BUTTON-PRESS"/>
+  <int value="6" label="REJECTED-VIA-SCRIM-TAP"/>
+  <int value="7" label="CANCELED-VIA-BACK-BUTTON-PRESS"/>
+  <int value="8" label="CANCELED-VIA-SCRIM-TAP"/>
 </enum>
 
 <enum name="AssistantEntryPoint">
@@ -14294,6 +14298,7 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="Go to URL"/>
   <int value="20" label="Copy link to text"/>
   <int value="21" label="Search Image with Google Lens"/>
+  <int value="22" label="Search part of page with Google Lens"/>
 </enum>
 
 <enum name="ContextMenuOptionIOS">
@@ -45310,6 +45315,20 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="11" label="Success: Image is translatable"/>
 </enum>
 
+<enum name="LensRegionSearchAspectRatio">
+  <summary>
+    Enum describing the aspect ratio of the captured region. The aspect ratios
+    are defined arbitrarly as follows: SQUARE: [0.8, 1.2] WIDE: (1.2, 1.7]
+    VERY_WIDE: (1.7, infinity] TALL: [0.3, 0.8) VERY_TALL: [0, 0.3)
+  </summary>
+  <int value="0" label="Undefined Aspect Ratio"/>
+  <int value="1" label="Square Aspect Ratio"/>
+  <int value="2" label="Wide Aspect Ratio"/>
+  <int value="3" label="Very Wide Aspect Ratio"/>
+  <int value="4" label="Tall Aspect Ratio"/>
+  <int value="5" label="Very Tall Aspect Ratio"/>
+</enum>
+
 <enum name="LensRegionSearchCaptureResult">
   <summary>Result of Lens Region Search feature.</summary>
   <int value="0" label="Success"/>
@@ -46372,7 +46391,6 @@ from previous Chrome versions.
   <int value="-2082462043" label="ViewPasswords:disabled"/>
   <int value="-2082042818"
       label="AutofillCreditCardLastUsedDateDisplay:enabled"/>
-  <int value="-2081925750" label="AssistantVoiceConsentTapsCounter:enabled"/>
   <int value="-2080657940" label="DirectActions:disabled"/>
   <int value="-2080504230" label="TabHoverCards:disabled"/>
   <int value="-2077268643" label="disable-device-enumeration"/>
@@ -48536,6 +48554,7 @@ from previous Chrome versions.
   <int value="-338978205" label="NavigationMojoResponse:enabled"/>
   <int value="-338606027" label="TrimOnMemoryPressure:disabled"/>
   <int value="-338277966" label="DecoupleSyncFromAndroidMasterSync:enabled"/>
+  <int value="-337722581" label="AssistantConsentV2:enabled"/>
   <int value="-334873793" label="MediaSessionNotification:enabled"/>
   <int value="-333216449" label="MouseSubframeNoImplicitCapture:enabled"/>
   <int value="-329727402" label="disable-files-quick-view"/>
@@ -49164,7 +49183,6 @@ from previous Chrome versions.
   <int value="194573877" label="MacViewsNativeDialogs:disabled"/>
   <int value="194895489" label="passive-listeners-default"/>
   <int value="195335115" label="AudioWorkletRealtimeThread:disabled"/>
-  <int value="195472365" label="AssistantVoiceConsentTapsCounter:disabled"/>
   <int value="195570937" label="EnableHomeLauncher:disabled"/>
   <int value="196103097" label="PaintPreviewShowOnStartup:disabled"/>
   <int value="198719062" label="WebAssemblyLazyCompilation:disabled"/>
@@ -49782,7 +49800,6 @@ from previous Chrome versions.
   <int value="689577480" label="vr-shell-experimental-rendering"/>
   <int value="690185633" label="NonValidatingReloadOnNormalReload:disabled"/>
   <int value="691020108" label="NTPCondensedTileLayout:disabled"/>
-  <int value="691059209" label="AssistantExplicitVoiceConsent:disabled"/>
   <int value="693012666" label="QuickUnlockPin:disabled"/>
   <int value="693545401"
       label="AutofillEnableInfoBarAccountIndicationFooter:enabled"/>
@@ -51181,6 +51198,7 @@ from previous Chrome versions.
   <int value="1842219851" label="enable-incognito-window-counter"/>
   <int value="1843088575" label="OutOfBlinkCors:enabled"/>
   <int value="1844110073" label="enable-app-view"/>
+  <int value="1844222711" label="AssistantConsentV2:disabled"/>
   <int value="1846717591" label="CaptureMode:disabled"/>
   <int value="1847024354" label="enable-hotword-hardware"/>
   <int value="1847658464" label="MeteredShowToggle:disabled"/>
@@ -51517,7 +51535,6 @@ from previous Chrome versions.
   <int value="2106798283" label="SafetyTip:disabled"/>
   <int value="2106855416" label="HostWindowsInAppShimProcess:enabled"/>
   <int value="2113804526" label="EnableAppShortcutSearch:enabled"/>
-  <int value="2113976442" label="AssistantExplicitVoiceConsent:enabled"/>
   <int value="2114221139" label="EnableHostnameSetting:disabled"/>
   <int value="2114843059" label="ContextualSuggestionsOptOut:enabled"/>
   <int value="2114894984" label="DelayCompetingLowPriorityRequests:enabled"/>
@@ -53333,8 +53350,10 @@ Called by update_use_counter_css.py.-->
 
 <enum name="MatchResult">
   <int value="0" label="Valid match"/>
-  <int value="1" label="Invalid match"/>
-  <int value="2" label="Index Out of Bounds"/>
+  <int value="1" label="Suggestion mismatch"/>
+  <int value="2" label="Result array size mismatch"/>
+  <int value="3" label="Native match dead"/>
+  <int value="4" label="Suggestion index out of bounds"/>
 </enum>
 
 <enum name="MayLaunchUrlType">
@@ -70666,6 +70685,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="112" label="IDC_CONTENT_CONTEXT_COPYLINKTOTEXT"/>
   <int value="113" label="IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE"/>
   <int value="114" label="IDC_CONTENT_CONTEXT_REMOVELINKTOTEXT"/>
+  <int value="115" label="IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">

@@ -223,6 +223,7 @@
 #include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
+#include "content/browser/android/java_interfaces_impl.h"
 #include "content/public/browser/android/java_interfaces.h"
 #include "media/audio/android/audio_manager_android.h"
 #include "third_party/blink/public/mojom/android_font_lookup/android_font_lookup.mojom.h"
@@ -1534,6 +1535,18 @@ class RenderProcessHostImpl::IOThreadHostImpl : public mojom::ChildProcessHost {
       return;
     }
 
+#if defined(OS_ANDROID)
+    if (base::FeatureList::IsEnabled(
+            features::kNavigationThreadingOptimizations)) {
+      // Bind the font lookup on the IO thread as an optimization to avoid
+      // running navigation critical path tasks on the UI thread.
+      if (auto r = receiver.As<blink::mojom::AndroidFontLookup>()) {
+        GetGlobalJavaInterfacesOnIOThread()->GetInterface(std::move(r));
+        return;
+      }
+    }
+#endif
+
     std::string interface_name = *receiver.interface_name();
     mojo::ScopedMessagePipeHandle pipe = receiver.PassPipe();
     if (binders_->TryBindInterface(interface_name, &pipe))
@@ -1849,6 +1862,10 @@ void RenderProcessHostImpl::RegisterRendererMainThreadFactory(
 void RenderProcessHostImpl::SetDomStorageBinderForTesting(
     DomStorageBinder binder) {
   GetDomStorageBinder() = std::move(binder);
+}
+
+bool RenderProcessHostImpl::HasDomStorageBinderForTesting() {
+  return !GetDomStorageBinder().is_null();
 }
 
 // static
@@ -2651,6 +2668,16 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::BindPluginRegistry,
                           weak_factory_.GetWeakPtr()));
+#else
+  if (base::FeatureList::IsEnabled(
+          features::kNavigationThreadingOptimizations)) {
+    // On platforms where plugins are disabled, the PluginRegistry interface is
+    // never bound. This still results in posting a task on the UI thread to
+    // look for the interface which can be slow. Instead, drop the interface
+    // immediately on the IO thread by binding en empty interface handler.
+    registry->AddInterface(base::BindRepeating(
+        [](mojo::PendingReceiver<blink::mojom::PluginRegistry> receiver) {}));
+  }
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
