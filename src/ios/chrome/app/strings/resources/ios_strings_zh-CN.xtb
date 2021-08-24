@@ -622,7 +622,7 @@
 <translation id="6979158407327259162">Google 云端硬盘</translation>
 <translation id="6988572888918530647">管理 Google 帐号</translation>
 <translation id="6989674195860388998">在“设置”中切换…</translation>
-<translation id="6995899638241819463">当密码遭遇数据泄露时，发送警告</translation>
+<translation id="6995899638241819463">提醒我密码是否遭遇了数据泄露</translation>
 <translation id="6998989275928107238">至</translation>
 <translation id="7004032350256606903">贵单位要求您进行无痕浏览。
 <ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
@@ -678,7 +678,7 @@
 <translation id="7481312909269577407">前进</translation>
 <translation id="7483467499335917849">使用您的当前位置</translation>
 <translation id="750493650310597496">未选中任何项</translation>
-<translation id="7508728395076009983">如需锁定您的无痕式标签页，请设置 Touch ID、Face ID 或密码。</translation>
+<translation id="7508728395076009983">如需锁定您的无痕式标签页，请设置触控 ID、面容 ID 或密码。</translation>
 <translation id="7514365320538308">下载</translation>
 <translation id="7537586195939242955">抱歉，目前无法将您的票证添加到 Passbook。</translation>
 <translation id="7554791636758816595">新标签页</translation>
